@@ -86,6 +86,12 @@ class CounterClaimFormDocumentGeneratorTest {
     }
 
     @Test
+    void expectedCounterClaimFormFilenameWithRankMatchesGeneratedFilename() {
+        assertThat(CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename(1, 2))
+            .isEqualTo("Counterclaim CC1 - Defendant 2");
+    }
+
+    @Test
     void templateIdsMatchRdoDocmosisNamingConvention() {
         assertThat(CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");

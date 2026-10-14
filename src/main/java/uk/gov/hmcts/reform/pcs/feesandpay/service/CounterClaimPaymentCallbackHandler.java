@@ -142,7 +142,8 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         // The counterclaim form is scheduled for generation so we reference it by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
-            .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaimEntity)) + GENERATED_DOC_EXTENSION)
+            .fileName(expectedCounterClaimFormFilename(counterClaimEntity.getRank(),
+                defendantNumber(counterClaimEntity)) + GENERATED_DOC_EXTENSION)
             .build());
 
         documents.addAll(counterClaimEntity.getPcsCase().getDocuments().stream()
