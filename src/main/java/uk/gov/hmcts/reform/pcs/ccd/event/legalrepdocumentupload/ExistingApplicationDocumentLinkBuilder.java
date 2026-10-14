@@ -61,7 +61,7 @@ public class ExistingApplicationDocumentLinkBuilder {
             );
     }
 
-    private String documentLink(DocumentEntity documentEntity) {
+    public static String documentLink(DocumentEntity documentEntity) {
         if (documentEntity == null) {
             return null;
         }
@@ -78,7 +78,7 @@ public class ExistingApplicationDocumentLinkBuilder {
         return "/documents/%s/binary".formatted(documentId);
     }
 
-    private UUID extractDocumentId(String documentUrl) {
+    private static UUID extractDocumentId(String documentUrl) {
         if (documentUrl == null) {
             return null;
         }
