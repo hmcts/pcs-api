@@ -56,7 +56,7 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
             .pageLabel("Confirm if the defendant needs help paying fees")
             .showCondition(fieldEquals("xui_genapp_ShowHwfScreens", VerticalYesNo.YES))
             .label("helpWithFeesNeeded-lineSeparator", "---")
-            .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND, "xui_genapp_ApplicationType\"SUSPEND\"")
+            .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND, fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
             .label("helpWithFeesNeeded-info", INFO_MARKDOWN, ShowConditions.and(
                 fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN),
                 fieldEquals("xui_genapp_ApplicationType", GenAppType.SET_ASIDE),
