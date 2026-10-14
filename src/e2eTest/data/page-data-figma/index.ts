@@ -61,3 +61,6 @@ export * from '@data/page-data-figma/page-data-common-component/globalSearch.pag
 export * from '@data/page-data-figma/page-data-common-component/noResultFound.page.data';
 export * from '@data/page-data-figma/page-data-common-component/searchResults.page.data';
 export * from '@data/page-data-figma/page-data-common-component/workAccess.page.data';
+export * from '@data/page-data-figma/page-data-common-component/challengedCaseDetails.page.data';
+export * from '@data/page-data-figma/page-data-common-component/whyDoYouNeedToAccessThisCase.page.data';
+export * from '@data/page-data-figma/page-data-common-component/challengedAccessSuccess.page.data';
