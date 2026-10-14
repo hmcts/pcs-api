@@ -307,6 +307,13 @@ public class NotificationService {
         }
     }
 
+    private boolean hasNoKnownName(PartyEntity party) {
+        return party != null
+            && isBlank(party.getFirstName())
+            && isBlank(party.getLastName())
+            && isBlank(party.getOrgName());
+    }
+
     private NotificationRecipient partyRecipient(PartyEntity party) {
         PcsCaseEntity pcsCase = party.getPcsCase();
         PartyRole partyRole = partyService.getPartyRole(party);
@@ -569,6 +576,11 @@ public class NotificationService {
         }
 
         PartyEntity party = recipient.party();
+        if (hasNoKnownName(party)) {
+            log.info("Skipping email notification because recipient name is unknown");
+            return null;
+        }
+
         if (party != null
             && recipient.recipientRole() != null
             && !partyService.canSendEmailNotification(party, recipient.recipientRole())) {

@@ -130,6 +130,27 @@ class NotificationPersonalisationFactoryTest {
         }
 
         @Test
+        @DisplayName("Should build empty recipient name when defendant has no name and no organisation")
+        void shouldBuildEmptyRecipientNameWhenDefendantNameUnknown() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
+            defendantParty.setFirstName(null);
+            defendantParty.setLastName(null);
+            defendantParty.setOrgName(null);
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            BasePersonalisation result = factory.forDefendant(response);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("firstName", "")
+                .containsEntry("lastName", "")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
         @DisplayName("Should use PERSONS UNKNOWN when defendant name is missing")
         void shouldUsePersonsUnknownWhenDefendantNameMissing() {
             PartyEntity claimantParty = stubClaimantParty();

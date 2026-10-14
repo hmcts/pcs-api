@@ -555,9 +555,49 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should skip defendant email when recipient has no first, last or organisation name")
+        void shouldSkipDefendantEmailWhenRecipientNameUnknown() {
+            PartyEntity namelessParty = defendantResponse.getParty();
+            namelessParty.setFirstName(null);
+            namelessParty.setLastName(null);
+            namelessParty.setOrgName(null);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+
+            assertThat(response).isNull();
+            verify(schedulerClient, never()).scheduleIfNotExists(any());
+            verifyNoInteractions(templateConfiguration);
+            verifyNoInteractions(notificationRepository);
+        }
+
+        @Test
+        @DisplayName("Should send defendant email when recipient is identified by organisation name only")
+        void shouldSendDefendantEmailWhenRecipientHasOrganisationNameOnly() {
+            PartyEntity orgParty = defendantResponse.getParty();
+            orgParty.setFirstName(null);
+            orgParty.setLastName(null);
+            orgParty.setOrgName("Defendant Corp");
+
+            when(partyService.canSendEmailNotification(any(), eq(PartyRole.DEFENDANT))).thenReturn(true);
+            when(templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM))
+                .thenReturn(TEMPLATE_ID);
+            when(notificationRepository.save(any())).thenReturn(createCaseNotification());
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+
+            assertThat(response).isNotNull();
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
         @DisplayName("Should send claimant defendant has made counterclaim email")
         void shouldSendClaimantDefendantHasMadeCounterclaimEmail() {
             PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setFirstName("Jane");
+            claimantParty.setLastName("Smith");
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
             when(partyService.canSendEmailNotification(any(), eq(PartyRole.CLAIMANT))).thenReturn(true);
@@ -586,6 +626,8 @@ class NotificationServiceTest {
         @DisplayName("Should send claimant defendant response received email")
         void shouldSendClaimantDefendantResponseReceivedEmail() {
             PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setFirstName("Jane");
+            claimantParty.setLastName("Smith");
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
 
@@ -614,6 +656,8 @@ class NotificationServiceTest {
         @DisplayName("Should send claimant claim issued email notification")
         void shouldSendClaimantClaimIssuedEmailNotification() {
             PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setFirstName("Jane");
+            claimantParty.setLastName("Smith");
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
 
@@ -865,6 +909,8 @@ class NotificationServiceTest {
         @DisplayName("Should send email when sending to claimant")
         void shouldSendEmailWhenCanSendEmailNotificationIsFalseForClaimant() {
             PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setFirstName("Jane");
+            claimantParty.setLastName("Smith");
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
             when(partyService.canSendEmailNotification(any(), eq(PartyRole.CLAIMANT))).thenReturn(true);
@@ -911,6 +957,7 @@ class NotificationServiceTest {
             PartyEntity applicantPartyEntity = mock(PartyEntity.class);
             when(genAppEntity.getParty()).thenReturn(applicantPartyEntity);
             when(applicantPartyEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(applicantPartyEntity.getFirstName()).thenReturn("Test");
             when(partyService.getPartyRole(applicantPartyEntity)).thenReturn(PartyRole.DEFENDANT);
             when(partyService.canSendEmailNotification(applicantPartyEntity, PartyRole.DEFENDANT)).thenReturn(true);
             when(applicantPartyEntity.getEmailAddress()).thenReturn(expectedEmailAddress);
@@ -949,6 +996,7 @@ class NotificationServiceTest {
             when(applicantParty.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
             when(applicantParty.getEmailAddress()).thenReturn("applicant@example.com");
+            when(applicantParty.getFirstName()).thenReturn("Test");
             when(partyService.getPartyRole(applicantParty)).thenReturn(PartyRole.DEFENDANT);
             when(partyService.canSendEmailNotification(applicantParty, PartyRole.DEFENDANT)).thenReturn(false);
 
@@ -1231,6 +1279,8 @@ class NotificationServiceTest {
         private PartyEntity party(String emailAddress) {
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
+                .firstName("Test")
+                .lastName("Party")
                 .emailAddress(emailAddress)
                 .pcsCase(pcsCase)
                 .build();
@@ -1635,6 +1685,7 @@ class NotificationServiceTest {
         }
     }
 
+    // Helper methods for creating test data
     private EmailNotificationRequest createValidEmailRequest() {
         Map<String, Object> personalisation = new HashMap<>();
         personalisation.put("name", "Test User");
