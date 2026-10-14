@@ -79,7 +79,7 @@ class HearingRecords {
             hearing.getHearingDate(),
             own.map(HearingFactsEntity::getVersion).orElse(null),
             startFrom.map(HearingRecords::caseFacts).orElseGet(() -> claimFacts(pcsCase)),
-            startFrom.map(facts -> new Recorded(facts.getUser().getName(), facts.getHearing().getHearingDate()))
+            startFrom.map(facts -> new Recorded(facts.getUser().getName(), facts.getUpdatedOn()))
                 .orElse(null),
             own.map(HearingFactsEntity::getJudicialNote).map(JudicialNoteEntity::getNote).orElse(null),
             earlierNotes(pcsCase.getJudicialNotes(), recorded, hearing.getHearingDate())

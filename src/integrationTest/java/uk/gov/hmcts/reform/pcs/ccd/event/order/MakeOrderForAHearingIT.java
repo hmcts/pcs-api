@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -132,6 +133,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     @Test
     @DisplayName("starts the next hearing from the facts and note the last hearing's judge recorded")
     void startsTheNextHearingFromTheLastOne() {
+        final Instant before = Instant.now();
         submitForReview(firstJudge, firstHearing, null, facts("900.00"), "Turned up with rent book");
 
         Hearing next = forHearing(secondJudge, secondHearing).start().hearing();
@@ -139,7 +141,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         assertThat(next.caseFacts().currentRent()).isEqualByComparingTo("900.00");
         assertThat(next.caseFacts().arrearsToday()).isEqualByComparingTo("1200.00");
         assertThat(next.recorded().by()).isEqualTo("First Judge");
-        assertThat(next.recorded().hearingDate()).isEqualTo(FIRST_HEARING);
+        assertThat(next.recorded().on()).isBetween(before, Instant.now());
         assertThat(next.version()).as("nothing is recorded for this hearing yet").isNull();
         assertThat(next.note()).as("each hearing's note starts blank").isNull();
         assertThat(next.earlierNotes()).singleElement().satisfies(note -> {
