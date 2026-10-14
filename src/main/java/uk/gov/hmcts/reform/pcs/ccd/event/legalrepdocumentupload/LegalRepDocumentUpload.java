@@ -97,7 +97,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String currentUserId = securityContextService.getCurrentUserId();
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
         List<GenAppEntity> existingApplications = existingApplications(pcsCaseEntity, currentUserId, organisationId);
 
@@ -163,7 +163,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     List<GenAppEntity> findGenAppsForCategory(
         PcsCaseEntity pcsCaseEntity,
-        UUID currentUserId,
+        String currentUserId,
         String organisationId,
         DocumentUploadCategory category
     ) {
@@ -180,7 +180,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private List<GenAppEntity> existingApplications(PcsCaseEntity pcsCaseEntity,
-                                                    UUID currentUserId,
+                                                    String currentUserId,
                                                     String organisationId) {
         return Arrays.stream(DocumentUploadCategory.values())
             .filter(category -> category != MAIN_CLAIM_OR_COUNTERCLAIM)
@@ -210,7 +210,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity,
-                                                     UUID currentUserId,
+                                                     String currentUserId,
                                                      String organisationId) {
         return genAppVisibilityService.getVisibleGenAppsToUser(
             pcsCaseEntity.getGenApps(),
@@ -221,7 +221,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private GenAppEntity resolveSelectedGenApp(PCSCase caseData,
                                                PcsCaseEntity pcsCaseEntity,
-                                               UUID currentUserId,
+                                               String currentUserId,
                                                String organisationId) {
 
         LegalRepDocumentUploadDetails details = caseData.getLegalRepDocumentUploadDetails();
@@ -269,7 +269,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PCSCase pcsCase = eventPayload.caseData();
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String currentUserId = securityContextService.getCurrentUserId();
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
         GenAppEntity selectedGenApp = resolveSelectedGenApp(pcsCase, pcsCaseEntity, currentUserId, organisationId);
         CounterClaimEntity selectedCounterClaim = resolveSelectedCounterClaim(pcsCase, pcsCaseEntity);

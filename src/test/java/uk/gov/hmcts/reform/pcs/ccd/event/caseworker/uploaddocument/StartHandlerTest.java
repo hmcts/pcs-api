@@ -141,6 +141,7 @@ class StartHandlerTest {
                 "General Application GA2 - submitted 14 May 2026",
                 "Counter claim CC3 - submitted 12 May 2026",
                 "Counter claim CC2 - submitted 9 May 2026",
+                "Counter claim CC1 - submitted 9 May 2026",
                 "General Application GA1 - submitted 4 May 2026",
                 "Counter claim CC1 - submitted 29 April 2026",
                 "Not related to an application or counterclaim"
@@ -149,7 +150,6 @@ class StartHandlerTest {
         assertThat(listItems).map(DynamicStringListElement::getCode)
             .containsExactly(
                 "GEN_APP:%s".formatted(genApp2Id),
-                "COUNTERCLAIM:%s".formatted(counterClaimEntity3.getId()),
                 "COUNTERCLAIM:%s".formatted(counterClaimEntity2.getId()),
                 "GEN_APP:%s".formatted(genApp1Id),
                 "COUNTERCLAIM:%s".formatted(counterClaimEntity1.getId()),
