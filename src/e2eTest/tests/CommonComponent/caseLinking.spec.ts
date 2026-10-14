@@ -138,6 +138,9 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
   test('Solicitor user cannot view, create or manage case linking @CC @nightly @caseLinking @rerun', async ({ page, context }) => {
     const { email, password } = user.claimantSolicitor;
     await performAction('login', { email, password });
+    await performAction('createCaseAPIDynamicUsers', { data: createCaseApiData.createCasePayload, email: user.claimantSolicitor.email, password: user.claimantSolicitor.password });
+    await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadCaseSummary(), email: user.claimantSolicitor.email, password: user.claimantSolicitor.password });
+    await performAction('updatePaymentAPI');
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
     await performAction('canLinkCases', 'no');
