@@ -6,19 +6,26 @@ import { user } from '@data/user-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from '../../playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {contactDetailsLR} from '@data/page-data-figma';
 import {startNow} from "@data/page-data-figma/page-data-legalRepresentative/startNow.page.data";
-test.beforeEach(async ({ page, context }) => {
+import { midEventLRRespondPossessionClaimApiData } from '@data/api-data/respondPossessionClaimMidEventLR.api.data';
+
+test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   const manageCaseBaseUrl = process.env.MANAGE_CASE_BASE_URL;
   if (!manageCaseBaseUrl) {
     throw new Error('MANAGE_CASE_BASE_URL is not set.');
   }
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
+  if (testInfo.title.includes('verifyLink')) {
+    await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCaseDefendantAddressKnown()});
+  } else {
+    await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
+  }
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
@@ -72,5 +79,28 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     await performAction('clickButton', 'Close and Return to case details');
     await performValidation('mainHeader', home.caseParties);
     await performValidation('bannerAlert', `Case #.* has been updated with event: ${caseSummary.amendRepresentativeDetails}`);
+  });
+
+  test('As a Defendant Solicitor I should not see the Respond to a claim event from event drop down after successful response submission @verifyLink @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
+    await performAction('clickButton', caseSummary.go);
+    await performAction('selectRespondToClaimContactPreferences', {
+      representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
+      notifications: contactDetailsLR.yesRadioOption,
+      correspondenceAddress: contactDetailsLR.noRadioOption,
+      phoneNumber: contactDetailsLR.noRadioOption
+    });
+    await performAction('clickButton', 'Close and Return to case details');
+    await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
+    await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
+    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
+    
+    await performAction('clickTab', caseSummary.summaryTab);
+    await performValidation('elementNotToBeVisible', {
+          elementType: 'text',
+          text: 'Respond to the claim.',
+        });
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('validateDropDownValues', ['Select action', 'Amend representative’s details', 'Make an application', 'Manage support', 'Request support', 'Upload additional documents']);
   });
 });

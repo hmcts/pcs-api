@@ -38,6 +38,7 @@ class ExtRespondPossessionClaimTest extends BaseEventTest {
     void shouldBeConfiguredAsShowForFeatureFlagsAndLegalRepUpdatedDetails() {
         assertConfiguredShowConditions(ShowConditions.and(
             "legalRepUpdatedDetails=\"Yes\"",
+            "hasUnsubmittedDefendantResponses=\"Yes\"",
             ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2)));
     }
 
