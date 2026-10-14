@@ -88,7 +88,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     await performAction('clickButton', home.saveForLater);
   }
 
-  test('Trigger Delete Draft Response event - Yes option selected @nightly', async () => {
+  test('Trigger Delete Draft Response event - Yes option selected @regression', async () => {
     await deleteDraftResponsePrerequisite();
     await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftResponse);
     await performAction('clickButton', caseSummary.go);
@@ -104,7 +104,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     });
   });
 
-  test('Trigger Delete Draft Response event - No option selected @nightly', async () => {
+  test('Trigger Delete Draft Response event - No option selected @regression', async () => {
     await deleteDraftResponsePrerequisite();
     await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftResponse);
     await performAction('clickButton', caseSummary.go);
