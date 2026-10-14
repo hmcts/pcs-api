@@ -56,6 +56,8 @@ export class ActionGenAppsRegistry {
     ['inputPaymentDetails', new GenAppsAction()],
     ['selectPaymentOptions', new GenAppsAction()],
     ['confirmPaymentGenApps', new GenAppsAction()],
+    ['selectGenAppsClaimantStatementOfTruth', new GenAppsAction()],
+    ['navigateToSummaryPage', new GenAppsAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
   ]);

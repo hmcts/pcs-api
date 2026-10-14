@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 @DisplayName("Support event defendant eligibility")
 class RequestSupportEligibilityIT extends AbstractPostgresContainerIT {
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final String CLAIMANT_FIRM = "CLAIMANT-FIRM";
     private static final String DEFENDANT_FIRM = "DEFENDANT-FIRM";
     private static final String REASONABLE_ADJUSTMENT_CODE = "RA0042";
