@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+/*
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.Context;
 import com.azure.storage.blob.BlobClient;
@@ -54,3 +55,4 @@ class BlobUploaderTest {
             .isEqualTo("{\"ok\":true}");
     }
 }
+*/

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.ObjectProvider;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -37,8 +36,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,24 +53,16 @@ class ExportServiceTest {
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
 
-    @Mock
-    private BlobUploader blobUploader;
-
-    @Mock
-    private ObjectProvider<BlobUploader> blobUploaderProvider;
-
     private ExportService exportService;
 
     @BeforeEach
     void setUp() {
-        when(blobUploaderProvider.getIfAvailable()).thenReturn(blobUploader);
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
         exportService = new ExportService(
             claimRepository,
             claimActivityLogRepository,
             new SnapshotMapper(),
             new FileWriter(objectMapper),
-            blobUploaderProvider,
             FIXED_CLOCK,
             "local",
             tempDir.toString()
@@ -146,7 +135,6 @@ class ExportServiceTest {
         assertThat(json).contains("\"claim_type\" : \"AAA3-SLD\"");
         assertThat(json).contains("\"name\" : \"Jane Doe\"");
         assertThat(json).contains("\"environment\" : \"local\"");
-        verify(blobUploader).upload(result.outputPath());
     }
 
     @Test
@@ -160,18 +148,5 @@ class ExportServiceTest {
         assertThat(result.recordCount()).isZero();
         assertThat(result.outputPath().getFileName().toString())
             .isEqualTo("claim_snapshot_export_2026-03-08.json");
-        verify(blobUploader).upload(result.outputPath());
-    }
-
-    @Test
-    void shouldSkipUploadWhenBlobUploaderIsNotAvailable() {
-        when(blobUploaderProvider.getIfAvailable()).thenReturn(null);
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of());
-
-        ExportResult result = exportService.exportAllClaims();
-
-        assertThat(result.recordCount()).isZero();
-        assertThat(result.outputPath()).exists();
-        verifyNoInteractions(blobUploader);
     }
 }
