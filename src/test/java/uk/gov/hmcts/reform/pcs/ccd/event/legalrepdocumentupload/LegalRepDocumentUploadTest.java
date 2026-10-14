@@ -645,6 +645,35 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
         @Test
+        void shouldAllowDocumentUploadWhenSingleRepresentedDefendantHasAlreadySubmittedResponse() {
+            // Given
+            UUID respondedPartyId = UUID.randomUUID();
+            PartyEntity respondedDefendant = PartyEntity.builder().id(respondedPartyId).build();
+
+            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+                .thenReturn(List.of(respondedDefendant));
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .document(mock(Document.class))
+                .build();
+
+            PCSCase pcsCase = PCSCase.builder()
+                .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
+                                                   .legalRepDocuments(wrapListItems(List.of(legalRepDocument)))
+                                                   .build())
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            assertThat(submitResponse.getErrors()).isNullOrEmpty();
+            verify(documentService).createDocumentEntitiesFromLegalRepDocuments(
+                List.of(legalRepDocument), pcsCaseEntity, respondedDefendant, null, null);
+        }
+
+        @Test
         void shouldReturnErrorIfLrRepresentsMultipleDefendants() {
             // Given
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))

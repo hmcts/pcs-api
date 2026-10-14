@@ -260,9 +260,17 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
+        List<PartyEntity> representedDefendants =
+            legalRepPartySelectionService.getRepresentedDefendants(pcsCaseEntity, organisationId);
 
-        return legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity,
-                                                                           organisationId);
+        if (representedDefendants.size() <= 1) {
+            return representedDefendants;
+        }
+
+        List<PartyEntity> awaitingResponse = legalRepPartySelectionService
+            .filterDefendantsAwaitingResponse(pcsCaseEntity.getCaseReference(), representedDefendants);
+
+        return awaitingResponse.isEmpty() ? representedDefendants : awaitingResponse;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -276,7 +284,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         PartyEntity uploadingParty;
         try {
-            uploadingParty = getUploadingParty(pcsCaseEntity, organisationId);
+            uploadingParty = getUploadingParty(pcsCaseEntity, organisationId, selectedCounterClaim);
         } catch (MultiplePartiesException | PartyNotFoundException partyException) {
             return errorResponse(partyException.getMessage());
         }
@@ -301,7 +309,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private PartyEntity getUploadingParty(PcsCaseEntity pcsCaseEntity,
-                                          String organisationId) {
+                                          String organisationId,
+                                          CounterClaimEntity selectedCounterClaim) {
 
         boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
 
@@ -313,6 +322,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 return partyEntities.getFirst();
             } else if (partyEntities.isEmpty()) {
                 throw new PartyNotFoundException("No represented party found");
+            } else if (selectedCounterClaim != null && selectedCounterClaim.getParty() != null
+                && partyEntities.contains(selectedCounterClaim.getParty())) {
+                return selectedCounterClaim.getParty();
             } else {
                 throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
             }
