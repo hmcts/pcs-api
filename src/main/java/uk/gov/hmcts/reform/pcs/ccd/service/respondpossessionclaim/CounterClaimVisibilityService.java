@@ -9,13 +9,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class CounterClaimVisibilityService {
 
     // Issued means paid for; only the raiser may attach documents
-    public boolean isCounterClaimVisibleToUser(CounterClaimEntity counterClaim, UUID currentUserId) {
+    public boolean isCounterClaimVisibleToUser(CounterClaimEntity counterClaim, String currentUserId) {
         if (counterClaim == null || currentUserId == null) {
             return false;
         }
@@ -30,7 +29,7 @@ public class CounterClaimVisibilityService {
 
     // One only, until multiple counterclaims per defendant are supported (HDPI-8372)
     public Optional<CounterClaimEntity> getVisibleCounterClaimForUser(
-        Collection<CounterClaimEntity> counterClaims, UUID currentUserId) {
+        Collection<CounterClaimEntity> counterClaims, String currentUserId) {
 
         if (counterClaims == null || counterClaims.isEmpty()) {
             return Optional.empty();
