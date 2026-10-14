@@ -306,12 +306,12 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });
 
-  test(`Case management - As a Case Worker Successfully Remove a 'Defendant' from the case`,
+  test(`Case management - As a Case Worker I want to Successfully Remove a 'Defendant' from the case`,
     {
       tag: ['@CM', '@regression'],
       annotation: [
         { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-6450` },
-        { type: 'ac', description: 'AC1 to AC6,AC11 to AC13' },
+        { type: 'ac', description: 'AC1 to AC5,AC8,AC9,AC11 to AC13' },
       ],
     },
     async () => {
@@ -320,12 +320,12 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       const partyAddress = getDefendantAddressByName(submitPayload, createPayload, name1);
       const removeParty = `${checkFullPartyDetails.doYouWantToRemoveHiddenQuestion} ${party1}?`;
 
-      await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+      await test.step(`Given the user has selected the Manage Parties event`, async () => {
         await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
         await performValidation('mainHeader', manageParty.mainHeader);
       });
 
-      await test.step(`Select Defendant 1 to be removed`, async () => {
+      await test.step(`When the user chooses to remove Defendant 1`, async () => {
         await performAction('selectParty', {
           question1: manageParty.whatChangeQuestion,
           option1: manageParty.removePartyRadioOption,
@@ -335,7 +335,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         });
       });
 
-      await test.step(`Verify the DOB and Address details of Defendant 1 `, async () => {
+      await test.step(`And the user verifies the details of the Defendant being removed `, async () => {
         await performAction('validateFullPartyDetails', {
           defName: party1,
           defDOB: 'Date of birth unknown',
@@ -346,7 +346,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         });
       });
 
-      await test.step(`Verify that the Confirmation page appears with Defendant Details that is being removed on Submission`, async () => {
+      await test.step(`Then the confirmation page displays the details of the Defendant being removed after submission`, async () => {
         await performAction('clickButton', checkYourAnswersManageParties.submitButton);
         await performAction('confirmRemoveParty', {
           userType: 'Defendant',
@@ -356,7 +356,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
       });
 
-      await test.step(`Verify that the removed Defendant is not present on Case Tab - Case Parties Section`, async () => {
+      await test.step(`And the removed Defendant is no longer visible in Case Tab - Case Parties Section`, async () => {
         await performValidation('mainHeader', home.caseParties);
         const defendantsToValidate = [
           { name: name, table: 'Defendant' },
@@ -376,17 +376,25 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       );
     });
 
-  test(`Case management - As a Case Worker select 'No' to remove party and attempt to Proceed @CM`, async () => {
+  test(`Case management - As a Case Worker select 'No' to remove party and attempt to Proceed @CM`,
+    {
+      tag: ['@CM'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-6450` },
+        { type: 'ac', description: 'AC10' },
+      ],
+    }, async () => {
     let party = allPartyDetails[0];
     let name = party.split(' - ')[0];
     let partyAddress = getDefendantAddressByName(submitPayload, createPayload, name);
     let removeParty = `${checkFullPartyDetails.doYouWantToRemoveHiddenQuestion} ${party}?`;
 
-    await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+    await test.step(`Given the user has selected the Manage Parties event`, async () => {
       await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
       await performValidation('mainHeader', manageParty.mainHeader);
     });
-    await test.step(`Select Defendant 1 to be removed`, async () => {
+
+    await test.step(`When the user selects Defendant 1 for removal`, async () => {
       await performAction('selectParty', {
         question1: manageParty.whatChangeQuestion,
         option1: manageParty.removePartyRadioOption,
@@ -395,7 +403,8 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         nextPage: checkFullPartyDetails.mainHeader
       });
     });
-    await test.step(`Verify that appropriate error message is displayed when user selects No to remove party and continues`, async () => {
+
+    await test.step(`Then an error message is displayed when the user chooses not to remove the Defendant and continues`, async () => {
       await performAction('validateFullPartyDetails', {
         defName: party,
         defDOB: 'Date of birth unknown',
@@ -409,13 +418,22 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     });
   });
 
-  test(`Case management - As a Case Worker attempt to Remove party from the case  'When there is an active GENAPP or Counter Claim ' @CM`, async () => {
+  test(`Case management - As a Case Worker attempt to Remove party from the case 'When there is an active GENAPP or Counter Claim '`,
+    {
+      tag: ['@CM'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-6450` },
+        { type: 'ac', description: 'AC7' },
+      ],
+    }, async () => {
     let party = allPartyDetails[0];
-    await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+
+    await test.step(`Given the user has selected the Manage Parties event`, async () => {
       await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
       await performValidation('mainHeader', manageParty.mainHeader);
     });
-    await test.step(`Verify that appropriate error message is displayed when user selects to remove party when there is an active Gen app`, async () => {
+
+    await test.step(`Then an error message is displayed when attempting to remove a Defendant with an active General Application against him`, async () => {
       await performAction('selectParty', {
         question1: manageParty.whatChangeQuestion,
         option1: manageParty.removePartyRadioOption,
@@ -428,12 +446,20 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     });
   });
 
-  test(`Case management - As a Case worker attempt to Remove party from the case when there is 'Single Defendant' on the claim @CM`, async () => {
-    await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+  test(`Case management - As a Case worker attempt to Remove party from the case when there is 'Single Defendant' on the claim`,
+    {
+      tag: ['@CM'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-6450` },
+        { type: 'ac', description: 'AC6' },
+      ],
+    }, async () => {
+    await test.step(`Given the user has selected the Manage Parties event`, async () => {
       await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
       await performValidation('mainHeader', manageParty.mainHeader);
     });
-    await test.step(`Validate that user cannot remove a claimant or defendant if only one of these parties exist on the case.`, async () => {
+    
+    await test.step(`Then an error message is displayed when attempting to remove the only Claimant or Defendant on the case`, async () => {
       await performAction('selectParty', {
         question1: manageParty.whatChangeQuestion,
         option1: manageParty.removePartyRadioOption,
