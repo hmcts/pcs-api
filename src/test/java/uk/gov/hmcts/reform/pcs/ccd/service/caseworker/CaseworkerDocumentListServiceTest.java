@@ -71,7 +71,7 @@ class CaseworkerDocumentListServiceTest {
             .id(ccId)
             .rank(2)
             .status(uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState
-                .PENDING_COUNTER_CLAIM_ISSUED)
+                .COUNTER_CLAIM_ISSUED)
             .claimSubmittedDate(LocalDateTime.of(2026, 8, 15, 10, 0))
             .build();
 
