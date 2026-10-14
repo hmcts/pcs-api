@@ -189,7 +189,7 @@ export class PageContentValidation implements IValidation {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else if(
-      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties"].some(str =>
+      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote"].some(str =>
         page.url().includes(str)
       )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
@@ -261,7 +261,7 @@ export class PageContentValidation implements IValidation {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
     }
     else if (
-      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties"].some(str =>
+      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote"].some(str =>
         page.url().includes(str)
       )) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma', `${fileName}.page.data.ts`);
@@ -406,7 +406,7 @@ export class PageContentValidation implements IValidation {
       } else if(url.includes("claimantMakeAnApplication")) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma/urlToFileMappingGenAppsClaimant.ts');
       } else if (
-        ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties"].some(str =>
+        ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote"].some(str =>
           url.includes(str)
         )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');

@@ -92,6 +92,10 @@ export class ActionCMRegistry {
     ['updatePartyDetails', new CaseManagementAction()],
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
     ['validateCaseNotesDetails', new CaseManagementAction()],
+    ['addJudicialNotes', new CaseManagementAction()],
+    ['confirmAddJudicialNotes', new CaseManagementAction()],
+    ['validateJudgeNotesTab', new CaseManagementAction()],
+    ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
 
   ]);
 
