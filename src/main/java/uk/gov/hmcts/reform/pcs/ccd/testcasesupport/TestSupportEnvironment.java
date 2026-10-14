@@ -33,18 +33,21 @@ public final class TestSupportEnvironment {
         return isNonProdTestSupportEnabled(
             System.getenv("ENVIRONMENT"),
             System.getenv(SPRING_PROFILES_ACTIVE),
-            System.getenv("ENABLE_TESTING_SUPPORT")
+            System.getenv("ENABLE_TESTING_SUPPORT"),
+            System.getenv("ENABLE_ENFORCEMENT")
         );
     }
 
     static boolean isNonProdTestSupportEnabled(
         String environment,
         String springProfilesActive,
-        String enableTestingSupport
+        String enableTestingSupport,
+        String enableEnforcement
     ) {
         return isStubEnvironment(environment)
             || isStubEnvironment(springProfilesActive)
-            || "true".equalsIgnoreCase(enableTestingSupport);
+            || "true".equalsIgnoreCase(enableTestingSupport)
+            || "true".equalsIgnoreCase(enableEnforcement);
     }
 
     private static boolean isStubEnvironment(String value) {
