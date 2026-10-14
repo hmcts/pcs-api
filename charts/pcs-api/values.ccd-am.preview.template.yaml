@@ -214,8 +214,7 @@ ccd:
         ORM_ENV: pr
         CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
         RAS_ENV: pr
-        # Default list (see am-role-assignment-service chart) plus pcs_api, so pcs-api can call RAS
-        # without a 403.
+        TESTING_SUPPORT_ENABLED: true
         ROLE_ASSIGNMENT_S2S_AUTHORISED_SERVICES: "ccd_gw,am_role_assignment_service,am_org_role_mapping_service,am_role_assignment_refresh_batch,wa_task_management_api,wa_task_configuration_api,xui_webapp,aac_manage_case_assignment,ccd_data,wa_workflow_api,wa_task_monitor,wa_case_event_handler,iac,hmc_cft_hearing_service,ccd_case_disposer,sscs,fis_hmc_api,fpl_case_service,disposer-idam-user,civil_service,prl_cos_api,wa_reporting_frontend,pcs_api"
       devmemoryRequests: 1024Mi
       devcpuRequests: 250m
@@ -271,6 +270,7 @@ xui-webapp:
       FEATURE_HELMET_ENABLED: false
       FEATURE_OIDC_ENABLED: false
       FEATURE_ACCESS_MANAGEMENT_ENABLED: true
+      FEATURE_LAU_SPECIFIC_CHALLENGED_ENABLED: true
       PROTOCOL: http
       PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
       LAUNCH_DARKLY_CLIENT_ID: 645baeea2787d812993d9d70
