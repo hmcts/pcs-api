@@ -4,7 +4,7 @@ ExUI shows PCS pages in Welsh by looking up each English label in a dictionary s
 
 | File | Use |
 | --- | --- |
-| `pcs-exui-welsh-dictionary.csv` | All PCS rows. Uploaded in full to AAT. |
+| `pcs-exui-welsh-dictionary.csv` | Every row PCS pages use, including shared ones prod already has. Uploaded in full to AAT. |
 | `deltas/<date>-prod-delta.csv` | What goes to prod. Never edited after upload. |
 | `prod-delta-exclude.txt` | Rows kept as prod has them, e.g. waiting for WLU. |
 
@@ -27,7 +27,8 @@ Prod is uploaded by CFT support, and gets a delta so rows other services use are
 2. Merge the delta, then raise the request in #platops-help with the Slack bot: **Definition import request**,
    environment Production, e.g. "Welsh translation import PROD environment, third batch (Possessions)".
 3. Attach the delta (downloaded from GitHub) to the CFTS ticket the bot creates, e.g. CFTS-7763.
-4. Add a row below once uploaded.
+4. After the prod upload, update the master copy so it matches prod: take a new prod export and add any row PCS pages
+   use that prod has and the master copy does not (prod's exact English and Welsh). Then mark the row below Uploaded.
 
 | Date | Ticket | Delta | Adds | Replaces | Status |
 | --- | --- | --- | --- | --- | --- |
