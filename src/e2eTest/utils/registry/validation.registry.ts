@@ -9,6 +9,7 @@ import {ErrorMessageValidation} from "@utils/validations/element-validations/err
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
 import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
 import {InputErrorValidation} from "@utils/validations/element-validations/inputError.validation";
+import {DropdownOptionValidation} from "@utils/validations/element-validations/dropdownOption.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -25,6 +26,7 @@ export class ValidationRegistry {
     ['waitUntilElementDisappears', new VisibilityValidation()],
     ['autoValidatePageContent', new PageContentValidation()],
     ['inputError', new InputErrorValidation()],
+    ['dropdownOption', new DropdownOptionValidation()],
   ]);
 
   static getValidation(validationType: string): IValidation {

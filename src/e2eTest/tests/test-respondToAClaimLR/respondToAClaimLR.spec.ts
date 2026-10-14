@@ -98,9 +98,9 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     });
     await performAction('confirmDeleteDraftResponse');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Delete draft response');
-    await performValidation('elementNotToBeVisible', {
-      locator: `${caseSummary.nextStepEventList} option`,
-      text: caseSummary.deleteDraftResponse
+    await performValidation('dropdownOption', caseSummary.nextStepEventList, {
+      text: caseSummary.deleteDraftResponse,
+      shouldBeAvailable: false
     });
   });
 
@@ -113,9 +113,9 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
       option: deleteDraftResponse.noRadioOption,
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Delete draft response');
-    await performValidation('elementToBeVisible', {
-      locator: `${caseSummary.nextStepEventList} option`,
-      text: caseSummary.deleteDraftResponse
+    await performValidation('dropdownOption', caseSummary.nextStepEventList, {
+      text: caseSummary.deleteDraftResponse,
+      shouldBeAvailable: true
     });
   });
 });
