@@ -181,9 +181,9 @@ sdp:
     enabled: ${SDP_EXPORT_ENABLED:false}
     schedule: ${SDP_EXPORT_SCHEDULE:DAILY|02:00}
     full-load: ${SDP_EXPORT_FULL_LOAD:false}
-    upload-enabled: ${SDP_EXPORT_UPLOAD_ENABLED:false}
-    account-url: ${SDP_EXPORT_ACCOUNT_URL:}
-    container-name: ${SDP_EXPORT_CONTAINER_NAME:sdp-export}
+    # upload-enabled: ${SDP_EXPORT_UPLOAD_ENABLED:false}
+    # account-url: ${SDP_EXPORT_ACCOUNT_URL:}
+    # container-name: ${SDP_EXPORT_CONTAINER_NAME:sdp-export}
     environment: ${SDP_EXPORT_ENVIRONMENT:local}
     output-directory: ${SDP_EXPORT_OUTPUT_DIR:./build/sdp-export}
 

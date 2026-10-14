@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+/*
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
@@ -24,3 +25,4 @@ public class AzureBlobConfiguration {
             .buildClient();
     }
 }
+*/
