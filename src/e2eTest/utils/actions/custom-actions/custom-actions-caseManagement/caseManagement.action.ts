@@ -1057,7 +1057,7 @@ export class CaseManagementAction implements IAction {
 
   }
 
-  private async caseTabTableData(page: Page, mainTable: string, subTable?: string, tableType?:string) {
+  private async caseTabTableData(page: Page, mainTable: string, subTable?: string) {
 
     const tableLocator = subTable
       ? `//span[normalize-space()="${mainTable}"]
@@ -1067,12 +1067,8 @@ export class CaseManagementAction implements IAction {
       : `//span[normalize-space()="${mainTable}"]
           /ancestor::div[1]
           //table[@class="complex-panel-table"]`;
-    
-    const summaryLocator =  `//h2[normalize-space()="${mainTable}"]
-                             /ancestor::div[contains(@class="govuk-summary-card")]
-                             //dl[@class="govuk-summary-list"]`;
 
-    const tables = page.locator(tableType === 'Review date' ? summaryLocator : tableLocator);
+    const tables = page.locator(tableLocator);
     const tableCount = await tables.count();
 
     if (tableCount === 0) {
