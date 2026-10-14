@@ -11,5 +11,3 @@ java:
     SDP_EXPORT_ENABLED: true
     SDP_EXPORT_FULL_LOAD: true
     SDP_EXPORT_UPLOAD_ENABLED: true
-    SDP_EXPORT_STORAGE_ENDPOINT: https://pcssdpaat.blob.core.windows.net
-    SDP_EXPORT_CONTAINER_NAME: sdp-export
