@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class ExportService {
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SnapshotMapper claimSnapshotMapper;
     private final FileWriter claimSnapshotFileWriter;
-    private final BlobUploader blobUploader;
+    private final ObjectProvider<BlobUploader> blobUploader;
     private final Clock utcClock;
     private final String environment;
     private final Path outputDirectory;
@@ -54,7 +55,7 @@ public class ExportService {
                          ClaimActivityLogRepository claimActivityLogRepository,
                          SnapshotMapper claimSnapshotMapper,
                          FileWriter claimSnapshotFileWriter,
-                         BlobUploader blobUploader,
+                         ObjectProvider<BlobUploader> blobUploader,
                          @Qualifier("utcClock") Clock utcClock,
                          @Value("${sdp.export.environment}") String environment,
                          @Value("${sdp.export.output-directory}") String outputDirectory) {
@@ -101,7 +102,10 @@ public class ExportService {
         String filename = "claim_snapshot_export_" + extractDateValue + ".json";
         Path outputPath = outputDirectory.resolve(filename);
         claimSnapshotFileWriter.write(records, outputPath);
-        blobUploader.upload(outputPath);
+        BlobUploader uploader = blobUploader.getIfAvailable();
+        if (uploader != null) {
+            uploader.upload(outputPath);
+        }
 
         log.info("SDP claim snapshot export complete: {} record(s) -> {}", records.size(), outputPath);
         return new ExportResult(outputPath, records.size());
