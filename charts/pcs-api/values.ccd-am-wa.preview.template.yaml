@@ -8,7 +8,7 @@ global:
   idamApiUrl: https://idam-api.aat.platform.hmcts.net
   idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
   s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-  amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+  amRoleAssignmentServiceUrl: http://${SERVICE_NAME}-am-role-assignment-service
   postgresSecret: postgres
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   postgresHost: "pcs-preview.postgres.database.azure.com"
@@ -112,8 +112,10 @@ ccd:
         DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
-        DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
         ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
+        DEFINITION_STORE_HOST: http://${SERVICE_NAME}-ccd-definition-store
+        CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
+        DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
         HTTP_CLIENT_READ_TIMEOUT: '120000'
         HTTP_CLIENT_MAX_TOTAL: '300'
         HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
@@ -127,7 +129,6 @@ ccd:
         ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend,xui_webapp"
-        CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
         UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: "PCS"
         ENABLE_CASE_GROUP_ACCESS_FILTERING: true
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
@@ -300,6 +301,7 @@ xui-mo-webapp:
     environment:
       MANAGE_CASE_LINK: https://xui-${SERVICE_FQDN}/cases
       MANAGE_ORG_LINK: https://xui-mo-${SERVICE_FQDN}
+      SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DEFINITION_STORE_API: http://${SERVICE_NAME}-ccd-definition-store
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       RD_PROFESSIONAL_API_SERVICE: http://rd-professional-api-aat.service.core-compute-aat.internal
@@ -360,6 +362,7 @@ am-org-role-mapping-service:
     devmemoryLimits: 4Gi
     environment:
       ROLE_ASSIGNMENT_APP_URL: http://${SERVICE_NAME}-am-role-assignment-service
+      CCD_DEF_STORE_APP_URL: http://${SERVICE_NAME}-ccd-definition-store
       AMQP_ENABLED: false
       ORG_ROLE_MAPPING_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
       ORG_ROLE_MAPPING_DB_NAME: "pr-${CHANGE_ID}-org-role-mapping"
