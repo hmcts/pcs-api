@@ -21,14 +21,9 @@ Check with Download, then test in a private window (ExUI caches translations for
 
 Prod is uploaded by CFT support, and gets a delta so rows other services use are not overwritten.
 
-1. Get a prod export (Welsh dictionary download) and build the delta:
-   ```
-   ./gradlew generateCCDConfig
-   bin/welsh/prod-delta.py --master src/main/resources/welsh/pcs-exui-welsh-dictionary.csv \
-     --prod <prod export>.csv --definitions build/definitions/PCS --pcs-uploader 46b20985 \
-     --exclude src/main/resources/welsh/prod-delta-exclude.txt --out src/main/resources/welsh/deltas/<date>-prod-delta.csv
-   ```
-   It adds English prod does not have and only replaces rows PCS uploaded. Check the `REVIEW` list it prints.
+1. Compare the master copy with a fresh prod export (Welsh dictionary download). The delta has the English prod does
+   not have, plus replacements only for rows PCS uploaded whose English is PCS text. Never replace another service's
+   row, and leave out anything in `prod-delta-exclude.txt`.
 2. Merge the delta, then raise the request in #platops-help with the Slack bot: **Definition import request**,
    environment Production, e.g. "Welsh translation import PROD environment, third batch (Possessions)".
 3. Attach the delta (downloaded from GitHub) to the CFTS ticket the bot creates, e.g. CFTS-7763.
