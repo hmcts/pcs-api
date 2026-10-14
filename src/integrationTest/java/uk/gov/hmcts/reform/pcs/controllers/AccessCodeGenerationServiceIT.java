@@ -55,7 +55,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
     @DisplayName("one defendant's failure does not roll back another's committed access code")
     void perDefendantTransactionIsolation() {
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithMultipleDefendants(
-            1781000000000001L, UUID.randomUUID(), UUID.randomUUID());
+            1781000000000001L, UUID.randomUUID().toString(), UUID.randomUUID().toString());
         List<PartyEntity> defendants = caseCreationHelper.getDefendants(caseEntity);
         UUID failingDefendantId = defendants.get(0).getId();
         UUID succeedingDefendantId = defendants.get(1).getId();
@@ -80,7 +80,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
     @DisplayName("re-run skips defendants that already have a code")
     void retryIsIdempotent() {
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithMultipleDefendants(
-            1781000000000002L, UUID.randomUUID(), UUID.randomUUID());
+            1781000000000002L, UUID.randomUUID().toString(), UUID.randomUUID().toString());
         List<PartyEntity> defendants = caseCreationHelper.getDefendants(caseEntity);
         final UUID firstDefendantId = defendants.get(0).getId();
         final UUID secondDefendantId = defendants.get(1).getId();
