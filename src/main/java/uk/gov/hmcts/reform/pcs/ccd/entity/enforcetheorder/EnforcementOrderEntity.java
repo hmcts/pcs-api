@@ -22,7 +22,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.StatementOfTruthEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,13 +54,16 @@ public class EnforcementOrderEntity {
     @Column(name = "enforcement_order")
     private EnforcementOrder enforcementOrder;
 
-    @OneToOne(mappedBy = "enforcementOrder")
+    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
+    private RiskProfileEntity riskProfileDetails;
+
+    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantEntity warrantDetails;
 
     @Column(name = "bailiff_date")
     private LocalDateTime bailiffDate;
 
-    @OneToOne(mappedBy = "enforcementOrder")
+    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
     @OneToOne(fetch = LAZY)
@@ -71,12 +74,24 @@ public class EnforcementOrderEntity {
     @OneToMany(mappedBy = "enfCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
+    private List<SelectedDefendantEntity> selectedDefendants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "enfCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
 
     public void addDocuments(List<DocumentEntity> documents) {
         for (DocumentEntity document : documents) {
             document.setEnfCase(this);
             this.documents.add(document);
+        }
+    }
+
+    public void addSelectedDefendants(List<SelectedDefendantEntity> selectedDefendants) {
+        for (SelectedDefendantEntity selectedDefendant : selectedDefendants) {
+            selectedDefendant.setEnfCase(this);
+            this.selectedDefendants.add(selectedDefendant);
         }
     }
 }

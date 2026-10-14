@@ -9,16 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -42,7 +35,6 @@ public class WarrantDetailsMapper {
             landRegistry(warrantDetails, warrantEntity);
             repayment(warrantDetails, warrantEntity);
             defendantsDOB(warrantEntity, warrantDetails);
-            statementOfTruth(warrantDetails, warrantEntity);
         }
         return warrantEntity;
     }
@@ -52,57 +44,6 @@ public class WarrantDetailsMapper {
             convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleWhoWillBeEvictedPage()));
         warrantEntity.setShowPeopleYouWantToEvictPage(
             convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleYouWantToEvictPage()));
-    }
-
-    private void statementOfTruth(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
-        if (warrantDetails.getStatementOfTruth() != null) {
-            StatementOfTruthDetailsEnforcement statementOfTruth = warrantDetails.getStatementOfTruth();
-            warrantEntity.setCompletedBy(statementOfTruth.getCompletedBy());
-            warrantEntity.setFullNameClaimant(statementOfTruth.getFullNameParty());
-            warrantEntity.setPositionClaimant(statementOfTruth.getPositionParty());
-            warrantEntity.setFullNameLegalRep(statementOfTruth.getFullNameLegalRep());
-            warrantEntity.setFirmNameLegalRep(statementOfTruth.getFirmNameLegalRep());
-            warrantEntity.setPositionLegalRep(statementOfTruth.getPositionLegalRep());
-
-            agreementClaimant(warrantEntity, statementOfTruth);
-            agreementLegalRep(warrantEntity, statementOfTruth);
-            certification(warrantEntity, statementOfTruth);
-        }
-    }
-
-    private void certification(WarrantEntity warrantEntity,
-                               StatementOfTruthDetailsEnforcement statementOfTruth) {
-        List<StatementOfTruthAgreement> certification = statementOfTruth.getCertification();
-        if (certification != null && !certification.isEmpty()) {
-            warrantEntity.setCertification(
-                certification.stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(","))
-            );
-        }
-    }
-
-    private void agreementLegalRep(WarrantEntity warrantEntity,
-                                   StatementOfTruthDetailsEnforcement statementOfTruth) {
-        List<AgreementClaimantLegalRep> agreementLegalRep = statementOfTruth.getAgreementClaimantLegalRep();
-        if (agreementLegalRep != null && !agreementLegalRep.isEmpty()) {
-            warrantEntity.setAgreementLegalRep(agreementLegalRep.stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(","))
-            );
-        }
-    }
-
-    private void agreementClaimant(WarrantEntity warrantEntity,
-                                   StatementOfTruthDetailsEnforcement statementOfTruth) {
-        List<StatementOfTruthAgreementClaimant> agreementClaimant = statementOfTruth.getAgreementClaimant();
-        if (agreementClaimant != null && !agreementClaimant.isEmpty()) {
-            warrantEntity.setAgreementClaimant(
-                agreementClaimant.stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(","))
-            );
-        }
     }
 
     private void suspendTheOrder(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {

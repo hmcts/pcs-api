@@ -24,14 +24,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -361,95 +359,6 @@ class WarrantDetailsMapperTest {
     }
 
     @Test
-    void shouldMapStatementOfTruth() {
-        // Given
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
-        statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);
-        statementOfTruth.setFullNameParty("John Doe");
-        statementOfTruth.setPositionParty("Owner");
-        statementOfTruth.setFullNameLegalRep("Jane Smith");
-        statementOfTruth.setFirmNameLegalRep("Smith & Co");
-        statementOfTruth.setPositionLegalRep("Solicitor");
-        WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.CLAIMANT);
-        assertThat(result.getFullNameClaimant()).isEqualTo("John Doe");
-        assertThat(result.getPositionClaimant()).isEqualTo("Owner");
-        assertThat(result.getFullNameLegalRep()).isEqualTo("Jane Smith");
-        assertThat(result.getFirmNameLegalRep()).isEqualTo("Smith & Co");
-        assertThat(result.getPositionLegalRep()).isEqualTo("Solicitor");
-    }
-
-    @Test
-    void shouldMapAgreementClaimant() {
-        // Given
-        List<StatementOfTruthAgreementClaimant> agreements = List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE);
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
-        statementOfTruth.setAgreementClaimant(agreements);
-        WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getAgreementClaimant()).isEqualTo(StatementOfTruthAgreementClaimant.BELIEVE_TRUE.name());
-    }
-
-    @Test
-    void shouldHandleEmptyAgreementClaimant() {
-        // Given
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
-        statementOfTruth.setAgreementClaimant(Collections.emptyList());
-        WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getAgreementClaimant()).isNull();
-    }
-
-    @Test
-    void shouldMapAgreementLegalRep() {
-        // Given
-        List<AgreementClaimantLegalRep> agreements = List.of(AgreementClaimantLegalRep.AGREED);
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
-        statementOfTruth.setAgreementClaimantLegalRep(agreements);
-        WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getAgreementLegalRep()).isEqualTo(AgreementClaimantLegalRep.AGREED.name());
-    }
-
-    @Test
-    void shouldMapCertification() {
-        // Given
-        List<StatementOfTruthAgreement> certifications = List.of(StatementOfTruthAgreement.CERTIFY);
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
-        statementOfTruth.setCertification(certifications);
-
-        WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getCertification()).isEqualTo(StatementOfTruthAgreement.CERTIFY.name());
-    }
-
-    @Test
     void shouldMapCompleteWarrantDetails() {
         // Given
         EnforcementOrder enforcementOrder = createCompleteEnforcementOrder();
@@ -462,7 +371,6 @@ class WarrantDetailsMapperTest {
         assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
         assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1000.00"));
-        assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
     }
 
     @ParameterizedTest

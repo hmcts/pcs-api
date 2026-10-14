@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.util.Optional;
