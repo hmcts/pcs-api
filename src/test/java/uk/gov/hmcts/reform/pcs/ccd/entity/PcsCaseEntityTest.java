@@ -85,4 +85,18 @@ class PcsCaseEntityTest {
         verify(hearingEntity).setPcsCase(underTest);
     }
 
+    @Test
+    void shouldAddJudicialNote() {
+        // Given
+        JudicialNoteEntity judicialNoteEntity = mock(JudicialNoteEntity.class);
+
+        // When
+        underTest.addJudicialNote(judicialNoteEntity);
+
+        // Then
+        assertThat(underTest.getJudicialNotes()).hasSize(1);
+        assertThat(underTest.getJudicialNotes().getFirst()).isEqualTo(judicialNoteEntity);
+        verify(judicialNoteEntity).setPcsCase(underTest);
+    }
+
 }
