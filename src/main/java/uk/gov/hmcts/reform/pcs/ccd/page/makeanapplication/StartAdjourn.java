@@ -44,7 +44,8 @@ public class StartAdjourn implements CcdPageConfiguration {
         by a judge before the hearing date.</p>
 
         <h2 class="govuk-heading-m">How much it will cost</h2>
-        <p class="govuk-body">It’s free to apply if the defendant’s court hearing is at least 14 days away.</p>
+        <p class="govuk-body">It’s free to apply if the defendant’s court hearing is at least 14 days away and all
+        the other parties have agreed to it.</p>
         <p class="govuk-body">If your court hearing is sooner, they will need to
         pay ${xui_genapp_StandardFee}.</p>
         <p class="govuk-body govuk-!-margin-bottom-1">The fee will increase to ${xui_genapp_MaxFee} if:</p>

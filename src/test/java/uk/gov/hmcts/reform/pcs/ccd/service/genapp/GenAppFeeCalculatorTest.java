@@ -45,11 +45,12 @@ class GenAppFeeCalculatorTest {
     }
 
     @Test
-    void shouldHaveNoFeeForAdjournWhenHearingMoreThan14DaysAway() {
+    void shouldHaveNoFeeForAdjournWhenHearingMoreThan14DaysAwayAndOtherPartiesAgreed() {
         // Given
         XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
             .applicationType(GenAppType.ADJOURN)
             .within14Days(VerticalYesNo.NO)
+            .otherPartiesAgreed(VerticalYesNo.YES)
             .build();
 
         // When
@@ -137,6 +138,26 @@ class GenAppFeeCalculatorTest {
 
     private static Stream<Arguments> applicationTypeScenarios() {
         return Stream.of(
+            argumentSet(
+                "Adjourn, hearing not within 14 days, without notice",
+                XuiGenAppRequest.builder()
+                    .applicationType(GenAppType.ADJOURN)
+                    .within14Days(VerticalYesNo.NO)
+                    .otherPartiesAgreed(VerticalYesNo.NO)
+                    .withoutNotice(VerticalYesNo.YES)
+                    .build(),
+                FeeType.GEN_APP_STANDARD_FEE
+            ),
+            argumentSet(
+                "Adjourn, hearing not within 14 days, with notice",
+                XuiGenAppRequest.builder()
+                    .applicationType(GenAppType.ADJOURN)
+                    .within14Days(VerticalYesNo.NO)
+                    .otherPartiesAgreed(VerticalYesNo.NO)
+                    .withoutNotice(VerticalYesNo.NO)
+                    .build(),
+                FeeType.GEN_APP_MAX_FEE
+            ),
             argumentSet(
                 "Adjourn, hearing within 14 days, parties agreed",
                 XuiGenAppRequest.builder()
