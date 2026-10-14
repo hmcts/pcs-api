@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.documentamend;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend;
 
 import uk.gov.hmcts.ccd.sdk.api.TypedPropertyGetter;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
