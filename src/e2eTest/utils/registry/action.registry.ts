@@ -144,6 +144,7 @@ export class ActionRegistry {
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
     ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
+    ['validateDropDownValues', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],

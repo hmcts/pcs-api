@@ -1,20 +1,14 @@
-import {Page} from '@playwright/test';
+import {expect, Page} from '@playwright/test';
 import {addressDetails} from '@data/page-data';
 import {contactDetailsLR} from '@data/page-data-figma';
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {performAction, performActions} from '@utils/controller';
-import Axios from "axios";
-import {midEventLRRespondPossessionClaimApiData} from "@data/api-data/respondPossessionClaimMidEventLR.api.data";
-import {actionRetries, VERY_SHORT_TIMEOUT} from "../../../../playwright.config";
-import {submitPossessionClaimResponseApiDataForLR} from "@data/api-data/respondPossessionClaimSubmitLR.api.data";
-import {
-  respondPossessionClaimSolicitorEventTokenApiData
-} from "@data/api-data/respondPossessionClaimEventToken.api.data";
 
 export class RespondToAClaimAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['selectRespondToClaimContactPreferences', () => this.selectContactPreferences(fieldName as actionRecord)]
+      ['selectRespondToClaimContactPreferences', () => this.selectContactPreferences(fieldName as actionRecord)],
+      ['validateDropDownValues', () => this.validateDropDownValues(page, fieldName as string[])],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -66,4 +60,13 @@ export class RespondToAClaimAction implements IAction {
     await performAction('clickButton', contactDetailsLR.saveAndContinueButton);
   }
 
+  private async validateDropDownValues(page: Page, expectedValues: string[]): Promise<void> {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    const dropdown = page.locator('#next-step');
+    await dropdown.waitFor({state: 'visible'});
+    const actualValues = (await dropdown.locator('option').allTextContents())
+      .map((value) => value.trim())
+      .filter(Boolean);
+    expect(actualValues).toEqual(expectedValues);
+  }
 }
