@@ -82,7 +82,7 @@ withPipeline(type, product, component) {
     setPreviewEnvVars(githubApi)
     // pr-values:ccd-am is a standalone alternative to pr-values:ccd (brings its own full CCD
     // stack plus RAS/ORM) — apply only one of the two labels to a PR, never both.
-    if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
+    if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am") || hasLabel(githubApi, "pr-values:ccd-am-wa")) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } else {
