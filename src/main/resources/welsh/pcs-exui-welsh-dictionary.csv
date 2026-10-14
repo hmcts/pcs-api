@@ -2203,7 +2203,7 @@ Short description,Disgrifiad Byr
 Which language did you use to complete this claim?,Pa iaith wnaethoch ei defnyddio i gwblhau'r hawliad hwn?
 English,Saesneg
 "If someone else helped you to answer a question in this claim, ask them if they answered any questions in Welsh. We’ll use this to make sure your claim is processed correctly","Os yw rhywun arall wedi eich helpu i ateb cwestiwn yn yr hawliad hwn, gofynnwch iddynt a wnaethant ateb unrhyw gwestiynau yn Gymraeg. Byddwn yn defnyddio hwn i sicrhau bod eich hawliad yn cael ei brosesu'n gywir."
-The defendant believes that the facts stated in this claim form are true. I am authorised by the defendant to sign this statement.,Creda’r hawlydd fod y ffeithiau a nodir yn y ffurflen hawlio hon yn wir. Fe’m hawdurdodir gan y diffynnydd i lofnodi’r datganiad hwn.
+The defendant believes that the facts stated in this claim form are true. I am authorised by the defendant to sign this statement.,Creda’r diffynnydd fod y ffeithiau a nodir yn y ffurflen hawlio hon yn wir. Fe’m hawdurdodir gan y diffynnydd i lofnodi’r datganiad hwn.
 Save claim,Cadw'r hawliad
 multi selection table,tabl aml-ddewis
 Add document 1,Ychwanegu dogfen 1
@@ -6275,7 +6275,7 @@ Support,Cymorth
  </li>
  <li class=""govuk-!-font-size-19"">lluniau o'r eiddo mewn cyflwr gwael, fel
  lleithder yn yr ystafell ymolchi</li>
- <li class=""govuk-!-font-size-19"">adroddiad gan drydanwr neu blymer, yn dangos tystiolaeth o
+ <li class=""govuk-!-font-size-19"">adroddiad gan drydanwr neu blymwr, yn dangos tystiolaeth o
  waith trwsio sydd angen ei wneud</li>
  <li class=""govuk-!-font-size-19"">negeseuon e-bost neu lythyrau gan yr hawlydd (landlord, cymdeithas dai
  neu fenthycwr morgeisi y diffynnydd)</li>
@@ -7204,14 +7204,14 @@ You’ll need to know:
 answers so that you can return to them later.</p>
 
 <h2 class=""govuk-heading-m"">How much it will cost</h2>","<p class=""govuk-body"">
-Gall y diffynnydd ofyn i'r llys wneud penderfyniad ar unrhyw bwynt yn ystod eu hachos.
-Gelwir hyn yn gais.
+Gall y diffynnydd ofyn i'r llys wneud penderfyniad ar unrhyw adeg yn ystod eu hachos.
+Gelwir hyn yn gwneud 'cais'.
 </p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Er enghraifft, gallant ddefnyddio hwn i:</p>
 
 <ul class=""govuk-list govuk-list--bullet"">
 <li class=""govuk-!-font-size-19"">ychwanegu rhywun fel parti ychwanegol i'w hawliad</li>
-<li class=""govuk-!-font-size-19"">gofyn i'r llys beidio eu cosbi am
+<li class=""govuk-!-font-size-19"">gofyn i'r llys beidio â'u cosbi am
    dorri gorchymyn (rhyddhad o sancsiynau)</li>
 <li class=""govuk-!-font-size-19"">cyflwyno hawliad y tu allan i Gymru a Lloegr</li>
 <li class=""govuk-!-font-size-19"">trosglwyddo'r achos i'r Uchel Lys ar gyfer gorfodi drwy writ meddiant</li>
@@ -7269,7 +7269,7 @@ Ask to adjourn (delay) the court hearing,Gofyn i ohirio (oedi) y gwrandawiad lly
 Ask the court to make an order,Gofyn i’r llys wneud gorchymyn
 Upload documents to support your application,Uwchlwythwch ddogfennau i gefnogi eich cais
 "What order do you want the court to make, and why?","Pa orchymyn ydych chi eisiau i’r llys ei wneud, a pham?"
-Confirm if these documents relate to an existing application,Cadarnhewch os yw’r dogfennau hyn yn ymwneud â chais presennol
+Confirm if these documents relate to an existing application,Cadarnhau os yw’r dogfennau hyn yn ymwneud â chais presennol
 Do these documents relate to an existing application?,A yw’r dogfennau hyn yn ymwneud â chais presennol?
 Electrical Installation Condition Report (EICR),Adroddiad Cyflwr Gosod Trydanol (EICR)
 Exempt landlord,Landlord wedi’i eithrio
@@ -7458,5 +7458,25 @@ Your answers will be saved from this point so you can return to your draft later
 <span class=""govuk-panel__title govuk-!-font-size-36"">You have updated a defendant’s legal representative’s information</span>
 </div>","---
 <div class=""govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3"">
-<span class=""govuk-panel__title govuk-!-font-size-36"">Rydych wedi diweddaru gwybodaeth cynrychiolydd cyfreithiol y diffynnydd</span>
+<span class=""govuk-panel__title govuk-!-font-size-36"">Rydych wedi diweddaru gwybodaeth cynrychiolydd cyfreithiol diffynnydd</span>
 </div>"
+Additional defendant 1,Diffynnydd ychwanegol 1
+Additional defendant’s name known?,A yw enw'r diffynnydd ychwanegol yn hysbys?
+Additional defendant’s address for service known?,A yw cyfeiriad y diffynnydd ychwanegol yn hysbys ar gyfer cyflwyno?
+Additional underlessee or mortgagee 1,Is-denant neu forgeisai ychwanegol 1
+Reasons for claiming possession under ground 3,Rhesymau dros hawlio meddiant o dan sail 3
+Judgment requested for the outstanding arrears?,Cais am ddyfarniad am yr ôl-ddyledion sy'n ddyledus
+"No, the documents I’m uploading relate to the main claim or counterclaim","Na, mae'r dogfennau rwy'n eu huwchlwytho yn ymwneud â'r prif gais neu'r gwrth-hawliad"
+"---
+<div class=""govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3"">
+ <span class=""govuk-panel__title govuk-!-font-size-36"">Documents uploaded</span>
+</div>
+<p class=""govuk-body"">We have received the documents you uploaded.</p>
+ <h3>What happens next</h3>
+<p class=""govuk-body"">You do not need to do anything else. We will review the documents.</p>","---
+<div class=""govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3"">
+ <span class=""govuk-panel__title govuk-!-font-size-36"">Dogfennau wedi’u huwchlwytho</span>
+</div>
+<p class=""govuk-body"">Rydym wedi derbyn y dogfennau rydych wedi’u huwchlwytho.</p>
+ <h3>Beth sy’n digwydd nesaf</h3>
+<p class=""govuk-body"">Nid oes angen i chi wneud unrhyw beth arall. Byddwn yn edrych ar y dogfennau.</p>"
