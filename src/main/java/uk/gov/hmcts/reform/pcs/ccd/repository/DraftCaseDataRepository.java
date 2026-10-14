@@ -25,7 +25,7 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
         long caseReference, EventId eventId, String organisationId);
 
     void deleteByCaseReferenceAndEventIdAndIdamUserId(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     void deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partyId);
@@ -33,14 +33,17 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+        long caseReference, EventId eventId, String idamUserId, UUID partyId);
+
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
