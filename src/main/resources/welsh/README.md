@@ -1,55 +1,39 @@
 # ExUI Welsh dictionary
 
-ExUI translates PCS pages by looking up each English label in the shared Welsh dictionary
-(ts-translation-service). The dictionary is shared by every service and matches on the exact English text.
+ExUI shows PCS pages in Welsh by looking up each English label in a dictionary shared by every service.
 
-## Files
-
-| File | What it is |
+| File | Use |
 | --- | --- |
-| `pcs-exui-welsh-dictionary.csv` | Master copy of every PCS row. Upload the whole file to AAT. |
-| `deltas/<date>-prod-delta.csv` | Exactly what was sent to prod for one release. Never edit after upload. |
-| `prod-delta-exclude.txt` | English keys to keep as prod has them (one JSON string per line), e.g. rows waiting for WLU. |
+| `pcs-exui-welsh-dictionary.csv` | All PCS rows. Uploaded in full to AAT. |
+| `deltas/<date>-prod-delta.csv` | What goes to prod. Never edited after upload. |
+| `prod-delta-exclude.txt` | Rows kept as prod has them, e.g. waiting for WLU. |
 
-Format for every CSV: no header, `English,Welsh` or `English,Welsh,true,<yes>,<no>` for question-specific
-Yes/No, UTF-8 without BOM, CRLF line endings. Do not open and re-save in Excel.
+Rows are `English,Welsh` (or `English,Welsh,true,<yes>,<no>`), no header, CRLF. Only Welsh from WLU. Do not re-save in Excel.
 
-Only use Welsh supplied by the Welsh Language Unit (WLU). Keys must match what ExUI sends: the label text from the
-CCD definition with indentation collapsed to single spaces.
+## AAT
 
-## Updating
+Upload `pcs-exui-welsh-dictionary.csv` (downloaded from GitHub) yourself in AAT Admin Web:
+https://ccd-admin-web.aat.platform.hmcts.net/manageWelshDictionary
 
-1. Change rows in `pcs-exui-welsh-dictionary.csv` in a PR.
-2. After merge, download the file from GitHub and upload it in AAT Admin Web (Manage Welsh dictionary).
-   Check it with the Admin Web download.
-3. QA and UAT in AAT, in a private window (ExUI caches translations for a day).
+Check with Download, then test in a private window (ExUI caches translations for a day).
 
-## Prod release
+## Prod
 
-Prod gets a delta, not the whole file, so rows other services already use are never overwritten.
+Prod is uploaded by CFT support, and gets a delta so rows other services use are not overwritten.
 
-1. Download a fresh prod export from prod Admin Web (Welsh dictionary > Download).
-2. Generate the definition: `./gradlew generateCCDConfig`.
-3. Build the delta:
-
+1. Get a prod export (Welsh dictionary download) and build the delta:
    ```
-   bin/welsh/prod-delta.py \
-     --master src/main/resources/welsh/pcs-exui-welsh-dictionary.csv \
-     --prod <prod export>.csv \
-     --definitions build/definitions/PCS \
-     --pcs-uploader <PCS uploader user_id prefix> \
-     --exclude src/main/resources/welsh/prod-delta-exclude.txt \
-     --out src/main/resources/welsh/deltas/<date>-prod-delta.csv
+   ./gradlew generateCCDConfig
+   bin/welsh/prod-delta.py --master src/main/resources/welsh/pcs-exui-welsh-dictionary.csv \
+     --prod <prod export>.csv --definitions build/definitions/PCS --pcs-uploader 46b20985 \
+     --exclude src/main/resources/welsh/prod-delta-exclude.txt --out src/main/resources/welsh/deltas/<date>-prod-delta.csv
    ```
+   It adds English prod does not have and only replaces rows PCS uploaded. Check the `REVIEW` list it prints.
+2. Merge the delta, then raise the request in #platops-help with the Slack bot: **Definition import request**,
+   environment Production, e.g. "Welsh translation import PROD environment, third batch (Possessions)".
+3. Attach the delta (downloaded from GitHub) to the CFTS ticket the bot creates, e.g. CFTS-7763.
+4. Add a row below once uploaded.
 
-   Rules: English not in prod is added; identical rows are skipped; a different value only replaces prod when prod's
-   row was uploaded by PCS and the English is PCS text; shared rows are listed as `REVIEW` and left as prod has them.
-4. Commit the delta in a PR, raise a CFTS request (platops help, Definition import request) and attach the delta
-   downloaded from GitHub.
-5. Add a line to the log below.
-
-## Prod upload log
-
-| Date | Request | Delta | Adds | Replaces |
-| --- | --- | --- | --- | --- |
-| 2026-10-14 | CFTS-7763 | `deltas/2026-10-14-prod-delta.csv` | 498 | 25 |
+| Date | Ticket | Delta | Adds | Replaces | Status |
+| --- | --- | --- | --- | --- | --- |
+| 2026-10-14 | CFTS-7763 | `deltas/2026-10-14-prod-delta.csv` | 498 | 25 | Pending |
