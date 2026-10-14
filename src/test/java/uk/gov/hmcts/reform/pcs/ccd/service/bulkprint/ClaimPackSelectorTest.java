@@ -93,7 +93,7 @@ class ClaimPackSelectorTest {
         assertThat(result.getFirst().documents()).containsExactly(claimForm);
         assertThat(result.get(1).recipientType()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(result.get(1).party()).isEqualTo(defendantA);
-        assertThat(result.get(1).documents()).containsExactly(claimForm, pinA);
+        assertThat(result.get(1).documents()).containsExactly(pinA, claimForm);
     }
 
     @Test
@@ -141,7 +141,7 @@ class ClaimPackSelectorTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().party()).isEqualTo(defendantA);
-        assertThat(result.getFirst().documents()).containsExactly(claimForm, pinA);
+        assertThat(result.getFirst().documents()).containsExactly(pinA, claimForm);
     }
 
     @ParameterizedTest
