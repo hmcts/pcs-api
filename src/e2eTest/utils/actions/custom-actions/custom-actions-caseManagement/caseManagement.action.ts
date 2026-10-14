@@ -5,7 +5,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import {formatDateTimeBST, generateRandomString} from "@utils/common/string.utils";
+import {formatDateTimeNonBST, generateRandomString} from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
 import {
   addReviewDates,
@@ -420,7 +420,7 @@ export class CaseManagementAction implements IAction {
 
   private async cancelHearing(cancelHearingData: actionRecord) {
     const hearingInfo = manageHearingApiData.AddHearingPayload;
-    const formattedHearingDate = formatDateTimeBST(hearingInfo.hearing_Date)
+    const formattedHearingDate = formatDateTimeNonBST(hearingInfo.hearing_Date)
       .replace(':00:00AM', ':00am')
       .replace(':00:00PM', ':00pm');
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
@@ -1057,7 +1057,7 @@ export class CaseManagementAction implements IAction {
 
   }
 
-  private async caseTabTableData(page: Page, mainTable: string, subTable?: string) {
+  private async caseTabTableData(page: Page, mainTable: string, subTable?: string, tableType?:string) {
 
     const tableLocator = subTable
       ? `//span[normalize-space()="${mainTable}"]
@@ -1067,9 +1067,12 @@ export class CaseManagementAction implements IAction {
       : `//span[normalize-space()="${mainTable}"]
           /ancestor::div[1]
           //table[@class="complex-panel-table"]`;
+    
+    const summaryLocator =  `//h2[normalize-space()="${mainTable}"]
+                             /ancestor::div[contains(@class="govuk-summary-card")]
+                             //dl[@class="govuk-summary-list"]`;
 
-
-    const tables = page.locator(tableLocator);
+    const tables = page.locator(tableType === 'Review date' ? summaryLocator : tableLocator);
     const tableCount = await tables.count();
 
     if (tableCount === 0) {
@@ -1126,7 +1129,7 @@ export class CaseManagementAction implements IAction {
     caseNote.set(`Reason`, caseNotes.reviewReason as string);
     caseNote.set(`Description of review`, caseNotes.reviewDescription as string);
 
-    await this.caseTabTableData(page, caseNotes.table as string);
+    await this.caseTabReviewDateTableData(page, caseNotes.table as string);
 
     const misMatchMap = compareMaps(caseNote, caseTabMap, {
       name1: 'CaseNote',
@@ -1150,4 +1153,52 @@ export class CaseManagementAction implements IAction {
     caseTabMap.clear();
 
   }
+
+  private async caseTabReviewDateTableData(page: Page, mainTable: string, subTable?: string) {
+
+    
+    const summaryLocator =  `//h2[normalize-space()="${mainTable}"]
+                             /ancestor::div[@class="govuk-summary-card"]
+                             //dl[@class="govuk-summary-list"]`;
+
+    const tables = page.locator(summaryLocator);
+    const tableCount = await tables.count();
+
+    if (tableCount === 0) {
+      throw new Error(
+        `Table ${subTable ? `${mainTable} -> ${subTable}` : mainTable
+        } not found.`
+      );
+    }
+
+
+    for (let i = 0; i < tableCount; i++) {
+      const table = tables.nth(i);
+      await expect(table).toBeVisible();
+
+      const rows = table.locator('.govuk-summary-list__row');
+      const rowCount = await rows.count();
+
+      for (let j = 0; j < rowCount; j++) {
+        const row = rows.nth(j);
+        if (!(await row.isVisible())) continue;
+
+        const keyQns = row.locator('dt');
+        const valAns = row.locator('dd');
+
+        if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
+
+        const keyText = (await keyQns.first().innerText()).trim();
+        let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+
+        if (keyText === "Created on" || keyText === "Created date") {
+          valText = valText.replace(/:\d{2} /, " ");
+        }
+
+        if (keyText && keyText.length > 0) {
+          caseTabMap.set(keyText ?? '', valText ?? '');
+        }
+      }
+    }
+  };
 }
