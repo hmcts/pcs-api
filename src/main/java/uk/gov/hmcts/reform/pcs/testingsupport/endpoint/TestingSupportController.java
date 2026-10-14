@@ -65,7 +65,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -108,7 +107,6 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
-    private final DocumentImportService documentImportService;
     private final DocumentRepository documentRepository;
     private final CaseDocumentClientApi caseDocumentClientApi;
     private final DocumentIdExtractor documentIdExtractor;
@@ -422,11 +420,10 @@ public class TestingSupportController {
                                                                                 CaseType.getCaseType(),
                                                                                 CaseType.getJurisdictionId(),
                                                                                 Collections.singletonList(file));
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         UploadResponse uploadResponse = this.caseDocumentClientApi.uploadDocuments(authorization,
                                                                                    serviceAuthorization,
                                                                                    documentUploadRequest);
-
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         Document document = uploadResponse.getDocuments().getFirst();
         DocumentEntity possessionOrder = DocumentEntity.builder()

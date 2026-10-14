@@ -75,7 +75,7 @@ public class OrdersTableRenderer {
         }
 
         String documentPath = documentUrl.substring(documentPathStart + "/documents/".length());
-        String documentId = documentPath.split("/")[0];
+        String documentId = documentPath.split("/", 2)[0];
         try {
             return UUID.fromString(documentId);
         } catch (IllegalArgumentException exception) {

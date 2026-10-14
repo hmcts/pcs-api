@@ -32,7 +32,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -111,8 +110,6 @@ class TestingSupportControllerTest {
     @Mock
     private FeatureToggleService featureToggleService;
     @Mock
-    private DocumentImportService documentImportService;
-    @Mock
     private DocumentRepository documentRepository;
     @Mock
     private CaseDocumentClientApi caseDocumentClientApi;
@@ -133,7 +130,7 @@ class TestingSupportControllerTest {
                                                  organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
-                                                 featureToggleService,documentImportService,documentRepository,
+                                                 featureToggleService,documentRepository,
                                                  caseDocumentClientApi, documentIdExtractor
         );
     }
