@@ -35,7 +35,7 @@ export class ClickRadioButtonAction implements IAction {
 
     for (const getLocator of patterns) {
       const locator = getLocator();
-      if (await this.clickWithRetry(locator.first())) {
+      if (await this.clickWithRetry(locator.filter({ visible: true }).first())) {
         return;
       }
     }
