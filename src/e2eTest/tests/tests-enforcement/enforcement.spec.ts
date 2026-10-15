@@ -40,6 +40,7 @@ import {
   suspendedOrder,
   statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import { cannotApplyForWarrantInfo } from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWarrantInfo.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -835,8 +836,10 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     });
     await performAction('missedPayments', {
       option: missedPayments.noRadioOption,
-      nextPage: cannotApplyForWritInfo.mainHeader
+      nextPage: cannotApplyForWarrantInfo.mainHeader
     });
-    await performAction('validateCannotApplyForWarrant' , { nextPage: cannotApplyForWritInfo.mainHeader });
+    await performAction('cannotApplyForWarrantInfo');
+    await performAction('errorValidationCannotApplyForWarrantPage', cannotApplyForWarrantInfo.errorValidation);
+
   });
 });
