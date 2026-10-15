@@ -11,9 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-
-import java.math.BigDecimal;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
@@ -24,7 +21,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
 
     private final EnforcementOrderService enforcementOrderService;
-    private final MoneyFormatter moneyFormatter;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {
@@ -33,18 +29,18 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
         enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
-        String caseIssueFee = moneyFormatter.formatFee(getFeeAmount(enforcementOrder));
         return SubmitResponse.<State>builder()
-            .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
+            .confirmationBody(getPaymentConfirmationMarkdown(getFeeAmount(enforcementOrder), caseReference))
             .state(PENDING_ENFORCEMENT_ISSUED)
             .build();
     }
 
-    private BigDecimal getFeeAmount(EnforcementOrder enforcementOrder) {
-        SelectEnforcementType selectEnforcementType = enforcementOrder.getSelectEnforcementType();
+    private String getFeeAmount(EnforcementOrder enforcementOrder) {
+        String enforcementType = enforcementOrder.getChooseEnforcementType().getValueCode();
+        SelectEnforcementType selectEnforcementType = getSelectEnforcementTypeFromName(enforcementType);
         return switch (selectEnforcementType) {
-            case WARRANT -> new BigDecimal(enforcementOrder.getWarrantFeeAmount());
-            case WRIT -> new BigDecimal(enforcementOrder.getWritFeeAmount());
+            case WARRANT -> enforcementOrder.getWarrantFeeAmount();
+            case WRIT -> enforcementOrder.getWritFeeAmount();
             case WARRANT_OF_RESTITUTION,
                  WRIT_OF_RESTITUTION ->
                 throw new IllegalArgumentException("Unimplemented enforcement type: " + selectEnforcementType);
