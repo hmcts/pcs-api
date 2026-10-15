@@ -800,8 +800,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     });
 });
 
-test.describe('[Enforcement - Delete Draft Application]', () => {
-  test('Claimant user can delete the draft claim from the system @enforcement', async ({ page }) => {
+test.describe('[Enforcement - Delete Draft Application] @enforcement', () => {
+  test('As a Claimant user, the enforcement draft application can be deleted', async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
