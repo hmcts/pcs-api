@@ -268,6 +268,17 @@ class HearingNoticePersistenceServiceTest {
         verifyNoInteractions(locationReferenceService);
     }
 
+    @Test
+    void shouldSkipRemovedPartiesOnWithoutNoticeHearing() {
+        HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
+        hearing.addParty(defendant1);
+        hearing.addParty(defendant2);
+        defendant1.setRemoved(true);
+
+        assertThat(buildNoticeContexts(hearing)).extracting(HearingNoticeRenderContext::partyId)
+            .containsExactly(defendant2.getId());
+    }
+
     private List<HearingNoticeRenderContext> buildNoticeContexts(HearingEntity hearing) {
         when(hearingRepository.findById(HEARING_ID)).thenReturn(Optional.of(hearing));
         return underTest.buildNoticeContexts(HEARING_ID);

@@ -172,6 +172,7 @@ public class HearingNoticePersistenceService {
         if (hearing.getIsWithoutNotice() == VerticalYesNo.YES) {
             return hearing.getHearingNoticeParties().stream()
                 .map(HearingNoticePartyEntity::getParty)
+                .filter(party -> !party.isRemoved())
                 .toList();
         }
         List<PartyEntity> allParties = new ArrayList<>(claimants);

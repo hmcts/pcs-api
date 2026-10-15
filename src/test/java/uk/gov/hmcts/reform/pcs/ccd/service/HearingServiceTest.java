@@ -1064,10 +1064,8 @@ public class HearingServiceTest {
 
         hearingService.updateHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-
-        assertThat(pcsCaseEntityCaptor.getValue().getHearings().getFirst().getHearingNoticeParties())
+        verify(hearingRepository).save(selectedHearing);
+        assertThat(selectedHearing.getHearingNoticeParties())
             .extracting(HearingNoticePartyEntity::getParty)
             .containsExactly(activeParty);
     }
