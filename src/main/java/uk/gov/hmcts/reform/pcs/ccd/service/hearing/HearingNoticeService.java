@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
@@ -16,19 +17,12 @@ import java.util.UUID;
  */
 @Service
 @Slf4j
+@AllArgsConstructor
 public class HearingNoticeService {
 
     private final HearingNoticePersistenceService persistenceService;
     private final HearingNoticeDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
-
-    public HearingNoticeService(HearingNoticePersistenceService persistenceService,
-                                HearingNoticeDocumentGenerator documentGenerator,
-                                DocumentImportService documentImportService) {
-        this.persistenceService = persistenceService;
-        this.documentGenerator = documentGenerator;
-        this.documentImportService = documentImportService;
-    }
 
     public void generateAndAttach(Integer hearingId) {
         List<HearingNoticeRenderContext> contexts = persistenceService.buildNoticeContexts(hearingId);
