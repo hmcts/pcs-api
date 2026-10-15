@@ -33,6 +33,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
                   or other procedure pending.</p>
                   <p class="govuk-body">
                   I request an order for enforcement in the High Court by writ of possession.</p>
+                  <p class="govuk-body">
+                  I believe that the facts stated in this form are true.</p>
                   """
             )
             .complex(PCSCase:: getEnforcementOrder)
@@ -44,8 +46,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .done()
             .complex(WritDetails::getStatementOfTruth)
             .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
-            .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
-                       WRIT_COMPLETED_BY_CLAIMANT
+            .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
+                       WRIT_COMPLETED_BY_CLAIMANT, null
             )
             .mandatory(StatementOfTruthDetailsEnforcement::getFullNameParty,
                        WRIT_COMPLETED_BY_CLAIMANT
@@ -53,8 +55,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .mandatory(StatementOfTruthDetailsEnforcement::getPositionParty,
                        WRIT_COMPLETED_BY_CLAIMANT
             )
-            .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimantLegalRep,
-                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
+            .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getAgreementClaimantLegalRep,
+                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE, null
             )
             .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
                        WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
