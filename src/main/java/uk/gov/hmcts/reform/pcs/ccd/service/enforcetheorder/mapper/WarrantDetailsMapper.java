@@ -31,6 +31,8 @@ public class WarrantDetailsMapper {
         if (enforcementOrder.getWarrantDetails() != null) {
             WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
             warrantEntity.setLanguageUsed(warrantDetails.getLanguageUsed());
+            breathingSpace(warrantEntity, warrantDetails);
+            missedPayments(warrantEntity, warrantDetails);
             controlFlags(warrantEntity, warrantDetails);
             suspendTheOrder(warrantEntity, warrantDetails);
             additionalInformation(warrantDetails, warrantEntity);
@@ -107,6 +109,14 @@ public class WarrantDetailsMapper {
 
     private void suspendTheOrder(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setIsSuspendedOrder(warrantDetails.getIsSuspendedOrder());
+    }
+
+    private void breathingSpace(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+        warrantEntity.setDefendantInBreathingSpace(warrantDetails.getDefendantInBreathingSpace());
+    }
+
+    private void missedPayments(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+        warrantEntity.setDefendantMissedPayments(warrantDetails.getDefendantMissedPayments());
     }
 
     private void peopleToEvict(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {

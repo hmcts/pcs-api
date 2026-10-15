@@ -14,7 +14,19 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { changeNameAddress, confirmHCEOfficer, enforcementApplication, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, repayments, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
+import {
+  changeNameAddress,
+  confirmHCEOfficer,
+  defendantInBreathingSpace,
+  enforcementApplication,
+  landRegistryFees,
+  languageUsed,
+  legalCosts, missedPayments,
+  moneyOwed,
+  nameAndAddressForEviction,
+  repayments,
+  statementOfTruth
+} from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -25,11 +37,11 @@ test.beforeEach(async ({ page }, testInfo) => {
 
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants()
     });
   } else if (testInfo.title.includes('@onlyMain')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -41,13 +53,14 @@ test.beforeEach(async ({ page }, testInfo) => {
     });
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayload()
     });
   }
+  await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -67,8 +80,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
-test.describe.skip('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement',
+test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -100,9 +113,13 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-        nextPage: confirmHCEOfficer.mainHeader
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+        nextPage: defendantInBreathingSpace.mainHeader
       });
+      await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
+      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+      await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
       await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
@@ -170,7 +187,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       });
     });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -193,9 +210,11 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      nextPage: confirmHCEOfficer.mainHeader
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      nextPage: defendantInBreathingSpace.mainHeader
     });
+    await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,
@@ -275,9 +294,11 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      nextPage: confirmHCEOfficer.mainHeader
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      nextPage: defendantInBreathingSpace.mainHeader
     });
+    await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,
@@ -377,7 +398,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
       await performValidation('mainHeader', changeNameAddress.mainHeader);

@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
@@ -350,4 +351,29 @@ class WritDetailsMapperTest {
         assertThat(entity.getRepaymentSummaryMarkdown()).isEqualTo("Repayment summary");
     }
 
+    @ParameterizedTest
+    @EnumSource(YesNoNotSure.class)
+    void shouldMapDefendantInBreathingSpace(YesNoNotSure defendantInBreathingSpace) {
+        // Given
+        writDetails.setDefendantInBreathingSpace(defendantInBreathingSpace);
+
+        // When
+        WritEntity result = underTest.toEntity(writDetails);
+
+        // Then
+        assertThat(result.getDefendantInBreathingSpace()).isEqualTo(defendantInBreathingSpace);
+    }
+
+    @ParameterizedTest
+    @EnumSource(VerticalYesNo.class)
+    void shouldMapDefendantsMissedPayments(VerticalYesNo defendantMissedPayments) {
+        // Given
+        writDetails.setDefendantMissedPayments(defendantMissedPayments);
+
+        // When
+        WritEntity result = underTest.toEntity(writDetails);
+
+        // Then
+        assertThat(result.getDefendantMissedPayments()).isEqualTo(defendantMissedPayments);
+    }
 }
