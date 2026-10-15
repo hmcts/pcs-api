@@ -43,9 +43,6 @@ class StatementOfTruthMapperTest {
         statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);
         statementOfTruth.setFullNameParty("John Doe");
         statementOfTruth.setPositionParty("Owner");
-        statementOfTruth.setFullNameLegalRep("Jane Smith");
-        statementOfTruth.setFirmNameLegalRep("Smith & Co");
-        statementOfTruth.setPositionLegalRep("Solicitor");
 
         // When
         StatementOfTruthEntity result = underTest.toEntity(statementOfTruth);
@@ -54,6 +51,7 @@ class StatementOfTruthMapperTest {
         assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.CLAIMANT);
         assertThat(result.getFullName()).isEqualTo("John Doe");
         assertThat(result.getPositionHeld()).isEqualTo("Owner");
+
         assertThat(result.getFirmName()).isNull();
     }
 

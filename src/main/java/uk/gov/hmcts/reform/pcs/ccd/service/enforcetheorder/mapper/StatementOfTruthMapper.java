@@ -24,7 +24,7 @@ public class StatementOfTruthMapper {
         if (data.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
             statementOfTruthEntity.setFullName(data.getFullNameParty());
             statementOfTruthEntity.setPositionHeld(data.getPositionParty());
-        } else if (data.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
+        } else {
             statementOfTruthEntity.setFullName(data.getFullNameLegalRep());
             statementOfTruthEntity.setFirmName(data.getFirmNameLegalRep());
             statementOfTruthEntity.setPositionHeld(data.getPositionLegalRep());

@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.StatementOfTru
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.CLAIMANT;
@@ -150,13 +151,13 @@ class StatementOfTruthServiceTest {
     class EnforcementTests {
 
         @Test
-        void shouldProcessStatementOfTruth() {
+        void shouldPersistStatementOfTruthForEnforcement() {
             // Given
             StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement
                     = new StatementOfTruthDetailsEnforcement();
             EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
-            StatementOfTruthEntity statementOfTruthEntity = new StatementOfTruthEntity();
-            StatementOfTruthEntity savedStatementOfTruthEntity = new StatementOfTruthEntity();
+            StatementOfTruthEntity statementOfTruthEntity = mock(StatementOfTruthEntity.class);
+            StatementOfTruthEntity savedStatementOfTruthEntity = mock(StatementOfTruthEntity.class);
 
             when(statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement))
                     .thenReturn(statementOfTruthEntity);

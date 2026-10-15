@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSelectedDefendants;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntit
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.SelectedDefendantsMapper;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.List;
@@ -49,22 +49,17 @@ class SelectedDefendantsMapperTest {
             .build();
 
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
-        DynamicStringListElement def1 = new DynamicStringListElement(
-            jessMayID.toString(), "Jess May");
-        DynamicStringListElement def2 = new DynamicStringListElement(
-            jamesMayID.toString(), "James May");
-
-        DynamicMultiSelectStringList selectedDefendants = new DynamicMultiSelectStringList(
-            List.of(def1, def2), List.of(def1, def2)
+        List<DynamicStringListElement> selected = List.of(
+                new DynamicStringListElement(jessMayID.toString(), "Jess May"),
+                new DynamicStringListElement(jamesMayID.toString(), "James May")
         );
 
-        RawWarrantDetails rawWarrantDetails = RawWarrantDetails.builder()
-            .selectedDefendants(selectedDefendants)
-            .build();
+        List<DynamicStringListElement> listItems = List.of(
+                new DynamicStringListElement(jessMayID.toString(), "Jess May"),
+                new DynamicStringListElement(jamesMayID.toString(), "James May")
+        );
 
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .rawWarrantDetails(rawWarrantDetails)
-            .build();
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSelectedDefendants(selected, listItems);
 
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
