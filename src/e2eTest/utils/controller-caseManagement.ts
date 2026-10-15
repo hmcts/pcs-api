@@ -88,7 +88,8 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     || action === 'updatePartyDetails'
     || action === 'selectManageHearing'
     || action === 'addReviewDates'
-    || action === 'addCourtPermissionDetails') {
+    || action === 'addCourtPermissionDetails'
+    || action === 'addJudicialNotes') {
     captureDataForCYAPage = true;
   }
 
@@ -97,7 +98,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     disableCYACapture = true;
     return
   }
-  
+
   if (disableCYACapture) {
     return;
   }
