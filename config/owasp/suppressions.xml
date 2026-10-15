@@ -40,6 +40,30 @@
     <cve>CVE-2026-41178</cve>
     <cve>CVE-2026-54285</cve>
   </suppress>
+  <suppress until="2026-11-15">
+    <notes><![CDATA[
+    HDPI-9102: false positive (CPE mismatch). CVE-2026-33117 affects only
+    com.azure:azure-security-keyvault-keys < 4.10.6, which PCS does not depend on.
+    NVD records it against the whole "azure_sdk_for_java" product, before 4.10.6, so
+    dependency-check flags every com.azure jar whose own version number is below 4.10.6.
+    https://github.com/advisories/ghsa-97jf-46m3-8953
+    Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure/(azure-core|azure-core-http-jdk-httpclient|azure-identity|azure-json)@.*$</packageUrl>
+    <cve>CVE-2026-33117</cve>
+  </suppress>
+  <suppress until="2026-11-15">
+    <notes><![CDATA[
+    HDPI-9102: false positive (already patched). CVE-2023-36415 was fixed in
+    azure-identity 1.10.2, and CVE-2024-35255 in azure-identity 1.12.2 / msal4j 1.15.1.
+    PCS has azure-identity 1.18.4 and msal4j 1.23.1. NVD's CPE version ranges for these
+    products do not line up with the Java artifact versions.
+    Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/(com\.azure/azure-identity@1\.18\.4|com\.microsoft\.azure/msal4j@1\.23\.1)$</packageUrl>
+    <cve>CVE-2023-36415</cve>
+    <cve>CVE-2024-35255</cve>
+  </suppress>
   <!--End of false positives section -->
 
   <suppress until="2026-11-15">
