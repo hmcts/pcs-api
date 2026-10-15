@@ -70,7 +70,7 @@ public class ConfirmationScreenFactory {
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body">
-            You do not need to do anything else. We will send the defendant’s application to the judge and we will
+            You do not need to do anything else. We will send the application to the judge and we will
             contact you again when they have made a decision.
             </p>
 
