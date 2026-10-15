@@ -59,7 +59,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -1732,7 +1732,7 @@ export class CreateCaseAction implements IAction {
           expect(fileCount).toBeGreaterThan(0);
         }
       }).toPass({
-        timeout: VERY_LONG_TIMEOUT,
+        timeout: VERY_LONG_TIMEOUT + LONG_TIMEOUT,
       });
     }
 

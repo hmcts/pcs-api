@@ -7,18 +7,16 @@ import { logToBrowser } from './test-logger';
 import { ActionCMRegistry } from './registry/registry-caseManagement/action-caseManagement.registry';
 import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
 import { axe_Exclusions } from '@config/axe_exclusions.config';
-import { CYA_EXCLUDED_ACTIONS, CYA_FLOW_EXCLUDED_ACTIONS } from './validations/custom-validations/CYA/cys-actions-ignore';
+import { CYA_CAPTURE_ACTIONS, CYA_EXCLUDED_ACTIONS, CYA_FLOW_EXCLUDED_ACTIONS } from './validations/custom-validations/CYA/cya-actions-constants';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
-let captureDataForCYAPage = false;
-let isErrorValidationFlow = false;
+let errorValidationDepth = 0;
 
 
 export function initializeCMExecutor(page: Page): void {
   testExecutor = { page };
   previousUrl = page.url();
-  captureDataForCYAPage = false;
 }
 
 function getExecutor(): { page: Page } {
@@ -76,19 +74,14 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
- 
-  if (isErrorValidationFlow) {
+
+  const isExcluded = errorValidationDepth > 0 || action.includes('errorValidation') || CYA_EXCLUDED_ACTIONS.has(action);
+
+  if (isExcluded) {
     return;
   }
 
-  if (action.includes('errorValidation') || CYA_EXCLUDED_ACTIONS.has(action)) {
-    captureDataForCYAPage = false;
-    return;
-  }
-
-  captureDataForCYAPage = true;
-
-  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {
+  if (CYA_CAPTURE_ACTIONS.has(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
   }
 }
@@ -96,9 +89,11 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionCMRegistry.getAction(action);
+  const isExcludedFlowAction = CYA_FLOW_EXCLUDED_ACTIONS.has(action) || action.includes('errorValidation');
 
-  if (CYA_FLOW_EXCLUDED_ACTIONS.has(action)) {
-    isErrorValidationFlow = true;
+  if (isExcludedFlowAction) {
+
+    errorValidationDepth++;
   }
 
   captureDataForCYA(action, fieldName, value);
@@ -147,8 +142,9 @@ export async function performAction(action: string, fieldName?: actionData | act
       await validatePageIfNavigated(action);
     }
   } finally {
-    if (CYA_FLOW_EXCLUDED_ACTIONS.has(action)) {
-      isErrorValidationFlow = false;
+    if (isExcludedFlowAction) {
+      //isErrorValidationFlow = false;
+      errorValidationDepth--;
     }
   }
 }
