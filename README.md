@@ -104,8 +104,25 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 
 #### Document Management
 
-- To get document upload working locally, it's easier to connect to AAT dependencies using a VPN.
-- Set the authentication mode to `AuthMode.AAT` as described above.
+To get document upload working locally, set the environment variable `LOCAL_DOC_SERVICES=true` in your Run config or before
+running `bootWithCCD` in a shell. This will start a docker container with dm-store and its dependencies and
+also override the necessary environment variables in `build.gradle` so that CDAM and ExUI will talk
+to the local dm-store.
+
+The first time this is run locally there will be a small additional delay at startup while the dm-store container
+spins up. However, it will remain up even when `bootWithCCD` is stopped so restarting pcs-api will not incur that
+additional delay each time.
+
+In order for document generation and viewing of documents in Case File View to work, it is currently necessary
+to be on the VPN as the AAT version of Docmosis is still used. (This does not need `AuthMode.AAT`).
+
+NOTE: This is a new configuration for running the dm-store locally. If it proves to be practical for developers
+then it may be updated to alwys run when `AuthMode.Local` is set.
+
+If the above fails, then it may be easier to connect
+to AAT dependencies using a VPN, by setting the authentication mode to `AuthMode.AAT` as described above and ensuring
+that `LOCAL_DOC_SERVICES` is not set to `true`.
+
 
 #### Generating the CCD definition XLS
 

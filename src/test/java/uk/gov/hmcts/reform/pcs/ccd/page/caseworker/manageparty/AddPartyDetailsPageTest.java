@@ -49,7 +49,7 @@ class AddPartyDetailsPageTest extends BasePageTest {
         lenient().when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        AddressValidator addressValidator = new AddressValidator(new PostcodeValidator());
+        AddressValidator addressValidator = new AddressValidator(new PostcodeValidator(), null);
         setPageUnderTest(new AddPartyDetailsPage(ukClock, textAreaValidationService, addressValidator));
     }
 

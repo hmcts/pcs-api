@@ -1,14 +1,18 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -28,13 +32,16 @@ class AddressValidatorTest {
     @Mock(strictness = LENIENT)
     private PostcodeValidator postcodeValidator;
 
+    @Mock(strictness = LENIENT)
+    private FeatureToggleService featureToggleService;
+
     private AddressValidator underTest;
 
     @BeforeEach
     void setUp() {
         when(postcodeValidator.isValidPostcode(VALID_POSTCODE)).thenReturn(true);
 
-        underTest = new AddressValidator(postcodeValidator);
+        underTest = new AddressValidator(postcodeValidator, featureToggleService);
     }
 
     @ParameterizedTest
@@ -79,6 +86,65 @@ class AddressValidatorTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"12345", "12345-6789", "A1B 0C1"})
+    void shouldAcceptCorrespondenceAddressWithInternationalPostalCode(String postalCode) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        AddressUK address = AddressUK.builder()
+            .addressLine1("10 some street")
+            .addressLine2("Flat 2")
+            .postTown("Paris")
+            .country("France")
+            .postCode(postalCode)
+            .build();
+
+        assertThat(underTest.validateCorrespondenceAddress(address)).isEmpty();
+        assertThat(underTest.validateAddressFields(address)).isNotEmpty();
+    }
+
+    @Test
+    void shouldUseUkAddressValidationWhenReleaseFlagIsDisabled() {
+        // Given
+        AddressUK address = AddressUK.builder()
+            .postTown(null)
+            .postCode(INVALID_POSTCODE)
+            .build();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+        // When
+        List<String> errors = underTest.validateCorrespondenceAddress(address, "defendant 1");
+
+        // Then
+        assertThat(errors).containsExactly(
+            "Town or City is required for defendant 1",
+            "Enter a valid postcode for defendant 1");
+    }
+
+    @ParameterizedTest
+    @MethodSource("correspondenceAddressScenarios")
+    void shouldRequireManualCorrespondenceAddressFields(String postTown,
+                                                        String postcode,
+                                                        List<String> expectedValidationErrors) {
+        // Given
+        String sectionHint = "some section";
+
+        AddressUK address = AddressUK.builder()
+            .postTown(postTown)
+            .postCode(postcode)
+            .build();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        // When
+        List<String> actualValidationErrors = underTest.validateCorrespondenceAddress(address, sectionHint);
+
+        // Then
+        assertThat(actualValidationErrors).hasSameSizeAs(expectedValidationErrors);
+        for (int i = 0; i < actualValidationErrors.size(); i++) {
+            assertThat(actualValidationErrors.get(i))
+                .isEqualTo(expectedValidationErrors.get(i) + " for " + sectionHint);
+        }
+    }
+
     private static Stream<Arguments> addressScenarios() {
         return Stream.of(
             // Town, postcode, expected validation errors
@@ -94,6 +160,16 @@ class AddressValidatorTest {
             arguments(TEST_TOWN, " ", List.of("Postcode is required")),
             arguments(TEST_TOWN, INVALID_POSTCODE, List.of("Enter a valid postcode")),
             arguments(null, INVALID_POSTCODE, List.of("Town or City is required", "Enter a valid postcode"))
+        );
+    }
+
+    private static Stream<Arguments> correspondenceAddressScenarios() {
+        return Stream.of(
+            // Town, postcode, expected validation errors
+            arguments("Paris", "1234567", List.of()),
+            arguments(null, "12345-6789", List.of("Town or City is required")),
+            arguments("Paris", null, List.of("Postcode is required")),
+            arguments(null, null, List.of("Town or City is required",  "Postcode is required"))
         );
     }
 
