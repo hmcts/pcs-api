@@ -5,11 +5,9 @@ set -euo pipefail
 : "${ORG_ROLE_MAPPING_SERVICE_URL:?Preview ORM URL is required}"
 : "${ROLE_ASSIGNMENT_SERVICE_URL:?Preview RAS URL is required}"
 : "${PCS_SOLICITOR_AUTOMATION_UID:?Smoke-test solicitor ID is required}"
-
-# LOCALLY:
-IDAM_DATA_STORE_SYSTEM_USER_USERNAME=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-username)
-IDAM_DATA_STORE_SYSTEM_USER_PASSWORD=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-password)
-CCD_API_GATEWAY_IDAM_CLIENT_SECRET=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)
+: "${IDAM_DATA_STORE_SYSTEM_USER_USERNAME:?CCD system username is required}"
+: "${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD:?CCD system password is required}"
+: "${CCD_API_GATEWAY_IDAM_CLIENT_SECRET:?CCD gateway client secret is required}"
 
 export CCD_API_GATEWAY_IDAM_CLIENT_SECRET
 export IDAM_API_BASE_URL=https://idam-api.aat.platform.hmcts.net
