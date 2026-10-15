@@ -1,3 +1,10 @@
+import { generateRandomFirstAndLastNames } from "@utils/common/userData.utils";
+
+const names = generateRandomFirstAndLastNames({
+countOfFirstNamesToGenerate: 3,
+countOfLastNamesToGenerate: 3,
+});
+
 export const submitCaseApiDataWales = {
   submitCaseEventName: 'resumePossessionClaim',
 
@@ -30,8 +37,8 @@ export const submitCaseApiDataWales = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: 'Peter',
-      lastName: 'Parker',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
       addressKnown: 'YES',
       addressSameAsPossession: 'YES',
       correspondenceAddress: {
@@ -208,8 +215,8 @@ export const submitCaseApiDataWales = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
       addressKnown: 'NO',
       addressSameAsPossession: null,
       correspondenceAddress: {
@@ -227,8 +234,8 @@ export const submitCaseApiDataWales = {
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Peter',
-          lastName: 'Parker',
+          firstName: names.firstNames[1],
+          lastName: names.lastNames[1],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
           correspondenceAddress: {
@@ -246,8 +253,8 @@ export const submitCaseApiDataWales = {
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Jen',
-          lastName: 'Parker',
+          firstName: names.firstNames[2],
+          lastName: names.lastNames[2],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
           correspondenceAddress: {

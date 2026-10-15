@@ -531,7 +531,7 @@ export const submitCaseApiData = {
     hasUnderlesseeOrMortgagee: 'YES',
     underlesseeOrMortgagee1: {
       nameKnown: 'YES',
-      name: 'peter',
+      name: names.firstNames[0],
       addressKnown: 'YES',
       address: {
         AddressLine1: '4 Second Avenue',
@@ -888,7 +888,7 @@ export const submitCaseApiData = {
     hasUnderlesseeOrMortgagee: 'YES',
     underlesseeOrMortgagee1: {
       nameKnown: 'YES',
-      name: 'peter',
+      name: names.firstNames[0],
       addressKnown: 'YES',
       address: {
         AddressLine1: '4 Second Avenue',
