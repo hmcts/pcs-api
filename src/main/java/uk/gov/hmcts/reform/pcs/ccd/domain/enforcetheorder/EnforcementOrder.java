@@ -26,7 +26,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@SuppressWarnings("java:S1133")
+@SuppressWarnings({"java:S1133", "java:S6355"})
 public class EnforcementOrder {
 
     // Redundant field to support the existing CCD definition, will be removed in the future once the

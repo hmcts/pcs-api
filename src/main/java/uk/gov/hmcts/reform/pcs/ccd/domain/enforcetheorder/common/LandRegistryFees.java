@@ -29,7 +29,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 @Deprecated
-@SuppressWarnings("java:S1133")
+@SuppressWarnings({"java:S1133", "java:S6355"})
 public class LandRegistryFees {
 
     @CCD(

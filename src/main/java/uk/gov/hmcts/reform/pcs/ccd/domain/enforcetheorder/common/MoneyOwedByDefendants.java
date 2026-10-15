@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
  * @deprecated As of release 1.4
  */
 @Deprecated
-@SuppressWarnings("java:S1133")
+@SuppressWarnings({"java:S1133", "java:S6355"})
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
