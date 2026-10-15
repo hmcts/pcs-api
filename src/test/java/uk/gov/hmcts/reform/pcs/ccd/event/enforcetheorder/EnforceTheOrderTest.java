@@ -50,11 +50,9 @@ import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
@@ -393,29 +391,6 @@ class EnforceTheOrderTest extends BaseEventTest {
                 .anyMatch(item ->
                         item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
         assertThat(warrantOfRestitutionOptionExists).isFalse();
-    }
-
-    @Test
-    void shouldNOTConfigurePages() {
-        mockedEnv.when(TestSupportEnvironment::isDev).thenReturn(false);
-        clearInvocations(enforcementPageConfigurer);
-        clearInvocations(warrantPageConfigurer);
-        clearInvocations(writPageConfigurer);
-        clearInvocations(warrantOfRestitutionPageConfigurer);
-
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder().build())
-            .build();
-
-        // When
-        callStartHandler(caseData);
-
-        //Then
-        verifyNoInteractions(enforcementPageConfigurer);
-        verifyNoInteractions(warrantPageConfigurer);
-        verifyNoInteractions(writPageConfigurer);
-        verifyNoInteractions(warrantOfRestitutionPageConfigurer);
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {

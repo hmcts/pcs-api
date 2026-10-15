@@ -72,7 +72,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String currentUserId = securityContextService.getCurrentUserId();
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         List<ListValue<RelatedApplicationOption>> options = new ArrayList<>(
@@ -94,7 +94,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity,
-                                                     UUID currentUserId,
+                                                     String currentUserId,
                                                      String organisationId) {
 
         return genAppVisibilityService.getVisibleGenAppsToUser(
@@ -104,7 +104,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         );
     }
 
-    private Optional<CounterClaimEntity> visibleCounterClaimForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+    private Optional<CounterClaimEntity> visibleCounterClaimForUser(PcsCaseEntity pcsCaseEntity, String currentUserId) {
         return counterClaimVisibilityService.getVisibleCounterClaimForUser(
             pcsCaseEntity.getCounterClaims(), currentUserId);
     }
@@ -153,7 +153,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String currentUserId = securityContextService.getCurrentUserId();
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         PartyEntity uploadingParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
@@ -189,7 +189,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private GenAppEntity resolveSelectedGenApp(UUID selectedId, PcsCaseEntity pcsCaseEntity,
-                                               UUID currentUserId, String organisationId) {
+                                               String currentUserId, String organisationId) {
         if (selectedId == null) {
             return null;
         }
@@ -200,7 +200,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private CounterClaimEntity resolveSelectedCounterClaim(UUID selectedId, PcsCaseEntity pcsCaseEntity,
-                                                           UUID currentUserId) {
+                                                           String currentUserId) {
         if (selectedId == null) {
             return null;
         }
