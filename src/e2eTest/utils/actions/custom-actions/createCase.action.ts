@@ -1678,15 +1678,18 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
-        if (ccPayload) {
-          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
-        }
+
         if (file) {
           userInputFiles.push(file as string);
         }
-        if (caseFile.caseWorkerAmend) {
+        if (caseFile.caseWorkerAmend && ccPayload) {
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
-        } 
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+        } else if (ccPayload) {
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        }
         break;
 
       case 'Applications':
