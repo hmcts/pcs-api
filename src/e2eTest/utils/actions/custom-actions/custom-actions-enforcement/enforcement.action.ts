@@ -589,11 +589,18 @@ export class EnforcementAction implements IAction{
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
+              
             case 'pageLevel':
+              await expect(async () => {
               await performAction('clickButton', validationArr.button);
-              await performValidation('text', { elementType: 'subHeader', text: validationArr.header as string });
+              await performValidation('text', {
+                  elementType: 'subHeader',
+                  text: (validationArr.header ?? 'There is a problem') as string,
+                });
               await performValidation('text', { elementType: 'paragraph', text: item.errMessage });
+              }).toPass({ timeout: VERY_LONG_TIMEOUT });
               break;
+
              case 'addDocument':
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);

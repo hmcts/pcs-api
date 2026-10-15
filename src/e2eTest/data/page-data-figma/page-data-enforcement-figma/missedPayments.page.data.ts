@@ -11,7 +11,7 @@ export const missedPayments = {
   noRadioOption: 'No',
   iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   paymentsHintText: `These are payments outlined in the suspended order for possession. They were ordered to make these payments by the judge.`,
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [

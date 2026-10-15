@@ -9,7 +9,7 @@ export const cannotApplyForWarrantInfo = {
   previousButton: 'Previous',
   continueButton: 'Continue',
   cancelLink: 'Cancel',
-  errorValidation: 'No', // set it to 'NO' before raising a PR
+  errorValidation: 'NO', // set it to 'NO' before raising a PR
   eventCouldNotBeCreatedHeader: 'The event could not be created',
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption', six: 'pageLevel' },
   errorValidationField: {
