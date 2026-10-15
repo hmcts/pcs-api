@@ -38,9 +38,8 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo
+  statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWarrantInfo,
 } from '@data/page-data-figma/page-data-enforcement-figma';
-import { cannotApplyForWarrantInfo } from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWarrantInfo.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
