@@ -11,3 +11,6 @@ FROM (
 ) AS ranked
 WHERE counter_claim.id = ranked.id
   AND counter_claim.rank IS NULL;
+
+ALTER TABLE public.counter_claim
+    ADD CONSTRAINT uq_counter_claim_case_rank UNIQUE (case_id, rank);
