@@ -248,6 +248,8 @@ xui-webapp:
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       JURISDICTIONS: PCS
       WA_SUPPORTED_JURISDICTIONS: PCS
+      HEARINGS_JURISDICTIONS: PCS
+      SERVICES_HEARINGS_COMPONENT_API_PCS: https://${SERVICE_NAME}.preview.platform.hmcts.net
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
       FEATURE_REDIS_ENABLED: false
       REDISCLOUD_URL: http://dummyrediscloudurl
