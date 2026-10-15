@@ -44,9 +44,12 @@ class WritPageConfigurerTest extends BasePageTest {
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
+
         verifyAndCount(inOrder, pageBuilder, CannotApplyForWritInfoPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, BreathingSpaceWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, MissedPaymentsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, HCEOfficerDetailsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);

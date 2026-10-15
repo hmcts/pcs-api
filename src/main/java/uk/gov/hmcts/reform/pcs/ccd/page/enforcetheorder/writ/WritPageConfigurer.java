@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @Component
 @AllArgsConstructor
 public class WritPageConfigurer implements PageConfigurer {
+
     private final LandRegistryFeesWritPage landRegistryFeesWritPage;
 
     @Override
@@ -16,6 +17,8 @@ public class WritPageConfigurer implements PageConfigurer {
             .add(new CannotApplyForWritInfoPage())
             .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressWritPage())
+            .add(new BreathingSpaceWritPage())
+            .add(new MissedPaymentsWritPage())
             .add(new ConfirmHCEOfficerPage())
             .add(new HCEOfficerDetailsPage())
             .add(new EnforcementOfficerSelectionPage())
