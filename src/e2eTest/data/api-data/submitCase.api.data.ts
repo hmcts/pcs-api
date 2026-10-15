@@ -1,6 +1,15 @@
+import { generateRandomFirstAndLastNames } from "@utils/common/userData.utils";
+import { testDocument, testDocumentListValue } from '@utils/common/uploadDocument.utils';
+
+const names = generateRandomFirstAndLastNames({
+countOfFirstNamesToGenerate: 3,
+countOfLastNamesToGenerate: 3,
+});
+
+
 export const submitCaseApiData = {
   submitCaseEventName: 'resumePossessionClaim',
-  submitCasePayload: {
+  submitCasePayload: ()=> ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
@@ -10,24 +19,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -42,16 +33,16 @@ export const submitCaseApiData = {
       nameKnown: 'YES',
       addressKnown: 'YES',
       addressSameAsPossession: 'YES',
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'YES',
     additionalDefendants: [
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Peter',
-          lastName: 'Parker',
+          firstName: names.firstNames[1],
+          lastName: names.lastNames[1],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES'
         },
@@ -60,8 +51,8 @@ export const submitCaseApiData = {
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Jen',
-          lastName: 'Parker',
+          firstName: names.firstNames[2],
+          lastName: names.lastNames[2],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES'
         },
@@ -95,8 +86,8 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
-  submitCasePayloadNoDefendants: {
+  }),
+  submitCasePayloadNoDefendants: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -105,24 +96,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -166,7 +139,7 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
+  }),
   submitCasePayloadOnlyMain: {
     regionId: '1',
     caseManagementLocationNumber: '20262',
@@ -176,24 +149,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -208,8 +163,8 @@ export const submitCaseApiData = {
       nameKnown: 'YES',
       addressKnown: 'YES',
       addressSameAsPossession: 'YES',
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'YES',
     additionalDefendants: [
@@ -258,7 +213,7 @@ export const submitCaseApiData = {
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
-  submitCasePayloadCaseTab: {
+  submitCasePayloadCaseTab: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -268,24 +223,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -318,8 +255,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [
@@ -368,8 +305,8 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
-  submitCasePayloadCaseSummary: {
+  }),
+  submitCasePayloadCaseSummary: () => ( {
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -379,24 +316,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -429,8 +348,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [
@@ -498,8 +417,8 @@ export const submitCaseApiData = {
       positionParty: 'fg',
       agreementClaimant: ['BELIEVE_TRUE'],
     },
-  },
-  submitCasePayloadCaseDetails: {
+  }),
+  submitCasePayloadCaseDetails: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -509,24 +428,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -559,8 +460,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [
@@ -595,14 +496,7 @@ export const submitCaseApiData = {
     rentDetails_Frequency: 'WEEKLY',
     rentDetails_CalculatedDailyCharge: '1429',
     rentArrears_StatementDocuments: [
-      {
-        id: '77d43175-cf1f-4feb-885f-0a0c454391c2',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056`,
-          document_binary_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056/binary`,
-          document_filename: 'rentStatement.pdf',
-        }
-      }
+      testDocumentListValue('rentStatement.pdf')
     ],
     rentArrears_Total: '23999',
     rentArrears_RecoveryAttempted: 'NO',
@@ -665,8 +559,8 @@ export const submitCaseApiData = {
       agreementClaimantLegalRep: [],
       agreementDefendantLegalRep: []
     },
-  },
-  submitCasePayloadCaseFileView: {
+  }),
+  submitCasePayloadCaseFileView: () =>({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
@@ -678,24 +572,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -714,55 +590,48 @@ export const submitCaseApiData = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: 'John',
-      lastName: 'Doe',
-      addressKnown: 'NO',
-      addressSameAsPossession: null,
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
+      addressKnown: 'YES',
+      addressSameAsPossession: 'NO',
       correspondenceAddress: {
-        AddressLine1: null,
-        AddressLine2: null,
-        AddressLine3: null,
-        PostTown: null,
-        County: null,
-        Country: null,
-        PostCode: null
-      }
+        AddressLine1: '6 Second Avenue',
+        AddressLine2: 'Oxford Street',
+        AddressLine3: '',
+        PostTown: 'London',
+        County: '',
+        Country: 'United Kingdom',
+        PostCode: 'W3 7RX'
+      },
     },
     addAnotherDefendant: 'YES',
     additionalDefendants: [
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Peter',
-          lastName: 'Parker',
+          firstName: names.firstNames[1],
+          lastName: names.lastNames[1],
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
-        },
-        id: null
+          addressSameAsPossession: 'YES',
+         },
+        id: '61cd2875-03af-45c7-a1e4-db5583a1eb11'
       },
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Jen',
-          lastName: 'Parker',
+          firstName: names.firstNames[2],
+          lastName: names.lastNames[2],
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
+          addressSameAsPossession: 'YES',
         },
-        id: null
+        id: '52834083-6f14-4fa9-8f2c-ebb628380530'
       },
     ],
     tenancy_TypeOfTenancyLicence: 'ASSURED_TENANCY',
     tenancy_TenancyLicenceDate: '2013-01-01',
     tenancy_HasCopyOfTenancyLicence: 'YES',
     tenancy_TenancyLicenceDocuments: [
-      {
-        id: '3bbe3b5d-8a49-46cf-ac3e-8863a7aea372',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/b5aacf07-97b4-4455-9140-c9220725a765`,
-          document_binary_url: `${process.env.DM_STORE}/documents/b5aacf07-97b4-4455-9140-c9220725a765/binary`,
-          document_filename: 'tenancy.pdf',
-        }
-      }
+      testDocumentListValue('tenancy.pdf')
     ],
     claimDueToRentArrears: 'Yes',
     rentArrears_RentArrearsGrounds: [
@@ -775,28 +644,15 @@ export const submitCaseApiData = {
     noticeServed: 'Yes',
     notice_ServiceMethod: 'FIRST_CLASS_POST',
     notice_PostedDate: '2015-12-01',
+    notice_AbleToUploadDocument: 'Yes',    
     notice_Documents: [
-      {
-        id: '2fbd79a1-19dc-46fb-9baf-83534187f37f',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac`,
-          document_binary_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac/binary`,
-          document_filename: 'NoticeDetails.pdf',
-        }
-      }
+      testDocumentListValue('NoticeDetails.pdf')
     ],
     rentDetails_CurrentRent: '1200',
     rentDetails_Frequency: 'WEEKLY',
     rentDetails_CalculatedDailyCharge: '171',
     rentArrears_StatementDocuments: [
-      {
-        id: '468ec779-350f-4484-9694-ea6b3285d86e',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52`,
-          document_binary_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52/binary`,
-          document_filename: `rentStatement.pdf`,
-        }
-      }
+      testDocumentListValue('rentStatement.pdf')
     ],
     rentArrears_Total: '123300',
     rentArrears_RecoveryAttempted: 'YES',
@@ -844,71 +700,14 @@ export const submitCaseApiData = {
               code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
               label: 'Inspection or report'
             },
-            list_items: [
-              {
-                code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-                label: 'Witness statement'
-              },
-              {
-                code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-                label: 'Rent statement'
-              },
-              {
-                code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-                label: 'Tenancy agreement'
-              },
-              {
-                code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-                label: 'Certificate of service'
-              },
-              {
-                code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-                label: 'Correspondence from defendant'
-              },
-              {
-                code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-                label: 'Correspondence from claimant'
-              },
-              {
-                code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-                label: 'Possession notice'
-              },
-              {
-                code: 'a9012afc-83de-4678-912b-6a523c496073',
-                label: 'Notice for service out of the jurisdiction'
-              },
-              {
-                code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-                label: 'Photographic evidence'
-              },
-              {
-                code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-                label: 'Inspection or report'
-              },
-              {
-                code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-                label: 'Certificate of suitability as litigation friend'
-              },
-              {
-                code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-                label: 'Legal aid certificate'
-              },
-              {
-                code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-                label: 'Other document'
-              }
-            ],
             valueCode: '69972f35-1f66-45be-9ea8-c57e0ca03501',
             valueLabel: 'Inspection or report'
           },
           description: 'inspection',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/9b3b7d09-188c-4d6b-9b11-8dcc78978c80`,
-            document_binary_url: `${process.env.DM_STORE}/documents/9b3b7d09-188c-4d6b-9b11-8dcc78978c80/binary`,
-            document_filename: 'inspectionOrReport.pdf',
-          }
+          document:
+            testDocument('inspectionOrReport.pdf')
+          
         },
-        id: '87b02265-f876-43da-bcd4-2cbb998cb948'
       },
       {
         value: {
@@ -917,71 +716,14 @@ export const submitCaseApiData = {
               code: '64af55f3-bb64-403b-832d-01df63bb47b9',
               label: 'Other document'
             },
-            list_items: [
-              {
-                code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-                label: 'Witness statement'
-              },
-              {
-                code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-                label: 'Rent statement'
-              },
-              {
-                code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-                label: 'Tenancy agreement'
-              },
-              {
-                code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-                label: 'Certificate of service'
-              },
-              {
-                code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-                label: 'Correspondence from defendant'
-              },
-              {
-                code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-                label: 'Correspondence from claimant'
-              },
-              {
-                code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-                label: 'Possession notice'
-              },
-              {
-                code: 'a9012afc-83de-4678-912b-6a523c496073',
-                label: 'Notice for service out of the jurisdiction'
-              },
-              {
-                code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-                label: 'Photographic evidence'
-              },
-              {
-                code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-                label: 'Inspection or report'
-              },
-              {
-                code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-                label: 'Certificate of suitability as litigation friend'
-              },
-              {
-                code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-                label: 'Legal aid certificate'
-              },
-              {
-                code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-                label: 'Other document'
-              }
-            ],
+            
             valueCode: '64af55f3-bb64-403b-832d-01df63bb47b9',
             valueLabel: 'Other document'
           },
           description: 'other doc',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/85ce1a13-4606-4519-aafd-b6ce3a0c2d3c`,
-            document_binary_url: `${process.env.DM_STORE}/documents/85ce1a13-4606-4519-aafd-b6ce3a0c2d3c/binary`,
-            document_filename: 'otherDocument.pdf',
-          }
+          document:
+          testDocument(`otherDocument.pdf`)
         },
-        id: '66246982-90b5-407d-8b5b-59565a0cb091'
       },
       {
         value: {
@@ -990,71 +732,13 @@ export const submitCaseApiData = {
               code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
               label: 'Legal aid certificate'
             },
-            list_items: [
-              {
-                code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-                label: 'Witness statement'
-              },
-              {
-                code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-                label: 'Rent statement'
-              },
-              {
-                code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-                label: 'Tenancy agreement'
-              },
-              {
-                code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-                label: 'Certificate of service'
-              },
-              {
-                code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-                label: 'Correspondence from defendant'
-              },
-              {
-                code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-                label: 'Correspondence from claimant'
-              },
-              {
-                code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-                label: 'Possession notice'
-              },
-              {
-                code: 'a9012afc-83de-4678-912b-6a523c496073',
-                label: 'Notice for service out of the jurisdiction'
-              },
-              {
-                code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-                label: 'Photographic evidence'
-              },
-              {
-                code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-                label: 'Inspection or report'
-              },
-              {
-                code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-                label: 'Certificate of suitability as litigation friend'
-              },
-              {
-                code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-                label: 'Legal aid certificate'
-              },
-              {
-                code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-                label: 'Other document'
-              }
-            ],
             valueCode: '61a87c03-9159-4c13-af31-1c3b90de42cb',
             valueLabel: 'Legal aid certificate'
           },
           description: 'legal aid',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/b4dea258-4a5c-4a00-b217-3ccacbdb1d8f`,
-            document_binary_url: `${process.env.DM_STORE}/documents/b4dea258-4a5c-4a00-b217-3ccacbdb1d8f/binary`,
-            document_filename: 'legalAidCertificate.pdf',
-          }
+          document: 
+          testDocument(`legalAidCertificate.pdf`)
         },
-        id: '2beff9b1-44d2-4e1a-9ea5-4c9d29e9cc39'
       },
       {
         value: {
@@ -1063,74 +747,16 @@ export const submitCaseApiData = {
               code: 'a9012afc-83de-4678-912b-6a523c496073',
               label: 'Notice for service out of the jurisdiction'
             },
-            list_items: [
-              {
-                code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-                label: 'Witness statement'
-              },
-              {
-                code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-                label: 'Rent statement'
-              },
-              {
-                code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-                label: 'Tenancy agreement'
-              },
-              {
-                code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-                label: 'Certificate of service'
-              },
-              {
-                code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-                label: 'Correspondence from defendant'
-              },
-              {
-                code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-                label: 'Correspondence from claimant'
-              },
-              {
-                code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-                label: 'Possession notice'
-              },
-              {
-                code: 'a9012afc-83de-4678-912b-6a523c496073',
-                label: 'Notice for service out of the jurisdiction'
-              },
-              {
-                code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-                label: 'Photographic evidence'
-              },
-              {
-                code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-                label: 'Inspection or report'
-              },
-              {
-                code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-                label: 'Certificate of suitability as litigation friend'
-              },
-              {
-                code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-                label: 'Legal aid certificate'
-              },
-              {
-                code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-                label: 'Other document'
-              }
-            ],
             valueCode: 'a9012afc-83de-4678-912b-6a523c496073',
             valueLabel: 'Notice for service out of the jurisdiction'
           },
           description: 'notice of service',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/90c34915-95a9-492e-a796-12fa2314f7b6`,
-            document_binary_url: `${process.env.DM_STORE}/documents/90c34915-95a9-492e-a796-12fa2314f7b6/binary`,
-            document_filename: 'noticeForService.pdf',
-          }
+          document: 
+          testDocument(`noticeForService.pdf`)
         },
-        id: '3b0a1f05-18c5-42ba-9e67-e81347125398'
       }
     ],
-    applicationWithClaim: 'YES',
+    applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW',
     endButtonLabel: 'Submit claim',
@@ -1148,8 +774,8 @@ export const submitCaseApiData = {
       agreementDefendantLegalRep: []
     }
 
-  },
-  submitCasePayloadDefault: {
+  }),
+  submitCasePayloadDefault: () => ( {
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -1159,24 +785,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -1209,8 +817,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [
@@ -1245,14 +853,7 @@ export const submitCaseApiData = {
     rentDetails_Frequency: 'WEEKLY',
     rentDetails_CalculatedDailyCharge: '1429',
     rentArrears_StatementDocuments: [
-      {
-        id: '77d43175-cf1f-4feb-885f-0a0c454391c2',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056`,
-          document_binary_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056/binary`,
-          document_filename: 'rentStatement.pdf',
-        }
-      }
+     testDocumentListValue('rentStatement.pdf')
     ],
     rentArrears_Total: '23999',
     rentArrears_RecoveryAttempted: 'NO',
@@ -1315,7 +916,7 @@ export const submitCaseApiData = {
       agreementClaimantLegalRep: ['AGREED'],
       agreementDefendantLegalRep: []
     },
-  },
+  }),
 
   submitCaseApiEndPoint: () =>
     `/cases/${process.env.CASE_NUMBER}/events`,

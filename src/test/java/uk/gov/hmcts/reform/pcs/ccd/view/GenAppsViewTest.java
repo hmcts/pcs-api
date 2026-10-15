@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class GenAppsViewTest {
 
-    private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_IDAM_ID = UUID.randomUUID().toString();
     private static final long TEST_CASE_REFERENCE = 123456789L;
     private static final String ORGANISATION_ID = "organisation";
 
@@ -169,7 +169,7 @@ class GenAppsViewTest {
         // Given
         PartyEntity currentParty = createPartyEntity();
         currentParty.setId(UUID.randomUUID());
-        currentParty.setIdamId(UUID.randomUUID());
+        currentParty.setIdamId(UUID.randomUUID().toString());
         currentParty.setOrganisationId(ORGANISATION_ID + 1);
         currentParty.setFirstName("Current party first name");
         currentParty.setLastName("Current party last name");
@@ -205,7 +205,7 @@ class GenAppsViewTest {
         Party genApp2Party = genApps.get(1).getValue().getParty();
 
         assertThat(genApp1Party.getId()).isEqualTo(currentParty.getId().toString());
-        assertThat(genApp1Party.getIdamId()).isEqualTo(currentParty.getIdamId().toString());
+        assertThat(genApp1Party.getIdamId()).isEqualTo(currentParty.getIdamId());
         assertThat(genApp1Party.getFirstName()).isEqualTo("Current party first name");
         assertThat(genApp1Party.getLastName()).isEqualTo("Current party last name");
 
@@ -244,28 +244,6 @@ class GenAppsViewTest {
     }
 
     @Test
-    void shouldNotSetSubmissionDocumentWhenSoftDeleted() {
-        // Given
-        LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
-        GenAppEntity genAppEntity1 = createGenAppEntity(UUID.randomUUID(), genApp1SubmittedDate);
-        DocumentEntity submissionDocumentEntity = mock(DocumentEntity.class);
-        when(submissionDocumentEntity.isRemoved()).thenReturn(true);
-        genAppEntity1.setSubmissionDocument(submissionDocumentEntity);
-
-        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        // Then
-        List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
-        assertThat(genApps).hasSize(1);
-
-        DocumentWithId actualSubmissionDocument = genApps.getFirst().getValue().getSubmissionDocument();
-        assertThat(actualSubmissionDocument).isNull();
-    }
-
-    @Test
     void shouldSetSupportingDocuments() {
         // Given
         UUID pcsDocumentId1 = UUID.randomUUID();
@@ -276,13 +254,11 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
         DocumentEntity documentEntity1 = mock(DocumentEntity.class);
         DocumentEntity documentEntity2 = mock(DocumentEntity.class);
-        DocumentEntity documentEntity3 = mock(DocumentEntity.class);
-        when(documentEntity3.isRemoved()).thenReturn(true);
 
         final Document expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1, "document1.pdf");
         final Document expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2, "document2.pdf");
 
-        genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2, documentEntity3));
+        genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);

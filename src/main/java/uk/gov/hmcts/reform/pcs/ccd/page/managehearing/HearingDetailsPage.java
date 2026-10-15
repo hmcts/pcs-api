@@ -13,9 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.IntegerValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 
 import java.util.List;
 

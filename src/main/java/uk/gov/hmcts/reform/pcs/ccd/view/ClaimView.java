@@ -117,7 +117,6 @@ public class ClaimView {
             .filter(ClaimView::isEnergyPerformanceCertificate)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
             .map(this::toDocument)
             .toList();
     }
@@ -131,7 +130,6 @@ public class ClaimView {
             .filter(ClaimView::isGasSafetyReport)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
             .map(this::toDocument)
             .toList();
     }
@@ -145,7 +143,6 @@ public class ClaimView {
             .filter(ClaimView::isElectricalInstallationCondition)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
             .map(this::toDocument)
             .toList();
     }
