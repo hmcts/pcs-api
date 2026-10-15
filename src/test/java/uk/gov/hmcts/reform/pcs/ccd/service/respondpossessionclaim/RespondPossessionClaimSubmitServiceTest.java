@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -259,6 +260,9 @@ class RespondPossessionClaimSubmitServiceTest {
                  .createReviewResponseAndCounterClaimDescription(CASE_REFERENCE, savedCounterClaim, feeDetails))
             .thenReturn(expectedDescription);
 
+        UUID counterClaimId = UUID.randomUUID();
+        when(savedCounterClaim.getId()).thenReturn(counterClaimId);
+
         // When
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
@@ -267,8 +271,12 @@ class RespondPossessionClaimSubmitServiceTest {
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.paymentRequired()).isFalse();
         assertThat(result.feeDetails()).isEqualTo(feeDetails);
-        verify(camundaService)
-            .createTask(CASE_REFERENCE, TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM, expectedDescription);
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM,
+            expectedDescription,
+            Map.of("counterClaimId", counterClaimId)
+        );
     }
 
     @Test

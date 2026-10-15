@@ -59,6 +59,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -1040,6 +1041,8 @@ class DocumentServiceTest {
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendGenAppPostfix("file-new.pdf", selectedGenApp, mainClaim, partyId))
             .thenReturn("file-new GA1 - Defendant 1.pdf");
+        UUID genAppId = UUID.randomUUID();
+        when(selectedGenApp.getId()).thenReturn(genAppId);
 
         UploadedDocument uploaded = UploadedDocument.builder()
             .document(Document.builder()
@@ -1072,8 +1075,12 @@ class DocumentServiceTest {
         assertThat(entity.getGeneralApplication()).isSameAs(selectedGenApp);
         assertThat(entity.getFileName()).isEqualTo("file-new GA1 - Defendant 1.pdf");
 
-        verify(camundaService)
-            .createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, expectedTaskDescription);
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP,
+            expectedTaskDescription,
+            Map.of("genAppId", genAppId)
+        );
     }
 
     @Test
@@ -1137,25 +1144,31 @@ class DocumentServiceTest {
                 .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
             .build();
 
-        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
-            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
-        );
-
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
+        UUID counterClaimId = UUID.randomUUID();
+        when(selectedCounterClaim.getId()).thenReturn(counterClaimId);
 
         String expectedTaskDescription = "some counterclaim task description";
         when(taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
             eq(CASE_REFERENCE), eq(mainClaim), eq(party), anyList()
         )).thenReturn(expectedTaskDescription);
 
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
 
         // Then
-        verify(camundaService)
-            .createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM, expectedTaskDescription);
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM,
+            expectedTaskDescription,
+            Map.of("counterClaimId", counterClaimId)
+        );
     }
 
     @Test

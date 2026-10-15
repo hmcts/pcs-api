@@ -128,6 +128,11 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<WaTaskEntity> waTasks = new ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -199,6 +204,11 @@ public class PcsCaseEntity {
     public void addHearing(HearingEntity hearing) {
         hearings.add(hearing);
         hearing.setPcsCase(this);
+    }
+
+    public void addWaTask(WaTaskEntity waTask) {
+        waTasks.add(waTask);
+        waTask.setPcsCase(this);
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -11,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CamundaRequestTaskData {
 
-    enum Action {
+    public enum Action {
         CREATE,
         CANCEL
     }
@@ -25,5 +26,7 @@ public class CamundaRequestTaskData {
     private final String taskDescription;
 
     private final UUID idempotencyKey;
+
+    private Map<String, Object> taskDetails;
 
 }
