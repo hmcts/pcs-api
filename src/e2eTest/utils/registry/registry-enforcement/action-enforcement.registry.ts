@@ -54,6 +54,7 @@ export class ActionEnforcementRegistry {
     ['provideDetailsBasedOnRadioOptionSelection', new EnforcementAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
     ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
@@ -92,7 +93,16 @@ export class ActionEnforcementRegistry {
     ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
-  ]);
+    ['selectApplicationType', new EnforcementAction()],
+    ['selectBreathingSpace', new EnforcementAction()],
+    ['selectMissedPayments', new EnforcementAction()],
+    ['verifyRadioOptions', new EnforcementAction()],
+    ['verifySaveAndReturnToggle', new EnforcementAction()],
+    ['errorValidationMissedPayments', new EnforcementAction()],
+    ['verifyPermissionScreen', new EnforcementAction()],
+    ['verifyMissedPaymentsPrePopulated', new EnforcementAction()],
+    ['verifyMissedPaymentsPage', new EnforcementAction()],
+        ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);

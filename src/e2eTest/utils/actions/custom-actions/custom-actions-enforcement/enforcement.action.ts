@@ -29,7 +29,8 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer
+  confirmHCEOfficer,
+  missedPayments, 
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
@@ -49,6 +50,15 @@ export class EnforcementAction implements IAction {
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
+      ['verifyMissedPaymentsPage', () => this.verifyMissedPaymentsPage(fieldName as actionRecord, page)],
+      ['errorValidationMissedPayments', () => this.errorValidationMissedPayments(fieldName as actionRecord)],
+      ['verifyPermissionScreen', () => this.verifyPermissionScreen(fieldName as actionRecord)],
+      ['verifyMissedPaymentsPrePopulated', () => this.verifyMissedPaymentsPrePopulated(fieldName as actionRecord, page)],
+      ['selectBreathingSpace', () => this.selectBreathingSpace(fieldName as actionRecord, page)],
+      ['selectMissedPayments', () => this.selectMissedPayments(fieldName as actionRecord, page)],
+      ['errorValidationMissedPayments', () => this.errorValidationMissedPayments(fieldName as actionRecord)],
+      ['verifyPermissionScreen', () => this.verifyPermissionScreen(fieldName as actionRecord)],
+      ['verifyMissedPaymentsPrePopulated', () => this.verifyMissedPaymentsPrePopulated(fieldName as actionRecord, page)],
       ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord, page)],
       ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord, page)],
       ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord, page)],
@@ -98,25 +108,67 @@ export class EnforcementAction implements IAction {
     moneyMap.set(feeType, writOrWarrantFeeAmt);
   }
 
-  private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
-    await performAction('expandSummary', bailiffQuote.type);
-    await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
-    await performAction('expandSummary', bailiffQuote.type);
+private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
+  await performAction('expandSummary', bailiffQuote.type);
+  await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
+  await performAction('expandSummary', bailiffQuote.type);
+}
+private async selectBreathingSpace(data: actionRecord, page: Page) {
+  await performAction('clickRadioButton', { question: data.question, option: data.option });
+  await performAction('reTryOnCallBackError', enforcementApplication.continueButton, data.nextPage as string);
+}
+private async verifyMissedPaymentsPage(data: actionRecord, page: Page) {
+  await test.step('radio options', () => this.verifyRadioOptions(data));
+  await test.step('save and return toggle', () => this.verifySaveAndReturnToggle(data, page));
+}
+private async selectMissedPayments(data: actionRecord, page: Page) {
+  await performAction('clickRadioButton', { question: data.question, option: data.option });
+  await performAction('reTryOnCallBackError', enforcementApplication.continueButton, data.nextPage as string);
+}
+private async selectApplicationType(applicationType: actionRecord, page: Page) {
+  await this.addFieldsToMap(applicationType);
+  await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+  await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+  await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
+  if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
+    await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
+    await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
+  } else if (applicationType.option === 'Warrant of possession') {
+      await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
+  } else if (applicationType.option === 'Warrant of restitution') {
+    await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
   }
 
-  private async selectApplicationType(applicationType: actionRecord, page: Page) {
-    await this.addFieldsToMap(applicationType);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
-      await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
-      await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
-      await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
-    }
-
+}
+private async errorValidationMissedPayments(data: actionRecord) {
+  await performValidation('text', { elementType: 'errorSummaryHeader', text: 'There is a problem' });
+  await performValidation('text', { elementType: 'span.error-message', text: data.errorMessage as string });
+}
+private async verifyPermissionScreen(data: actionRecord) {
+  await performValidation('text', { elementType: 'paragraph', text: data.text as string });
+  await performValidation('text', { elementType: 'link', text: data.linkName as string }); 
+}
+private async verifyRadioOptions(data: actionRecord) {
+  await performValidation('text', { elementType: 'inlineText', text: data.question as string });
+  for (const option of data.options as string[]) {
+    await performValidation('text', { elementType: 'label', text: option });
   }
+}
+
+private async verifySaveAndReturnToggle(data: actionRecord, page: Page) {
+  await performAction('expandSummary', data.label as string);
+  await performValidation('text', { elementType: 'expandableText', text: data.text as string });
+  await performAction('expandSummary', data.hideLabel as string);
+  await performValidation('elementNotToBeVisible', { elementType: 'expandableText', text: data.text as string });
+}
+private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
+  await performAction('clickButton', enforcementApplication.previousButton); 
+  await performValidation('text', { elementType: 'heading', text: data.nextPage as string }); 
+  await expect(
+    page.getByRole('group', { name: data.question as string })
+      .getByRole('radio', { name: data.option as string, exact: true })
+  ).toBeChecked();
+}
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
@@ -404,7 +456,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
     if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantDetails.option1);
-      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
     if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
@@ -421,7 +473,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantSOT.option1);
-      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
+      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
     if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
@@ -550,7 +602,6 @@ export class EnforcementAction implements IAction {
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
-
             case 'addDocument':
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);

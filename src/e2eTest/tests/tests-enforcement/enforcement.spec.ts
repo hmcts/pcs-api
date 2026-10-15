@@ -38,7 +38,9 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth
+  missedPayments,
+  statementOfTruth,
+  defendantInBreathingSpace
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -49,11 +51,11 @@ test.beforeEach(async ({ page }, testInfo) => {
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants()
     });
   } else if (testInfo.title.includes('@onlyMain')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -65,14 +67,16 @@ test.beforeEach(async ({ page }, testInfo) => {
     });
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayload()
     });
   }
+  await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
@@ -114,15 +118,39 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
-        question: enforcementApplication.typeOfApplicationQuestion,
-        option: enforcementApplication.warrantOfPossessionRadioOption,
-        nextPage: nameAndAddressForEviction.mainHeader
-      });
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('selectBreathingSpace', {
+      question: defendantInBreathingSpace.breathingSpaceQuestion, 
+      option: defendantInBreathingSpace.noRadioOption,            
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.permissionScreenHeader
+    });
+    await performAction('verifyPermissionScreen', {
+      text: missedPayments.permissionExplanationText,
+      linkName: missedPayments.permissionLinkText
+    });
+    await performAction('verifyMissedPaymentsPrePopulated', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.yesRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
       await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader
       });
       await performAction('errorValidationConfirmDefendantsDOBPage', confirmDefendantsDOB.errorValidation);
@@ -297,12 +325,48 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
       option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('selectBreathingSpace', {
+      question: defendantInBreathingSpace.breathingSpaceQuestion, 
+      option: defendantInBreathingSpace.noRadioOption,            
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('verifyMissedPaymentsPage', {
+      question: missedPayments.missedPaymentsQuestion,
+      options: [missedPayments.yesRadioOption, missedPayments.noRadioOption],
+      label: missedPayments.saveAndReturnLabel,
+      hideLabel: missedPayments.saveAndReturnHideLabel,
+      text: missedPayments.saveAndReturnText
+    });
+    await performAction('clickButton', enforcementApplication.continueButton);
+    await performAction('errorValidationMissedPayments', {
+      errorMessage: missedPayments.errorMessage
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.permissionScreenHeader
+    });
+    await performAction('verifyPermissionScreen', {
+      text: missedPayments.permissionExplanationText,
+      linkName: missedPayments.permissionLinkText
+    });
+    await performAction('verifyMissedPaymentsPrePopulated', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
+
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.yesRadioOption,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmDefendantsDOB.mainHeader
     });
     await performAction('confirmDefendantsDOB', {
@@ -410,15 +474,56 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       label2: enforcementApplication.writFeeValidationLabelHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
-    await performAction('selectApplicationType', {
+    // await performAction('selectApplicationType', {
+    //   question: enforcementApplication.typeOfApplicationQuestion,
+    //   option: enforcementApplication.warrantOfPossessionRadioOption,
+    //   nextPage: nameAndAddressForEviction.mainHeader
+    // });
+     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
       option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('selectBreathingSpace', {
+      question: defendantInBreathingSpace.breathingSpaceQuestion, 
+      option: defendantInBreathingSpace.noRadioOption,            
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('verifyMissedPaymentsPage', {
+      question: missedPayments.missedPaymentsQuestion,
+      options: [missedPayments.yesRadioOption, missedPayments.noRadioOption],
+      label: missedPayments.saveAndReturnLabel,
+      hideLabel: missedPayments.saveAndReturnHideLabel,
+      text: missedPayments.saveAndReturnText
+    });
+    await performAction('clickButton', enforcementApplication.continueButton);
+    await performAction('errorValidationMissedPayments', {
+      errorMessage: missedPayments.errorMessage
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.permissionScreenHeader
+    });
+    await performAction('verifyPermissionScreen', {
+      text: missedPayments.permissionExplanationText,
+      linkName: missedPayments.permissionLinkText
+    });
+    await performAction('verifyMissedPaymentsPrePopulated', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
+
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.yesRadioOption,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmDefendantsDOB.mainHeader
     });
     await performAction('confirmDefendantsDOB', {
@@ -529,15 +634,49 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', enforcementApplication.mainHeader);
+
       await performAction('selectApplicationType', {
-        question: enforcementApplication.typeOfApplicationQuestion,
-        option: enforcementApplication.warrantOfPossessionRadioOption,
-        nextPage: nameAndAddressForEviction.mainHeader
-      });
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('selectBreathingSpace', {
+      question: defendantInBreathingSpace.breathingSpaceQuestion, 
+      option: defendantInBreathingSpace.noRadioOption,            
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('verifyMissedPaymentsPage', {
+      question: missedPayments.missedPaymentsQuestion,
+      options: [missedPayments.yesRadioOption, missedPayments.noRadioOption],
+      label: missedPayments.saveAndReturnLabel,
+      hideLabel: missedPayments.saveAndReturnHideLabel,
+      text: missedPayments.saveAndReturnText
+    });
+    
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.permissionScreenHeader
+    });
+    await performAction('verifyPermissionScreen', {
+      text: missedPayments.permissionExplanationText,
+      linkName: missedPayments.permissionLinkText
+    });
+    await performAction('verifyMissedPaymentsPrePopulated', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
+
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.yesRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
       await performAction('clickButton', changeNameAddress.continueButton);
@@ -557,15 +696,40 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         label2: enforcementApplication.writFeeValidationLabelHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
-      await performAction('selectApplicationType', {
-        question: enforcementApplication.typeOfApplicationQuestion,
-        option: enforcementApplication.warrantOfPossessionRadioOption,
-        nextPage: nameAndAddressForEviction.mainHeader
-      });
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('selectBreathingSpace', {
+      question: defendantInBreathingSpace.breathingSpaceQuestion, 
+      option: defendantInBreathingSpace.noRadioOption,            
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.permissionScreenHeader
+    });
+    await performAction('verifyPermissionScreen', {
+      text: missedPayments.permissionExplanationText,
+      linkName: missedPayments.permissionLinkText
+    });
+    await performAction('verifyMissedPaymentsPrePopulated', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
+
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.yesRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader
       });
       await performAction('confirmDefendantsDOB', {
@@ -692,15 +856,39 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         label2: enforcementApplication.writFeeValidationLabelHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
-      await performAction('selectApplicationType', {
-        question: enforcementApplication.typeOfApplicationQuestion,
-        option: enforcementApplication.warrantOfPossessionRadioOption,
-        nextPage: nameAndAddressForEviction.mainHeader,
-      });
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('selectBreathingSpace', {
+      question: defendantInBreathingSpace.breathingSpaceQuestion, 
+      option: defendantInBreathingSpace.noRadioOption,            
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.permissionScreenHeader
+    });
+    await performAction('verifyPermissionScreen', {
+      text: missedPayments.permissionExplanationText,
+      linkName: missedPayments.permissionLinkText
+    });
+    await performAction('verifyMissedPaymentsPrePopulated', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.yesRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader,
       });
       await performAction('confirmDefendantsDOB', {
