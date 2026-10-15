@@ -22,12 +22,9 @@ import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Map;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Builder
