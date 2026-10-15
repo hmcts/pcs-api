@@ -794,21 +794,5 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
         input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader,
       });
-      await performAction('verifyChangeLink', {
-        question: checkYourAnswersEnforcement.positionOrOfficeHeldHiddenTextLabel
-      });
-      await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByLabel,
-        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruth.signThisStatementHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruth.nameOfFirmHiddenTextInput,
-        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruth.positionOrOfficeHeldChangeHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader,
-      });
     });
 });

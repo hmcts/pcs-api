@@ -8,6 +8,9 @@ import { ActionCMRegistry } from './registry/registry-caseManagement/action-case
 import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
 import { axe_Exclusions } from '@config/axe_exclusions.config';
 import {ActionEnforcementRegistry} from "@utils/registry/registry-enforcement";
+import {
+  ErrorValidationAction
+} from "@utils/actions/custom-actions/custom-actions-enforcement/enforcementErrorValidation.action";
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -76,20 +79,13 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
+  if (action.includes('errorValidation')) {
+    return;
+  }
   if (action === 'validateWritOrWarrantFeeAmount'
     || action === 'selectApplicationType'
     ) {
     captureDataForCYAPage = true;
-  }
-
-  if (action.includes('errorValidation')) {
-    captureDataForCYAPage = false;
-    disableCYACapture = true;
-    return
-  }
-
-  if (disableCYACapture) {
-    return;
   }
 
   if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {

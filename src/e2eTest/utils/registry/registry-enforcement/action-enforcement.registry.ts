@@ -93,7 +93,6 @@ export class ActionEnforcementRegistry {
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
-    ['verifyChangeLink', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

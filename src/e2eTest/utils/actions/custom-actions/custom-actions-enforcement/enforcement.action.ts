@@ -77,7 +77,6 @@ export class EnforcementAction implements IAction {
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
-      ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord, page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -397,12 +396,6 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: suspendedOrderPara.question, option: suspendedOrderPara.option });
     await performAction('reTryOnCallBackError', suspendedOrder.continueButton, suspendedOrderPara.nextPage as string);
-  }
-
-  private async verifyChangeLink(changeLink: actionRecord, page: Page) {
-
-    await this.addFieldsToMap(changeLink);
-
   }
 
   private async selectStatementOfTruth(claimantDetails: actionRecord, page: Page) {
