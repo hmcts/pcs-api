@@ -61,7 +61,7 @@ export class ErrorValidationAction implements IAction {
     await actionToPerform();
   }
   private async errorValidationCannotApplyForWarrantPage(validationReq: string) {
-   console.log('validationReq:', validationReq);
+
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
       validationType: cannotApplyForWarrantInfo.errorValidationType.six,
