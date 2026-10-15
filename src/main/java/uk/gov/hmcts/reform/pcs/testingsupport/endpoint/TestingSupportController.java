@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -420,25 +421,31 @@ public class TestingSupportController {
                                                                                 CaseType.getCaseType(),
                                                                                 CaseType.getJurisdictionId(),
                                                                                 Collections.singletonList(file));
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        UploadResponse uploadResponse = this.caseDocumentClientApi.uploadDocuments(authorization,
-                                                                                   serviceAuthorization,
-                                                                                   documentUploadRequest);
+        try {
+            PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+            UploadResponse uploadResponse = this.caseDocumentClientApi.uploadDocuments(
+                authorization,
+                serviceAuthorization,
+                documentUploadRequest
+            );
 
-        Document document = uploadResponse.getDocuments().getFirst();
-        DocumentEntity possessionOrder = DocumentEntity.builder()
-            .documentId(documentIdExtractor.extractDocumentId(document.links.self.href))
-            .fileName(document.originalDocumentName)
-            .url(document.links.self.href)
-            .binaryUrl(document.links.binary.href)
-            .type(DocumentType.POSSESSION_ORDER)
-            .categoryId(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS.getId())
-            .contentType(document.mimeType)
-            .build();
+            Document document = uploadResponse.getDocuments().getFirst();
+            DocumentEntity possessionOrder = DocumentEntity.builder()
+                .documentId(documentIdExtractor.extractDocumentId(document.links.self.href))
+                .fileName(document.originalDocumentName)
+                .url(document.links.self.href)
+                .binaryUrl(document.links.binary.href)
+                .type(DocumentType.POSSESSION_ORDER)
+                .categoryId(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS.getId())
+                .contentType(document.mimeType)
+                .build();
 
-        pcsCaseEntity.addDocument(possessionOrder);
-        documentRepository.save(possessionOrder);
-        return ResponseEntity.ok(uploadResponse);
+            pcsCaseEntity.addDocument(possessionOrder);
+            documentRepository.save(possessionOrder);
+            return ResponseEntity.ok(uploadResponse);
+        } catch (CaseNotFoundException exception) {
+            throw exception;
+        }
     }
 
     @PostMapping(
