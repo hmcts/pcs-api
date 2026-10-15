@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +50,7 @@ class PartyAccessCodeLinkServiceTest {
 
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
-    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+    private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174000";
 
     private UserInfo testUser;
 
@@ -58,10 +60,10 @@ class PartyAccessCodeLinkServiceTest {
     }
 
     private UserInfo createUser() {
-        return new UserInfo(null, USER_ID.toString(), null, null, null, List.of());
+        return new UserInfo(null, USER_ID, null, null, null, List.of());
     }
 
-    private PartyEntity createParty(UUID partyId, UUID idamUserId) {
+    private PartyEntity createParty(UUID partyId, String idamUserId) {
         PartyEntity partyEntity = new PartyEntity();
         partyEntity.setId(partyId);
         partyEntity.setIdamId(idamUserId);
@@ -134,12 +136,40 @@ class PartyAccessCodeLinkServiceTest {
     }
 
     @Test
+    void shouldNotLinkAccessCodeForRemovedDefendant() {
+        UUID caseId = UUID.randomUUID();
+        UUID activePartyId = UUID.randomUUID();
+        UUID removedPartyId = UUID.randomUUID();
+
+        PartyEntity activeDefendant = createParty(activePartyId, null);
+        PartyEntity removedDefendant = createParty(removedPartyId, null);
+        removedDefendant.setRemoved(true);
+        PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(activeDefendant, removedDefendant));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(removedPartyId)
+            .code(ACCESS_CODE)
+            .build();
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(List.of(activeDefendant), removedPartyId))
+            .thenThrow(new InvalidPartyForAccessCodeException("The party this access code was generated for"
+                                                                  + " is not a defendant in this case"));
+
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
+            .isInstanceOf(InvalidPartyForAccessCodeException.class);
+
+        verify(validator).validatePartyIsADefendant(List.of(activeDefendant), removedPartyId);
+    }
+
+    @Test
     void shouldThrowAccessCodeAlreadyUsedException_WhenDefendantAlreadyLinked() {
         // GIVEN
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
 
-        PartyEntity defendantEntity = createParty(partyId, UUID.randomUUID());
+        PartyEntity defendantEntity = createParty(partyId, UUID.randomUUID().toString());
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
@@ -207,7 +237,7 @@ class PartyAccessCodeLinkServiceTest {
         UUID partyId2 = UUID.randomUUID();
 
         // Defendant 1: Linked to different user
-        PartyEntity defendantEntity1 = createParty(partyId1, UUID.randomUUID());
+        PartyEntity defendantEntity1 = createParty(partyId1, UUID.randomUUID().toString());
         // Defendant 2: Not linked yet
         PartyEntity defendantEntity2 = createParty(partyId2, null);
         List<PartyEntity> allDefendants = List.of(defendantEntity1, defendantEntity2);
