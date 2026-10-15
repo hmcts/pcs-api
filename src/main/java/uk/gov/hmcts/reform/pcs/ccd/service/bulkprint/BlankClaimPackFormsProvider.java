@@ -19,10 +19,8 @@ public class BlankClaimPackFormsProvider {
     private final byte[] counterclaimForm;
 
     public BlankClaimPackFormsProvider(
-            @Value("${bulk-print.blank-forms.defence-form:classpath:forms/ONC-002R-defence-form.pdf}")
-            Resource defenceFormResource,
-            @Value("${bulk-print.blank-forms.counterclaim-form:classpath:forms/ONC-003-counterclaim.pdf}")
-            Resource counterclaimFormResource) {
+            @Value("${bulk-print.blank-forms.defence-form}") Resource defenceFormResource,
+            @Value("${bulk-print.blank-forms.counterclaim-form}") Resource counterclaimFormResource) {
         this.defenceForm = loadBytes(defenceFormResource, "defence form (ONC 002R)");
         this.counterclaimForm = loadBytes(counterclaimFormResource, "counterclaim form (ONC 003)");
     }
