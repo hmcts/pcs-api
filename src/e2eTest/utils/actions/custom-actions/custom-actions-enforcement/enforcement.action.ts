@@ -398,6 +398,11 @@ export class EnforcementAction implements IAction {
     await performAction('reTryOnCallBackError', suspendedOrder.continueButton, suspendedOrderPara.nextPage as string);
   }
 
+  private async verifyChangeLink(changeLink: actionRecord, page: Page) {
+    await this.addFieldsToMap(changeLink);
+    await page.getByLabel(`Change ${changeLink.question}`).click();
+  }
+
   private async selectStatementOfTruth(claimantDetails: actionRecord, page: Page) {
     await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
