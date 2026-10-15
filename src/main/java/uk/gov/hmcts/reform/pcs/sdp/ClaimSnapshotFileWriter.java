@@ -15,24 +15,24 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class FileWriter {
+public class ClaimSnapshotFileWriter {
 
     private final ObjectMapper objectMapper;
 
-    public FileWriter(ObjectMapper objectMapper) {
+    public ClaimSnapshotFileWriter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    public Path write(List<ClaimSnapshotRecord> records, Path outputPath) {
+    public byte[] write(List<ClaimSnapshotRecord> records, Path outputPath) {
         try {
             Path parent = outputPath.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(records);
-            Files.writeString(outputPath, json);
+            byte[] json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(records);
+            Files.write(outputPath, json);
             log.info("Wrote {} SDP claim snapshot record(s) to {}", records.size(), outputPath);
-            return outputPath;
+            return json;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write SDP claim snapshot file to " + outputPath, e);
         }

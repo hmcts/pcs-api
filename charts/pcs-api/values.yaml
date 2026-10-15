@@ -66,7 +66,7 @@ java:
     PCS_FRONTEND_URL: "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net"
     SDP_EXPORT_ENVIRONMENT: "{{ .Values.global.environment }}"
     SDP_EXPORT_OUTPUT_DIR: "/tmp/sdp-export"
-    # SDP_EXPORT_ACCOUNT_URL: "https://pcssdp{{ .Values.global.environment }}.blob.core.windows.net"
+    SDP_EXPORT_ACCOUNT_URL: "https://pcssdp{{ .Values.global.environment }}.blob.core.windows.net"
 servicebus:
   enabled: false
 ccd:

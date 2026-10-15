@@ -16,15 +16,15 @@ import java.util.Map;
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
 public class SdpExportTestingSupportController {
 
-    private final ExportService claimSnapshotExportService;
+    private final ExportService exportService;
 
-    public SdpExportTestingSupportController(ExportService claimSnapshotExportService) {
-        this.claimSnapshotExportService = claimSnapshotExportService;
+    public SdpExportTestingSupportController(ExportService exportService) {
+        this.exportService = exportService;
     }
 
     @PostMapping("/sdp/export-claim-snapshots")
     public ResponseEntity<Map<String, Object>> exportClaimSnapshots() {
-        ExportResult result = claimSnapshotExportService.exportAllClaims();
+        ExportResult result = exportService.exportAllClaims();
         return ResponseEntity.ok(Map.of(
             "outputPath", result.outputPath().toAbsolutePath().toString(),
             "recordCount", result.recordCount()

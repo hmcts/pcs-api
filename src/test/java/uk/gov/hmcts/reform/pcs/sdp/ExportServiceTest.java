@@ -33,9 +33,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,16 +58,24 @@ class ExportServiceTest {
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
 
+    @Mock
+    private BlobUploader blobUploader;
+
     private ExportService exportService;
 
     @BeforeEach
     void setUp() {
+        exportService = exportService(Optional.of(blobUploader));
+    }
+
+    private ExportService exportService(Optional<BlobUploader> uploader) {
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
-        exportService = new ExportService(
+        return new ExportService(
             claimRepository,
             claimActivityLogRepository,
             new SnapshotMapper(),
-            new FileWriter(objectMapper),
+            new ClaimSnapshotFileWriter(objectMapper),
+            uploader,
             FIXED_CLOCK,
             "local",
             tempDir.toString()
@@ -127,7 +140,7 @@ class ExportServiceTest {
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(result.outputPath()).exists();
         assertThat(result.outputPath().getFileName().toString())
-            .isEqualTo("claim_snapshot_export_2026-03-09.json");
+            .isEqualTo("claim_snapshot_full_2026-03-09.json");
 
         String json = Files.readString(result.outputPath());
         assertThat(json).contains("\"contract_version\" : \"4.1.0\"");
@@ -135,6 +148,7 @@ class ExportServiceTest {
         assertThat(json).contains("\"claim_type\" : \"AAA3-SLD\"");
         assertThat(json).contains("\"name\" : \"Jane Doe\"");
         assertThat(json).contains("\"environment\" : \"local\"");
+        verify(blobUploader).upload(eq("claim_snapshot_full_2026-03-09.json"), any(byte[].class));
     }
 
     @Test
@@ -147,6 +161,19 @@ class ExportServiceTest {
 
         assertThat(result.recordCount()).isZero();
         assertThat(result.outputPath().getFileName().toString())
-            .isEqualTo("claim_snapshot_export_2026-03-08.json");
+            .isEqualTo("claim_snapshot_delta_2026-03-08.json");
+        verify(blobUploader).upload(eq("claim_snapshot_delta_2026-03-08.json"), any(byte[].class));
+    }
+
+    @Test
+    void shouldSkipUploadWhenBlobUploaderIsNotAvailable() {
+        exportService = exportService(Optional.empty());
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of());
+
+        ExportResult result = exportService.exportAllClaims();
+
+        assertThat(result.recordCount()).isZero();
+        assertThat(result.outputPath()).exists();
+        verifyNoInteractions(blobUploader);
     }
 }

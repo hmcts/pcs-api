@@ -26,6 +26,8 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
         JOIN FETCH c.pcsCase pc
         LEFT JOIN FETCH pc.tenancyLicence
         LEFT JOIN FETCH c.noticeOfPossession
+        LEFT JOIN FETCH c.claimParties cp
+        LEFT JOIN FETCH cp.party
         """)
     List<ClaimEntity> findAllForSdpSnapshotExport();
 
@@ -34,6 +36,8 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
         JOIN FETCH c.pcsCase pc
         LEFT JOIN FETCH pc.tenancyLicence
         LEFT JOIN FETCH c.noticeOfPossession
+        LEFT JOIN FETCH c.claimParties cp
+        LEFT JOIN FETCH cp.party
         WHERE c.claimSubmittedDate >= :from
         AND c.claimSubmittedDate < :to
         """)
