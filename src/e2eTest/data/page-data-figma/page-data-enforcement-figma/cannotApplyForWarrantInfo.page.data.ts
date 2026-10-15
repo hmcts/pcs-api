@@ -9,12 +9,12 @@ export const cannotApplyForWarrantInfo = {
   previousButton: 'Previous',
   continueButton: 'Continue',
   cancelLink: 'Cancel',
-errorValidation: 'No', // set it to 'NO' before raising a PR
-eventCouldNotBeCreatedHeader: 'The event could not be created',
-errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption', six: 'pageLevel' },
-errorValidationField: {
-  errorPageLevel: [
-    { type: 'none', input: '', errMessage: 'You cannot continue with this application until you ask the judge for permission to apply for a warrant of possession' },
-  ],
+  errorValidation: 'No', // set it to 'NO' before raising a PR
+  eventCouldNotBeCreatedHeader: 'The event could not be created',
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption', six: 'pageLevel' },
+  errorValidationField: {
+    errorPageLevel: [
+      { type: 'none', input: '', errMessage: 'You cannot continue with this application until you ask the judge for permission to apply for a warrant of possession' },
+    ],
 },
 };
