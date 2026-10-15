@@ -72,8 +72,4 @@ public class EnforcementOrder {
 
     private String warrantOfRestitutionInfoText;
 
-    @CCD(label = "Are you sure you want to permanently delete this draft application? "
-            + "You will no longer be able to view the details in the future.")
-    private YesOrNo deleteDraftApplication;
-
 }
