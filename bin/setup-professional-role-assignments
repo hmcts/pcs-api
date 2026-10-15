@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set +
+set -euo pipefail
+
+: "${ORG_ROLE_MAPPING_SERVICE_URL:?Preview ORM URL is required}"
+: "${ROLE_ASSIGNMENT_SERVICE_URL:?Preview RAS URL is required}"
+: "${PCS_SOLICITOR_AUTOMATION_UID:?Smoke-test solicitor ID is required}"
+
+# LOCALLY:
+IDAM_DATA_STORE_SYSTEM_USER_USERNAME=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-username)
+IDAM_DATA_STORE_SYSTEM_USER_PASSWORD=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-password)
+CCD_API_GATEWAY_IDAM_CLIENT_SECRET=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)
+
+export CCD_API_GATEWAY_IDAM_CLIENT_SECRET
+export IDAM_API_BASE_URL=https://idam-api.aat.platform.hmcts.net
+
+BASEDIR=$(dirname "$0")
+S2S_TOKEN=$(bash "${BASEDIR}/s2s-token.sh" "am_org_role_mapping_service")
+IDAM_TOKEN=$(bash "${BASEDIR}/idam-user-token.sh" "$IDAM_DATA_STORE_SYSTEM_USER_USERNAME" "$IDAM_DATA_STORE_SYSTEM_USER_PASSWORD")
+
+function send_curl_request() {
+  curl --silent --show-error --fail --connect-timeout 10 --max-time 60 \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer ${IDAM_TOKEN}" \
+  -H "ServiceAuthorization: ${S2S_TOKEN}" "$@"
+}
+
+echo 'Loading preview professional access types'
+if ! send_curl_request "${ROLE_ASSIGNMENT_SERVICE_URL}/am/role-assignments/actors/${USER_ID}" \
+  | jq -e '.endStatus == "SUCCESS"' >/dev/null; then
+    echo 'Unable to load professional access types.' >&2
+    exit 1
+fi
+
+USER_ID=$(jq -rn --arg id "$PCS_SOLICITOR_AUTOMATION_UID" '$id | @uri')
+echo 'Refreshing the smoke-test solicitor professional role assignments'
+send_curl_request -X POST "${ORG_ROLE_MAPPING_SERVICE_URL}/am/role-mapping/professional/refresh?userId=${USER_ID}" >/dev/null

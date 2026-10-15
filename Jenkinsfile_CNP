@@ -190,6 +190,14 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:preview') {
+    if (hasLabel(githubApi, "pr-values:ccd-am-wa")) {
+      withEnv([
+        "ORG_ROLE_MAPPING_SERVICE_URL=https://am-org-role-mapping-service-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+        "ROLE_ASSIGNMENT_SERVICE_URL=https://am-role-assignment-service-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      ]) {
+        sh 'bash ./bin/setup-professional-role-assignments.sh'
+      }
+    }
     if (env.CCD_ENABLED == "true") {
       sh "./bin/trigger-global-search-index.sh"
     }
