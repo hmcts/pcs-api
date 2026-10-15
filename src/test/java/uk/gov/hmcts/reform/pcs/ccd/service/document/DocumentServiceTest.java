@@ -1109,6 +1109,8 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
+        UUID counterClaimId = UUID.randomUUID();
+        when(selectedCounterClaim.getId()).thenReturn(counterClaimId);
 
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
@@ -1357,6 +1359,7 @@ class DocumentServiceTest {
             when(documentIdExtractor.extractDocumentId(docUrl)).thenReturn(expectedDocumentId);
 
             GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+            when(selectedGenApp.getId()).thenReturn(UUID.randomUUID());
 
             String expectedRenamedFile = fileName + " GA1 - Defendant 2.pdf";
             when(documentNameService.appendGenAppPostfix(fileName, selectedGenApp, mainClaim, partyId))
