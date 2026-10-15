@@ -42,7 +42,9 @@ class CaseworkerDocumentListServiceTest {
     @BeforeEach
     void setUp() {
         featureToggleService = mock(FeatureToggleService.class);
-        underTest = new CaseworkerDocumentListService(new PartyService(null, null, null), featureToggleService);
+        underTest = new CaseworkerDocumentListService(
+            new PartyService(null, null, null, null, null),
+            featureToggleService);
     }
 
     @Test
@@ -84,6 +86,24 @@ class CaseworkerDocumentListServiceTest {
 
         assertThat(result.getValue().getCode()).isEqualTo(DEFENDANT_ID);
         assertThat(result.getValue().getLabel()).isEqualTo("Daniel Defendant - Defendant 1");
+    }
+
+    @Test
+    void shouldExcludeRemovedPartiesFromRelatedPartyList() {
+        PcsCaseEntity pcsCaseEntity = caseWithParties();
+        PartyEntity removedDefendant = PartyEntity.builder()
+            .id(UUID.fromString("44444444-4444-4444-4444-444444444444"))
+            .firstName("Rory")
+            .lastName("Removed")
+            .removed(true)
+            .build();
+        pcsCaseEntity.getMainClaim().addParty(removedDefendant, PartyRole.DEFENDANT);
+
+        DynamicList result = underTest.buildRelatedPartyList(pcsCaseEntity);
+
+        assertThat(result.getListItems())
+            .extracting(DynamicListElement::getCode)
+            .containsExactly(CLAIMANT_ID, DEFENDANT_ID);
     }
 
     @Test
