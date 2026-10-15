@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTrut
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("java:S1133")
 public class WritDetails {
 
     @JsonUnwrapped

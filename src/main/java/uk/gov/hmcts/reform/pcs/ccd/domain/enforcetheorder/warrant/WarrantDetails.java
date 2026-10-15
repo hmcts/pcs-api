@@ -32,6 +32,7 @@ import java.util.Set;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("java:S1133")
 public class WarrantDetails {
 
     @JsonUnwrapped

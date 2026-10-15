@@ -33,6 +33,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "enf_warrant")
+@SuppressWarnings("java:S1133")
 public class WarrantEntity {
 
     @Id

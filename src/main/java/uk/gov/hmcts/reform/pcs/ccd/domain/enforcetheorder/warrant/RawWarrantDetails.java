@@ -18,6 +18,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
  * @deprecated This field is retained only for backwards compatibility.
  */
 @Deprecated
+@SuppressWarnings("java:S1133")
 @Builder
 @Data
 @AllArgsConstructor

@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@SuppressWarnings("java:S1133")
 @Deprecated
 public class PeopleToEvict {
 
