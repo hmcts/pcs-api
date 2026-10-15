@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -44,7 +45,8 @@ public class ExportService {
     private final ClaimRepository claimRepository;
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SnapshotMapper claimSnapshotMapper;
-    private final FileWriter claimSnapshotFileWriter;
+    private final ClaimSnapshotFileWriter claimSnapshotFileWriter;
+    private final Optional<BlobUploader> blobUploader;
     private final Clock utcClock;
     private final String environment;
     private final Path outputDirectory;
@@ -52,7 +54,8 @@ public class ExportService {
     public ExportService(ClaimRepository claimRepository,
                          ClaimActivityLogRepository claimActivityLogRepository,
                          SnapshotMapper claimSnapshotMapper,
-                         FileWriter claimSnapshotFileWriter,
+                         ClaimSnapshotFileWriter claimSnapshotFileWriter,
+                         Optional<BlobUploader> blobUploader,
                          @Qualifier("utcClock") Clock utcClock,
                          @Value("${sdp.export.environment}") String environment,
                          @Value("${sdp.export.output-directory}") String outputDirectory) {
@@ -60,6 +63,7 @@ public class ExportService {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.claimSnapshotMapper = claimSnapshotMapper;
         this.claimSnapshotFileWriter = claimSnapshotFileWriter;
+        this.blobUploader = blobUploader;
         this.utcClock = utcClock;
         this.environment = environment;
         this.outputDirectory = Path.of(outputDirectory);
@@ -70,7 +74,7 @@ public class ExportService {
      */
     @Transactional(readOnly = true)
     public ExportResult exportAllClaims() {
-        return writeExport(claimRepository.findAllForSdpSnapshotExport(), LocalDate.now(utcClock));
+        return writeExport(claimRepository.findAllForSdpSnapshotExport(), LocalDate.now(utcClock), "full");
     }
 
     /**
@@ -84,10 +88,10 @@ public class ExportService {
             fromDate.atStartOfDay(),
             toDate.atStartOfDay()
         );
-        return writeExport(claims, fromDate);
+        return writeExport(claims, fromDate, "delta");
     }
 
-    private ExportResult writeExport(List<ClaimEntity> claims, LocalDate extractDate) {
+    private ExportResult writeExport(List<ClaimEntity> claims, LocalDate extractDate, String loadType) {
         String extractDateValue = extractDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         List<ClaimSnapshotRecord> records = new ArrayList<>();
@@ -95,9 +99,10 @@ public class ExportService {
             records.add(mapClaim(claim, extractDateValue));
         }
 
-        String filename = "claim_snapshot_export_" + extractDateValue + ".json";
+        String filename = "claim_snapshot_" + loadType + "_" + extractDateValue + ".json";
         Path outputPath = outputDirectory.resolve(filename);
-        claimSnapshotFileWriter.write(records, outputPath);
+        byte[] json = claimSnapshotFileWriter.write(records, outputPath);
+        blobUploader.ifPresent(uploader -> uploader.upload(filename, json));
 
         log.info("SDP claim snapshot export complete: {} record(s) -> {}", records.size(), outputPath);
         return new ExportResult(outputPath, records.size());

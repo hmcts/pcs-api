@@ -17,18 +17,18 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FileWriterTest {
+class ClaimSnapshotFileWriterTest {
 
     @TempDir
     private Path tempDir;
 
     private ObjectMapper objectMapper;
-    private FileWriter fileWriter;
+    private ClaimSnapshotFileWriter fileWriter;
 
     @BeforeEach
     void setUp() {
         objectMapper = new JacksonConfiguration().getMapper();
-        fileWriter = new FileWriter(objectMapper);
+        fileWriter = new ClaimSnapshotFileWriter(objectMapper);
     }
 
     @Test
@@ -56,9 +56,10 @@ class FileWriterTest {
 
         Path outputPath = tempDir.resolve("claim_snapshot_export.json");
 
-        Path written = fileWriter.write(List.of(record), outputPath);
+        byte[] written = fileWriter.write(List.of(record), outputPath);
 
-        assertThat(written).exists();
+        assertThat(outputPath).exists();
+        assertThat(written).isEqualTo(Files.readAllBytes(outputPath));
         String json = Files.readString(outputPath);
         JsonNode root = objectMapper.readTree(json);
 
