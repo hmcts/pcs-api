@@ -33,7 +33,7 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer, defendantInBreathingSpace, missedPayments
+  confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import Axios from "axios";
 
@@ -135,9 +135,25 @@ export class EnforcementAction implements IAction{
   private async missedPayments(missedPaymentsData: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickLink', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
+    await performValidation('text', { elementType: 'paragraph', text: missedPayments.thisWillSaveHiddenParagraph });
+    await performValidation('text', { elementType: 'listItem', text: missedPayments.cancelHiddenListItem });
+
+    await performValidation('text', { elementType: 'paragraph', text: missedPayments.thisWillSaveHiddenParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: missedPayments.thisWillSaveHiddenParagraph });
+
     await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
     await performAction('reTryOnCallBackError', missedPayments.continueButton, missedPaymentsData.nextPage as string);
   }
+
+  private async validateCannotApplyForWarrant(cannotApplyErrorData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+
+    await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
+    await performAction('reTryOnCallBackError', cannotApplyForWritInfo.continueButton, cannotApplyErrorData.nextPage as string);
+  }
+
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
