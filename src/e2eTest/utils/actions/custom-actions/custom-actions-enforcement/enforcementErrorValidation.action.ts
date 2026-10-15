@@ -3,7 +3,27 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import { defendantDetails } from './enforcement.action';
-import { confirmDefendantsDOB, confirmHCEOfficer, enforcementApplication, evictionRisksPosed, explainHowDefendantsReturned, knownDefendantsDOBInformation, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWhoWillBeEvicted, peopleYouWantToEvict, repayments, statementOfTruth, suspendedOrder, violentAggressiveRisk, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
+import {
+  confirmDefendantsDOB,
+  confirmHCEOfficer,
+  defendantInBreathingSpace,
+  enforcementApplication,
+  evictionRisksPosed,
+  explainHowDefendantsReturned,
+  knownDefendantsDOBInformation,
+  landRegistryFees,
+  languageUsed,
+  legalCosts, missedPayments,
+  moneyOwed,
+  nameAndAddressForEviction,
+  peopleWhoWillBeEvicted,
+  peopleYouWantToEvict,
+  repayments,
+  statementOfTruth,
+  suspendedOrder,
+  violentAggressiveRisk,
+  vulnerableAdultsChildren
+} from '@data/page-data-figma/page-data-enforcement-figma';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -30,6 +50,8 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationExplainHowDefendantsEnteredPage', () => this.errorValidationExplainHowDefendantsEnteredPage(errorFlag as string)],
       ['errorValidationPeopleYouWantToEvictPage', () => this.errorValidationPeopleYouWantToEvictPage(errorFlag as string)],
       ['errorValidationPeopleWhoWillBeEvictedPage', () => this.errorValidationPeopleWhoWillBeEvictedPage(errorFlag as string)],
+      ['errorValidationIsDefendantInBreathingSpacePage', () => this.errorValidationIsDefendantInBreathingSpacePage(errorFlag as string)],
+      ['errorValidationMissedPaymentsPage', () => this.errorValidationMissedPaymentsPage(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -69,6 +91,32 @@ export class ErrorValidationAction implements IAction {
         question: confirmDefendantsDOB.defendantsDOBQuestion,
         option: confirmDefendantsDOB.yesRadioOption,
         button: confirmDefendantsDOB.continueButton
+      });
+    }
+  }
+
+  private async errorValidationIsDefendantInBreathingSpacePage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+
+        validationType: defendantInBreathingSpace.errorValidationType.three,
+        inputArray: defendantInBreathingSpace.errorValidationField.errorRadioOption,
+        question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion,
+        option: defendantInBreathingSpace.yesRadioOption,
+        button: defendantInBreathingSpace.continueButton
+      });
+    }
+  }
+
+  private async errorValidationMissedPaymentsPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+
+        validationType: missedPayments.errorValidationType.three,
+        inputArray: missedPayments.errorValidationField.errorRadioOption,
+        question: missedPayments.haveDefendantsMissedPaymentsQuestion,
+        option: missedPayments.yesRadioOption,
+        button: missedPayments.continueButton
       });
     }
   }

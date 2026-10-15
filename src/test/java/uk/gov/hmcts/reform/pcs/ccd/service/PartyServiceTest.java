@@ -132,7 +132,7 @@ class PartyServiceTest {
         @Test
         void shouldGetPartyEntityByIdamId() {
             // Given
-            UUID idamId = UUID.randomUUID();
+            String idamId = UUID.randomUUID().toString();
 
             PartyEntity expectedPartyEntity = mock(PartyEntity.class);
             when(partyRepository.queryPartyByIdamId(idamId, CASE_REFERENCE))
@@ -148,7 +148,7 @@ class PartyServiceTest {
         @Test
         void shouldThrowExceptionWhenNoPartyEntityByIdamId() {
             // Given
-            UUID idamId = UUID.randomUUID();
+            String idamId = UUID.randomUUID().toString();
 
             when(partyRepository.queryPartyByIdamId(idamId, CASE_REFERENCE)).thenReturn(Optional.empty());
 
@@ -194,6 +194,16 @@ class PartyServiceTest {
             assertThat(throwable)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No party found for party ID: " + id + " and case reference: " + caseReference);
+        }
+
+        @ParameterizedTest
+        @ValueSource(booleans = {true, false})
+        void shouldCheckPartyIsActive(boolean removed) {
+            PartyEntity partyEntity = PartyEntity.builder()
+                .removed(removed)
+                .build();
+
+            assertThat(underTest.isActive(partyEntity)).isEqualTo(!removed);
         }
 
         @Test
