@@ -481,8 +481,7 @@ class GenAppDocumentGeneratorTest {
     }
 
     private void stubDocumentNameService(String modifiedFilename) {
-        when(documentNameService
-                 .appendGenAppPostfix(anyString(), any(GenAppEntity.class), any(ClaimEntity.class), any(UUID.class)))
+        when(documentNameService.expectedGenAppFilename(any(GenAppEntity.class), any(ClaimEntity.class)))
             .thenReturn(modifiedFilename);
     }
 
