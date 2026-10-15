@@ -36,13 +36,13 @@ USER_ID=$(jq -rn --arg id "$PCS_SOLICITOR_AUTOMATION_UID" '$id | @uri')
 echo 'Refreshing the smoke-test solicitor professional role assignments'
 send_curl_request -X POST "${ORG_ROLE_MAPPING_SERVICE_URL}/am/role-mapping/professional/refresh?userId=${USER_ID}" >/dev/null
 
-if ! send_curl_request "${ORG_ROLE_MAPPING_SERVICE_URL}/am/role-assignments/actors/${USER_ID}" \
+if ! send_curl_request "${ROLE_ASSIGNMENT_SERVICE_URL}/am/role-assignments/actors/${USER_ID}" \
   | jq -e '
       any(.roleAssignmentResponse[]?;
         .roleType == "ORGANISATION" and
         .roleName == "claimant-solicitor" and
         .grantType == "STANDARD" and
-        .attributes.juristiction == "PCS" and
+        .attributes.jurisdiction == "PCS" and
         .attributes.caseType == "PCS")
     ' >/dev/null; then
   echo 'PCS claimant-solicitor role not found'
