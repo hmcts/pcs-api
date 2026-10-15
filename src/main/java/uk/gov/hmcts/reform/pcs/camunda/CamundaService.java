@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -58,7 +59,7 @@ public class CamundaService {
                           LocationReferenceService locationReferenceService,
                           PcsCaseRepository pcsCaseRepository,
                           WaTaskRepository waTaskRepository,
-                          Clock utcClock,
+                          @Qualifier("utcClock") Clock utcClock,
                           @Value("${camunda.pcs-api-env}") String pcsApiEnvironment) {
         this.workAllocationWorkflowApi = workAllocationWorkflowApi;
         this.authTokenGenerator = authTokenGenerator;
@@ -292,6 +293,7 @@ public class CamundaService {
             .action(action)
             .taskType(taskType)
             .taskDetails(taskDetails)
+            .requestedAt(Instant.now(utcClock))
             .build();
 
         pcsCaseEntity.addWaTask(waTaskEntity);

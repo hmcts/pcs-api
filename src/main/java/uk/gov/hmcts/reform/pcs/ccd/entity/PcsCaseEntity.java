@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
@@ -128,7 +129,7 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 
-    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @OneToMany(mappedBy = "pcsCase", fetch = EAGER, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
     private List<WaTaskEntity> waTasks = new ArrayList<>();

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,10 +21,12 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
@@ -39,7 +42,7 @@ public class WaTaskEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = LAZY, cascade = ALL)
+    @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
@@ -53,6 +56,7 @@ public class WaTaskEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> taskDetails;
 
-    private LocalDateTime requestedAt;
+    @Column(updatable = false, nullable = false)
+    private Instant requestedAt;
 
 }

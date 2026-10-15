@@ -476,6 +476,7 @@ public class CamundaServiceTest {
         assertThat(waTaskEntity.getAction()).isEqualTo(Action.CANCEL);
         assertThat(waTaskEntity.getTaskType()).isEqualTo(taskType);
         assertThat(waTaskEntity.getTaskDetails()).isNull();
+        assertThat(waTaskEntity.getRequestedAt()).isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
 
         ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
         verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
@@ -609,6 +610,7 @@ public class CamundaServiceTest {
         assertThat(waTaskEntity.getTaskType()).isEqualTo(taskType);
         assertThat(taskData.getTaskDetails()).hasSize(1);
         assertThat(waTaskEntity.getTaskDetails().get("test")).isEqualTo("value");
+        assertThat(waTaskEntity.getRequestedAt()).isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType, String taskDescription) {
