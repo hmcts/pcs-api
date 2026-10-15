@@ -161,7 +161,7 @@ class RevokeAccessHelperTest {
         long caseReference = 789L;
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-        UUID idamId = UUID.randomUUID();
+        String idamId = UUID.randomUUID().toString();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .caseReference(caseReference)
@@ -183,7 +183,7 @@ class RevokeAccessHelperTest {
                      scheduledCaptor.getValue().getTaskInstance().getId());
         RoleAssignmentTaskData scheduledData =
             (RoleAssignmentTaskData) scheduledCaptor.getValue().getTaskInstance().getData();
-        assertEquals(idamId.toString(), scheduledData.getUserId());
+        assertEquals(idamId, scheduledData.getUserId());
         assertEquals(UserRole.DEFENDANT, scheduledData.getRole());
         assertEquals(String.valueOf(caseReference), scheduledData.getCaseReference());
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserId(
