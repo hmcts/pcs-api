@@ -155,6 +155,7 @@ public class GenAppService {
                                    GenAppState initialState) {
 
         EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest();
+        boolean isSuspendApplication = enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SUSPEND;
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(enterGenAppRequest.getApplicationTypeOption().getStandardGenAppType())
@@ -165,7 +166,7 @@ public class GenAppService {
             .state(initialState)
             .feeAmountReceived(enterGenAppRequest.getFeeAmountReceived())
             .appliedForHwf(enterGenAppRequest.getAppliedForHwf())
-            .otherPartiesAgreed(enterGenAppRequest.getAllPartiesAgree())
+            .otherPartiesAgreed(isSuspendApplication ? null : enterGenAppRequest.getAllPartiesAgree())
             .build();
 
         if (enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SOMETHING_ELSE) {
@@ -182,7 +183,7 @@ public class GenAppService {
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
         }
 
-        if (enterGenAppRequest.getAllPartiesAgree() == VerticalYesNo.NO) {
+        if (!isSuspendApplication && enterGenAppRequest.getAllPartiesAgree() == VerticalYesNo.NO) {
             genAppEntity.setWithoutNotice(enterGenAppRequest.getWithoutNotice());
         }
 

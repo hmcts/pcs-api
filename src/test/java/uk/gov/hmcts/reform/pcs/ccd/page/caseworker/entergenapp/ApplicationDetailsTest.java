@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -94,6 +95,27 @@ class ApplicationDetailsTest extends BasePageTest {
         // Then
         assertThat(response.getErrorMessageOverride()).isNull();
         assertThat(caseData.getEnterGenAppRequest().getApplicationTypeOption()).isEqualTo(EnterGenAppType.SUSPEND);
+    }
+
+    @Test
+    void shouldClearConsentAndNoticeAnswersWhenSuspendIsSelected() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enterGenAppRequest(EnterGenAppRequest.builder()
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SUSPEND))
+                .dateReceived(FIXED_CURRENT_DATE.minusDays(1))
+                .allPartiesAgree(VerticalYesNo.NO)
+                .withoutNotice(VerticalYesNo.YES)
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+        assertThat(caseData.getEnterGenAppRequest().getAllPartiesAgree()).isNull();
+        assertThat(caseData.getEnterGenAppRequest().getWithoutNotice()).isNull();
     }
 
     @Test
