@@ -49,7 +49,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('getDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
