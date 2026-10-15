@@ -674,20 +674,28 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
         @Test
-        void shouldReturnErrorIfLrRepresentsMultipleDefendants() {
+        void shouldDefaultToFirstRepresentedDefendantWhenLrRepresentsMultipleDefendants() {
             // Given
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .document(mock(Document.class))
+                .build();
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty, mock(PartyEntity.class)));
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
-            PCSCase pcsCase = PCSCase.builder().build();
+            PCSCase pcsCase = PCSCase.builder()
+                .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
+                                                   .legalRepDocuments(wrapListItems(List.of(legalRepDocument)))
+                                                   .build())
+                .build();
 
             // When
             SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
             // Then
-            assertThat(submitResponse.getErrors())
-                .contains("Uploading documents for multiple parties is not supported");
+            assertThat(submitResponse.getErrors()).isNullOrEmpty();
+            verify(documentService).createDocumentEntitiesFromLegalRepDocuments(
+                List.of(legalRepDocument), pcsCaseEntity, defendantParty, null, null);
         }
 
         @ParameterizedTest

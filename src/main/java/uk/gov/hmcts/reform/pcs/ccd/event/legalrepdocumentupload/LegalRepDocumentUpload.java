@@ -318,15 +318,13 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         } else {
             List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
-            if (partyEntities.size() == 1) {
-                return partyEntities.getFirst();
-            } else if (partyEntities.isEmpty()) {
+            if (partyEntities.isEmpty()) {
                 throw new PartyNotFoundException("No represented party found");
             } else if (selectedCounterClaim != null && selectedCounterClaim.getParty() != null
                 && partyEntities.contains(selectedCounterClaim.getParty())) {
                 return selectedCounterClaim.getParty();
             } else {
-                throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
+                return partyEntities.getFirst();
             }
         }
     }
