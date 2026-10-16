@@ -36,6 +36,9 @@ flyway:
   noop:
     strategy: false
 
+db-scheduler:
+  executor-enabled: false
+
 logging:
   level:
     uk.gov.hmcts.reform.pcs: DEBUG
