@@ -24,7 +24,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SoftDelete;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -106,11 +105,6 @@ public class DocumentEntity {
     @Builder.Default
     @JsonManagedReference
     private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
-
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "enf_case_id")
-    @JsonBackReference
-    private EnforcementOrderEntity enfCase;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "counter_claim_id")

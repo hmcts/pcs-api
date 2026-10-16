@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrat
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -64,12 +63,13 @@ class EnforcementOrderServiceTest {
         // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setId(claimId);
         pcsCaseEntity.setClaims(List.of(claimEntity));
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
-        claimEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
+        when(enforcementOrderRepository.findByClaimId(claimId)).thenReturn(List.of(enforcementOrderEntity));
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         // When
         EnforcementOrder retOrder = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -32,12 +30,10 @@ public class EnforcementOrderService {
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        Set<EnforcementOrderEntity> enforcementEntitySet = claimEntity.getEnforcementOrders();
-        if (CollectionUtils.isEmpty(enforcementEntitySet)) {
-            return null;
-        }
+        List<EnforcementOrderEntity> enforcementEntities =
+                enforcementOrderRepository.findByClaimId(claimEntity.getId());
 
-        return enforcementEntitySet
+        return enforcementEntities
                 .stream()
                 .map(EnforcementOrderEntity::getEnforcementOrder)
                 .filter(order ->
