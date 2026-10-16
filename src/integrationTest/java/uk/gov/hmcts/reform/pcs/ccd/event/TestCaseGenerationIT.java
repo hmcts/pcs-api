@@ -44,9 +44,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
-import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.ENFORCEMENT_CASE_GENERATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.MAKE_A_CLAIM_CASE_GENERATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_CASE_AVAILABLE;
+import static uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestCaseGenerator.ENFORCEMENT_CASE_GENERATOR;
 
 /**
  * This is based on the test json sitting in src/main/java/resources/test-case-generation
