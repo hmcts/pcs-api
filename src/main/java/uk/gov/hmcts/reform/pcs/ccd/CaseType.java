@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -166,6 +167,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
+
+        buildOrdersTab(builder);
 
         buildSummaryTab(builder);
 
@@ -371,5 +374,17 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("orders", "Orders")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .showCondition(ShowConditions.and(
+            ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS),
+            ShowConditions.featureFlagsEnabled(FeatureFlag.ENFORCEMENT)
+            )
+            )
+            .label("ordersTableLabel", null, "${ordersTab_TableMarkup}")
+            .field("ordersTab_TableMarkup", NEVER_SHOW);
     }
 }

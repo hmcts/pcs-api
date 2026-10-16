@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,7 +26,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
+import uk.gov.hmcts.reform.ccd.document.am.model.Document;
+import uk.gov.hmcts.reform.ccd.document.am.model.DocumentUploadRequest;
+import uk.gov.hmcts.reform.ccd.document.am.model.UploadResponse;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -36,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -51,10 +60,18 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.ScheduledTasksService;
 
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,6 +84,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
 @AllArgsConstructor
@@ -76,6 +94,8 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Tag(name = "Testing Support")
 public class TestingSupportController {
 
+    private final SchedulerClient schedulerClient;
+    private final Task<Void> helloWorldTask;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final JdbcTemplate jdbcTemplate;
@@ -88,7 +108,60 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
+    private final DocumentRepository documentRepository;
+    private final CaseDocumentClientApi caseDocumentClientApi;
+    private final DocumentIdExtractor documentIdExtractor;
     private final ScheduledTasksService scheduledTasksService;
+
+    @Operation(
+        summary = "Schedule a Hello World task",
+        description = "Schedules a Hello World task to be executed after a specified delay. "
+            + "This endpoint is used for testing the database scheduler functionality."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task scheduled successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/db-scheduler-test")
+    public ResponseEntity<String> scheduleHelloWorldTask(
+        @Parameter(
+            description = "Delay in seconds before task execution (default: 1)",
+            example = "5"
+        )
+        @RequestParam(value = "delaySeconds", defaultValue = "1") int delaySeconds,
+        @Parameter(
+            description = "Bearer token for user authentication (default: DummyId)",
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            required = true
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
+        try {
+            String taskId = "helloWorld-" + UUID.randomUUID();
+            Instant executionTime = Instant.now().plusSeconds(delaySeconds);
+
+            schedulerClient.scheduleIfNotExists(
+                helloWorldTask.instance(taskId),
+                executionTime
+            );
+
+            log.info("Scheduled Hello World task with ID: {} to execute at: {}", taskId, executionTime);
+            return ResponseEntity.ok(String.format(
+                "Hello World task scheduled successfully with ID: %s, execution time: %s",
+                taskId, executionTime
+            ));
+        } catch (Exception e) {
+            log.error("Failed to schedule Hello World task", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to schedule Hello World task: " + e.getMessage());
+        }
+    }
 
     @Operation(
         summary = "Checks the eligibility for a given property postcode",
@@ -337,6 +410,47 @@ public class TestingSupportController {
         accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
+    @PostMapping("/cases/{caseReference}/possession-order-doc")
+    @Transactional
+    public ResponseEntity<?> addPossessionOrderDocument(
+        @PathVariable long caseReference,
+        @RequestParam("file") MultipartFile file,
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @RequestHeader("ServiceAuthorization") String serviceAuthorization
+    ) {
+        DocumentUploadRequest documentUploadRequest = new DocumentUploadRequest("PUBLIC",
+                                                                                CaseType.getCaseType(),
+                                                                                CaseType.getJurisdictionId(),
+                                                                                Collections.singletonList(file));
+        try {
+            PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+            UploadResponse uploadResponse = this.caseDocumentClientApi.uploadDocuments(
+                authorization,
+                serviceAuthorization,
+                documentUploadRequest
+            );
+
+            Document document = uploadResponse.getDocuments().getFirst();
+            DocumentEntity possessionOrder = DocumentEntity.builder()
+                .documentId(documentIdExtractor.extractDocumentId(document.links.self.href))
+                .fileName(document.originalDocumentName)
+                .url(document.links.self.href)
+                .binaryUrl(document.links.binary.href)
+                .type(DocumentType.POSSESSION_ORDER)
+                .categoryId(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS.getId())
+                .contentType(document.mimeType)
+                .build();
+
+            pcsCaseEntity.addDocument(possessionOrder);
+            documentRepository.save(possessionOrder);
+            return ResponseEntity.ok(uploadResponse);
+        } catch (Exception exception) {
+            log.error(exception.getMessage(),exception);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", exception.getMessage()));
+        }
+    }
+
     @PostMapping(
         value = "/link-defendant-solicitor-to-party/{caseReference}/{partyId}",
         produces = MediaType.APPLICATION_JSON_VALUE
@@ -458,38 +572,64 @@ public class TestingSupportController {
     }
 
     @Operation(
-        summary = "Execute future DB Scheduler tasks",
-        description = "Reschedules all scheduled tasks within the specified window from now to be "
+        summary = "Reschedule Camunda request",
+        description = "Reschedules all scheduled Camunda requests within the specified window from now to be "
             + "triggered immediately"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Tasks rescheduled successfully"),
+        @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping(path = "/execute-future-db-scheduler-tasks", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> executeFutureDbSchedulerTasks(
+    @PostMapping("/reschedule-camunda-requests")
+    public ResponseEntity<String> rescheduleCamundaRequest(
         @Parameter(
-            description = "Name of task (type) to reschedule",
-            example = "camunda-request-task"
+            description = "Days to add to current time (default: 0)",
+            example = "1"
         )
-        @RequestParam(value = "taskName") String taskName,
+        @RequestParam(value = "days", defaultValue = "0") int days,
         @Parameter(
-            description = "Duration to add to current time, (ISO 8601 duration string)",
-            example = "P1DT2H",
-            required = true
+            description = "Hours to add to current time (default: 0)",
+            example = "2"
         )
-        @RequestParam(value = "windowDuration") Duration windowDuration,
+        @RequestParam(value = "hours", defaultValue = "0") int hours,
+        @Parameter(
+            description = "Minutes to add to current time (default: 0)",
+            example = "10"
+        )
+        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
-
         try {
-            scheduledTasksService.executeFutureDbSchedulerTasks(taskName, windowDuration);
-            return ResponseEntity.ok("Tasks rescheduled successfully");
+
+            Instant taskTriggerTime = Instant.now().plus(Duration.ofDays(days)
+                                   .plusHours(hours)
+                                   .plusMinutes(minutes));
+
+            List<String> taskIds = jdbcTemplate.query(
+                """
+                    SELECT task_instance
+                    FROM scheduled_tasks
+                    WHERE task_name = 'camunda-request-task' and execution_time <= ?
+                """,
+                (rs, rowNum) -> rs.getString("task_instance"),
+                Timestamp.from(taskTriggerTime)
+            );
+
+            for (String taskId : taskIds) {
+                schedulerClient.reschedule(
+                    CAMUNDA_REQUEST_TASK_DESCRIPTOR.instance(taskId).build(),
+                    Instant.now()
+                );
+
+                log.info("Rescheduled Camunda request task with ID: {}", taskId);
+            }
+
+            return ResponseEntity.ok("Camunda request rescheduled successfully");
         } catch (Exception e) {
-            log.error("Failed to reschedule tasks for {}", taskName, e);
+            log.error("Failed to reschedule Camunda request task", e);
             return ResponseEntity.internalServerError()
-                .body("Failed to reschedule tasks: " + e.getMessage());
+                .body("Failed to reschedule Camunda request task: " + e.getMessage());
         }
     }
 
