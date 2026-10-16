@@ -456,7 +456,7 @@ dependencies {
   // Versioned by the CCD SDK's BOM, so it matches the SDK.
   implementation group: 'com.github.hmcts', name: 'docweave'
   // Compile-time only: needed for IdamApi.class reference in @EnableFeignClients (ccd-sdk's IdamClient depends on it).
-  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
+  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '4.1.0-CCD-8220'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
   implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.59.2'
   implementation group: 'com.github.hmcts', name: 'send-letter-client', version: '5.1.1'
