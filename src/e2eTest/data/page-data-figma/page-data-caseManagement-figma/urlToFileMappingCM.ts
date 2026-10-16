@@ -30,5 +30,4 @@ export default {
   'manageParties/submit': 'managePartiesCheckYourAnswers',
   'manageParties/confirm': 'confirmManageParties',
   'managePartiesaddLitigationParty': 'addAParty',
-  'managePartiesremovePartyDetails': 'checkFullPartyDetails'
 };

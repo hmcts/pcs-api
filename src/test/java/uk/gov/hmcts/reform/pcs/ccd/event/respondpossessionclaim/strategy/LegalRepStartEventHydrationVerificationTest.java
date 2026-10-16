@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
@@ -19,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
@@ -53,9 +52,6 @@ class LegalRepStartEventHydrationVerificationTest {
     @Mock
     private UploadTimestampProvider uploadTimestampProvider;
 
-    @Mock
-    private CaseDetailsTabView caseDetailsTabView;
-
     private LegalRepStartEventStrategy underTest;
 
     @BeforeEach
@@ -65,8 +61,8 @@ class LegalRepStartEventHydrationVerificationTest {
             legalRepForDefendantAccessValidator,
             legalRepPartySelectionService,
             organisationService,
-            caseDetailsTabView,
             new TenancyLicenceView(uploadTimestampProvider),
+            new NoticeOfPossessionView(),
             new RentArrearsView(uploadTimestampProvider)
         );
     }
@@ -126,8 +122,6 @@ class LegalRepStartEventHydrationVerificationTest {
             List.of(defendant),
             "test-org-id"
         )).thenReturn(incomingCase);
-        when(caseDetailsTabView.buildCaseDetailsTab(incomingCase, caseEntity, false))
-            .thenReturn(CaseDetailsTab.builder().build());
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, incomingCase);
 
@@ -135,6 +129,9 @@ class LegalRepStartEventHydrationVerificationTest {
         assertThat(result.getTenancyLicenceDetails().getTypeOfTenancyLicence())
             .isEqualTo(TenancyLicenceType.SECURE_TENANCY);
         assertThat(result.getTenancyLicenceDetails().getTenancyLicenceDate()).isEqualTo(tenancyStart);
+        assertThat(result.getNoticeServed()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getNoticeServedDetails()).isNotNull();
+        assertThat(result.getNoticeServedDetails().getPostedDate()).isEqualTo(noticePosted);
         assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
     }
 

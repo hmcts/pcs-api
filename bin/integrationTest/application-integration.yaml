@@ -1,0 +1,44 @@
+security:
+  anonymousPaths:
+    - "/**"
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 1
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  sql:
+    init:
+      mode: always
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+      show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    show-sql: true
+    properties:
+      hibernate:
+        hbm2ddl-auto: none
+      hibernate.format_sql: true
+      show-dql: true
+
+idam:
+  system-user:
+    username: ${PLACEHOLDER_INTEGRATION_IDAM_USERNAME:pcs-system-user-it}
+    password: ${PLACEHOLDER_INTEGRATION_IDAM_PASSWORD:pcs-system-password-it}
+
+flyway:
+  noop:
+    strategy: false
+
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs: DEBUG
+
+testing-support:
+  enabled: true

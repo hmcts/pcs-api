@@ -284,14 +284,11 @@ public class NotificationService {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
 
         List<PartyEntity> recipients = new ArrayList<>();
-        getActivePartiesByRole(pcsCase, PartyRole.CLAIMANT).stream()
-            .findFirst()
-            .ifPresent(recipients::add);
+        recipients.add(partyService.getPrimaryClaimantPartyEntity(pcsCase));
 
         pcsCase.getClaims().getFirst().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
-            .filter(this::isActiveParty)
             .filter(defendant -> !defendant.getId().equals(representedDefendant.getId()))
             .forEach(recipients::add);
 
@@ -308,18 +305,6 @@ public class NotificationService {
                 notificationPersonalisationFactory.forParty(recipient, pcsCase)
             );
         }
-    }
-
-    private List<PartyEntity> getActivePartiesByRole(PcsCaseEntity pcsCase, PartyRole role) {
-        return pcsCase.getClaims().getFirst().getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == role)
-            .map(ClaimPartyEntity::getParty)
-            .filter(this::isActiveParty)
-            .toList();
-    }
-
-    private boolean isActiveParty(PartyEntity party) {
-        return party != null && !party.isRemoved();
     }
 
     private NotificationRecipient partyRecipient(PartyEntity party) {

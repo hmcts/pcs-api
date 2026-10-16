@@ -19,5 +19,4 @@ export const axe_Exclusions = [
   '#implicit-label',
   '#aria-required-parent',
   'button[role="treeitem"]',
-  '.action-cell > .govuk-link', // temporary exclusion for color-contrast issue in Fee & Pay Service Request Review
 ];

@@ -1,0 +1,119 @@
+{
+  "data": {
+    "dashboardData": {
+      "caseId": "${caseId}",
+      "notifications": [
+        {
+          "value": {
+            "templateId": "Defendant.NoHearingArranged",
+            "templateValues": []
+          }
+        },
+        {
+          "value": {
+            "templateId": "Defendant.ResponseNotStarted",
+            "templateValues": []
+          }
+        }
+      ],
+      "taskGroups": [
+        {
+          "value": {
+            "groupId": "CLAIM",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewClaim",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "DOCUMENTS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "UploadDocuments",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewDocuments",
+                  "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "RESPONSE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "RespondToClaim",
+                  "status": "NOT_STARTED"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewResponse",
+                  "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "HEARING",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewHearingDocuments",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "NOTICE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewOrdersAndNotices",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "APPLICATIONS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "MakeGeneralApplication",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewAllApplications",
+                  "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

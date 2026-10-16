@@ -128,17 +128,14 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
             pcsCase.getDateSubmitted() != null);
         var caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
 
-        pcsCase.setCaseDetailsTab(getCaseDetailsTab(caseDetailsTab, builtCaseDetailsTab));
-
-        return pcsCase;
-    }
-
-    private CaseDetailsTab getCaseDetailsTab(CaseDetailsTab caseDetailsTab, CaseDetailsTab builtCaseDetailsTab) {
         caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
         caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
         caseDetailsTab.setOccupationContractLicenceDetails(builtCaseDetailsTab.getOccupationContractLicenceDetails());
         caseDetailsTab.setNoticeDetails(builtCaseDetailsTab.getNoticeDetails());
+        
+        pcsCase.setCaseDetailsTab(caseDetailsTab);
 
-        return caseDetailsTab;
+        System.out.println("CitizenStartEventStrategy pcsCase: " + pcsCase);
+        return pcsCase;
     }
 }

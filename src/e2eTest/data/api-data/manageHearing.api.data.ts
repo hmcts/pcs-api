@@ -2,7 +2,7 @@ import {
   CaseManagementCommonUtils
 } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
 
-let date = CaseManagementCommonUtils.getRandomDate('future');
+let date = CaseManagementCommonUtils.getRandomDate('future', 'dateTime');
 const [day, month, year] = date.split('/');
 const hearingDate = `${year}-${month}-${day}T00:00:00`;
 

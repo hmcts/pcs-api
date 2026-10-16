@@ -1,16 +1,9 @@
-import { generateRandomFirstAndLastNames } from "@utils/common/userData.utils";
-
-const names = generateRandomFirstAndLastNames({
-countOfFirstNamesToGenerate: 3,
-countOfLastNamesToGenerate: 3,
-});
-
 export const submitCaseApiDataWales = {
   submitCaseEventName: 'resumePossessionClaim',
 
   submitCasePayloadCaseSummary: {
     orgNameFound: 'Yes',
-    claimantName: 'PCS_Local_Auth_Org_Testing',
+    claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
     legislativeCountry: 'Wales',
     claimantType: {
@@ -37,8 +30,8 @@ export const submitCaseApiDataWales = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: names.firstNames[0],
-      lastName: names.lastNames[0],
+      firstName: 'Peter',
+      lastName: 'Parker',
       addressKnown: 'YES',
       addressSameAsPossession: 'YES',
       correspondenceAddress: {
@@ -102,7 +95,7 @@ export const submitCaseApiDataWales = {
     rentArrears_RecoveryAttempted: 'YES',
     rentArrears_RecoveryAttemptDetails: 'recovery attempts made',
     arrearsJudgmentWanted: 'YES',
-    claimantNamePossessiveForm: 'PCS_Local_Auth_Org_Testing’s',
+    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
     claimantCircumstancesSelect: 'YES',
     claimantCircumstancesDetails: 'test data claimant circumstances',
     hasDefendantCircumstancesInfo: 'YES',
@@ -170,7 +163,7 @@ export const submitCaseApiDataWales = {
     regionId: '7',
     caseManagementLocationNumber: '366572',
     orgNameFound: 'Yes',
-    claimantName: 'PCS_Local_Auth_Org_Testing',
+    claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
     legislativeCountry: 'Wales',
     claimantType: {
@@ -215,8 +208,8 @@ export const submitCaseApiDataWales = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: names.firstNames[0],
-      lastName: names.lastNames[0],
+      firstName: 'John',
+      lastName: 'Doe',
       addressKnown: 'NO',
       addressSameAsPossession: null,
       correspondenceAddress: {
@@ -234,8 +227,8 @@ export const submitCaseApiDataWales = {
       {
         value: {
           nameKnown: 'YES',
-          firstName: names.firstNames[1],
-          lastName: names.lastNames[1],
+          firstName: 'Peter',
+          lastName: 'Parker',
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
           correspondenceAddress: {
@@ -253,8 +246,8 @@ export const submitCaseApiDataWales = {
       {
         value: {
           nameKnown: 'YES',
-          firstName: names.firstNames[2],
-          lastName: names.lastNames[2],
+          firstName: 'Jen',
+          lastName: 'Parker',
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
           correspondenceAddress: {
@@ -321,7 +314,7 @@ export const submitCaseApiDataWales = {
     rentArrears_RecoveryAttempted: 'YES',
     rentArrears_RecoveryAttemptDetails: 'test attempts made',
     arrearsJudgmentWanted: 'YES',
-    claimantNamePossessiveForm: 'PCS_Local_Auth_Org_Testing’s',
+    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
     claimantCircumstancesSelect: 'YES',
     claimantCircumstancesDetails: 'claimant circumstances',
     hasDefendantCircumstancesInfo: 'YES',
