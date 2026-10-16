@@ -5,7 +5,7 @@ export const confirmIfTheseDocumentsRelateToAnApplication = {
   doTheseDocumentsQuestion: `Do these documents relate to an existing application?`,
   relatedToAdjournRadioOptionHidden: `Yes, the documents I’m uploading relate to General app (GA1) - Defendant 1: the application to adjourn the hearing - submitted on`,
   relatedToSetAsideRadioOptionHidden: `Yes, the documents I’m uploading relate to an application to set aside the order - submitted on`,
-  relatedToApplicationRadioOptionHidden: `Yes, the documents I’m uploading relate to General app (GA1) - Defendant 1: an application submitted on`,
+  relatedToApplicationRadioOptionHidden: `Yes, the documents I’m uploading relate to an application submitted on `,
   relatedToGAAdjournHidden : `Yes, the documents I’m uploading relate to General app (GA2) - Defendant 1: the application to adjourn the hearing - submitted on`,
   relatedSetAsideHidden: `Yes, the documents I’m uploading relate to General app (GA1) - Defendant 1: an application to set aside the order - submitted on`,
   noRadioOption: `No, the documents I’m uploading relate to the main claim or counterclaim`,

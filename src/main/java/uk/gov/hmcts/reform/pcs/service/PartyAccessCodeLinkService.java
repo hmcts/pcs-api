@@ -48,7 +48,6 @@ public class PartyAccessCodeLinkService {
             .getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
-            .filter(party -> !party.isRemoved())
             .toList();
 
         PartyEntity partyEntity = validator.validatePartyIsADefendant(defendantPartyEntities,partyId);

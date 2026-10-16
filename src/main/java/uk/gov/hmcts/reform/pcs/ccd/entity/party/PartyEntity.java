@@ -115,8 +115,6 @@ public class PartyEntity {
 
     private String pcqId;
 
-    private boolean removed;
-
     @Column(name = "dob")
     private LocalDate dateOfBirth;
 

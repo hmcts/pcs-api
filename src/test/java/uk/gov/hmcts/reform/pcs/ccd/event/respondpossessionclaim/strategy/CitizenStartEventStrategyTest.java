@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -102,8 +103,8 @@ class CitizenStartEventStrategyTest {
             rentArrearsView
         );
 
-        lenient().when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
-            .thenReturn(CaseDetailsTab.builder().build());
+        lenient().when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), 
+            any(Boolean.class))).thenReturn(CaseDetailsTab.builder().build());
     }
 
     @Test
@@ -131,9 +132,15 @@ class CitizenStartEventStrategyTest {
             .rentAmount("1200")
             .rentStatement(rentStatements)
             .build();
+        NoticeTabDetails noticeDetails = NoticeTabDetails.builder()
+            .noticeServed("Yes")
+            .noticeMethod("By email")
+            .noticeDate("11 May 2026, 5:02:00PM")
+            .build();
         CaseDetailsTab builtCaseDetailsTab = CaseDetailsTab.builder()
             .tenancyLicenceDetails(tenancyLicenceDetails)
             .rentArrearsDetails(rentArrearsDetails)
+            .noticeDetails(noticeDetails)
             .build();
 
         PartyEntity defendantEntity = PartyEntity.builder()
@@ -153,7 +160,8 @@ class CitizenStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(pcsCaseEntity), eq(false)))
+            .thenReturn(builtCaseDetailsTab);
 
         // When
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -164,6 +172,7 @@ class CitizenStartEventStrategyTest {
         assertThat(result.getCaseDetailsTab()).isNotNull();
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails()).isEqualTo(tenancyLicenceDetails);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails()).isEqualTo(rentArrearsDetails);
+        assertThat(result.getCaseDetailsTab().getNoticeDetails()).isEqualTo(noticeDetails);
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails().getTenancyLicenceDocuments())
             .isEqualTo(tenancyDocuments);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails().getRentStatement())
@@ -173,7 +182,7 @@ class CitizenStartEventStrategyTest {
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
         verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
-        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, pcsCaseEntity, false);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
@@ -206,9 +215,15 @@ class CitizenStartEventStrategyTest {
             .rentAmount("800")
             .rentStatement(rentStatements)
             .build();
+        NoticeTabDetails noticeDetails = NoticeTabDetails.builder()
+            .noticeServed("Yes")
+            .noticeMethod("First class post")
+            .noticeDate("10 May 2026")
+            .build();
         CaseDetailsTab builtCaseDetailsTab = CaseDetailsTab.builder()
             .tenancyLicenceDetails(tenancyLicenceDetails)
             .rentArrearsDetails(rentArrearsDetails)
+            .noticeDetails(noticeDetails)
             .build();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
@@ -237,7 +252,8 @@ class CitizenStartEventStrategyTest {
             .thenReturn(PCSCase.builder()
                             .possessionClaimResponse(draftResponse)
                             .build());
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(pcsCaseEntity), eq(false)))
+            .thenReturn(builtCaseDetailsTab);
 
         // When
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -247,6 +263,7 @@ class CitizenStartEventStrategyTest {
         assertThat(result.getCaseDetailsTab()).isNotNull();
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails()).isEqualTo(tenancyLicenceDetails);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails()).isEqualTo(rentArrearsDetails);
+        assertThat(result.getCaseDetailsTab().getNoticeDetails()).isEqualTo(noticeDetails);
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails().getTenancyLicenceDocuments())
             .isEqualTo(tenancyDocuments);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails().getRentStatement())
@@ -255,7 +272,7 @@ class CitizenStartEventStrategyTest {
         verify(possessionClaimDraftBuilder).buildCaseWithDraft(caseData, draftResponse);
         verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
-        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, pcsCaseEntity, false);
     }
 
     @Test

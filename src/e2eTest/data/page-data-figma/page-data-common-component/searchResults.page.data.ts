@@ -3,7 +3,7 @@ export const searchResults = {
     changeSearchLink: 'Change search',
     caseColumnHeader: 'Case',
     serviceColumnHeader: 'Service',
-    serviceLabel: 'PCS_Local_Auth_Org_Testing',
+    serviceLabel: 'Possession Claims',
     stateColumnHeader: 'State',
     stateLabel: 'Pending Case Issued',
     locationColumnHeader: 'Location',

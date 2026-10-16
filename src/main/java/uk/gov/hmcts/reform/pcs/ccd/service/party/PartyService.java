@@ -22,19 +22,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
-
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -49,8 +47,6 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
     private final OrganisationService organisationService;
-    private final FeatureToggleService featureToggleService;
-    private final PostcodeValidator postcodeValidator;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
         var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
@@ -101,10 +97,6 @@ public class PartyService {
 
             return !partyName.isBlank() ? partyName : PERSON_UNKNOWN_NAME;
         }
-    }
-
-    public boolean isActive(PartyEntity partyEntity) {
-        return !partyEntity.isRemoved();
     }
 
     public String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
@@ -187,7 +179,6 @@ public class PartyService {
                 "Organisation profile ID must be provided to create a case for organisation " + organisationId);
         }
         PartyEntity claimantParty = new PartyEntity();
-        claimantParty.setRemoved(false);
         claimantParty.setOrganisationId(organisationId);
         claimantParty.setOrganisationProfileId(organisationProfileId);
         claimantParty.setClaimCreator(true);
@@ -207,7 +198,6 @@ public class PartyService {
         requireNonNull(claimantInformation, "Claimant must be provided");
 
         setClaimantOrgName(claimantInformation, claimantParty);
-        claimantParty.setRemoved(false);
         setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileId);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
@@ -285,7 +275,6 @@ public class PartyService {
 
     private PartyEntity createDefendant(DefendantDetails defendantDetails) {
         PartyEntity defendantEntity = new PartyEntity();
-        defendantEntity.setRemoved(false);
 
         VerticalYesNo nameKnown = defendantDetails.getNameKnown();
         defendantEntity.setNameKnown(nameKnown);
@@ -332,7 +321,6 @@ public class PartyService {
     private PartyEntity createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
 
         PartyEntity underlesseeMortgageeEntity = new PartyEntity();
-        underlesseeMortgageeEntity.setRemoved(false);
 
         VerticalYesNo nameKnown = underlesseeMortgageeDetails.getNameKnown();
         underlesseeMortgageeEntity.setNameKnown(nameKnown);
@@ -351,18 +339,8 @@ public class PartyService {
     }
 
     private AddressEntity mapAddress(AddressUK address) {
-        if (address == null) {
-            return null;
-        }
-
-        if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
-            if (postcodeValidator.isValidPostcode(address.getPostCode())) {
-                return addressMapper.toAddressEntityAndNormalise(address);
-            }
-            return addressMapper.toCorrespondenceAddressEntity(address);
-        }
-
-        return addressMapper.toAddressEntityAndNormalise(address);
+        return address != null
+            ? addressMapper.toAddressEntityAndNormalise(address) : null;
     }
 
     private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {

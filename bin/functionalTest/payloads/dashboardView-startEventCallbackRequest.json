@@ -1,0 +1,8 @@
+{
+  "event_id": "dashboardView",
+  "case_details": {
+    "id": "${caseId}",
+    "case_type_id": "${caseTypeId}",
+    "data": {}
+  }
+}

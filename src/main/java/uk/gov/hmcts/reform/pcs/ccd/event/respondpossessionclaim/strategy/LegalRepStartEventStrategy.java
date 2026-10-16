@@ -37,6 +37,7 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
+       
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
@@ -68,6 +69,8 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
         pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
+
+        System.out.println("LegalRepStartEventStrategy pcsCase: " + pcsCase);
         return pcsCase;
     }
 

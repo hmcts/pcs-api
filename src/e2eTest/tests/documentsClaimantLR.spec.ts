@@ -98,7 +98,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
   });
 
   test('Claimant LR Upload documents when GenApps submitted - SET_ASIDE', async () => {
-    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToSetAsideRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });

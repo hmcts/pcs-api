@@ -78,14 +78,9 @@ public class PartiesView {
                                                     boolean isCitizen, String currentUserId) {
         List<ListValue<Party>> result = claimParties.stream()
             .filter(cp -> cp.getRole() == role)
-            .filter(cp -> isActive(cp.getParty()))
             .map(cp -> toListValue(cp, isCitizen, currentUserId))
             .toList();
         return result.isEmpty() ? null : result;
-    }
-
-    private boolean isActive(PartyEntity partyEntity) {
-        return !partyEntity.isRemoved();
     }
 
     private ListValue<Party> toListValue(ClaimPartyEntity claimPartyEntity, boolean isCitizen, String currentUserId) {

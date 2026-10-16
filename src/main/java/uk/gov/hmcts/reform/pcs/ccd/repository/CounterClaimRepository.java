@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,11 +15,5 @@ public interface CounterClaimRepository extends JpaRepository<CounterClaimEntity
         long caseReference,
         UUID partyId,
         CounterClaimState status
-    );
-
-    boolean existsByPcsCaseCaseReferenceAndPartyIdAndStatusIn(
-        long caseReference,
-        UUID partyId,
-        Collection<CounterClaimState> statuses
     );
 }

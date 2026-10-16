@@ -110,18 +110,19 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         SubmittedCase submittedCase = getSubmittedCase(caseReference, state);
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         if (hasUnsubmittedCaseData) {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
                     draft -> {
-                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
+                        caseTabView.setDraftCaseTabFields(pcsCase, draft, pcsCaseEntity);
                         },
-                    () -> caseTabView.setCaseTabFields(pcsCase)
+                    () -> caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity)
                 );
         } else {
-            caseTabView.setCaseTabFields(pcsCase);
+            caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity);
         }
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
@@ -272,7 +273,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         if (userId != null) {
             return pcsCaseEntity.getParties().stream()
                 .filter(party -> userId.equals(party.getIdamId()))
-                .filter(this::isActive)
                 .findFirst();
         } else {
             return Optional.empty();
@@ -294,14 +294,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
         return partyEntities.stream()
-            .filter(this::isActive)
             .map(entity -> modelMapper.map(entity, Party.class))
             .map(party -> ListValue.<Party>builder().id(party.getId()).value(party).build())
             .toList();
-    }
-
-    private boolean isActive(PartyEntity partyEntity) {
-        return !partyEntity.isRemoved();
     }
 
     private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

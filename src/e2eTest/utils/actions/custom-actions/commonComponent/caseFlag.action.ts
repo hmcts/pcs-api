@@ -209,14 +209,13 @@ export class CaseFlagAction implements IAction {
     }
   }
 
-  private async canCreatePartyLevelFlag(option: actionRecord, page: Page): Promise<void> {
-    let partyName = option.name as string
-    if (option.condition == 'yes') {
+  private async canCreatePartyLevelFlag(option: actionData, page: Page): Promise<void> {
+    if (option == 'yes') {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
       await performAction('clickButton', caseSummary.go);
       await performAction('whereShouldThisFlagBeAdded', {
         flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
-        flagLevelOption: `${partyName} ${whereShouldThisFlagBeAdded.respondentHiddenRadioOption}`,
+        flagLevelOption: whereShouldThisFlagBeAdded.respondentRadioOption,
         continueButton: whereShouldThisFlagBeAdded.continueButton
       });
       await performAction('selectFlagType', {
@@ -274,7 +273,7 @@ export class CaseFlagAction implements IAction {
       await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
       await performAction('clickButton', manageCaseFlags.goButton);
       await performAction('manageCaseFlags', {
-        flagOption: manageCaseFlags.respondentHiddenRadioOption,
+        flagOption: manageCaseFlags.respondentRadioOption,
         continueButton: manageCaseFlags.continueButton
       });
       await performAction('makeFlagInactive', {

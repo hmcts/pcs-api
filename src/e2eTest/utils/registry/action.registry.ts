@@ -207,8 +207,7 @@ export class ActionRegistry {
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
-    ['removeFile', new RemoveFileAction()],
-    ['getAllPartyDetails', new CreateCaseAction()],    
+    ['removeFile', new RemoveFileAction()],    
   ]);
 
   static getAction(actionName: string): IAction {

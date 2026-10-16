@@ -35,5 +35,4 @@ export * from './checkYourAnswersEditHearing.page.data';
 export * from './confirmEditHearing.page.data';
 export * from './cancelHearing.page.data';
 export * from './checkYourAnswersCancelHearing.page.data';
-export * from './confirmCancelHearing.page.data';
-export * from './checkFullPartyDetails.page.data';
+export * from './confirmCancelHearing.page.data'

@@ -1,9 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -20,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Optional;
 
@@ -31,17 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SubmitResponseFactoryTest {
     private static final long CASE_REFERENCE = 1234567890L;
 
-    @Mock
-    private FeatureToggleService featureToggleService;
-
-    private SubmitResponseFactory submitResponseFactory;
-
-    @BeforeEach
-    void setUp() {
-        submitResponseFactory = new SubmitResponseFactory(
-            new AddressValidator(new PostcodeValidator(), featureToggleService)
-        );
-    }
+    private final SubmitResponseFactory submitResponseFactory =
+        new SubmitResponseFactory(new AddressValidator(new PostcodeValidator()));
 
     @Test
     void validate_WithNullPossessionClaimResponse_ReturnsError() {
