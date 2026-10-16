@@ -797,8 +797,8 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     });
 });
 
-test.describe('[Enforcement - Delete Draft Application] @enforcement', () => {
-  test('As a Claimant user, the enforcement draft application can be deleted after selecting a warrant of possession', async () => {
+test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a warrant of possession @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -812,7 +812,7 @@ test.describe('[Enforcement - Delete Draft Application] @enforcement', () => {
     await performAction('deleteDraftApplication');
   });
 
-  test('As a Claimant user, the enforcement draft application can be deleted after selecting a writ of possession', async () => {
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a writ of possession @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
