@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantOfRestitutionRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDocumentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WarrantOfRestitutionMapper;
 
@@ -46,7 +46,7 @@ class WarrantOfRestitutionStrategyTest {
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
-    private DocumentService documentService;
+    private EnforcementDocumentService enforcementDocumentService;
 
     @Test
     void shouldProcessWarrantOfRestitutionDetailsAndSaveToRepository() {
@@ -116,7 +116,7 @@ class WarrantOfRestitutionStrategyTest {
         when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
                 .thenReturn(warrantOfRestitutionEntity);
         when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
-        when(documentService.createAllDocuments(enforcementOrder)).thenReturn(documentEntities);
+        when(enforcementDocumentService.createAllDocuments(enforcementOrder)).thenReturn(documentEntities);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
