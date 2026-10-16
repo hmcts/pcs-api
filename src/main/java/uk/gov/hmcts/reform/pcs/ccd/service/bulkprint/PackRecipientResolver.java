@@ -27,6 +27,7 @@ public class PackRecipientResolver {
     private final ClaimPackSelector claimPackSelector;
     private final DefencePackSelector defencePackSelector;
     private final GenAppPackSelector genAppPackSelector;
+    private final HearingNoticeSelector hearingNoticeSelector;
     private final RecipientAddressResolver recipientAddressResolver;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final AddressMapper addressMapper;
@@ -35,6 +36,7 @@ public class PackRecipientResolver {
                                  ClaimPackSelector claimPackSelector,
                                  DefencePackSelector defencePackSelector,
                                  GenAppPackSelector genAppPackSelector,
+                                 HearingNoticeSelector hearingNoticeSelector,
                                  RecipientAddressResolver recipientAddressResolver,
                                  DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                  AddressMapper addressMapper) {
@@ -42,6 +44,7 @@ public class PackRecipientResolver {
         this.claimPackSelector = claimPackSelector;
         this.defencePackSelector = defencePackSelector;
         this.genAppPackSelector = genAppPackSelector;
+        this.hearingNoticeSelector = hearingNoticeSelector;
         this.recipientAddressResolver = recipientAddressResolver;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.addressMapper = addressMapper;
@@ -74,6 +77,15 @@ public class PackRecipientResolver {
             .orElseGet(List::of);
     }
 
+    @Transactional(readOnly = true)
+    public List<ResolvedRecipient> resolveHearingNoticeRecipients(UUID caseId) {
+        return pcsCaseRepository.findById(caseId)
+            .map(pcsCase -> hearingNoticeSelector.findHearingNoticePackCandidates(pcsCase).stream()
+                .map(candidate -> resolveHearingNoticeRecipient(pcsCase, candidate))
+                .toList())
+            .orElseGet(List::of);
+    }
+
     private ResolvedRecipient resolveClaimRecipient(PcsCaseEntity pcsCase, ClaimPackCandidate candidate) {
         PartyEntity recipient = candidate.party();
         PartyRole role = candidate.recipientType();
@@ -102,6 +114,15 @@ public class PackRecipientResolver {
         PartyEntity recipient = candidate.recipient();
         PartyRole role = candidate.role();
         return new ResolvedRecipient(pcsCase, recipient, LetterType.GEN_APP_PACK, candidate.documents(),
+            recipientAddressResolver.resolveDisplayName(recipient),
+            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
+    }
+
+    private ResolvedRecipient resolveHearingNoticeRecipient(PcsCaseEntity pcsCase,
+                                                            HearingNoticePackCandidate candidate) {
+        PartyEntity recipient = candidate.recipient();
+        PartyRole role = candidate.role();
+        return new ResolvedRecipient(pcsCase, recipient, LetterType.HEARING_NOTICE_PACK, candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
             correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
     }

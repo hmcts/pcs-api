@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
@@ -20,9 +21,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -56,8 +57,6 @@ public class HearingServiceTest {
     private PcsCaseService pcsCaseService;
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
-    @Mock
     private HearingRepository hearingRepository;
     @Mock
     private PartyRepository partyRepository;
@@ -65,16 +64,19 @@ public class HearingServiceTest {
     @Mock
     private PartyService partyService;
 
+    @Mock
+    private DocumentRepository documentRepository;
+
     private HearingService hearingService;
 
     @BeforeEach
     void setUp() {
         hearingService = new HearingService(
             pcsCaseService,
-            pcsCaseRepository,
             hearingRepository,
             partyRepository,
             partyService,
+            documentRepository,
             FIXED_UK_CLOCK
         );
     }
@@ -121,14 +123,12 @@ public class HearingServiceTest {
         // When
         hearingService.addHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-
-        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(persistedCaseEntity.getHearings()).hasSize(1);
+        ArgumentCaptor<HearingEntity> hearingEntityCaptor = ArgumentCaptor.forClass(HearingEntity.class);
+        verify(hearingRepository).save(hearingEntityCaptor.capture());
 
         // Then
-        HearingEntity hearingEntity = persistedCaseEntity.getHearings().getFirst();
+        HearingEntity hearingEntity = hearingEntityCaptor.getValue();
+        assertThat(pcsCaseEntity.getHearings()).containsExactly(hearingEntity);
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.OTHER);
         assertThat(hearingEntity.getOtherHearingType()).isEqualTo("other hearing type");
         assertThat(hearingEntity.getNoticeWording()).isEqualTo(HearingNoticeWording.ADJ);
@@ -142,6 +142,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("additional information");
         assertThat(hearingEntity.getHearingNoticeParties()).hasSize(1);
         assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity);
+        assertThat(hearingEntity.getNoticeNumber()).isEqualTo(1);
     }
 
     @Test
@@ -183,14 +184,12 @@ public class HearingServiceTest {
         // When
         hearingService.addHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-
-        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(persistedCaseEntity.getHearings()).hasSize(1);
+        ArgumentCaptor<HearingEntity> hearingEntityCaptor = ArgumentCaptor.forClass(HearingEntity.class);
+        verify(hearingRepository).save(hearingEntityCaptor.capture());
 
         // Then
-        HearingEntity hearingEntity = persistedCaseEntity.getHearings().getFirst();
+        HearingEntity hearingEntity = hearingEntityCaptor.getValue();
+        assertThat(pcsCaseEntity.getHearings()).containsExactly(hearingEntity);
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.OTHER);
         assertThat(hearingEntity.getOtherHearingType()).isEqualTo("other hearing type");
         assertThat(hearingEntity.getNoticeWording()).isEqualTo(HearingNoticeWording.ADJ);
@@ -235,11 +234,11 @@ public class HearingServiceTest {
         // When
         hearingService.addHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        ArgumentCaptor<HearingEntity> hearingEntityCaptor = ArgumentCaptor.forClass(HearingEntity.class);
+        verify(hearingRepository).save(hearingEntityCaptor.capture());
 
         // Then
-        HearingEntity hearingEntity = pcsCaseEntityCaptor.getValue().getHearings().getFirst();
+        HearingEntity hearingEntity = hearingEntityCaptor.getValue();
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.APPLICATION);
         assertThat(hearingEntity.getOtherHearingType()).isNull();
         assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.NO);
@@ -312,15 +311,14 @@ public class HearingServiceTest {
         // When
         hearingService.updateHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        ArgumentCaptor<HearingEntity> hearingEntityCaptor = ArgumentCaptor.forClass(HearingEntity.class);
+        verify(hearingRepository).save(hearingEntityCaptor.capture());
 
-        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(persistedCaseEntity.getHearings()).hasSize(2);
-        assertThat(persistedCaseEntity.getHearings().getFirst()).isSameAs(nonSelectedHearing);
+        assertThat(pcsCaseEntity.getHearings()).hasSize(2);
+        assertThat(pcsCaseEntity.getHearings().getFirst()).isSameAs(nonSelectedHearing);
 
         // Then
-        HearingEntity hearingEntity = persistedCaseEntity.getHearings().getLast();
+        HearingEntity hearingEntity = hearingEntityCaptor.getValue();
         assertThat(hearingEntity.getId()).isEqualTo(2);
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.OTHER);
         assertThat(hearingEntity.getOtherHearingType()).isEqualTo("updated other hearing type");
@@ -383,11 +381,11 @@ public class HearingServiceTest {
         // When
         hearingService.updateHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        ArgumentCaptor<HearingEntity> hearingEntityCaptor = ArgumentCaptor.forClass(HearingEntity.class);
+        verify(hearingRepository).save(hearingEntityCaptor.capture());
 
         // Then
-        HearingEntity hearingEntity = pcsCaseEntityCaptor.getValue().getHearings().getFirst();
+        HearingEntity hearingEntity = hearingEntityCaptor.getValue();
         assertThat(hearingEntity.getId()).isEqualTo(10);
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.APPLICATION);
         assertThat(hearingEntity.getOtherHearingType()).isNull();
@@ -1016,13 +1014,12 @@ public class HearingServiceTest {
         // When
         hearingService.updateHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        ArgumentCaptor<HearingEntity> hearingEntityCaptor = ArgumentCaptor.forClass(HearingEntity.class);
+        verify(hearingRepository).save(hearingEntityCaptor.capture());
 
         // Then
-        assertThat(
-            pcsCaseEntityCaptor.getValue().getHearings().getFirst().getHearingNoticeParties().getFirst().getParty()
-        ).isEqualTo(partyEntity);
+        assertThat(hearingEntityCaptor.getValue().getHearingNoticeParties().getFirst().getParty())
+            .isEqualTo(partyEntity);
     }
 
     @Test
@@ -1067,10 +1064,8 @@ public class HearingServiceTest {
 
         hearingService.updateHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-
-        assertThat(pcsCaseEntityCaptor.getValue().getHearings().getFirst().getHearingNoticeParties())
+        verify(hearingRepository).save(selectedHearing);
+        assertThat(selectedHearing.getHearingNoticeParties())
             .extracting(HearingNoticePartyEntity::getParty)
             .containsExactly(activeParty);
     }
@@ -1190,15 +1185,14 @@ public class HearingServiceTest {
         // When
         hearingService.updateHearing(caseReference, pcsCase);
 
-        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        ArgumentCaptor<HearingEntity> hearingEntityCaptor = ArgumentCaptor.forClass(HearingEntity.class);
+        verify(hearingRepository).save(hearingEntityCaptor.capture());
 
-        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(persistedCaseEntity.getHearings()).hasSize(2);
-        assertThat(persistedCaseEntity.getHearings().getFirst()).isSameAs(nonSelectedHearing);
+        assertThat(pcsCaseEntity.getHearings()).hasSize(2);
+        assertThat(pcsCaseEntity.getHearings().getFirst()).isSameAs(nonSelectedHearing);
 
         // Then
-        HearingEntity hearingEntity = persistedCaseEntity.getHearings().getLast();
+        HearingEntity hearingEntity = hearingEntityCaptor.getValue();
         assertThat(hearingEntity.getId()).isEqualTo(2);
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.OTHER);
         assertThat(hearingEntity.getOtherHearingType()).isEqualTo("updated other hearing type");
@@ -1214,5 +1208,71 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getHearingNoticeParties()).hasSize(2);
         assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity1);
         assertThat(hearingEntity.getHearingNoticeParties().getLast().getParty()).isEqualTo(partyEntity2);
+    }
+
+    @Test
+    void shouldGiveAnEditedHearingTheNextNoticeNumberOnTheCase() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.POSSESSION)
+            .date(LocalDateTime.of(2026, 3, 4, 10, 15, 0))
+            .durationDays(0)
+            .durationHours(1f)
+            .durationMinutes(0f)
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.NO)
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("1")
+            .hearing(hearing)
+            .build();
+
+        HearingEntity editedHearing = HearingEntity.builder().id(1).noticeNumber(1).build();
+        HearingEntity otherHearing = HearingEntity.builder().id(2).noticeNumber(2).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(editedHearing, otherHearing))
+            .build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(documentRepository.existsByHearing_IdAndType(1, DocumentType.NOTICE_OF_HEARING)).thenReturn(true);
+
+        // When
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        // Then
+        assertThat(editedHearing.getNoticeNumber()).isEqualTo(3);
+        assertThat(otherHearing.getNoticeNumber()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldKeepNoticeNumberWhenEditedBeforeNoticeIsGenerated() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.POSSESSION)
+            .date(LocalDateTime.of(2026, 3, 4, 10, 15, 0))
+            .durationDays(0)
+            .durationHours(1f)
+            .durationMinutes(0f)
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.NO)
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("1")
+            .hearing(hearing)
+            .build();
+
+        HearingEntity editedHearing = HearingEntity.builder().id(1).noticeNumber(1).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(editedHearing))
+            .build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(documentRepository.existsByHearing_IdAndType(1, DocumentType.NOTICE_OF_HEARING)).thenReturn(false);
+
+        // When
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        // Then
+        assertThat(editedHearing.getNoticeNumber()).isEqualTo(1);
     }
 }

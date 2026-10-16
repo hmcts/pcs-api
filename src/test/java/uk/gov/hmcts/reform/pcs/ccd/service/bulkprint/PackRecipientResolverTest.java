@@ -45,6 +45,8 @@ class PackRecipientResolverTest {
     @Mock
     private GenAppPackSelector genAppPackSelector;
     @Mock
+    private HearingNoticeSelector hearingNoticeSelector;
+    @Mock
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
@@ -236,6 +238,37 @@ class PackRecipientResolverTest {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
 
         assertThat(underTest.resolveGenAppRecipients(CASE_ID)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Resolves a hearing notice with HEARING_NOTICE_PACK and the defendant's correspondence address")
+    void shouldResolveHearingNoticeRecipientWithHearingNoticeLetterType() {
+        AddressUK addressUk = AddressUK.builder().addressLine1("42 Renters Way").build();
+        DocumentEntity notice = DocumentEntity.builder().id(UUID.randomUUID()).build();
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(hearingNoticeSelector.findHearingNoticePackCandidates(pcsCase))
+            .thenReturn(List.of(new HearingNoticePackCandidate(PartyRole.DEFENDANT, defendant, List.of(notice))));
+        when(recipientAddressResolver.resolveDisplayName(defendant)).thenReturn("Bob Tenant");
+        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant, pcsCase.getPropertyAddress()))
+            .thenReturn(addressUk);
+
+        List<ResolvedRecipient> resolved = underTest.resolveHearingNoticeRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.recipient()).isEqualTo(defendant);
+            assertThat(recipient.letterType()).isEqualTo(LetterType.HEARING_NOTICE_PACK);
+            assertThat(recipient.recipientName()).isEqualTo("Bob Tenant");
+            assertThat(recipient.address()).isEqualTo(addressUk);
+            assertThat(recipient.documents()).containsExactly(notice);
+        });
+    }
+
+    @Test
+    @DisplayName("Returns no hearing notice recipients when the case is not found")
+    void shouldReturnNoHearingNoticeRecipientsWhenCaseNotFound() {
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
+
+        assertThat(underTest.resolveHearingNoticeRecipients(CASE_ID)).isEmpty();
     }
 
     private void stubDefenceCandidate(List<DocumentEntity> documents) {

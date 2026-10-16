@@ -26,6 +26,9 @@ public final class FormFieldFormatter {
     }
 
     private static final DateTimeFormatter LONG_DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
+    private static final DateTimeFormatter TIME_WITH_MINUTES = DateTimeFormatter.ofPattern("h:mma", Locale.UK);
+    private static final DateTimeFormatter TIME_ON_THE_HOUR = DateTimeFormatter.ofPattern("ha", Locale.UK);
+    private static final DateTimeFormatter MONTH_AND_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.UK);
 
     public static boolean isPopulated(String text) {
         return text != null && !text.isBlank();
@@ -66,6 +69,33 @@ public final class FormFieldFormatter {
     // Long date, e.g. "10 January 2024". Null-safe.
     public static String formatLongDate(LocalDate date) {
         return date == null ? null : date.format(LONG_DATE_FORMAT);
+    }
+
+    // Short time, e.g. "3:40pm", or "10am" on the hour
+    public static String formatShortTime(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+        DateTimeFormatter timeFormat = dateTime.getMinute() == 0 ? TIME_ON_THE_HOUR : TIME_WITH_MINUTES;
+        return dateTime.format(timeFormat).toLowerCase(Locale.UK);
+    }
+
+    // Ordinal date, e.g. "15th August 2026"
+    public static String formatOrdinalDate(LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+        int day = date.getDayOfMonth();
+        return "%d%s %s".formatted(day, ordinalSuffix(day), date.format(MONTH_AND_YEAR));
+    }
+
+    private static String ordinalSuffix(int day) {
+        return switch (day) {
+            case 1, 21, 31 -> "st";
+            case 2, 22 -> "nd";
+            case 3, 23 -> "rd";
+            default -> "th";
+        };
     }
 
     // A stored UTC timestamp rendered as the UK calendar date, so a value just after midnight BST
