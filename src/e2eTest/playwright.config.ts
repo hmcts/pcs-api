@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import {defineConfig, devices} from '@playwright/test';
+import {defineBddConfig} from 'playwright-bdd';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
 export const VERY_SHORT_TIMEOUT = 1000;
@@ -31,6 +32,16 @@ function resolveWorkers(): number {
   const parsed = Number(process.env.E2E_WORKERS?.trim());
   return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
 }
+
+// Enforcement BDD: `yarn bddgen` turns the .feature files into specs under .features-gen/ (gitignored).
+// Only the enforcement-bdd project reads them; projects using testDir 'tests/' never pick them up.
+const ENFORCEMENT_BDD_DIR = 'tests/tests-enforcement/bdd';
+const enforcementBddTestDir = defineBddConfig({
+  features: `${ENFORCEMENT_BDD_DIR}/features/**/*.feature`,
+  steps: [`${ENFORCEMENT_BDD_DIR}/fixtures/*.ts`, `${ENFORCEMENT_BDD_DIR}/steps/**/*.ts`],
+  featuresRoot: `${ENFORCEMENT_BDD_DIR}/features`,
+  outputDir: '.features-gen/enforcement',
+});
 
 export default defineConfig({
   testDir: 'tests/',
@@ -66,6 +77,20 @@ export default defineConfig({
   
     {
       name: 'chrome',
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        trace: 'on-first-retry',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: !!process.env.CI,
+      },
+    },
+    {
+      name: 'enforcement-bdd',
+      testDir: enforcementBddTestDir,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
