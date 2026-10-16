@@ -13,7 +13,11 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -39,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,7 +87,13 @@ public class DocumentService {
      * remains for tests and callers that need persisted entities in one step.
      */
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
+        List<DocumentEntity> documents = buildDocumentEntitiesForCase(pcsCase);
+
+        if (documents.isEmpty()) {
+            return List.of();
+        }
+
+        return documentRepository.saveAll(documents);
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
@@ -94,7 +105,7 @@ public class DocumentService {
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = new ArrayList<>();
 
-        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
+        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRentArrears())
@@ -158,9 +169,53 @@ public class DocumentService {
                 .toList();
     }
 
-    private List<DocumentHolder> mapAdditionalDocumentsWithType(
-            List<ListValue<AdditionalDocument>> documents) {
+    private List<DocumentHolder> mapAdditionalDocumentsWithType(PCSCase pcsCase) {
+        
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            
+            if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocumentsWales())) {
+                return mapAdditionalDocumentsWithType(
+                    pcsCase.getAdditionalDocumentsWales(),
+                    AdditionalDocumentWales::getDocumentType
+                );
+            } else if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
+                // fallback to additional documents
+                return mapLegacyAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments());
+            }
+            
+        } else {
+            if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocumentsEngland())) {
+                return mapAdditionalDocumentsWithType(
+                    pcsCase.getAdditionalDocumentsEngland(),
+                    AdditionalDocumentEngland::getDocumentType
+                );
+            } else if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
+                // fallback to additional documents
+                return mapLegacyAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments());
+            }
+        }
 
+        return Collections.emptyList();
+    }
+
+    private <T> List<DocumentHolder> mapAdditionalDocumentsWithType(
+        List<ListValue<T>> documents,
+        java.util.function.Function<T, ? extends Enum<?>> documentTypeExtractor
+    ) {
+        if (CollectionUtils.isEmpty(documents)) {
+            return Collections.emptyList();
+        }
+
+        return ListValueUtils.unwrapListItems(documents).stream()
+            .map(doc -> {
+                DocumentHolder additionalDocument = getAdditionalDocument(doc);
+                additionalDocument.setType(getAdditionalDocumentType(documentTypeExtractor.apply(doc)));
+                return additionalDocument;
+            })
+            .toList();
+    }
+
+    private List<DocumentHolder> mapLegacyAdditionalDocumentsWithType(List<ListValue<AdditionalDocument>> documents) {
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
         }
@@ -173,6 +228,39 @@ public class DocumentService {
                 .description(doc.getDescription())
                 .build())
             .toList();
+    }
+
+    private DocumentHolder getAdditionalDocument(Object document) {
+        if (document instanceof AdditionalDocumentEngland englandDocument) {
+            return DocumentHolder.builder()
+                .document(englandDocument.getDocument())
+                .description(englandDocument.getDescription())
+                .build();
+        }
+
+        if (document instanceof AdditionalDocumentWales walesDocument) {
+            return DocumentHolder.builder()
+                .document(walesDocument.getDocument())
+                .description(walesDocument.getDescription())
+                .build();
+        }
+
+        throw new IllegalArgumentException("Unsupported additional document type: " + document.getClass().getName());
+    }
+
+    private DocumentType getAdditionalDocumentType(Enum<?> documentType) {
+        if (documentType == null) {
+            return null;
+        }
+
+        if (documentType instanceof AdditionalDocumentType
+            || documentType instanceof AdditionalDocumentTypeEngland
+            || documentType instanceof AdditionalDocumentTypeWales) {
+            return DocumentType.valueOf(documentType.name());
+        }
+
+        throw new IllegalArgumentException("Unsupported additional document type enum: " 
+            + documentType.getClass().getName());
     }
 
     private List<DocumentHolder> mapEvidenceOfDefendantsDocumentsWithType(
@@ -214,6 +302,32 @@ public class DocumentService {
                     + "." + FilenameUtils.getExtension(uploadedFilename));
         });
 
+    }
+
+    public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
+        if (additionalType == null) {
+            return null;
+        }
+
+        return switch (additionalType) {
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
+            case ENERGY_PERFORMANCE_CERTIFICATE -> DocumentType.ENERGY_PERFORMANCE_CERTIFICATE;
+            case GAS_SAFETY_CERTIFICATE -> DocumentType.GAS_SAFETY_CERTIFICATE;
+            case EICR_REPORT -> DocumentType.EICR_REPORT;
+            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
+            case CERTIFICATE_OF_SERVICE -> DocumentType.CERTIFICATE_OF_SERVICE;
+            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
+            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
+            case POSSESSION_NOTICE -> DocumentType.POSSESSION_NOTICE;
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION;
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case INSPECTION_OR_REPORT -> DocumentType.INSPECTION_OR_REPORT;
+            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
+            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
+            case OTHER -> DocumentType.OTHER;
+        };
     }
 
     public List<DocumentEntity> linkAdditionalDocumentsToCase(

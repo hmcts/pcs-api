@@ -17,8 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 public class AdditionalDocument {
 
     @CCD(
-            label = "Type of document",
-            access = {DefendantAccess.class}
+        label = "Type of document",
+        access = {DefendantAccess.class}
     )
     private DynamicList documentType;
 
