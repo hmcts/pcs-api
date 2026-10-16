@@ -12,7 +12,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,7 +50,7 @@ class EnforcementOrderViewTest {
         // Then
         if (state == State.CASE_ISSUED) {
             verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-            assertThat(pcsCase.getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
+            assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
             if (hasDraftData) {
                 verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
             }
@@ -68,6 +70,68 @@ class EnforcementOrderViewTest {
         // Then
         verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
         assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    @Test
+    void shouldKeepViewDerivedFieldsWhenDraftReplacesEnforcementOrder() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        EnforcementOrder draftOrder = EnforcementOrder.builder()
+            .deleteDraftApplication(YesOrNo.NO)
+            .confirmEvictionSummaryMarkup("stale draft markup")
+            .showConfirmEvictionJourney(YesOrNo.NO)
+            .formattedDefendantNames("draft defendant names")
+            .formattedPropertyAddress("draft property address")
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder().enforcementOrder(draftOrder).build()));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder()
+                                  .confirmEvictionSummaryMarkup("case view markup")
+                                  .showConfirmEvictionJourney(YesOrNo.YES)
+                                  .build())
+            .build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        EnforcementOrder result = pcsCase.getEnforcementOrder();
+        assertThat(result.getDeleteDraftApplication()).isEqualTo(YesOrNo.NO);
+        assertThat(result.getConfirmEvictionSummaryMarkup()).isEqualTo("case view markup");
+        assertThat(result.getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getFormattedDefendantNames()).isNull();
+        assertThat(result.getFormattedPropertyAddress()).isNull();
+        assertThat(result.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldKeepCurrentEnforcementOrderWhenDraftHasNone() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder().build()));
+
+        EnforcementOrder currentOrder = EnforcementOrder.builder()
+            .confirmEvictionSummaryMarkup("case view markup")
+            .showConfirmEvictionJourney(YesOrNo.YES)
+            .formattedDefendantNames("defendant names")
+            .formattedPropertyAddress("property address")
+            .build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(currentOrder).build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        EnforcementOrder result = pcsCase.getEnforcementOrder();
+        assertThat(result).isSameAs(currentOrder);
+        assertThat(result.getConfirmEvictionSummaryMarkup()).isEqualTo("case view markup");
+        assertThat(result.getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getFormattedDefendantNames()).isEqualTo("defendant names");
+        assertThat(result.getFormattedPropertyAddress()).isEqualTo("property address");
+        assertThat(result.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
     }
 
     private static Stream<Arguments> enforcementDraftScenarios() {

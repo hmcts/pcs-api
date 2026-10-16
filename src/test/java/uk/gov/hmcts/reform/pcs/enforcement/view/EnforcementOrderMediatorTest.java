@@ -69,9 +69,10 @@ class EnforcementOrderMediatorTest {
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
-        assertEquals(YesOrNo.YES, pcsCase.getShowConfirmEvictionJourney());
-        assertNotNull(pcsCase.getConfirmEvictionSummaryMarkup());
-        assertTrue(pcsCase.getConfirmEvictionSummaryMarkup().contains("Confirm the eviction date"));
+        assertEquals(YesOrNo.YES, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNotNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains("Confirm the eviction date"));
         verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
@@ -88,9 +89,10 @@ class EnforcementOrderMediatorTest {
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
-        assertEquals(YesOrNo.NO, pcsCase.getShowConfirmEvictionJourney());
-        assertNotNull(pcsCase.getConfirmEvictionSummaryMarkup());
-        assertTrue(pcsCase.getConfirmEvictionSummaryMarkup().contains("You cannot enforce the order at the moment"));
+        assertEquals(YesOrNo.NO, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNotNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains("You cannot enforce the order at the moment"));
         verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
@@ -110,7 +112,7 @@ class EnforcementOrderMediatorTest {
         // Then
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
         String expectedDate = bailiffDate.atZone(ZoneId.of("UTC")).format(outputFormatter);
-        assertTrue(pcsCase.getConfirmEvictionSummaryMarkup().contains(expectedDate));
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup().contains(expectedDate));
     }
 
     @Test
@@ -130,7 +132,23 @@ class EnforcementOrderMediatorTest {
         // Then
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
         String expectedDeadline = bailiffDate.atZone(ZoneId.of("UTC")).minusHours(72).format(outputFormatter);
-        assertTrue(pcsCase.getConfirmEvictionSummaryMarkup().contains(expectedDeadline));
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup().contains(expectedDeadline));
+    }
+
+    @Test
+    void shouldCreateEnforcementOrderWhenCaseHasNone() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(null)));
+        PCSCase caseWithoutEnforcementOrder = PCSCase.builder().build();
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, caseWithoutEnforcementOrder);
+
+        // Then
+        assertNotNull(caseWithoutEnforcementOrder.getEnforcementOrder());
+        assertEquals(YesOrNo.NO, caseWithoutEnforcementOrder.getEnforcementOrder().getShowConfirmEvictionJourney());
     }
 
     @Test
@@ -139,8 +157,8 @@ class EnforcementOrderMediatorTest {
         underTest.handleEnforcementRequirements(null, pcsCase);
 
         // Then
-        assertNull(pcsCase.getShowConfirmEvictionJourney());
-        assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
+        assertNull(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
         verify(enforcementOrderRepository, never()).findByClaimId(any());
     }
 
@@ -153,8 +171,8 @@ class EnforcementOrderMediatorTest {
         underTest.handleEnforcementRequirements(pcsCaseEntity, null);
 
         // Then
-        assertNull(pcsCase.getShowConfirmEvictionJourney());
-        assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
+        assertNull(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
         verify(enforcementOrderRepository, never()).findByClaimId(any());
     }
 
@@ -230,8 +248,8 @@ class EnforcementOrderMediatorTest {
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
-        assertNull(pcsCase.getShowConfirmEvictionJourney());
-        assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
+        assertNull(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
         verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
