@@ -311,7 +311,7 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
 export async function signStatementOfTruth(type: 'warrant of possession' | 'writ of possession'): Promise<void> {
   await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
   const signedByLegalRepresentative = {
-    question: statementOfTruth.completedByLabel,
+    question: statementOfTruth.completedByParagraph,
     option: statementOfTruth.claimantLegalRepresentativeRadioOption,
     option1: statementOfTruth.signThisStatementHiddenCheckbox,
     label: statementOfTruth.fullNameHiddenTextLabel,
