@@ -5,23 +5,25 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-public class SuspendedOrderPage implements CcdPageConfiguration {
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
+public class MissedPaymentsPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("suspendedOrder")
-            .pageLabel("Suspended order")
+            .page("missedPayments")
+            .pageLabel("Missed payments")
+            .label("missedPayments-line-separator", "---")
             .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
-            .label("suspendedOrder-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
-            .mandatory(WarrantDetails::getIsSuspendedOrder)
+            .mandatory(WarrantDetails::getDefendantMissedPayments)
             .done()
             .done()
-            .label("suspendedOrder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("missedPayments-save-and-return", SAVE_AND_RETURN);
     }
+
 }

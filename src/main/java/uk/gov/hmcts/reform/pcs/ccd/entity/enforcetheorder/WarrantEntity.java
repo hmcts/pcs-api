@@ -21,7 +21,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -33,6 +33,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "enf_warrant")
+@SuppressWarnings({"java:S1133", "java:S6355"})
 public class WarrantEntity {
 
     @Id
@@ -44,16 +45,41 @@ public class WarrantEntity {
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesNoNotSure defendantInBreathingSpace;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo defendantMissedPayments;
+
     // UI Control Flags
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
-    // Language & Status
+    /**
+     * Indicates whether the order is suspended.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isSuspendedOrder;
@@ -113,27 +139,6 @@ public class WarrantEntity {
 
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;
-
-    // Statement of Truth
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private StatementOfTruthCompletedBy completedBy;
-
-    private String agreementClaimant;
-
-    private String fullNameClaimant;
-
-    private String positionClaimant;
-
-    private String agreementLegalRep;
-
-    private String fullNameLegalRep;
-
-    private String firmNameLegalRep;
-
-    private String positionLegalRep;
-
-    private String certification;
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;

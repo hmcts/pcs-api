@@ -8,29 +8,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.RiskDetailsMapper;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.createExpectedRiskProfileEntity;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class RiskProfileServiceTest {
 
     @Mock
     private RiskDetailsMapper riskProfileMapper;
-    @Mock
-    private RiskProfileRepository riskProfileRepository;
     @InjectMocks
     private RiskProfileService underTest;
 
     @Test
     void shouldProcessRiskDetailsSuccessfully() {
         // Given
-        EnforcementOrderEntity enforcementOrderEntity = mock(EnforcementOrderEntity.class);
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
 
         EnforcementOrder enforcementOrder = mock(EnforcementOrder.class);
         RiskProfileEntity riskProfileEntity = createExpectedRiskProfileEntity(enforcementOrderEntity);
@@ -40,6 +38,6 @@ class RiskProfileServiceTest {
         underTest.processRisk(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        verify(riskProfileRepository).save(riskProfileEntity);
+        assertThat(enforcementOrderEntity.getRiskProfileDetails()).isEqualTo(riskProfileEntity);
     }
 }

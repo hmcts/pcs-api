@@ -54,13 +54,8 @@ class WarrantPageConfigurerTest extends BasePageTest {
 
     @Mock
     private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
-
     @Mock
     private AdditionalInformationPage additionalInformationPage;
-
-    @Mock
-    private LandRegistryFeesPage landRegistryFeesPage;
-
     @Mock
     private DefendantsDOBPage defendantsDOBPage;
 
@@ -80,12 +75,13 @@ class WarrantPageConfigurerTest extends BasePageTest {
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
 
+        verifyAndCount(inOrder, pageBuilder, BreathingSpacePage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, MissedPaymentsPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, CannotApplyForWarrantInfoPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmIfDOBKnownPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, defendantsDOBPage, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, PeopleYouWantToEvictPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LivingInThePropertyPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EvictionDelayWarningPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EvictionRisksPosedPage.class, verificationCount);
@@ -100,14 +96,7 @@ class WarrantPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, propertyAccessDetailsPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, additionalInformationPage, verificationCount);
 
-        verifyAndCount(inOrder, pageBuilder, MoneyOwedPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, LegalCostsPage.class, verificationCount);
-
-        verifyAndCount(inOrder, pageBuilder, landRegistryFeesPage, verificationCount);
-
-        verifyAndCount(inOrder, pageBuilder, RepaymentsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsedPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, SuspendedOrderPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, StatementOfTruthPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();

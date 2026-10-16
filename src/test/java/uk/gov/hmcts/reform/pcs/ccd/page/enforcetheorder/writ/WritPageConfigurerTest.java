@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -27,8 +26,6 @@ class WritPageConfigurerTest extends BasePageTest {
     @InjectMocks
     private WritPageConfigurer writPageConfigurer;
 
-    @Mock
-    private LandRegistryFeesWritPage landRegistryFeesWritPage;
 
     @Test
     void shouldConfigurePagesInCorrectOrder() {
@@ -44,16 +41,15 @@ class WritPageConfigurerTest extends BasePageTest {
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
+
         verifyAndCount(inOrder, pageBuilder, CannotApplyForWritInfoPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, BreathingSpaceWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, MissedPaymentsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, HCEOfficerDetailsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, MoneyOwedWritPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, landRegistryFeesWritPage, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, RepaymentsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsedWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, StatementOfTruthWritPage.class, verificationCount);
 

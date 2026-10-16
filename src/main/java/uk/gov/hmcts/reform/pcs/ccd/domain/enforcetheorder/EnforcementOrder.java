@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
@@ -26,6 +27,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@SuppressWarnings({"java:S1133", "java:S6355"})
 public class EnforcementOrder {
 
     // Redundant field to support the existing CCD definition, will be removed in the future once the
@@ -49,6 +51,12 @@ public class EnforcementOrder {
     @CCD
     private WritDetails writDetails;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private RawWarrantDetails rawWarrantDetails;
@@ -61,6 +69,12 @@ public class EnforcementOrder {
     @CCD
     private RawWarrantRestDetails rawWarrantRestDetails;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @CCD(searchable = false)
     @External
     private String warrantFeeAmount;
@@ -71,4 +85,7 @@ public class EnforcementOrder {
 
     private String warrantOfRestitutionInfoText;
 
+    @CCD(label = "Are you sure you want to permanently delete this draft application? "
+            + "You will no longer be able to view the details in the future.")
+    private YesOrNo deleteDraftApplication;
 }

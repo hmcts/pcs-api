@@ -23,7 +23,8 @@ public class StatementOfTruthDetails {
 
     @CCD(
         typeOverride = MultiSelectList,
-        typeParameterOverride = "StatementOfTruthAgreementClaimant"
+        typeParameterOverride = "StatementOfTruthAgreementClaimant",
+        label = "Claimant agreement"
     )
     protected List<StatementOfTruthAgreementClaimant> agreementClaimant;
 
