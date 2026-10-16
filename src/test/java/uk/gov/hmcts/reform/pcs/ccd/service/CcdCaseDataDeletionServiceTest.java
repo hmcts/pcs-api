@@ -17,7 +17,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.model.DeletionCaseData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CcdCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
@@ -77,7 +79,7 @@ class CcdCaseDataDeletionServiceTest {
         when(ccdCaseRepository.findExpiredDraftCases(DISCARD_AFTER_DAYS, 10)).thenReturn(List.of());
 
         // When
-        List<Long> result = underTest.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, 10);
+        List<DeletionCaseData> result = underTest.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, 10);
 
         // Then
         assertThat(result).isEmpty();
@@ -87,10 +89,13 @@ class CcdCaseDataDeletionServiceTest {
     void shouldReturnValidListWhenExpiredCasesFound() {
         // Given
         when(ccdCaseRepository.findExpiredDraftCases(DISCARD_AFTER_DAYS, 10))
-                .thenReturn(List.of(CASE_REF_1, CASE_REF_2));
+                .thenReturn(List.of(
+                        DeletionCaseData.builder().caseRef(CASE_REF_1).state(State.PENDING_CASE_ISSUED).build(),
+                        DeletionCaseData.builder().caseRef(CASE_REF_2).state(State.DRAFT_DISCARDED).build()
+                ));
 
         // When
-        List<Long> result = underTest.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, 10);
+        List<DeletionCaseData> result = underTest.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, 10);
 
         // Then
         assertThat(result).hasSize(2);
