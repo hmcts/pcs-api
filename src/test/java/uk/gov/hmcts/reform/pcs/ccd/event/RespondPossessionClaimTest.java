@@ -68,7 +68,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
-import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -167,8 +166,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
-    private NoticeOfPossessionView noticeOfPossessionView;
-    @Mock
     private RentArrearsView rentArrearsView;
     @Mock
     private OrganisationService organisationService;
@@ -183,6 +180,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        lenient().when(caseDetailsTabView.buildCaseDetailsTab(
+            any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         // Create handlers with real dependencies
 
@@ -211,8 +211,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                        legalRepForDefendantAccessValidator,
                                                        pcsCaseService),
                                                    organisationService,
+                                                   caseDetailsTabView,
                                                    tenancyLicenceView,
-                                                   noticeOfPossessionView,
                                                    rentArrearsView)
             )
         );

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
-import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -66,8 +67,8 @@ class LegalRepStartEventStrategyTest {
     @Mock
     private TenancyLicenceView tenancyLicenceView;
 
-    @Mock
-    private NoticeOfPossessionView noticeOfPossessionView;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private CaseDetailsTabView caseDetailsTabView;
 
     @Mock
     private RentArrearsView rentArrearsView;
@@ -129,7 +130,6 @@ class LegalRepStartEventStrategyTest {
         verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants,
                                                                organisationId);
         verify(tenancyLicenceView).setCaseFields(pcsCase, caseEntity);
-        verify(noticeOfPossessionView).setCaseFields(pcsCase, caseEntity);
         verify(rentArrearsView).setCaseFields(pcsCase, caseEntity);
     }
 
@@ -296,8 +296,8 @@ class LegalRepStartEventStrategyTest {
                 accessValidator,
                 pcsCaseService),
             organisationService,
+            caseDetailsTabView,
             tenancyLicenceView,
-            noticeOfPossessionView,
             rentArrearsView);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
@@ -357,8 +357,8 @@ class LegalRepStartEventStrategyTest {
                 accessValidator,
                 pcsCaseService),
             organisationService,
+            caseDetailsTabView,
             tenancyLicenceView,
-            noticeOfPossessionView,
             rentArrearsView);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
@@ -416,8 +416,8 @@ class LegalRepStartEventStrategyTest {
                 accessValidator,
                 pcsCaseService),
             organisationService,
+            caseDetailsTabView,
             tenancyLicenceView,
-            noticeOfPossessionView,
             rentArrearsView);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);

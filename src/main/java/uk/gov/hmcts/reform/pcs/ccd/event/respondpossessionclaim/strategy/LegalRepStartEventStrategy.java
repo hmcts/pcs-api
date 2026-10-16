@@ -5,12 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+//import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -26,8 +28,9 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
     private final OrganisationService organisationService;
+    private final CaseDetailsTabView caseDetailsTabView;
     private final TenancyLicenceView tenancyLicenceView;
-    private final NoticeOfPossessionView noticeOfPossessionView;
+    //private final NoticeOfPossessionView noticeOfPossessionView;
     private final RentArrearsView rentArrearsView;
 
     @Override
@@ -66,12 +69,23 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     private PCSCase hydrateClaimantProvidedCaseFields(PcsCaseEntity caseEntity, PCSCase pcsCase) {
         tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
-        noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
+        //noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
-        pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
+        //pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
 
-        System.out.println("LegalRepStartEventStrategy pcsCase: " + pcsCase);
-        log.info("LegalRepStartEventStrategy pcsCase: " + pcsCase);
+        var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
+        var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, caseEntity, 
+            pcsCase.getDateSubmitted() != null);
+        var caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
+
+        caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
+        caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
+        caseDetailsTab.setOccupationContractLicenceDetails(builtCaseDetailsTab.getOccupationContractLicenceDetails());
+        caseDetailsTab.setNoticeDetails(builtCaseDetailsTab.getNoticeDetails());
+        
+        pcsCase.setCaseDetailsTab(caseDetailsTab);
+
+
         return pcsCase;
     }
 
