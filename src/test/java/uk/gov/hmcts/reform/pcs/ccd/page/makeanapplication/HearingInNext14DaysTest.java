@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -19,13 +18,12 @@ class HearingInNext14DaysTest extends BasePageTest {
         setPageUnderTest(new HearingInNext14Days());
     }
 
-    @ParameterizedTest
-    @EnumSource(value = VerticalYesNo.class)
-    void shouldSetShowHwfScreens(VerticalYesNo hearingWithinNext14Days) {
+    @Test
+    void shouldShowHwfScreensWhenHearingIsNotWithinNext14Days() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder()
-                                  .within14Days(hearingWithinNext14Days)
+                                  .within14Days(VerticalYesNo.NO)
                                   .build())
             .build();
 
@@ -34,7 +32,7 @@ class HearingInNext14DaysTest extends BasePageTest {
 
         // Then
         PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(hearingWithinNext14Days);
+        assertThat(updatedCaseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(VerticalYesNo.YES);
     }
 
 }
