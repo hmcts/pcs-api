@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySel
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
-//import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -30,7 +30,7 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     private final OrganisationService organisationService;
     private final CaseDetailsTabView caseDetailsTabView;
     private final TenancyLicenceView tenancyLicenceView;
-    //private final NoticeOfPossessionView noticeOfPossessionView;
+    private final NoticeOfPossessionView noticeOfPossessionView;
     private final RentArrearsView rentArrearsView;
 
     @Override
@@ -69,9 +69,9 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     private PCSCase hydrateClaimantProvidedCaseFields(PcsCaseEntity caseEntity, PCSCase pcsCase) {
         tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
-        //noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
+        noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
-        //pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
+        pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
 
         var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
         var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, caseEntity, 
