@@ -13,6 +13,8 @@
     "test:commonComponent": "yarn playwright install && yarn playwright test --project chrome --grep '@CC'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:caseManagement": "yarn playwright install && yarn playwright test --project chrome --grep '@CM'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:noticeOfChange": "yarn playwright install && yarn playwright test --project chrome --grep '@noticeOfChange'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
+    "bddgen": "bddgen",
+    "test:enforcement:bdd": "yarn bddgen && yarn playwright install && yarn playwright test --project enforcement-bdd --grep-invert '@pending|@open-question'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:webkit": "yarn playwright install && yarn playwright test --project webkit; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
@@ -30,6 +32,7 @@
     "allure-js-commons": "^3.3.0",
     "allure-playwright": "^3.3.0",
     "axios": "^1.15.0",
+    "playwright-bdd": "^9.2.1",
     "simple-git": "^4.0.0",
     "tsx": "^4.19.2",
     "typescript": "^6.0.0"
