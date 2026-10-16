@@ -81,25 +81,11 @@ test.afterEach(async () => {
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
 test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement @regression',
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', enforcementApplication.mainHeader);
-      await performAction('validateWritOrWarrantFeeAmount', {
-        journey: enforcementApplication.writOfPossessionRadioOption,
-        type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
-        text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
-        text2: enforcementApplication.writFeeValidationTextHidden
-      });
-      await performAction('validateGetQuoteFromBailiffLink', {
-        type: enforcementApplication.summaryWritOrWarrantLink,
-        link: enforcementApplication.quoteFromBailiffLinkHidden,
-        newPage: enforcementApplication.hceoPageTitleHidden
-      });
-      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
@@ -131,38 +117,6 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       await performAction('nameYourHCEO', {
         label: yourHCEO.nameOfYourHCEOTextLabel,
         input: yourHCEO.nameOfYourHCEOTextInput,
-        nextPage: moneyOwed.mainHeader
-      });
-      await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
-      await performAction('provideMoneyOwed', {
-        label: moneyOwed.totalAmountOwedTextLabel,
-        input: moneyOwed.totalAmountOwedTextInput,
-        nextPage: legalCosts.mainHeader
-      });
-      await performAction('errorValidationLegalCostsPage', legalCosts.errorValidation);
-      await performAction('provideLegalCosts', {
-        question: legalCosts.reclaimLegalCostsQuestion,
-        option: legalCosts.yesRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
-        input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
-        nextPage: landRegistryFees.mainHeader
-      });
-      await performAction('errorValidationLandRegistryFeePage', landRegistryFees.errorValidation);
-      await performAction('provideLandRegistryFees', {
-        question: landRegistryFees.landRegistryFeeQuestion,
-        option: landRegistryFees.yesRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
-        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-        nextPage: repayments.mainHeader
-      });
-      await performValidation('mainHeader', repayments.mainHeader);
-      await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
-      await performAction('errorValidationRepaymentsPage', repayments.errorValidation);
-      await performAction('provideAmountToRePay', {
-        question: repayments.rePaymentQuestion,
-        option: repayments.someRadioOptions,
-        label: repayments.enterTheAmountTextLabelHidden,
-        input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
       await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
@@ -172,22 +126,20 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
         nextPage: statementOfTruth.mainHeader
       });
       await performAction('errorValidationSOTWritPage', statementOfTruth.errorValidation);
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruthWrit', {
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantRadioOption,
-        option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        option1: statementOfTruth.iCertifyCheckboxDynamic,
         label: statementOfTruth.fullNameHiddenTextLabel,
         input: statementOfTruth.fullNameHiddenTextInput,
         label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
         input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruth.nameOfFirmHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader
+        nextPage: checkYourAnswers.mainHeader,
+        iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
       });
     });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement @regression', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -221,57 +173,27 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       nextPage: theNICEWillChoose.mainHeader
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);
-    await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
-    await performAction('provideMoneyOwed', {
-      label: moneyOwed.totalAmountOwedTextLabel,
-      input: moneyOwed.totalAmountOwedTextInput,
-      nextPage: legalCosts.mainHeader
-    });
-    await performAction('provideLegalCosts', {
-      question: legalCosts.reclaimLegalCostsQuestion,
-      option: legalCosts.noRadioOption,
-      label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
-      input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
-      nextPage: landRegistryFees.mainHeader
-    });
-    await performAction('provideLandRegistryFees', {
-      question: landRegistryFees.landRegistryFeeQuestion,
-      option: landRegistryFees.noRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
-      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-      nextPage: repayments.mainHeader
-    });
-    await performValidation('mainHeader', repayments.mainHeader);
-    await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
-    await performAction('provideAmountToRePay', {
-      question: repayments.rePaymentQuestion,
-      option: repayments.allRadioOptions,
-      label: repayments.enterTheAmountTextLabelHidden,
-      input: repayments.enterTheAmountTextInputHidden,
-      nextPage: languageUsed.mainHeader
-    });
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.welshRadioOption,
       nextPage: statementOfTruth.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByLabel,
+      question: statementOfTruth.completedByParagraph,
       option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruth.signThisStatementHiddenCheckbox,
+      option1: statementOfTruth.iCertifyCheckboxDynamic,
       label: statementOfTruth.fullNameHiddenTextLabel,
       input: statementOfTruth.fullNameHiddenTextInput,
       label1: statementOfTruth.nameOfFirmHiddenTextLabel,
       input1: statementOfTruth.nameOfFirmHiddenTextInput,
       label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
       input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader
+      nextPage: checkYourAnswers.mainHeader,
+      claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox
     });
   });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] @enforcement ', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -305,58 +227,26 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       nextPage: theNICEWillChoose.mainHeader
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);
-    await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('provideMoneyOwed', {
-      label: moneyOwed.totalAmountOwedTextLabel,
-      input: moneyOwed.totalAmountOwedTextInput,
-      nextPage: legalCosts.mainHeader
-    });
-    await performValidation('mainHeader', legalCosts.mainHeader);
-    await performAction('provideLegalCosts', {
-      question: legalCosts.reclaimLegalCostsQuestion,
-      option: legalCosts.yesRadioOption,
-      label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
-      input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
-      nextPage: landRegistryFees.mainHeader
-    });
-    await performAction('provideLandRegistryFees', {
-      question: landRegistryFees.landRegistryFeeQuestion,
-      option: landRegistryFees.noRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
-      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-      nextPage: repayments.mainHeader
-    });
-    await performValidation('mainHeader', repayments.mainHeader);
-    await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
-    await performAction('provideAmountToRePay', {
-      question: repayments.rePaymentQuestion,
-      option: repayments.noneRadioOptions,
-      label: repayments.enterTheAmountTextLabelHidden,
-      input: repayments.enterTheAmountTextInputHidden,
-      nextPage: languageUsed.mainHeader
-    });
     await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.englishAndWelshRadioOption,
       nextPage: statementOfTruth.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByLabel,
+      question: statementOfTruth.completedByParagraph,
       option: statementOfTruth.claimantRadioOption,
-      option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      option1: statementOfTruth.iCertifyCheckboxDynamic,
       label: statementOfTruth.fullNameHiddenTextLabel,
       input: statementOfTruth.fullNameHiddenTextInput,
       label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
       input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input2: statementOfTruth.nameOfFirmHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader
+      nextPage: checkYourAnswers.mainHeader,
+      iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
     });
   });
 
-  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement', async () => {
+  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -377,7 +267,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
-  test('Writ - Apply for a Writ of Possession [General application journey]', {
+  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',

@@ -274,7 +274,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantRadioOption,
         option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
         label: statementOfTruth.fullNameHiddenTextLabel,
@@ -392,7 +392,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruth', {
       selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByLabel,
+      question: statementOfTruth.completedByParagraph,
       option: statementOfTruth.claimantLegalRepresentativeRadioOption,
       option1: statementOfTruth.signThisStatementHiddenCheckbox,
       label: statementOfTruth.fullNameHiddenTextLabel,
@@ -515,7 +515,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruth', {
       selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByLabel,
+      question: statementOfTruth.completedByParagraph,
       option: statementOfTruth.claimantRadioOption,
       option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
       label: statementOfTruth.fullNameHiddenTextLabel,
@@ -681,7 +681,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         option1: statementOfTruth.signThisStatementHiddenCheckbox,
         label: statementOfTruth.fullNameHiddenTextLabel,
@@ -799,7 +799,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         option1: statementOfTruth.signThisStatementHiddenCheckbox,
         label: statementOfTruth.fullNameHiddenTextLabel,
