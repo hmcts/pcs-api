@@ -349,14 +349,16 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/enforcement/domain/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/enforcement/ccd/page/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/enforcement/entity/**/*.java," +
       "**/entities/**," +
       "**/model/**," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
       // Covered by MakeOrderIT, which runs in the integration suite rather than before this scan.
       "**/uk/gov/hmcts/reform/pcs/ccd/event/order/**/*.java"
-    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/entity/enforcetheorder/WarrantEntity.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/WarrantDetails," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
+    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/enforcement/entity/WarrantEntity.java," +
+      "**/uk/gov/hmcts/reform/pcs/enforcement/domain/warrant/WarrantDetails," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentamend/DocumentAmendDetails.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentremoval/DocumentRemovalDetails.java,"

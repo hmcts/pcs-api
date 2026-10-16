@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class DomainDataModelSupportHelper {
+public class DomainDataModelSupportHelper {
 
     private final Set<Class<?>> processedClasses = new HashSet<>();
     private final Map<String, List<CCDFieldInfo>> ccdFieldsByClass = new HashMap<>();
@@ -168,11 +168,11 @@ class DomainDataModelSupportHelper {
             && !type.getName().startsWith("uk.gov.hmcts.ccd.sdk.type.");
     }
 
-    record CCDFieldInfo(String fieldName, Class<?> fieldType, CCD annotation) {
+    public record CCDFieldInfo(String fieldName, Class<?> fieldType, CCD annotation) {
 
     }
 
-    record MissingCCDFieldInfo(String className, CCDFieldInfo ccdFieldInfo) {
+    public record MissingCCDFieldInfo(String className, CCDFieldInfo ccdFieldInfo) {
 
     }
 
