@@ -96,8 +96,6 @@ final class AccessGrants {
         // a case to a user who can read it in the case.
         grants.put(SYSTEM_USER, Permission.R);
         addReadAccess(grants, INTERNAL_READ_ROLES);
-
-        addUpdateAccess(grants, PARTY_VISIBLE_ROLES);
         return grants;
     }
 
@@ -118,12 +116,6 @@ final class AccessGrants {
     private static void addReadAccess(SetMultimap<HasRole, Permission> grants, UserRole... roles) {
         for (UserRole role : roles) {
             grants.put(role, Permission.R);
-        }
-    }
-
-    private static void addUpdateAccess(SetMultimap<HasRole, Permission> grants, UserRole... roles) {
-        for (UserRole role : roles) {
-            grants.put(role, Permission.U);
         }
     }
 }
