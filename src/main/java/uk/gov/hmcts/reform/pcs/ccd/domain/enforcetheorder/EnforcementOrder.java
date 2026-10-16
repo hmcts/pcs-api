@@ -26,6 +26,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@SuppressWarnings({"java:S1133", "java:S6355"})
 public class EnforcementOrder {
 
     // Redundant field to support the existing CCD definition, will be removed in the future once the
@@ -49,6 +50,12 @@ public class EnforcementOrder {
     @CCD
     private WritDetails writDetails;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private RawWarrantDetails rawWarrantDetails;
@@ -61,6 +68,12 @@ public class EnforcementOrder {
     @CCD
     private RawWarrantRestDetails rawWarrantRestDetails;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @CCD(searchable = false)
     @External
     private String warrantFeeAmount;

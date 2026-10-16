@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTrut
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings({"java:S1133", "java:S6355"})
 public class WritDetails {
 
     @JsonUnwrapped
@@ -46,6 +47,12 @@ public class WritDetails {
     )
     private String hceoDetails;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private LegalCosts legalCosts;

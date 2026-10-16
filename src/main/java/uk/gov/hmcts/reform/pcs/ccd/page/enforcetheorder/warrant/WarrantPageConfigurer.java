@@ -19,7 +19,6 @@ public class WarrantPageConfigurer implements PageConfigurer {
     private final PropertyAccessDetailsPage propertyAccessDetailsPage;
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
-    private final LandRegistryFeesPage landRegistryFeesPage;
     private final DefendantsDOBPage defendantsDOBPage;
 
     @Override
@@ -29,8 +28,6 @@ public class WarrantPageConfigurer implements PageConfigurer {
             .add(new ChangeNameAddressPage())
             .add(new ConfirmIfDOBKnownPage())
             .add(defendantsDOBPage)
-            .add(new PeopleWhoWillBeEvictedPage())
-            .add(new PeopleYouWantToEvictPage())
             .add(new LivingInThePropertyPage())
             .add(new EvictionDelayWarningPage())
             .add(new EvictionRisksPosedPage())
@@ -44,12 +41,7 @@ public class WarrantPageConfigurer implements PageConfigurer {
             .add(vulnerableAdultsChildrenPage)
             .add(propertyAccessDetailsPage)
             .add(additionalInformationPage)
-            .add(new MoneyOwedPage())
-            .add(new LegalCostsPage())
-            .add(landRegistryFeesPage)
-            .add(new RepaymentsPage())
             .add(new LanguageUsedPage())
-            .add(new SuspendedOrderPage())
             .add(new StatementOfTruthPage());
     }
 }
