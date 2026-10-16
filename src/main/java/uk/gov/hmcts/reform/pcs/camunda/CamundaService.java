@@ -73,15 +73,15 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock), null);
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock), Map.of());
     }
 
     public void createTask(long caseId, TaskType taskType, Duration delay) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay), null);
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay), Map.of());
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), null);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of());
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Map<String, Object> taskDetails) {
@@ -89,7 +89,7 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
-        createTask(caseId, taskType, taskDescription, scheduledTo, null);
+        createTask(caseId, taskType, taskDescription, scheduledTo, Map.of());
     }
 
     public void createTask(
