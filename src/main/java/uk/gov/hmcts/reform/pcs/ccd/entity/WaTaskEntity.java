@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import java.time.Instant;
 import java.util.Map;
 
-import static jakarta.persistence.FetchType.EAGER;
+import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Builder
@@ -39,7 +39,7 @@ public class WaTaskEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = EAGER)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;

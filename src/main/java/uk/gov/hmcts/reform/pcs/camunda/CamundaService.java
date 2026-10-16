@@ -294,9 +294,9 @@ public class CamundaService {
             .taskType(taskType)
             .taskDetails(taskDetails)
             .requestedAt(Instant.now(utcClock))
+            .pcsCase(pcsCaseEntity)
             .build();
 
-        pcsCaseEntity.addWaTask(waTaskEntity);
         return waTaskRepository.save(waTaskEntity);
     }
 
