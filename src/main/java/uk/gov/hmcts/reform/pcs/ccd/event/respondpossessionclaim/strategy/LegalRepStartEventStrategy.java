@@ -85,7 +85,6 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         
         pcsCase.setCaseDetailsTab(caseDetailsTab);
 
-
         return pcsCase;
     }
 
