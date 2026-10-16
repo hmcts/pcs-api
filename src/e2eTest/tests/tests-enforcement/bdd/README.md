@@ -1,0 +1,46 @@
+# Enforcement BDD tests
+
+XUI end-to-end tests for the enforcement journeys (Bailiff Management, [HDPI-7342](https://hmcts.atlassian.net/browse/HDPI-7342)), written as Gherkin features and run with [playwright-bdd](https://vitalets.github.io/playwright-bdd/). The model, roles, journeys and open questions are in [features/README.md](features/README.md).
+
+```
+bdd/
+├── features/   # .feature files, one per journey, plus the requirements README
+├── steps/      # step definitions, one file per domain
+├── fixtures/   # playwright-bdd test, world, pending helpers
+└── support/    # journeys composed from the existing enforcement actions
+```
+
+## Running
+
+From `src/e2eTest`, with the same environment variables as the other suites (see `test-README.md`):
+
+```bash
+yarn bddgen                  # generate specs into .features-gen/ (gitignored)
+yarn test:enforcement:bdd    # bddgen, then the enforcement-bdd project without @pending and @open-question
+```
+
+To run one feature, scenario or tag, generate first and then use Playwright as normal:
+
+```bash
+yarn bddgen && yarn playwright test --project enforcement-bdd --grep '@HDPI-7547'
+yarn playwright test --project enforcement-bdd --list   # every scenario, including pending ones
+```
+
+The `enforcement-bdd` project only reads `.features-gen/`. The `chrome` and other projects use `tests/` as before, so `--grep '@PR'` and `@regression` runs never pick up these scenarios.
+
+## Pending steps and `@pending`
+
+Most of the enforcement journeys do not exist in pcs-api yet. Steps for those journeys are registered with `pendingSteps(...)`: when a scenario reaches one, it is marked `fixme` with a message naming the delivering ticket and the scenario's `@HDPI` tags. No step asserts something the app cannot do.
+
+- `@pending` marks a scenario (or a whole feature, or an `Examples` block) with nothing implemented beyond set-up. It is skipped before a case is created, and `test:enforcement:bdd` leaves it out.
+- A scenario without `@pending` runs its implemented steps and stops as `fixme` at the first pending step. A failure before that point is a real failure.
+- Some preconditions the app cannot set up yet, and does not depend on today, are recorded as an "approximated precondition" annotation in the report instead of stopping the scenario. For example, an enforcement status or a scheduled eviction date.
+
+When a journey is built, swap its expressions in `pendingSteps(...)` for real steps, then remove `@pending` from the scenarios that now run end to end.
+
+## What runs today
+
+- Journey 01: "Enforce the order" for a warrant of possession, writ of possession and warrant of restitution (up to the status check, which is pending on HDPI-7419). The warrant of restitution is only offered once a warrant exists, so the step seeds one through the API first.
+- Journey 06: "Confirm the eviction date" availability and start. pcs-api calls the event "Confirm the eviction details".
+
+Each scenario creates its own case through the API. The case reference in the feature files is illustrative.
