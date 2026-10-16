@@ -31,7 +31,7 @@ import java.util.UUID;
 @Component
 public class BulkPrintScheduledTask {
 
-    private static final String BULK_PRINT_TASK_NAME = "bulk-print-task";
+    public static final String BULK_PRINT_TASK_NAME = "bulk-print-task";
     private static final String MDC_TASK_NAME = "taskName";
 
     private final FeatureToggleService featureToggleService;

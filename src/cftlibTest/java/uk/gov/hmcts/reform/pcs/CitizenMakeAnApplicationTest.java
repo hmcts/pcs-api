@@ -2,9 +2,7 @@ package uk.gov.hmcts.reform.pcs;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,8 +54,8 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     private AccessCodeService accessCodeService;
     @Autowired
     private TestingSupportClient testingSupportClient;
-
-    private final MockNotificationServer mockNotificationServer = new MockNotificationServer();
+    @Autowired
+    private MockNotificationServer mockNotificationServer;
 
     private String solicitorToken;
     private String citizenToken;
@@ -66,18 +64,6 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     void setup() {
         solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
         citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
-
-        mockNotificationServer.startServer();
-    }
-
-    @AfterAll
-    void tearDown() {
-        mockNotificationServer.stopServer();
-    }
-
-    @BeforeEach
-    void setUp() {
-        mockNotificationServer.resetServer();
     }
 
     @Test
@@ -116,7 +102,7 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
 
         ccdClient.updateCase(EventId.makeAnApplication, caseReference, caseData, citizenToken);
 
-        List<CapturedNotification> sentNotifications = mockNotificationServer.getSentNotifications(1);
+        List<CapturedNotification> sentNotifications = mockNotificationServer.getSentNotifications(caseReference, 1);
 
         CapturedNotification sentNotification = sentNotifications.getFirst();
         assertThat(sentNotification.getTemplateId()).isEqualTo(GEN_APP_NOTIFICATION_TEMPLATE_ID);

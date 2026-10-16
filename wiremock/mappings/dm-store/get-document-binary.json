@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathTemplate": "/documents/{documentId}/binary"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "dm-store/placeholder.pdf",
+    "transformerParameters": {
+      "disableBodyFileTemplating": true
+    }
+  }
+}
