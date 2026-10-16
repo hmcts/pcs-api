@@ -27,7 +27,8 @@ public class WritDetailsMapper {
         entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
         entity.setLanguageUsed(writDetails.getLanguageUsed());
 
-
+        breathingSpace(entity, writDetails);
+        missedPayments(entity, writDetails);
         return entity;
     }
 
@@ -37,6 +38,14 @@ public class WritDetailsMapper {
         if (nameAndAddress != null) {
             entity.setCorrectNameAndAddress(nameAndAddress.getCorrectNameAndAddress());
         }
+    }
+
+    private void breathingSpace(WritEntity writEntity, WritDetails writDetails) {
+        writEntity.setDefendantInBreathingSpace(writDetails.getDefendantInBreathingSpace());
+    }
+
+    private void missedPayments(WritEntity writEntity, WritDetails writDetails) {
+        writEntity.setDefendantMissedPayments(writDetails.getDefendantMissedPayments());
     }
 
     private YesOrNo convertYesOrNo(YesOrNo yesOrNo) {

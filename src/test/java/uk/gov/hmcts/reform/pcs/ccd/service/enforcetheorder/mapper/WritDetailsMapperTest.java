@@ -4,11 +4,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
@@ -173,4 +176,29 @@ class WritDetailsMapperTest {
     }
 
 
+    @ParameterizedTest
+    @EnumSource(YesNoNotSure.class)
+    void shouldMapDefendantInBreathingSpace(YesNoNotSure defendantInBreathingSpace) {
+        // Given
+        writDetails.setDefendantInBreathingSpace(defendantInBreathingSpace);
+
+        // When
+        WritEntity result = underTest.toEntity(writDetails);
+
+        // Then
+        assertThat(result.getDefendantInBreathingSpace()).isEqualTo(defendantInBreathingSpace);
+    }
+
+    @ParameterizedTest
+    @EnumSource(VerticalYesNo.class)
+    void shouldMapDefendantsMissedPayments(VerticalYesNo defendantMissedPayments) {
+        // Given
+        writDetails.setDefendantMissedPayments(defendantMissedPayments);
+
+        // When
+        WritEntity result = underTest.toEntity(writDetails);
+
+        // Then
+        assertThat(result.getDefendantMissedPayments()).isEqualTo(defendantMissedPayments);
+    }
 }

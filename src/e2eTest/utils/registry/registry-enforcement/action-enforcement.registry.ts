@@ -93,7 +93,12 @@ export class ActionEnforcementRegistry {
     ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
-    ['updatePaymentAPI', new CreateCaseAPIAction()]
+    ['isDefendantInBreathingSpace', new EnforcementAction()],
+    ['missedPayments', new EnforcementAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['getCaseAPI', new CreateCaseAPIAction()],
+    ['errorValidationIsDefendantInBreathingSpacePage', new ErrorValidationAction()],
+    ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {
