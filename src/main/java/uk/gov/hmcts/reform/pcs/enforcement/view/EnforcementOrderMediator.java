@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -52,16 +53,25 @@ public class EnforcementOrderMediator {
     }
 
     private void prepareEvictionWithDates(PCSCase pcsCase, LocalDateTime localDateTime) {
-        pcsCase.setShowConfirmEvictionJourney(YesOrNo.YES);
-        pcsCase.setConfirmEvictionSummaryMarkup(String.format(
+        EnforcementOrder enforcementOrder = enforcementOrderOf(pcsCase);
+        enforcementOrder.setShowConfirmEvictionJourney(YesOrNo.YES);
+        enforcementOrder.setConfirmEvictionSummaryMarkup(String.format(
             CONFIRM_EVICTION_SUMMARY_WITH_DATES,
             formatDate(localDateTime),
             getEvictionCancellationDeadline(localDateTime)));
     }
 
     private void prepareEvictionWithNoDates(PCSCase pcsCase) {
-        pcsCase.setShowConfirmEvictionJourney(YesOrNo.NO);
-        pcsCase.setConfirmEvictionSummaryMarkup(CONFIRM_EVICTION_SUMMARY_NO_DATES);
+        EnforcementOrder enforcementOrder = enforcementOrderOf(pcsCase);
+        enforcementOrder.setShowConfirmEvictionJourney(YesOrNo.NO);
+        enforcementOrder.setConfirmEvictionSummaryMarkup(CONFIRM_EVICTION_SUMMARY_NO_DATES);
+    }
+
+    private static EnforcementOrder enforcementOrderOf(PCSCase pcsCase) {
+        if (pcsCase.getEnforcementOrder() == null) {
+            pcsCase.setEnforcementOrder(new EnforcementOrder());
+        }
+        return pcsCase.getEnforcementOrder();
     }
 
     public String formatDate(LocalDateTime localDateTime) {

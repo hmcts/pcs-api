@@ -150,7 +150,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getFormattedPropertyAddress())
+        assertThat(result.getEnforcementOrder().getFormattedPropertyAddress())
                 .isEqualTo(expectedFormattedPropertyAddress);
         assertThat(result.getAllDefendants()).hasSize(1);
     }
