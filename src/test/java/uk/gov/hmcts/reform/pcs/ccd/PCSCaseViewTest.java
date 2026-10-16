@@ -15,7 +15,6 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.enforcement.view.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -32,11 +31,11 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseViewContributor;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
-import uk.gov.hmcts.reform.pcs.enforcement.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -123,8 +122,6 @@ class PCSCaseViewTest {
     @Mock
     private CaseLinkView caseLinkView;
     @Mock
-    private EnforcementOrderMediator enforcementOrderMediator;
-    @Mock
     private CaseNoteView caseNoteView;
     @Mock
     private CaseTabView caseTabView;
@@ -141,7 +138,7 @@ class PCSCaseViewTest {
     @Mock
     private HearingView hearingView;
     @Mock
-    private EnforcementOrderView enforcementOrderView;
+    private CaseViewContributor caseViewContributor;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -161,10 +158,10 @@ class PCSCaseViewTest {
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
-                                    caseLinkView, enforcementOrderMediator,
+                                    caseLinkView,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
-                                    hearingView, enforcementOrderView, legalRepresentativeSummaryService,
+                                    hearingView, List.of(caseViewContributor), legalRepresentativeSummaryService,
                                     organisationService
         );
     }
@@ -484,21 +481,12 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldCallEnforcementOrderMediator() {
+    void shouldCallCaseViewContributors() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
-    }
-
-    @Test
-    void shouldCallEnforcementOrderView() {
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        verify(caseViewContributor).contribute(pcsCaseEntity, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

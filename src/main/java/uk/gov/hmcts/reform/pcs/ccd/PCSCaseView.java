@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.enforcement.view.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -29,11 +28,11 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseViewContributor;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
-import uk.gov.hmcts.reform.pcs.enforcement.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -86,7 +85,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final SearchCriteriaIndexer searchCriteriaIndexer;
     private final CaseListView caseListView;
     private final CaseLinkView caseLinkView;
-    private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseNoteView caseNoteView;
     private final CaseTabView caseTabView;
     private final PartiesView partiesView;
@@ -96,7 +94,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
-    private final EnforcementOrderView enforcementOrderView;
+    private final List<CaseViewContributor> caseViewContributors;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
 
@@ -126,9 +124,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
-
-        enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
+        caseViewContributors.forEach(
+            contributor -> contributor.contribute(submittedCase.pcsCaseEntity(), pcsCase, caseReference, state)
+        );
 
         caseFieldsView.setCaseFields(pcsCase);
 
