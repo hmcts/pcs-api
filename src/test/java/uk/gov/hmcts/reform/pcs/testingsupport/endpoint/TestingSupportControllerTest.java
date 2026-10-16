@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.Task;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
@@ -45,7 +49,8 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.ScheduledTasksService;
 
-import java.time.Duration;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +75,10 @@ class TestingSupportControllerTest {
     private static final String SERVICE_AUTH_TOKEN = "ServiceAuthToken";
 
     @Mock
+    private SchedulerClient schedulerClient;
+    @Mock
+    private Task<Void> helloWorldTask;
+    @Mock
     private EligibilityService eligibilityService;
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -81,6 +90,8 @@ class TestingSupportControllerTest {
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private CaseRoleAssignmentService caseRoleAssignmentService;
     @Mock
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     @Mock
@@ -105,13 +116,16 @@ class TestingSupportControllerTest {
     private CaseDocumentClientApi caseDocumentClientApi;
     @Mock
     private DocumentIdExtractor documentIdExtractor;
+    @Mock
+    private ScheduledTasksService scheduledTasksService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        underTest = new TestingSupportController(eligibilityService,
+        underTest = new TestingSupportController(schedulerClient, helloWorldTask,
+                                                 eligibilityService,
                                                  pcsCaseRepository, jdbcTemplate, partyRepository,
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  legalRepresentativePartyLinkService,
@@ -120,10 +134,100 @@ class TestingSupportControllerTest {
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
                                                  featureToggleService,documentRepository,
-                                                 caseDocumentClientApi, documentIdExtractor
-                                                 featureToggleService,
-                                                 scheduledTasksService
+                                                 caseDocumentClientApi, documentIdExtractor,scheduledTasksService
         );
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_Success() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(5,
+                                                                           "Bearer token",
+                                                                           SERVICE_AUTH_TOKEN
+        );
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
+        assertThat(response.getBody()).contains("execution time:");
+
+        ArgumentCaptor<TaskInstance<Void>> taskInstanceCaptor = ArgumentCaptor.forClass(TaskInstance.class);
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+
+        verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture(), instantCaptor.capture());
+
+        TaskInstance<Void> capturedTaskInstance = taskInstanceCaptor.getValue();
+        Instant scheduledInstant = instantCaptor.getValue();
+
+        assertThat(capturedTaskInstance).isSameAs(mockTaskInstance);
+        assertThat(scheduledInstant).isAfterOrEqualTo(Instant.now().plusSeconds(4));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_Failure() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)
+            .scheduleIfNotExists(any(TaskInstance.class), any(Instant.class));
+
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(2,
+                                                                           "Bearer token",
+                                                                           SERVICE_AUTH_TOKEN
+        );
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("Failed to schedule Hello World task");
+        assertThat(response.getBody()).contains("Scheduler failure");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_WithDefaultDelaySeconds() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        Instant testStartTime = Instant.now();
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(1,
+                                                                           "Bearer token",
+                                                                           SERVICE_AUTH_TOKEN
+        );
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
+
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+        verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), instantCaptor.capture());
+
+        Instant scheduledInstant = instantCaptor.getValue();
+        assertThat(scheduledInstant)
+            .isAfterOrEqualTo(testStartTime)
+            .isBeforeOrEqualTo(testStartTime.plusSeconds(2));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_WithDefaultAuthorization() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(3,
+                                                                           "DummyId",
+                                                                           SERVICE_AUTH_TOKEN
+        );
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
+        verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), any(Instant.class));
     }
 
     @Test
@@ -428,42 +532,52 @@ class TestingSupportControllerTest {
         verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    void shouldRescheduleTasks() {
+    void shouldRescheduleCamundaRequest() {
         // Given
-        String taskName = "test-task";
-        Duration windowDuration = Duration.parse("PT1H");
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
+            .thenReturn(List.of("db-task-id"));
 
         // When
-        ResponseEntity<String> response = underTest.executeFutureDbSchedulerTasks(
-            taskName,
-            windowDuration,
-            SERVICE_AUTH_TOKEN
-        );
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
 
         // Then
-        verify(scheduledTasksService).executeFutureDbSchedulerTasks(taskName, windowDuration);
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody()).contains("Tasks rescheduled successfully");
+        assertThat(response.getBody()).contains("Camunda request rescheduled successfully");
+
+        ArgumentCaptor<TaskInstance<Void>> taskInstanceCaptor = ArgumentCaptor.forClass(TaskInstance.class);
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+
+        verify(schedulerClient).reschedule(taskInstanceCaptor.capture(), instantCaptor.capture());
+
+        TaskInstance<Void> capturedTaskInstance = taskInstanceCaptor.getValue();
+        Instant scheduledInstant = instantCaptor.getValue();
+
+        assertThat(capturedTaskInstance.getId()).isSameAs("db-task-id");
+        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    void shouldHandleRescheduleTasksFailure() {
+    void shouldHandleRescheduleCamundaRequestFailure() {
         // Given
-        doThrow(new RuntimeException("Scheduler failure"))
-            .when(scheduledTasksService).executeFutureDbSchedulerTasks(anyString(), any(Duration.class));
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
+            .thenReturn(List.of("db-task-id"));
 
-        ResponseEntity<String> response = underTest.executeFutureDbSchedulerTasks(
-            "test-task",
-            Duration.parse("PT1H"),
-            SERVICE_AUTH_TOKEN
-        );
+        doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)
+            .reschedule(any(TaskInstance.class), any(Instant.class));
+
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Failed to reschedule tasks");
+        assertThat(response.getBody()).contains("Failed to reschedule Camunda request task");
         assertThat(response.getBody()).contains("Scheduler failure");
     }
 
