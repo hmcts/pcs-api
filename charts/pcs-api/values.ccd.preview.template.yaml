@@ -25,6 +25,9 @@ java:
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
     CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
     ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+    # Temp change for testing
+    CCD_SDK_DECENTRALISED_ES_INDEXER_ENABLED: false
+
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
