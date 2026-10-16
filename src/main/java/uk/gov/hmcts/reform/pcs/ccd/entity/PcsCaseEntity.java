@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
-import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
