@@ -2,8 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary, home } from '@data/page-data';
-import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
+import { caseSummary } from '@data/page-data';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -41,8 +40,6 @@ import {
   suspendedOrder,
   statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
-import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
-import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -801,7 +798,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
 });
 
 test.describe('[Enforcement - Delete Draft Application] @enforcement', () => {
-  test('As a Claimant user, the enforcement draft application can be deleted', async ({ page }) => {
+  test('As a Claimant user, the enforcement draft application can be deleted', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -812,32 +809,6 @@ test.describe('[Enforcement - Delete Draft Application] @enforcement', () => {
     });
     await performAction('clickButton', nameAndAddressForEviction.cancelLink);
     await performValidation('mainHeader', caseSummary.mainHeader);
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
-    await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
-    await performAction('clickButton', deleteThisDraftApplication.continueButton);
-    await performValidation('errorMessage', {
-      header: deleteThisDraftApplication.errorMessageHeader,
-      message: deleteThisDraftApplication.deleteDraftApplicationRequiredError,
-    });
-    await performAction('clickRadioButton', {
-      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
-      option: deleteThisDraftApplication.noRadioOption,
-    });
-    await performAction('clickButton', deleteThisDraftApplication.continueButton);
-    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
-    await performAction('clickTab', home.caseSummary);
-    await performValidation('mainHeader', caseSummary.mainHeader);
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
-    await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
-    await performAction('clickRadioButton', {
-      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
-      option: deleteThisDraftApplication.yesRadioOption,
-   });
-    await performAction('clickButton', deleteThisDraftApplication.continueButton);
-    await performValidation('mainHeader', draftApplicationDeleted.mainHeader);
-    await performAction('clickButton', draftApplicationDeleted.closeAndReturnToCaseListButton);
-    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+    await performAction('deleteDraftApplication');
   });
 });
