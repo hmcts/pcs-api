@@ -388,4 +388,18 @@ class LegalRepPartySelectionServiceTest {
             DefendantResponseStatus.SUBMITTED);
         assertThat(pcsCase.getAllLinkedDefendants().size()).isEqualTo(1);
     }
+
+    @Test
+    void shouldReturnRepresentedDefendantsFromAccessValidator() {
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        String organisationId = "ORG-123";
+        List<PartyEntity> defendants = List.of(PartyEntity.builder().id(UUID.randomUUID()).build());
+
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
+            .thenReturn(defendants);
+
+        List<PartyEntity> result = underTest.getRepresentedDefendants(caseEntity, organisationId);
+
+        assertThat(result).isEqualTo(defendants);
+    }
 }

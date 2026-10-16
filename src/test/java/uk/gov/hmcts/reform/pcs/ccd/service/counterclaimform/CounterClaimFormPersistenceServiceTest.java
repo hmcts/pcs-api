@@ -71,6 +71,7 @@ class CounterClaimFormPersistenceServiceTest {
 
         assertThat(context).isPresent();
         assertThat(context.get().payload()).isSameAs(payload);
+        assertThat(context.get().counterClaimRank()).isEqualTo(1);
         assertThat(context.get().defendantNumber()).isEqualTo(2);
     }
 
@@ -159,6 +160,10 @@ class CounterClaimFormPersistenceServiceTest {
     }
 
     private CounterClaimEntity counterClaimFor(PartyEntity defendant, Integer rank) {
+        return counterClaimFor(defendant, 1, rank);
+    }
+
+    private CounterClaimEntity counterClaimFor(PartyEntity defendant, Integer ccRank, Integer rank) {
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
         ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
             .party(defendant)
@@ -173,6 +178,7 @@ class CounterClaimFormPersistenceServiceTest {
             .id(COUNTER_CLAIM_ID)
             .pcsCase(pcsCase)
             .party(defendant)
+            .rank(ccRank)
             .build();
     }
 }

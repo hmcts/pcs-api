@@ -5,6 +5,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.time.LocalDate;
@@ -70,21 +71,40 @@ public class DocumentNameService {
         return filename;
     }
 
-    public String appendCounterClaimPostfix(String originalFilename, ClaimEntity claim, UUID partyId) {
+    public String appendCounterClaimPostfix(String originalFilename,
+                                            CounterClaimEntity counterClaimEntity,
+                                            ClaimEntity claim,
+                                            UUID partyId) {
         if (originalFilename == null) {
             return null;
         }
 
         String baseName = FilenameUtils.getBaseName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
+
+        // Example label: Evidence CC1 - Defendant 1.pdf
         String partyLabel = partyService.getPartyLabel(claim, partyId);
-        String filename = partyLabel != null ? baseName + " - " + partyLabel : baseName;
+        int rank = resolveCounterClaimRank(counterClaimEntity);
+        String filename = "%s CC%d".formatted(baseName, rank);
 
-        if (!extension.isBlank()) {
-            filename += "." + extension;
+        return buildFilename(filename, extension, partyLabel);
+    }
+
+    private int resolveCounterClaimRank(CounterClaimEntity counterClaimEntity) {
+        if (counterClaimEntity == null) {
+            return 1;
         }
-
-        return filename;
+        if (counterClaimEntity.getRank() != null) {
+            return counterClaimEntity.getRank();
+        }
+        if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getCounterClaims() != null) {
+            int index = counterClaimEntity.getPcsCase().getCounterClaims().indexOf(counterClaimEntity);
+            if (index >= 0) {
+                return index + 1;
+            }
+            return counterClaimEntity.getPcsCase().getCounterClaims().size() + 1;
+        }
+        return 1;
     }
 
     public String appendPartyPostfix(String originalFilename,
