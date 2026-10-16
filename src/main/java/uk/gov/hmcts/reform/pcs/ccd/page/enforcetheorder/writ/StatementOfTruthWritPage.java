@@ -66,8 +66,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy,null,
                        null,
                        " ")
-            .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
-                       WRIT_COMPLETED_BY_CLAIMANT
+            .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
+                       WRIT_COMPLETED_BY_CLAIMANT, null
             )
             .mandatory(StatementOfTruthDetailsEnforcement::getFullNameParty,
                        WRIT_COMPLETED_BY_CLAIMANT
@@ -75,8 +75,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .mandatory(StatementOfTruthDetailsEnforcement::getPositionParty,
                        WRIT_COMPLETED_BY_CLAIMANT
             )
-            .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimantLegalRep,
-                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
+            .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getAgreementClaimantLegalRep,
+                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE, null
             )
             .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
                        WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
