@@ -54,6 +54,7 @@ public class AddPartyService {
 
     private PartyEntity buildParty(PartyType partyType, AddPartyDetails addPartyDetails) {
         PartyEntity partyEntity = new PartyEntity();
+        partyEntity.setRemoved(false);
         switch (partyType) {
             case CLAIMANT -> applyClaimantDetails(addPartyDetails, partyEntity);
             case DEFENDANT -> applyDefendantDetails(addPartyDetails, partyEntity);

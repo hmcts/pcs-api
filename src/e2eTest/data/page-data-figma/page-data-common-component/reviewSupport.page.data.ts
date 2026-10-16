@@ -6,7 +6,7 @@ export const reviewSupport = {
     reviewSupportHeader: `Review support request`,
     continueButton: `Continue`,
     submitButton: `Submit`,
-    whoIsTheSupportForOption: `Peter Parker (Defendant)`,
+    whoIsTheSupportForOption: `(Defendant)`,
     supporTypeHeader: `Select support type`,
     specialMeasureOption: `Special measure`,
     specialMeasureHeader: `Special measure`,

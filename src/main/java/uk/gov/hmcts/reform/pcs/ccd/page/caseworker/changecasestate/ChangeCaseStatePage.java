@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.changecasestate;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.changecasestate;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
