@@ -1,0 +1,33 @@
+// Caseworker decides an enforcement application (feature 02). "Decide enforcement" does not exist yet.
+import { pendingSteps } from '../fixtures/pending';
+
+pendingSteps({ ticket: 'HDPI-8656', summary: 'Decide enforcement' }, [
+  'I select {string} without choosing an option',
+  'I see an error asking me to choose accept or reject',
+  'I select {string} and {string}',
+  'the {string} screen shows my decision with a {string} link',
+  'I am on the {string} screen having accepted',
+  'I select {string} next to the decision',
+  'I return to the {string} screen with {string} still selected',
+  'I have accepted the application',
+  'I see the {string} confirmation screen with the case number, property address and party names',
+  'a warrant number is assigned to the enforcement',
+  'the document is date and time stamped in {string} format',
+  'the document is stored in the {string} folder in case file view',
+  'the document is visible to internal users only',
+  'the case {string} tab shows the {string} event',
+  'the enforcement is of type {string}',
+  'I see the {string} confirmation screen',
+  'a writ number is assigned to the enforcement',
+  'a {string} document is generated with the High Court seal',
+  'the document is visible to the claimant and internal users',
+  'a {string} document is generated with the {string} seal',
+  'it is visible to {string}',
+  'the claimant has the {string} case flag',
+  'the warrant is generated in Welsh',
+  'the {string} tab is shown on the case to internal users and the claimant',
+  'I enter a reason for rejecting',
+  'no warrant is generated',
+  'the {string} tab is not shown',
+  'the claimant can apply again using {string}',
+]);
