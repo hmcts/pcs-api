@@ -30,4 +30,13 @@ public class SdpExportTestingSupportController {
             "recordCount", result.recordCount()
         ));
     }
+
+    @PostMapping("/sdp/export-claim-snapshots/delta")
+    public ResponseEntity<Map<String, Object>> exportDeltaClaimSnapshots() {
+        ExportResult result = exportService.exportDeltaClaims();
+        return ResponseEntity.ok(Map.of(
+            "outputPath", result.outputPath().toAbsolutePath().toString(),
+            "recordCount", result.recordCount()
+        ));
+    }
 }
