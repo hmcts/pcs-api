@@ -785,12 +785,8 @@ public class PCSCase {
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
 
-    @CCD (
-        label = "Review date",
-        access = {InternalTabAccess.class},
-        typeOverride = Collection,
-        typeParameterOverride = "CaseReviewDate")
-    private List<ListValue<CaseReviewDate>> caseReviewDates;
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String caseReviewDatesMarkdown;
 
     @CCD(
         label = "Review date",
@@ -876,7 +872,6 @@ public class PCSCase {
 
     @JsonUnwrapped
     private RemovePartyDetails removePartyDetails;
-
 
     @CCD(
         label = "Do you want to add, edit or cancel a hearing?",

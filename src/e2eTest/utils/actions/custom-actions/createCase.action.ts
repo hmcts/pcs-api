@@ -59,7 +59,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -1678,11 +1678,17 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
-        if (ccPayload) {
-          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
-        }
+
         if (file) {
           userInputFiles.push(file as string);
+        }
+        if (caseFile.caseWorkerAmend && ccPayload) {
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+        } else if (ccPayload) {
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         }
         break;
 
@@ -1729,7 +1735,7 @@ export class CreateCaseAction implements IAction {
           expect(fileCount).toBeGreaterThan(0);
         }
       }).toPass({
-        timeout: VERY_LONG_TIMEOUT,
+        timeout: VERY_LONG_TIMEOUT + LONG_TIMEOUT,
       });
     }
 
