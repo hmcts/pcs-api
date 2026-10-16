@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -54,7 +55,6 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil.deriveCaseAccessGroups;
@@ -96,6 +96,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
+    private final EnforcementOrderView enforcementOrderView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
 
@@ -116,9 +117,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
-                    draft -> {
-                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
-                        },
+                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
                     () -> caseTabView.setCaseTabFields(pcsCase)
                 );
         } else {
@@ -128,6 +127,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
+
+        enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -268,11 +269,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             return Optional.empty();
         }
 
-        UUID userId = securityContextService.getCurrentUserId();
+        String userId = securityContextService.getCurrentUserId();
 
         if (userId != null) {
             return pcsCaseEntity.getParties().stream()
                 .filter(party -> userId.equals(party.getIdamId()))
+                .filter(this::isActive)
                 .findFirst();
         } else {
             return Optional.empty();
@@ -294,9 +296,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
         return partyEntities.stream()
+            .filter(this::isActive)
             .map(entity -> modelMapper.map(entity, Party.class))
             .map(party -> ListValue.<Party>builder().id(party.getId()).value(party).build())
             .toList();
+    }
+
+    private boolean isActive(PartyEntity partyEntity) {
+        return !partyEntity.isRemoved();
     }
 
     private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

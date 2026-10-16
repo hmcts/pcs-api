@@ -46,6 +46,8 @@ export const TEST_DOCUMENT_SLOTS: readonly { file: string; slot?: string }[] = [
   { file: 'legalAidCertificate.pdf' },
   { file: 'otherDocument.pdf' },
   { file: 'inspectionOrReport.pdf' },
+  { file: 'licence.pdf' },
+  { file: 'possessionNoticeWithOutNotice.pdf' },
 ];
 
 const slotKey = (file: string, slot?: string): string => (slot ? `${file}#${slot}` : file);
@@ -115,6 +117,9 @@ export async function uploadTestDocument(fileName: string): Promise<CcdDocument>
  * S2S tokens are in place.
  */
 export async function uploadTestDocuments(): Promise<void> {
+
+  console.log(`\nAS PART OF GLOBAL SETUP UPLOAD TEST DOCUMENTS AND GENERATE MANIFEST\n`);
+
   if (!process.env.CDAM_URL) {
     throw new Error('CDAM_URL is not set (applyPlaywrightServiceUrls should have defaulted it)');
   }

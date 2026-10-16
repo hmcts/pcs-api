@@ -1,4 +1,12 @@
+import { generateRandomFirstAndLastNames } from "@utils/common/userData.utils";
 import { testDocument, testDocumentListValue } from '@utils/common/uploadDocument.utils';
+
+const names = generateRandomFirstAndLastNames({
+countOfFirstNamesToGenerate: 3,
+countOfLastNamesToGenerate: 3,
+});
+
+
 export const submitCaseApiData = {
   submitCaseEventName: 'resumePossessionClaim',
   submitCasePayload: ()=> ({
@@ -11,24 +19,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -43,16 +33,16 @@ export const submitCaseApiData = {
       nameKnown: 'YES',
       addressKnown: 'YES',
       addressSameAsPossession: 'YES',
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'YES',
     additionalDefendants: [
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Peter',
-          lastName: 'Parker',
+          firstName: names.firstNames[1],
+          lastName: names.lastNames[1],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES'
         },
@@ -61,8 +51,8 @@ export const submitCaseApiData = {
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Jen',
-          lastName: 'Parker',
+          firstName: names.firstNames[2],
+          lastName: names.lastNames[2],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES'
         },
@@ -106,24 +96,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -177,24 +149,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -209,8 +163,8 @@ export const submitCaseApiData = {
       nameKnown: 'YES',
       addressKnown: 'YES',
       addressSameAsPossession: 'YES',
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'YES',
     additionalDefendants: [
@@ -269,24 +223,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -319,8 +255,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [
@@ -380,24 +316,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -430,8 +348,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [
@@ -510,24 +428,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -560,8 +460,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [
@@ -672,24 +572,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -708,57 +590,39 @@ export const submitCaseApiData = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: 'John',
-      lastName: 'Doe',
-      addressKnown: 'NO',
-      addressSameAsPossession: null,
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
+      addressKnown: 'YES',
+      addressSameAsPossession: 'NO',
       correspondenceAddress: {
-        AddressLine1: null,
-        AddressLine2: null,
-        AddressLine3: null,
-        PostTown: null,
-        County: null,
-        Country: null,
-        PostCode: null
-      }
+        AddressLine1: '6 Second Avenue',
+        AddressLine2: 'Oxford Street',
+        AddressLine3: '',
+        PostTown: 'London',
+        County: '',
+        Country: 'United Kingdom',
+        PostCode: 'W3 7RX'
+      },
     },
     addAnotherDefendant: 'YES',
     additionalDefendants: [
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Peter',
-          lastName: 'Parker',
+          firstName: names.firstNames[1],
+          lastName: names.lastNames[1],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
-          correspondenceAddress: {
-            AddressLine1: null,
-            AddressLine2: null,
-            AddressLine3: null,
-            PostTown: null,
-            County: null,
-            Country: null,
-            PostCode: null
-          }
-        },
+         },
         id: '61cd2875-03af-45c7-a1e4-db5583a1eb11'
       },
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'Jen',
-          lastName: 'Parker',
+          firstName: names.firstNames[2],
+          lastName: names.lastNames[2],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
-          correspondenceAddress: {
-            AddressLine1: null,
-            AddressLine2: null,
-            AddressLine3: null,
-            PostTown: null,
-            County: null,
-            Country: null,
-            PostCode: null
-          }
         },
         id: '52834083-6f14-4fa9-8f2c-ebb628380530'
       },
@@ -921,24 +785,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -971,8 +817,8 @@ export const submitCaseApiData = {
         Country: 'United Kingdom',
         PostCode: 'W3 7RX'
       },
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: names.firstNames[0],
+      lastName: names.lastNames[0],
     },
     addAnotherDefendant: 'NO',
     additionalDefendants: [

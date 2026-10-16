@@ -132,7 +132,6 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     });
     await performValidation('mainHeader', statementOfTruth.mainHeader);
     await performAction('selectStatementOfTruth', {
-      question: statementOfTruth.completedByTheDefendantsLegalParagraph,
       option: statementOfTruth.theDefendantBelievesCheckBox,
       label1: statementOfTruth.fullNameTextLabel,
       input1: statementOfTruth.fullNameTextInput,
@@ -201,7 +200,6 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No]',
   });
   await performValidation('mainHeader', statementOfTruth.mainHeader);
   await performAction('selectStatementOfTruth', {
-    question: statementOfTruth.completedByTheDefendantsLegalParagraph,
     option: statementOfTruth.theDefendantBelievesCheckBox,
     label1: statementOfTruth.fullNameTextLabel,
     input1: statementOfTruth.fullNameTextInput,

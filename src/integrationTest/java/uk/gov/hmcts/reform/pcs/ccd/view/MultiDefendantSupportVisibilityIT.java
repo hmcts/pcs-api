@@ -117,7 +117,7 @@ class MultiDefendantSupportVisibilityIT extends AbstractPostgresContainerIT {
     }
 
     private void readingAsProfessionalFrom(String organisationId) {
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID().toString());
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
     }
 
