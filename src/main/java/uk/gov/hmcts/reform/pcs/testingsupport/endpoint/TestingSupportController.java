@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.kagkarlsson.scheduler.SchedulerClient;
-import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,10 +51,9 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.ScheduledTasksService;
 
-import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -70,7 +67,6 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
 @AllArgsConstructor
@@ -80,8 +76,6 @@ import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUND
 @Tag(name = "Testing Support")
 public class TestingSupportController {
 
-    private final SchedulerClient schedulerClient;
-    private final Task<Void> helloWorldTask;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final JdbcTemplate jdbcTemplate;
@@ -94,56 +88,7 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
-
-    @Operation(
-        summary = "Schedule a Hello World task",
-        description = "Schedules a Hello World task to be executed after a specified delay. "
-            + "This endpoint is used for testing the database scheduler functionality."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Task scheduled successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @PostMapping("/db-scheduler-test")
-    public ResponseEntity<String> scheduleHelloWorldTask(
-        @Parameter(
-            description = "Delay in seconds before task execution (default: 1)",
-            example = "5"
-        )
-        @RequestParam(value = "delaySeconds", defaultValue = "1") int delaySeconds,
-        @Parameter(
-            description = "Bearer token for user authentication (default: DummyId)",
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
-        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
-        @Parameter(
-            description = "Service-to-Service (S2S) authorization token",
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            required = true
-        )
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
-        try {
-            String taskId = "helloWorld-" + UUID.randomUUID();
-            Instant executionTime = Instant.now().plusSeconds(delaySeconds);
-
-            schedulerClient.scheduleIfNotExists(
-                helloWorldTask.instance(taskId),
-                executionTime
-            );
-
-            log.info("Scheduled Hello World task with ID: {} to execute at: {}", taskId, executionTime);
-            return ResponseEntity.ok(String.format(
-                "Hello World task scheduled successfully with ID: %s, execution time: %s",
-                taskId, executionTime
-            ));
-        } catch (Exception e) {
-            log.error("Failed to schedule Hello World task", e);
-            return ResponseEntity.internalServerError()
-                .body("Failed to schedule Hello World task: " + e.getMessage());
-        }
-    }
+    private final ScheduledTasksService scheduledTasksService;
 
     @Operation(
         summary = "Checks the eligibility for a given property postcode",
@@ -513,64 +458,38 @@ public class TestingSupportController {
     }
 
     @Operation(
-        summary = "Reschedule Camunda request",
-        description = "Reschedules all scheduled Camunda requests within the specified window from now to be "
+        summary = "Execute future DB Scheduler tasks",
+        description = "Reschedules all scheduled tasks within the specified window from now to be "
             + "triggered immediately"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
+        @ApiResponse(responseCode = "200", description = "Tasks rescheduled successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/reschedule-camunda-requests")
-    public ResponseEntity<String> rescheduleCamundaRequest(
+    @PostMapping(path = "/execute-future-db-scheduler-tasks", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> executeFutureDbSchedulerTasks(
         @Parameter(
-            description = "Days to add to current time (default: 0)",
-            example = "1"
+            description = "Name of task (type) to reschedule",
+            example = "camunda-request-task"
         )
-        @RequestParam(value = "days", defaultValue = "0") int days,
+        @RequestParam(value = "taskName") String taskName,
         @Parameter(
-            description = "Hours to add to current time (default: 0)",
-            example = "2"
+            description = "Duration to add to current time, (ISO 8601 duration string)",
+            example = "P1DT2H",
+            required = true
         )
-        @RequestParam(value = "hours", defaultValue = "0") int hours,
-        @Parameter(
-            description = "Minutes to add to current time (default: 0)",
-            example = "10"
-        )
-        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
+        @RequestParam(value = "windowDuration") Duration windowDuration,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
+
         try {
-
-            Instant taskTriggerTime = Instant.now().plus(Duration.ofDays(days)
-                                   .plusHours(hours)
-                                   .plusMinutes(minutes));
-
-            List<String> taskIds = jdbcTemplate.query(
-                """
-                    SELECT task_instance
-                    FROM scheduled_tasks
-                    WHERE task_name = 'camunda-request-task' and execution_time <= ?
-                """,
-                (rs, rowNum) -> rs.getString("task_instance"),
-                Timestamp.from(taskTriggerTime)
-            );
-
-            for (String taskId : taskIds) {
-                schedulerClient.reschedule(
-                    CAMUNDA_REQUEST_TASK_DESCRIPTOR.instance(taskId).build(),
-                    Instant.now()
-                );
-
-                log.info("Rescheduled Camunda request task with ID: {}", taskId);
-            }
-
-            return ResponseEntity.ok("Camunda request rescheduled successfully");
+            scheduledTasksService.executeFutureDbSchedulerTasks(taskName, windowDuration);
+            return ResponseEntity.ok("Tasks rescheduled successfully");
         } catch (Exception e) {
-            log.error("Failed to reschedule Camunda request task", e);
+            log.error("Failed to reschedule tasks for {}", taskName, e);
             return ResponseEntity.internalServerError()
-                .body("Failed to reschedule Camunda request task: " + e.getMessage());
+                .body("Failed to reschedule tasks: " + e.getMessage());
         }
     }
 
