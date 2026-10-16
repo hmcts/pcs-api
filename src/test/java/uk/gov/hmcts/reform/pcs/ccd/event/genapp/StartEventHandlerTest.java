@@ -151,6 +151,7 @@ class StartEventHandlerTest {
         // Given
         final String formattedStandardFee = "10.99";
         final String formattedMaxFee = "20.99";
+        final String formattedSuspendFee = "9.99";
 
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder().build())
@@ -174,6 +175,11 @@ class StartEventHandlerTest {
             .applyFeeAmount(eq(caseData), eq(FeeType.GEN_APP_MAX_FEE), feeSetterCaptor.capture());
         feeSetterCaptor.getValue().accept(caseData, formattedMaxFee);
         assertThat(caseData.getXuiGenAppRequest().getMaxFee()).isEqualTo(formattedMaxFee);
+
+        verify(feeApplier)
+            .applyFeeAmount(eq(caseData), eq(FeeType.GEN_APP_SUSPEND_FEE), feeSetterCaptor.capture());
+        feeSetterCaptor.getValue().accept(caseData, formattedSuspendFee);
+        assertThat(caseData.getXuiGenAppRequest().getSuspendFee()).isEqualTo(formattedSuspendFee);
     }
 
     @Test

@@ -5,6 +5,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -37,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -377,22 +381,32 @@ class UploadDocumentsTest extends BaseEventTest {
             assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.NO);
         }
 
-        @Test
-        void shouldIncludeAdjournCategoryWhenAdjournGenAppExists() {
+        @ParameterizedTest
+        @MethodSource("genAppTypeScenarios")
+        void shouldIncludeCorrectCategoryWhenGenAppTypeExists(GenAppType genAppType,
+                                                                 DocumentUploadCategory documentUploadCategory) {
             LocalDateTime submittedDate = LocalDateTime.now();
-            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, submittedDate);
+            GenAppEntity genApp = stubGenApp(genAppType, submittedDate);
 
-            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genApp));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             DocumentUploadDetails details = result.getDocumentUploadDetails();
             assertThat(details.getRelatedApplicationOptions())
                 .extracting(option -> option.getValue().getCategory())
-                .containsExactly(DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
+                .containsExactly(documentUploadCategory);
             assertThat(details.getRelatedApplicationOptions().getFirst().getValue().getSubmittedDate())
                 .isEqualTo(submittedDate);
             assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
+        }
+
+        private static Stream<Arguments> genAppTypeScenarios() {
+            return Stream.of(
+                Arguments.of(GenAppType.ADJOURN, DocumentUploadCategory.ADJOURN_HEARING_APPLICATION),
+                Arguments.of(GenAppType.SUSPEND, DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION),
+                Arguments.of(GenAppType.SET_ASIDE, DocumentUploadCategory.SET_ASIDE_ORDER_APPLICATION)
+            );
         }
 
         @Test
