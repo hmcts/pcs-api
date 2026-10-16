@@ -277,6 +277,9 @@ access-code:
 
 bulk-print:
   schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  blank-forms:
+    defence-form: classpath:forms/ONC-002R-defence-form.pdf
+    counterclaim-form: classpath:forms/ONC-003-counterclaim.pdf
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
