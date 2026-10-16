@@ -342,29 +342,29 @@ aac-manage-case-assignment:
             alias: NOTIFY_MCA_API_KEY
 pcs-frontend:
   enabled: true
-nodejs:
-  image: 'hmctsprod.azurecr.io/pcs/frontend:latest'
-  ingressHost: pcs-frontend-${SERVICE_FQDN}
-  keyVaults:
-    pcs:
-      secrets:
-        - app-insights-connection-string
-        - pcs-frontend-s2s-secret
-        - pcs-frontend-idam-secret
-        - pcs-os-client-lookup-key
-        - pcs-pcq-token-key
-        - launchdarkly-sdk-key
-  environment:
-    PCS_API_URL: http://${SERVICE_FQDN}-java
-    CCD_URL: http://-ccd-data-store-api-${SERVICE_FQDN}
-    CDAM_URL: http://ccd-case-document-am-api-${SERVICE_FQDN}
-    XUI_BASE_URI: http://$xui-${SERVICE_FQDN}
-    REDIRECTS_MANAGE_CASE_RETURN_URL: https://xui-${SERVICE_FQDN}/cases/case-details/PCS/PCS
-    REDIS_CONNECTION_STRING: redis://${SERVICE_NAME}-redis-master:6379
-    OIDC_REDIRECT_URI: https://pcs-frontend-${SERVICE_FQDN}/oauth2/callback
-    PAYMENT_RETURN_URL: https://pcs-frontend-${SERVICE_FQDN}/payment/return
-    CUI_RA_CALLBACK_URL: https://pcs-frontend-${SERVICE_FQDN}/case/:caseReference/respond-to-claim/reasonable-adjustments/callback/:id
-    CUI_RA_LOGOUT_URL: https://pcs-frontend-${SERVICE_FQDN}/logout
+  nodejs:
+    image: 'hmctsprod.azurecr.io/pcs/frontend:latest'
+    ingressHost: pcs-frontend-${SERVICE_FQDN}
+    keyVaults:
+      pcs:
+        secrets:
+          - app-insights-connection-string
+          - pcs-frontend-s2s-secret
+          - pcs-frontend-idam-secret
+          - pcs-os-client-lookup-key
+          - pcs-pcq-token-key
+          - launchdarkly-sdk-key
+    environment:
+      PCS_API_URL: http://${SERVICE_FQDN}-java
+      CCD_URL: http://ccd-data-store-api-${SERVICE_FQDN}
+      CDAM_URL: http://ccd-case-document-am-api-${SERVICE_FQDN}
+      XUI_BASE_URI: http://xui-${SERVICE_FQDN}
+      REDIRECTS_MANAGE_CASE_RETURN_URL: https://xui-${SERVICE_FQDN}/cases/case-details/PCS/PCS
+      REDIS_CONNECTION_STRING: redis://${SERVICE_NAME}-redis-master:6379
+      OIDC_REDIRECT_URI: https://pcs-frontend-${SERVICE_FQDN}/oauth2/callback
+      PAYMENT_RETURN_URL: https://pcs-frontend-${SERVICE_FQDN}/payment/return
+      CUI_RA_CALLBACK_URL: https://pcs-frontend-${SERVICE_FQDN}/case/:caseReference/respond-to-claim/reasonable-adjustments/callback/:id
+      CUI_RA_LOGOUT_URL: https://pcs-frontend-${SERVICE_FQDN}/logout
 redis:
   image:
     registry: hmctsprod.azurecr.io
