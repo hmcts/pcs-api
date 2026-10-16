@@ -109,6 +109,7 @@ export class ActionEnforcementRegistry {
     ['verifyPermissionScreen', new EnforcementAction()],
     ['verifyMissedPaymentsPrePopulated', new EnforcementAction()],
     ['verifyMissedPaymentsPage', new EnforcementAction()],
+    ['resumeDraftApplication', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

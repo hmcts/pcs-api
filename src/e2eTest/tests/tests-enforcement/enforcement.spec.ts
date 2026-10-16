@@ -653,4 +653,22 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
     await performValidation('mainHeader', caseSummary.mainHeader);
     await performAction('deleteDraftApplication');
   });
+
+  test ('Resume the draft application @enforcement @rerun', async ({ page }) => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await expect(page.getByText('Resume draft application', { exact: true }))
+      .toBeVisible();
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+  });
 });
