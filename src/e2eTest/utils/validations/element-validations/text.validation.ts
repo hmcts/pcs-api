@@ -42,6 +42,11 @@ export class TextValidation implements IValidation {
       case 'hintText':
         data.elementType = 'span.govuk-hint'
         break;
+      case 'containerText': {
+        const locator = page.locator('.govuk-details__text');
+        await expect(locator).toContainText(String(data.text));
+        return;
+      }
       case 'warningText':
         const locator = page.locator('.govuk-warning-text__text');
         const actualText = (await locator.textContent())
