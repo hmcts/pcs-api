@@ -798,13 +798,30 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
 });
 
 test.describe('[Enforcement - Delete Draft Application] @enforcement', () => {
-  test('As a Claimant user, the enforcement draft application can be deleted', async () => {
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a warrant of possession', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
       option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('deleteDraftApplication');
+  });
+
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a writ of possession', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
       nextPage: nameAndAddressForEviction.mainHeader,
     });
     await performAction('clickButton', nameAndAddressForEviction.cancelLink);
