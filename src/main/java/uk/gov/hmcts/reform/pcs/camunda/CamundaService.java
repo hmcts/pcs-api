@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -9,7 +10,9 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.WaTaskEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.WaTaskRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
@@ -38,6 +41,7 @@ public class CamundaService {
     private final FeatureToggleService featureToggleService;
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseRepository pcsCaseRepository;
+    private final WaTaskRepository waTaskRepository;
 
     private static final String CREATE = "createTaskMessage";
     private static final String CANCEL = "cancelTasks";
@@ -54,7 +58,8 @@ public class CamundaService {
                           FeatureToggleService featureToggleService,
                           LocationReferenceService locationReferenceService,
                           PcsCaseRepository pcsCaseRepository,
-                          Clock utcClock,
+                          WaTaskRepository waTaskRepository,
+                          @Qualifier("utcClock") Clock utcClock,
                           @Value("${camunda.pcs-api-env}") String pcsApiEnvironment) {
         this.workAllocationWorkflowApi = workAllocationWorkflowApi;
         this.authTokenGenerator = authTokenGenerator;
@@ -62,29 +67,45 @@ public class CamundaService {
         this.featureToggleService = featureToggleService;
         this.locationReferenceService = locationReferenceService;
         this.pcsCaseRepository = pcsCaseRepository;
+        this.waTaskRepository = waTaskRepository;
         this.utcClock = utcClock;
         this.pcsApiEnvironment = pcsApiEnvironment;
     }
 
     public void createTask(long caseId, TaskType taskType) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock), Map.of());
     }
 
     public void createTask(long caseId, TaskType taskType, Duration delay) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay));
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay), Map.of());
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock));
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of());
+    }
+
+    public void createTask(long caseId, TaskType taskType, String taskDescription, Map<String, Object> taskDetails) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), taskDetails);
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
+        createTask(caseId, taskType, taskDescription, scheduledTo, Map.of());
+    }
+
+    public void createTask(
+        long caseId,
+        TaskType taskType,
+        String taskDescription,
+        Instant scheduledTo,
+        Map<String, Object> taskDetails
+    ) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
+            .taskDetails(taskDetails)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
@@ -105,7 +126,8 @@ public class CamundaService {
                 taskData.getCaseReference(),
                 taskData.getTaskType(),
                 taskData.getTaskDescription(),
-                taskData.getIdempotencyKey()
+                taskData.getIdempotencyKey(),
+                taskData.getTaskDetails()
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
@@ -127,7 +149,12 @@ public class CamundaService {
                 .scheduledTo(scheduledTo));
     }
 
-    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey) {
+    private void requestTaskCreation(
+        long caseId, TaskType taskType,
+        String taskDescription,
+        UUID idempotencyKey,
+        Map<String, Object> taskDetails
+    ) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -167,7 +194,12 @@ public class CamundaService {
         processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("workingDaysAllowed", dmnIntegerValue(99));
 
-        addLocationDataToTask(caseId, processVariables);
+        PcsCaseEntity pcsCaseEntity = loadCase(caseId);
+
+        addLocationDataToTask(pcsCaseEntity, processVariables);
+
+        WaTaskEntity waTaskEntity = saveWaTaskRequest(pcsCaseEntity, taskType, Action.CREATE, taskDetails);
+        processVariables.put("pcsTaskId", dmnIntegerValue(waTaskEntity.getId()));
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -198,6 +230,9 @@ public class CamundaService {
             .all(true)
             .build();
 
+        PcsCaseEntity pcsCaseEntity = loadCase(caseId);
+        WaTaskEntity waTaskEntity = saveWaTaskRequest(pcsCaseEntity, taskType, Action.CANCEL, null);
+        processVariables.put("pcsTaskId", dmnIntegerValue(waTaskEntity.getId()));
         sendCamundaRequest(request, caseId);
     }
 
@@ -230,9 +265,8 @@ public class CamundaService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    private void addLocationDataToTask(long caseId, Map<String, DmnValue<?>> processVariables) {
+    private void addLocationDataToTask(PcsCaseEntity pcsCaseEntity, Map<String, DmnValue<?>> processVariables) {
         try {
-            PcsCaseEntity pcsCaseEntity = loadCase(caseId);
             Integer locationId = pcsCaseEntity.getBaseLocation();
             List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(locationId));
             String locationName = CollectionUtils.isEmpty(courtVenues) ? UNABLE_TO_FIND_LOCATION :
@@ -247,6 +281,23 @@ public class CamundaService {
             processVariables.put("taskLocationName", dmnStringValue(UNABLE_TO_FIND_LOCATION));
             processVariables.put("taskRegion", dmnIntegerValue(1));
         }
+    }
+
+    private WaTaskEntity saveWaTaskRequest(
+        PcsCaseEntity pcsCaseEntity,
+        TaskType taskType,
+        Action action,
+        Map<String, Object> taskDetails
+    ) {
+        WaTaskEntity waTaskEntity = WaTaskEntity.builder()
+            .action(action)
+            .taskType(taskType)
+            .taskDetails(taskDetails)
+            .requestedAt(Instant.now(utcClock))
+            .pcsCase(pcsCaseEntity)
+            .build();
+
+        return waTaskRepository.save(waTaskEntity);
     }
 
 }

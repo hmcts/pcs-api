@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -67,7 +68,9 @@ class GenAppWaTaskServiceTest {
     @MethodSource("genAppTypeToTaskTypeScenarios")
     void shouldCreateTaskForGenApp(GenAppType genAppType, TaskType expectedTaskType) {
         // Given
+        UUID genAppId = UUID.randomUUID();
         GenAppEntity genAppEntity = GenAppEntity.builder()
+            .id(genAppId)
             .type(genAppType)
             .build();
 
@@ -79,7 +82,12 @@ class GenAppWaTaskServiceTest {
         underTest.createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
 
         // Then
-        verify(camundaService).createTask(CASE_REFERENCE, expectedTaskType, expectedDescription);
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            expectedTaskType,
+            expectedDescription,
+            Map.of("genAppId", genAppId)
+        );
     }
 
     private static Stream<Arguments> genAppTypeToTaskTypeScenarios() {
