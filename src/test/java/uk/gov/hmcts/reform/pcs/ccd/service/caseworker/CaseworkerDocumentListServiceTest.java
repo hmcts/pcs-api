@@ -139,6 +139,25 @@ class CaseworkerDocumentListServiceTest {
             .contains("Counter claim CC1 - submitted 12 May 2026");
     }
 
+    @Test
+    void shouldUseStoredRankWhenRelease14IsOn() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(PartyEntity.builder().id(DEFENDANT_ID).build())
+            .rank(3)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(LocalDateTime.of(2026, 5, 12, 10, 0))
+            .build();
+
+        DynamicStringList result = underTest.buildRelatedSubmissionsList(
+            caseWithParties(), List.of(), List.of(counterClaim));
+
+        assertThat(result.getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .contains("Counter claim CC3 - submitted 12 May 2026");
+    }
+
     private static PcsCaseEntity caseWithParties() {
         PartyEntity claimant = PartyEntity.builder()
             .id(CLAIMANT_ID)
