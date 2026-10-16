@@ -1,0 +1,72 @@
+name: DB schema lint
+
+# Applies the Flyway migrations to a throwaway Postgres and lints the resulting schema against
+# the conventions in config/schemalint/.schemalintrc.js. Postgres and Flyway are started by
+# bin/db-schema-lint.sh rather than by a service container, so this runs the same way locally.
+
+on:
+  pull_request:
+
+concurrency:
+  group: db-schema-lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: DB schema lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # The job runs on every PR so the check always reports, but only does the work when
+      # something that can move the schema or the rules has changed.
+      - name: Detect schema changes
+        id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed='false'
+          if git diff --name-only --diff-filter=ACMRT "${BASE_SHA}...${HEAD_SHA}" -- \
+            src/main/resources/db/migration \
+            config/schemalint \
+            bin/db-schema-lint.sh \
+            .github/workflows/db-schema-lint.yml | grep -q .; then
+            changed='true'
+          fi
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node
+        if: steps.detect.outputs.changed == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: config/schemalint/yarn.lock
+
+      # shell: bash for pipefail — the default shell would report the exit status of tee.
+      - name: Lint database schema
+        if: steps.detect.outputs.changed == 'true'
+        shell: bash
+        run: bin/db-schema-lint.sh 2>&1 | tee db-schema-lint.log
+
+      - name: Publish findings to the job summary
+        if: failure() && steps.detect.outputs.changed == 'true'
+        run: |
+          {
+            echo '## Database schema lint findings'
+            echo
+            echo 'Rules live in `config/schemalint/.schemalintrc.js`. Reproduce locally with `bin/db-schema-lint.sh`.'
+            echo
+            echo '```'
+            cat db-schema-lint.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,1070 @@
+[
+  {
+    "identifier": "public.case_flag.case_flag_flag_ref_data_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.case_notification.fk_case_notification_case",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.case_notification.fk_case_notification_claim",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.case_notification.fk_case_notification_party",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.case_party_flag.case_party_flag_flag_ref_data_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.claim_party_contact_details.claim_party_contact_details_address_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.claim_party_contact_details.claim_party_contact_details_case_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.claim_party_contact_details.claim_party_contact_details_organisation_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.claim_party_organisation.claim_party_organisation_organisation_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.claim_party_organisation.claim_party_organisation_party_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.claim_party.claim_party_acting_for_party_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.counter_claim.counter_claim_case_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.counter_claim.counter_claim_party_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.counter_claim.counter_claim_sot_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.defendant_response.defendant_response_party_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.fee_payment.fk_fee_payment_help_with_fees",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.general_application.general_application_hwf_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.general_application.general_application_party_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.general_application.general_application_sot_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.general_application.general_application_submission_document_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.party_attribute_assertion.party_attribute_assertion_created_by_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.party_attribute_assertion.party_attribute_assertion_evidence_document_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.party_attribute_assertion.party_attribute_assertion_last_updated_by_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.party.party_address_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.party.party_contact_preferences_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.pcs_case.pcs_case_property_address_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "public.regular_expenses.regular_expenses_hc_id_fkey",
+    "rule": "index-referencing-column"
+  },
+  {
+    "identifier": "draft.draft_case_data.event_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "draft.draft_case_data.organisation_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.address.address_line1",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.address.address_line2",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.address.address_line3",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.address.country",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.address.county",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.address.post_town",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.address.postcode",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.asb_prohibited_conduct.antisocial_behaviour_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.asb_prohibited_conduct.claiming_standard_contract_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.asb_prohibited_conduct.illegal_purposes_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.asb_prohibited_conduct.other_prohibited_conduct_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.asb_prohibited_conduct.periodic_contract_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.address_line1",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.address_line2",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.address_line3",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.country",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.county",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.organisation_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.organisation_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.post_code",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.cached_organisation_response.post_town",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.flag_comment",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.flag_comment_cy",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.flag_update_comment",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.other_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.other_description_cy",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.paths",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.status",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.sub_type_key",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.sub_type_value",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.sub_type_value_cy",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_flag.visibility",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_link_reason.reason_code",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_link.ccd_list_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_note.created_by",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_note.note",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_notification.claim_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_notification.recipient",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_notification.status",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_notification.type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.flag_comment",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.flag_comment_cy",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.flag_update_comment",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.other_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.other_description_cy",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.paths",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.status",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.sub_type_key",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.sub_type_value",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.sub_type_value_cy",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_party_flag.visibility",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_review_date.description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.case_review_date.reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_activity_log.activity_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_activity_log.status",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_ground.category",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_ground.code",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_ground.description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_ground.reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_party_contact_details.contact_reference",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_party_contact_details.email_address",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_party_contact_details.phone_number",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim_uploaded_document_checklist.document_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim.additional_reasons",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim.claimant_circumstances",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim.defendant_circumstances",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim.no_electrical_installation_condition_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim.no_energy_performance_certificate_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim.no_gas_safety_report_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.claim.pre_action_protocol_incomplete_explanation",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.counter_claim.claim_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.counter_claim.counterclaim_for",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.counter_claim.counterclaim_reasons",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.counter_claim.hwf_reference_number",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.counter_claim.other_order_request_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.counter_claim.other_order_request_facts",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.counter_claim.status",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.defendant_response.channel",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.defendant_response.dispute_claim_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.defendant_response.ingestion_source",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.defendant_response.other_considerations_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.defendant_response.status",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.document.content_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.document.description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.document.removal_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.animals_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.criminal_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.firearms_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.police_social_services_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.protest_group_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.verbal_threats_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.violent_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.vulnerable_category",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_risk_profile.vulnerable_reason_text",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant_of_restitution.additional_information_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant_of_restitution.clarification_on_access_difficulty_text",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant_of_restitution.how_defendants_returned",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant_of_restitution.language_used",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.additional_information_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.clarification_on_access_difficulty_text",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.defendants_dob_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.firm_name_legal_rep",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.full_name_claimant",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.full_name_legal_rep",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.language_used",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.position_claimant",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.position_legal_rep",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_warrant.repayment_choice",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_writ_of_restitution.language_used",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_writ.hceo_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_writ.language_used",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.enf_writ.repayment_choice",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.fee_payment.external_reference",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.fee_payment.payment_callback_handler_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.fee_payment.service_request_reference",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.fee_payment.status",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.flag_ref_data.flag_code",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.flag_ref_data.name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.flag_ref_data.name_cy",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.flag_ref_data.visibility",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.general_application.client_reference",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.general_application.language_used",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.general_application.something_else_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.general_application.state",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.general_application.type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.general_application.what_order_wanted",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.general_application.without_notice_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.hearing.additional_information",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.hearing.cancellation_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.hearing.notes",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.hearing.notice_wording",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.hearing.other_hearing_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.hearing.type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.help_with_fees.hwf_reference",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.additional_circumstances_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.debt_contribution_frequency",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.dependant_children_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.exceptional_hardship_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.expense_frequency",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.other_dependant_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.other_tenants_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.household_circumstances.regular_expenses",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.notice_of_possession.notice_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.notice_of_possession.notice_statement",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.notice_of_possession.notice_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.notice_of_possession.serving_method",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.notice_of_possession.unable_to_upload_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.organisation.organisation_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.organisation.organisation_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.organisation.organisation_profile_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party_access_code.code",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party_access_code.role",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party_attribute_assertion.attributes_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.email_address",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.first_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.last_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.org_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.organisation_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.organisation_profile_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.pcq_id",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.phone_number",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.party.text_message_number",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.payment_agreement.additional_contribution_frequency",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.payment_agreement.payment_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.payment_agreement.repayment_agreed_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.pcs_case.claimant_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.pcs_case.legislative_country",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.possession_alternatives.dot_housing_act_section",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.possession_alternatives.dot_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.possession_alternatives.dot_statement_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.possession_alternatives.supension_of_rtb_housing_act_section",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.possession_alternatives.supension_of_rtb_reason",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.postcode_court_mapping.legislative_country",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.postcode_court_mapping.postcode",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.hearing_enhancement_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.language_support_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.reasonable_adjustment_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.reasonable_adjustments_required",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.sign_language_support_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.travel_support_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.vulnerable_characteristic_description",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.reasonable_adjustments.welsh_language_requirements",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.regular_expenses.expense_frequency",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.regular_expenses.expense_type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.regular_income.other_income_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.rent_arrears.recovery_attempt_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.statement_of_truth.completed_by",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.statement_of_truth.firm_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.statement_of_truth.full_name",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.statement_of_truth.position_held",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.tenancy_licence.other_rent_frequency",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.tenancy_licence.other_type_details",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.tenancy_licence.reasons_for_no_tenancy_licence",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.tenancy_licence.rent_frequency",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "public.tenancy_licence.type",
+    "rule": "prefer-text-to-varchar"
+  },
+  {
+    "identifier": "draft.draft_case_data.created_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.cached_organisation_response.last_modified_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_flag.date_time_created",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_flag.date_time_modified",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_link.created_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_notification.last_updated_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_notification.scheduled_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_notification.submitted_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_party_flag.date_time_created",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_party_flag.date_time_modified",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.case_review_date.created_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.claim_activity_log.created_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.claim_party_organisation.end_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.claim_party_organisation.start_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.counter_claim.claim_issued_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.counter_claim.claim_submitted_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.counter_claim.last_modified_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.defendant_response.response_deleted_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.defendant_response.response_received_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.defendant_response.response_submitted_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.document.removed_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.enf_case.bailiff_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.enf_warrant_of_restitution.created",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.enf_warrant.created",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.enf_writ_of_restitution.created",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.enf_writ.created",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.fee_payment.request_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.general_application.application_issued_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.general_application.application_submitted_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.hearing.hearing_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.notice_of_possession.notice_date_time",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.organisation.created_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.organisation.last_modified_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.party_access_code.created",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.party_attribute_assertion.created_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.party_attribute_assertion.last_updated_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.pcs_case.created_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.regular_income_item.created_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.regular_income_item.updated_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.regular_income.created_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.regular_income.updated_at",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.statement_of_truth.completed_date",
+    "rule": "prefer-timestamptz-to-timestamp"
+  },
+  {
+    "identifier": "public.cached_organisation_response",
+    "rule": "require-primary-key"
+  }
+]
