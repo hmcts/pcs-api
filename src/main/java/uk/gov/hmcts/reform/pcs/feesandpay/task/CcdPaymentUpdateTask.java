@@ -39,8 +39,7 @@ public class CcdPaymentUpdateTask {
     @Bean
     public CustomTask<CcdPaymentStateUpdateTaskData> ccdPaymentUpdateTask() {
         return Tasks.custom(CCD_PAYMENT_DATE_TASK_DESCRIPTOR)
-            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetriesCcdPaymentUpdate,
+            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(maxRetriesCcdPaymentUpdate,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(ccdPaymentUpdateBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
