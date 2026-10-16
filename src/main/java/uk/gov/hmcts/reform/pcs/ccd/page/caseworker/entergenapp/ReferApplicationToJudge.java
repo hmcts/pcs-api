@@ -4,8 +4,10 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldNotEquals;
 
 public class ReferApplicationToJudge implements CcdPageConfiguration {
 
@@ -19,6 +21,7 @@ public class ReferApplicationToJudge implements CcdPageConfiguration {
             .page("referApplicationToJudge")
             .pageLabel("Refer without notice application to judge")
             .showCondition(ShowConditions.and(
+                fieldNotEquals("enter_genapp_ApplicationTypeOption", EnterGenAppType.SUSPEND),
                 fieldEquals("enter_genapp_AllPartiesAgree", VerticalYesNo.NO),
                 fieldEquals("enter_genapp_WithoutNotice", VerticalYesNo.YES))
             )

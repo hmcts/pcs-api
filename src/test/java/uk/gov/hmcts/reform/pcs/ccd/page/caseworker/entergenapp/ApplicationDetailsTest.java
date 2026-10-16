@@ -11,10 +11,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -50,7 +53,7 @@ class ApplicationDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.ADJOURN)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.ADJOURN))
                 .dateReceived(dateReceived)
                 .build())
             .build();
@@ -77,12 +80,51 @@ class ApplicationDetailsTest extends BasePageTest {
     }
 
     @Test
+    void shouldMapSuspendApplicationTypeFromSelectedDynamicListOption() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enterGenAppRequest(EnterGenAppRequest.builder()
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SUSPEND))
+                .dateReceived(FIXED_CURRENT_DATE.minusDays(1))
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+        assertThat(caseData.getEnterGenAppRequest().getApplicationTypeOption()).isEqualTo(EnterGenAppType.SUSPEND);
+    }
+
+    @Test
+    void shouldClearConsentAndNoticeAnswersWhenSuspendIsSelected() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enterGenAppRequest(EnterGenAppRequest.builder()
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SUSPEND))
+                .dateReceived(FIXED_CURRENT_DATE.minusDays(1))
+                .allPartiesAgree(VerticalYesNo.NO)
+                .withoutNotice(VerticalYesNo.YES)
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+        assertThat(caseData.getEnterGenAppRequest().getAllPartiesAgree()).isNull();
+        assertThat(caseData.getEnterGenAppRequest().getWithoutNotice()).isNull();
+    }
+
+    @Test
     void shouldAcceptValidSomethingElseDetails() {
         // Given
         String details = "some categories";
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SOMETHING_ELSE))
                 .somethingElseDetails(details)
                 .build())
             .build();
@@ -100,7 +142,7 @@ class ApplicationDetailsTest extends BasePageTest {
         String longText = "a".repeat(MEDIUM_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SOMETHING_ELSE))
                 .somethingElseDetails(longText)
                 .build())
             .build();
@@ -123,7 +165,7 @@ class ApplicationDetailsTest extends BasePageTest {
         String longText = "a".repeat(MEDIUM_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.ADJOURN)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.ADJOURN))
                 .somethingElseDetails(longText)
                 .build())
             .build();
@@ -133,6 +175,15 @@ class ApplicationDetailsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrorMessageOverride()).isNull();
+    }
+
+    private DynamicStringList applicationTypeOptionList(EnterGenAppType applicationType) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                       .code(applicationType.name())
+                       .label(applicationType.getLabel())
+                       .build())
+            .build();
     }
 
 }
