@@ -71,6 +71,7 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
 
         System.out.println("LegalRepStartEventStrategy pcsCase: " + pcsCase);
+        log.info("LegalRepStartEventStrategy pcsCase: " + pcsCase);
         return pcsCase;
     }
 
