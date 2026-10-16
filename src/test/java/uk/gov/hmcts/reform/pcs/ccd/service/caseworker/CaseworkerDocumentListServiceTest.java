@@ -9,19 +9,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.GEN_APP_ID_PREFIX;
 
 class CaseworkerDocumentListServiceTest {
@@ -30,11 +36,15 @@ class CaseworkerDocumentListServiceTest {
     private static final UUID DEFENDANT_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final String GEN_APP_ID = "33333333-3333-3333-3333-333333333333";
 
+    private FeatureToggleService featureToggleService;
     private CaseworkerDocumentListService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseworkerDocumentListService(new PartyService(null, null, null, null, null));
+        featureToggleService = mock(FeatureToggleService.class);
+        underTest = new CaseworkerDocumentListService(
+            new PartyService(null, null, null, null, null),
+            featureToggleService);
     }
 
     @Test
@@ -108,6 +118,44 @@ class CaseworkerDocumentListServiceTest {
 
         assertThat(result.getValue().getCode()).isEqualTo(CaseworkerDocumentType.WITNESS_STATEMENT.name());
         assertThat(result.getValue().getLabel()).isEqualTo(CaseworkerDocumentType.WITNESS_STATEMENT.getLabel());
+    }
+
+    @Test
+    void shouldUseDefendantNumberWhenRelease14IsOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(PartyEntity.builder().id(DEFENDANT_ID).build())
+            .rank(3)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(LocalDateTime.of(2026, 5, 12, 10, 0))
+            .build();
+
+        DynamicStringList result = underTest.buildRelatedSubmissionsList(
+            caseWithParties(), List.of(), List.of(counterClaim));
+
+        assertThat(result.getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .contains("Counter claim CC1 - submitted 12 May 2026");
+    }
+
+    @Test
+    void shouldUseStoredRankWhenRelease14IsOn() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(PartyEntity.builder().id(DEFENDANT_ID).build())
+            .rank(3)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(LocalDateTime.of(2026, 5, 12, 10, 0))
+            .build();
+
+        DynamicStringList result = underTest.buildRelatedSubmissionsList(
+            caseWithParties(), List.of(), List.of(counterClaim));
+
+        assertThat(result.getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .contains("Counter claim CC3 - submitted 12 May 2026");
     }
 
     private static PcsCaseEntity caseWithParties() {

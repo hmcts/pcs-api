@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +52,8 @@ class TranslationWAServiceTest {
     private PartyService partyService;
     @Mock
     private DocumentNameService documentNameService;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;

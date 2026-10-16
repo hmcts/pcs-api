@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -56,6 +58,8 @@ class StartHandlerTest {
     @Mock
     private PartyService partyService;
     @Mock
+    private FeatureToggleService featureToggleService;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private ClaimEntity mainClaim;
@@ -67,7 +71,8 @@ class StartHandlerTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
 
-        underTest = new StartHandler(pcsCaseService, new CaseworkerDocumentListService(partyService));
+        underTest = new StartHandler(
+            pcsCaseService, new CaseworkerDocumentListService(partyService, featureToggleService));
     }
 
     @ParameterizedTest
@@ -106,12 +111,13 @@ class StartHandlerTest {
 
         PartyEntity claimant1Party = PartyEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity defendant4Party = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(partyService.getPartyLabel(mainClaim, claimant1Party.getId())).thenReturn("Claimant 1 Label");
-        when(partyService.getPartyLabel(mainClaim, defendant4Party.getId())).thenReturn("Defendant 1 Label");
 
         CounterClaimEntity counterClaimEntity1 = createCounterClaimEntity(baseDateTime.minusDays(5), claimant1Party);
+        counterClaimEntity1.setRank(1);
         CounterClaimEntity counterClaimEntity2 = createCounterClaimEntity(baseDateTime.plusDays(5), defendant4Party);
+        counterClaimEntity2.setRank(2);
         CounterClaimEntity counterClaimEntity3 = createCounterClaimEntity(baseDateTime.plusDays(8), defendant4Party);
+        counterClaimEntity3.setRank(3);
         counterClaimEntity3.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         CounterClaimEntity counterClaimEntity4 = createCounterClaimEntity(baseDateTime.plusDays(9), defendant4Party);
         counterClaimEntity4.setStatus(null);
@@ -125,6 +131,7 @@ class StartHandlerTest {
             .legislativeCountry(ENGLAND)
             .build();
 
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         when(pcsCaseEntity.getCounterClaims())
             .thenReturn(List.of(counterClaimEntity1, counterClaimEntity2, counterClaimEntity3, counterClaimEntity4));
 
@@ -139,7 +146,7 @@ class StartHandlerTest {
         assertThat(listItems).map(DynamicStringListElement::getLabel)
             .containsExactly(
                 "General Application GA2 - submitted 14 May 2026",
-                "Counter claim CC1 - submitted 9 May 2026",
+                "Counter claim CC2 - submitted 9 May 2026",
                 "General Application GA1 - submitted 4 May 2026",
                 "Counter claim CC1 - submitted 29 April 2026",
                 "Not related to an application or counterclaim"
