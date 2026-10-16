@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +19,16 @@ public class BlobUploader {
     static final String CONTENT_TYPE = "application/json";
 
     private final BlobContainerClient blobContainerClient;
+    private final String blobPrefix;
 
-    public BlobUploader(BlobContainerClient blobContainerClient) {
+    public BlobUploader(BlobContainerClient blobContainerClient,
+                        @Value("${sdp.export.blob-prefix}") String blobPrefix) {
         this.blobContainerClient = blobContainerClient;
+        this.blobPrefix = blobPrefix;
     }
 
-    public void upload(String blobName, byte[] json) {
+    public void upload(String fileName, byte[] json) {
+        String blobName = blobPrefix + fileName;
         try {
             BlobClient blobClient = blobContainerClient.getBlobClient(blobName);
             BlobParallelUploadOptions options = new BlobParallelUploadOptions(BinaryData.fromBytes(json))
