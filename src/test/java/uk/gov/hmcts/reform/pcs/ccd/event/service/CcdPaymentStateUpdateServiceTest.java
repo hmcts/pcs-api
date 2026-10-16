@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -53,13 +53,20 @@ class CcdPaymentStateUpdateServiceTest {
     private NotificationService notificationService;
     @Mock
     private ClaimEntity claim;
+    @Mock
+    private SchedulerClient schedulerClient;
 
     @InjectMocks
     private CcdPaymentStateUpdateService underTest;
 
-    @Test
-    void shouldStartEventAndSubmitPaymentSuccessfully() {
+    @ParameterizedTest
+    @MethodSource("eventIds")
+    void shouldStartEventAndSubmitPaymentSuccessfully(EventId eventId) {
+        // Given // When
+        underTest.submitPaymentSuccess(CASE_ID, eventId);
 
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(any());
     }
 
     @ParameterizedTest
@@ -69,7 +76,7 @@ class CcdPaymentStateUpdateServiceTest {
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_BEARER);
         when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_BEARER);
         StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_BEARER).build();
-        when(coreCaseDataApi.startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), claimIssuePayment.name()))
+        when(coreCaseDataApi.startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), eventId.name()))
             .thenReturn(startEventResponse);
 
         CaseResource expectedCaseResource = new CaseResource();
@@ -84,13 +91,13 @@ class CcdPaymentStateUpdateServiceTest {
         underTest.updateCcd(taskData);
 
         // Then
-        verify(coreCaseDataApi).startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), claimIssuePayment.name());
+        verify(coreCaseDataApi).startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), eventId.name());
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
         verify(coreCaseDataApi).createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
                                             contentCaptor.capture());
         CaseDataContent submitted = contentCaptor.getValue();
         assertThat(submitted.getEventToken()).isEqualTo(IDAM_BEARER);
-        assertThat(submitted.getEvent().getId()).isEqualTo(claimIssuePayment.name());
+        assertThat(submitted.getEvent().getId()).isEqualTo(eventId.name());
     }
 
     private static Stream<Arguments> eventIds() {
