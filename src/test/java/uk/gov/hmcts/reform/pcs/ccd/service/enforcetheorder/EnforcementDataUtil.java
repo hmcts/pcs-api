@@ -9,8 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddress
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -64,24 +63,6 @@ public final class EnforcementDataUtil {
                 .build();
     }
 
-    public static EnforcementOrder buildEnforcementOrderWithVulnerability() {
-        return EnforcementOrder.builder()
-                .chooseEnforcementType(buildEnforcementTypes(WARRANT))
-                .warrantDetails(WarrantDetails.builder()
-                        .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                .correctNameAndAddress(VerticalYesNo.YES)
-                                .build())
-                        .build())
-                .rawWarrantDetails(RawWarrantDetails.builder()
-                        .vulnerablePeoplePresent(YesNoNotSure.YES)
-                        .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
-                                .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS)
-                                .vulnerableReasonText("Vulnerability reason")
-                                .build())
-                        .build())
-                .build();
-    }
-
     public static EnforcementOrder buildEnforcementOrderWithSelectedDefendants(
         List<DynamicStringListElement> selectedValues,
         List<DynamicStringListElement> listItems) {
@@ -104,8 +85,21 @@ public final class EnforcementDataUtil {
     }
 
     public static EnforcementOrder buildEnforcementOrderWithSpecifiedType(SelectEnforcementType enforcementType) {
-        return EnforcementOrder.builder()
-                .chooseEnforcementType(buildEnforcementTypes(enforcementType))
+        EnforcementOrder.EnforcementOrderBuilder builder = EnforcementOrder.builder()
+                .chooseEnforcementType(buildEnforcementTypes(enforcementType));
+
+        if (enforcementType == SelectEnforcementType.WRIT) {
+            return builder
+                    .writDetails(WritDetails.builder()
+                            .nameAndAddressForEviction(uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ
+                                    .NameAndAddressForEviction.builder()
+                                    .correctNameAndAddress(VerticalYesNo.YES)
+                                    .build())
+                            .build())
+                    .build();
+        }
+
+        return builder
                 .warrantDetails(WarrantDetails.builder()
                         .nameAndAddressForEviction(NameAndAddressForEviction.builder()
                                 .correctNameAndAddress(VerticalYesNo.YES)
