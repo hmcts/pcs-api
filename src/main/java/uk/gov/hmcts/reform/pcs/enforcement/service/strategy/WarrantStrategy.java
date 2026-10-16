@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.SelectedDefendantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.StatementOfTruthService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatementOfTruthService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WarrantDetailsMapper;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.SelectedDefendantsMapper;
@@ -19,7 +19,7 @@ import java.util.List;
 public class WarrantStrategy implements EnforcementTypeStrategy {
 
     private final RiskProfileService riskProfileService;
-    private final StatementOfTruthService statementOfTruthService;
+    private final EnforcementStatementOfTruthService enforcementStatementOfTruthService;
     private final SelectedDefendantsMapper selectedDefendantsMapper;
     private final WarrantDetailsMapper warrantDetailsMapper;
 
@@ -27,8 +27,8 @@ public class WarrantStrategy implements EnforcementTypeStrategy {
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         processWarrant(enforcementOrder, enforcementOrderEntity);
         riskProfileService.processRisk(enforcementOrder, enforcementOrderEntity);
-        statementOfTruthService.processStatementOfTruth(enforcementOrder.getWarrantDetails().getStatementOfTruth(),
-                enforcementOrderEntity);
+        enforcementStatementOfTruthService.processStatementOfTruth(
+                enforcementOrder.getWarrantDetails().getStatementOfTruth(), enforcementOrderEntity);
         processSelectedDefendants(enforcementOrderEntity);
     }
 
