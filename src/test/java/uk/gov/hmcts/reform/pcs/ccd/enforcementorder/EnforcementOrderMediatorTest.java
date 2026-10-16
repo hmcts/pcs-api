@@ -261,7 +261,6 @@ class EnforcementOrderMediatorTest {
         );
     }
 
-    // Helper methods
     private PcsCaseEntity createPcsCaseEntity() {
         PcsCaseEntity entity = new PcsCaseEntity();
         ClaimEntity claimEntity = new ClaimEntity();
