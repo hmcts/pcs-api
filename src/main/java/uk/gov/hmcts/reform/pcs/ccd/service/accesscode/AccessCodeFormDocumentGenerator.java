@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -36,6 +38,7 @@ import java.util.stream.Stream;
 public class AccessCodeFormDocumentGenerator {
 
     static final String TEMPLATE_ID = "CV-PCS-LET-ENG-Defendant-Access-Code.docx";
+    static final String TEMPLATE_ID_V2 = "CV-PCS-LET-ENG-Defendant-Access-Code-V2.docx";
     private static final String OUTPUT_FILENAME_PREFIX = "Defendant Access Code";
     private static final String PERSONS_UNKNOWN = "Persons unknown";
 
@@ -47,6 +50,7 @@ public class AccessCodeFormDocumentGenerator {
     private final RecipientAddressResolver recipientAddressResolver;
     private final Clock ukClock;
     private final String respondOnlineUrl;
+    private final FeatureToggleService featureToggleService;
 
     public AccessCodeFormDocumentGenerator(
         DocAssemblyService docAssemblyService,
@@ -56,7 +60,8 @@ public class AccessCodeFormDocumentGenerator {
         CaseReferenceFormatter caseReferenceFormatter,
         RecipientAddressResolver recipientAddressResolver,
         @Qualifier("ukClock") Clock ukClock,
-        @Value("${access-code-form.respond-online-url}") String respondOnlineUrl
+        @Value("${access-code-form.respond-online-url}") String respondOnlineUrl,
+        FeatureToggleService featureToggleService
     ) {
         this.docAssemblyService = docAssemblyService;
         this.locationReferenceService = locationReferenceService;
@@ -66,6 +71,7 @@ public class AccessCodeFormDocumentGenerator {
         this.recipientAddressResolver = recipientAddressResolver;
         this.ukClock = ukClock;
         this.respondOnlineUrl = respondOnlineUrl;
+        this.featureToggleService = featureToggleService;
     }
 
     public String generate(PcsCaseEntity pcsCaseEntity,
@@ -86,11 +92,15 @@ public class AccessCodeFormDocumentGenerator {
             .accessCode(plaintextAccessCode)
             .issuedOn(LocalDate.now(ukClock))
             .url(respondOnlineUrl)
+            .courtName(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? servingCourt.courtName() : null)
             .build();
 
         String outputFilename = OUTPUT_FILENAME_PREFIX + " " + defendant.getId();
 
-        return docAssemblyService.generateDocument(payload, TEMPLATE_ID, OutputType.PDF, outputFilename);
+        String templateId = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
+            ? TEMPLATE_ID_V2 : TEMPLATE_ID;
+
+        return docAssemblyService.generateDocument(payload, templateId, OutputType.PDF, outputFilename);
     }
 
     private String resolveClaimantName(ClaimEntity mainClaim) {

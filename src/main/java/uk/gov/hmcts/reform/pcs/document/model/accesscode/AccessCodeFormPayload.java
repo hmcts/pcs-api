@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.model.accesscode;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
@@ -25,5 +26,7 @@ public class AccessCodeFormPayload implements FormPayload {
     private String accessCode;
     private LocalDate issuedOn;
     private String url;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String courtName;
 
 }
