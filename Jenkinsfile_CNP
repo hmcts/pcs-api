@@ -26,6 +26,9 @@ def secrets = [
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
     secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
     secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
+    secret('pcs-frontend-idam-secret', 'PCS_FRONTEND_IDAM_SECRET'),
+    secret('pcs-local-auth-automation-uid', 'PCS_LOCAL_AUTH_AUTOMATION_UID'),
+    secret('launchdarkly-sdk-key', 'LAUNCHDARKLY_SDK_KEY'),
   ],
   'ccd-${env}': [
     secret('session-keys', 'SESSION_KEYS')
@@ -236,7 +239,37 @@ withPipeline(type, product, component) {
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
   }
+  
+ afterSuccess('functionalTest:preview') {
+ if (env.CCD_ENABLED == "true") {
+    dir('pcs-frontend-e2e') {
+     deleteDir()
+     sh 'git clone --depth=1 --branch=master https://github.com/hmcts/pcs-frontend.git .'
+     
+     withEnv([
+       "TEST_URL=https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+       "PCS_API_URL=https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+       "CASE_TYPE_ID=PCS",
+       "DATA_STORE_URL_BASE=https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+       "CDAM_URL=https://ccd-case-document-am-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+       "E2E_TEST_SCOPE=@sanity",
+       "CI=true",
 
+        ]) {
+          try {
+            sh '''
+              node --version
+              yarn install --immutable
+              yarn test:functional
+
+            '''
+          } finally {
+            publishHTML([reportDir: 'allure-report', reportFiles: 'index.html', reportName: 'Frontend E2E Test Report', allowMissing: true, keepAll: true, alwaysLinkToLastBuild: true])
+          }
+        }
+      }
+    }
+  }
   afterAlways('smoketest:aat') {
     archiveSmokeTestReports()
   }
@@ -422,3 +455,4 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
 }
+
