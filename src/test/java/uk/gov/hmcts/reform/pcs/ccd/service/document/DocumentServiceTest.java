@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -30,10 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceDocumentType;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceOfDefendants;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.ClaimantDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DefendantDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
@@ -466,92 +461,37 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(List.of());
     }
 
-
-    @ParameterizedTest
-    @EnumSource(EvidenceDocumentType.class)
-    void shouldMapAllEvidenceDocumentTypes(EvidenceDocumentType evidenceDocumentType) {
+    @Test
+    void shouldCreateDocumentsAsSuppliedWithoutRenaming() {
         // Given
-        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
-                .document(Document.builder()
-                        .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-                        .filename("file-WITNESS_STATEMENT")
-                        .binaryUrl("bin-WITNESS_STATEMENT")
-                        .categoryId("cat-WITNESS_STATEMENT")
-                        .build())
-                .documentType(evidenceDocumentType)
-                .build();
-
-        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
-                List.of(ListValue.<EvidenceOfDefendants>builder()
-                        .id("1").value(evidenceDocument).build());
-
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
-                        .additionalDocuments(evidenceDocuments)
-                        .build())
-                .build();
-
-        // When
-        underTest.createAllDocuments(enforcementOrder);
-
-        // Then
-        DocumentType expectedDocumentType = DocumentType.valueOf(evidenceDocumentType.name());
-
-        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
-
-        assertThat(capturedEntities)
-                .extracting(DocumentEntity::getType)
-                .containsExactly(expectedDocumentType);
-    }
-
-    @Test
-    void shouldPersistNullCategoryForPoliceReportEvidenceDocuments() {
-        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
-            .document(Document.builder()
-                .url("url-POLICE_REPORT")
-                .filename("file-POLICE_REPORT")
-                .binaryUrl("bin-POLICE_REPORT")
-                .build())
-            .documentType(EvidenceDocumentType.POLICE_REPORT)
-            .build();
-
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
-                .additionalDocuments(List.of(ListValue.<EvidenceOfDefendants>builder()
-                    .id("1")
-                    .value(evidenceDocument)
-                    .build()))
-                .build())
-            .build();
-
-        underTest.createAllDocuments(enforcementOrder);
-
-        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
-
-        assertThat(capturedEntities).hasSize(1);
-        assertThat(capturedEntities.getFirst().getCategoryId())
-            .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
-    }
-
-    @Test
-    void shouldHandleEmptyEvidenceDocument() {
-        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
-                new ArrayList<>();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
-                        .additionalDocuments(evidenceDocuments)
-                        .build())
-                .build();
+        String url = "http://dm-store/documents/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef";
+        UUID documentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        when(documentIdExtractor.extractDocumentId(url)).thenReturn(documentId);
         when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
+        DocumentHolder documentHolder = DocumentHolder.builder()
+            .document(Document.builder()
+                .url(url)
+                .filename("statement.pdf")
+                .binaryUrl(url + "/binary")
+                .build())
+            .type(DocumentType.WITNESS_STATEMENT)
+            .description("")
+            .build();
+
         // When
-        List<DocumentEntity> entities = underTest.createAllDocuments(enforcementOrder);
+        List<DocumentEntity> entities = underTest.createDocuments(List.of(documentHolder));
 
         // Then
-        assertThat(entities).isEmpty();
-        verify(documentRepository).saveAll(List.of());
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getUrl()).isEqualTo(url);
+        assertThat(entity.getDocumentId()).isEqualTo(documentId);
+        assertThat(entity.getFileName()).isEqualTo("statement.pdf");
+        assertThat(entity.getBinaryUrl()).isEqualTo(url + "/binary");
+        assertThat(entity.getType()).isEqualTo(DocumentType.WITNESS_STATEMENT);
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.EVIDENCE.getId());
+        assertThat(entity.getDescription()).isNull();
     }
 
     @Test
