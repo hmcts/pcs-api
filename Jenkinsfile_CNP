@@ -240,6 +240,18 @@ withPipeline(type, product, component) {
     archiveSmokeTestReports()
   }
 
+   afterAlways('functionalTest:preview') {
+    runFrontendE2eIfEnabled()
+  }
+
+   afterSuccess('FunctionalTest:preview') {
+    runFrontendE2eIfEnabled()
+  }
+
+  afterSuccess('fullFunctionalTest:preview') {
+   runFrontendE2eIfEnabled()
+  }
+  
   afterAlways('smoketest:aat') {
     archiveSmokeTestReports()
   }
