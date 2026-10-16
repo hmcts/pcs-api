@@ -154,7 +154,7 @@ export class CreateCaseAction implements IAction {
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
-      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
+      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],
       ['resumePartialClaim', () => this.resumePartialClaim()],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
@@ -1629,7 +1629,7 @@ export class CreateCaseAction implements IAction {
     const file =
       caseFile.caseWorkerUpload ??
       caseFile.caseWorkerAmend ??
-      caseFile.genApp;    
+      caseFile.genApp;
 
     switch (folderName) {
       case 'Property documents':
@@ -1656,6 +1656,32 @@ export class CreateCaseAction implements IAction {
 
       case 'Statements of case':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Notice for service out of the jurisdiction');
+        break;
+
+      case 'Statements of case':
+        this.readDocFilesFromPayLoad(
+          userInputFiles,
+          submitPayLoad?.additionalDocuments,
+          'Notice for service out of the jurisdiction'
+        );
+
+        // Counterclaim (CC) documents
+        if (ccPayload) {
+          // Docs uploaded as part of the counterclaim, e.g. "Screenshot ... CC1 - Defendant 1.png"
+          this.readDocFilesFromPayLoad(
+            userInputFiles,
+            ccPayload.ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments
+          );
+
+          // Generated counterclaim PDF, e.g. "Counterclaim CC1 - Defendant 1.pdf"
+          const defIndex = Number(caseFile.defendantIndex ?? 1);
+          userInputFiles.push(`Counterclaim CC1 - Defendant ${defIndex}.pdf`);
+        }
+
+        // Any file passed in directly on the action (if the CC upload is driven from the test data)
+        if (file) {
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
+        }
         break;
 
       case 'Evidence':
@@ -1717,9 +1743,9 @@ export class CreateCaseAction implements IAction {
     }
 
     if (!caseFile.allowEmptyFolder && fileCount === 0) {
-      await expect(async () => {        
+      await expect(async () => {
         await performAction('clickTab', home.caseSummary);
-        await performAction('clickTab', home.caseFileView);        
+        await performAction('clickTab', home.caseFileView);
         await this.checkFolderCount(page);
         const text = await folder.innerText();
         fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
@@ -1733,7 +1759,7 @@ export class CreateCaseAction implements IAction {
       });
     }
 
-    if (fileCount === 0) {      
+    if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
@@ -2093,7 +2119,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async getAllPartyDetails(allPartiesDetails: actionRecord) {
-  
+
       let originalDefendantDetails: string[] = [];
       const payLoad = allPartiesDetails.payLoad as Record<string, any>;
       if (allPartiesDetails.defendant1NameKnown === 'YES') {
@@ -2105,9 +2131,9 @@ export class CreateCaseAction implements IAction {
           `null null`
         );
       }
-  
+
       if (allPartiesDetails.additionalDefendants === 'YES') {
-  
+
         for (const [index, defendant] of payLoad.additionalDefendants.entries()) {
           if (defendant.value.nameKnown === 'YES') {
             originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName} - Defendant ${index + 2}`);
@@ -2118,7 +2144,7 @@ export class CreateCaseAction implements IAction {
           }
         }
       }
-  
+
       allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
       ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
       ];
