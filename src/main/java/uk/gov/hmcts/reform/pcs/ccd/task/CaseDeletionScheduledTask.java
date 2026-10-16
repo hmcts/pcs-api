@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentDeletionIncompleteException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentNotFoundException;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,7 @@ public class CaseDeletionScheduledTask {
     private final CaseDeletionService caseDeletionService;
     private final PcsCaseService pcsCaseService;
     private final DocumentImportService documentImportService;
+    private final FeatureToggleService featureToggleService;
     private final String schedule;
     private final int discardAfterDays;
     private final int batchSize;
@@ -49,15 +52,16 @@ public class CaseDeletionScheduledTask {
     private final Semaphore documentCallThrottle;
 
     public CaseDeletionScheduledTask(@Value("${expired-case-deletion.schedule}") String schedule,
-                                    @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
-                                    @Value("${expired-case-deletion.batch-size}") int batchSize,
-                                    @Value("${expired-case-deletion.sql-limit}") int sqlLimit,
-                                    @Value("${expired-case-deletion.ccd-call-control-size}") int ccdControlSize,
-                                    @Value("${expired-case-deletion.doc-call-control-size}") int docControlSize,
-                                    CaseDeletionService caseDeletionService,
-                                    CcdCaseDataDeletionService ccdCaseDataDeletionService,
-                                    PcsCaseService pcsCaseService,
-                                    DocumentImportService documentImportService) {
+                                     @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
+                                     @Value("${expired-case-deletion.batch-size}") int batchSize,
+                                     @Value("${expired-case-deletion.sql-limit}") int sqlLimit,
+                                     @Value("${expired-case-deletion.ccd-call-control-size}") int ccdControlSize,
+                                     @Value("${expired-case-deletion.doc-call-control-size}") int docControlSize,
+                                     CaseDeletionService caseDeletionService,
+                                     CcdCaseDataDeletionService ccdCaseDataDeletionService,
+                                     PcsCaseService pcsCaseService,
+                                     DocumentImportService documentImportService,
+                                     FeatureToggleService featureToggleService) {
         this.schedule = schedule;
         this.discardAfterDays = discardAfterDays;
         this.batchSize = batchSize;
@@ -68,6 +72,7 @@ public class CaseDeletionScheduledTask {
         this.ccdCallThrottle = new Semaphore(ccdControlSize);
         this.documentCallThrottle = new Semaphore(docControlSize);
         this.documentImportService = documentImportService;
+        this.featureToggleService = featureToggleService;
     }
 
     @Bean
@@ -78,6 +83,12 @@ public class CaseDeletionScheduledTask {
 
     public void runSweep() {
         MDC.put(MDC_TASK_NAME, CASE_DELETION_TASK_NAME);
+
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            log.info("Case deletion sweep disabled");
+            return;
+        }
+
         log.info("runSweep starting up ...");
         try {
             List<DeletionCaseData> cases =

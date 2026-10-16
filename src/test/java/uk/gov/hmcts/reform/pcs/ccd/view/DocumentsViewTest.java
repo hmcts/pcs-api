@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -46,6 +47,8 @@ class DocumentsViewTest {
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private SecurityContextService securityContextService;
 
     private PCSCase pcsCase;
 
@@ -59,7 +62,8 @@ class DocumentsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider());
+        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
+                                      securityContextService);
     }
 
     @Test
@@ -146,6 +150,24 @@ class DocumentsViewTest {
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+    }
+
+    @Test
+    void shouldShowAccessCodeLettersToTheSystemUser() {
+        DocumentEntity accessCodeLetter = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("access-code-letter.pdf")
+            .url("pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter));
+        when(securityContextService.isIdamSystemUser()).thenReturn(true);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename())
+                .isEqualTo("access-code-letter.pdf"));
     }
 
     @Test

@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
@@ -94,6 +95,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.CasePaymentHistoryViewer;
+
 
 
 /**
@@ -149,7 +152,6 @@ public class PCSCase {
     private VerticalYesNo multipleRepresentedParties;
 
     @CCD(
-        label = "Property address",
         access = {DefendantAccess.class}
     )
     @External
@@ -925,6 +927,13 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
+
+    @CCD(
+        typeOverride = CasePaymentHistoryViewer,
+        access = {PaymentHistoryTabAccess.class}
+    )
+    private String casePaymentHistoryViewer;
+
 
     @JsonProperty("TTL")
     @CCD(
