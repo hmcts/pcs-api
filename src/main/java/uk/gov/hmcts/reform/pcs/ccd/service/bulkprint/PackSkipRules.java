@@ -29,6 +29,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopu
  * Selector-time skip rules for bulk-print packs. When {@link FeatureFlag#RELEASE_1_DOT_3} is on, packs that
  * need translation, a follow-on gen app, or an issued counterclaim HWF reference are held back silently —
  * no {@code PACK_SENT} or {@code PACK_FAILED} row is written. Flag off keeps current send behaviour.
+ * When {@link FeatureFlag#RELEASE_1_DOT_4} is on, claimants are excluded from every pack type.
  */
 @Service
 @Slf4j
@@ -63,6 +64,10 @@ public class PackSkipRules {
             return false;
         }
         return skipIfPresent(pcsCase, "gen-app", genAppPackSkipReason(pcsCase, genApp));
+    }
+
+    public boolean shouldExcludeClaimant() {
+        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
     }
 
     private Optional<String> claimPackSkipReason(PcsCaseEntity pcsCase, ClaimEntity claim) {
