@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,7 +20,6 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.time.LocalDateTime;
@@ -48,10 +46,6 @@ public class StatementOfTruthEntity {
     @OneToOne(mappedBy = "statementOfTruth", cascade = ALL)
     @JsonBackReference
     private DefendantResponseEntity defendantResponse;
-
-    @OneToOne(mappedBy = "statementOfTruth", cascade = ALL)
-    @JsonManagedReference
-    private EnforcementOrderEntity enforcementOrder;
 
     @Enumerated(EnumType.STRING)
     private StatementOfTruthCompletedBy completedBy;

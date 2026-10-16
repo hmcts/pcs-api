@@ -76,16 +76,13 @@ public class EnforcementOrderEntity {
     @JsonManagedReference
     private List<SelectedDefendantEntity> selectedDefendants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "enfCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @OneToMany(fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "enf_case_id")
     @Builder.Default
-    @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
 
     public void addDocuments(List<DocumentEntity> documents) {
-        for (DocumentEntity document : documents) {
-            document.setEnfCase(this);
-            this.documents.add(document);
-        }
+        this.documents.addAll(documents);
     }
 
     public void addSelectedDefendants(List<SelectedDefendantEntity> selectedDefendants) {
