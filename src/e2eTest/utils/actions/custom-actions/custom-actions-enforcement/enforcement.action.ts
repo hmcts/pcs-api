@@ -528,7 +528,7 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
     if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
-      await performAction('check', claimantDetails.option1);
+      await performAction('check', claimantDetails.option2);
       await performAction('inputText', claimantDetails.label, claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
       await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
