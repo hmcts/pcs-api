@@ -26,7 +26,7 @@ export const askToAdjournTheCourtHearing = {
   youSeeTheFinalApplicationParagraph: `You’ll see the final application fee before you pay.`,
   ifYouAreWorriedAboutPayingFeesHeader: `If you are worried about the defendant paying fees`,
   youMayBeEligibleParagraph: `They may be eligible to apply for`,
-  helpWithFeesLink: `help with fees (GOV.UK, opens in a new tab)`,
+  helpWithFeesLink: `Help with Fees (GOV.UK, opens in a new tab)`,
   weWillAskYouIfTheyWantParagraph: `. We will ask you if they want to do this when you apply.`,
   ApplyByPostHeader: `Apply by post`,
   youCannotApplyToSuspendParagraph: `You cannot apply to suspend (stop or delay) the eviction online.`,

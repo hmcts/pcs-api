@@ -51,7 +51,7 @@ public class EnterGenAppRequest {
     @JacksonMoneyGBP
     private BigDecimal feeAmountReceived;
 
-    @CCD(label = "Has the applicant included a Help With Fees reference number on their application?")
+    @CCD(label = "Has the applicant included a Help with Fees reference number on their application?")
     private VerticalYesNo appliedForHwf;
 
     @CCD(
