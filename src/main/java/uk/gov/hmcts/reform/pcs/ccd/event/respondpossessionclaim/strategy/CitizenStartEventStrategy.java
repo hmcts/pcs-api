@@ -134,6 +134,8 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
         caseDetailsTab.setNoticeDetails(builtCaseDetailsTab.getNoticeDetails());
         
         pcsCase.setCaseDetailsTab(caseDetailsTab);
+
+        System.out.println("CitizenStartEventStrategy pcsCase: " + pcsCase);
         return pcsCase;
     }
 }
