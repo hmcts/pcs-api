@@ -1,0 +1,187 @@
+package uk.gov.hmcts.reform.pcs.enforcement.domain.warrant;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.LandRegistryFees;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.LegalCosts;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.PropertyAccessDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.RepaymentCosts;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.RiskCategory;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
+
+import java.util.Set;
+
+@Builder
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@NoArgsConstructor
+@AllArgsConstructor
+@SuppressWarnings({"java:S1133", "java:S6355"})
+public class WarrantDetails {
+
+    @JsonUnwrapped
+    @CCD
+    private AdditionalInformation additionalInformation;
+
+    @JsonUnwrapped
+    @CCD
+    private NameAndAddressForEviction nameAndAddressForEviction;
+
+    @CCD(
+        label = "Is the defendant currently in a breathing space?"
+    )
+    private YesNoNotSure defendantInBreathingSpace;
+
+    @CCD(
+        label = "Have the defendants missed any payments?",
+        hint = "These are payments outlined in the suspended order for possession.  "
+              + "They were ordered to make these payments by the judge."
+    )
+    private VerticalYesNo defendantMissedPayments;
+
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This model is retained only for backwards compatibility.
+     */
+    @JsonUnwrapped
+    @CCD
+    @Deprecated
+    private PeopleToEvict peopleToEvict;
+
+    @CCD(
+        label = "Does anyone living at the property pose a risk to the bailiff?"
+    )
+    private YesNoNotSure anyRiskToBailiff;
+
+    @CCD(
+        label = "What kind of risks do they pose to the bailiff?",
+        hint = "Include any risks posed by the defendants and also anyone else living at the property",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RiskCategory"
+    )
+    @JsonProperty("EnforcementRiskCategories")
+    private Set<RiskCategory> riskCategories;
+
+    @CCD(searchable = false)
+    private YesOrNo showChangeNameAddressPage;
+
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
+    @CCD(searchable = false)
+    private YesOrNo showPeopleWhoWillBeEvictedPage;
+
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
+    @CCD(searchable = false)
+    private YesOrNo showPeopleYouWantToEvictPage;
+
+    @CCD(label = "Do you know the defendants’ dates of birth?")
+    private VerticalYesNo defendantsDOBKnown;
+
+    @JsonUnwrapped
+    @CCD(
+        label = "Risk details"
+    )
+    private RiskDetails riskDetails;
+
+    @CCD(
+        label = "Which language did you use to complete this service?",
+        hint = "If someone else helped you to answer a question in this service, "
+            + "ask them if they answered any questions in Welsh. We’ll use this to "
+            + "make sure your claim is processed correctly"
+    )
+    @JsonProperty("EnforcementLanguageUsed")
+    private LanguageUsed languageUsed;
+
+    @JsonUnwrapped
+    @CCD
+    private PropertyAccessDetails propertyAccessDetails;
+
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
+    @JsonUnwrapped
+    @CCD
+    private LegalCosts legalCosts;
+
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
+    @JsonUnwrapped
+    @CCD
+    private MoneyOwedByDefendants moneyOwedByDefendants;
+
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
+    @JsonUnwrapped
+    @CCD
+    private LandRegistryFees landRegistryFees;
+
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
+    @JsonUnwrapped
+    @CCD
+    private RepaymentCosts repaymentCosts;
+
+    /**
+     * Indicates whether the order is suspended.
+     *
+     * @deprecated As of release 1.4
+     */
+    @CCD(
+            label = "Is your order a suspended order?",
+            hint = "If your order is suspended, you will see a different version of the statement of truth on the "
+                    + "next page. If you do not know if your order is suspended: save your application as a draft, "
+                    + "return to the case summary page, and then check the tab named ‘Case File View’"
+    )
+    @Deprecated
+    private VerticalYesNo isSuspendedOrder;
+
+    @JsonUnwrapped
+    @CCD
+    private StatementOfTruthDetailsEnforcement statementOfTruth;
+
+    @CCD
+    @JsonUnwrapped
+    private DefendantsDOB defendantsDOB;
+
+}

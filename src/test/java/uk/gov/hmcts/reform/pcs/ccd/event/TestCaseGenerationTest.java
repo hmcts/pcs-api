@@ -25,7 +25,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.event.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;

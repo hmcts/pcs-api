@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.VulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrant.VulnerableAdultsChildrenPage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
