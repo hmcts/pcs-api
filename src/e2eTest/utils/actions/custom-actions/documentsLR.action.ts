@@ -43,6 +43,7 @@ export class DocumentsAction implements IAction {
       ],
       ['uploadAdditionalDocsLR', () => this.uploadAdditionalDocsLR(fieldName as actionRecord)],
       ['selectDocumentRelatingTo', () => this.selectDocumentRelatingTo(fieldName as actionRecord)],
+      ['selectDocumentRelatingToCC', () => this.selectDocumentRelatingToCC(fieldName as actionRecord)],
       ['verifyPdfLinks', () => this.verifyPdfLinks(fieldName.expectedTexts as string[], page)],
     ]);
 

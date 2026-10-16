@@ -68,7 +68,8 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   if (title.includes('GenApps submitted and counter claim included')) {
     await performAction('makeAnApplicationAPI', {
-      data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
+        defendantUserDetails[0].id,defendantUserDetails[0].name),
     });
     await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
     await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
