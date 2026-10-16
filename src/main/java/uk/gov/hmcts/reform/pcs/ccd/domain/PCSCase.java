@@ -672,10 +672,6 @@ public class PCSCase {
     )
     private ComponentLauncher caseFileView;
 
-    @CCD(searchable = false)
-    private String formattedDefendantNames;
-    private String formattedPropertyAddress;
-
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
@@ -749,12 +745,6 @@ public class PCSCase {
         access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private DynamicList caseManagementCategory;
-
-    @CCD(searchable = false)
-    private String confirmEvictionSummaryMarkup;
-
-    @CCD(searchable = false, access = {ClaimantAccess.class})
-    private YesOrNo showConfirmEvictionJourney;
 
     @CCD(access = DocumentAccess.class)
     private List<ListValue<GeneralApplication>> genApps;
@@ -936,8 +926,5 @@ public class PCSCase {
         access = {PaymentHistoryTabAccess.class}
     )
     private String casePaymentHistoryViewer;
-
-    @CCD(searchable = false)
-    private YesOrNo hasUnsubmittedEnforcementData;
 
 }

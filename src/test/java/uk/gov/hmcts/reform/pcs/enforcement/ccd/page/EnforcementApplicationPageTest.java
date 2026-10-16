@@ -57,7 +57,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getFormattedDefendantNames())
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
                 .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
     }
 
@@ -71,7 +71,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getFormattedDefendantNames())
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
             .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>");
     }
 
@@ -89,7 +89,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getFormattedDefendantNames())
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
                 .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
                         + "<div class=\"govuk-!-margin-bottom-2\">Test Testing</div>"
                         + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
@@ -109,7 +109,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getFormattedDefendantNames())
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
             .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
                            + "<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>"
                            + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
@@ -126,7 +126,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getFormattedDefendantNames()).isNull();
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames()).isNull();
     }
 
     @Test
@@ -138,7 +138,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+        assertThat(caseData.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
