@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.StatementOfTruthService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatementOfTruthService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WarrantDetailsMapper;
@@ -30,7 +30,7 @@ class WarrantStrategyTest {
     @Mock
     private RiskProfileService riskProfileService;
     @Mock
-    private StatementOfTruthService statementOfTruthService;
+    private EnforcementStatementOfTruthService enforcementStatementOfTruthService;
     @Mock
     private SelectedDefendantsMapper selectedDefendantsMapper;
     @Mock
@@ -70,7 +70,7 @@ class WarrantStrategyTest {
         // Then
         verify(warrantDetailsMapper).toEntity(enforcementOrder, enforcementOrderEntity);
         verify(riskProfileService).processRisk(enforcementOrder, enforcementOrderEntity);
-        verify(statementOfTruthService).processStatementOfTruth(
+        verify(enforcementStatementOfTruthService).processStatementOfTruth(
                 enforcementOrder.getWarrantDetails().getStatementOfTruth(), enforcementOrderEntity);
         verify(selectedDefendantsMapper).mapToEntities(enforcementOrderEntity);
         assertThat(enforcementOrderEntity.getSelectedDefendants()).containsExactlyElementsOf(selectedDefendantEntities);

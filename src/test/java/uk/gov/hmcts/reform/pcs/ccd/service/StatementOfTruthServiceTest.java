@@ -8,21 +8,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.StatementOfTruthRepository;
-import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.StatementOfTruthMapper;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
@@ -32,12 +26,6 @@ class StatementOfTruthServiceTest {
 
     @InjectMocks
     private StatementOfTruthService statementOfTruthService;
-
-    @Mock
-    private StatementOfTruthRepository statementOfTruthRepository;
-
-    @Mock
-    private StatementOfTruthMapper statementOfTruthMapper;
 
     @Mock
     private PCSCase pcsCase;
@@ -144,32 +132,6 @@ class StatementOfTruthServiceTest {
 
             // Then
             assertThat(result.getAccepted()).isNull();
-        }
-    }
-
-    @Nested
-    class EnforcementTests {
-
-        @Test
-        void shouldPersistStatementOfTruthForEnforcement() {
-            // Given
-            StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement
-                    = new StatementOfTruthDetailsEnforcement();
-            EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
-            StatementOfTruthEntity statementOfTruthEntity = mock(StatementOfTruthEntity.class);
-            StatementOfTruthEntity savedStatementOfTruthEntity = mock(StatementOfTruthEntity.class);
-
-            when(statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement))
-                    .thenReturn(statementOfTruthEntity);
-            when(statementOfTruthRepository.save(statementOfTruthEntity))
-                    .thenReturn(savedStatementOfTruthEntity);
-
-            // When
-            statementOfTruthService.processStatementOfTruth(statementOfTruthDetailsEnforcement, enforcementOrderEntity);
-
-            // Then
-            assertThat(enforcementOrderEntity.getStatementOfTruth()).isEqualTo(savedStatementOfTruthEntity);
-            verify(statementOfTruthRepository).save(statementOfTruthEntity);
         }
     }
 }
