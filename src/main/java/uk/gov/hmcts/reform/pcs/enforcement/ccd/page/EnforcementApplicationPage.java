@@ -109,10 +109,10 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .page("enforcementApplication", this::midEvent)
             .pageLabel("Your application")
             .label("enforcementApplication-content", "---")
-            .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
-            .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
-            .readonly(PCSCase::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
+            .readonly(EnforcementOrder::getFormattedDefendantNames, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
@@ -135,7 +135,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
-        data.setHasUnsubmittedEnforcementData(YesOrNo.YES);
+        data.getEnforcementOrder().setHasUnsubmittedEnforcementData(YesOrNo.YES);
         setFormattedDefendantNames(data.getAllDefendants(), data);
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
@@ -151,7 +151,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.setFormattedDefendantNames(defendants.stream()
+            pcsCase.getEnforcementOrder().setFormattedDefendantNames(defendants.stream()
                                                    .map(defendant -> "<div class=\"govuk-!-margin-bottom-2\">"
                                                        + resolvePartyName(defendant.getValue()) + "</div>")
                                                    .collect(Collectors.joining()));
