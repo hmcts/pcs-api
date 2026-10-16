@@ -16,6 +16,9 @@ import {caseInfo} from "@utils/actions/custom-actions/createCaseAPI.action";
 import {createCaseApiData} from "@data/api-data";
 import {compareMaps} from "@utils/common/compareMaps.util";
 import {FieldsStore} from "@utils/actions/custom-actions";
+import {
+  confirmIfTheseDocumentsRelateToCounterClaim
+} from "@data/page-data-figma/page-data-legalRepresentative/confirmIfTheseDocumentsRelateToCounterClaim.page.data";
 
 const cyaMap = new Map<string, string>();
 export const documentsAddressInfo = {
@@ -40,6 +43,7 @@ export class DocumentsAction implements IAction {
       ],
       ['uploadAdditionalDocsLR', () => this.uploadAdditionalDocsLR(fieldName as actionRecord)],
       ['selectDocumentRelatingTo', () => this.selectDocumentRelatingTo(fieldName as actionRecord)],
+      ['selectDocumentRelatingToCC', () => this.selectDocumentRelatingToCC(fieldName as actionRecord)],
       ['verifyPdfLinks', () => this.verifyPdfLinks(fieldName.expectedTexts as string[], page)],
     ]);
 
@@ -417,4 +421,9 @@ export class DocumentsAction implements IAction {
     await performAction('clickRadioButton', { question: selectDoc.question, option: selectDoc.option });
     await performAction('reTryOnCallBackError', confirmIfTheseDocumentsRelateToAnApplication.continueButton, selectDoc.nextPage as string);
   }
+  private async selectDocumentRelatingToCC(selectDoc: actionRecord) {
+    await performAction('clickRadioButton', { question: selectDoc.question, option: selectDoc.option });
+    await performAction('reTryOnCallBackError', confirmIfTheseDocumentsRelateToCounterClaim.continueButton, selectDoc.nextPage as string);
+  }
 }
+

@@ -70,6 +70,8 @@ export class ActionRegistry {
     ['submitCaseAPIDynamicUsers', new CreateCaseAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
@@ -198,6 +200,7 @@ export class ActionRegistry {
     ['uploadFiles', new DocumentsAction()],
     ['uploadAdditionalDocsLR', new DocumentsAction()],
     ['selectDocumentRelatingTo', new DocumentsAction()],
+    ['selectDocumentRelatingToCC', new DocumentsAction()],
     ['verifyPdfLinks', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
@@ -208,7 +211,7 @@ export class ActionRegistry {
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
     ['removeFile', new RemoveFileAction()],
-    ['getAllPartyDetails', new CreateCaseAction()],    
+    ['getAllPartyDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {

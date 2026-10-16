@@ -20,6 +20,10 @@ import { FieldsStore } from '@utils/actions/custom-actions/recordAnsweredFields.
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { getFormattedDate } from '@utils/common/string.utils';
 import { home } from '@data/page-data';
+import {
+  confirmIfTheseDocumentsRelateToCounterClaim
+} from "@data/page-data-figma/page-data-legalRepresentative/confirmIfTheseDocumentsRelateToCounterClaim.page.data";
+import {midEventLRRespondPossessionClaimApiData} from "@data/api-data/respondPossessionClaimMidEventLR.api.data";
 
 
 
@@ -60,6 +64,16 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     await performAction('makeAnApplicationAPI', {
       data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
     });
+  }
+
+  if (title.includes('GenApps submitted and counter claim included')) {
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
+        defendantUserDetails[0].id,defendantUserDetails[0].name),
+    });
+    await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
+    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
+    await performAction('updatePaymentAPI', { amt: 3500, app: 'Counter Claim' });
   }
 
   if (title.includes('MULTI_APP')) {
@@ -364,6 +378,49 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       allowEmptyFolder: true
     });
 
+  });
+
+  test('Upload documents when GenApps submitted and counter claim included - Single def @regression', async () => {
+    let docRelatedToOption = confirmIfTheseDocumentsRelateToAnApplication.noRadioOption;
+    let docRelatedToOptionForCC =  `${confirmIfTheseDocumentsRelateToCounterClaim.relatedToCounterClaimRadioOptionHidden} ${getFormattedDate()}`;
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
+    await performAction('selectDocumentRelatingTo', {
+      question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
+      option: docRelatedToOption,
+      nextPage: confirmIfTheseDocumentsRelateToCounterClaim.mainHeader,
+    });
+    await performAction('reTryOnCallBackError', confirmIfTheseDocumentsRelateToAnApplication.continueButton, confirmIfTheseDocumentsRelateToCounterClaim.mainHeader as string);
+    await performAction('selectDocumentRelatingToCC', {
+      question: confirmIfTheseDocumentsRelateToCounterClaim.doTheseDocumentsQuestion,
+      option: docRelatedToOptionForCC,
+      nextPage: uploadYourDocuments.mainHeader,
+    });
+    await performAction('uploadAdditionalDocsLR', {
+      documents: [
+        { type: uploadYourDocuments.rentStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
+      ]
+    });
+    await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
+    await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitPayload,
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Statements of case',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      ccPayload : midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
+      allowEmptyFolder: true
+    });
   });
 });
 
