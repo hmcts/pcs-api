@@ -64,6 +64,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.WLU_ADMIN
     };
 
+    static final AccessProfile[] JUDICIAL_NOTE_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE
+    };
+
     static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -201,6 +208,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSupportTab(builder);
 
+        buildJudicialNotesTab(builder);
+      
         builder.tab("paymentHistory", "Payment History")
             .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -371,5 +380,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("judicialNotes", "Judicial notes")
+            .forRoles(JUDICIAL_NOTE_TAB_ROLES)
+            .label("judicialNotesMarkdownLabel", null, "${judicialNotesMarkdown}")
+            .field("judicialNotesMarkdown", NEVER_SHOW);
     }
 }
