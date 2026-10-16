@@ -38,24 +38,12 @@ class BlobUploaderTest {
         byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
         when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
 
-        new BlobUploader(blobContainerClient, "").upload(blobName, json);
+        new BlobUploader(blobContainerClient).upload(blobName, json);
 
         verify(blobClient).uploadWithResponse(uploadOptionsCaptor.capture(), isNull(), eq(Context.NONE));
         BlobParallelUploadOptions options = uploadOptionsCaptor.getValue();
         assertThat(options.getHeaders().getContentType()).isEqualTo("application/json");
         assertThat(new String(BinaryData.fromFlux(options.getDataFlux()).block().toBytes(), StandardCharsets.UTF_8))
             .isEqualTo("{\"ok\":true}");
-    }
-
-    @Test
-    void shouldUploadUnderBlobPrefix() {
-        byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
-        when(blobContainerClient.getBlobClient("functional-test/claim_snapshot_full_2026-10-13.json"))
-            .thenReturn(blobClient);
-
-        new BlobUploader(blobContainerClient, "functional-test/")
-            .upload("claim_snapshot_full_2026-10-13.json", json);
-
-        verify(blobClient).uploadWithResponse(uploadOptionsCaptor.capture(), isNull(), eq(Context.NONE));
     }
 }
