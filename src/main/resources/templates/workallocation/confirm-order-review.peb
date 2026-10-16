@@ -1,0 +1,7 @@
+### Confirm order review
+
+{% if resubmitted %}{{judgeName}} has changed an order that was returned to them, and submitted it for review again.
+{% else %}{{judgeName}} has submitted an order for review.
+{% endif %}
+<a href="{{reviewUrl}}">Review the {{orderType}} order</a>, then either return it to the judge with a query or issue
+it. The task will close when the order is returned or issued.

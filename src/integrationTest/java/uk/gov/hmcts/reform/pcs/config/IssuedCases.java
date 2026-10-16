@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 
 /**
  * Issued possession cases, seeded straight into CCD and pcs-api's tables for tests of what happens
@@ -68,6 +69,12 @@ public class IssuedCases {
         long reference = events.seed(State.CASE_ISSUED, PCSCase.builder().build());
         transaction.executeWithoutResult(status -> storeClaim(reference, claim, defendant));
         return reference;
+    }
+
+    /** Changes an issued case's stored entities, as another event would. */
+    public void update(long reference, Consumer<PcsCaseEntity> change) {
+        transaction.executeWithoutResult(status ->
+            change.accept(pcsCases.findByCaseReference(reference).orElseThrow()));
     }
 
     private void storeClaim(long reference, PCSCase claim, PartyEntity defendant) {
