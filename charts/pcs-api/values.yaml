@@ -82,3 +82,5 @@ am-org-role-mapping-service:
   enabled: false
 wa:
   enabled: false
+pcs-frontend:
+   enabled: false

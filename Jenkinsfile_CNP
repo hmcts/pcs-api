@@ -26,6 +26,9 @@ def secrets = [
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
     secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
     secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
+    secret('pcs-frontend-idam-secret', 'PCS_FRONTEND_IDAM_SECRET'),
+    secret('pcs-local-auth-automation-uid', 'PCS_LOCAL_AUTH_AUTOMATION_UID'),
+    secret('launchdarkly-sdk-key', 'LAUNCHDARKLY_SDK_KEY'),
   ],
   'ccd-${env}': [
     secret('session-keys', 'SESSION_KEYS')
