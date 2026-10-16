@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -436,7 +437,7 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
         verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
-        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+        assertThat(pcsCase.getNextStepsResumeClaim()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -455,19 +456,20 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
         verify(caseTabView).setCaseTabFields(pcsCase);
-        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+        assertThat(pcsCase.getNextStepsResumeClaim()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
     void shouldNotFetchUnsubmittedCaseDataWhenNoUnsubmittedCaseDataExists() {
         // When
-        underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
 
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
         verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
         verify(caseTabView).setCaseTabFields(any(PCSCase.class));
+        assertThat(pcsCase.getNextStepsResumeClaim()).isEqualTo(YesOrNo.NO);
     }
 
     @Test

@@ -25,4 +25,7 @@ public class ClaimantCircumstances {
     @CCD(searchable = false)
     private String claimantNamePossessiveForm;
 
+    @CCD(searchable = false)
+    private String claimantCircumstancesName;
+
 }

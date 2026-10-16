@@ -55,7 +55,7 @@
       "isClaimantNameCorrect": "YES",
       "claimantContactEmail": "pcs-solicitor1@test.com",
       "isCorrectClaimantContactEmail": "YES",
-      "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
+      "formattedClaimantContactAddress": "Ministry Of Justice\nSeventh Floor 102 Petty France\nLondon\nSW1H 9AJ",
       "isCorrectClaimantContactAddress": "YES",
       "claimantProvidePhoneNumber": "NO",
       "defendant1": {

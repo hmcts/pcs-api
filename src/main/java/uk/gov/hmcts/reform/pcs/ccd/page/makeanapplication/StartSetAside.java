@@ -40,8 +40,14 @@ public class StartSetAside implements CcdPageConfiguration {
         answers so that you can return to them later.</p>
 
         <h2 class="govuk-heading-m">How much it will cost</h2>
+        """;
+
+    private static final String FEE_MARKDOWN = """
         <p class="govuk-body govuk-!-margin-bottom-1">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
         increase to ${xui_genapp_MaxFee} if:</p>
+        """;
+
+    private static final String INFO_MARKDOWN_AFTER_FEE = """
         <ul class="govuk-list govuk-list--bullet">
           <li class="govuk-!-font-size-19">the defendant has already told the other party that they are making
           this application, and</li>
@@ -80,7 +86,9 @@ public class StartSetAside implements CcdPageConfiguration {
             .pageLabel("Ask the court to set aside (cancel) an order on behalf of a defendant")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.SET_ASIDE))
             .label("startSetAside-lineSeparator", "---")
-            .label("startSetAside-info", INFO_MARKDOWN);
+            .label("startSetAside-info", INFO_MARKDOWN)
+            .label("startSetAside-info-fee", FEE_MARKDOWN)
+            .label("startSetAside-info-after-fee", INFO_MARKDOWN_AFTER_FEE);
     }
 
 }

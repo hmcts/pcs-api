@@ -216,7 +216,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             AddressUK organisationAddress = mock(AddressUK.class);
             when(organisationService.getOrganisationAddress(any())).thenReturn(organisationAddress);
-            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.NEWLINE_DELIMITER))
                 .thenReturn("formatted org address");
 
             PCSCase caseData = PCSCase.builder()
@@ -243,7 +243,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             when(organisationService.getOrganisationAddress(any())).thenReturn(organisationAddress);
 
             String formattedOrgAddress = "formatted org address";
-            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.NEWLINE_DELIMITER))
                 .thenReturn(formattedOrgAddress);
 
             PCSCase caseData = PCSCase.builder()
@@ -269,7 +269,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
 
-            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER))
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.NEWLINE_DELIMITER))
                 .thenReturn(null);
 
             PCSCase caseData = PCSCase.builder()
@@ -341,7 +341,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .thenReturn(hasUnsubmittedData);
 
             when(userDetails.getSub()).thenReturn("user@test.com");
-            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER)).thenReturn(null);
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.NEWLINE_DELIMITER)).thenReturn(null);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))

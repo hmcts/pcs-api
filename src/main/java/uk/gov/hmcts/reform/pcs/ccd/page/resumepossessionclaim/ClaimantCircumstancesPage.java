@@ -38,6 +38,7 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
             .pageLabel(CLAIMANT_CIRCUMSTANCES_LABEL)
             .complex(PCSCase::getClaimantCircumstances)
                 .readonly(ClaimantCircumstances::getClaimantNamePossessiveForm, NEVER_SHOW)
+                .readonly(ClaimantCircumstances::getClaimantCircumstancesName, NEVER_SHOW)
                 .label(
                     CLAIMANT_CIRCUMSTANCES_INFO, """
                     ---

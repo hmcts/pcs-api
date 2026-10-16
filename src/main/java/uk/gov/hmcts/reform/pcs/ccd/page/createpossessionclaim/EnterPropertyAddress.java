@@ -147,6 +147,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
     private List<DynamicStringListElement> createCrossBorderCountriesList(
         List<LegislativeCountry> legislativeCountries) {
         return legislativeCountries.stream()
+            .sorted()
             .map(value -> DynamicStringListElement.builder()
                 .code(value.name())
                 .label(value.getLabel())

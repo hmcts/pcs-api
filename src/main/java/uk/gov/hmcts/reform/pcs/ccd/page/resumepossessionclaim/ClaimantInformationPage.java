@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -80,8 +81,9 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             claimantName = claimantInfo.getClaimantName();
         }
 
-        caseData.getClaimantCircumstances()
-            .setClaimantNamePossessiveForm(possessiveNameService.applyApostrophe(claimantName));
+        ClaimantCircumstances claimantCircumstances = caseData.getClaimantCircumstances();
+        claimantCircumstances.setClaimantNamePossessiveForm(possessiveNameService.applyApostrophe(claimantName));
+        claimantCircumstances.setClaimantCircumstancesName(claimantName == null ? null : claimantName.trim());
     }
 
 

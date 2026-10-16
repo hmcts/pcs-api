@@ -41,7 +41,6 @@ public class ContactPreferences implements CcdPageConfiguration {
 
             // Email section
             .complex(PCSCase::getClaimantContactPreferences)
-                .readonly(ClaimantContactPreferences::getClaimantContactEmail, NEVER_SHOW, true)
             .label("contactPreferences-email", """
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
@@ -49,13 +48,8 @@ public class ContactPreferences implements CcdPageConfiguration {
                         You’ll receive updates about your claim by email. For example, when a hearing
                         has been scheduled or when a document is ready to view.
                     </p>
-                      <h3 class="govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-                        Your My HMCTS registered email address is:
-                    </h3>
-                    <p class="govuk-body-s govuk-!-margin-top-1">
-                        ${claimantContactEmail}
-                    </p>
                     """)
+            .readonlyNoSummary(ClaimantContactPreferences::getClaimantContactEmail)
             .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
             .mandatory(ClaimantContactPreferences::getOverriddenClaimantContactEmail,
         "isCorrectClaimantContactEmail=\"NO\""
@@ -67,7 +61,6 @@ public class ContactPreferences implements CcdPageConfiguration {
             .readonly(ClaimantContactPreferences::getOrgAddressFound, NEVER_SHOW)
             // Address found
             .readonly(ClaimantContactPreferences::getOrganisationAddress, NEVER_SHOW, true)
-            .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW, true)
             .label("contactPreferences-address-info-yes", """
                     ----
                     <h2 class="govuk-heading-m">Service address</h2>
@@ -78,14 +71,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                         the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .label("contactPreferences-address-registered", """
-                    <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        Your organisation’s My HMCTS registered address is:
-                    </h3>
-                    <p class="govuk-body-s govuk-!-margin-top-1">
-                        ${formattedClaimantContactAddress}
-                    </p>
-                    """, ORG_ADDRESS_FOUND)
+            .readonlyNoSummary(ClaimantContactPreferences::getFormattedClaimantContactAddress, ORG_ADDRESS_FOUND)
             .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
 
             // Address not found

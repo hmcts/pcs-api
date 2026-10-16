@@ -35,7 +35,7 @@ public class ClaimTypeNotEligibleEngland implements CcdPageConfiguration {
                 <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
-                    <span class="govuk-warning-text__assistive">Warning</span>
+                    <span class="govuk-visually-hidden">Warning</span>
                     <span id="warning-message">
                       To exit to the case list, select ‘Cancel’
                     </span>

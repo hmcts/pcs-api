@@ -305,8 +305,8 @@ class EnterPropertyAddressTest extends BasePageTest {
                 EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED,
                 Arrays.asList(WALES, ENGLAND),
                 YES,
-                "Wales",
-                "England"
+                "England",
+                "Wales"
             )
         );
     }

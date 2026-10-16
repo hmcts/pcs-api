@@ -43,7 +43,6 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .label("chooseAnApplication-lineSeparator", "---")
             .label("chooseAnApplication-info", INFO_MARKDOWN)
             .readonly(PCSCase::getCurrentRepresentedPartyId, NEVER_SHOW, true)
-            .readonly(PCSCase::getCurrentRepresentedPartyName, NEVER_SHOW, true)
             .complex(PCSCase::getXuiGenAppRequest)
             .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)

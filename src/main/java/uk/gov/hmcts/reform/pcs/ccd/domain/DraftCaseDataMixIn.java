@@ -20,7 +20,7 @@ public abstract class DraftCaseDataMixIn {
     @JsonIgnore
     private DashboardData dashboardData;
     @JsonIgnore
-    private String nextStepsMarkdown;
+    private YesOrNo nextStepsResumeClaim;
 
     @JsonIgnore
     private String claimantName;

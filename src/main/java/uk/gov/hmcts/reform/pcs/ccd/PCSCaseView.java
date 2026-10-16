@@ -228,38 +228,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
-        if (hasUnsubmittedCaseData) {
-            pcsCase.setNextStepsMarkdown("""
-                                             <h2 class="govuk-heading-m">Resume claim</h2>
-                                             You've already answered some questions about this claim.
-                                             <br>
-                                             <br>
-                                             <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
-                                                role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
-                                               Continue
-                                             </a>
-                                             <p class="govuk-body govuk-!-font-size-19">
-                                             <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
-                                             </p>
-                                             """.formatted(resumePossessionClaim));
-        } else {
-            pcsCase.setNextStepsMarkdown("""
-                                             <h2 class="govuk-heading-m">Provide more details about your claim</h2>
-                                             Your answers will be saved from this point so you can return to your draft
-                                             later.
-                                             <br>
-                                             <br>
-                                             <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
-                                                role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
-                                               Continue
-                                             </a>
-                                             <p class="govuk-body govuk-!-font-size-19">
-                                             <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
-                                             </p>
-                                             """.formatted(resumePossessionClaim));
-        }
+        pcsCase.setNextStepsResumeClaim(YesOrNo.from(hasUnsubmittedCaseData));
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {

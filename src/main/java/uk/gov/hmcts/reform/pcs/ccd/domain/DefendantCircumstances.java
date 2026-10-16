@@ -18,7 +18,7 @@ public class DefendantCircumstances {
     @CCD(label = """
         ---
         <p class="govuk-body" tabindex="0">
-         You can use this section to provide any information about the ${defendantTermPossessive} circumstances.
+         You can use this section to provide any information about the defendant’s circumstances.
         </p>
         <p class="govuk-body">
         You must give details if any of the following apply:
@@ -33,6 +33,25 @@ public class DefendantCircumstances {
         """,typeOverride = FieldType.Label
     )
     private String defendantCircumstancesLabel;
+
+    @CCD(label = """
+        ---
+        <p class="govuk-body" tabindex="0">
+         You can use this section to provide any information about the defendants’ circumstances.
+        </p>
+        <p class="govuk-body">
+        You must give details if any of the following apply:
+        <ul class="govuk-list govuk-list--bullet">
+            <li class="govuk-!-font-size-19">
+            the defendant receives any social security benefits</li>
+            <li class="govuk-!-font-size-19">
+            payments are made on their behalf directly to you, under the Social Security Contributions
+            and Benefits Act 1992</li>
+        </ul>
+        </p>
+        """,typeOverride = FieldType.Label
+    )
+    private String defendantsCircumstancesLabel;
 
     @CCD(
         label = "Is there any information you’re required to provide, or you want to provide, "
