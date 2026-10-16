@@ -14,5 +14,6 @@ export const defendantInBreathingSpace = {
     ]
   },
   continueButton: 'Continue',
-  previousButton: 'Previous'
-}
+  previousButton: 'Previous',
+  breathingSpaceQuestion: 'Is the defendant currently in a breathing space?',
+};

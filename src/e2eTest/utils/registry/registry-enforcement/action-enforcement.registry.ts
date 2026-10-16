@@ -55,6 +55,7 @@ export class ActionEnforcementRegistry {
     ['provideDetailsBasedOnRadioOptionSelection', new EnforcementAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
     ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
@@ -95,12 +96,19 @@ export class ActionEnforcementRegistry {
     ['validatePrePopulatedData', new EnforcementAction()],
     ['isDefendantInBreathingSpace', new EnforcementAction()],
     ['missedPayments', new EnforcementAction()],
-    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['getCaseAPI', new CreateCaseAPIAction()],
     ['errorValidationIsDefendantInBreathingSpacePage', new ErrorValidationAction()],
     ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
     ['cannotApplyForWarrantInfo', new EnforcementAction()],
     ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
+    ['selectBreathingSpace', new EnforcementAction()],
+    ['selectMissedPayments', new EnforcementAction()],
+    ['verifyRadioOptions', new EnforcementAction()],
+    ['verifySaveAndReturnToggle', new EnforcementAction()],
+    ['errorValidationMissedPayments', new EnforcementAction()],
+    ['verifyPermissionScreen', new EnforcementAction()],
+    ['verifyMissedPaymentsPrePopulated', new EnforcementAction()],
+    ['verifyMissedPaymentsPage', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
