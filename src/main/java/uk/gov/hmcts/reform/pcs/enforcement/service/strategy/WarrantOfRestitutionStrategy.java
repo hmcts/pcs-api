@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantOfRestitutionRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDocumentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WarrantOfRestitutionMapper;
 
@@ -23,7 +23,7 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
     private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
     private final WarrantOfRestitutionRepository warrantOfRestitutionRepository;
     private final EnforcementOrderRepository enforcementOrderRepository;
-    private final DocumentService documentService;
+    private final EnforcementDocumentService enforcementDocumentService;
 
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
@@ -44,7 +44,7 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
         if (enforcementOrder.getWarrantOfRestitutionDetails() != null
                 && !CollectionUtils.isEmpty(
                         enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments())) {
-            List<DocumentEntity> documentEntities = documentService.createAllDocuments(enforcementOrder);
+            List<DocumentEntity> documentEntities = enforcementDocumentService.createAllDocuments(enforcementOrder);
             enforcementOrderEntity.addDocuments(documentEntities);
             enforcementOrderRepository.save(enforcementOrderEntity);
         }
