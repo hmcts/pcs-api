@@ -36,12 +36,12 @@ public class WritDetails {
     private YesOrNo showChangeNameAddressPage;
 
     @CCD(
-        label = "Have you hired a High Court enforcement officer?"
+        label = "Have you hired a High Court Enforcement Officer?"
     )
     private VerticalYesNo hasHiredHighCourtEnforcementOfficer;
 
     @CCD(
-        label = "Name of your High Court enforcement officer",
+        label = "Name of your High Court Enforcement Officer",
         hint = "If you do not know their name, use the name of the organisation they work for",
         max = 120
     )
