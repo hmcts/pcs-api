@@ -683,14 +683,18 @@ cftlibTest {
   environment 'ENABLE_CASE_GROUP_ACCESS_FILTERING', 'true'
 
   // To match the fake document URLs returned by the shared Wiremock
-  environment 'CCD_DOCUMENT_URL_PATTERN', 'https://docstore/document/[A-Za-z0-9-]+.*'
+  environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:8083/documents/[A-Za-z0-9-]+.*'
 
   // Use shared wiremock (8083) for the document services in CftLib tests
   environment 'DM_STORE_BASE_URL', 'http://localhost:8083'
   environment 'DOC_ASSEMBLY_URL', 'http://localhost:8083'
 
-  // Use wiremock spun up by tests (9400) for email, so it can be queried easily
+  // Use wiremock spun up by tests (9400) for email and bulk print, so it is isolated and can be queried easily
   environment 'NOTIFY_URL', 'http://localhost:9400'
+  environment 'SEND_LETTER_URL', 'http://localhost:9400'
+
+  // Override feature flags for tests
+  systemProperty 'feature.bulk-print-enabled', 'true'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
