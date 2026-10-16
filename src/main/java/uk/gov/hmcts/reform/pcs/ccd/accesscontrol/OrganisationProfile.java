@@ -6,6 +6,7 @@ package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
  */
 public enum OrganisationProfile {
 
+    ORGANISATION_PROFILE,
     SOLICITOR_PROFILE,
     LOCALAUTH_PROFILE,
     OTHER_REALT_PROFILE,

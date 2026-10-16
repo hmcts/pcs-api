@@ -1,9 +1,10 @@
 package uk.gov.hmcts.reform.pcs;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -34,7 +35,7 @@ public class CftlibOrganisationConfig {
             public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
                 OrganisationDetailsResponse response = new OrganisationDetailsResponse();
                 response.setOrganisationIdentifier(TEST_ORG_ID);
-                response.setOrganisationProfileIds(List.of(OrganisationProfile.SOLICITOR_PROFILE.getId()));
+                response.setOrganisationProfileIds(List.of(SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId()));
                 response.setName("Test Organisation");
                 response.setContactInformation(List.of());
                 return response;
@@ -62,7 +63,7 @@ public class CftlibOrganisationConfig {
 
             @Override
             public String getOrgProfileIdForCurrentUser() {
-                return OrganisationProfile.SOLICITOR_PROFILE.getId();
+                return SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId();
             }
 
             @Override

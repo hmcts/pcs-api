@@ -106,6 +106,38 @@ class OrganisationServiceTest {
     }
 
     @Test
+    @DisplayName("Should fall back to the generic organisation profile when it is the only profile")
+    void shouldFallBackToGenericOrganisationProfileWhenOnlyProfile() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+            .thenReturn(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .organisationProfileIds(List.of("ORGANISATION_PROFILE"))
+                            .build());
+
+        String result = organisationService.getOrgProfileIdForCurrentUser();
+
+        assertThat(result).isEqualTo("ORGANISATION_PROFILE");
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation details themselves are null")
+    void shouldReturnNullWhenOrganisationDetailsAreNull() {
+        assertThat(organisationService.getOrgProfileId(null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when profile id list is empty")
+    void shouldReturnNullWhenProfileIdListIsEmpty() {
+        OrganisationDetailsResponse details = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .organisationProfileIds(List.of())
+            .build();
+
+        assertThat(organisationService.getOrgProfileId(details)).isNull();
+    }
+
+    @Test
     @DisplayName("Should return null profile ids when absent from the organisation details")
     void shouldReturnNullWhenProfileIdsAbsent() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
