@@ -65,6 +65,15 @@ When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
 
+// Only the claimant legal representative can sign in today: it is the storage-state user from
+// config/global-setup.config.ts. Other users wait on HDPI-7539.
+When('a {string} opens the case', async ({ page, $tags }, user: string) => {
+  if (user !== 'claimant legal representative') {
+    return markPending({ ticket: 'HDPI-7539', summary: `opening the case as a ${user}` }, $tags);
+  }
+  await openCaseSummary(page);
+});
+
 Then('the {string} event is available in the next steps drop down', async ({ page, $tags }, eventName: string) => {
   const event = xuiEvents[eventName];
   if (!event) {
@@ -126,7 +135,6 @@ pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not
 
 pendingSteps({ ticket: 'HDPI-7539', summary: 'Opening the case as a role other than the claimant legal representative' }, [
   'an internal user opens the case',
-  'a {string} opens the case',
   'a bailiff opens the case',
   'a hearing centre admin opens the case',
 ]);

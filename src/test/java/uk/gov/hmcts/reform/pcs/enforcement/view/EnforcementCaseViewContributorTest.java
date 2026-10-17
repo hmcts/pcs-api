@@ -38,7 +38,7 @@ class EnforcementCaseViewContributorTest {
         InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-        inOrder.verify(enforcementOrderView).setEnforcementStatus(pcsCaseEntity, pcsCase);
+        inOrder.verify(enforcementOrderView).setEnforcementStatusFields(pcsCaseEntity, pcsCase);
         inOrder.verifyNoMoreInteractions();
     }
 

@@ -96,9 +96,11 @@ public class EnforcementOrderService {
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
-        // The status is held on the enf_case.status column and only copied onto the case view, so do not
-        // store a copy of it in the enforcement order JSON.
+        // The status is held on the enf_case.status column and only copied onto the case view, and the list of
+        // enforcements is built from the enf_case rows for the case view, so do not store a copy of either in the
+        // enforcement order JSON.
         enforcementOrder.setEnforcementStatus(null);
+        enforcementOrder.setEnforcements(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);

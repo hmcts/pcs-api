@@ -8,18 +8,25 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,12 +38,17 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT_OF_RESTITUTION;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT_OF_RESTITUTION;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderViewTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final UUID CLAIM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
+    private static final LocalDateTime BAILIFF_DATE = LocalDateTime.of(2026, 6, 25, 10, 0);
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
@@ -159,7 +171,7 @@ class EnforcementOrderViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setEnforcementStatus(pcsCaseEntity, pcsCase);
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
 
         // Then
         assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus())
@@ -181,7 +193,7 @@ class EnforcementOrderViewTest {
             .build();
 
         // When
-        underTest.setEnforcementStatus(pcsCaseEntity, pcsCase);
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
 
         // Then
         assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus()).isEqualTo(EnforcementStatus.REJECTED);
@@ -196,7 +208,7 @@ class EnforcementOrderViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setEnforcementStatus(pcsCaseEntity, pcsCase);
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
 
         // Then
         assertThat(pcsCase.getEnforcementOrder()).isNull();
@@ -210,8 +222,8 @@ class EnforcementOrderViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setEnforcementStatus(pcsCaseEntity, pcsCase);
-        underTest.setEnforcementStatus(null, pcsCase);
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+        underTest.setEnforcementStatusFields(null, pcsCase);
 
         // Then
         verifyNoInteractions(enforcementOrderRepository);
@@ -236,6 +248,173 @@ class EnforcementOrderViewTest {
 
         // Then
         assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus()).isEqualTo(EnforcementStatus.CLOSED);
+    }
+
+    @Test
+    void shouldListEveryEnforcementWithTheLiveOneFirstThenNewestFirst() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity legacy = enforcementOfType(WARRANT, EnforcementStatus.CLOSED, null);
+        EnforcementOrderEntity olderClosed =
+            enforcementOfType(WARRANT, EnforcementStatus.CLOSED, Instant.parse("2026-02-01T10:00:00Z"));
+        EnforcementOrderEntity live =
+            enforcementOfType(WARRANT_OF_RESTITUTION, EnforcementStatus.AWAITING_SCHEDULING,
+                        Instant.parse("2026-08-01T10:00:00Z"));
+        EnforcementOrderEntity laterRejected =
+            enforcementOfType(WRIT, EnforcementStatus.REJECTED, Instant.parse("2026-09-01T10:00:00Z"));
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID))
+            .thenReturn(List.of(legacy, olderClosed, live, laterRejected));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements())
+            .extracting(ListValue::getId)
+            .containsExactly(idOf(live), idOf(laterRejected), idOf(olderClosed), idOf(legacy));
+        assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus())
+            .isEqualTo(EnforcementStatus.AWAITING_SCHEDULING);
+    }
+
+    @Test
+    void shouldShowTheTypeStatusAndStatusUpdatedDateOfEachEnforcement() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        // 23:30 UTC on 1 July is 00:30 on 2 July in London (BST).
+        EnforcementOrderEntity writ =
+            enforcementOfType(WRIT_OF_RESTITUTION, EnforcementStatus.TRANSFERRED_TO_HIGH_COURT,
+                        Instant.parse("2026-07-01T23:30:00Z"));
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(writ));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements())
+            .singleElement()
+            .extracting(ListValue::getValue)
+            .isEqualTo(EnforcementSummary.builder()
+                           .enforcementType(WRIT_OF_RESTITUTION)
+                           .status(EnforcementStatus.TRANSFERRED_TO_HIGH_COURT)
+                           .statusUpdatedDate(LocalDate.of(2026, 7, 2))
+                           .build());
+    }
+
+    @ParameterizedTest
+    @MethodSource("scheduledEvictionScenarios")
+    void shouldShowTheScheduledEvictionDateForWarrantsOnly(SelectEnforcementType type,
+                                                           LocalDateTime expectedEvictionDate) {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity enforcement =
+            enforcementOfType(type, EnforcementStatus.CLAIMANT_CONFIRMED, Instant.parse("2026-06-01T10:00:00Z"));
+        enforcement.setBailiffDate(BAILIFF_DATE);
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(enforcement));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements().getFirst().getValue().getScheduledEvictionDate())
+            .isEqualTo(expectedEvictionDate);
+    }
+
+    @Test
+    void shouldFallBackToTheLegacyEnforcementTypeAndLeaveAnUnknownTypeUnset() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity legacyType = enforcementOfType(null, EnforcementStatus.CLOSED,
+                                                              Instant.parse("2026-02-01T10:00:00Z"));
+        legacyType.setEnforcementOrder(EnforcementOrder.builder().selectEnforcementType(WARRANT).build());
+        EnforcementOrderEntity unknownType = enforcementOfType(null, EnforcementStatus.CLOSED,
+                                                               Instant.parse("2026-01-01T10:00:00Z"));
+        unknownType.setEnforcementOrder(EnforcementOrder.builder()
+                                            .chooseEnforcementType(chosenType("SOMETHING_ELSE"))
+                                            .build());
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(unknownType, legacyType));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements())
+            .extracting(listValue -> listValue.getValue().getEnforcementType())
+            .containsExactly(WARRANT, null);
+    }
+
+    @Test
+    void shouldLeaveTheEnforcementListUnsetWhenTheClaimHasNoEnforcementWithAStatus() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID))
+            .thenReturn(List.of(enforcementOfType(WARRANT, null, Instant.parse("2026-02-01T10:00:00Z"))));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    @Test
+    void shouldKeepTheCaseViewEnforcementListWhenDraftReplacesEnforcementOrder() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        List<ListValue<EnforcementSummary>> draftList = List.of(summary("draft"));
+        List<ListValue<EnforcementSummary>> caseViewList = List.of(summary("case view"));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder()
+                                        .enforcementOrder(EnforcementOrder.builder().enforcements(draftList).build())
+                                        .build()));
+        PCSCase pcsCase = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().enforcements(caseViewList).build())
+            .build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements()).isSameAs(caseViewList);
+    }
+
+    private static ListValue<EnforcementSummary> summary(String id) {
+        return ListValue.<EnforcementSummary>builder().id(id).value(new EnforcementSummary()).build();
+    }
+
+    private static String idOf(EnforcementOrderEntity enforcement) {
+        return enforcement.getId().toString();
+    }
+
+    private static DynamicStringList chosenType(String code) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement.builder().code(code).label(code).build())
+            .build();
+    }
+
+    private static EnforcementOrderEntity enforcementOfType(SelectEnforcementType type, EnforcementStatus status,
+                                                      Instant statusUpdatedAt) {
+        EnforcementOrderEntity enforcement = enforcement(status, statusUpdatedAt);
+        enforcement.setId(UUID.randomUUID());
+        if (type != null) {
+            enforcement.setEnforcementOrder(EnforcementOrder.builder()
+                                                .chooseEnforcementType(chosenType(type.name()))
+                                                .build());
+        }
+        return enforcement;
+    }
+
+    private static Stream<Arguments> scheduledEvictionScenarios() {
+        return Stream.of(
+            Arguments.of(WARRANT, BAILIFF_DATE),
+            Arguments.of(WARRANT_OF_RESTITUTION, BAILIFF_DATE),
+            Arguments.of(WRIT, null),
+            Arguments.of(WRIT_OF_RESTITUTION, null)
+        );
     }
 
     private static PcsCaseEntity pcsCaseEntityWithClaim() {
