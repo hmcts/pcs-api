@@ -19,6 +19,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.Evic
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator.DISPENSE_WITH_SERVICE_REQUIRED_ERROR;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator.EVICTION_DATE_IN_PAST_ERROR;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator.EVICTION_DATE_REQUIRED_ERROR;
+import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator.EVICTION_TIME_IN_PAST_ERROR;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator.SERVED_AT_IN_FUTURE_ERROR;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator.SERVED_AT_REQUIRED_ERROR;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator.SERVED_HOW_REQUIRED_ERROR;
@@ -39,9 +40,21 @@ class EvictionScheduleValidatorTest {
     }
 
     @Test
-    void shouldAcceptAnEvictionEarlierToday() {
+    void shouldRejectAnEvictionEarlierToday() {
         assertThat(underTest.validateEvictionDate(schedule(LocalDateTime.parse("2026-07-08T00:00"))))
+            .containsExactly(EVICTION_TIME_IN_PAST_ERROR);
+    }
+
+    @Test
+    void shouldAcceptAnEvictionThisMinute() {
+        assertThat(underTest.validateEvictionDate(schedule(LocalDateTime.parse("2026-07-08T10:00"))))
             .isEmpty();
+    }
+
+    @Test
+    void shouldRejectAnEvictionLastMinute() {
+        assertThat(underTest.validateEvictionDate(schedule(LocalDateTime.parse("2026-07-08T09:59"))))
+            .containsExactly(EVICTION_TIME_IN_PAST_ERROR);
     }
 
     @Test

@@ -25,13 +25,16 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnOut
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @SpringBootTest
 @ActiveProfiles("integration")
@@ -61,6 +64,9 @@ class WarrantReturnPersistenceIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private WarrantReturnService warrantReturnService;
 
     @Test
     @DisplayName("stores a successful eviction with its outcome, time, details and who recorded it")
@@ -197,6 +203,27 @@ class WarrantReturnPersistenceIT extends AbstractPostgresContainerIT {
 
         assertThat(jdbcTemplate.queryForObject(
             "SELECT count(*) FROM enf_warrant_return WHERE id = ?", Integer.class, id)).isZero();
+    }
+
+    @ParameterizedTest(name = "approved {0} months ago: free {1}")
+    @CsvSource({"6, true", "13, false"})
+    @DisplayName("measures the free further warrant from when the warrant was approved")
+    void measuresTheFreeWarrantPeriodFromApproval(int monthsSinceApproval, boolean free) {
+        long caseReference = 2222111144443333L + monthsSinceApproval;
+        EnforcementOrderEntity warrant = savedWarrant(caseReference);
+        warrant.setApprovedAt(LocalDate.now().minusMonths(monthsSinceApproval).atStartOfDay(UK_ZONE_ID).toInstant());
+        enforcementOrderRepository.saveAndFlush(warrant);
+        // Recorded today, so a period measured from the return would always be free.
+        save(WarrantReturnEntity.builder()
+            .enforcementOrder(warrant)
+            .returnType(WarrantReturnType.FINAL)
+            .outcome(WarrantReturnOutcome.EVICTION_UNSUCCESSFUL)
+            .returnName(WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER)
+            .recordedAt(Instant.now()));
+
+        PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow();
+
+        assertThat(warrantReturnService.isNextWarrantFree(pcsCase)).isEqualTo(free);
     }
 
     private static String insertSql() {

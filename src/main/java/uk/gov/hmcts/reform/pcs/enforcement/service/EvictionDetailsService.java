@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -53,10 +54,7 @@ public class EvictionDetailsService {
             .map(EvictionDetailsService::claimantName)
             .filter(Objects::nonNull)
             .toList();
-        List<String> defendantNames = partiesWithRole(claimParties, PartyRole.DEFENDANT)
-            .map(EvictionDetailsService::defendantName)
-            .distinct()
-            .toList();
+        List<String> defendantNames = defendantNames(partiesWithRole(claimParties, PartyRole.DEFENDANT));
         return new EvictionDetails(claimantType, claimantNames, defendantNames);
     }
 
@@ -72,9 +70,31 @@ public class EvictionDetailsService {
         return party.getOrgName() != null ? party.getOrgName() : fullName(party);
     }
 
-    private static String defendantName(PartyEntity party) {
-        String name = party.getNameKnown() == VerticalYesNo.YES ? fullName(party) : null;
-        return name == null ? PERSONS_UNKNOWN : name;
+    /**
+     * Every defendant's name, with "Person(s) unknown" shown once however many defendants have no known name.
+     * Only that placeholder is deduplicated: two defendants can share a name, such as joint tenants or a
+     * father and son, and each is a person the bailiff has to evict. The "Record warrant return" screen's
+     * table applies the same rule.
+     */
+    private static List<String> defendantNames(Stream<PartyEntity> defendants) {
+        List<String> names = new ArrayList<>();
+        boolean anyUnknown = false;
+        for (PartyEntity defendant : defendants.toList()) {
+            String name = knownName(defendant);
+            if (name == null) {
+                if (!anyUnknown) {
+                    names.add(PERSONS_UNKNOWN);
+                }
+                anyUnknown = true;
+            } else {
+                names.add(name);
+            }
+        }
+        return names;
+    }
+
+    private static String knownName(PartyEntity party) {
+        return party.getNameKnown() == VerticalYesNo.YES ? fullName(party) : null;
     }
 
     private static String fullName(PartyEntity party) {

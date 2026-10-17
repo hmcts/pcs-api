@@ -46,7 +46,10 @@ public class BailiffAllocationService {
     private final Clock utcClock;
 
     /**
-     * The claim's current enforcement, if it is a warrant bailiffs can be allocated to.
+     * The claim's current enforcement, if it is a warrant bailiffs can be allocated to. For a start callback:
+     * it refuses by throwing, which
+     * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
+     * error on the start response.
      *
      * @throws NoEnforcementException if the claim has no enforcement
      * @throws EnforcementEventNotAvailableException if the enforcement is not an approved, live warrant
@@ -58,6 +61,20 @@ public class BailiffAllocationService {
             throw new EnforcementEventNotAvailableException(NOT_AVAILABLE_MESSAGE);
         }
         return enforcement;
+    }
+
+    /**
+     * The claim's current enforcement if it is a warrant bailiffs can be allocated to, or why it is not.
+     */
+    private EnforcementChange<EnforcementOrderEntity> findAllocatableEnforcement(long caseReference) {
+        Optional<EnforcementOrderEntity> current = currentEnforcementService.findCurrentEnforcement(caseReference);
+        if (current.isEmpty()) {
+            return EnforcementChange.refused(NoEnforcementException.MESSAGE);
+        }
+        if (!BailiffEnforcementRules.isApprovedLiveWarrant(current.get())) {
+            return EnforcementChange.refused(NOT_AVAILABLE_MESSAGE);
+        }
+        return EnforcementChange.made(current.get());
     }
 
     /**
@@ -88,12 +105,15 @@ public class BailiffAllocationService {
      * Allocates the claim's current warrant to the bailiff. Allocating it again to its current bailiff
      * changes nothing.
      *
-     * @throws NoEnforcementException if the claim has no enforcement
-     * @throws EnforcementEventNotAvailableException if the enforcement is not an approved, live warrant
+     * @return made, or the errors to show when the claim has no approved, live warrant
      */
     @Transactional
-    public void allocate(long caseReference, BailiffUser bailiff) {
-        EnforcementOrderEntity enforcement = getAllocatableEnforcement(caseReference);
+    public EnforcementChange<Void> allocate(long caseReference, BailiffUser bailiff) {
+        EnforcementChange<EnforcementOrderEntity> allocatable = findAllocatableEnforcement(caseReference);
+        if (allocatable.refused()) {
+            return EnforcementChange.refused(allocatable.errors());
+        }
+        EnforcementOrderEntity enforcement = allocatable.change();
         Instant now = Instant.now(utcClock);
 
         boolean alreadyAllocated =
@@ -126,5 +146,6 @@ public class BailiffAllocationService {
         // TODO(HDPI-8627): complete the "Allocate case to bailiff" task and create the "Review risks and set
         //  level" task, assigned to the allocated bailiff.
         log.info("Enforcement {} allocated to bailiff {}", enforcement.getId(), bailiff.userId());
+        return EnforcementChange.made();
     }
 }

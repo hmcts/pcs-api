@@ -18,11 +18,10 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.allocatebailiff.AllocateBail
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.allocatebailiff.FindBailiffPage;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffAllocationDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffDirectoryService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +62,7 @@ public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         allocateBailiffConfigurer.configurePages(new PageBuilder(eventBuilder));
+        SummaryFields.excludeNeverShownFields(eventBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -90,10 +90,9 @@ public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
         if (bailiff.isEmpty()) {
             return errorResponse(FindBailiffPage.NOT_A_BAILIFF_ERROR);
         }
-        try {
-            bailiffAllocationService.allocate(caseReference, bailiff.get());
-        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
-            return errorResponse(ex.getMessage());
+        EnforcementChange<Void> allocated = bailiffAllocationService.allocate(caseReference, bailiff.get());
+        if (allocated.refused()) {
+            return errorResponse(allocated.errors());
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader("# Case assigned to " + displayName(bailiff.get()))
@@ -106,6 +105,10 @@ public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private static SubmitResponse<State> errorResponse(String error) {
-        return SubmitResponse.<State>builder().errors(List.of(error)).build();
+        return errorResponse(List.of(error));
+    }
+
+    private static SubmitResponse<State> errorResponse(List<String> errors) {
+        return SubmitResponse.<State>builder().errors(errors).build();
     }
 }

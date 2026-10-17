@@ -14,12 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.MarkNoticeOfEvictionServedConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
 import java.time.LocalDateTime;
@@ -90,16 +90,15 @@ public class MarkNoticeOfEvictionServed implements CCDConfig<PCSCase, State, Use
         }
         LocalDateTime servedAt = schedule.getNoticeOfEvictionServedAt().truncatedTo(ChronoUnit.MINUTES);
         String bailiffNote = schedule.getNoticeOfEvictionAddBailiffNote() == YesOrNo.YES ? bailiffNoteText : null;
-        try {
-            evictionScheduleService.markNoticeServed(
-                caseReference, servedAt, schedule.getNoticeOfEvictionServedHow(), bailiffNote);
-        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
-            return SubmitResponse.<State>builder().errors(List.of(ex.getMessage())).build();
+        EnforcementChange<String> served = evictionScheduleService.markNoticeServed(
+            caseReference, servedAt, schedule.getNoticeOfEvictionServedHow(), bailiffNote);
+        if (served.refused()) {
+            return SubmitResponse.<State>builder().errors(served.errors()).build();
         }
-        // TODO HDPI-7658: show the warrant number once warrants are numbered.
         return SubmitResponse.<State>builder()
             .confirmationHeader(CONFIRMATION_HEADER)
-            .confirmationBody("Case number: " + caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
+            .confirmationBody(ConfirmationNumbers.caseAndWarrant(
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), served.change()))
             .build();
     }
 }

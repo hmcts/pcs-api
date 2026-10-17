@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.PlacedFields;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.allocatebailiff.AllocateBailiffConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffAllocationDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
@@ -27,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffDirectoryService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +39,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -112,6 +114,19 @@ class AllocateBailiffTest extends BaseEventTest {
     }
 
     @Test
+    void shouldKeepTheCaseNameHeadingOffCheckYourAnswers() {
+        setEventUnderTest(new AllocateBailiff(new AllocateBailiffConfigurer(bailiffDirectoryService),
+                                              bailiffAllocationService, bailiffDirectoryService,
+                                              new CaseNameFormatter(), new CaseReferenceFormatter()));
+
+        Field<?, ?, ?, ?> caseName =
+            PlacedFields.find(configuredEvent.getFields(), "bailiffAllocationCaseName");
+
+        assertThat(caseName.isShowSummary()).isFalse();
+        assertThat(caseName.isRetainHiddenValue()).isTrue();
+    }
+
+    @Test
     void shouldRefuseToStartWhenTheWarrantCannotBeAllocated() {
         when(bailiffAllocationService.getAllocatableEnforcement(TEST_CASE_REFERENCE))
             .thenThrow(new EnforcementEventNotAvailableException("not yet"));
@@ -146,6 +161,7 @@ class AllocateBailiffTest extends BaseEventTest {
     @Test
     void shouldAllocateTheChosenBailiffAndConfirmIt() {
         when(bailiffDirectoryService.findBailiff(SAM_ID)).thenReturn(Optional.of(SAM));
+        when(bailiffAllocationService.allocate(anyLong(), any())).thenReturn(EnforcementChange.made());
 
         SubmitResponse<State> response = callSubmitHandler(caseWithBailiff(SAM_ID));
 
@@ -159,6 +175,7 @@ class AllocateBailiffTest extends BaseEventTest {
     void shouldConfirmWithTheEmailWhenTheBailiffHasNoName() {
         when(bailiffDirectoryService.findBailiff(SAM_ID))
             .thenReturn(Optional.of(new BailiffUser(SAM_ID, "", "sam.jones@justice.gov.uk")));
+        when(bailiffAllocationService.allocate(anyLong(), any())).thenReturn(EnforcementChange.made());
 
         SubmitResponse<State> response = callSubmitHandler(caseWithBailiff(SAM_ID));
 
@@ -187,7 +204,8 @@ class AllocateBailiffTest extends BaseEventTest {
     @Test
     void shouldShowTheErrorWhenTheWarrantCanNoLongerBeAllocated() {
         when(bailiffDirectoryService.findBailiff(SAM_ID)).thenReturn(Optional.of(SAM));
-        doThrow(new NoEnforcementException()).when(bailiffAllocationService).allocate(TEST_CASE_REFERENCE, SAM);
+        when(bailiffAllocationService.allocate(TEST_CASE_REFERENCE, SAM))
+            .thenReturn(EnforcementChange.refused(NoEnforcementException.MESSAGE));
 
         SubmitResponse<State> response = callSubmitHandler(caseWithBailiff(SAM_ID));
 

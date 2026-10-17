@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,6 +8,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -14,8 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.PlacedFields;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantreturn.EvictionDetailsMarkup;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantreturn.RecordWarrantReturnConfigurer;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantreturn.RecordWarrantReturnPage;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.InterimWarrantReturnName;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDetails;
@@ -23,8 +29,9 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnNam
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
 import java.util.List;
@@ -57,6 +64,13 @@ class RecordWarrantReturnTest extends BaseEventTest {
                                                   new CaseReferenceFormatter()));
     }
 
+    @AfterEach
+    void clearSynchronisation() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
     @Test
     void shouldConfigureThePages() {
         verify(recordWarrantReturnConfigurer).configurePages(any());
@@ -76,6 +90,19 @@ class RecordWarrantReturnTest extends BaseEventTest {
     @Test
     void shouldBeAvailableInEveryStateOnceTheCaseIsIssued() {
         assertConfiguredForStates(AddBailiffNote.STATES);
+    }
+
+    @Test
+    void shouldRetainTheEvictionDetailsWithoutPuttingTheMarkupOnCheckYourAnswers() {
+        setEventUnderTest(new RecordWarrantReturn(
+            new RecordWarrantReturnConfigurer(new RecordWarrantReturnPage(warrantReturnService)),
+            warrantReturnService, warrantReturnNotificationService, evictionDetailsMarkup,
+            new CaseReferenceFormatter()));
+
+        Field<?, ?, ?, ?> markup = PlacedFields.find(configuredEvent.getFields(), "warrantReturnEvictionDetailsMarkup");
+
+        assertThat(markup.isRetainHiddenValue()).isTrue();
+        assertThat(markup.isShowSummary()).isFalse();
     }
 
     @ParameterizedTest
@@ -152,7 +179,7 @@ class RecordWarrantReturnTest extends BaseEventTest {
     void shouldRecordTheReturnNotifyTheClaimantAndConfirm() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order shown");
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenReturn(WarrantReturnName.OTHER_INTERIM_RETURN);
+            .thenReturn(recorded(WarrantReturnName.OTHER_INTERIM_RETURN, "WP-00000042"));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(details));
 
@@ -160,6 +187,18 @@ class RecordWarrantReturnTest extends BaseEventTest {
             .notifyClaimant(TEST_CASE_REFERENCE, WarrantReturnName.OTHER_INTERIM_RETURN, "Court order shown");
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getConfirmationHeader()).isEqualTo("# Outcome recorded as Other interim return");
+        assertThat(response.getConfirmationBody())
+            .isEqualTo("Case number: 0000-0000-0000-1234\n\nWarrant number: WP-00000042");
+    }
+
+    @Test
+    void shouldLeaveTheWarrantNumberOutOfTheConfirmationWhenTheWarrantHasNone() {
+        WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
+        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, null));
+
+        SubmitResponse<State> response = callSubmitHandler(caseWith(details));
+
         assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
     }
 
@@ -167,7 +206,7 @@ class RecordWarrantReturnTest extends BaseEventTest {
     void shouldStillConfirmWhenTheEmailCannotBeScheduled() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenReturn(WarrantReturnName.CROWDS_OR_PROTESTS);
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
         when(warrantReturnNotificationService.notifyClaimant(anyLong(), any(), any()))
             .thenThrow(new IllegalStateException("Notify down"));
 
@@ -178,10 +217,41 @@ class RecordWarrantReturnTest extends BaseEventTest {
     }
 
     @Test
+    void shouldNotNotifyTheClaimantUntilTheSubmitTransactionCommits() {
+        WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
+        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
+        TransactionSynchronizationManager.initSynchronization();
+
+        callSubmitHandler(caseWith(details));
+
+        verify(warrantReturnNotificationService, never()).notifyClaimant(anyLong(), any(), any());
+
+        TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
+
+        verify(warrantReturnNotificationService)
+            .notifyClaimant(TEST_CASE_REFERENCE, WarrantReturnName.CROWDS_OR_PROTESTS, null);
+    }
+
+    @Test
+    void shouldNotNotifyTheClaimantWhenTheSubmitTransactionRollsBack() {
+        WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
+        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
+        TransactionSynchronizationManager.initSynchronization();
+
+        callSubmitHandler(caseWith(details));
+        TransactionSynchronizationManager.getSynchronizations()
+            .forEach(synchronization -> synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+
+        verify(warrantReturnNotificationService, never()).notifyClaimant(anyLong(), any(), any());
+    }
+
+    @Test
     void shouldReturnTheValidationErrors() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenThrow(new WarrantReturnValidationException(List.of("Enter additional details")));
+            .thenReturn(EnforcementChange.refused(List.of("Enter additional details")));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(details));
 
@@ -192,12 +262,18 @@ class RecordWarrantReturnTest extends BaseEventTest {
 
     @Test
     void shouldReturnAnErrorWhenTheWarrantHasGone() {
-        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, null)).thenThrow(new NoEnforcementException());
+        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, null))
+            .thenReturn(EnforcementChange.refused(NoEnforcementException.MESSAGE));
 
         SubmitResponse<State> response = callSubmitHandler(PCSCase.builder().build());
 
         assertThat(response.getErrors()).containsExactly("There is no warrant on this case");
         verify(warrantReturnNotificationService, never()).notifyClaimant(anyLong(), any(), any());
+    }
+
+    private static EnforcementChange<RecordedWarrantReturn> recorded(WarrantReturnName returnName,
+                                                                     String warrantNumber) {
+        return EnforcementChange.made(new RecordedWarrantReturn(returnName, warrantNumber));
     }
 
     private static PCSCase caseWith(WarrantReturnDetails details) {

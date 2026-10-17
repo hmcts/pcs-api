@@ -26,7 +26,7 @@
       <rule id="DecisionRule_17sqvb4">
         <description></description>
         <inputEntry id="UnaryTests_0kkhvpk">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ReviewClaimantWarrantApplication"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1hbvv3u">
           <text></text>
@@ -55,7 +55,7 @@
       </rule>
       <rule id="DecisionRule_1qs3glb">
         <inputEntry id="UnaryTests_0l9ifw6">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ReviewClaimantWarrantApplication"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_175p0w3">
           <text></text>
@@ -137,6 +137,125 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0hssf3g">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfBailiffAdminAllocation">
+        <description>Allocating a warrant to a bailiff is done by bailiff admin, not by the allocated bailiff</description>
+        <inputEntry id="UnaryTests_enfBailiffAdminAllocationTaskType">
+          <text>"AllocateCaseToBailiff"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfBailiffAdminAllocationCase">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAdminAllocationCategory">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAdminAllocationName">
+          <text>"bailiff-admin"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAdminAllocationValue">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAdminAllocationRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAdminAllocationAuthorisations">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAdminAllocationPriority">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAdminAllocationAutoAssignable">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfBailiffManagerAllocation">
+        <inputEntry id="UnaryTests_enfBailiffManagerAllocationTaskType">
+          <text>"AllocateCaseToBailiff"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfBailiffManagerAllocationCase">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerAllocationCategory">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerAllocationName">
+          <text>"bailiff-manager"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerAllocationValue">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete,Cancel,Assign,Unassign"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerAllocationRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerAllocationAuthorisations">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerAllocationPriority">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerAllocationAutoAssignable">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfAllocatedBailiffTasks">
+        <description>allocated-bailiff is the case role AllocateBailiff grants, so these tasks auto-assign to the bailiff the enforcement is allocated to and follow a reallocation</description>
+        <inputEntry id="UnaryTests_enfAllocatedBailiffTasksTaskType">
+          <text>"ReviewRisksAndSetLevel", "MarkNoticeOfEvictionServed", "RescheduleEviction", "ReviewUpdatedRiskInformation", "RecordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocatedBailiffTasksCase">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksCategory">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksName">
+          <text>"allocated-bailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksValue">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksAuthorisations">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksPriority">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksAutoAssignable">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfBailiffManagerOversight">
+        <description>Reallocating an enforcement reassigns its open bailiff tasks, which needs Assign and Unassign</description>
+        <inputEntry id="UnaryTests_enfBailiffManagerOversightTaskType">
+          <text>"ReviewRisksAndSetLevel", "MarkNoticeOfEvictionServed", "RescheduleEviction", "ReviewUpdatedRiskInformation", "RecordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfBailiffManagerOversightCase">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerOversightCategory">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerOversightName">
+          <text>"bailiff-manager"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerOversightValue">
+          <text>"Read,Own,Manage,Complete,Cancel,Assign,Unassign"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerOversightRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerOversightAuthorisations">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerOversightPriority">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffManagerOversightAutoAssignable">
           <text>false</text>
         </outputEntry>
       </rule>

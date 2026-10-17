@@ -49,6 +49,14 @@ class ConfirmEvictionTest extends BaseEventTest {
     }
 
     @Test
+    void shouldOnlyBeOfferedWhenTheCaseViewSaysTheEvictionNeedsConfirming() {
+        setEventUnderTest(underTest);
+
+        assertConfiguredShowConditions(
+            "featureFlags.enforcementEnabled=\"YES\" AND showConfirmEvictionJourney=\"Yes\"");
+    }
+
+    @Test
     void shouldRecordTheClaimantsAttendanceAnswerOnSubmit() {
         // Given
         PCSCase caseData = PCSCase.builder()

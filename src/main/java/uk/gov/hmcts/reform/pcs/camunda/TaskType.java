@@ -121,6 +121,68 @@ public enum TaskType {
             Only mark the task as complete once the translation has been completed and any required action has been
             taken.
             """
+    ),
+    REVIEW_CLAIMANT_WARRANT_APPLICATION(
+        "ReviewClaimantWarrantApplication",
+        "Review claimant warrant application",
+        """
+            Review the claimant's application for a warrant or writ and record the decision through the
+            "Decide enforcement" event. Accepting it seals and issues the warrant or writ; rejecting it asks for
+            a reason. The task closes when that event is submitted.
+            """
+    ),
+    ALLOCATE_CASE_TO_BAILIFF(
+        "AllocateCaseToBailiff",
+        "Allocate case to bailiff",
+        """
+            Allocate the warrant to a bailiff at the court handling the case through the "Allocate case to
+            bailiff" event. The task closes when that event is submitted.
+            """
+    ),
+    REVIEW_RISKS_AND_SET_LEVEL(
+        "ReviewRisksAndSetLevel",
+        "Review risks and set level",
+        """
+            Read the claimant's risk assessment on the "Risk assessment" tab and record the eviction risk level
+            through the "Set risk level" event. A high level needs a reason. The task closes when that event is
+            submitted.
+            """
+    ),
+    MARK_NOTICE_OF_EVICTION_SERVED(
+        "MarkNoticeOfEvictionServed",
+        "Mark notice of eviction as served",
+        """
+            Record when and how you served the notice of eviction through the "Mark notice of eviction as served"
+            event. Serving the notice is what makes the enforcement visible to the defendants. The task closes
+            when that event is submitted.
+            """
+    ),
+    RESCHEDULE_EVICTION(
+        "RescheduleEviction",
+        "Reschedule eviction",
+        """
+            The claimant cannot attend the eviction on the scheduled date. Record a new date and time through the
+            "Reschedule eviction" event, avoiding the dates the claimant has given. The task closes when that
+            event is submitted.
+            """
+    ),
+    REVIEW_UPDATED_RISK_INFORMATION(
+        "ReviewUpdatedRiskInformation",
+        "Review updated risk information",
+        """
+            The claimant has changed their risk assessment answers. Read the changes on the "Risk assessment" tab
+            and confirm or change the risk level through the "Set risk level" event. The task closes when that
+            event is submitted.
+            """
+    ),
+    RECORD_WARRANT_RETURN(
+        "RecordWarrantReturn",
+        "Record warrant return",
+        """
+            Record the outcome of the eviction through the "Record warrant return" event. The return name decides
+            whether the warrant closes, goes into breathing space, goes back for scheduling or reopens for
+            allocation. The task closes when that event is submitted.
+            """
     );
 
     private final String id;

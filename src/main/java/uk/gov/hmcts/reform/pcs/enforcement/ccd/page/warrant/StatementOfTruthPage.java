@@ -4,12 +4,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class StatementOfTruthPage implements CcdPageConfiguration {
@@ -28,13 +26,6 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getCertification)
-                    .done()
-                    .complex(WarrantDetails::getRepaymentCosts)
-                        .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
-                        .label("statementOfTruth-payments-table",
-                            "${warrantStatementOfTruthRepaymentSummaryMarkdown}")
-                    .done()
-                    .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
                         .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
                             WARRANT_COMPLETED_BY_CLAIMANT, null)

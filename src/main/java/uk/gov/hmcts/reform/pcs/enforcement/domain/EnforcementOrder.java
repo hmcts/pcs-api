@@ -115,6 +115,13 @@ public class EnforcementOrder {
     private YesOrNo showConfirmEvictionJourney;
 
     /**
+     * The scheduled eviction date the claimant is being asked to confirm, set for the case view alongside
+     * {@link #showConfirmEvictionJourney} and shown on the "The eviction date" page.
+     */
+    @CCD(searchable = false, access = {ClaimantAccess.class})
+    private String formattedEvictionDate;
+
+    /**
      * The claimant's answer in "Confirm the eviction details". It is only used on submit, to move the
      * enforcement status, and is not stored.
      */
@@ -127,6 +134,16 @@ public class EnforcementOrder {
      */
     @CCD(label = "Enforcement status", searchable = false, access = {EnforcementStatusReadAccess.class})
     private EnforcementStatus enforcementStatus;
+
+    /**
+     * Whether to show the "Risk assessment" tab, set for the case view. The tab belongs to the bailiffs' work
+     * on a warrant, so it is shown for a warrant or warrant of restitution that a caseworker has approved and
+     * that is still live, and not for a writ or a warrant still going through payment and review
+     * (13-risk-assessment-tab.feature). The tab's CCD show condition cannot apply that rule itself.
+     */
+    @CCD(label = "Show the risk assessment tab", searchable = false,
+        access = {EnforcementStatusReadAccess.class})
+    private YesOrNo showRiskAssessmentTab;
 
     /**
      * Every warrant and writ on the claim, newest first, set for the case view and shown on the "Enforcement

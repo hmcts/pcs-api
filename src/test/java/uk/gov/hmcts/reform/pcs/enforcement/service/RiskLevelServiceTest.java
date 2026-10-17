@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -53,8 +52,10 @@ class RiskLevelServiceTest {
     void shouldSaveAHighRiskLevelWithItsReason() {
         EnforcementOrderEntity enforcement = givenCurrentEnforcement(EnforcementStatus.AWAITING_SCHEDULING);
 
-        underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.HIGH, "Known history of violence");
+        EnforcementChange<Void> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.HIGH,
+                                                             "Known history of violence");
 
+        assertThat(set.refused()).isFalse();
         assertThat(enforcement.getRiskLevel()).isEqualTo(RiskLevel.HIGH);
         assertThat(enforcement.getRiskLevelReason()).isEqualTo("Known history of violence");
         assertThat(enforcement.getRiskLevelSetAt()).isEqualTo(NOW);
@@ -101,10 +102,19 @@ class RiskLevelServiceTest {
     void shouldRefuseAWarrantAwaitingReview() {
         givenCurrentEnforcement(EnforcementStatus.AWAITING_REVIEW);
 
-        assertThatThrownBy(() -> underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.MEDIUM, null))
-            .isInstanceOf(EnforcementEventNotAvailableException.class)
-            .hasMessage(RiskLevelService.NOT_AVAILABLE_MESSAGE);
+        EnforcementChange<Void> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.MEDIUM, null);
+
+        assertThat(set.errors()).containsExactly(RiskLevelService.NOT_AVAILABLE_MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldRefuseRatherThanThrowWhenTheClaimHasNoEnforcementOnSubmit() {
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        EnforcementChange<Void> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.MEDIUM, null);
+
+        assertThat(set.errors()).containsExactly(NoEnforcementException.MESSAGE);
     }
 
     @Test

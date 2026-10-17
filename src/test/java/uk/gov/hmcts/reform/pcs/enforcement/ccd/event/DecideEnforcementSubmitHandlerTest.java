@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,12 +18,13 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -55,12 +58,13 @@ class DecideEnforcementSubmitHandlerTest {
     void shouldApproveTheApplicationAndConfirmIt(SelectEnforcementType type, String number, String title,
                                                  String numberLine, String whatNext) {
         when(enforcementDecisionService.accept(CASE_REFERENCE))
-            .thenReturn(new EnforcementDecisionOutcome(type, ACCEPT, number));
+            .thenReturn(Optional.of(new EnforcementDecisionOutcome(type, ACCEPT, number)));
         givenFormattedAddress();
 
         SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null));
 
-        assertThat(response.getState()).isNull();
+        assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getConfirmationBody())
             .contains(title, numberLine, "Case number: " + CASE_REFERENCE, "Property address: 1 High Street",
                       CASE_NAME, whatNext);
@@ -77,7 +81,7 @@ class DecideEnforcementSubmitHandlerTest {
     void shouldRejectTheApplicationAndPutTheCaseBackSoTheClaimantCanApplyAgain(SelectEnforcementType type,
                                                                                String title) {
         when(enforcementDecisionService.reject(CASE_REFERENCE, "No possession order"))
-            .thenReturn(new EnforcementDecisionOutcome(type, REJECT, null));
+            .thenReturn(Optional.of(new EnforcementDecisionOutcome(type, REJECT, null)));
         givenFormattedAddress();
 
         SubmitResponse<State> response = underTest.submit(payload(REJECT, "No possession order"));
@@ -92,10 +96,10 @@ class DecideEnforcementSubmitHandlerTest {
 
     @Test
     void shouldRefuseASubmissionWithNoDecision() {
-        EventPayload<PCSCase, State> payload = payload(null, null);
+        SubmitResponse<State> response = underTest.submit(payload(null, null));
 
-        assertThatThrownBy(() -> underTest.submit(payload))
-            .isInstanceOf(EnforcementEventNotAvailableException.class);
+        assertThat(response.getErrors()).containsExactly(DecideEnforcementSubmitHandler.NO_DECISION_MESSAGE);
+        assertThat(response.getState()).isNull();
         verifyNoInteractions(enforcementDecisionService);
     }
 
@@ -103,15 +107,46 @@ class DecideEnforcementSubmitHandlerTest {
     void shouldRefuseASubmissionWithNoEnforcementOrder() {
         EventPayload<PCSCase, State> payload = new EventPayload<>(CASE_REFERENCE, PCSCase.builder().build(), null);
 
-        assertThatThrownBy(() -> underTest.submit(payload))
-            .isInstanceOf(EnforcementEventNotAvailableException.class);
+        SubmitResponse<State> response = underTest.submit(payload);
+
+        assertThat(response.getErrors()).containsExactly(DecideEnforcementSubmitHandler.NO_DECISION_MESSAGE);
+        assertThat(response.getState()).isNull();
+        verifyNoInteractions(enforcementDecisionService);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "   "})
+    void shouldRefuseARejectionWithNoReasonWithoutStartingATransaction(String reason) {
+        SubmitResponse<State> response = underTest.submit(payload(REJECT, reason));
+
+        assertThat(response.getErrors())
+            .containsExactly(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
+        assertThat(response.getState()).isNull();
         verifyNoInteractions(enforcementDecisionService);
     }
 
     @Test
-    void shouldOnlyChangeTheCaseStateOnRejection() {
-        assertThat(DecideEnforcementSubmitHandler.stateAfter(REJECT)).isEqualTo(State.CASE_ISSUED);
-        assertThat(DecideEnforcementSubmitHandler.stateAfter(ACCEPT)).isNull();
+    void shouldReportAnApplicationAlreadyDecidedByAnotherCaseworkerAsAnError() {
+        when(enforcementDecisionService.accept(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null));
+
+        assertThat(response.getErrors()).containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
+        assertThat(response.getState()).isNull();
+        assertThat(response.getConfirmationBody()).isNull();
+        verifyNoInteractions(addressFormatter);
+    }
+
+    @Test
+    void shouldReportARejectionOfAnApplicationAlreadyDecidedAsAnError() {
+        when(enforcementDecisionService.reject(CASE_REFERENCE, "No possession order")).thenReturn(Optional.empty());
+
+        SubmitResponse<State> response = underTest.submit(payload(REJECT, "No possession order"));
+
+        assertThat(response.getErrors()).containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
+        assertThat(response.getState()).isNull();
+        verifyNoInteractions(addressFormatter);
     }
 
     private void givenFormattedAddress() {

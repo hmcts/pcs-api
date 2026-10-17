@@ -8,7 +8,8 @@ public enum NotificationClaimType {
     NO_COUNTER_CLAIM("no_counter_claim"),
     POSSESSION_CLAIM("possession_claim"),
     GENERAL_APPLICATION("general_application"),
-    NOTICE_OF_CHANGE("notice_of_change");
+    NOTICE_OF_CHANGE("notice_of_change"),
+    ENFORCEMENT("enforcement");
 
     private final String value;
 

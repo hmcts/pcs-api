@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,13 +27,14 @@ public final class EvictionConfirmationFormat {
     }
 
     /**
-     * The body of the schedule and reschedule confirmation screens: the case number, the notice the bailiff
-     * needs to print and a link to case file view.
+     * The body of the schedule and reschedule confirmation screens: the case and warrant numbers, the notice
+     * the bailiff needs to print and a link to case file view.
+     *
+     * @param warrantNumber the warrant's number, or null for a warrant that has none
      */
-    public static String scheduledBody(String formattedCaseReference, long caseReference) {
-        // TODO HDPI-7547: show the warrant number once warrants are numbered.
+    public static String scheduledBody(String formattedCaseReference, long caseReference, String warrantNumber) {
         return """
-            Case number: %s
+            %s
 
             <h2 class="govuk-heading-m">You need to</h2>
             <ul class="govuk-list govuk-list--bullet">
@@ -41,6 +43,6 @@ public final class EvictionConfirmationFormat {
 
             <a href="/cases/case-details/%d#Case%%20File%%20View" target="_blank" rel="noopener noreferrer" \
             class="govuk-link">Go to case file view (same service, opens in a new tab)</a>
-            """.formatted(formattedCaseReference, caseReference);
+            """.formatted(ConfirmationNumbers.caseAndWarrant(formattedCaseReference, warrantNumber), caseReference);
     }
 }

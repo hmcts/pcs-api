@@ -6,6 +6,7 @@ import com.github.kagkarlsson.scheduler.task.ExecutionOperations;
 import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
+import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -137,16 +139,18 @@ class EnforcementDraftDeletionScheduledTaskTest {
     }
 
     @Test
-    void shouldStopWhenMaxRetriesExceeded() {
+    void shouldReturnToTheRecurringScheduleWhenMaxRetriesExceeded() {
         // Given
         FailureHandler<Void> failureHandler = underTest.enforcementDraftDeletionTask().getFailureHandler();
+        ExecutionComplete execution = failedExecution(MAX_RETRIES);
 
         // When
-        failureHandler.onFailure(failedExecution(MAX_RETRIES), executionOperations);
+        failureHandler.onFailure(execution, executionOperations);
 
         // Then
-        verify(executionOperations).stop();
-        verify(executionOperations, never()).reschedule(any(ExecutionComplete.class), any(Instant.class));
+        verify(executionOperations).reschedule(eq(execution),
+                eq(Schedules.parseSchedule("DAILY|02:00").getNextExecutionTime(execution)));
+        verify(executionOperations, never()).stop();
     }
 
     @Test

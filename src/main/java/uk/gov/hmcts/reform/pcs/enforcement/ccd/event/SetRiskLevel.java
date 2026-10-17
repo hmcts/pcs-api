@@ -18,8 +18,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevelDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
 
 import java.util.List;
@@ -90,10 +89,9 @@ public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
                 return errorResponse(REASON_TOO_LONG_ERROR);
             }
         }
-        try {
-            riskLevelService.setRiskLevel(caseReference, riskLevel, reason);
-        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
-            return errorResponse(ex.getMessage());
+        EnforcementChange<Void> set = riskLevelService.setRiskLevel(caseReference, riskLevel, reason);
+        if (set.refused()) {
+            return errorResponse(set.errors());
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader("# Risk level set to " + riskLevel.getLabel())
@@ -113,6 +111,10 @@ public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private static SubmitResponse<State> errorResponse(String error) {
-        return SubmitResponse.<State>builder().errors(List.of(error)).build();
+        return errorResponse(List.of(error));
+    }
+
+    private static SubmitResponse<State> errorResponse(List<String> errors) {
+        return SubmitResponse.<State>builder().errors(errors).build();
     }
 }
