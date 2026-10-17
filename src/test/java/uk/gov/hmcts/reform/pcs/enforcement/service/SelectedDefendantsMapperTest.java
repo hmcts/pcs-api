@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.SelectedDefendantsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.List;
@@ -94,6 +95,40 @@ class SelectedDefendantsMapperTest {
             .build();
 
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
+
+        // When
+        List<SelectedDefendantEntity> entities =
+            selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
+
+        // Then
+        assertThat(entities).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenTheDraftHasNoRawWarrantDetails() {
+        // Given a resumed draft: only enforceTheOrder's start callback populates rawWarrantDetails
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+        enforcementOrderEntity.setEnforcementOrder(EnforcementOrder.builder().build());
+
+        // When
+        List<SelectedDefendantEntity> entities =
+            selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
+
+        // Then
+        assertThat(entities).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenSelectedDefendantsHasNoValue() {
+        // Given
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+        enforcementOrderEntity.setEnforcementOrder(EnforcementOrder.builder()
+            .rawWarrantDetails(RawWarrantDetails.builder()
+                                   .selectedDefendants(DynamicMultiSelectStringList.builder()
+                                                           .listItems(List.of())
+                                                           .build())
+                                   .build())
+            .build());
 
         // When
         List<SelectedDefendantEntity> entities =

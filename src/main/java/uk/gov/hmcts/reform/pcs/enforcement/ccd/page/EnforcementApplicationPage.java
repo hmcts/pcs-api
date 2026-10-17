@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -159,10 +160,10 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     }
 
     private String resolvePartyName(Party party) {
-        if (StringUtils.isBlank(party.getFirstName()) && StringUtils.isBlank(party.getLastName())) {
-            return CaseTabView.NAME_UNKNOWN;
-        }
-        return party.getFirstName() + " " + party.getLastName();
+        String name = Stream.of(party.getFirstName(), party.getLastName())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(" "));
+        return name.isEmpty() ? CaseTabView.NAME_UNKNOWN : name;
     }
 
     private static boolean toBoolean(YesOrNo yesOrNo) {

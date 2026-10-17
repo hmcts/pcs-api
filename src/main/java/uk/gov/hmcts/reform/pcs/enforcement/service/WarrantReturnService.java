@@ -81,6 +81,7 @@ public class WarrantReturnService {
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final WarrantReturnValidator warrantReturnValidator;
     private final SecurityContextService securityContextService;
+    private final BailiffAllocationService bailiffAllocationService;
     private final Clock utcClock;
     private final Clock ukClock;
 
@@ -89,6 +90,7 @@ public class WarrantReturnService {
                                 EnforcementStatusTransitions enforcementStatusTransitions,
                                 WarrantReturnValidator warrantReturnValidator,
                                 SecurityContextService securityContextService,
+                                BailiffAllocationService bailiffAllocationService,
                                 @Qualifier("utcClock") Clock utcClock,
                                 @Qualifier("ukClock") Clock ukClock) {
         this.currentEnforcementService = currentEnforcementService;
@@ -96,6 +98,7 @@ public class WarrantReturnService {
         this.enforcementStatusTransitions = enforcementStatusTransitions;
         this.warrantReturnValidator = warrantReturnValidator;
         this.securityContextService = securityContextService;
+        this.bailiffAllocationService = bailiffAllocationService;
         this.utcClock = utcClock;
         this.ukClock = ukClock;
     }
@@ -164,10 +167,15 @@ public class WarrantReturnService {
             .filter(target -> target != warrant.getStatus())
             .ifPresent(target -> enforcementStatusTransitions.transition(warrant, target));
 
-        if (warrant.getStatus() == CLOSED) {
-            // TODO HDPI-8189: end the allocated bailiff's "allocated-bailiff" case role (end date today) and
-            // cancel the open bailiff tasks for the enforcement. Allocation is built in a parallel branch
-            // (Allocate bailiff, V042) and is not modelled here.
+        EnforcementStatus statusAfterReturn = warrant.getStatus();
+        if (statusAfterReturn == CLOSED || statusAfterReturn == AWAITING_BAILIFF_ALLOCATION) {
+            // A closed warrant has no bailiff, and a reopened one is waiting for a new allocation.
+            bailiffAllocationService.endActiveAllocations(warrant);
+        }
+        if (statusAfterReturn == CLOSED) {
+            // TODO HDPI-8189: end the allocated bailiff's "allocated-bailiff" AM case role (end date today) and
+            // cancel the open bailiff tasks for the enforcement. pcs-api cannot write AM case roles yet: see
+            // BailiffAllocationService.
             log.info("Warrant {} closed by return {}", warrant.getId(), returnName);
         }
         return returnName;

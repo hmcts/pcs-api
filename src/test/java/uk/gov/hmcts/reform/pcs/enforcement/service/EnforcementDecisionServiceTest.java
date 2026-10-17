@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -164,7 +165,8 @@ class EnforcementDecisionServiceTest {
     @ValueSource(strings = {"", "   "})
     void shouldRefuseToRejectWithoutAReason(String reason) {
         assertThatThrownBy(() -> underTest.reject(CASE_REFERENCE, reason))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(EnforcementEventNotAvailableException.class)
+            .hasMessage(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
     }
 

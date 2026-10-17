@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 
@@ -21,6 +22,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 @RequiredArgsConstructor
 public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
 
+    static final String NO_DECISION_MESSAGE = "No enforcement decision was made";
+
     private final EnforcementDecisionService enforcementDecisionService;
     private final AddressFormatter addressFormatter;
 
@@ -29,9 +32,9 @@ public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         EnforcementOrder enforcementOrder = Optional.ofNullable(pcsCase.getEnforcementOrder())
-            .orElseThrow(() -> new IllegalArgumentException("No enforcement decision was made"));
+            .orElseThrow(() -> new EnforcementEventNotAvailableException(NO_DECISION_MESSAGE));
         EnforcementDecision decision = Optional.ofNullable(enforcementOrder.getEnforcementDecision())
-            .orElseThrow(() -> new IllegalArgumentException("No enforcement decision was made"));
+            .orElseThrow(() -> new EnforcementEventNotAvailableException(NO_DECISION_MESSAGE));
 
         EnforcementDecisionOutcome outcome = switch (decision) {
             case ACCEPT -> enforcementDecisionService.accept(caseReference);

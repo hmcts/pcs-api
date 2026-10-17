@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.SelectedDefendantEntity;
@@ -27,9 +28,15 @@ public class WarrantStrategy implements EnforcementTypeStrategy {
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         processWarrant(enforcementOrder, enforcementOrderEntity);
         riskProfileService.processRisk(enforcementOrder, enforcementOrderEntity);
-        enforcementStatementOfTruthService.processStatementOfTruth(
-                enforcementOrder.getWarrantDetails().getStatementOfTruth(), enforcementOrderEntity);
+        processStatementOfTruth(enforcementOrder, enforcementOrderEntity);
         processSelectedDefendants(enforcementOrderEntity);
+    }
+
+    private void processStatementOfTruth(EnforcementOrder enforcementOrder,
+                                         EnforcementOrderEntity enforcementOrderEntity) {
+        WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
+        enforcementStatementOfTruthService.processStatementOfTruth(
+                warrantDetails == null ? null : warrantDetails.getStatementOfTruth(), enforcementOrderEntity);
     }
 
     private void processWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {

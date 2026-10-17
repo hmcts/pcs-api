@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -16,10 +17,11 @@ import java.time.temporal.ChronoUnit;
 public class DraftEnforcementDeletionService {
 
     private final DraftCaseDataRepository draftCaseDataRepository;
+    private final Clock utcClock;
 
     @Transactional
     public void deleteEnforcementDraftsBatch(long discardDays) {
-        Instant cutoff = Instant.now().minus(discardDays, ChronoUnit.DAYS);
+        Instant cutoff = Instant.now(utcClock).minus(discardDays, ChronoUnit.DAYS);
         log.info("Running deletion of Enforcement Drafts at a cut off of {}", cutoff);
         int numberRemoved = draftCaseDataRepository
                 .deleteByEventIdAndCutoff(EventId.enforceTheOrder, cutoff);

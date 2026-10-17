@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WritEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WritRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatementOfTruthService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WritDetailsMapper;
 
 @Component
@@ -15,6 +16,7 @@ public class WritStrategy implements EnforcementTypeStrategy {
 
     private final WritDetailsMapper writDetailsMapper;
     private final WritRepository writRepository;
+    private final EnforcementStatementOfTruthService enforcementStatementOfTruthService;
 
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
@@ -22,6 +24,8 @@ public class WritStrategy implements EnforcementTypeStrategy {
         WritEntity writEntity = writDetailsMapper.toEntity(writDetails);
         writEntity.setEnforcementOrder(enforcementOrderEntity);
         writRepository.save(writEntity);
+        enforcementStatementOfTruthService.processStatementOfTruth(
+                writDetails == null ? null : writDetails.getStatementOfTruth(), enforcementOrderEntity);
     }
 
 }

@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -30,6 +31,9 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.TRANS
 @Service
 @RequiredArgsConstructor
 public class EnforcementDecisionService {
+
+    public static final String NO_REJECTION_REASON_MESSAGE =
+        "A reason is needed to reject an enforcement application";
 
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseService pcsCaseService;
@@ -71,11 +75,12 @@ public class EnforcementDecisionService {
      * enforcement is not live.
      *
      * @throws NoEnforcementAwaitingReviewException if no application is awaiting review
+     * @throws EnforcementEventNotAvailableException if no rejection reason was given
      */
     @Transactional
     public EnforcementDecisionOutcome reject(long caseReference, String rejectionReason) {
         if (StringUtils.isBlank(rejectionReason)) {
-            throw new IllegalArgumentException("A reason is needed to reject an enforcement application");
+            throw new EnforcementEventNotAvailableException(NO_REJECTION_REASON_MESSAGE);
         }
         EnforcementOrderEntity enforcement = awaitingReview(caseReference);
         final SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);

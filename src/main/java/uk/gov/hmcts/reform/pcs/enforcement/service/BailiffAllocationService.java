@@ -69,6 +69,22 @@ public class BailiffAllocationService {
     }
 
     /**
+     * Ends the enforcement's active allocation, leaving it with no bailiff. The warrant closing or being
+     * reopened ends the allocation this way: the partial unique index on enf_bailiff_allocation allows only
+     * one active row per enforcement, so a stale one would block the next allocation.
+     */
+    @Transactional
+    public void endActiveAllocations(EnforcementOrderEntity enforcement) {
+        List<BailiffAllocationEntity> active =
+            bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(enforcement.getId());
+        if (!active.isEmpty()) {
+            Instant now = Instant.now(utcClock);
+            active.forEach(allocation -> allocation.setEndedAt(now));
+            bailiffAllocationRepository.saveAllAndFlush(active);
+        }
+    }
+
+    /**
      * Allocates the claim's current warrant to the bailiff. Allocating it again to its current bailiff
      * changes nothing.
      *
@@ -80,14 +96,12 @@ public class BailiffAllocationService {
         EnforcementOrderEntity enforcement = getAllocatableEnforcement(caseReference);
         Instant now = Instant.now(utcClock);
 
-        List<BailiffAllocationEntity> active =
-            bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(enforcement.getId());
-        boolean alreadyAllocated = active.stream()
-            .anyMatch(allocation -> allocation.getBailiffUserId().equals(bailiff.userId()));
+        boolean alreadyAllocated =
+            bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(enforcement.getId()).stream()
+                .anyMatch(allocation -> allocation.getBailiffUserId().equals(bailiff.userId()));
 
         if (!alreadyAllocated) {
-            active.forEach(previous -> previous.setEndedAt(now));
-            bailiffAllocationRepository.saveAllAndFlush(active);
+            endActiveAllocations(enforcement);
             bailiffAllocationRepository.save(BailiffAllocationEntity.builder()
                                                  .enforcementOrder(enforcement)
                                                  .bailiffUserId(bailiff.userId())

@@ -6,12 +6,14 @@ import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.convert.DurationUnit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.enforcement.service.DraftEnforcementDeletionService;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
@@ -33,7 +35,8 @@ public class EnforcementDraftDeletionScheduledTask {
             @Value("${enforcement-draft-deletion.schedule}") String schedule,
             @Value("${enforcement-draft-deletion.discard-after-days}") int discardAfterDays,
             @Value("${enforcement-draft-deletion.request.max-retries:3}") int maxRetries,
-            @Value("${enforcement-draft-deletion.request.backoff-delay-seconds:10s}") Duration backoffDelay,
+            @Value("${enforcement-draft-deletion.request.backoff-delay-seconds:10s}")
+            @DurationUnit(ChronoUnit.SECONDS) Duration backoffDelay,
             DraftEnforcementDeletionService draftEnforcementDeletionService,
             FeatureToggleService featureToggleService) {
         this.schedule = schedule;
@@ -42,6 +45,10 @@ public class EnforcementDraftDeletionScheduledTask {
         this.backoffDelay = backoffDelay;
         this.draftEnforcementDeletionService = draftEnforcementDeletionService;
         this.featureToggleService = featureToggleService;
+    }
+
+    Duration backoffDelay() {
+        return backoffDelay;
     }
 
     @Bean

@@ -15,7 +15,9 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.NameAndAddressForEviction
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WritEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WritRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatementOfTruthService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WritDetailsMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +33,8 @@ class WritStrategyTest {
     private WritDetailsMapper writDetailsMapper;
     @Mock
     private WritRepository writRepository;
+    @Mock
+    private EnforcementStatementOfTruthService enforcementStatementOfTruthService;
 
     @InjectMocks
     private WritStrategy underTest;
@@ -78,6 +82,35 @@ class WritStrategyTest {
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(writEntity);
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldPersistTheStatementOfTruthTheClaimantSigned() {
+        // Given
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        writDetails.setStatementOfTruth(statementOfTruth);
+        when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
+        when(writRepository.save(any(WritEntity.class))).thenReturn(writEntity);
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(enforcementStatementOfTruthService).processStatementOfTruth(statementOfTruth, enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldPersistNoStatementOfTruthWhenTheWritHasNoDetails() {
+        // Given
+        enforcementOrder.setWritDetails(null);
+        when(writDetailsMapper.toEntity(null)).thenReturn(writEntity);
+        when(writRepository.save(any(WritEntity.class))).thenReturn(writEntity);
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(enforcementStatementOfTruthService).processStatementOfTruth(null, enforcementOrderEntity);
     }
 
     @Test
