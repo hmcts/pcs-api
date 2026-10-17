@@ -1,4 +1,4 @@
-@HDPI-7342 @enforcement @caseworker @pending
+@HDPI-7342 @enforcement @caseworker
 Feature: Caseworker decides an enforcement application
   As a caseworker
   I want to approve or reject a claimant's enforcement application
@@ -9,7 +9,7 @@ Feature: Caseworker decides an enforcement application
     And a "Review claimant warrant application" task exists on the case
     And I am signed in to XUI as a hearing centre admin
 
-  @HDPI-9539 @HDPI-8656
+  @HDPI-9539 @HDPI-8656 @pending
   Scenario: Caseworker opens decide enforcement from the task
     When I select the "Review claimant warrant application" task from the case "Tasks" tab
     Then the "Decide enforcement" journey opens
@@ -58,7 +58,7 @@ Feature: Caseworker decides an enforcement application
     And the "Review claimant warrant application" task is completed
     And the case "History" tab shows the "Decide enforcement" event
 
-  @HDPI-9566 @HDPI-7353 @HDPI-7538 @open-question
+  @HDPI-9566 @HDPI-7353 @HDPI-7538 @open-question @pending
   Scenario: Approving a writ of possession generates the sealed writ for the claimant
     Given the enforcement is of type "writ of possession"
     And I have accepted the application
@@ -81,11 +81,16 @@ Feature: Caseworker decides an enforcement application
     Examples:
       | type                   | seal         | visible to                     |
       | warrant of possession  | county court | internal users                 |
+
+    # Only a warrant of possession can be seeded through the API today.
+    @pending
+    Examples:
+      | type                   | seal         | visible to                     |
       | writ of possession     | High Court   | claimant and internal users    |
       | warrant of restitution | county court | internal users                 |
       | writ of restitution    | High Court   | claimant and internal users    |
 
-  @HDPI-9566
+  @HDPI-9566 @pending
   Scenario: Document is generated in Welsh when the claimant asked for Welsh
     Given the claimant has the "wants to receive documents in Welsh" case flag
     And I have accepted the application

@@ -2,7 +2,7 @@
  * Thin wrappers that compose the existing enforcement actions (utils/registry/registry-enforcement) into the
  * journeys the feature files describe. The action arguments follow tests-enforcement/*.spec.ts.
  */
-import { Page } from '@playwright/test';
+import { BrowserContext, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld, SubmitCasePayload } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
@@ -14,6 +14,9 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@data/api-data';
 import { caseSummary } from '@data/page-data';
+import { user, users } from '@data/user-data';
+import { staff } from '@data/user-data/staff.user.data';
+import { dismissCookieBanner } from '@config/cookie-banner';
 import {
   checkYourAnswers,
   evidenceUpload,
@@ -43,6 +46,7 @@ import {
   vulnerableAdultsChildren,
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
+import { decideEnforcement } from './decide-enforcement';
 
 
 /** XUI events the steps can drive today, keyed by the name the feature files use. */
@@ -51,6 +55,10 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
   // The requirements and the case summary markup call it "Confirm the eviction date";
   // pcs-api names the event "Confirm the eviction details".
   'Confirm the eviction date': { label: caseSummary.confirmEvictionEvent, firstPageHeader: confirmEvictionDetails.mainHeader },
+  // A caseworker event: sign in as a hearing centre admin first.
+  [decideEnforcement.eventName]: { label: decideEnforcement.eventName, firstPageHeader: decideEnforcement.mainHeader },
+  // pcs-api AddBailiffNote: the event name and its one page's label.
+  'Add a bailiff note': { label: 'Add a bailiff note', firstPageHeader: 'Add bailiff note' },
 };
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */
@@ -82,6 +90,20 @@ export async function openCaseSummary(page: Page): Promise<void> {
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({ timeout: VERY_LONG_TIMEOUT });
+}
+
+/**
+ * Asserts whether a case tab is on the open case. Waits for the Summary tab first, so "not shown" is only
+ * checked once XUI has rendered the tabs.
+ */
+export async function expectCaseTab(page: Page, tabName: string, shown: boolean): Promise<void> {
+  await expect(page.getByRole('tab', { name: caseSummary.mainHeader, exact: true })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  const tab = page.getByRole('tab', { name: tabName, exact: true });
+  if (shown) {
+    await expect(tab).toBeVisible();
+  } else {
+    await expect(tab).toHaveCount(0);
+  }
 }
 
 /** Option labels in the case summary "Next step" drop down (same locator as the select action). */
@@ -339,4 +361,56 @@ function requireSubmitPayload(world: EnforcementWorld): SubmitCasePayload {
     throw new Error('No case has been created in this scenario: start with "Given a PCS case ..."');
   }
   return world.submitPayload;
+}
+
+/**
+ * Permanent XUI users the steps can sign in as, keyed by the role names in the feature files. The claimant's
+ * legal representative is the storage-state user (config/global-setup.config.ts), so needs no sign-in.
+ * There are no bailiff, bailiff-admin or bailiff-manager users yet (HDPI-7539).
+ */
+const signInUsers: Record<string, () => string | undefined> = {
+  'hearing-centre-admin': () => user.hearingCenterAdmin.email,
+  'hearing-centre-team-leader': () => staff.pcs_hearing_centre_team_leader_email,
+  judge: () => users.find(candidate => candidate.user === 'County Court Judge')?.email,
+  'defendant legal representative': () => user.defendantSolicitor.email,
+};
+
+export const CLAIMANT_LEGAL_REPRESENTATIVE = 'claimant legal representative';
+
+export function canSignInAs(role: string): boolean {
+  return role === CLAIMANT_LEGAL_REPRESENTATIVE || role in signInUsers;
+}
+
+/**
+ * Signs in to XUI as `role` in place of the storage-state user, as the case tabs specs do. A defendant
+ * legal representative is first linked to the scenario's case so that they can open it.
+ */
+export async function signInAs(role: string, page: Page, context: BrowserContext): Promise<void> {
+  if (role === CLAIMANT_LEGAL_REPRESENTATIVE) {
+    return;
+  }
+  const email = signInUsers[role]?.();
+  if (!email) {
+    throw new Error(`No XUI user to sign in as "${role}"`);
+  }
+  if (role === 'defendant legal representative') {
+    await performCommonAction('getCaseAPIDynamic', { req: 'Link Solicitor', email, password: process.env.IDAM_PCS_USER_PASSWORD });
+  }
+  await clearBrowserSession(page, context);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
+  await dismissCookieBanner(page, 'additional');
+  await performAction('login', { email, password: process.env.IDAM_PCS_USER_PASSWORD });
+  await dismissCookieBanner(page, 'analytics');
+}
+
+async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
+  await context.clearCookies();
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {
+      // The page may not have an origin yet (about:blank).
+    }
+  });
 }

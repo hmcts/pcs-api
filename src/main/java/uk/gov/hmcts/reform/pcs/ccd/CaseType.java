@@ -16,7 +16,10 @@ import java.util.EnumSet;
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 /**
  * Setup some common possessions case type configuration.
@@ -43,7 +46,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF,
+        AccessProfile.BAILIFF_ADMIN,
+        AccessProfile.BAILIFF_MANAGER
     };
     static final AccessProfile[] INTERNAL_TAB_ROLES = {
         AccessProfile.JUDGE,
@@ -52,7 +58,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF,
+        AccessProfile.BAILIFF_ADMIN,
+        AccessProfile.BAILIFF_MANAGER
     };
 
     static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
@@ -84,6 +93,26 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_TEAM_LEADER,
         AccessProfile.WLU_ADMIN
+    };
+
+    /**
+     * Internal users and the claimant side. Defendants are left out until the notice of eviction can be marked
+     * as served (HDPI-7346), which is when they may see a warrant; they never see writs.
+     */
+    static final AccessProfile[] ENFORCEMENT_STATUS_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF,
+        AccessProfile.BAILIFF_ADMIN,
+        AccessProfile.BAILIFF_MANAGER,
+        AccessProfile.CLAIMANT,
+        AccessProfile.PCS_SOLICITOR,
+        AccessProfile.GA_CLAIMANT_SOLICITOR
     };
 
     @Value("${hmcts.hmctsOrgId}")
@@ -207,6 +236,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCasePaymentHistoryViewer);
 
+        buildEnforcementStatusTab(builder);
+        buildRiskAssessmentTab(builder);
+
         if (shutterService) {
             builder.shutterService();
         }
@@ -232,6 +264,29 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .categoryLabel(label)
             .displayOrder(displayOrder)
             .build();
+    }
+
+    /**
+     * Every warrant and writ on the case. The enforcement module fills the {@code enforcements} field for the
+     * case view and restricts who can read it; the tab appears once the case has an enforcement.
+     */
+    private void buildEnforcementStatusTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("enforcementStatus", "Enforcement status")
+            .forRoles(ENFORCEMENT_STATUS_TAB_ROLES)
+            .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "enforcements!=\"\""))
+            .field("enforcements");
+    }
+
+    /**
+     * Enforcement risk assessment (HDPI-7350), shown once the claim has an enforcement. Only the bailiff notes
+     * (HDPI-7593) are built so far. The fields belong to enforcement, so they are named rather than referenced.
+     */
+    private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("riskAssessment", "Risk assessment")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .showCondition("enforcementStatus!=\"\"")
+            .field("enforcementStatus", NEVER_SHOW)
+            .field("bailiffNotes");
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
