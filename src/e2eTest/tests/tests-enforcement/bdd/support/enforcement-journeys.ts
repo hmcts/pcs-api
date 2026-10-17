@@ -55,18 +55,23 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
   // The requirements and the case summary markup call it "Confirm the eviction date";
   // pcs-api names the event "Confirm the eviction details".
   'Confirm the eviction date': { label: caseSummary.confirmEvictionEvent, firstPageHeader: confirmEvictionDetails.mainHeader },
-<<<<<<< HEAD
+  // A caseworker event: sign in as a hearing centre admin first.
+  [decideEnforcement.eventName]: { label: decideEnforcement.eventName, firstPageHeader: decideEnforcement.mainHeader },
   // pcs-api AddBailiffNote: the event name and its one page's label.
   'Add a bailiff note': { label: 'Add a bailiff note', firstPageHeader: 'Add bailiff note' },
   // pcs-api AllocateBailiff and SetRiskLevel: the event names and their first page labels.
   'Allocate case to bailiff': { label: 'Allocate case to bailiff', firstPageHeader: 'Find the bailiff\'s name' },
   'Set risk level': { label: 'Set risk level', firstPageHeader: 'Set risk level' },
-=======
-  // A caseworker event: sign in as a hearing centre admin first.
-  [decideEnforcement.eventName]: { label: decideEnforcement.eventName, firstPageHeader: decideEnforcement.mainHeader },
-  // pcs-api AddBailiffNote: the event name and its one page's label.
-  'Add a bailiff note': { label: 'Add a bailiff note', firstPageHeader: 'Add bailiff note' },
->>>>>>> origin/pcs-enforcements
+  // pcs-api ScheduleEviction, RescheduleEviction and MarkNoticeOfEvictionServed: event names and first page labels.
+  // They are offered to bailiff staff only once the warrant reaches the right status (HDPI-7419), which the
+  // suite cannot set up yet, and there are no bailiff test users (HDPI-7539), so features 05, 07 and 08 stay @pending.
+  'Schedule eviction': { label: 'Schedule eviction', firstPageHeader: 'Schedule eviction' },
+  'Reschedule eviction': { label: 'Reschedule eviction', firstPageHeader: 'Reschedule eviction' },
+  // CCD caps event names at 30 characters, so pcs-api names this event "Mark eviction notice served".
+  'Mark notice of eviction as served': {
+    label: 'Mark eviction notice served',
+    firstPageHeader: "Mark 'notice of eviction' as served",
+  },
 };
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */

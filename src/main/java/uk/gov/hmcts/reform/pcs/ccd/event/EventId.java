@@ -39,5 +39,8 @@ public enum EventId {
     decideEnforcement,
     addBailiffNote,
     allocateBailiff,
-    setRiskLevel
+    setRiskLevel,
+    scheduleEviction,
+    rescheduleEviction,
+    markNoticeOfEvictionServed
 }

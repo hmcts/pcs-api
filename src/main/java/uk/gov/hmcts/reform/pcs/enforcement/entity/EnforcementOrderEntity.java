@@ -124,6 +124,29 @@ public class EnforcementOrderEntity {
     @Column(name = "risk_level_set_at")
     private Instant riskLevelSetAt;
 
+    /**
+     * Whether the court has given permission to dispense with service of the notice of eviction. Set when the
+     * eviction is scheduled or rescheduled; null before that.
+     */
+    @Column(name = "dispense_with_service")
+    private Boolean dispenseWithService;
+
+    /**
+     * When the bailiff served the notice of eviction, as a UK wall-clock time like {@link #bailiffDate}.
+     */
+    @Column(name = "notice_served_at")
+    private LocalDateTime noticeServedAt;
+
+    @Column(name = "notice_served_how")
+    private String noticeServedHow;
+
+    /**
+     * Derived from the notice of eviction: true once it is served, false when service is dispensed with.
+     * Change it only through EvictionScheduleService, which keeps it in step with the fields it derives from.
+     */
+    @Column(name = "defendants_can_see_enforcement")
+    private boolean defendantsCanSeeEnforcement;
+
     public void addDocuments(List<DocumentEntity> documents) {
         this.documents.addAll(documents);
     }

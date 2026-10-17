@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffNoteReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementStatusReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
@@ -169,4 +170,20 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private RiskLevelDetails riskLevelDetails;
+
+    /**
+     * The fields of the schedule, reschedule and notice of eviction events (HDPI-7344, HDPI-7549, HDPI-7346).
+     */
+    @JsonUnwrapped
+    @CCD
+    private EvictionSchedule evictionSchedule;
+
+    /**
+     * Whether defendants may see the current enforcement, set for the case view. Read only and internal: it is
+     * derived on the enforcement record, true once the notice of eviction is served and false when service is
+     * dispensed with (HDPI-7658). Nothing reads it yet. Defendant access to the enforcement status tab and the
+     * case file view folder is to be driven from it later (HDPI-7539, HDPI-8442).
+     */
+    @CCD(label = "Defendants can see the enforcement", searchable = false, access = {InternalTabAccess.class})
+    private YesOrNo defendantsCanSeeEnforcement;
 }
