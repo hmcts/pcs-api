@@ -158,6 +158,40 @@ class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("rescheduling clears the previous notice of eviction so the new one can be marked as served")
+    void reschedulingLetsTheNewNoticeBeMarkedAsServed() {
+        long caseReference = 8888999900001111L;
+        final UUID id = savedEnforcement(caseReference, EnforcementStatus.AWAITING_SCHEDULING).getId();
+        evictionScheduleService.schedule(caseReference, EVICTION, false);
+        evictionScheduleService.markNoticeServed(caseReference, SERVED, "by hand to the occupant", null);
+        claimantEvictionConfirmationService.recordAttendance(caseReference, YesOrNo.YES);
+        entityManager.flush();
+        entityManager.clear();
+
+        LocalDateTime newDate = EVICTION.plusDays(10);
+        evictionScheduleService.reschedule(caseReference, newDate, false);
+        entityManager.flush();
+        entityManager.clear();
+
+        EnforcementOrderEntity rescheduled = enforcementOrderRepository.findById(id).orElseThrow();
+        assertThat(rescheduled.getNoticeServedAt()).isNull();
+        assertThat(rescheduled.getNoticeServedHow()).isNull();
+        assertThat(rescheduled.isDefendantsCanSeeEnforcement()).isFalse();
+        assertThat(EvictionScheduleService.canMarkNoticeServed(rescheduled)).isTrue();
+
+        LocalDateTime servedAgain = SERVED.plusDays(2);
+        evictionScheduleService.markNoticeServed(caseReference, servedAgain, "by first class post", null);
+        entityManager.flush();
+        entityManager.clear();
+
+        EnforcementOrderEntity reloaded = enforcementOrderRepository.findById(id).orElseThrow();
+        assertThat(reloaded.getBailiffDate()).isEqualTo(newDate);
+        assertThat(reloaded.getNoticeServedAt()).isEqualTo(servedAgain);
+        assertThat(reloaded.getNoticeServedHow()).isEqualTo("by first class post");
+        assertThat(reloaded.isDefendantsCanSeeEnforcement()).isTrue();
+    }
+
+    @Test
     @DisplayName("limits how the notice was served to 500 characters")
     void limitsHowTheNoticeWasServed() {
         UUID id = savedEnforcement(5555666677778888L, EnforcementStatus.AWAITING_SCHEDULING).getId();
