@@ -29,8 +29,9 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnNam
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
 import java.util.List;
@@ -178,7 +179,7 @@ class RecordWarrantReturnTest extends BaseEventTest {
     void shouldRecordTheReturnNotifyTheClaimantAndConfirm() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order shown");
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenReturn(WarrantReturnName.OTHER_INTERIM_RETURN);
+            .thenReturn(recorded(WarrantReturnName.OTHER_INTERIM_RETURN, "WP-00000042"));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(details));
 
@@ -186,6 +187,18 @@ class RecordWarrantReturnTest extends BaseEventTest {
             .notifyClaimant(TEST_CASE_REFERENCE, WarrantReturnName.OTHER_INTERIM_RETURN, "Court order shown");
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getConfirmationHeader()).isEqualTo("# Outcome recorded as Other interim return");
+        assertThat(response.getConfirmationBody())
+            .isEqualTo("Case number: 0000-0000-0000-1234\n\nWarrant number: WP-00000042");
+    }
+
+    @Test
+    void shouldLeaveTheWarrantNumberOutOfTheConfirmationWhenTheWarrantHasNone() {
+        WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
+        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, null));
+
+        SubmitResponse<State> response = callSubmitHandler(caseWith(details));
+
         assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
     }
 
@@ -193,7 +206,7 @@ class RecordWarrantReturnTest extends BaseEventTest {
     void shouldStillConfirmWhenTheEmailCannotBeScheduled() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenReturn(WarrantReturnName.CROWDS_OR_PROTESTS);
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
         when(warrantReturnNotificationService.notifyClaimant(anyLong(), any(), any()))
             .thenThrow(new IllegalStateException("Notify down"));
 
@@ -207,7 +220,7 @@ class RecordWarrantReturnTest extends BaseEventTest {
     void shouldNotNotifyTheClaimantUntilTheSubmitTransactionCommits() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenReturn(WarrantReturnName.CROWDS_OR_PROTESTS);
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
         TransactionSynchronizationManager.initSynchronization();
 
         callSubmitHandler(caseWith(details));
@@ -224,7 +237,7 @@ class RecordWarrantReturnTest extends BaseEventTest {
     void shouldNotNotifyTheClaimantWhenTheSubmitTransactionRollsBack() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenReturn(WarrantReturnName.CROWDS_OR_PROTESTS);
+            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
         TransactionSynchronizationManager.initSynchronization();
 
         callSubmitHandler(caseWith(details));
@@ -238,7 +251,7 @@ class RecordWarrantReturnTest extends BaseEventTest {
     void shouldReturnTheValidationErrors() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenThrow(new WarrantReturnValidationException(List.of("Enter additional details")));
+            .thenReturn(EnforcementChange.refused(List.of("Enter additional details")));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(details));
 
@@ -249,12 +262,18 @@ class RecordWarrantReturnTest extends BaseEventTest {
 
     @Test
     void shouldReturnAnErrorWhenTheWarrantHasGone() {
-        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, null)).thenThrow(new NoEnforcementException());
+        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, null))
+            .thenReturn(EnforcementChange.refused(NoEnforcementException.MESSAGE));
 
         SubmitResponse<State> response = callSubmitHandler(PCSCase.builder().build());
 
         assertThat(response.getErrors()).containsExactly("There is no warrant on this case");
         verify(warrantReturnNotificationService, never()).notifyClaimant(anyLong(), any(), any());
+    }
+
+    private static EnforcementChange<RecordedWarrantReturn> recorded(WarrantReturnName returnName,
+                                                                     String warrantNumber) {
+        return EnforcementChange.made(new RecordedWarrantReturn(returnName, warrantNumber));
     }
 
     private static PCSCase caseWith(WarrantReturnDetails details) {

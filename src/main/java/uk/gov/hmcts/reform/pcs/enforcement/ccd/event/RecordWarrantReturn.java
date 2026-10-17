@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantreturn.EvictionDetailsMarkup;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantreturn.RecordWarrantReturnConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
@@ -21,12 +22,11 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDet
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 import uk.gov.hmcts.reform.pcs.enforcement.util.AfterCommit;
-
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -97,22 +97,20 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         EnforcementOrder enforcementOrder = eventPayload.caseData().getEnforcementOrder();
         WarrantReturnDetails details = enforcementOrder == null ? null : enforcementOrder.getWarrantReturn();
 
-        WarrantReturnName returnName;
-        try {
-            returnName = warrantReturnService.recordReturn(caseReference, details);
-        } catch (WarrantReturnValidationException ex) {
-            return errorResponse(ex.getErrors());
-        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
-            return errorResponse(List.of(ex.getMessage()));
+        EnforcementChange<RecordedWarrantReturn> recorded =
+            warrantReturnService.recordReturn(caseReference, details);
+        if (recorded.refused()) {
+            return SubmitResponse.<State>builder().errors(recorded.errors()).build();
         }
+        WarrantReturnName returnName = recorded.change().returnName();
 
         notifyClaimant(caseReference, returnName, details.getAdditionalDetails());
 
-        // TODO HDPI-8424: the confirmation also shows the warrant number, which is not generated yet
-        // (OPEN-QUESTIONS 5).
         return SubmitResponse.<State>builder()
             .confirmationHeader(CONFIRMATION_HEADER.formatted(returnName.getLabel()))
-            .confirmationBody("Case number: " + caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
+            .confirmationBody(ConfirmationNumbers.caseAndWarrant(
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference),
+                recorded.change().warrantNumber()))
             .build();
     }
 
@@ -129,9 +127,5 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
                 log.error("Failed to schedule the warrant return email for case {}", caseReference, ex);
             }
         });
-    }
-
-    private static SubmitResponse<State> errorResponse(List<String> errors) {
-        return SubmitResponse.<State>builder().errors(errors).build();
     }
 }

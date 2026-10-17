@@ -28,13 +28,13 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.BailiffAllocationRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -174,19 +174,22 @@ class WarrantReturnServiceTest {
     @Test
     void shouldRecordASuccessfulEvictionAndCloseTheWarrant() {
         EnforcementOrderEntity warrant = givenWarrant(CLAIMANT_CONFIRMED);
+        warrant.setEnforcementNumber("WP-00000042");
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         LocalDateTime evictedAt = LocalDateTime.of(2026, 7, 8, 9, 15);
 
-        WarrantReturnName recorded = underTest.recordReturn(CASE_REFERENCE, WarrantReturnDetails.builder()
-            .type(WarrantReturnType.FINAL)
-            .outcome(WarrantReturnOutcome.EVICTION_SUCCESSFUL)
-            .successfulReturnName(SuccessfulWarrantReturnName.EVICTION_SUCCESSFUL)
-            .unsuccessfulReturnName(UnsuccessfulWarrantReturnName.WARRANT_EXPIRED)
-            .evictionDateTime(evictedAt)
-            .additionalDetails("Keys handed over")
-            .build());
+        EnforcementChange<RecordedWarrantReturn> recorded =
+            underTest.recordReturn(CASE_REFERENCE, WarrantReturnDetails.builder()
+                .type(WarrantReturnType.FINAL)
+                .outcome(WarrantReturnOutcome.EVICTION_SUCCESSFUL)
+                .successfulReturnName(SuccessfulWarrantReturnName.EVICTION_SUCCESSFUL)
+                .unsuccessfulReturnName(UnsuccessfulWarrantReturnName.WARRANT_EXPIRED)
+                .evictionDateTime(evictedAt)
+                .additionalDetails("Keys handed over")
+                .build());
 
-        assertThat(recorded).isEqualTo(WarrantReturnName.EVICTION_SUCCESSFUL);
+        assertThat(recorded.change()).isEqualTo(
+            new RecordedWarrantReturn(WarrantReturnName.EVICTION_SUCCESSFUL, "WP-00000042"));
         WarrantReturnEntity saved = savedReturn();
         assertThat(saved.getEnforcementOrder()).isSameAs(warrant);
         assertThat(saved.getReturnType()).isEqualTo(WarrantReturnType.FINAL);
@@ -298,14 +301,34 @@ class WarrantReturnServiceTest {
     void shouldNotRecordAnInvalidReturn() {
         EnforcementOrderEntity warrant = givenWarrant(CLAIMANT_CONFIRMED);
 
-        assertThatThrownBy(() -> underTest.recordReturn(
-            CASE_REFERENCE, interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, null)))
-            .isInstanceOf(WarrantReturnValidationException.class)
-            .satisfies(ex -> assertThat(((WarrantReturnValidationException) ex).getErrors())
-                .containsExactly("Enter additional details"));
+        EnforcementChange<RecordedWarrantReturn> recorded = underTest.recordReturn(
+            CASE_REFERENCE, interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, null));
 
+        assertThat(recorded.errors()).containsExactly("Enter additional details");
         verify(warrantReturnRepository, never()).save(any());
         assertThat(warrant.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
+    }
+
+    @Test
+    void shouldRefuseRatherThanThrowWhenThereIsNoWarrantToRecordAReturnAgainst() {
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        EnforcementChange<RecordedWarrantReturn> recorded = underTest.recordReturn(
+            CASE_REFERENCE, interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order"));
+
+        assertThat(recorded.errors()).containsExactly(NoEnforcementException.MESSAGE);
+        verify(warrantReturnRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldRefuseRatherThanThrowWhenNoBailiffIsAllocatedYet() {
+        givenWarrant(AWAITING_BAILIFF_ALLOCATION);
+
+        EnforcementChange<RecordedWarrantReturn> recorded = underTest.recordReturn(
+            CASE_REFERENCE, interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order"));
+
+        assertThat(recorded.errors()).containsExactly(WarrantReturnService.NOT_ALLOCATED_MESSAGE);
+        verify(warrantReturnRepository, never()).save(any());
     }
 
     @Test
@@ -368,6 +391,30 @@ class WarrantReturnServiceTest {
         ));
 
         assertThat(underTest.isNextWarrantFree(pcsCase)).isTrue();
+    }
+
+    @Test
+    void shouldMeasureTheFreePeriodFromWhenTheWarrantWasApprovedNotWhenTheReturnWasRecorded() {
+        PcsCaseEntity pcsCase = caseWithClaim();
+        UUID claimId = pcsCase.getClaims().getFirst().getId();
+        when(warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claimId)).thenReturn(List.of(
+            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER,
+                          NOW.minusSeconds(60), LocalDate.of(2025, 6, 7).atStartOfDay(UK_ZONE_ID).toInstant())
+        ));
+
+        assertThat(underTest.isNextWarrantFree(pcsCase)).isFalse();
+    }
+
+    @Test
+    void shouldChargeTheNextWarrantWhenTheWarrantHasNoApprovalTime() {
+        PcsCaseEntity pcsCase = caseWithClaim();
+        UUID claimId = pcsCase.getClaims().getFirst().getId();
+        when(warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claimId)).thenReturn(List.of(
+            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER,
+                          NOW.minusSeconds(60), null)
+        ));
+
+        assertThat(underTest.isNextWarrantFree(pcsCase)).isFalse();
     }
 
     @Test
@@ -438,7 +485,19 @@ class WarrantReturnServiceTest {
 
     private static WarrantReturnEntity warrantReturn(WarrantReturnType type, WarrantReturnName name,
                                                      Instant recordedAt) {
-        return WarrantReturnEntity.builder().returnType(type).returnName(name).recordedAt(recordedAt).build();
+        return warrantReturn(type, name, recordedAt, NOW.minus(Duration.ofDays(30)));
+    }
+
+    private static WarrantReturnEntity warrantReturn(WarrantReturnType type, WarrantReturnName name,
+                                                     Instant recordedAt, Instant warrantApprovedAt) {
+        EnforcementOrderEntity warrant = enforcement(SelectEnforcementType.WARRANT, CLOSED);
+        warrant.setApprovedAt(warrantApprovedAt);
+        return WarrantReturnEntity.builder()
+            .enforcementOrder(warrant)
+            .returnType(type)
+            .returnName(name)
+            .recordedAt(recordedAt)
+            .build();
     }
 
     private static PcsCaseEntity caseWithClaim() {

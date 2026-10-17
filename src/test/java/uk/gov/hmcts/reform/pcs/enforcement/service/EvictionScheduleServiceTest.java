@@ -62,9 +62,12 @@ class EvictionScheduleServiceTest {
     @Test
     void shouldScheduleTheEvictionAsTheBailiffDateAndAwaitClaimantConfirmation() {
         EnforcementOrderEntity enforcement = current(AWAITING_SCHEDULING);
+        enforcement.setEnforcementNumber("WP-00000042");
 
-        underTest.schedule(CASE_REFERENCE, EVICTION, false);
+        EnforcementChange<String> scheduled = underTest.schedule(CASE_REFERENCE, EVICTION, false);
 
+        assertThat(scheduled.refused()).isFalse();
+        assertThat(scheduled.change()).isEqualTo("WP-00000042");
         assertThat(enforcement.getBailiffDate()).isEqualTo(EVICTION);
         assertThat(enforcement.getDispenseWithService()).isFalse();
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_CLAIMANT_CONFIRMATION);
@@ -88,10 +91,23 @@ class EvictionScheduleServiceTest {
     void shouldOnlyScheduleAWarrantAwaitingScheduling(EnforcementStatus status) {
         EnforcementOrderEntity enforcement = current(status);
 
-        assertThatThrownBy(() -> underTest.schedule(CASE_REFERENCE, EVICTION, false))
-            .isInstanceOfAny(EnforcementEventNotAvailableException.class, NoEnforcementException.class);
+        EnforcementChange<String> scheduled = underTest.schedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(scheduled.refused()).isTrue();
+        assertThat(scheduled.errors()).containsExactly(status.isLive()
+                                                           ? EvictionScheduleService.CANNOT_SCHEDULE_ERROR
+                                                           : NoEnforcementException.MESSAGE);
         assertThat(enforcement.getBailiffDate()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldRefuseToScheduleRatherThanThrowWhenTheClaimHasNoEnforcement() {
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        EnforcementChange<String> scheduled = underTest.schedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(scheduled.errors()).containsExactly(NoEnforcementException.MESSAGE);
     }
 
     @Test
@@ -125,10 +141,12 @@ class EvictionScheduleServiceTest {
     void shouldRescheduleOnceTheClaimantHasAnswered(EnforcementStatus status) {
         EnforcementOrderEntity enforcement = current(status);
         enforcement.setBailiffDate(EVICTION);
+        enforcement.setEnforcementNumber("WP-00000042");
         LocalDateTime newDate = LocalDateTime.parse("2026-07-01T09:30");
 
-        underTest.reschedule(CASE_REFERENCE, newDate, false);
+        EnforcementChange<String> rescheduled = underTest.reschedule(CASE_REFERENCE, newDate, false);
 
+        assertThat(rescheduled.change()).isEqualTo("WP-00000042");
         assertThat(enforcement.getBailiffDate()).isEqualTo(newDate);
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_CLAIMANT_CONFIRMATION);
         verify(enforcementOrderRepository).save(enforcement);
@@ -177,9 +195,12 @@ class EvictionScheduleServiceTest {
     @Test
     void shouldMarkTheNoticeServedAndLetDefendantsSeeTheEnforcement() {
         EnforcementOrderEntity enforcement = scheduled(AWAITING_CLAIMANT_CONFIRMATION, false);
+        enforcement.setEnforcementNumber("WP-00000042");
 
-        underTest.markNoticeServed(CASE_REFERENCE, SERVED, "by hand to the occupant", null);
+        EnforcementChange<String> served =
+            underTest.markNoticeServed(CASE_REFERENCE, SERVED, "by hand to the occupant", null);
 
+        assertThat(served.change()).isEqualTo("WP-00000042");
         assertThat(enforcement.getNoticeServedAt()).isEqualTo(SERVED);
         assertThat(enforcement.getNoticeServedHow()).isEqualTo("by hand to the occupant");
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isTrue();
@@ -223,9 +244,9 @@ class EvictionScheduleServiceTest {
         EnforcementOrderEntity enforcement = scheduled(AWAITING_CLAIMANT_CONFIRMATION, false);
         enforcement.setNoticeServedAt(SERVED);
 
-        assertThatThrownBy(() -> underTest.markNoticeServed(CASE_REFERENCE, SERVED, "by hand", null))
-            .isInstanceOf(EnforcementEventNotAvailableException.class)
-            .hasMessage(EvictionScheduleService.CANNOT_MARK_NOTICE_SERVED_ERROR);
+        EnforcementChange<String> served = underTest.markNoticeServed(CASE_REFERENCE, SERVED, "by hand", null);
+
+        assertThat(served.errors()).containsExactly(EvictionScheduleService.CANNOT_MARK_NOTICE_SERVED_ERROR);
         verify(enforcementOrderRepository, never()).save(any());
     }
 
