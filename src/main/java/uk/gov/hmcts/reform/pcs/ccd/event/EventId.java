@@ -42,5 +42,6 @@ public enum EventId {
     setRiskLevel,
     scheduleEviction,
     rescheduleEviction,
-    markNoticeOfEvictionServed
+    markNoticeOfEvictionServed,
+    recordWarrantReturn
 }

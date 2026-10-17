@@ -28,6 +28,8 @@ class EnforcementCaseViewContributorTest {
     @Mock
     private EvictionScheduleView evictionScheduleView;
     @Mock
+    private WarrantReturnView warrantReturnView;
+    @Mock
     private EnforcementDocumentVisibility enforcementDocumentVisibility;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
@@ -44,13 +46,14 @@ class EnforcementCaseViewContributorTest {
 
         // Then
         InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView, riskLevelView,
-                                  evictionScheduleView, enforcementDocumentVisibility);
+                                  evictionScheduleView, warrantReturnView, enforcementDocumentVisibility);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
         inOrder.verify(enforcementOrderView).setEnforcementStatusFields(pcsCaseEntity, pcsCase);
         inOrder.verify(bailiffNoteView).setBailiffNotes(pcsCaseEntity, pcsCase);
         inOrder.verify(riskLevelView).setRiskLevel(pcsCaseEntity, pcsCase);
         inOrder.verify(evictionScheduleView).setEvictionScheduleFields(pcsCaseEntity, pcsCase);
+        inOrder.verify(warrantReturnView).setLatestWarrantReturn(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementDocumentVisibility).hideFromDefendants(pcsCase, CASE_REFERENCE);
         inOrder.verifyNoMoreInteractions();
     }

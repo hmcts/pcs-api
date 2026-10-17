@@ -72,6 +72,8 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
     label: 'Mark eviction notice served',
     firstPageHeader: "Mark 'notice of eviction' as served",
   },
+  // pcs-api RecordWarrantReturn: the event name and its one page's label.
+  'Record warrant return': { label: 'Record warrant return', firstPageHeader: 'Record warrant return' },
 };
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */

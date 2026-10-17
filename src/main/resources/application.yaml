@@ -396,3 +396,9 @@ frontend:
 docweave:
   templates:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
+
+enforcement-notify:
+  # Notify template for the claimant email sent when a bailiff records a warrant return (HDPI-8424). The body
+  # varies by return name and is sent as the "warrantReturnBody" personalisation. Blank sends nothing; no
+  # template exists yet, so do not set it in prod.
+  warrant-return-claimant-template-id: ${ENFORCEMENT_WARRANT_RETURN_CLAIMANT_TEMPLATE_ID:}

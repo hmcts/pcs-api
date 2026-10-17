@@ -86,6 +86,9 @@ public class EnforcementOrderService {
      * HDPI-8424, is still to be agreed) and the fee is not taken during submit. The fee amounts on the
      * submitted case data come from the client, so they are not used to decide this.
      *
+     * <p>TODO HDPI-8424: WarrantReturnService#isNextWarrantFree answers whether a further warrant is free from
+     * the return history. It is not used here until the fee exemption is agreed (OPEN-QUESTIONS 6).</p>
+     *
      * <p>TODO HDPI-2877: nothing moves an application on from AWAITING_PAYMENT yet, because pcs-api has no
      * enforcement payment callback on this branch. When the enforcement payment handler from hmcts/pcs-api#2941
      * lands, its PAID path should call {@code enforcementStatusTransitions.transition(entity, AWAITING_REVIEW)}
@@ -125,6 +128,9 @@ public class EnforcementOrderService {
         // Bailiff notes are held on enf_bailiff_note, so do not copy the case view's notes into the JSON either.
         enforcementOrder.setBailiffNotes(null);
         enforcementOrder.setBailiffNoteText(null);
+        // Warrant returns are held on enf_warrant_return.
+        enforcementOrder.setWarrantReturn(null);
+        enforcementOrder.setLatestWarrantReturn(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
