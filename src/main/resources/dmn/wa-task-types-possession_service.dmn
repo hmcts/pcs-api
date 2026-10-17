@@ -174,6 +174,83 @@
           <text>"Translate Caseworker Uploaded Document"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_enfReviewClaimantWarrantApplication">
+        <inputEntry id="UnaryTests_enfReviewClaimantWarrantApplication">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfReviewClaimantWarrantApplicationId">
+          <text>"ReviewClaimantWarrantApplication"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewClaimantWarrantApplicationName">
+          <text>"Review claimant warrant application"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfAllocateCaseToBailiff">
+        <inputEntry id="UnaryTests_enfAllocateCaseToBailiff">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateCaseToBailiffId">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateCaseToBailiffName">
+          <text>"Allocate case to bailiff"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfReviewRisksAndSetLevel">
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevel">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelId">
+          <text>"ReviewRisksAndSetLevel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelName">
+          <text>"Review risks and set level"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfMarkNoticeOfEvictionServed">
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServed">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedId">
+          <text>"MarkNoticeOfEvictionServed"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedName">
+          <text>"Mark notice of eviction as served"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfRescheduleEviction">
+        <inputEntry id="UnaryTests_enfRescheduleEviction">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionId">
+          <text>"RescheduleEviction"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionName">
+          <text>"Reschedule eviction"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfReviewUpdatedRiskInformation">
+        <inputEntry id="UnaryTests_enfReviewUpdatedRiskInformation">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfReviewUpdatedRiskInformationId">
+          <text>"ReviewUpdatedRiskInformation"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewUpdatedRiskInformationName">
+          <text>"Review updated risk information"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfRecordWarrantReturn">
+        <inputEntry id="UnaryTests_enfRecordWarrantReturn">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfRecordWarrantReturnId">
+          <text>"RecordWarrantReturn"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRecordWarrantReturnName">
+          <text>"Record warrant return"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1rb7ro7">
         <inputEntry id="UnaryTests_1pdvjve">
           <text></text>

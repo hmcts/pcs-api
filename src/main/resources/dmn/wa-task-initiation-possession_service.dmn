@@ -12,6 +12,21 @@
           <text></text>
         </inputExpression>
       </input>
+      <input id="InputClause_enfStatus" label="Enforcement status" biodi:width="250" camunda:inputVariable="enforcementStatus">
+        <inputExpression id="LiteralExpression_enfStatus" typeRef="string">
+          <text>if(additionalData != null and additionalData.Data != null and additionalData.Data.enforcementStatus != null)
+            then additionalData.Data.enforcementStatus
+            else null</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_enfNoticeToServe" label="Notice of eviction still to serve" biodi:width="250" camunda:inputVariable="canMarkNoticeOfEvictionServed">
+        <inputExpression id="LiteralExpression_enfNoticeToServe" typeRef="string">
+          <text>if(additionalData != null and additionalData.Data != null
+            and additionalData.Data.canMarkNoticeOfEvictionServed != null)
+            then additionalData.Data.canMarkNoticeOfEvictionServed
+            else null</text>
+        </inputExpression>
+      </input>
       <input id="InputClause_18rl6x4" label="Counterclaim state">
         <inputExpression id="LiteralExpression_0y39cf1" typeRef="string">
           <text></text>
@@ -58,6 +73,12 @@ else
         <inputEntry id="UnaryTests_0pzaled">
           <text>"CASE_ISSUED"</text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus0in26ix">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe0in26ix">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0ed245d">
           <text></text>
         </inputEntry>
@@ -103,6 +124,12 @@ else
         <inputEntry id="UnaryTests_0khfdvd">
           <text>"CASE_ISSUED"</text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1hp5ex8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1hp5ex8">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0ay3z0x">
           <text></text>
         </inputEntry>
@@ -146,6 +173,12 @@ else
         </inputEntry>
         <inputEntry id="UnaryTests_1bja5yc">
           <text>"CASE_ISSUED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus047fn37">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe047fn37">
+          <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1nuipj0">
           <text></text>
@@ -199,6 +232,12 @@ else
         <inputEntry id="UnaryTests_1v4n4zf">
           <text>"PENDING_CASE_ISSUED to CASE_ISSUED"</text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus0cuaabj">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe0cuaabj">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0iinfsn">
           <text></text>
         </inputEntry>
@@ -241,6 +280,12 @@ else
           <text>respondPossessionClaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ttsckb">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus0v14k8l">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe0v14k8l">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_09uwuq6">
@@ -287,6 +332,12 @@ else
         <inputEntry id="UnaryTests_1majuv9">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus0g14gbs">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe0g14gbs">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_00gjequ">
           <text></text>
         </inputEntry>
@@ -329,6 +380,12 @@ else
           <text>"uploadDocuments"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1it4om8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1ko9g24">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1ko9g24">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0kptyq0">
@@ -376,6 +433,12 @@ else
         <inputEntry id="UnaryTests_03orr3t">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus0it2mq5">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe0it2mq5">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1sgv2be">
           <text></text>
         </inputEntry>
@@ -419,6 +482,12 @@ else
           <text>uploadDocuments</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ymqq27">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1mcvohl">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1mcvohl">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_18fy3x7">
@@ -465,6 +534,12 @@ else
         <inputEntry id="UnaryTests_1qjz49o">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1sql6w5">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1sql6w5">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1izvczo">
           <text></text>
         </inputEntry>
@@ -507,6 +582,12 @@ else
           <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0s3jyx2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1ub9q8h">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1ub9q8h">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1bl8els">
@@ -554,6 +635,12 @@ else
         <inputEntry id="UnaryTests_0f94fhz">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus15nwjxc">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe15nwjxc">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0n2730c">
           <text></text>
         </inputEntry>
@@ -597,6 +684,12 @@ else
           <text>Payment callback for "adjourn" general application</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1aw8m4y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1ts2qj9">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1ts2qj9">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_08t0s2l">
@@ -644,6 +737,12 @@ else
         <inputEntry id="UnaryTests_07pvozn">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus08h5xfk">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe08h5xfk">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1n9lv3b">
           <text></text>
         </inputEntry>
@@ -687,6 +786,12 @@ else
           <text>Payment callback for "set aside" general application</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0whra9y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus14q31wi">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe14q31wi">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_03g2saa">
@@ -734,6 +839,12 @@ else
         <inputEntry id="UnaryTests_0edws7w">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1fhifem">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1fhifem">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1p7i63x">
           <text></text>
         </inputEntry>
@@ -777,6 +888,12 @@ else
           <text>Payment callback for "something else" general application</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0mwitt7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1unjls3">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1unjls3">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0yb4qb7">
@@ -823,6 +940,12 @@ else
         <inputEntry id="UnaryTests_093wyty">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1rvkjkh">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1rvkjkh">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_03m763x">
           <text></text>
         </inputEntry>
@@ -865,6 +988,12 @@ else
           <text>"respondPossessionClaim"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1nts3e0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus0g1qchi">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe0g1qchi">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0yrg7qj">
@@ -911,6 +1040,12 @@ else
         <inputEntry id="UnaryTests_0sgxbm8">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1fuajcp">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1fuajcp">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0dqduwd">
           <text></text>
         </inputEntry>
@@ -953,6 +1088,12 @@ else
           <text>"addCaseReviewDate"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1r9ux5s">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus0isk9qq">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe0isk9qq">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0w7vg3q">
@@ -999,6 +1140,12 @@ else
         <inputEntry id="UnaryTests_05cljls">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus11ciltn">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe11ciltn">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0xpd2q0">
           <text></text>
         </inputEntry>
@@ -1041,6 +1188,12 @@ else
           <text>Claimant submits claim or gen app</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0x5a2l7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1dxqrjr">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1dxqrjr">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0fbkyvu">
@@ -1087,6 +1240,12 @@ else
         <inputEntry id="UnaryTests_11vn4jx">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatus1fpu8y9">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfNoticeToServe1fpu8y9">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1j844jn">
           <text></text>
         </inputEntry>
@@ -1122,6 +1281,314 @@ else
         </outputEntry>
         <outputEntry id="LiteralExpression_1mxonvy">
           <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <!-- Enforcement tasks (18-work-allocation-tasks.feature). Enforcement status lives on the
+           enforcement record and never changes the case state, so these rules read it from case
+           data rather than from postEventState. -->
+      <rule id="DecisionRule_enfReviewWarrantApplication">
+        <description>An application for a type with no fee goes straight to review on submit. The paid path has no CCD event: EnforcementOrderService#recordFeePaid moves the status, so that path creates the task through CamundaService instead (HDPI-2877).</description>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationEvent">
+          <text>"enforceTheOrder"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationPostEventState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationStatus">
+          <text>"AWAITING_REVIEW"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationNoticeToServe">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationCounterclaimState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationGenAppState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationNote">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationAdminAction">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewWarrantApplicationOrderDueDate">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfReviewWarrantApplicationTaskId">
+          <text>"ReviewClaimantWarrantApplication"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewWarrantApplicationName">
+          <text>"Review claimant warrant application"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewWarrantApplicationDelayUntil">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewWarrantApplicationWorkingDays">
+          <text>10</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewWarrantApplicationCategories">
+          <text>"ReviewClaimantWarrantApplication"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewWarrantApplicationWorkType">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewWarrantApplicationRoleCategory">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfAllocateAfterApproval">
+        <description>The caseworker approved a warrant or a warrant of restitution. An approved writ goes to TRANSFERRED_TO_HIGH_COURT and needs no allocation.</description>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalEvent">
+          <text>"decideEnforcement"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalPostEventState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalStatus">
+          <text>"AWAITING_BAILIFF_ALLOCATION"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalNoticeToServe">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalCounterclaimState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalGenAppState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalNote">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalAdminAction">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterApprovalOrderDueDate">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterApprovalTaskId">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterApprovalName">
+          <text>"Allocate case to bailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterApprovalDelayUntil">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterApprovalWorkingDays">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterApprovalCategories">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterApprovalWorkType">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterApprovalRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfAllocateAfterReopen">
+        <description>The bailiff recorded the "Reopen warrant" return, which is the only return that puts a closed warrant back to awaiting allocation.</description>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenEvent">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenPostEventState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenStatus">
+          <text>"AWAITING_BAILIFF_ALLOCATION"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenNoticeToServe">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenCounterclaimState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenGenAppState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenNote">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenAdminAction">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfAllocateAfterReopenOrderDueDate">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterReopenTaskId">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterReopenName">
+          <text>"Allocate case to bailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterReopenDelayUntil">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterReopenWorkingDays">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterReopenCategories">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterReopenWorkType">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateAfterReopenRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfReviewRisksAndSetLevel">
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelEvent">
+          <text>"allocateBailiff"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelPostEventState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelStatus">
+          <text>"AWAITING_SCHEDULING"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelNoticeToServe">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelCounterclaimState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelGenAppState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelNote">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelAdminAction">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfReviewRisksAndSetLevelOrderDueDate">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelTaskId">
+          <text>"ReviewRisksAndSetLevel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelName">
+          <text>"Review risks and set level"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelDelayUntil">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelWorkingDays">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelCategories">
+          <text>"ReviewRisksAndSetLevel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelWorkType">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfMarkNoticeOfEvictionServed">
+        <description>canMarkNoticeOfEvictionServed is Yes only once the eviction is scheduled, the court has not dispensed with service and the notice is not yet served, which is exactly when this task is due. Rescheduling generates a new notice of eviction, so it raises the task again.</description>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedEvent">
+          <text>"scheduleEviction", "rescheduleEviction"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedPostEventState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedStatus">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedNoticeToServe">
+          <text>"Yes"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedCounterclaimState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedGenAppState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedNote">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedAdminAction">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMarkNoticeOfEvictionServedOrderDueDate">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedTaskId">
+          <text>"MarkNoticeOfEvictionServed"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedName">
+          <text>"Mark notice of eviction as served"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedDelayUntil">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedWorkingDays">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedCategories">
+          <text>"MarkNoticeOfEvictionServed"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedWorkType">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfRescheduleEviction">
+        <description>The claimant answered that they cannot attend the eviction on this date.</description>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionEvent">
+          <text>"confirmEviction"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionPostEventState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionStatus">
+          <text>"CLAIMANT_UNABLE_TO_ATTEND"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionNoticeToServe">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionCounterclaimState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionGenAppState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionNote">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionAdminAction">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRescheduleEvictionOrderDueDate">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionTaskId">
+          <text>"RescheduleEviction"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionName">
+          <text>"Reschedule eviction"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionDelayUntil">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionWorkingDays">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionCategories">
+          <text>"RescheduleEviction"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionWorkType">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionRoleCategory">
+          <text>"ENFORCEMENT"</text>
         </outputEntry>
       </rule>
     </decisionTable>
