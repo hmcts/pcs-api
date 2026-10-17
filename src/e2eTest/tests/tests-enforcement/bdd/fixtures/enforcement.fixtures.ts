@@ -28,6 +28,8 @@ export class EnforcementWorld {
   enforcementSeeded = false;
   /** The enforcement type chosen in "Enforce the order". */
   applicationType?: EnforcementType;
+  /** The XUI event this scenario is in, once started. */
+  currentEvent?: string;
 }
 
 type EnforcementFixtures = {

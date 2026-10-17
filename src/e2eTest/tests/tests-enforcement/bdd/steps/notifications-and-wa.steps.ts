@@ -16,7 +16,6 @@ pendingSteps({ ticket: 'HDPI-7538', summary: 'Enforcement notifications' }, [
 pendingSteps({ ticket: 'HDPI-8627', summary: 'Enforcement work allocation tasks' }, [
   'a {string} work allocation task is created',
   'the task is due in 10 working days',
-  'a {string} task exists on the case',
   'I select the {string} task from the case {string} tab',
   'the {string} task is completed',
   'an {string} task is created',

@@ -323,6 +323,46 @@ class EnforcementOrderViewTest {
     }
 
     @Test
+    void shouldShowTheWarrantOrWritNumberOnceApproved() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity enforcement =
+            enforcementOfType(WARRANT, EnforcementStatus.AWAITING_SCHEDULING, Instant.parse("2026-06-01T10:00:00Z"));
+        enforcement.setEnforcementNumber("WP-000001");
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(enforcement));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements().getFirst().getValue().getEnforcementNumber())
+            .isEqualTo("WP-000001");
+    }
+
+    @ParameterizedTest
+    @MethodSource("highCourtTransferScenarios")
+    void shouldShowTheDateOfTransferToTheHighCourtForWritsOnly(SelectEnforcementType type,
+                                                               LocalDate expectedTransferDate) {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity enforcement =
+            enforcementOfType(type, EnforcementStatus.TRANSFERRED_TO_HIGH_COURT,
+                              Instant.parse("2026-07-03T10:00:00Z"));
+        // 23:30 UTC on 1 July is 00:30 on 2 July in London (BST).
+        enforcement.setApprovedAt(Instant.parse("2026-07-01T23:30:00Z"));
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(enforcement));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements().getFirst().getValue().getHighCourtTransferDate())
+            .isEqualTo(expectedTransferDate);
+    }
+
+    @Test
     void shouldFallBackToTheLegacyEnforcementTypeAndLeaveAnUnknownTypeUnset() {
         // Given
         final PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
@@ -414,6 +454,15 @@ class EnforcementOrderViewTest {
             Arguments.of(WARRANT_OF_RESTITUTION, BAILIFF_DATE),
             Arguments.of(WRIT, null),
             Arguments.of(WRIT_OF_RESTITUTION, null)
+        );
+    }
+
+    private static Stream<Arguments> highCourtTransferScenarios() {
+        return Stream.of(
+            Arguments.of(WRIT, LocalDate.of(2026, 7, 2)),
+            Arguments.of(WRIT_OF_RESTITUTION, LocalDate.of(2026, 7, 2)),
+            Arguments.of(WARRANT, null),
+            Arguments.of(WARRANT_OF_RESTITUTION, null)
         );
     }
 

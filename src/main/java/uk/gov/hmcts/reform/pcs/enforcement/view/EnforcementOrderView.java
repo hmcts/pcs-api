@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -44,6 +45,9 @@ public class EnforcementOrderView {
 
     private static final Set<SelectEnforcementType> WARRANTS =
         EnumSet.of(SelectEnforcementType.WARRANT, SelectEnforcementType.WARRANT_OF_RESTITUTION);
+
+    private static final Set<SelectEnforcementType> WRITS =
+        EnumSet.of(SelectEnforcementType.WRIT, SelectEnforcementType.WRIT_OF_RESTITUTION);
 
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementOrderRepository enforcementOrderRepository;
@@ -84,16 +88,20 @@ public class EnforcementOrderView {
         SelectEnforcementType type = enforcementTypeOf(enforcement.getEnforcementOrder());
         EnforcementSummary summary = EnforcementSummary.builder()
             .enforcementType(type)
+            .enforcementNumber(enforcement.getEnforcementNumber())
             .status(enforcement.getStatus())
-            .statusUpdatedDate(Optional.ofNullable(enforcement.getStatusUpdatedAt())
-                                   .map(updatedAt -> updatedAt.atZone(UK_ZONE_ID).toLocalDate())
-                                   .orElse(null))
+            .statusUpdatedDate(toUkDate(enforcement.getStatusUpdatedAt()))
             .scheduledEvictionDate(WARRANTS.contains(type) ? enforcement.getBailiffDate() : null)
+            .highCourtTransferDate(WRITS.contains(type) ? toUkDate(enforcement.getApprovedAt()) : null)
             .build();
         return ListValue.<EnforcementSummary>builder()
             .id(enforcement.getId() != null ? enforcement.getId().toString() : null)
             .value(summary)
             .build();
+    }
+
+    private static LocalDate toUkDate(Instant instant) {
+        return instant != null ? instant.atZone(UK_ZONE_ID).toLocalDate() : null;
     }
 
     /**

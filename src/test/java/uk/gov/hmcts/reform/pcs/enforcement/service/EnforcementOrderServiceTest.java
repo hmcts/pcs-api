@@ -240,4 +240,31 @@ class EnforcementOrderServiceTest {
         );
     }
 
+    @Test
+    void shouldMoveTheApplicationAwaitingPaymentToAwaitingReviewWhenTheFeeIsPaid() {
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        EnforcementOrderEntity awaitingPayment = new EnforcementOrderEntity();
+        awaitingPayment.setStatus(EnforcementStatus.AWAITING_PAYMENT);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(enforcementOrderRepository.findByClaimIdAndStatus(claimId, EnforcementStatus.AWAITING_PAYMENT))
+            .thenReturn(List.of(awaitingPayment));
+
+        boolean recorded = enforcementOrderService.recordFeePaid(CASE_REFERENCE);
+
+        assertThat(recorded).isTrue();
+        assertThat(awaitingPayment.getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
+        assertThat(awaitingPayment.getStatusUpdatedAt()).isEqualTo(NOW);
+        verify(enforcementOrderRepository).save(awaitingPayment);
+    }
+
+    @Test
+    void shouldRecordNoFeeWhenNoApplicationIsAwaitingPayment() {
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(enforcementOrderRepository.findByClaimIdAndStatus(claimId, EnforcementStatus.AWAITING_PAYMENT))
+            .thenReturn(List.of());
+
+        assertThat(enforcementOrderService.recordFeePaid(CASE_REFERENCE)).isFalse();
+        verify(enforcementOrderRepository, org.mockito.Mockito.never()).save(any());
+    }
 }

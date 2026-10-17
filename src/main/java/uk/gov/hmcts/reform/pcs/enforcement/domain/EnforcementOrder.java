@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
  * The main domain model representing an enforcement order.
@@ -122,4 +123,19 @@ public class EnforcementOrder {
      */
     @CCD(label = "Warrants and writs", searchable = false, access = {EnforcementStatusReadAccess.class})
     private List<ListValue<EnforcementSummary>> enforcements;
+
+    /**
+     * "Claimant vs defendants", set for the decideEnforcement header.
+     */
+    @CCD(searchable = false)
+    private String formattedCaseName;
+
+    /**
+     * Only set during decideEnforcement. The decision is recorded on the enforcement record.
+     */
+    @CCD(label = "Do you want to accept or reject this application?", searchable = false)
+    private EnforcementDecision enforcementDecision;
+
+    @CCD(label = "Reason for rejecting the application", typeOverride = TextArea, searchable = false)
+    private String enforcementRejectionReason;
 }

@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
  * One warrant or writ on the claim, as shown on the "Enforcement status" tab. It is derived for the case view
  * from the enforcement record and is never stored.
  *
- * <p>The warrant / writ number and, for writs, the date of the judge's order approving it ("Date of transfer
- * to the High Court") are not recorded yet. They are left out until the "Decide enforcement" event stores them.
+ * <p>The warrant / writ number and, for writs, the date of transfer to the High Court are set once the
+ * caseworker approves the application in "Decide enforcement". Both are unset until then.
  */
 @Data
 @Builder
@@ -26,6 +26,12 @@ public class EnforcementSummary {
 
     @CCD(label = "Type")
     private SelectEnforcementType enforcementType;
+
+    /**
+     * The warrant or writ number given when the caseworker approves the application.
+     */
+    @CCD(label = "Warrant or writ number")
+    private String enforcementNumber;
 
     @CCD(label = "Status")
     private EnforcementStatus status;
@@ -39,4 +45,10 @@ public class EnforcementSummary {
      */
     @CCD(label = "Scheduled eviction")
     private LocalDateTime scheduledEvictionDate;
+
+    /**
+     * The date the caseworker approved the writ, which is when it transfers to the High Court. Writs only.
+     */
+    @CCD(label = "Date of transfer to the High Court")
+    private LocalDate highCourtTransferDate;
 }
