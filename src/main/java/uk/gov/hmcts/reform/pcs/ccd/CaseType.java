@@ -278,14 +278,16 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     }
 
     /**
-     * Enforcement risk assessment (HDPI-7350), shown once the claim has an enforcement. Only the bailiff notes
-     * (HDPI-7593) are built so far. The fields belong to enforcement, so they are named rather than referenced.
+     * Enforcement risk assessment (HDPI-7350), shown for an approved, live warrant and not for a writ or a
+     * warrant still awaiting payment or review (13-risk-assessment-tab.feature). Only the bailiff notes
+     * (HDPI-7593) are built so far. The fields belong to enforcement, so they are named rather than referenced;
+     * enforcement sets showRiskAssessmentTab, because a show condition cannot apply the rule itself.
      */
     private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("riskAssessment", "Risk assessment")
             .forRoles(INTERNAL_TAB_ROLES)
-            .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "enforcementStatus!=\"\""))
-            .field("enforcementStatus", NEVER_SHOW)
+            .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "showRiskAssessmentTab=\"Yes\""))
+            .field("showRiskAssessmentTab", NEVER_SHOW)
             .field("bailiffNotes")
             .field("currentRiskLevel")
             .field("currentRiskLevelReason");

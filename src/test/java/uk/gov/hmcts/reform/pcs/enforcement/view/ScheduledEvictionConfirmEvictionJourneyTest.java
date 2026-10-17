@@ -66,9 +66,9 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
 
         CurrentEnforcementService currentEnforcementService =
             new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository);
-        EnforcementStatusTransitions transitions =
-            new EnforcementStatusTransitions(Clock.fixed(Instant.parse("2026-06-20T09:00:00Z"), ZoneOffset.UTC));
-        mediator = new EnforcementOrderMediator(currentEnforcementService);
+        Clock clock = Clock.fixed(Instant.parse("2026-06-20T09:00:00Z"), ZoneOffset.UTC);
+        EnforcementStatusTransitions transitions = new EnforcementStatusTransitions(clock);
+        mediator = new EnforcementOrderMediator(currentEnforcementService, clock);
         evictionScheduleService = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
                                                               transitions, bailiffNoteService);
         claimantEvictionConfirmationService = new ClaimantEvictionConfirmationService(

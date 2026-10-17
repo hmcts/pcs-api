@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -17,11 +18,14 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.common.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -123,6 +127,100 @@ class WarrantOfRestitutionMapperTest {
         assertThat(target.getWarrantOfRestitutionDetails().getPropertyAccessDetails()).isNull();
         assertThat(target.getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest()).isNull();
         assertThat(target.getRawWarrantRestDetails().getVulnerablePeoplePresentWarrantRest()).isNull();
+    }
+
+    @Test
+    void shouldKeepTheClaimantsAnswersWhenTheApplicationPageRunsAgain() {
+        // Given a claimant who has been seeded from their warrant and then answered the restitution questions
+        EnforcementOrder source = warrantEnforcementOrder();
+        EnforcementOrder target = EnforcementOrder.builder().build();
+        underTest.prePopulateFieldsFromWarrantDetails(source, target);
+
+        WarrantOfRestitutionDetails answers = target.getWarrantOfRestitutionDetails();
+        answers.setHowDefendantsReturned("They broke back in through the kitchen window");
+        answers.setAdditionalDocuments(List.of(ListValue.<EvidenceOfDefendants>builder()
+                .value(EvidenceOfDefendants.builder().description("photograph of the window").build())
+                .build()));
+        answers.setAnyRiskToBailiff(YesNoNotSure.NO);
+        answers.getPropertyAccessDetails().setClarificationOnAccessDifficultyText("the side gate is locked");
+        target.getRawWarrantRestDetails().setVulnerablePeoplePresentWarrantRest(YesNoNotSure.NO);
+
+        // When the "Your application" page runs again, as it does on ExUI "Previous" then "Continue"
+        underTest.prePopulateFieldsFromWarrantDetails(source, target);
+
+        // Then
+        assertThat(target.getWarrantOfRestitutionDetails().getHowDefendantsReturned())
+                .isEqualTo("They broke back in through the kitchen window");
+        assertThat(target.getWarrantOfRestitutionDetails().getAdditionalDocuments()).hasSize(1);
+        assertThat(target.getWarrantOfRestitutionDetails().getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.NO);
+        assertThat(target.getWarrantOfRestitutionDetails().getPropertyAccessDetails()
+                .getClarificationOnAccessDifficultyText()).isEqualTo("the side gate is locked");
+        assertThat(target.getRawWarrantRestDetails().getVulnerablePeoplePresentWarrantRest())
+                .isEqualTo(YesNoNotSure.NO);
+    }
+
+    @Test
+    void shouldKeepTheAnswersOfAResumedDraftApplication() {
+        // Given a draft the claimant saved after answering the restitution questions
+        EnforcementOrder source = warrantEnforcementOrder();
+        EnforcementOrder target = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .howDefendantsReturned("They broke back in through the kitchen window")
+                        .anyRiskToBailiff(YesNoNotSure.NO)
+                        .build())
+                .build();
+
+        // When the resumed draft continues off the "Your application" page
+        underTest.prePopulateFieldsFromWarrantDetails(source, target);
+
+        // Then
+        assertThat(target.getWarrantOfRestitutionDetails().getHowDefendantsReturned())
+                .isEqualTo("They broke back in through the kitchen window");
+        assertThat(target.getWarrantOfRestitutionDetails().getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.NO);
+        assertThat(target.getWarrantOfRestitutionDetails().getRiskCategories()).isNull();
+        assertThat(target.getRawWarrantRestDetails()).isNull();
+    }
+
+    @Test
+    void shouldSeedTheAnswersWhenOnlyTheEmptyContainersArePresent() {
+        // Given the containers CCD sends back with no answer in them
+        EnforcementOrder source = warrantEnforcementOrder();
+        EnforcementOrder target = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(new WarrantOfRestitutionDetails())
+                .rawWarrantRestDetails(new RawWarrantRestDetails())
+                .build();
+
+        // When
+        underTest.prePopulateFieldsFromWarrantDetails(source, target);
+
+        // Then
+        assertThat(target.getWarrantOfRestitutionDetails().getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
+        assertThat(target.getRawWarrantRestDetails().getVulnerablePeoplePresentWarrantRest())
+                .isEqualTo(YesNoNotSure.YES);
+    }
+
+    private static EnforcementOrder warrantEnforcementOrder() {
+        return EnforcementOrder.builder()
+                .warrantDetails(WarrantDetails.builder()
+                        .anyRiskToBailiff(YesNoNotSure.YES)
+                        .riskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                        .riskDetails(RiskDetails.builder().violentDetails("violent").build())
+                        .propertyAccessDetails(PropertyAccessDetails.builder()
+                                .isDifficultToAccessProperty(VerticalYesNo.YES)
+                                .clarificationOnAccessDifficultyText("communal entrance")
+                                .build())
+                        .additionalInformation(AdditionalInformation.builder()
+                                .additionalInformationSelect(VerticalYesNo.NO)
+                                .build())
+                        .build())
+                .rawWarrantDetails(RawWarrantDetails.builder()
+                        .vulnerablePeoplePresent(YesNoNotSure.YES)
+                        .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                                .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS)
+                                .vulnerableReasonText("reason")
+                                .build())
+                        .build())
+                .build();
     }
 
     @Test

@@ -10,11 +10,14 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_DEADLINE;
+import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_DEADLINE_IMMEDIATE;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_NO_DATES;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_WITH_DATES;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION;
@@ -24,7 +27,13 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 @AllArgsConstructor
 public class EnforcementOrderMediator {
 
+    /**
+     * How long before the eviction the claimant has to confirm the details by.
+     */
+    private static final int CONFIRMATION_HOURS_BEFORE_EVICTION = 72;
+
     private final CurrentEnforcementService currentEnforcementService;
+    private final Clock ukClock;
 
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity != null && pcsCase != null) {
@@ -64,7 +73,7 @@ public class EnforcementOrderMediator {
         enforcementOrder.setConfirmEvictionSummaryMarkup(String.format(
             CONFIRM_EVICTION_SUMMARY_WITH_DATES,
             formatDate(localDateTime),
-            getEvictionCancellationDeadline(localDateTime)));
+            confirmationDeadlineSentence(localDateTime)));
     }
 
     private void prepareEvictionWithNoDates(PCSCase pcsCase) {
@@ -87,8 +96,18 @@ public class EnforcementOrderMediator {
         return localDateTime.format(outputFormatter);
     }
 
-    public String getEvictionCancellationDeadline(LocalDateTime localDateTime) {
+    /**
+     * The sentence telling the claimant when they have to confirm by: 72 hours before the eviction, or, when
+     * the eviction is closer than that, to confirm straight away. The bailiff can schedule an eviction less
+     * than 72 hours out, and naming the 72 hour deadline then names a date in the past, which reads as if the
+     * claimant has already missed it.
+     */
+    public String confirmationDeadlineSentence(LocalDateTime evictionDateTime) {
+        LocalDateTime deadline = evictionDateTime.minusHours(CONFIRMATION_HOURS_BEFORE_EVICTION);
+        if (!deadline.isAfter(LocalDateTime.now(ukClock))) {
+            return CONFIRM_EVICTION_DEADLINE_IMMEDIATE;
+        }
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-        return localDateTime.minusHours(72).format(outputFormatter);
+        return CONFIRM_EVICTION_DEADLINE.formatted(deadline.format(outputFormatter));
     }
 }

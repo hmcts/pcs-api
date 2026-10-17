@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -38,6 +40,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_DEADLINE_IMMEDIATE;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderMediatorTest {
@@ -47,6 +51,9 @@ class EnforcementOrderMediatorTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
+    // 01/04/2026 10:00 in London (BST), well over 72 hours before the eviction dates used below
+    private static final Instant NOW = Instant.parse("2026-04-01T09:00:00Z");
+
     private EnforcementOrderMediator underTest;
 
     private PCSCase pcsCase;
@@ -54,7 +61,8 @@ class EnforcementOrderMediatorTest {
     @BeforeEach
     void beforeEach() {
         underTest = new EnforcementOrderMediator(
-            new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository));
+            new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
+            Clock.fixed(NOW, UK_ZONE_ID));
         pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
@@ -166,6 +174,53 @@ class EnforcementOrderMediatorTest {
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
         String expectedDeadline = bailiffDate.atZone(ZoneId.of("UTC")).minusHours(72).format(outputFormatter);
         assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup().contains(expectedDeadline));
+    }
+
+    @Test
+    void shouldTellTheClaimantToConfirmNowWhenTheEvictionIsLessThan72HoursAway() {
+        // Given an eviction tomorrow morning, which the bailiff can schedule
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(LocalDateTime.parse("2026-04-02T10:00:00"))));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        String markup = pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup();
+        assertThat(markup).contains(CONFIRM_EVICTION_DEADLINE_IMMEDIATE)
+            .doesNotContain("You must confirm the eviction details before");
+    }
+
+    @Test
+    void shouldNotNameADeadlineInThePast() {
+        // Given an eviction later today
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(LocalDateTime.parse("2026-04-01T16:00:00"))));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup())
+            .doesNotContain("29 March 2026")
+            .contains(CONFIRM_EVICTION_DEADLINE_IMMEDIATE);
+    }
+
+    @Test
+    void shouldNameTheDeadlineWhenTheEvictionIsMoreThan72HoursAway() {
+        // Given an eviction four days away
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(LocalDateTime.parse("2026-04-05T10:00:00"))));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup())
+            .contains("You must confirm the eviction details before 2 April 2026.");
     }
 
     @Test
