@@ -19,8 +19,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionSch
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.ScheduleEvictionConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService.EvictionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
@@ -137,6 +137,9 @@ class ScheduleEvictionTest extends BaseEventTest {
 
     @Test
     void shouldScheduleAndConfirm() {
+        when(evictionScheduleService.schedule(anyLong(), any(), anyBoolean()))
+            .thenReturn(EnforcementChange.made("WP-00000042"));
+
         SubmitResponse<State> response = callSubmitHandler(caseWith(LocalDateTime.parse("2026-06-25T10:00:30"),
                                                                      YesOrNo.NO));
 
@@ -145,11 +148,28 @@ class ScheduleEvictionTest extends BaseEventTest {
         assertThat(response.getConfirmationHeader())
             .isEqualTo("# Eviction date scheduled for Thursday 25 June 2026 at 10:00am");
         assertThat(response.getConfirmationBody())
-            .contains("Case number: 0000-0000-0000-1234", "Print the 'notice of eviction' (form N54)");
+            .contains("Case number: 0000-0000-0000-1234", "Warrant number: WP-00000042",
+                      "Print the 'notice of eviction' (form N54)");
+    }
+
+    @Test
+    void shouldLeaveTheWarrantNumberOutOfTheConfirmationWhenTheWarrantHasNone() {
+        when(evictionScheduleService.schedule(anyLong(), any(), anyBoolean()))
+            .thenReturn(EnforcementChange.made(null));
+
+        SubmitResponse<State> response = callSubmitHandler(caseWith(LocalDateTime.parse("2026-06-25T10:00"),
+                                                                     YesOrNo.NO));
+
+        assertThat(response.getConfirmationBody())
+            .contains("Case number: 0000-0000-0000-1234")
+            .doesNotContain("Warrant number");
     }
 
     @Test
     void shouldPassOnThatServiceIsDispensedWith() {
+        when(evictionScheduleService.schedule(anyLong(), any(), anyBoolean()))
+            .thenReturn(EnforcementChange.made("WP-00000042"));
+
         callSubmitHandler(caseWith(LocalDateTime.parse("2026-06-25T10:00"), YesOrNo.YES));
 
         verify(evictionScheduleService).schedule(TEST_CASE_REFERENCE, LocalDateTime.parse("2026-06-25T10:00"), true);
@@ -173,8 +193,8 @@ class ScheduleEvictionTest extends BaseEventTest {
 
     @Test
     void shouldReturnAnErrorWhenTheWarrantHasMovedOn() {
-        doThrow(new EnforcementEventNotAvailableException("Not now"))
-            .when(evictionScheduleService).schedule(anyLong(), any(), anyBoolean());
+        when(evictionScheduleService.schedule(anyLong(), any(), anyBoolean()))
+            .thenReturn(EnforcementChange.refused("Not now"));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(LocalDateTime.parse("2026-06-25T10:00"),
                                                                      YesOrNo.NO));

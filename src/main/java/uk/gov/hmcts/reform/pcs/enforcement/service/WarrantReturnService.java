@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -105,7 +104,10 @@ public class WarrantReturnService {
 
     /**
      * The warrant a return would be recorded against: the claim's current enforcement, if it is a warrant
-     * that a bailiff has been allocated to.
+     * that a bailiff has been allocated to. For the start callback and the mid-event page: it refuses by
+     * throwing, which
+     * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
+     * error on the callback response.
      *
      * @throws NoEnforcementException if the claim has no warrant, or it has not been approved yet
      * @throws EnforcementEventNotAvailableException if the warrant is waiting for a bailiff to be allocated
@@ -127,6 +129,26 @@ public class WarrantReturnService {
     }
 
     /**
+     * The warrant a return would be recorded against, or why there is none.
+     */
+    private EnforcementChange<EnforcementOrderEntity> findRecordableWarrant(long caseReference) {
+        Optional<EnforcementOrderEntity> warrant = currentEnforcementService.findCurrentEnforcement(caseReference)
+            .filter(WarrantReturnService::isWarrant);
+        if (warrant.isEmpty()) {
+            return EnforcementChange.refused(NoEnforcementException.MESSAGE);
+        }
+        EnforcementStatus status = warrant.get().getStatus();
+        if (status == AWAITING_BAILIFF_ALLOCATION) {
+            return EnforcementChange.refused(NOT_ALLOCATED_MESSAGE);
+        }
+        if (!RECORDABLE_STATUSES.contains(status)) {
+            // Not approved yet (or rejected), so no warrant has been generated.
+            return EnforcementChange.refused(NoEnforcementException.MESSAGE);
+        }
+        return EnforcementChange.made(warrant.get());
+    }
+
+    /**
      * The errors to show for the answers, against the warrant's current status.
      */
     public List<String> validate(long caseReference, WarrantReturnDetails details) {
@@ -138,15 +160,19 @@ public class WarrantReturnService {
      * (HDPI-8424). A return name that leaves the status unchanged, or that names the status the warrant is
      * already in, records the return only.
      *
-     * @return the return name recorded
-     * @throws WarrantReturnValidationException if the answers are not valid for the warrant as it is now
+     * @return what was recorded, or the errors to show when there is no warrant to record it against or the
+     *         answers are not valid for the warrant as it is now
      */
     @Transactional
-    public WarrantReturnName recordReturn(long caseReference, WarrantReturnDetails details) {
-        EnforcementOrderEntity warrant = findWarrant(caseReference);
+    public EnforcementChange<RecordedWarrantReturn> recordReturn(long caseReference, WarrantReturnDetails details) {
+        EnforcementChange<EnforcementOrderEntity> recordable = findRecordableWarrant(caseReference);
+        if (recordable.refused()) {
+            return EnforcementChange.refused(recordable.errors());
+        }
+        EnforcementOrderEntity warrant = recordable.change();
         List<String> errors = warrantReturnValidator.validate(details, warrant.getStatus());
         if (!errors.isEmpty()) {
-            throw new WarrantReturnValidationException(errors);
+            return EnforcementChange.refused(errors);
         }
         WarrantReturnName returnName = WarrantReturnDetails.selectedReturnName(details).orElseThrow();
         boolean finalReturn = details.getType() == WarrantReturnType.FINAL;
@@ -173,12 +199,13 @@ public class WarrantReturnService {
             bailiffAllocationService.endActiveAllocations(warrant);
         }
         if (statusAfterReturn == CLOSED) {
-            // TODO HDPI-8189: end the allocated bailiff's "allocated-bailiff" AM case role (end date today) and
-            // cancel the open bailiff tasks for the enforcement. pcs-api cannot write AM case roles yet: see
-            // BailiffAllocationService.
+            // TODO HDPI-8189: end the allocated bailiff's "allocated-bailiff" AM case role (end date today).
+            // The allocation row itself is ended above; pcs-api cannot write AM case roles yet, see
+            // BailiffAllocationService. Cancelling the enforcement's open bailiff tasks is HDPI-8627.
             log.info("Warrant {} closed by return {}", warrant.getId(), returnName);
         }
-        return returnName;
+        return EnforcementChange.made(
+            new RecordedWarrantReturn(returnName, warrant.getEnforcementNumber()));
     }
 
     /**
@@ -194,13 +221,10 @@ public class WarrantReturnService {
     /**
      * HDPI-8424 fee waiver hook: whether a further warrant applied for today would be free. It is free when
      * the claim's most recent final return is one of {@link #FREE_REPEAT_WARRANT_RETURN_NAMES} and today is
-     * within {@value #FREE_REPEAT_WARRANT_MONTHS} calendar months of that warrant being generated.
+     * within {@value #FREE_REPEAT_WARRANT_MONTHS} calendar months of that warrant being generated. A warrant
+     * is generated when a caseworker approves the application, which is what enf_case.approved_at records.
      *
      * <p>Not wired into the enforcement fee yet: see EnforcementOrderService#isPaymentOutstanding.</p>
-     *
-     * <p>TODO HDPI-8656: the time a warrant is generated is not stored yet (Decide enforcement is built in a
-     * parallel branch), so the time of the suspending return stands in for it. Pass the generated time once
-     * it is recorded.</p>
      */
     @Transactional(readOnly = true)
     public boolean isNextWarrantFree(PcsCaseEntity pcsCaseEntity) {
@@ -212,7 +236,8 @@ public class WarrantReturnService {
             .stream()
             .filter(warrantReturn -> warrantReturn.getReturnType() == WarrantReturnType.FINAL)
             .findFirst()
-            .map(lastFinal -> isFreeRepeatWarrant(lastFinal.getReturnName(), lastFinal.getRecordedAt(),
+            .map(lastFinal -> isFreeRepeatWarrant(lastFinal.getReturnName(),
+                                                  lastFinal.getEnforcementOrder().getApprovedAt(),
                                                   LocalDate.now(ukClock)))
             .orElse(false);
     }

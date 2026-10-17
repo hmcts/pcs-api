@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.RescheduleEvictionConfigurer;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
@@ -57,8 +58,9 @@ public class RescheduleEviction extends EvictionDateEvent {
     }
 
     @Override
-    void save(long caseReference, LocalDateTime evictionDateTime, boolean dispenseWithService) {
-        evictionScheduleService.reschedule(caseReference, evictionDateTime, dispenseWithService);
+    EnforcementChange<String> save(long caseReference, LocalDateTime evictionDateTime,
+                                   boolean dispenseWithService) {
+        return evictionScheduleService.reschedule(caseReference, evictionDateTime, dispenseWithService);
     }
 
     @Override
