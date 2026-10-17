@@ -23,6 +23,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_PAYMENT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_PROPERTY_VISIT;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_REVIEW;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_SCHEDULING;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.BREATHING_SPACE;
@@ -37,7 +38,7 @@ class EnforcementStatusTransitionsTest {
     private static final Instant NOW = Instant.parse("2026-10-16T10:15:30Z");
 
     /**
-     * The transition table from 19-enforcement-status-model.feature, plus the two additions noted below.
+     * The transition table from 19-enforcement-status-model.feature, plus the additions noted below.
      * A null "from" is the feature's "(none)".
      */
     private static final List<Transition> TABLE = List.of(
@@ -59,7 +60,24 @@ class EnforcementStatusTransitionsTest {
         new Transition(CLAIMANT_CONFIRMED, "the bailiff records a closing final return", CLOSED),
         new Transition(CLAIMANT_CONFIRMED, "the bailiff records a breathing space return", BREATHING_SPACE),
         new Transition(CLAIMANT_CONFIRMED, "the bailiff records an obstruction return", AWAITING_SCHEDULING),
-        new Transition(CLOSED, "the bailiff records \"Reopen warrant\"", AWAITING_BAILIFF_ALLOCATION)
+        new Transition(CLOSED, "the bailiff records \"Reopen warrant\"", AWAITING_BAILIFF_ALLOCATION),
+        // 11-record-warrant-return.feature (HDPI-8424): a return can be recorded at any point after a bailiff is
+        // allocated, and from breathing space
+        new Transition(AWAITING_SCHEDULING, "the bailiff records a closing final return", CLOSED),
+        new Transition(AWAITING_SCHEDULING, "the bailiff records a breathing space return", BREATHING_SPACE),
+        new Transition(AWAITING_CLAIMANT_CONFIRMATION, "the bailiff records a closing final return", CLOSED),
+        new Transition(AWAITING_CLAIMANT_CONFIRMATION, "the bailiff records a breathing space return",
+                       BREATHING_SPACE),
+        new Transition(AWAITING_CLAIMANT_CONFIRMATION, "the bailiff records an obstruction return",
+                       AWAITING_SCHEDULING),
+        new Transition(CLAIMANT_UNABLE_TO_ATTEND, "the bailiff records a closing final return", CLOSED),
+        new Transition(CLAIMANT_UNABLE_TO_ATTEND, "the bailiff records a breathing space return", BREATHING_SPACE),
+        new Transition(CLAIMANT_UNABLE_TO_ATTEND, "the bailiff records an obstruction return", AWAITING_SCHEDULING),
+        new Transition(AWAITING_PROPERTY_VISIT, "the bailiff records a closing final return", CLOSED),
+        new Transition(AWAITING_PROPERTY_VISIT, "the bailiff records a breathing space return", BREATHING_SPACE),
+        new Transition(AWAITING_PROPERTY_VISIT, "the bailiff records an obstruction return", AWAITING_SCHEDULING),
+        new Transition(BREATHING_SPACE, "the bailiff records a closing final return", CLOSED),
+        new Transition(BREATHING_SPACE, "the bailiff records an obstruction return", AWAITING_SCHEDULING)
     );
 
     private final EnforcementStatusTransitions underTest =

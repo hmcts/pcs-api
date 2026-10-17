@@ -33,4 +33,16 @@ class EnforcementCallbackExceptionHandlerTest {
         assertThat(response.getBody().getErrors()).containsExactly("There is no warrant on this case");
         assertThat(response.getBody().getData()).isNull();
     }
+
+    @Test
+    void shouldReturnTheWarrantReturnNotAllowedErrorToCcd() {
+        ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> response = underTest.handleWarrantReturnNotAllowed(
+            new WarrantReturnNotAllowedException(WarrantReturnNotAllowedException.NOT_ALLOCATED_MESSAGE));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getErrors())
+            .containsExactly("A bailiff must be allocated to the warrant before a return can be recorded");
+        assertThat(response.getBody().getData()).isNull();
+    }
 }

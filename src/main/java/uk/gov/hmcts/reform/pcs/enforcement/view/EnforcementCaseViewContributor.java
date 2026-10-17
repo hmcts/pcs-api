@@ -14,6 +14,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final EnforcementOrderView enforcementOrderView;
     private final BailiffNoteView bailiffNoteView;
+    private final WarrantReturnView warrantReturnView;
 
     @Override
     public void contribute(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
@@ -21,6 +22,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
         enforcementOrderView.setEnforcementStatus(pcsCaseEntity, pcsCase);
         bailiffNoteView.setBailiffNotes(pcsCaseEntity, pcsCase);
+        warrantReturnView.setLatestWarrantReturn(pcsCaseEntity, pcsCase);
     }
 
 }

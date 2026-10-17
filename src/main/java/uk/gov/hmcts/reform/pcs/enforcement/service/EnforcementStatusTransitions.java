@@ -17,6 +17,7 @@ import java.util.Set;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_PAYMENT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_PROPERTY_VISIT;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_REVIEW;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_SCHEDULING;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.BREATHING_SPACE;
@@ -28,7 +29,8 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.TRANS
 
 /**
  * The enforcement status state machine. Every status change goes through {@link #transition}, which
- * rejects any move not in the transition table of 19-enforcement-status-model.feature.
+ * rejects any move not in the transition table of 19-enforcement-status-model.feature, or in the warrant
+ * return additions from 11-record-warrant-return.feature.
  */
 @Component
 @RequiredArgsConstructor
@@ -95,6 +97,16 @@ public class EnforcementStatusTransitions {
         allow(allowed, CLAIMANT_CONFIRMED, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
         // the bailiff records "Reopen warrant"
         allow(allowed, CLOSED, AWAITING_BAILIFF_ALLOCATION);
+        // 11-record-warrant-return.feature (HDPI-8424, "Return name moves the enforcement status"): a return can
+        // be recorded at any point after a bailiff is allocated, not only once the claimant has confirmed, and
+        // closes the warrant, puts it in breathing space or sends it back for scheduling. A warrant in breathing
+        // space can still take a return (19-enforcement-status-model.feature event availability), which is how
+        // it leaves breathing space (OPEN-QUESTIONS 11).
+        allow(allowed, AWAITING_SCHEDULING, CLOSED, BREATHING_SPACE);
+        allow(allowed, AWAITING_CLAIMANT_CONFIRMATION, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
+        allow(allowed, CLAIMANT_UNABLE_TO_ATTEND, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
+        allow(allowed, AWAITING_PROPERTY_VISIT, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
+        allow(allowed, BREATHING_SPACE, CLOSED, AWAITING_SCHEDULING);
         allowed.replaceAll((from, targets) -> Collections.unmodifiableSet(targets));
         return Collections.unmodifiableMap(allowed);
     }

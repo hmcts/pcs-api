@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.LatestWarrantReturn;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
@@ -131,4 +133,19 @@ public class EnforcementOrder {
      */
     @CCD(label = "Bailiff note", searchable = false, access = {BailiffNoteReadAccess.class})
     private List<ListValue<BailiffNote>> bailiffNotes;
+
+    /**
+     * The answers to the "Record warrant return" event. They are saved to the enforcement's return history on
+     * submit, not to the case.
+     */
+    @JsonUnwrapped(prefix = "warrantReturn")
+    @CCD
+    private WarrantReturnDetails warrantReturn;
+
+    /**
+     * The current enforcement's most recent warrant return, set for the case view. Read only.
+     */
+    @JsonUnwrapped(prefix = "latestWarrantReturn")
+    @CCD
+    private LatestWarrantReturn latestWarrantReturn;
 }

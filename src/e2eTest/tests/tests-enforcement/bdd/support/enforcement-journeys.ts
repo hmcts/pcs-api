@@ -56,6 +56,8 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
   'Confirm the eviction date': { label: caseSummary.confirmEvictionEvent, firstPageHeader: confirmEvictionDetails.mainHeader },
   // pcs-api AddBailiffNote: the event name and its one page's label.
   'Add a bailiff note': { label: 'Add a bailiff note', firstPageHeader: 'Add bailiff note' },
+  // pcs-api RecordWarrantReturn: the event name and its one page's label.
+  'Record warrant return': { label: 'Record warrant return', firstPageHeader: 'Record warrant return' },
 };
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */

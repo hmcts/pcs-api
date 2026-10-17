@@ -37,4 +37,13 @@ public class EnforcementCallbackExceptionHandler {
                                      .errors(List.of(ex.getMessage()))
                                      .build());
     }
+
+    @ExceptionHandler(WarrantReturnNotAllowedException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleWarrantReturnNotAllowed(
+        WarrantReturnNotAllowedException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
 }
