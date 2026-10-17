@@ -145,15 +145,20 @@ class EvictionScheduleServiceTest {
     }
 
     @Test
-    void shouldKeepAServedNoticeVisibleToDefendantsWhenRescheduledWithService() {
+    void shouldClearThePreviousNoticeServiceWhenRescheduling() {
         EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
+        enforcement.setBailiffDate(EVICTION);
         enforcement.setDispenseWithService(false);
         enforcement.setNoticeServedAt(SERVED);
+        enforcement.setNoticeServedHow("by hand to the occupant");
         enforcement.setDefendantsCanSeeEnforcement(true);
 
-        underTest.reschedule(CASE_REFERENCE, EVICTION, false);
+        underTest.reschedule(CASE_REFERENCE, EVICTION.plusDays(7), false);
 
-        assertThat(enforcement.isDefendantsCanSeeEnforcement()).isTrue();
+        assertThat(enforcement.getNoticeServedAt()).isNull();
+        assertThat(enforcement.getNoticeServedHow()).isNull();
+        assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
+        assertThat(EvictionScheduleService.canMarkNoticeServed(enforcement)).isTrue();
     }
 
     @Test
@@ -166,6 +171,7 @@ class EvictionScheduleServiceTest {
         underTest.reschedule(CASE_REFERENCE, EVICTION, true);
 
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
+        assertThat(EvictionScheduleService.canMarkNoticeServed(enforcement)).isFalse();
     }
 
     @Test

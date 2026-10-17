@@ -160,10 +160,18 @@ public class EvictionScheduleService {
         //  folder and the notice of eviction, driven from defendantsCanSeeEnforcement.
     }
 
+    /**
+     * A new eviction date comes with a fresh notice of eviction (HDPI-7354), so the service record of the
+     * previous notice no longer applies: clearing it makes "Mark eviction notice served" available again, and
+     * takes defendant visibility away until the new notice is served. Defendant visibility is derived from the
+     * notice fields, so it is recomputed after they are cleared.
+     */
     private void setEvictionDate(EnforcementOrderEntity enforcement, LocalDateTime evictionDateTime,
                                  boolean dispenseWithService) {
         enforcement.setBailiffDate(evictionDateTime);
         enforcement.setDispenseWithService(dispenseWithService);
+        enforcement.setNoticeServedAt(null);
+        enforcement.setNoticeServedHow(null);
         enforcement.setDefendantsCanSeeEnforcement(defendantsCanSeeEnforcement(enforcement));
         enforcementStatusTransitions.transition(enforcement, AWAITING_CLAIMANT_CONFIRMATION);
         enforcementOrderRepository.save(enforcement);

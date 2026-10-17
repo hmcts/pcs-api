@@ -15,6 +15,11 @@ import java.util.List;
  * A decentralised start handler can only return case data, so an enforcement event that must not start
  * throws instead. This turns the exception into a callback response with an error, which CCD shows to
  * the user in place of the event.
+ *
+ * <p>These handlers only cover the start callbacks. A decentralised event's start runs through
+ * {@code CallbackController#aboutToStart}, but its submit runs through the SDK's package-private
+ * {@code ServicePersistenceController}, which this advice cannot be scoped to, so a submit handler must
+ * return its errors on the {@code SubmitResponse} rather than throw.</p>
  */
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
