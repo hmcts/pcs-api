@@ -43,5 +43,6 @@ When a journey is built, swap its expressions in `pendingSteps(...)` for real st
 - Journey 01: "Enforce the order" for a warrant of possession, writ of possession and warrant of restitution (up to the status check, which is pending on HDPI-7419). The warrant of restitution is only offered once a warrant exists, so the step seeds one through the API first.
 - Journey 06: "Confirm the eviction date" availability and start. pcs-api calls the event "Confirm the eviction details".
 - Journey 10: "Add a bailiff note" is offered to a hearing centre admin and team leader, and not to the claimant's or defendant's legal representative or a judge. The scenarios that sign in as a bailiff, bailiff admin or bailiff manager stay `@pending` until those test users exist (HDPI-7539).
+- Journeys 05, 07 and 08: "Schedule eviction", "Reschedule eviction" and "Mark notice of eviction as served" exist in pcs-api and are registered in `xuiEvents`, but the features stay `@pending`. Every scenario signs in as a bailiff (no test users yet, HDPI-7539) and needs a warrant in a status the suite cannot reach (Awaiting scheduling and later, HDPI-7419).
 
 Each scenario creates its own case through the API. The case reference in the feature files is illustrative.

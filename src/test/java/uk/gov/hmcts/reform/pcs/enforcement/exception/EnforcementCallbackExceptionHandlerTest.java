@@ -33,4 +33,15 @@ class EnforcementCallbackExceptionHandlerTest {
         assertThat(response.getBody().getErrors()).containsExactly("There is no warrant on this case");
         assertThat(response.getBody().getData()).isNull();
     }
+
+    @Test
+    void shouldReturnTheActionNotAvailableErrorToCcd() {
+        ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> response =
+            underTest.handleEnforcementActionNotAvailable(new EnforcementActionNotAvailableException("Not now"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getErrors()).containsExactly("Not now");
+        assertThat(response.getBody().getData()).isNull();
+    }
 }

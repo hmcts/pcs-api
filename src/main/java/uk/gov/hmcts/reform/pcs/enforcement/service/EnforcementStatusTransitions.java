@@ -93,6 +93,10 @@ public class EnforcementStatusTransitions {
         allow(allowed, CLAIMANT_UNABLE_TO_ATTEND, AWAITING_CLAIMANT_CONFIRMATION);
         // the bailiff records a closing final, breathing space or obstruction return
         allow(allowed, CLAIMANT_CONFIRMED, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
+        // the bailiff reschedules an eviction the claimant has already confirmed. Not in the feature's
+        // transition table, but its event availability rules offer "Reschedule eviction" in Claimant confirmed
+        // (HDPI-7549, open question 13).
+        allow(allowed, CLAIMANT_CONFIRMED, AWAITING_CLAIMANT_CONFIRMATION);
         // the bailiff records "Reopen warrant"
         allow(allowed, CLOSED, AWAITING_BAILIFF_ALLOCATION);
         allowed.replaceAll((from, targets) -> Collections.unmodifiableSet(targets));
