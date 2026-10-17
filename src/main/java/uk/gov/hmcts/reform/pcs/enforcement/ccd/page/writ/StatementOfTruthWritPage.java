@@ -6,10 +6,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
-import uk.gov.hmcts.reform.pcs.enforcement.domain.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementType;
@@ -28,13 +26,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .label("statementOfTruthWrit-line-separator", "---")
             .complex(PCSCase:: getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
-            .complex(WritDetails::getRepaymentCosts)
-            .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
-            .label("statementOfTruthWrit-payments-table",
-                   "${writStatementOfTruthRepaymentSummaryMarkdown}")
-            .done()
             .complex(WritDetails::getStatementOfTruth)
-            .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
+            .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getCertification)
             .label(
                 "statementOfTruthWrit-certification-details",
                 """

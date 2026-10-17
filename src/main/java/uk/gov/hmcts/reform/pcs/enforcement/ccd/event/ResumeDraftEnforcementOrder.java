@@ -56,6 +56,7 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
+        SummaryFields.excludeNeverShownFields(eventBuilder);
     }
 
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

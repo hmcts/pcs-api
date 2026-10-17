@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.PlacedFields;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
@@ -71,6 +73,32 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
         verify(warrantPageConfigurer).configurePages(savingPageBuilder);
         verify(writPageConfigurer).configurePages(savingPageBuilder);
         verify(warrantOfRestitutionPageConfigurer).configurePages(savingPageBuilder);
+    }
+
+    /**
+     * Resume reuses the pages of "Enforce the order", so it has to drop the same hidden value carriers
+     * from check your answers — field placements belong to one event, not to the page configurer.
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldKeepNeverShownFieldsOffCheckYourAnswers() {
+        when(savingPageBuilderFactory.create(any(EventBuilder.class), eq(enforceTheOrder)))
+            .thenAnswer(invocation -> {
+                EventBuilder<PCSCase, UserRole, State> eventBuilder = invocation.getArgument(0);
+                eventBuilder.fields()
+                    .page("resume-test")
+                    .complex(PCSCase::getEnforcementOrder)
+                    .readonly(EnforcementOrder::getHasUnsubmittedEnforcementData, ShowConditions.NEVER_SHOW, true)
+                    .done();
+                return savingPageBuilder;
+            });
+        setEventUnderTest(resumeDraftEnforcementOrder);
+
+        Field<?, ?, ?, ?> hiddenField =
+            PlacedFields.find(configuredEvent.getFields(), "hasUnsubmittedEnforcementData");
+
+        assertThat(hiddenField.isShowSummary()).isFalse();
+        assertThat(hiddenField.isRetainHiddenValue()).isTrue();
     }
 
     @Test

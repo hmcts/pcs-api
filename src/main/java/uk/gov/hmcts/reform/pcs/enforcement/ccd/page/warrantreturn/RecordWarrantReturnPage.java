@@ -51,7 +51,10 @@ public class RecordWarrantReturnPage implements CcdPageConfiguration, CcdPage {
             .label(pageKey + "-eviction-details", "${warrantReturnEvictionDetailsMarkup}")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantReturn)
-            .readonlyNoSummary(WarrantReturnDetails::getEvictionDetailsMarkup, NEVER_SHOW)
+            // RetainHiddenValue, or the markup is dropped on the way to check your answers and the whole
+            // eviction-details table is blank when the bailiff presses Previous. The event drops
+            // NEVER_SHOW fields from the summary, so this does not reach check your answers itself.
+            .readonly(WarrantReturnDetails::getEvictionDetailsMarkup, NEVER_SHOW, true)
             .mandatory(WarrantReturnDetails::getType)
             .mandatory(WarrantReturnDetails::getOutcome, FINAL)
             .mandatory(WarrantReturnDetails::getSuccessfulReturnName, SUCCESSFUL)

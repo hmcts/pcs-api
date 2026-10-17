@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.PlacedFields;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.allocatebailiff.AllocateBailiffConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffAllocationDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
@@ -109,6 +111,19 @@ class AllocateBailiffTest extends BaseEventTest {
     @Test
     void shouldShowCheckYourAnswers() {
         assertThat(configuredEvent.isShowSummary()).isTrue();
+    }
+
+    @Test
+    void shouldKeepTheCaseNameHeadingOffCheckYourAnswers() {
+        setEventUnderTest(new AllocateBailiff(new AllocateBailiffConfigurer(bailiffDirectoryService),
+                                              bailiffAllocationService, bailiffDirectoryService,
+                                              new CaseNameFormatter(), new CaseReferenceFormatter()));
+
+        Field<?, ?, ?, ?> caseName =
+            PlacedFields.find(configuredEvent.getFields(), "bailiffAllocationCaseName");
+
+        assertThat(caseName.isShowSummary()).isFalse();
+        assertThat(caseName.isRetainHiddenValue()).isTrue();
     }
 
     @Test
