@@ -87,6 +87,20 @@ export async function openCaseSummary(page: Page): Promise<void> {
   }).toPass({ timeout: VERY_LONG_TIMEOUT });
 }
 
+/**
+ * Asserts whether a case tab is on the open case. Waits for the Summary tab first, so "not shown" is only
+ * checked once XUI has rendered the tabs.
+ */
+export async function expectCaseTab(page: Page, tabName: string, shown: boolean): Promise<void> {
+  await expect(page.getByRole('tab', { name: caseSummary.mainHeader, exact: true })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  const tab = page.getByRole('tab', { name: tabName, exact: true });
+  if (shown) {
+    await expect(tab).toBeVisible();
+  } else {
+    await expect(tab).toHaveCount(0);
+  }
+}
+
 /** Option labels in the case summary "Next step" drop down (same locator as the select action). */
 export async function nextStepOptions(page: Page): Promise<string[]> {
   const field = caseSummary.nextStepEventList;

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementStatusReadAccess;
@@ -17,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.RawWarran
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+
+import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -112,6 +115,14 @@ public class EnforcementOrder {
      */
     @CCD(label = "Enforcement status", searchable = false, access = {EnforcementStatusReadAccess.class})
     private EnforcementStatus enforcementStatus;
+
+    /**
+     * Every warrant and writ on the claim, newest first, set for the case view and shown on the "Enforcement
+     * status" tab. Read only, like {@link #enforcementStatus}: the enforcement records hold the data and no
+     * event edits this field.
+     */
+    @CCD(label = "Warrants and writs", searchable = false, access = {EnforcementStatusReadAccess.class})
+    private List<ListValue<EnforcementSummary>> enforcements;
 
     /**
      * "Claimant vs defendants", set for the decideEnforcement header.
