@@ -25,7 +25,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
         enforcementOrderView.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
         bailiffNoteView.setBailiffNotes(pcsCaseEntity, pcsCase);
-        riskLevelView.setRiskLevel(pcsCaseEntity, pcsCase);
+        riskLevelView.setRiskAssessmentFields(pcsCaseEntity, pcsCase);
         evictionScheduleView.setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         warrantReturnView.setLatestWarrantReturn(pcsCaseEntity, pcsCase);
         enforcementDocumentVisibility.hideFromDefendants(pcsCase, caseReference);

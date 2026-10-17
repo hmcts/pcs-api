@@ -6,7 +6,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
 
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ public class EvictionScheduleValidator {
 
     public static final String EVICTION_DATE_REQUIRED_ERROR = "Enter the eviction date and time";
     public static final String EVICTION_DATE_IN_PAST_ERROR = "The eviction date must be today or in the future";
+    public static final String EVICTION_TIME_IN_PAST_ERROR = "The eviction time must be in the future";
     public static final String DISPENSE_WITH_SERVICE_REQUIRED_ERROR =
         "Select if the court has given permission to dispense with service";
     public static final String SERVED_AT_REQUIRED_ERROR = "Enter when you served the 'notice of eviction'";
@@ -43,15 +43,20 @@ public class EvictionScheduleValidator {
     }
 
     /**
-     * The eviction can be today, at any time, or on a later day.
+     * The eviction can be later today, to the minute, or on a later day. A time that has already passed is
+     * rejected: the claimant cannot be given an eviction, or a confirmation deadline, in the past.
      */
     public List<String> validateEvictionDate(EvictionSchedule schedule) {
         List<String> errors = new ArrayList<>();
         LocalDateTime evictionDateTime = schedule == null ? null : schedule.getEvictionDateTime();
+        LocalDateTime now = LocalDateTime.now(ukClock);
         if (evictionDateTime == null) {
             errors.add(EVICTION_DATE_REQUIRED_ERROR);
-        } else if (evictionDateTime.toLocalDate().isBefore(LocalDate.now(ukClock))) {
+        } else if (evictionDateTime.toLocalDate().isBefore(now.toLocalDate())) {
             errors.add(EVICTION_DATE_IN_PAST_ERROR);
+        } else if (evictionDateTime.truncatedTo(ChronoUnit.MINUTES)
+            .isBefore(now.truncatedTo(ChronoUnit.MINUTES))) {
+            errors.add(EVICTION_TIME_IN_PAST_ERROR);
         }
         if (schedule == null || schedule.getEvictionDispenseWithService() == null) {
             errors.add(DISPENSE_WITH_SERVICE_REQUIRED_ERROR);

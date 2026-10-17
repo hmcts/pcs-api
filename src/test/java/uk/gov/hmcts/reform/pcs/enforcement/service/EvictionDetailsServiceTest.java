@@ -69,6 +69,23 @@ class EvictionDetailsServiceTest {
     }
 
     @Test
+    void shouldShowEachDefendantThatSharesANameWithAnother() {
+        ClaimEntity claim = new ClaimEntity();
+        claim.setClaimParties(new ArrayList<>(List.of(
+            claimParty(PartyRole.CLAIMANT, 1, person("Pat", "Landlord", VerticalYesNo.YES)),
+            claimParty(PartyRole.CLAIMANT, 2, person("Pat", "Landlord", VerticalYesNo.YES)),
+            claimParty(PartyRole.DEFENDANT, 1, person("Jo", "Bloggs", VerticalYesNo.YES)),
+            claimParty(PartyRole.DEFENDANT, 2, person("Jo", "Bloggs", VerticalYesNo.YES))
+        )));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseWith(claim));
+
+        EvictionDetails details = underTest.getEvictionDetails(CASE_REFERENCE);
+
+        assertThat(details.claimantNames()).containsExactly("Pat Landlord", "Pat Landlord");
+        assertThat(details.defendantNames()).containsExactly("Jo Bloggs", "Jo Bloggs");
+    }
+
+    @Test
     void shouldLeaveOutRemovedParties() {
         ClaimEntity claim = new ClaimEntity();
         PartyEntity removed = person("Gone", "Away", VerticalYesNo.YES);
