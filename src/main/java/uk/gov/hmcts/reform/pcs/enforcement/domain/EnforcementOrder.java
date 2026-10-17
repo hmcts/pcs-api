@@ -136,6 +136,16 @@ public class EnforcementOrder {
     private EnforcementStatus enforcementStatus;
 
     /**
+     * Whether to show the "Risk assessment" tab, set for the case view. The tab belongs to the bailiffs' work
+     * on a warrant, so it is shown for a warrant or warrant of restitution that a caseworker has approved and
+     * that is still live, and not for a writ or a warrant still going through payment and review
+     * (13-risk-assessment-tab.feature). The tab's CCD show condition cannot apply that rule itself.
+     */
+    @CCD(label = "Show the risk assessment tab", searchable = false,
+        access = {EnforcementStatusReadAccess.class})
+    private YesOrNo showRiskAssessmentTab;
+
+    /**
      * Every warrant and writ on the claim, newest first, set for the case view and shown on the "Enforcement
      * status" tab. Read only, like {@link #enforcementStatus}: the enforcement records hold the data and no
      * event edits this field.
