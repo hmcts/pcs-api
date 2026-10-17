@@ -6,7 +6,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -14,12 +13,11 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -32,17 +30,6 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 @RequiredArgsConstructor
 public class EnforcementOrderView {
 
-    /**
-     * The live enforcement first (a claim has at most one, and it is always the newest), then the rest by when
-     * their status last changed, most recent first. Rows with no status change time come last: they predate
-     * the status model.
-     */
-    private static final Comparator<EnforcementOrderEntity> CURRENT_FIRST =
-        Comparator.comparing((EnforcementOrderEntity enforcement) -> enforcement.getStatus().isLive())
-            .thenComparing(EnforcementOrderEntity::getStatusUpdatedAt,
-                           Comparator.nullsFirst(Comparator.<Instant>naturalOrder()))
-            .reversed();
-
     private static final Set<SelectEnforcementType> WARRANTS =
         EnumSet.of(SelectEnforcementType.WARRANT, SelectEnforcementType.WARRANT_OF_RESTITUTION);
 
@@ -50,7 +37,7 @@ public class EnforcementOrderView {
         EnumSet.of(SelectEnforcementType.WRIT, SelectEnforcementType.WRIT_OF_RESTITUTION);
 
     private final DraftCaseDataService draftCaseDataService;
-    private final EnforcementOrderRepository enforcementOrderRepository;
+    private final CurrentEnforcementService currentEnforcementService;
 
     public void setCaseFields(PCSCase pcsCase, long caseReference, State state) {
         setHasEnforcementDraftData(caseReference, state, pcsCase);
@@ -62,18 +49,11 @@ public class EnforcementOrderView {
      * Leaves both unset when the claim has no enforcement.
      */
     public void setEnforcementStatusFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
-        if (pcsCaseEntity == null || pcsCase == null) {
+        if (pcsCase == null) {
             return;
         }
-        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
-        if (claims == null || claims.isEmpty()) {
-            return;
-        }
-        List<EnforcementOrderEntity> enforcements = enforcementOrderRepository
-            .findByClaimId(claims.getFirst().getId()).stream()
-            .filter(enforcement -> enforcement.getStatus() != null)
-            .sorted(CURRENT_FIRST)
-            .toList();
+        List<EnforcementOrderEntity> enforcements =
+            currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity);
         if (enforcements.isEmpty()) {
             return;
         }

@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.pcs.enforcement.view;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -56,8 +58,17 @@ class EnforcementOrderViewTest {
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
 
-    @InjectMocks
+    @Mock
+    private PcsCaseService pcsCaseService;
+
     private EnforcementOrderView underTest;
+
+    @BeforeEach
+    void setUp() {
+        // The real current-enforcement ordering, so these tests cover what the tab shows.
+        underTest = new EnforcementOrderView(draftCaseDataService,
+                                             new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository));
+    }
 
     @ParameterizedTest
     @MethodSource("enforcementDraftScenarios")

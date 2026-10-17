@@ -30,6 +30,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @ExtendWith(MockitoExtension.class)
 class CaseTypeTest {
@@ -105,6 +106,7 @@ class CaseTypeTest {
             TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseDetailsTabBuilder =
             Tab.TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> riskAssessmentTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, AccessProfile> searchBuilder =
             Search.SearchBuilder.builder(PCSCase.class, utils);
         final SearchCases.SearchCasesBuilder<PCSCase> searchCasesBuilder =
@@ -132,6 +134,7 @@ class CaseTypeTest {
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
         when(builder.tab("enforcementStatus", "Enforcement status")).thenReturn(enforcementStatusTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
+        when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(riskAssessmentTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
         lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
@@ -153,6 +156,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> riskAssessmentTab = riskAssessmentTabBuilder.build();
         final Tab<PCSCase, AccessProfile> enforcementStatusTab = enforcementStatusTabBuilder.build();
 
 
@@ -197,6 +201,12 @@ class CaseTypeTest {
         assertThat(supportTab.getShowCondition())
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
 
+        assertThat(riskAssessmentTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(riskAssessmentTab.getShowCondition()).isEqualTo("enforcementStatus!=\"\"");
+        assertThat(riskAssessmentTab.getFields()).extracting(TabField::getId)
+            .containsExactly("enforcementStatus", "bailiffNotes");
+        assertThat(riskAssessmentTab.getFields()).extracting(TabField::getShowCondition)
+            .containsExactly(NEVER_SHOW, null);
         assertThat(enforcementStatusTab.getFields()).extracting(TabField::getId).containsExactly("enforcements");
         assertThat(enforcementStatusTab.getForRoles())
             .containsExactlyInAnyOrder(CaseType.ENFORCEMENT_STATUS_TAB_ROLES);
@@ -302,6 +312,7 @@ class CaseTypeTest {
         when(builder.tab("enforcementStatus", "Enforcement status"))
             .thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
     }

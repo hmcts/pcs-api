@@ -1,4 +1,4 @@
-@HDPI-7342 @enforcement @bailiff @pending
+@HDPI-7342 @enforcement @bailiff
 Feature: Add a bailiff note
   As a bailiff, bailiff administrator, bailiff manager, hearing centre team leader or hearing centre administrator
   I want to add notes about the enforcement
@@ -15,11 +15,16 @@ Feature: Add a bailiff note
 
     Examples:
       | role                       |
+      | hearing-centre-admin       |
+      | hearing-centre-team-leader |
+
+    # No bailiff, bailiff-admin or bailiff-manager test users yet (HDPI-7539).
+    @pending
+    Examples:
+      | role                       |
       | bailiff                    |
       | bailiff-admin              |
       | bailiff-manager            |
-      | hearing-centre-admin       |
-      | hearing-centre-team-leader |
 
   @HDPI-7593 @HDPI-7539
   Scenario Outline: Other users cannot add a bailiff note
@@ -33,7 +38,7 @@ Feature: Add a bailiff note
       | defendant legal representative |
       | judge                        |
 
-  @HDPI-7593 @open-question
+  @HDPI-7593 @open-question @pending
   Scenario: Bailiff note can be added in any live enforcement status and after closure
     Given I am signed in to XUI as a bailiff
     And the enforcement status is "<status>"
@@ -48,7 +53,7 @@ Feature: Add a bailiff note
       | Breathing space              |
       | Closed                       |
 
-  @HDPI-7593
+  @HDPI-7593 @pending
   Scenario: Add bailiff note screen
     Given I am signed in to XUI as a bailiff
     When I start the "Add a bailiff note" event
@@ -56,7 +61,7 @@ Feature: Add a bailiff note
     And I see the "Add note" text box
     And the "Previous" button is disabled
 
-  @HDPI-7593
+  @HDPI-7593 @pending
   Scenario Outline: Note validation
     Given I am signed in to XUI as a bailiff
     And I am on the "Add bailiff note" screen
@@ -69,7 +74,7 @@ Feature: Add a bailiff note
       | 6,801 characters     | the standard XUI error for too many characters |
       | Dog on site * (large) | the confirmation screen                  |
 
-  @HDPI-7593 @HDPI-7350
+  @HDPI-7593 @HDPI-7350 @pending
   Scenario: Saved note is shown on the risk assessment tab
     Given I am signed in to XUI as bailiff "Sam Jones"
     When I add the bailiff note "Rear gate is locked"
@@ -79,7 +84,7 @@ Feature: Add a bailiff note
     And the note cannot be edited
     And the note is visible to internal users only
 
-  @HDPI-7593
+  @HDPI-7593 @pending
   Scenario: Multiple notes are shown newest first
     Given the case has bailiff notes added on "1 Feb 2026" and "3 Feb 2026"
     When I open the "Risk assessment" tab

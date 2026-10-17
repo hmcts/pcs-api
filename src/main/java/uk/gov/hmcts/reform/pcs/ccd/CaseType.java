@@ -45,7 +45,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF,
+        AccessProfile.BAILIFF_ADMIN,
+        AccessProfile.BAILIFF_MANAGER
     };
     static final AccessProfile[] INTERNAL_TAB_ROLES = {
         AccessProfile.JUDGE,
@@ -54,7 +57,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF,
+        AccessProfile.BAILIFF_ADMIN,
+        AccessProfile.BAILIFF_MANAGER
     };
 
     static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
@@ -100,6 +106,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF,
+        AccessProfile.BAILIFF_ADMIN,
+        AccessProfile.BAILIFF_MANAGER,
         AccessProfile.CLAIMANT,
         AccessProfile.PCS_SOLICITOR,
         AccessProfile.GA_CLAIMANT_SOLICITOR
@@ -227,6 +236,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCasePaymentHistoryViewer);
 
         buildEnforcementStatusTab(builder);
+        buildRiskAssessmentTab(builder);
 
         if (shutterService) {
             builder.shutterService();
@@ -254,6 +264,18 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(ENFORCEMENT_STATUS_TAB_ROLES)
             .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "enforcements!=\"\""))
             .field("enforcements");
+    }
+
+    /**
+     * Enforcement risk assessment (HDPI-7350), shown once the claim has an enforcement. Only the bailiff notes
+     * (HDPI-7593) are built so far. The fields belong to enforcement, so they are named rather than referenced.
+     */
+    private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("riskAssessment", "Risk assessment")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .showCondition("enforcementStatus!=\"\"")
+            .field("enforcementStatus", NEVER_SHOW)
+            .field("bailiffNotes");
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

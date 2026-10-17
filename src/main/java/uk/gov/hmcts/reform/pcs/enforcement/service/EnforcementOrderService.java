@@ -122,6 +122,9 @@ public class EnforcementOrderService {
         // enforcement order JSON.
         enforcementOrder.setEnforcementStatus(null);
         enforcementOrder.setEnforcements(null);
+        // Bailiff notes are held on enf_bailiff_note, so do not copy the case view's notes into the JSON either.
+        enforcementOrder.setBailiffNotes(null);
+        enforcementOrder.setBailiffNoteText(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);

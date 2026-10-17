@@ -3,10 +3,12 @@ import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import {
+  canSignInAs,
   createIssuedCase,
   nextStepOptions,
   openCaseSummary,
   seedWarrantApplication,
+  signInAs,
   startEvent,
   xuiEvents,
 } from '../support/enforcement-journeys';
@@ -72,6 +74,14 @@ Given('there is no live enforcement on the case', async ({ world }) => {
   expect(world.enforcementSeeded, 'an enforcement seeded on the case').toBe(false);
 });
 
+// Internal users and the defendant's legal representative sign in in place of the storage-state user.
+Given('I am signed in to XUI as a {string}', async ({ page, context, $tags }, role: string) => {
+  if (!canSignInAs(role)) {
+    return markPending({ ticket: 'HDPI-7539', summary: `signing in as a ${role}: there is no ${role} test user yet` }, $tags);
+  }
+  await signInAs(role, page, context);
+});
+
 When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
@@ -91,6 +101,16 @@ Then('the {string} event is available in the next steps drop down', async ({ pag
     return markPending(eventNotBuilt(eventName), $tags);
   }
   await expect.poll(() => nextStepOptions(page)).toContain(event.label);
+});
+
+Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+  const event = xuiEvents[eventName];
+  if (!event) {
+    return markPending(eventNotBuilt(eventName), $tags);
+  }
+  // Wait for the drop down to load with the user's other events before checking this one is missing.
+  await expect.poll(async () => (await nextStepOptions(page)).length).toBeGreaterThan(0);
+  expect(await nextStepOptions(page)).not.toContain(event.label);
 });
 
 When('I start the {string} event', async ({ $tags }, eventName: string) => {
@@ -113,7 +133,6 @@ pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a role other than th
   'I am signed in to XUI as a bailiff manager',
   'I am signed in to XUI as a bailiff',
   'I am signed in to XUI as the allocated bailiff',
-  'I am signed in to XUI as a {string}',
   'I am signed in to XUI as bailiff {string}',
   'I am signed in as a defendant legal representative',
   'I am signed in to XUI as a bailiff with open enforcement tasks',
