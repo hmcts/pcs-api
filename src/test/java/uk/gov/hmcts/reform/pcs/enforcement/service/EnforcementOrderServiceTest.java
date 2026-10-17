@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -8,6 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -46,6 +48,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -76,6 +79,12 @@ class EnforcementOrderServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final Instant NOW = Instant.parse("2026-10-16T10:15:30Z");
+
+    @BeforeEach
+    void stubSaveToReturnTheEnforcementItWasGiven() {
+        lenient().when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+    }
 
     @Test
     void shouldReturnEnforcementOrderIfFoundInDatabase() {
@@ -177,7 +186,7 @@ class EnforcementOrderServiceTest {
 
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
-    void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
+    void shouldPersistTheEnforcementOrderBeforeTheStrategyRuns(SelectEnforcementType enforcementType) {
         // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         final ClaimEntity claimEntity = new ClaimEntity();
@@ -194,10 +203,9 @@ class EnforcementOrderServiceTest {
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
                 ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
-        inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
+        InOrder inOrder = inOrder(enforcementOrderRepository, strategy);
+        inOrder.verify(enforcementOrderRepository).save(any(EnforcementOrderEntity.class));
+        inOrder.verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getClaim()).isSameAs(claimEntity);
@@ -205,6 +213,22 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);
         assertThat(savedEntity.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
+    }
+
+    @Test
+    void shouldResolveTheTypeOfAnApplicationCarryingOnlyTheOldEnforcementTypeField() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementOrder.builder().selectEnforcementType(WRIT).build();
+        final EnforcementTypeStrategy strategy = mock(EnforcementTypeStrategy.class);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(WRIT)).thenReturn(strategy);
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(strategy).process(any(EnforcementOrderEntity.class), eq(enforcementOrder));
     }
 
     @ParameterizedTest
