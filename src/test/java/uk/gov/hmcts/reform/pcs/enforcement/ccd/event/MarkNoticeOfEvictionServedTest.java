@@ -57,7 +57,8 @@ class MarkNoticeOfEvictionServedTest extends BaseEventTest {
     void shouldBeGatedOnTheNoticeBeingDueAndTheEnforcementFeatureFlag() {
         assertConfiguredShowConditions(
             "featureFlags.enforcementEnabled=\"YES\" AND canMarkNoticeOfEvictionServed=\"Yes\"");
-        assertThat(configuredEvent.getName()).isEqualTo("Mark notice of eviction as served");
+        assertThat(configuredEvent.getName()).isEqualTo("Mark eviction notice served");
+        assertThat(configuredEvent.getName()).hasSizeLessThanOrEqualTo(30);
         assertThat(configuredEvent.isShowSummary()).isTrue();
         assertConfiguredForStates(AddBailiffNote.STATES);
         verify(configurer).configurePages(any());

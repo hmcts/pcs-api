@@ -61,8 +61,9 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
   // suite cannot set up yet, and there are no bailiff test users (HDPI-7539), so features 05, 07 and 08 stay @pending.
   'Schedule eviction': { label: 'Schedule eviction', firstPageHeader: 'Schedule eviction' },
   'Reschedule eviction': { label: 'Reschedule eviction', firstPageHeader: 'Reschedule eviction' },
+  // CCD caps event names at 30 characters, so pcs-api names this event "Mark eviction notice served".
   'Mark notice of eviction as served': {
-    label: 'Mark notice of eviction as served',
+    label: 'Mark eviction notice served',
     firstPageHeader: "Mark 'notice of eviction' as served",
   },
 };

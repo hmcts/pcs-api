@@ -57,7 +57,9 @@ public class MarkNoticeOfEvictionServed implements CCDConfig<PCSCase, State, Use
             configBuilder
                 .decentralisedEvent(markNoticeOfEvictionServed.name(), this::submit, this::start)
                 .forStates(AddBailiffNote.STATES)
-                .name("Mark notice of eviction as served")
+                // CCD rejects event names longer than 30 characters
+                .name("Mark eviction notice served")
+                .description("Mark notice of eviction as served")
                 .grant(Permission.CRUD, BAILIFF_STAFF_ROLES)
                 .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
