@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 
@@ -93,7 +94,8 @@ class DecideEnforcementSubmitHandlerTest {
     void shouldRefuseASubmissionWithNoDecision() {
         EventPayload<PCSCase, State> payload = payload(null, null);
 
-        assertThatThrownBy(() -> underTest.submit(payload)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> underTest.submit(payload))
+            .isInstanceOf(EnforcementEventNotAvailableException.class);
         verifyNoInteractions(enforcementDecisionService);
     }
 
@@ -101,7 +103,8 @@ class DecideEnforcementSubmitHandlerTest {
     void shouldRefuseASubmissionWithNoEnforcementOrder() {
         EventPayload<PCSCase, State> payload = new EventPayload<>(CASE_REFERENCE, PCSCase.builder().build(), null);
 
-        assertThatThrownBy(() -> underTest.submit(payload)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> underTest.submit(payload))
+            .isInstanceOf(EnforcementEventNotAvailableException.class);
         verifyNoInteractions(enforcementDecisionService);
     }
 

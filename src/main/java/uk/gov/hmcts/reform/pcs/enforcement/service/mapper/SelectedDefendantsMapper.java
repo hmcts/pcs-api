@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.enforcement.service.mapper;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -22,10 +24,13 @@ public class SelectedDefendantsMapper {
     public List<SelectedDefendantEntity> mapToEntities(
         EnforcementOrderEntity enforcementOrderEntity) {
 
+        EnforcementOrder enforcementOrder = enforcementOrderEntity.getEnforcementOrder();
+        RawWarrantDetails rawWarrantDetails =
+            enforcementOrder == null ? null : enforcementOrder.getRawWarrantDetails();
         DynamicMultiSelectStringList selectedDefendants =
-            enforcementOrderEntity.getEnforcementOrder().getRawWarrantDetails().getSelectedDefendants();
+            rawWarrantDetails == null ? null : rawWarrantDetails.getSelectedDefendants();
 
-        if (selectedDefendants == null) {
+        if (selectedDefendants == null || selectedDefendants.getValue() == null) {
             return Collections.emptyList();
         }
 

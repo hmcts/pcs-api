@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.boot.convert.ApplicationConversionService;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import uk.gov.hmcts.reform.pcs.enforcement.service.DraftEnforcementDeletionService;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -145,6 +147,22 @@ class EnforcementDraftDeletionScheduledTaskTest {
         // Then
         verify(executionOperations).stop();
         verify(executionOperations, never()).reschedule(any(ExecutionComplete.class), any(Instant.class));
+    }
+
+    @Test
+    void shouldBindABackoffDelayWithoutAUnitAsSeconds() {
+        new ApplicationContextRunner()
+                .withInitializer(context -> context.getBeanFactory()
+                        .setConversionService(ApplicationConversionService.getSharedInstance()))
+                .withBean(DraftEnforcementDeletionService.class, () -> draftEnforcementDeletionService)
+                .withBean(FeatureToggleService.class, () -> featureToggleService)
+                .withBean(EnforcementDraftDeletionScheduledTask.class)
+                .withPropertyValues(
+                        "enforcement-draft-deletion.schedule=DAILY|02:00",
+                        "enforcement-draft-deletion.discard-after-days=" + DISCARD_AFTER_DAYS,
+                        "enforcement-draft-deletion.request.backoff-delay-seconds=30")
+                .run(context -> assertThat(context.getBean(EnforcementDraftDeletionScheduledTask.class)
+                        .backoffDelay()).isEqualTo(Duration.ofSeconds(30)));
     }
 
     private EnforcementDraftDeletionScheduledTask newScheduledTask(String schedule) {

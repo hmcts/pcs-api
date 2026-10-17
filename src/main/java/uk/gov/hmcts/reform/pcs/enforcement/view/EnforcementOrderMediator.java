@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_NO_DATES;
 import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_WITH_DATES;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION;
 
 @Component
 @Slf4j
@@ -28,12 +29,24 @@ public class EnforcementOrderMediator {
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity != null && pcsCase != null) {
             getEnforcementOrder(pcsCaseEntity).ifPresent(enforcementOrderEntity ->
-                Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
+                dateToConfirm(enforcementOrderEntity)
                     .ifPresentOrElse(
                         date -> prepareEvictionWithDates(pcsCase, date),
                         () -> prepareEvictionWithNoDates(pcsCase)
                     ));
         }
+    }
+
+    /**
+     * The eviction date the claimant still has to confirm. A warrant keeps its bailiff date once it is closed,
+     * so the status decides whether the journey is offered: ClaimantEvictionConfirmationService only records
+     * an answer while the warrant is awaiting the claimant's confirmation.
+     */
+    private static Optional<LocalDateTime> dateToConfirm(EnforcementOrderEntity enforcementOrderEntity) {
+        if (enforcementOrderEntity.getStatus() != AWAITING_CLAIMANT_CONFIRMATION) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(enforcementOrderEntity.getBailiffDate());
     }
 
     /**

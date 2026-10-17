@@ -30,8 +30,8 @@ public class ClaimantEvictionConfirmationService {
     /**
      * Moves the live enforcement to "Claimant confirmed" or "Claimant unable to attend". This only happens
      * when it is awaiting the claimant's confirmation, which "Schedule eviction" and "Reschedule eviction" move it
-     * to (HDPI-7344, HDPI-7549). The journey is offered from the bailiff date rather than the status, so in any
-     * other case the status is left as it is.
+     * to (HDPI-7344, HDPI-7549). In any other case the status is left as it is: another user may have moved the
+     * warrant on while the journey was open.
      */
     @Transactional
     public void recordAttendance(long caseReference, YesOrNo canAttend) {

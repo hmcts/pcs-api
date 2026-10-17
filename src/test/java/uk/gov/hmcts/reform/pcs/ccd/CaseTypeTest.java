@@ -202,7 +202,8 @@ class CaseTypeTest {
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
 
         assertThat(riskAssessmentTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(riskAssessmentTab.getShowCondition()).isEqualTo("enforcementStatus!=\"\"");
+        assertThat(riskAssessmentTab.getShowCondition())
+            .isEqualTo("featureFlags.enforcementEnabled=\"YES\" AND enforcementStatus!=\"\"");
         assertThat(riskAssessmentTab.getFields()).extracting(TabField::getId)
             .containsExactly("enforcementStatus", "bailiffNotes", "currentRiskLevel", "currentRiskLevelReason");
         assertThat(riskAssessmentTab.getFields()).extracting(TabField::getShowCondition)

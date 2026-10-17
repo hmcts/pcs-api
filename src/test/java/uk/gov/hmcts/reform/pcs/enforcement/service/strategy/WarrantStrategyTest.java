@@ -77,6 +77,20 @@ class WarrantStrategyTest {
     }
 
     @Test
+    void shouldSubmitAWarrantThatHasNoWarrantDetails() {
+        // Given
+        enforcementOrder.setWarrantDetails(null);
+        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
+                .thenReturn(Collections.emptyList());
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(enforcementStatementOfTruthService).processStatementOfTruth(null, enforcementOrderEntity);
+    }
+
+    @Test
     void shouldNotAddEmptySelectedDefendants() {
         // Given
         List<SelectedDefendantEntity> selectedDefendantEntities = Collections.emptyList();

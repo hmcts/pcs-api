@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -99,6 +100,28 @@ class EnforcementOrderMediatorTest {
         assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
             .contains("You cannot enforce the order at the moment"));
         verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, mode = EnumSource.Mode.EXCLUDE,
+        names = "AWAITING_CLAIMANT_CONFIRMATION")
+    void shouldNotOfferTheJourneyWhenTheWarrantIsNotAwaitingTheClaimantsConfirmation(EnforcementStatus status) {
+        // Given a warrant that keeps its bailiff date after moving on, for example a closed one
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity enforcementOrderEntity =
+            createEnforcementOrderEntity(LocalDateTime.parse("2026-04-15T10:00:00"));
+        enforcementOrderEntity.setStatus(status);
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(enforcementOrderEntity));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertEquals(YesOrNo.NO, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains("You cannot enforce the order at the moment"));
     }
 
     @Test

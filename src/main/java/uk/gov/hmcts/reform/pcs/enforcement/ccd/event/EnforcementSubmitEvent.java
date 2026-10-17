@@ -8,17 +8,27 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementApplicationFee;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
-import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.getSelectEnforcementTypeFromName;
+import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
+
+/**
+ * Submits the enforcement application for "Enforce the order" and "Resume draft application": it writes the
+ * application to enf_case, deletes the draft and moves the claim to pending enforcement issued.
+ */
 @Component("enforcementSubmitEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
+
+    static final String NO_ENFORCEMENT_TYPE_ERROR =
+        "Select what you want to apply for before submitting this application";
 
     private final EnforcementOrderService enforcementOrderService;
 
@@ -27,24 +37,29 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         long caseReference = payload.caseReference();
         PCSCase pcsCase = payload.caseData();
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+
+        SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcementOrder);
+        if (enforcementType == null) {
+            return errorResponse(NO_ENFORCEMENT_TYPE_ERROR);
+        }
+        // Drafts are per user and organisation, so another claimant-side user may have submitted their own
+        // draft since this one was started. A claim can only have one live enforcement.
+        if (enforcementOrderService.hasLiveEnforcement(caseReference)) {
+            return errorResponse(LiveEnforcementExistsException.MESSAGE);
+        }
+
         enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         return SubmitResponse.<State>builder()
-            .confirmationBody(getPaymentConfirmationMarkdown(getFeeAmount(enforcementOrder), caseReference))
+            .confirmationBody(EnforcementApplicationFee.findAmount(enforcementOrder, enforcementType)
+                                  .map(feeAmount -> getPaymentConfirmationMarkdown(feeAmount, caseReference))
+                                  .orElse(null))
             .state(PENDING_ENFORCEMENT_ISSUED)
             .build();
     }
 
-    private String getFeeAmount(EnforcementOrder enforcementOrder) {
-        String enforcementType = enforcementOrder.getChooseEnforcementType().getValueCode();
-        SelectEnforcementType selectEnforcementType = getSelectEnforcementTypeFromName(enforcementType);
-        return switch (selectEnforcementType) {
-            case WARRANT -> enforcementOrder.getWarrantFeeAmount();
-            case WRIT -> enforcementOrder.getWritFeeAmount();
-            case WARRANT_OF_RESTITUTION,
-                 WRIT_OF_RESTITUTION ->
-                throw new IllegalArgumentException("Unimplemented enforcement type: " + selectEnforcementType);
-        };
+    private static SubmitResponse<State> errorResponse(String error) {
+        return SubmitResponse.<State>builder().errors(List.of(error)).build();
     }
 
     private static String getPaymentConfirmationMarkdown(String enforcementFee, long caseReference) {

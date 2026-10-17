@@ -23,11 +23,14 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDet
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnType;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffAllocationEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
+import uk.gov.hmcts.reform.pcs.enforcement.repository.BailiffAllocationRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -45,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
@@ -66,18 +70,25 @@ class WarrantReturnServiceTest {
     private WarrantReturnRepository warrantReturnRepository;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private BailiffAllocationRepository bailiffAllocationRepository;
+    @Mock
+    private EnforcementOrderRepository enforcementOrderRepository;
 
     private WarrantReturnService underTest;
 
     @BeforeEach
     void setUp() {
         Clock utcClock = Clock.fixed(NOW, ZoneOffset.UTC);
+        EnforcementStatusTransitions transitions = new EnforcementStatusTransitions(utcClock);
         underTest = new WarrantReturnService(
             currentEnforcementService,
             warrantReturnRepository,
-            new EnforcementStatusTransitions(utcClock),
+            transitions,
             new WarrantReturnValidator(Clock.fixed(NOW, UK_ZONE_ID)),
             securityContextService,
+            new BailiffAllocationService(currentEnforcementService, transitions, bailiffAllocationRepository,
+                                         enforcementOrderRepository, securityContextService, utcClock),
             utcClock,
             Clock.fixed(NOW, UK_ZONE_ID));
     }
@@ -246,6 +257,44 @@ class WarrantReturnServiceTest {
     }
 
     @Test
+    void shouldEndTheBailiffAllocationWhenAFinalReturnClosesTheWarrant() {
+        EnforcementOrderEntity warrant = givenWarrant(CLAIMANT_CONFIRMED);
+        BailiffAllocationEntity allocation = givenActiveAllocation(warrant);
+
+        underTest.recordReturn(CASE_REFERENCE, WarrantReturnDetails.builder()
+            .type(WarrantReturnType.FINAL)
+            .outcome(WarrantReturnOutcome.EVICTION_UNSUCCESSFUL)
+            .unsuccessfulReturnName(UnsuccessfulWarrantReturnName.WARRANT_EXPIRED)
+            .build());
+
+        assertThat(warrant.getStatus()).isEqualTo(CLOSED);
+        assertThat(allocation.getEndedAt()).isEqualTo(NOW);
+        verify(bailiffAllocationRepository).saveAllAndFlush(List.of(allocation));
+    }
+
+    @Test
+    void shouldLeaveAReopenedWarrantWithNoActiveBailiffAllocation() {
+        EnforcementOrderEntity warrant = givenWarrant(CLOSED);
+        BailiffAllocationEntity allocation = givenActiveAllocation(warrant);
+
+        underTest.recordReturn(CASE_REFERENCE, interim(InterimWarrantReturnName.REOPEN_WARRANT, "Suspension lifted"));
+
+        assertThat(warrant.getStatus()).isEqualTo(AWAITING_BAILIFF_ALLOCATION);
+        assertThat(allocation.getEndedAt()).isEqualTo(NOW);
+        verify(bailiffAllocationRepository).saveAllAndFlush(List.of(allocation));
+    }
+
+    @Test
+    void shouldKeepTheBailiffAllocationForAReturnThatLeavesTheWarrantLive() {
+        givenWarrant(CLAIMANT_CONFIRMED);
+
+        underTest.recordReturn(CASE_REFERENCE,
+                               interim(InterimWarrantReturnName.OBSTRUCTION_BY_DEFENDANTS, null));
+
+        verifyNoInteractions(bailiffAllocationRepository);
+    }
+
+    @Test
     void shouldNotRecordAnInvalidReturn() {
         EnforcementOrderEntity warrant = givenWarrant(CLAIMANT_CONFIRMED);
 
@@ -347,6 +396,17 @@ class WarrantReturnServiceTest {
         EnforcementOrderEntity warrant = enforcement(SelectEnforcementType.WARRANT, status);
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(warrant));
         return warrant;
+    }
+
+    private BailiffAllocationEntity givenActiveAllocation(EnforcementOrderEntity warrant) {
+        BailiffAllocationEntity allocation = BailiffAllocationEntity.builder()
+            .enforcementOrder(warrant)
+            .bailiffUserId("bailiff-user-id")
+            .startedAt(NOW.minusSeconds(7200))
+            .build();
+        when(bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(warrant.getId()))
+            .thenReturn(List.of(allocation));
+        return allocation;
     }
 
     private WarrantReturnEntity savedReturn() {

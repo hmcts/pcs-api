@@ -11,9 +11,12 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetails
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.StatementOfTruthMapper;
 
+import java.time.Clock;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,5 +52,20 @@ class EnforcementStatementOfTruthServiceTest {
         // Then
         assertThat(enforcementOrderEntity.getStatementOfTruth()).isEqualTo(savedStatementOfTruthEntity);
         verify(statementOfTruthRepository).save(statementOfTruthEntity);
+    }
+
+    @Test
+    void shouldPersistNothingWhenTheApplicationCapturedNoStatementOfTruth() {
+        // Given the real mapper, which is what dereferences the statement of truth
+        EnforcementStatementOfTruthService underTest = new EnforcementStatementOfTruthService(
+            new StatementOfTruthMapper(Clock.systemUTC()), statementOfTruthRepository);
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+
+        // When
+        underTest.processStatementOfTruth(null, enforcementOrderEntity);
+
+        // Then
+        assertThat(enforcementOrderEntity.getStatementOfTruth()).isNull();
+        verifyNoInteractions(statementOfTruthRepository);
     }
 }
