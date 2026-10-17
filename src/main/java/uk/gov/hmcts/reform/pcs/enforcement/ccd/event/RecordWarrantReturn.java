@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailabl
 import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
+import uk.gov.hmcts.reform.pcs.enforcement.util.AfterCommit;
 
 import java.util.List;
 
@@ -70,6 +71,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         recordWarrantReturnConfigurer.configurePages(new PageBuilder(eventBuilder));
+        SummaryFields.excludeNeverShownFields(eventBuilder);
     }
 
     /**
@@ -114,13 +116,19 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             .build();
     }
 
-    // The return is saved by now, so a failure to schedule the email must not fail the event.
+    /**
+     * Schedules the claimant's email once the submit transaction has committed, so the claimant is never
+     * told about a return that was rolled back. The notification service runs in its own transaction, and a
+     * failure to schedule is only logged, so Notify can never undo the recorded return.
+     */
     private void notifyClaimant(long caseReference, WarrantReturnName returnName, String additionalDetails) {
-        try {
-            warrantReturnNotificationService.notifyClaimant(caseReference, returnName, additionalDetails);
-        } catch (RuntimeException ex) {
-            log.error("Failed to schedule the warrant return email for case {}", caseReference, ex);
-        }
+        AfterCommit.run(() -> {
+            try {
+                warrantReturnNotificationService.notifyClaimant(caseReference, returnName, additionalDetails);
+            } catch (RuntimeException ex) {
+                log.error("Failed to schedule the warrant return email for case {}", caseReference, ex);
+            }
+        });
     }
 
     private static SubmitResponse<State> errorResponse(List<String> errors) {

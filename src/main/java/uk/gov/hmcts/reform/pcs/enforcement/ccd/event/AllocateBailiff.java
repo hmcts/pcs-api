@@ -63,6 +63,7 @@ public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         allocateBailiffConfigurer.configurePages(new PageBuilder(eventBuilder));
+        SummaryFields.excludeNeverShownFields(eventBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

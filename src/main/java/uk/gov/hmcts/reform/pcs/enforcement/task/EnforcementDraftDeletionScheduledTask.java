@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.enforcement.task;
 import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
+import com.github.kagkarlsson.scheduler.task.schedule.Schedule;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,11 +54,15 @@ public class EnforcementDraftDeletionScheduledTask {
 
     @Bean
     public RecurringTask<Void> enforcementDraftDeletionTask() {
-        return Tasks.recurring(ENFORCEMENT_DRAFT_DELETION_TASK, Schedules.parseSchedule(schedule))
+        Schedule parsedSchedule = Schedules.parseSchedule(schedule);
+        return Tasks.recurring(ENFORCEMENT_DRAFT_DELETION_TASK, parsedSchedule)
+                // Once the retries are used up, fall back to the recurring schedule rather than
+                // ExecutionOperations.stop(): stop() deletes the execution row, and a RecurringTask only
+                // recreates it when the scheduler starts, so a run of failures would stop draft deletion
+                // until the pod restarted.
                 .onFailure(FailureHandler.<Void>maxRetries(maxRetries)
                         .withBackoff(backoffDelay)
-                        .then((executionComplete, executionOperations)
-                                -> executionOperations.stop()))
+                        .then(new FailureHandler.OnFailureReschedule<>(parsedSchedule)))
                 .execute((taskInstance, executionContext) -> runSweep());
     }
 
