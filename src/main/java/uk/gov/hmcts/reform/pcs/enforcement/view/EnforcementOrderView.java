@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +63,7 @@ public class EnforcementOrderView {
     }
 
     private static ListValue<EnforcementSummary> toSummaryListValue(EnforcementOrderEntity enforcement) {
-        SelectEnforcementType type = enforcementTypeOf(enforcement.getEnforcementOrder());
+        SelectEnforcementType type = SelectEnforcementType.from(enforcement.getEnforcementOrder());
         EnforcementSummary summary = EnforcementSummary.builder()
             .enforcementType(type)
             .enforcementNumber(enforcement.getEnforcementNumber())
@@ -82,25 +80,6 @@ public class EnforcementOrderView {
 
     private static LocalDate toUkDate(Instant instant) {
         return instant != null ? instant.atZone(UK_ZONE_ID).toLocalDate() : null;
-    }
-
-    /**
-     * The type chosen in "Enforce the order", or null if the stored application does not record a known one.
-     */
-    private static SelectEnforcementType enforcementTypeOf(EnforcementOrder enforcementOrder) {
-        if (enforcementOrder == null) {
-            return null;
-        }
-        String code = Optional.ofNullable(enforcementOrder.getChooseEnforcementType())
-            .map(DynamicStringList::getValueCode)
-            .orElse(null);
-        if (code == null) {
-            return enforcementOrder.getSelectEnforcementType();
-        }
-        return Arrays.stream(SelectEnforcementType.values())
-            .filter(type -> type.name().equals(code))
-            .findFirst()
-            .orElse(null);
     }
 
     private void setHasEnforcementDraftData(long caseReference, State state, PCSCase pcsCase) {

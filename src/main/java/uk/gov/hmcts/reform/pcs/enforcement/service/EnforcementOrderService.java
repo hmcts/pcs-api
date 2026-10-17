@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementApplicationFee;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
@@ -15,8 +16,10 @@ import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -38,17 +41,19 @@ public class EnforcementOrderService {
         return enforcementEntities
                 .stream()
                 .map(EnforcementOrderEntity::getEnforcementOrder)
-                .filter(order ->
-                        order.getChooseEnforcementType().getValue().getCode().equals(enforcementType.name()))
+                .filter(order -> SelectEnforcementType.from(order) == enforcementType)
                 .findFirst()
                 .orElse(null);
     }
 
+    /**
+     * The case's claim. Enforcement assumes one claim per case, as the rest of the service does.
+     *
+     * @throws ClaimNotFoundException if the case has no claim
+     */
     ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
-        List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
-
-        // Assuming 1 claim per PcsCase
-        return claimEntities.getFirst();
+        return Optional.ofNullable(pcsCaseEntity.getMainClaim())
+                .orElseThrow(() -> new ClaimNotFoundException(pcsCaseEntity.getCaseReference()));
     }
 
     /**
@@ -71,20 +76,21 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
+        SelectEnforcementType enforcementType = SelectEnforcementType.getSelectEnforcementTypeFromName(
+                enforcementOrder.getChooseEnforcementType().getValueCode());
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, claimEntity);
         enforcementStatusTransitions.transition(enforcementOrderEntity,
-            EnforcementStatusTransitions.initialStatus(isPaymentOutstanding()));
-        strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
-                        enforcementOrder.getChooseEnforcementType().getValueCode()))
-                .process(enforcementOrderEntity, enforcementOrder);
+            EnforcementStatusTransitions.initialStatus(isPaymentOutstanding(enforcementType)));
+        strategyFactory.getStrategy(enforcementType).process(enforcementOrderEntity, enforcementOrder);
         enforcementOrderRepository.save(enforcementOrderEntity);
     }
 
     /**
-     * Every application owes a fee when it is submitted: no fee exemption exists yet (a free repeat warrant,
-     * HDPI-8424, is still to be agreed) and the fee is not taken during submit. The fee amounts on the
-     * submitted case data come from the client, so they are not used to decide this.
+     * An application for a type with a fee owes it when it is submitted: no fee exemption exists yet (a free
+     * repeat warrant, HDPI-8424, is still to be agreed) and the fee is not taken during submit. An application
+     * for a type with no fee, which is either restitution type, owes nothing and goes straight to review. The
+     * fee amounts on the submitted case data come from the client, so they are not used to decide this.
      *
      * <p>TODO HDPI-8424: WarrantReturnService#isNextWarrantFree answers whether a further warrant is free from
      * the return history. It is not used here until the fee exemption is agreed (OPEN-QUESTIONS 6).</p>
@@ -94,8 +100,8 @@ public class EnforcementOrderService {
      * lands, its PAID path should call {@code enforcementStatusTransitions.transition(entity, AWAITING_REVIEW)}
      * from inside this package (it must link the fee payment to the enf_case id to find the entity).
      */
-    private static boolean isPaymentOutstanding() {
-        return true;
+    private static boolean isPaymentOutstanding(SelectEnforcementType enforcementType) {
+        return EnforcementApplicationFee.isPayable(enforcementType);
     }
 
     /**

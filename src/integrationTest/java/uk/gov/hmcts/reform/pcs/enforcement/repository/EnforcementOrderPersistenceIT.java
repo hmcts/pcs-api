@@ -8,7 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -16,10 +20,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.StatementOfTruthRepository;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.event.EnforcementSubmitEvent;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +53,9 @@ class EnforcementOrderPersistenceIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private PcsCaseRepository pcsCaseRepository;
+
+    @Autowired
+    private EnforcementSubmitEvent enforcementSubmitEvent;
 
     @Autowired
     private EntityManager entityManager;
@@ -88,6 +102,42 @@ class EnforcementOrderPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(enforcementOrderRepository.findByClaimId(claim.getId()))
             .extracting(EnforcementOrderEntity::getId)
             .containsExactly(enforcementOrderId);
+    }
+
+    @Test
+    @DisplayName("refuses a submitted application while the claim already has a live one")
+    void refusesASecondLiveEnforcementOnSubmit() {
+        long caseReference = 6789678967896789L;
+        ClaimEntity claim = savedClaim(caseReference);
+        EnforcementOrderEntity live = enforcementOrder(claim);
+        live.setStatus(EnforcementStatus.AWAITING_REVIEW);
+        live.setStatusUpdatedAt(Instant.now());
+        final UUID liveId = enforcementOrderRepository.save(live).getId();
+        entityManager.flush();
+        entityManager.clear();
+
+        SubmitResponse<State> response = enforcementSubmitEvent.submit(submitPayload(caseReference));
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(response.getErrors()).containsExactly(LiveEnforcementExistsException.MESSAGE);
+        assertThat(response.getState()).isNull();
+        assertThat(enforcementOrderRepository.findByClaimId(claim.getId()))
+            .extracting(EnforcementOrderEntity::getId)
+            .containsExactly(liveId);
+    }
+
+    private static EventPayload<PCSCase, State> submitPayload(long caseReference) {
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .chooseEnforcementType(DynamicStringList.builder()
+                                       .value(DynamicStringListElement.builder()
+                                                  .code(SelectEnforcementType.WARRANT.name())
+                                                  .build())
+                                       .build())
+            .build();
+        return new EventPayload<>(caseReference,
+                                  PCSCase.builder().enforcementOrder(enforcementOrder).build(),
+                                  null);
     }
 
     private ClaimEntity savedClaim(long caseReference) {

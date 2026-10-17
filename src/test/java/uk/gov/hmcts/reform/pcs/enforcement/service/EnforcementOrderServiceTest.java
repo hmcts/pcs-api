@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -24,8 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategy;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -36,6 +39,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -109,6 +113,54 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
+    void shouldFindAnApplicationStoredBeforeTheDynamicListReplacedTheType() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        EnforcementOrderEntity legacyEntity = new EnforcementOrderEntity();
+        legacyEntity.setEnforcementOrder(EnforcementOrder.builder().selectEnforcementType(WARRANT).build());
+        when(enforcementOrderRepository.findByClaimId(claimId)).thenReturn(List.of(legacyEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        EnforcementOrder retrieved = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
+
+        // Then
+        assertThat(retrieved).isSameAs(legacyEntity.getEnforcementOrder());
+    }
+
+    @Test
+    void shouldIgnoreAStoredApplicationThatRecordsNoEnforcementType() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        EnforcementOrderEntity noType = new EnforcementOrderEntity();
+        noType.setEnforcementOrder(EnforcementOrder.builder().build());
+        EnforcementOrderEntity noSelectedValue = new EnforcementOrderEntity();
+        noSelectedValue.setEnforcementOrder(
+            EnforcementOrder.builder().chooseEnforcementType(DynamicStringList.builder().build()).build());
+        when(enforcementOrderRepository.findByClaimId(claimId)).thenReturn(List.of(noType, noSelectedValue));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        EnforcementOrder retrieved = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
+
+        // Then
+        assertThat(retrieved).isNull();
+    }
+
+    @Test
+    void shouldReportAMissingClaimRatherThanFailingOnAnEmptyList() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setCaseReference(CASE_REFERENCE);
+        pcsCaseEntity.setClaims(List.of());
+
+        // When // Then
+        assertThatThrownBy(() -> enforcementOrderService.retrieveClaimEntity(pcsCaseEntity))
+            .isInstanceOf(ClaimNotFoundException.class)
+            .hasMessage("No claim found for case reference " + CASE_REFERENCE);
+    }
+
+    @Test
     void shouldReturnFirstClaimFromPcsCaseEntity() {
         // Given
         final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -153,6 +205,25 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);
         assertThat(savedEntity.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SelectEnforcementType.class, names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
+    void shouldStartAnApplicationWithNoFeeAwaitingReview(SelectEnforcementType enforcementType) {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(enforcementType)).thenReturn(mock(EnforcementTypeStrategy.class));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
+        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        assertThat(savedCaptor.getValue().getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
+        assertThat(savedCaptor.getValue().getStatusUpdatedAt()).isEqualTo(NOW);
     }
 
     @Test
