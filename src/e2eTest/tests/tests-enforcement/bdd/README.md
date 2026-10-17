@@ -42,6 +42,8 @@ When a journey is built, swap its expressions in `pendingSteps(...)` for real st
 
 - Journey 01: "Enforce the order" for a warrant of possession, writ of possession and warrant of restitution (up to the status check, which is pending on HDPI-7419). The warrant of restitution is only offered once a warrant exists, so the step seeds one through the API first.
 - Journey 06: "Confirm the eviction date" availability and start. pcs-api calls the event "Confirm the eviction details".
+- Journey 02: "Decide enforcement" as a hearing centre admin: the mandatory decision, cancel, check your answers and change, approving a warrant of possession (confirmation and warrant number) and rejecting (confirmation). pcs-api cannot take the enforcement fee yet (HDPI-2877), so the background seeds a warrant application through the API and moves it to "Awaiting review" with the `POST /testing-support/enforcement/{caseReference}/fee-paid` testing-support endpoint. Documents, notifications, the WA task, the status tab and writs stay pending.
+- Journey 12: the claimant legal representative sees the "Enforcement status" tab once a warrant application is on the case. The warrant is a submitted application rather than an approved, generated one, because "Decide enforcement" (HDPI-8656) does not exist yet.
 - Journey 10: "Add a bailiff note" is offered to a hearing centre admin and team leader, and not to the claimant's or defendant's legal representative or a judge. The scenarios that sign in as a bailiff, bailiff admin or bailiff manager stay `@pending` until those test users exist (HDPI-7539).
 
 Each scenario creates its own case through the API. The case reference in the feature files is illustrative.

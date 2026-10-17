@@ -58,12 +58,33 @@ class CurrentEnforcementServiceTest {
     }
 
     @Test
-    void shouldTreatAnEnforcementWithNoStatusAsNotLive() {
+    void shouldIgnoreAnEnforcementWithNoStatus() {
         EnforcementOrderEntity noStatus = enforcement(null, LATER);
         EnforcementOrderEntity live = enforcement(EnforcementStatus.AWAITING_PAYMENT, EARLIER);
         when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(noStatus, live));
 
         assertThat(underTest.findCurrentEnforcement(caseWithClaim())).contains(live);
+        assertThat(underTest.findEnforcementsCurrentFirst(caseWithClaim())).containsExactly(live);
+    }
+
+    @Test
+    void shouldFindNothingWhenNoEnforcementHasAStatus() {
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(enforcement(null, LATER)));
+
+        assertThat(underTest.findCurrentEnforcement(caseWithClaim())).isEmpty();
+    }
+
+    @Test
+    void shouldListEveryEnforcementCurrentFirst() {
+        EnforcementOrderEntity live = enforcement(EnforcementStatus.AWAITING_SCHEDULING, EARLIER);
+        EnforcementOrderEntity laterRejected = enforcement(EnforcementStatus.REJECTED, LATER);
+        EnforcementOrderEntity olderClosed = enforcement(EnforcementStatus.CLOSED, EARLIER);
+        EnforcementOrderEntity unknownTime = enforcement(EnforcementStatus.CLOSED, null);
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID))
+            .thenReturn(List.of(unknownTime, olderClosed, live, laterRejected));
+
+        assertThat(underTest.findEnforcementsCurrentFirst(caseWithClaim()))
+            .containsExactly(live, laterRejected, olderClosed, unknownTime);
     }
 
     @Test
@@ -80,6 +101,7 @@ class CurrentEnforcementServiceTest {
 
         assertThat(underTest.findCurrentEnforcement(noClaims)).isEmpty();
         assertThat(underTest.findCurrentEnforcement((PcsCaseEntity) null)).isEmpty();
+        assertThat(underTest.findEnforcementsCurrentFirst(null)).isEmpty();
         verifyNoInteractions(enforcementOrderRepository);
     }
 

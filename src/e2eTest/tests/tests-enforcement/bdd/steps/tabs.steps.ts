@@ -1,5 +1,44 @@
 // Enforcement status tab, risk assessment tab, case file view documents and defendant visibility (features 12-14).
-import { pendingSteps } from '../fixtures/pending';
+import { Given, Then } from '../fixtures/enforcement.fixtures';
+import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
+import { expectCaseTab, seedWarrantApplication } from '../support/enforcement-journeys';
+
+/** Tabs the steps can check today, with the ticket that delivers each of the others. */
+const builtTabs = ['Enforcement status'];
+const tabTickets: Record<string, string> = { 'Risk assessment': 'HDPI-7350' };
+
+function tabNotBuilt(tabName: string) {
+  return { ticket: tabTickets[tabName], summary: `the "${tabName}" tab` };
+}
+
+Given('the case has a warrant of possession', async ({ world }) => {
+  approximatePrecondition('HDPI-8656', 'the warrant is a submitted application: "Decide enforcement" does not approve and generate it yet');
+  await seedWarrantApplication(world);
+});
+
+Given('the notice of eviction {string}', async ({ $tags }, served: string) => {
+  if (served !== 'has not been served') {
+    return markPending({ ticket: 'HDPI-7346', summary: 'the "Mark notice of eviction as served" event' }, $tags);
+  }
+  // True by construction: nothing can mark the notice of eviction as served yet.
+});
+
+Then('the {string} tab is {string}', async ({ page, $tags }, tabName: string, visibility: string) => {
+  if (!builtTabs.includes(tabName)) {
+    return markPending(tabNotBuilt(tabName), $tags);
+  }
+  if (visibility !== 'shown' && visibility !== 'hidden') {
+    throw new Error(`Unknown tab visibility "${visibility}". Expected "shown" or "hidden"`);
+  }
+  await expectCaseTab(page, tabName, visibility === 'shown');
+});
+
+Then('there is no {string} tab', async ({ page, $tags }, tabName: string) => {
+  if (!builtTabs.includes(tabName)) {
+    return markPending(tabNotBuilt(tabName), $tags);
+  }
+  await expectCaseTab(page, tabName, false);
+});
 
 pendingSteps({ ticket: 'HDPI-8442', summary: 'Enforcement documents in case file view' }, [
   'an {string} folder is created in case file view',
@@ -15,7 +54,6 @@ pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
   'the {string} tab shows my answers under {string}',
   'I am on the {string} tab',
   'the case has no generated warrant or writ',
-  'there is no {string} tab',
   'the case has a warrant of possession {string}',
   'a bailiff opens the {string} tab',
   'I see {string} as a heading',
@@ -29,9 +67,6 @@ pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
   'the case has a closed warrant {string} generated on {string}',
   'a live warrant of restitution {string} generated on {string}',
   '{string} is listed above {string}',
-  'the case has a warrant of possession',
-  'the notice of eviction {string}',
-  'the {string} tab is {string}',
   'the case has a writ of possession',
   'the case header shows the case number and property address',
   'the case header does not show {string}',
