@@ -8,12 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.util.List;
@@ -48,51 +46,59 @@ public class EnforcementDecisionService {
      * Approves the application: a warrant goes on to bailiff allocation, a writ is transferred to the High Court.
      * Gives it a warrant or writ number and records when it was approved.
      *
-     * @throws NoEnforcementAwaitingReviewException if no application is awaiting review
+     * <p>Returns empty, rather than throwing, when the claim has no application awaiting review: the submit
+     * handler runs inside the transaction the SDK opens for the event, so an exception out of this method would
+     * mark that transaction rollback-only and the caller could not turn it into an error for the caseworker.</p>
+     *
+     * @return the outcome, or empty if no application is awaiting review
      */
     @Transactional
-    public EnforcementDecisionOutcome accept(long caseReference) {
-        EnforcementOrderEntity enforcement = awaitingReview(caseReference);
-        SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
+    public Optional<EnforcementDecisionOutcome> accept(long caseReference) {
+        return findAwaitingReview(caseReference).map(enforcement -> {
+            SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
 
-        enforcementStatusTransitions.transition(enforcement, approvedStatus(enforcementType));
-        enforcement.setApprovedAt(enforcement.getStatusUpdatedAt());
-        String enforcementNumber = enforcementNumberGenerator.next(enforcementType);
-        enforcement.setEnforcementNumber(enforcementNumber);
+            enforcementStatusTransitions.transition(enforcement, approvedStatus(enforcementType));
+            enforcement.setApprovedAt(enforcement.getStatusUpdatedAt());
+            String enforcementNumber = enforcementNumberGenerator.next(enforcementType);
+            enforcement.setEnforcementNumber(enforcementNumber);
 
-        // TODO HDPI-9566: generate the sealed warrant (county court seal, internal users only) or writ (High Court
-        //  seal, claimant and internal users), in Welsh when the claimant asked for Welsh documents, and store it
-        //  in the "Enforcement" folder. The Docmosis templates are not in pcs-api yet, so no document is made here.
-        // TODO HDPI-7538: email the claimant ("Caseworker generates the warrant of possession" / "Application for a
-        //  writ successful"). Enforcement has no Notify templates yet.
-        enforcementOrderRepository.save(enforcement);
-        log.info("Enforcement {} on case {} approved as {}", enforcement.getId(), caseReference, enforcementNumber);
-        return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.ACCEPT, enforcementNumber);
+            // TODO HDPI-9566: generate the sealed warrant (county court seal, internal users only) or writ (High
+            //  Court seal, claimant and internal users), in Welsh when the claimant asked for Welsh documents, and
+            //  store it in the "Enforcement" folder. The Docmosis templates are not in pcs-api yet, so no document
+            //  is made here.
+            // TODO HDPI-7538: email the claimant ("Caseworker generates the warrant of possession" / "Application
+            //  for a writ successful"). Enforcement has no Notify templates yet.
+            enforcementOrderRepository.save(enforcement);
+            log.info("Enforcement {} on case {} approved as {}", enforcement.getId(), caseReference,
+                     enforcementNumber);
+            return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.ACCEPT, enforcementNumber);
+        });
     }
 
     /**
      * Rejects the application. No number is given, and the claimant can apply again because a rejected
      * enforcement is not live.
      *
-     * @throws NoEnforcementAwaitingReviewException if no application is awaiting review
+     * @return the outcome, or empty if no application is awaiting review
      * @throws EnforcementEventNotAvailableException if no rejection reason was given
      */
     @Transactional
-    public EnforcementDecisionOutcome reject(long caseReference, String rejectionReason) {
+    public Optional<EnforcementDecisionOutcome> reject(long caseReference, String rejectionReason) {
         if (StringUtils.isBlank(rejectionReason)) {
             throw new EnforcementEventNotAvailableException(NO_REJECTION_REASON_MESSAGE);
         }
-        EnforcementOrderEntity enforcement = awaitingReview(caseReference);
-        final SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
+        return findAwaitingReview(caseReference).map(enforcement -> {
+            final SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
 
-        enforcementStatusTransitions.transition(enforcement, REJECTED);
-        enforcement.setRejectionReason(rejectionReason.trim());
+            enforcementStatusTransitions.transition(enforcement, REJECTED);
+            enforcement.setRejectionReason(rejectionReason.trim());
 
-        // TODO HDPI-7538: email the claimant ("Caseworker rejects the warrant of possession application").
-        //  Enforcement has no Notify templates yet.
-        enforcementOrderRepository.save(enforcement);
-        log.info("Enforcement {} on case {} rejected", enforcement.getId(), caseReference);
-        return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.REJECT, null);
+            // TODO HDPI-7538: email the claimant ("Caseworker rejects the warrant of possession application").
+            //  Enforcement has no Notify templates yet.
+            enforcementOrderRepository.save(enforcement);
+            log.info("Enforcement {} on case {} rejected", enforcement.getId(), caseReference);
+            return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.REJECT, null);
+        });
     }
 
     static EnforcementStatus approvedStatus(SelectEnforcementType enforcementType) {
@@ -100,10 +106,6 @@ public class EnforcementDecisionService {
             case WARRANT, WARRANT_OF_RESTITUTION -> AWAITING_BAILIFF_ALLOCATION;
             case WRIT, WRIT_OF_RESTITUTION -> TRANSFERRED_TO_HIGH_COURT;
         };
-    }
-
-    private EnforcementOrderEntity awaitingReview(long caseReference) {
-        return findAwaitingReview(caseReference).orElseThrow(NoEnforcementAwaitingReviewException::new);
     }
 
     private Optional<EnforcementOrderEntity> findAwaitingReview(long caseReference) {
@@ -118,15 +120,10 @@ public class EnforcementDecisionService {
     }
 
     private static SelectEnforcementType enforcementTypeOf(EnforcementOrderEntity enforcement) {
-        EnforcementOrder enforcementOrder = enforcement.getEnforcementOrder();
-        if (enforcementOrder != null && enforcementOrder.getChooseEnforcementType() != null
-            && enforcementOrder.getChooseEnforcementType().getValueCode() != null) {
-            return SelectEnforcementType.getSelectEnforcementTypeFromName(
-                enforcementOrder.getChooseEnforcementType().getValueCode());
+        SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcement.getEnforcementOrder());
+        if (enforcementType == null) {
+            throw new IllegalStateException("Enforcement %s has no enforcement type".formatted(enforcement.getId()));
         }
-        if (enforcementOrder != null && enforcementOrder.getSelectEnforcementType() != null) {
-            return enforcementOrder.getSelectEnforcementType();
-        }
-        throw new IllegalStateException("Enforcement %s has no enforcement type".formatted(enforcement.getId()));
+        return enforcementType;
     }
 }

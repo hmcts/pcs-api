@@ -99,9 +99,14 @@ public class EnforcementOrderView {
     }
 
     /**
-     * The draft replaces the case's enforcement order, but the fields below are derived for the
-     * case view (or only set during an event) rather than taken from the draft, so keep the
-     * current values. A draft with no enforcement order keeps the current order.
+     * The draft replaces the case's enforcement order, but the fields below are derived for the case view
+     * rather than taken from the draft, so keep the current values. A draft with no enforcement order keeps
+     * the current order.
+     *
+     * <p>The formatted property address and defendant names are the other way round: only enforceTheOrder's
+     * start callback and the first page's mid event write them, so the draft holds the real values and the
+     * case view has none. Keeping the draft's values is what makes them survive into
+     * resumeEnforcementOrder, which has no start callback to work them out again.</p>
      */
     private static EnforcementOrder keepViewFields(EnforcementOrder draftOrder, EnforcementOrder currentOrder) {
         if (draftOrder == null) {
@@ -110,10 +115,15 @@ public class EnforcementOrderView {
         EnforcementOrder current = currentOrder != null ? currentOrder : new EnforcementOrder();
         draftOrder.setConfirmEvictionSummaryMarkup(current.getConfirmEvictionSummaryMarkup());
         draftOrder.setShowConfirmEvictionJourney(current.getShowConfirmEvictionJourney());
-        draftOrder.setFormattedDefendantNames(current.getFormattedDefendantNames());
-        draftOrder.setFormattedPropertyAddress(current.getFormattedPropertyAddress());
+        draftOrder.setFormattedEvictionDate(current.getFormattedEvictionDate());
         draftOrder.setEnforcementStatus(current.getEnforcementStatus());
         draftOrder.setEnforcements(current.getEnforcements());
+        if (draftOrder.getFormattedDefendantNames() == null) {
+            draftOrder.setFormattedDefendantNames(current.getFormattedDefendantNames());
+        }
+        if (draftOrder.getFormattedPropertyAddress() == null) {
+            draftOrder.setFormattedPropertyAddress(current.getFormattedPropertyAddress());
+        }
         return draftOrder;
     }
 

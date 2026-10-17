@@ -60,6 +60,7 @@ public class EnforcementOrderMediator {
     private void prepareEvictionWithDates(PCSCase pcsCase, LocalDateTime localDateTime) {
         EnforcementOrder enforcementOrder = enforcementOrderOf(pcsCase);
         enforcementOrder.setShowConfirmEvictionJourney(YesOrNo.YES);
+        enforcementOrder.setFormattedEvictionDate(formatDate(localDateTime));
         enforcementOrder.setConfirmEvictionSummaryMarkup(String.format(
             CONFIRM_EVICTION_SUMMARY_WITH_DATES,
             formatDate(localDateTime),
@@ -69,6 +70,7 @@ public class EnforcementOrderMediator {
     private void prepareEvictionWithNoDates(PCSCase pcsCase) {
         EnforcementOrder enforcementOrder = enforcementOrderOf(pcsCase);
         enforcementOrder.setShowConfirmEvictionJourney(YesOrNo.NO);
+        enforcementOrder.setFormattedEvictionDate(null);
         enforcementOrder.setConfirmEvictionSummaryMarkup(CONFIRM_EVICTION_SUMMARY_NO_DATES);
     }
 

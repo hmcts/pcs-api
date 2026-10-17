@@ -20,13 +20,13 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -101,9 +101,9 @@ class EnforcementDecisionServiceTest {
         EnforcementOrderEntity enforcement = givenAwaitingReview(type);
         when(enforcementNumberGenerator.next(type)).thenReturn(number);
 
-        EnforcementDecisionOutcome outcome = underTest.accept(CASE_REFERENCE);
+        Optional<EnforcementDecisionOutcome> outcome = underTest.accept(CASE_REFERENCE);
 
-        assertThat(outcome).isEqualTo(new EnforcementDecisionOutcome(type, EnforcementDecision.ACCEPT, number));
+        assertThat(outcome).contains(new EnforcementDecisionOutcome(type, EnforcementDecision.ACCEPT, number));
         assertThat(enforcement.getStatus()).isEqualTo(approvedStatus);
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         assertThat(enforcement.getApprovedAt()).isEqualTo(NOW);
@@ -133,11 +133,10 @@ class EnforcementDecisionServiceTest {
     }
 
     @Test
-    void shouldRefuseToApproveWhenNoApplicationIsAwaitingReview() {
+    void shouldApproveNothingWhenNoApplicationIsAwaitingReview() {
         when(enforcementOrderRepository.findByClaimIdAndStatus(CLAIM_ID, AWAITING_REVIEW)).thenReturn(List.of());
 
-        assertThatThrownBy(() -> underTest.accept(CASE_REFERENCE))
-            .isInstanceOf(NoEnforcementAwaitingReviewException.class);
+        assertThat(underTest.accept(CASE_REFERENCE)).isEmpty();
         verifyNoInteractions(enforcementNumberGenerator);
         verify(enforcementOrderRepository, never()).save(any());
     }
@@ -146,9 +145,10 @@ class EnforcementDecisionServiceTest {
     void shouldRejectTheApplicationWithTheReasonAndNoNumber() {
         EnforcementOrderEntity enforcement = givenAwaitingReview(SelectEnforcementType.WARRANT);
 
-        EnforcementDecisionOutcome outcome = underTest.reject(CASE_REFERENCE, "  The order has been set aside  ");
+        Optional<EnforcementDecisionOutcome> outcome =
+            underTest.reject(CASE_REFERENCE, "  The order has been set aside  ");
 
-        assertThat(outcome).isEqualTo(
+        assertThat(outcome).contains(
             new EnforcementDecisionOutcome(SelectEnforcementType.WARRANT, EnforcementDecision.REJECT, null));
         assertThat(enforcement.getStatus()).isEqualTo(EnforcementStatus.REJECTED);
         assertThat(enforcement.getStatus().isLive()).isFalse();
@@ -171,11 +171,11 @@ class EnforcementDecisionServiceTest {
     }
 
     @Test
-    void shouldRefuseToRejectWhenNoApplicationIsAwaitingReview() {
+    void shouldRejectNothingWhenNoApplicationIsAwaitingReview() {
         when(enforcementOrderRepository.findByClaimIdAndStatus(CLAIM_ID, AWAITING_REVIEW)).thenReturn(List.of());
 
-        assertThatThrownBy(() -> underTest.reject(CASE_REFERENCE, "reason"))
-            .isInstanceOf(NoEnforcementAwaitingReviewException.class);
+        assertThat(underTest.reject(CASE_REFERENCE, "reason")).isEmpty();
+        verify(enforcementOrderRepository, never()).save(any());
     }
 
     private EnforcementOrderEntity givenAwaitingReview(SelectEnforcementType type) {

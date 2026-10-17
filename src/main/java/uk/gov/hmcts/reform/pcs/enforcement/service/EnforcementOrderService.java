@@ -76,14 +76,16 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        SelectEnforcementType enforcementType = SelectEnforcementType.getSelectEnforcementTypeFromName(
-                enforcementOrder.getChooseEnforcementType().getValueCode());
+        SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcementOrder);
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, claimEntity);
         enforcementStatusTransitions.transition(enforcementOrderEntity,
             EnforcementStatusTransitions.initialStatus(isPaymentOutstanding(enforcementType)));
-        strategyFactory.getStrategy(enforcementType).process(enforcementOrderEntity, enforcementOrder);
-        enforcementOrderRepository.save(enforcementOrderEntity);
+        // The writ, writ of restitution and warrant of restitution strategies each save a child row whose
+        // enf_case_id is not nullable, and EnforcementOrderEntity has no association to cascade through, so the
+        // enforcement has to be persistent before a strategy runs.
+        EnforcementOrderEntity savedEntity = enforcementOrderRepository.save(enforcementOrderEntity);
+        strategyFactory.getStrategy(enforcementType).process(savedEntity, enforcementOrder);
     }
 
     /**
