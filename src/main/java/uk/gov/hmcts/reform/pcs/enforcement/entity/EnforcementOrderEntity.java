@@ -23,6 +23,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -109,6 +110,19 @@ public class EnforcementOrderEntity {
     @JoinColumn(name = "enf_case_id")
     @Builder.Default
     private List<DocumentEntity> documents = new ArrayList<>();
+
+    /**
+     * The eviction risk level the bailiff set (HDPI-7343). A high level always has a reason.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "risk_level")
+    private RiskLevel riskLevel;
+
+    @Column(name = "risk_level_reason", length = 6800)
+    private String riskLevelReason;
+
+    @Column(name = "risk_level_set_at")
+    private Instant riskLevelSetAt;
 
     public void addDocuments(List<DocumentEntity> documents) {
         this.documents.addAll(documents);

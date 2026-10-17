@@ -46,4 +46,13 @@ public class EnforcementCallbackExceptionHandler {
                                      .errors(List.of(ex.getMessage()))
                                      .build());
     }
+
+    @ExceptionHandler(EnforcementEventNotAvailableException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleEventNotAvailable(
+        EnforcementEventNotAvailableException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
 }

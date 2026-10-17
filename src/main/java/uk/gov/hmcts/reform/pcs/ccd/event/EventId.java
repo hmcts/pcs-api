@@ -37,5 +37,7 @@ public enum EventId {
     resumeEnforcementOrder,
     deleteDraftApplication,
     decideEnforcement,
-    addBailiffNote
+    addBailiffNote,
+    allocateBailiff,
+    setRiskLevel
 }

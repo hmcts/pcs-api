@@ -14,6 +14,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final EnforcementOrderView enforcementOrderView;
     private final BailiffNoteView bailiffNoteView;
+    private final RiskLevelView riskLevelView;
     private final EnforcementDocumentVisibility enforcementDocumentVisibility;
 
     @Override
@@ -22,6 +23,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
         enforcementOrderView.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
         bailiffNoteView.setBailiffNotes(pcsCaseEntity, pcsCase);
+        riskLevelView.setRiskLevel(pcsCaseEntity, pcsCase);
         enforcementDocumentVisibility.hideFromDefendants(pcsCase, caseReference);
     }
 
