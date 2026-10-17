@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDet
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnNotAllowedException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
@@ -116,10 +116,10 @@ class RecordWarrantReturnTest extends BaseEventTest {
     @Test
     void shouldRefuseToStartBeforeABailiffIsAllocated() {
         when(warrantReturnService.findWarrant(TEST_CASE_REFERENCE)).thenThrow(
-            new WarrantReturnNotAllowedException(WarrantReturnNotAllowedException.NOT_ALLOCATED_MESSAGE));
+            new EnforcementEventNotAvailableException(WarrantReturnService.NOT_ALLOCATED_MESSAGE));
 
         assertThatThrownBy(() -> callStartHandler(PCSCase.builder().build()))
-            .isInstanceOf(WarrantReturnNotAllowedException.class);
+            .isInstanceOf(EnforcementEventNotAvailableException.class);
     }
 
     @Test

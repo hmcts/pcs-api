@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnNotAllowedException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
 import java.util.List;
@@ -119,10 +119,10 @@ class RecordWarrantReturnPageTest extends BasePageTest {
     @Test
     void shouldReturnAnErrorWhenNoBailiffIsAllocated() {
         when(warrantReturnService.validate(TEST_CASE_REFERENCE, null)).thenThrow(
-            new WarrantReturnNotAllowedException(WarrantReturnNotAllowedException.NOT_ALLOCATED_MESSAGE));
+            new EnforcementEventNotAvailableException(WarrantReturnService.NOT_ALLOCATED_MESSAGE));
 
         assertThat(callMidEventHandler(PCSCase.builder().build()).getErrors())
-            .containsExactly(WarrantReturnNotAllowedException.NOT_ALLOCATED_MESSAGE);
+            .containsExactly(WarrantReturnService.NOT_ALLOCATED_MESSAGE);
     }
 
     private void assertMandatoryWhen(String fieldId, String showCondition) {

@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnTyp
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnNotAllowedException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -135,7 +135,7 @@ class WarrantReturnServiceTest {
             .thenReturn(Optional.of(enforcement(SelectEnforcementType.WARRANT, AWAITING_BAILIFF_ALLOCATION)));
 
         assertThatThrownBy(() -> underTest.findWarrant(CASE_REFERENCE))
-            .isInstanceOf(WarrantReturnNotAllowedException.class)
+            .isInstanceOf(EnforcementEventNotAvailableException.class)
             .hasMessage("A bailiff must be allocated to the warrant before a return can be recorded");
     }
 

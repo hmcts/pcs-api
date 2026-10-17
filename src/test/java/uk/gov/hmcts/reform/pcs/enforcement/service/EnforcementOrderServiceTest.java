@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffNote;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -198,6 +199,30 @@ class EnforcementOrderServiceTest {
         assertThat(savedCaptor.getValue().getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);
     }
 
+    @Test
+    void shouldNotStoreTheViewEnforcementListInTheEnforcementOrderJson() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
+        enforcementOrder.setEnforcements(List.of(ListValue.<EnforcementSummary>builder()
+                                                     .id("earlier-warrant")
+                                                     .value(EnforcementSummary.builder()
+                                                                .enforcementType(WARRANT)
+                                                                .status(EnforcementStatus.CLOSED)
+                                                                .build())
+                                                     .build()));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(WARRANT)).thenReturn(mock(EnforcementTypeStrategy.class));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
+        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        assertThat(savedCaptor.getValue().getEnforcementOrder().getEnforcements()).isNull();
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void shouldReportWhetherTheClaimHasALiveEnforcement(boolean live) {
@@ -220,4 +245,31 @@ class EnforcementOrderServiceTest {
         );
     }
 
+    @Test
+    void shouldMoveTheApplicationAwaitingPaymentToAwaitingReviewWhenTheFeeIsPaid() {
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        EnforcementOrderEntity awaitingPayment = new EnforcementOrderEntity();
+        awaitingPayment.setStatus(EnforcementStatus.AWAITING_PAYMENT);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(enforcementOrderRepository.findByClaimIdAndStatus(claimId, EnforcementStatus.AWAITING_PAYMENT))
+            .thenReturn(List.of(awaitingPayment));
+
+        boolean recorded = enforcementOrderService.recordFeePaid(CASE_REFERENCE);
+
+        assertThat(recorded).isTrue();
+        assertThat(awaitingPayment.getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
+        assertThat(awaitingPayment.getStatusUpdatedAt()).isEqualTo(NOW);
+        verify(enforcementOrderRepository).save(awaitingPayment);
+    }
+
+    @Test
+    void shouldRecordNoFeeWhenNoApplicationIsAwaitingPayment() {
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(enforcementOrderRepository.findByClaimIdAndStatus(claimId, EnforcementStatus.AWAITING_PAYMENT))
+            .thenReturn(List.of());
+
+        assertThat(enforcementOrderService.recordFeePaid(CASE_REFERENCE)).isFalse();
+        verify(enforcementOrderRepository, org.mockito.Mockito.never()).save(any());
+    }
 }

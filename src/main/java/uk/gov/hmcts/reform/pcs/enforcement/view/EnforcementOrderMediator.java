@@ -5,15 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -25,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.Marku
 @AllArgsConstructor
 public class EnforcementOrderMediator {
 
-    private final EnforcementOrderRepository enforcementOrderRepository;
+    private final CurrentEnforcementService currentEnforcementService;
 
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity != null && pcsCase != null) {
@@ -38,18 +36,12 @@ public class EnforcementOrderMediator {
         }
     }
 
+    /**
+     * The enforcement the claimant confirms the eviction for: the claim's current one, which is the one the
+     * bailiff schedules (HDPI-7344).
+     */
     Optional<EnforcementOrderEntity> getEnforcementOrder(PcsCaseEntity pcsCaseEntity) {
-        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
-        if (claims != null && !claims.isEmpty()) {
-            // At this point we do not know which Enforcement Order the Confirm Eviction is placed against.
-            // this to be confirmed beyond this ticket scope (HDPI-4312)
-            List<EnforcementOrderEntity> enforcementOrderEntities = enforcementOrderRepository
-                .findByClaimId(claims.getFirst().getId());
-            if (!enforcementOrderEntities.isEmpty()) {
-                return Optional.of(enforcementOrderEntities.getFirst());
-            }
-        }
-        return Optional.empty();
+        return currentEnforcementService.findCurrentEnforcement(pcsCaseEntity);
     }
 
     private void prepareEvictionWithDates(PCSCase pcsCase, LocalDateTime localDateTime) {

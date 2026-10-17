@@ -6,16 +6,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -41,14 +43,17 @@ class EnforcementOrderMediatorTest {
 
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
+    @Mock
+    private PcsCaseService pcsCaseService;
 
-    @InjectMocks
     private EnforcementOrderMediator underTest;
 
     private PCSCase pcsCase;
 
     @BeforeEach
     void beforeEach() {
+        underTest = new EnforcementOrderMediator(
+            new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository));
         pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
@@ -133,6 +138,22 @@ class EnforcementOrderMediatorTest {
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
         String expectedDeadline = bailiffDate.atZone(ZoneId.of("UTC")).minusHours(72).format(outputFormatter);
         assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup().contains(expectedDeadline));
+    }
+
+    @Test
+    void shouldUseTheCurrentEnforcementRatherThanAnOlderOne() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity olderRejected = createEnforcementOrderEntity(null);
+        olderRejected.setStatus(EnforcementStatus.REJECTED);
+        EnforcementOrderEntity scheduled = createEnforcementOrderEntity(LocalDateTime.parse("2026-04-15T10:00:00"));
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of(olderRejected, scheduled));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertEquals(YesOrNo.YES, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
     }
 
     @Test
@@ -291,6 +312,7 @@ class EnforcementOrderMediatorTest {
         EnforcementOrderEntity entity = new EnforcementOrderEntity();
         entity.setId(UUID.randomUUID());
         entity.setBailiffDate(bailiffDate);
+        entity.setStatus(EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION);
         return entity;
     }
 

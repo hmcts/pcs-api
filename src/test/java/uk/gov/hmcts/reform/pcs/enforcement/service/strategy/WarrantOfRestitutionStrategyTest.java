@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceD
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
@@ -110,18 +109,16 @@ class WarrantOfRestitutionStrategyTest {
         EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder().build();
 
         WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
-        List<DocumentEntity> documentEntities = List.of(DocumentEntity.builder().build());
-        enforcementOrderEntity.addDocuments(documentEntities);
 
         when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
                 .thenReturn(warrantOfRestitutionEntity);
         when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
-        when(enforcementDocumentService.createAllDocuments(enforcementOrder)).thenReturn(documentEntities);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
+        verify(enforcementDocumentService).createAllDocuments(enforcementOrderEntity, enforcementOrder);
         verify(enforcementOrderRepository).save(enforcementOrderEntity);
     }
 }

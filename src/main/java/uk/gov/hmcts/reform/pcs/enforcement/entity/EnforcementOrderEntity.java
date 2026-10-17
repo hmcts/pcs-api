@@ -23,6 +23,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -77,6 +78,21 @@ public class EnforcementOrderEntity {
     @Column(name = "status_updated_at")
     private Instant statusUpdatedAt;
 
+    /**
+     * The warrant or writ number, given when the caseworker approves the application.
+     */
+    @Column(name = "enforcement_number")
+    private String enforcementNumber;
+
+    /**
+     * When the caseworker approved the application. For a writ this is the date of transfer to the High Court.
+     */
+    @Column(name = "approved_at")
+    private Instant approvedAt;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
     @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
@@ -94,6 +110,42 @@ public class EnforcementOrderEntity {
     @JoinColumn(name = "enf_case_id")
     @Builder.Default
     private List<DocumentEntity> documents = new ArrayList<>();
+
+    /**
+     * The eviction risk level the bailiff set (HDPI-7343). A high level always has a reason.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "risk_level")
+    private RiskLevel riskLevel;
+
+    @Column(name = "risk_level_reason", length = 6800)
+    private String riskLevelReason;
+
+    @Column(name = "risk_level_set_at")
+    private Instant riskLevelSetAt;
+
+    /**
+     * Whether the court has given permission to dispense with service of the notice of eviction. Set when the
+     * eviction is scheduled or rescheduled; null before that.
+     */
+    @Column(name = "dispense_with_service")
+    private Boolean dispenseWithService;
+
+    /**
+     * When the bailiff served the notice of eviction, as a UK wall-clock time like {@link #bailiffDate}.
+     */
+    @Column(name = "notice_served_at")
+    private LocalDateTime noticeServedAt;
+
+    @Column(name = "notice_served_how")
+    private String noticeServedHow;
+
+    /**
+     * Derived from the notice of eviction: true once it is served, false when service is dispensed with.
+     * Change it only through EvictionScheduleService, which keeps it in step with the fields it derives from.
+     */
+    @Column(name = "defendants_can_see_enforcement")
+    private boolean defendantsCanSeeEnforcement;
 
     public void addDocuments(List<DocumentEntity> documents) {
         this.documents.addAll(documents);

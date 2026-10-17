@@ -1,3 +1,5 @@
+# Built in pcs-api as the setRiskLevel event. @pending until bailiff test users (HDPI-7539) and the WA tasks
+# (HDPI-8627) exist: the background signs in as the allocated bailiff and assigns them a task.
 @HDPI-7342 @enforcement @bailiff @pending
 Feature: Bailiff sets the eviction risk level
   As a bailiff

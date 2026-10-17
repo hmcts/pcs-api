@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnTyp
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnNotAllowedException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -47,6 +47,9 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLOSE
 @Slf4j
 @Service
 public class WarrantReturnService {
+
+    public static final String NOT_ALLOCATED_MESSAGE =
+        "A bailiff must be allocated to the warrant before a return can be recorded";
 
     /**
      * Only warrants go to county court bailiffs. A writ goes to a High Court Enforcement Officer.
@@ -102,7 +105,7 @@ public class WarrantReturnService {
      * that a bailiff has been allocated to.
      *
      * @throws NoEnforcementException if the claim has no warrant, or it has not been approved yet
-     * @throws WarrantReturnNotAllowedException if the warrant is waiting for a bailiff to be allocated
+     * @throws EnforcementEventNotAvailableException if the warrant is waiting for a bailiff to be allocated
      */
     @Transactional(readOnly = true)
     public EnforcementOrderEntity findWarrant(long caseReference) {
@@ -111,7 +114,7 @@ public class WarrantReturnService {
             .orElseThrow(NoEnforcementException::new);
         EnforcementStatus status = enforcement.getStatus();
         if (status == AWAITING_BAILIFF_ALLOCATION) {
-            throw new WarrantReturnNotAllowedException(WarrantReturnNotAllowedException.NOT_ALLOCATED_MESSAGE);
+            throw new EnforcementEventNotAvailableException(NOT_ALLOCATED_MESSAGE);
         }
         if (!RECORDABLE_STATUSES.contains(status)) {
             // Not approved yet (or rejected), so no warrant has been generated.

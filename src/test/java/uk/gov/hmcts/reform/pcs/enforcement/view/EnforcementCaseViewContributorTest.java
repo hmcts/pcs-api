@@ -24,7 +24,13 @@ class EnforcementCaseViewContributorTest {
     @Mock
     private BailiffNoteView bailiffNoteView;
     @Mock
+    private RiskLevelView riskLevelView;
+    @Mock
+    private EvictionScheduleView evictionScheduleView;
+    @Mock
     private WarrantReturnView warrantReturnView;
+    @Mock
+    private EnforcementDocumentVisibility enforcementDocumentVisibility;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -34,18 +40,21 @@ class EnforcementCaseViewContributorTest {
     private EnforcementCaseViewContributor underTest;
 
     @Test
-    void shouldHandleEnforcementRequirementsThenSetEnforcementCaseFieldsAndStatus() {
+    void shouldHandleEnforcementRequirementsThenSetCaseFieldsAndStatusThenHideDocumentsFromDefendants() {
         // When
         underTest.contribute(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
 
         // Then
-        InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView,
-                                  warrantReturnView);
+        InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView, riskLevelView,
+                                  evictionScheduleView, warrantReturnView, enforcementDocumentVisibility);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-        inOrder.verify(enforcementOrderView).setEnforcementStatus(pcsCaseEntity, pcsCase);
+        inOrder.verify(enforcementOrderView).setEnforcementStatusFields(pcsCaseEntity, pcsCase);
         inOrder.verify(bailiffNoteView).setBailiffNotes(pcsCaseEntity, pcsCase);
+        inOrder.verify(riskLevelView).setRiskLevel(pcsCaseEntity, pcsCase);
+        inOrder.verify(evictionScheduleView).setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         inOrder.verify(warrantReturnView).setLatestWarrantReturn(pcsCaseEntity, pcsCase);
+        inOrder.verify(enforcementDocumentVisibility).hideFromDefendants(pcsCase, CASE_REFERENCE);
         inOrder.verifyNoMoreInteractions();
     }
 

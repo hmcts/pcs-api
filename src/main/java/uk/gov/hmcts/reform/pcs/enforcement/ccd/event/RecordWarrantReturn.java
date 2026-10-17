@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnNotAllowedException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.WarrantReturnValidationException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
@@ -76,7 +76,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
      * Refuses to start without a warrant that can take a return, and starts with empty answers.
      *
      * @throws NoEnforcementException if the claim has no warrant
-     * @throws WarrantReturnNotAllowedException if the warrant has no bailiff allocated yet
+     * @throws EnforcementEventNotAvailableException if the warrant has no bailiff allocated yet
      */
     PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         warrantReturnService.findWarrant(eventPayload.caseReference());
@@ -100,7 +100,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             returnName = warrantReturnService.recordReturn(caseReference, details);
         } catch (WarrantReturnValidationException ex) {
             return errorResponse(ex.getErrors());
-        } catch (NoEnforcementException | WarrantReturnNotAllowedException ex) {
+        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
             return errorResponse(List.of(ex.getMessage()));
         }
 
