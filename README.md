@@ -201,6 +201,75 @@ Note that there seems to be a delay of a couple of seconds before a freshly subm
 is detected by the task monitor, so you may need to trigger the poll a second time if no Camunda tasks were picked
 up and configured as WA tasks.
 
+#### How PCS creates tasks
+
+pcs-api does not publish CCD case events to Service Bus, so `wa-case-event-handler` never sees a PCS event.
+Instead `CamundaService` posts a `createTaskMessage` message straight to `wa-workflow-api`, carrying the
+`taskId`, `name` and `__processCategory__<taskId>` process variables taken from the `TaskType` enum, and a
+`cancelTasks` message to cancel. That has a consequence for the six DMN tables in
+`src/main/resources/dmn`:
+
+| Table | Evaluated by | Does it affect PCS today? |
+|---|---|---|
+| `wa-task-configuration` | `wa-task-management-api` | Yes — sets every task attribute |
+| `wa-task-permissions` | `wa-task-management-api` | Yes — sets who can see and work the task |
+| `wa-task-types` | `wa-task-management-api` | Yes — XUI's task type filters |
+| `wa-task-completion` | `wa-task-management-api` (`/task/search-for-completable`) | Yes — closes a task when its event is submitted |
+| `wa-task-initiation` | `wa-case-event-handler` | No — nothing publishes the case events it reads |
+| `wa-task-cancellation` | `wa-case-event-handler` | No — the same |
+
+So a new task type needs rows in the configuration, permissions, types and completion tables to work. Keep the
+initiation and cancellation rows correct alongside them: they are what will fire if pcs-api starts publishing
+case events, and until then they are the specification the `CamundaService` calls have to match.
+
+#### Enforcement tasks
+
+| Task | Raised when | Due | Closed by | Roles |
+|---|---|---|---|---|
+| Review claimant warrant application | the application reaches `AWAITING_REVIEW` | 10 working days | `decideEnforcement` | `hearing-centre-admin`, `hearing-centre-team-leader` |
+| Allocate case to bailiff | a warrant reaches `AWAITING_BAILIFF_ALLOCATION`, on approval or on a "Reopen warrant" return | 5 working days | `allocateBailiff` | `bailiff-admin`, `bailiff-manager` |
+| Review risks and set level | a bailiff is allocated | 5 working days | `setRiskLevel` | `allocated-bailiff`, `bailiff-manager` |
+| Mark notice of eviction as served | the eviction is scheduled or rescheduled and the court has not dispensed with service | 5 working days | `markNoticeOfEvictionServed` | `allocated-bailiff`, `bailiff-manager` |
+| Reschedule eviction | the claimant answers that they cannot attend | 5 working days | `rescheduleEviction` | `allocated-bailiff`, `bailiff-manager` |
+| Review updated risk information | the claimant changes a risk assessment answer | 5 working days | `setRiskLevel` | `allocated-bailiff`, `bailiff-manager` |
+| Record warrant return | the scheduled eviction date arrives | 5 working days | `recordWarrantReturn` | `allocated-bailiff`, `bailiff-manager` |
+
+A return that closes the enforcement cancels whichever of these are still open.
+
+Only the review task's 10 working days and its major priority of 2000, band 2 of the 7 the configuration table
+uses, come from the requirements (HDPI-9539). The other tasks have no stated SLA or priority, so they take 5
+working days and 5000, which is what the rest of PCS uses.
+
+Enforcement status is held on the enforcement record and never changes the case state, so the initiation and
+cancellation rules read it out of case data (`enforcementStatus`) rather than out of `postEventState`. Three
+tasks have no initiation rule, because no CCD event raises them:
+
+- **Review claimant warrant application** on a paid application. Paying the fee is not a CCD event:
+  `EnforcementOrderService#recordFeePaid` moves the status, so that path has to call `CamundaService`
+  (HDPI-2877). The initiation row covers only the fee-free restitution applications, which reach
+  `AWAITING_REVIEW` on `enforceTheOrder`.
+- **Review updated risk information**. No case data field records that the claimant changed a risk assessment
+  answer (HDPI-7552), so there is nothing a rule could test.
+- **Record warrant return**, which is raised on the eviction date by a scheduled job rather than by an event.
+
+`allocated-bailiff` is the case role `AllocateBailiff` grants, which is how the bailiff tasks auto-assign to the
+allocated bailiff and follow a reallocation. Granting it needs `am-role-assignment-service`, which the preview
+environment does not currently deploy.
+
+#### Editing a DMN table
+
+`WaDmnTablesTest` and `EnforcementWaDmnTest` evaluate the tables from the classpath and assert the rows a given
+input collects, so an edit that drops a cell, misspells a task type or leaves a task type without permissions or
+a work type fails `./gradlew test`. To see the tables run for real, start `camunda-local` from
+`docker-compose-wa.yml` and post to
+`/engine-rest/decision-definition/key/<decision-id>/tenant-id/pcs/evaluate`.
+
+Keep every condition a FEEL unary test, which means a string literal or a comma-separated list of them. Camunda
+evaluates every rule's cell for a column it reads, so one cell holding free text fails the whole decision for
+every input. The initiation table came with 37 such cells spread over 23 of its 24 rules — a real engine throws
+`FEEL/SCALA-01008 ... failed to parse expression 'Tech team update case state'` on it for any event — which
+does no harm only because nothing publishes PCS case events. They have to go before that changes.
+
 ### Running the tests
 
 The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.

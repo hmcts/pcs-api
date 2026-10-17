@@ -549,6 +549,150 @@ Short name</description>
           <text>false</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_enfWorkTypeDecisionMaking">
+        <inputEntry id="UnaryTests_enfWorkTypeDecisionMakingCaseData">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfWorkTypeDecisionMakingAttributes">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfWorkTypeDecisionMakingTaskType">
+          <text>"ReviewClaimantWarrantApplication","ReviewRisksAndSetLevel","ReviewUpdatedRiskInformation"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfWorkTypeDecisionMakingName">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfWorkTypeDecisionMakingValue">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfWorkTypeDecisionMakingReconfigure">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfWorkTypeRoutine">
+        <inputEntry id="UnaryTests_enfWorkTypeRoutineCaseData">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfWorkTypeRoutineAttributes">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfWorkTypeRoutineTaskType">
+          <text>"AllocateCaseToBailiff","MarkNoticeOfEvictionServed","RescheduleEviction","RecordWarrantReturn"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfWorkTypeRoutineName">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfWorkTypeRoutineValue">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfWorkTypeRoutineReconfigure">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfRoleCategory">
+        <description>Bailiff tasks are worked by enforcement staff, so they override the ADMIN default set above</description>
+        <inputEntry id="UnaryTests_enfRoleCategoryCaseData">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRoleCategoryAttributes">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfRoleCategoryTaskType">
+          <text>"AllocateCaseToBailiff","ReviewRisksAndSetLevel","MarkNoticeOfEvictionServed","RescheduleEviction","ReviewUpdatedRiskInformation","RecordWarrantReturn"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfRoleCategoryName">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRoleCategoryValue">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRoleCategoryReconfigure">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfMajorPriorityReview">
+        <description>HDPI-9539: major priority 2 of the 7 bands used above, so 2000</description>
+        <inputEntry id="UnaryTests_enfMajorPriorityReviewCaseData">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMajorPriorityReviewAttributes">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMajorPriorityReviewTaskType">
+          <text>"ReviewClaimantWarrantApplication"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfMajorPriorityReviewName">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMajorPriorityReviewValue">
+          <text>2000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMajorPriorityReviewReconfigure">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfMajorPriorityBailiff">
+        <inputEntry id="UnaryTests_enfMajorPriorityBailiffCaseData">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMajorPriorityBailiffAttributes">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfMajorPriorityBailiffTaskType">
+          <text>"AllocateCaseToBailiff","ReviewRisksAndSetLevel","MarkNoticeOfEvictionServed","RescheduleEviction","ReviewUpdatedRiskInformation","RecordWarrantReturn"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfMajorPriorityBailiffName">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMajorPriorityBailiffValue">
+          <text>5000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMajorPriorityBailiffReconfigure">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfDueDateReview">
+        <description>HDPI-9539: the review task is due in 10 working days</description>
+        <inputEntry id="UnaryTests_enfDueDateReviewCaseData">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfDueDateReviewAttributes">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfDueDateReviewTaskType">
+          <text>"ReviewClaimantWarrantApplication"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfDueDateReviewName">
+          <text>"dueDateIntervalDays"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfDueDateReviewValue">
+          <text>10</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfDueDateReviewReconfigure">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfDueDateBailiff">
+        <description>No SLA is stated for the bailiff tasks, so they take the 5 working day interval the other PCS tasks use</description>
+        <inputEntry id="UnaryTests_enfDueDateBailiffCaseData">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfDueDateBailiffAttributes">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfDueDateBailiffTaskType">
+          <text>"AllocateCaseToBailiff","ReviewRisksAndSetLevel","MarkNoticeOfEvictionServed","RescheduleEviction","ReviewUpdatedRiskInformation","RecordWarrantReturn"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfDueDateBailiffName">
+          <text>"dueDateIntervalDays"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfDueDateBailiffValue">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfDueDateBailiffReconfigure">
+          <text></text>
+        </outputEntry>
+      </rule>
     </decisionTable>
   </decision>
   <dmndi:DMNDI>
