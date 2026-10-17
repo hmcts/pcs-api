@@ -61,7 +61,7 @@ class FindBailiffPageTest extends BasePageTest {
         Field<?, ?, ?, ?> email = field("allocatedBailiffEmail");
 
         assertThat(email.getContext()).isEqualTo(DisplayContext.ReadOnly);
-        assertThat(email.getShowCondition()).isEqualTo("allocatedBailiffEmail!=\"\"");
+        assertThat(email.getShowCondition()).isEqualTo("allocatedBailiff.idamId!=\"\"");
     }
 
     @Test

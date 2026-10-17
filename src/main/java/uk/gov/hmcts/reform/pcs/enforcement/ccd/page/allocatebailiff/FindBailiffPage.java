@@ -35,6 +35,12 @@ public class FindBailiffPage implements CcdPageConfiguration, CcdPage {
      */
     static final String STAFF_USER_SEARCH = "#ARGUMENT(CATEGORY-ADMIN)";
 
+    /**
+     * Shows the email once a bailiff is chosen. CCD rejects a show condition that refers to the field it is on,
+     * so this keys off the chosen bailiff rather than the email itself.
+     */
+    static final String EMAIL_SHOW_CONDITION = "allocatedBailiff.idamId!=\"\"";
+
     public static final String CHOOSE_A_BAILIFF_ERROR = "Choose a bailiff";
     public static final String NOT_A_BAILIFF_ERROR = "Choose a user who has the bailiff role";
 
@@ -54,7 +60,7 @@ public class FindBailiffPage implements CcdPageConfiguration, CcdPage {
             .label(pageKey + "-line-separator", "---")
             .mandatoryWithDisplayContextParameter(BailiffAllocationDetails::getAllocatedBailiff, null,
                                                   STAFF_USER_SEARCH)
-            .readonly(BailiffAllocationDetails::getAllocatedBailiffEmail, "allocatedBailiffEmail!=\"\"")
+            .readonly(BailiffAllocationDetails::getAllocatedBailiffEmail, EMAIL_SHOW_CONDITION)
             .done()
             .done();
     }
