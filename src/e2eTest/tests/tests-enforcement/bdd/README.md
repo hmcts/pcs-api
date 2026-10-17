@@ -42,5 +42,6 @@ When a journey is built, swap its expressions in `pendingSteps(...)` for real st
 
 - Journey 01: "Enforce the order" for a warrant of possession, writ of possession and warrant of restitution (up to the status check, which is pending on HDPI-7419). The warrant of restitution is only offered once a warrant exists, so the step seeds one through the API first.
 - Journey 06: "Confirm the eviction date" availability and start. pcs-api calls the event "Confirm the eviction details".
+- Journey 12: the claimant legal representative sees the "Enforcement status" tab once a warrant application is on the case. The warrant is a submitted application rather than an approved, generated one, because "Decide enforcement" (HDPI-8656) does not exist yet.
 
 Each scenario creates its own case through the API. The case reference in the feature files is illustrative.

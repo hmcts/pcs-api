@@ -18,7 +18,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     public void contribute(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
         enforcementOrderMediator.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
-        enforcementOrderView.setEnforcementStatus(pcsCaseEntity, pcsCase);
+        enforcementOrderView.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
     }
 
 }
