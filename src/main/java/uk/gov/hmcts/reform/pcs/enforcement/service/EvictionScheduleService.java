@@ -110,11 +110,20 @@ public class EvictionScheduleService {
                                CANNOT_MARK_NOTICE_SERVED_ERROR);
     }
 
+    /**
+     * Saves the eviction date on the claim's live warrant.
+     *
+     * @return the warrant's number for the confirmation screen, or the errors to show instead
+     */
     @Transactional
-    public void schedule(long caseReference, LocalDateTime evictionDateTime, boolean dispenseWithService) {
-        EnforcementOrderEntity enforcement = requireLiveEnforcement(
+    public EnforcementChange<String> schedule(long caseReference, LocalDateTime evictionDateTime,
+                                              boolean dispenseWithService) {
+        EnforcementChange<EnforcementOrderEntity> live = findLiveEnforcement(
             caseReference, EvictionScheduleService::canSchedule, CANNOT_SCHEDULE_ERROR);
-        setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        if (live.refused()) {
+            return EnforcementChange.refused(live.errors());
+        }
+        setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
         // TODO HDPI-7354 / HDPI-8442: generate the sealed notice of eviction (form N54) into the Enforcement
         //  folder, internal only. There is no Docmosis template for it in pcs-api yet.
         // TODO HDPI-7355 / HDPI-8442: generate the unsealed notice of appointment into the Enforcement folder,
@@ -124,30 +133,47 @@ public class EvictionScheduleService {
         // TODO HDPI-7346 / HDPI-8627: create the "Mark notice of eviction as served" WA task for the allocated
         //  bailiff when service is not dispensed with.
         // TODO HDPI-7347: create the "Record warrant return" WA task due on the eviction date.
+        return EnforcementChange.made(live.change().getEnforcementNumber());
     }
 
+    /**
+     * Saves a new eviction date on the claim's live warrant.
+     *
+     * @return the warrant's number for the confirmation screen, or the errors to show instead
+     */
     @Transactional
-    public void reschedule(long caseReference, LocalDateTime evictionDateTime, boolean dispenseWithService) {
-        EnforcementOrderEntity enforcement = requireLiveEnforcement(
+    public EnforcementChange<String> reschedule(long caseReference, LocalDateTime evictionDateTime,
+                                                boolean dispenseWithService) {
+        EnforcementChange<EnforcementOrderEntity> live = findLiveEnforcement(
             caseReference, EvictionScheduleService::canReschedule, CANNOT_RESCHEDULE_ERROR);
-        setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        if (live.refused()) {
+            return EnforcementChange.refused(live.errors());
+        }
+        setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
         // TODO HDPI-7354 / HDPI-7355: generate a new notice of eviction and notice of appointment, keeping the
         //  originals in the Enforcement folder. There are no Docmosis templates for them yet.
         // TODO HDPI-7538: send the claimant the "Bailiff reschedules the eviction date" email and the "Confirm
         //  the eviction date" dashboard notification. The Notify templates do not exist yet.
         // TODO HDPI-7549: complete the "Reschedule eviction" WA task, and move the "Record warrant return" task
         //  (HDPI-7347) to the new eviction date.
+        return EnforcementChange.made(live.change().getEnforcementNumber());
     }
 
     /**
      * Records when and how the notice of eviction was served, and adds the bailiff note if there is one.
      *
      * @param bailiffNote the note to add, or null for none
+     * @return the warrant's number for the confirmation screen, or the errors to show instead
      */
     @Transactional
-    public void markNoticeServed(long caseReference, LocalDateTime servedAt, String servedHow, String bailiffNote) {
-        EnforcementOrderEntity enforcement = requireLiveEnforcement(
+    public EnforcementChange<String> markNoticeServed(long caseReference, LocalDateTime servedAt, String servedHow,
+                                                      String bailiffNote) {
+        EnforcementChange<EnforcementOrderEntity> live = findLiveEnforcement(
             caseReference, EvictionScheduleService::canMarkNoticeServed, CANNOT_MARK_NOTICE_SERVED_ERROR);
+        if (live.refused()) {
+            return EnforcementChange.refused(live.errors());
+        }
+        EnforcementOrderEntity enforcement = live.change();
         enforcement.setNoticeServedAt(servedAt);
         enforcement.setNoticeServedHow(servedHow);
         enforcement.setDefendantsCanSeeEnforcement(defendantsCanSeeEnforcement(enforcement));
@@ -158,6 +184,7 @@ public class EvictionScheduleService {
         // TODO HDPI-7346: complete the "Mark notice of eviction as served" WA task.
         // TODO HDPI-7539 / HDPI-8442 / HDPI-7354: let defendants see the enforcement status tab, the Enforcement
         //  folder and the notice of eviction, driven from defendantsCanSeeEnforcement.
+        return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
     /**
@@ -177,15 +204,39 @@ public class EvictionScheduleService {
         enforcementOrderRepository.save(enforcement);
     }
 
+    /**
+     * The claim's live enforcement, for a start callback: it refuses by throwing, which
+     * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
+     * error on the start response. A submit handler must go through {@link #findLiveEnforcement} instead.
+     */
     private EnforcementOrderEntity requireLiveEnforcement(long caseReference,
                                                           Predicate<EnforcementOrderEntity> available,
                                                           String notAvailableError) {
-        EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
-            .filter(current -> current.getStatus() != null && current.getStatus().isLive())
+        EnforcementOrderEntity enforcement = findLive(caseReference)
             .orElseThrow(NoEnforcementException::new);
         if (!available.test(enforcement)) {
             throw new EnforcementEventNotAvailableException(notAvailableError);
         }
         return enforcement;
+    }
+
+    /**
+     * The claim's live enforcement if the event applies to it, or why it does not.
+     */
+    private EnforcementChange<EnforcementOrderEntity> findLiveEnforcement(
+        long caseReference, Predicate<EnforcementOrderEntity> available, String notAvailableError) {
+        Optional<EnforcementOrderEntity> live = findLive(caseReference);
+        if (live.isEmpty()) {
+            return EnforcementChange.refused(NoEnforcementException.MESSAGE);
+        }
+        if (!available.test(live.get())) {
+            return EnforcementChange.refused(notAvailableError);
+        }
+        return EnforcementChange.made(live.get());
+    }
+
+    private Optional<EnforcementOrderEntity> findLive(long caseReference) {
+        return currentEnforcementService.findCurrentEnforcement(caseReference)
+            .filter(current -> current.getStatus() != null && current.getStatus().isLive());
     }
 }

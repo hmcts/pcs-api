@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.RescheduleE
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService.EvictionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
@@ -95,12 +96,27 @@ class RescheduleEvictionTest extends BaseEventTest {
 
     @Test
     void shouldRescheduleAndConfirm() {
+        when(evictionScheduleService.reschedule(anyLong(), any(), anyBoolean()))
+            .thenReturn(EnforcementChange.made("WP-00000042"));
+
         SubmitResponse<State> response = callSubmitHandler(caseWith(LocalDateTime.parse("2026-07-01T09:30")));
 
         verify(evictionScheduleService).reschedule(TEST_CASE_REFERENCE, LocalDateTime.parse("2026-07-01T09:30"),
                                                    false);
         assertThat(response.getConfirmationHeader())
             .isEqualTo("# Eviction date rescheduled for Wednesday 1 July 2026 at 09:30am");
+        assertThat(response.getConfirmationBody()).contains("Warrant number: WP-00000042");
+    }
+
+    @Test
+    void shouldReturnAnErrorWhenTheWarrantHasMovedOn() {
+        when(evictionScheduleService.reschedule(anyLong(), any(), anyBoolean()))
+            .thenReturn(EnforcementChange.refused(EvictionScheduleService.CANNOT_RESCHEDULE_ERROR));
+
+        SubmitResponse<State> response = callSubmitHandler(caseWith(LocalDateTime.parse("2026-07-01T09:30")));
+
+        assertThat(response.getErrors()).containsExactly(EvictionScheduleService.CANNOT_RESCHEDULE_ERROR);
+        assertThat(response.getConfirmationHeader()).isNull();
     }
 
     @Test

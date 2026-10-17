@@ -19,8 +19,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionDet
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 
 import java.time.LocalDateTime;
@@ -67,7 +66,12 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
      */
     abstract void checkCanStart(long caseReference);
 
-    abstract void save(long caseReference, LocalDateTime evictionDateTime, boolean dispenseWithService);
+    /**
+     * Saves the eviction date, giving back the warrant number for the confirmation screen or the errors to
+     * show instead.
+     */
+    abstract EnforcementChange<String> save(long caseReference, LocalDateTime evictionDateTime,
+                                            boolean dispenseWithService);
 
     /**
      * "scheduled" or "rescheduled", for the confirmation header.
@@ -114,16 +118,17 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
             return SubmitResponse.<State>builder().errors(errors).build();
         }
         LocalDateTime evictionDateTime = schedule.getEvictionDateTime().truncatedTo(ChronoUnit.MINUTES);
-        try {
+        EnforcementChange<String> saved =
             save(caseReference, evictionDateTime, schedule.getEvictionDispenseWithService() == YesOrNo.YES);
-        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
-            return SubmitResponse.<State>builder().errors(List.of(ex.getMessage())).build();
+        if (saved.refused()) {
+            return SubmitResponse.<State>builder().errors(saved.errors()).build();
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader("# Eviction date %s for %s".formatted(
                 confirmationVerb(), EvictionConfirmationFormat.format(evictionDateTime)))
             .confirmationBody(EvictionConfirmationFormat.scheduledBody(
-                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), caseReference))
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), caseReference,
+                saved.change()))
             .build();
     }
 }
