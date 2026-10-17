@@ -17,6 +17,13 @@
           <text>state</text>
         </inputExpression>
       </input>
+      <input id="InputClause_enfStatus" label="Enforcement Status" biodi:width="250" camunda:inputVariable="enforcementStatus">
+        <inputExpression id="LiteralExpression_enfStatus" typeRef="string">
+          <text>if(additionalData != null and additionalData.Data != null and additionalData.Data.enforcementStatus != null)
+            then additionalData.Data.enforcementStatus
+            else null</text>
+        </inputExpression>
+      </input>
       <output id="OutputClause_18zgoaj" label="Action" name="action" typeRef="string" />
       <output id="OutputClause_0tu8bqp" label="Task Id" name="Task Id" typeRef="string" />
       <output id="OutputClause_1kfc3jv" label="Warning Text" name="warningText" typeRef="string" />
@@ -31,6 +38,9 @@
         </inputEntry>
         <inputEntry id="UnaryTests_1ah5t17">
           <text>"CASE_CLOSED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatusCaseClosed">
+          <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1c4vo81">
           <text>"Cancel"</text>
@@ -55,6 +65,9 @@
         <inputEntry id="UnaryTests_0bv4k05">
           <text>"CASE_STAYED"</text>
         </inputEntry>
+        <inputEntry id="UnaryTests_enfStatusCaseStayed">
+          <text></text>
+        </inputEntry>
         <outputEntry id="LiteralExpression_08a36m9">
           <text>"Cancel"</text>
         </outputEntry>
@@ -68,6 +81,139 @@
           <text>"NewClaimCreateNewHearing"</text>
         </outputEntry>
       </rule>
+      <!-- A return that closes the enforcement cancels the bailiff tasks that are still open on it
+           (11-record-warrant-return.feature, HDPI-8189). One rule per process category: several
+           categories in one rule would only cancel tasks carrying all of them. -->
+      <rule id="DecisionRule_enfCancelAllocate">
+        <inputEntry id="UnaryTests_enfCancelAllocateFromState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelAllocateEvent">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelAllocateToState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelAllocateStatus">
+          <text>"CLOSED"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfCancelAllocateAction">
+          <text>"Cancel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelAllocateTaskId">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelAllocateWarningText">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelAllocateCategories">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfCancelRiskLevel">
+        <inputEntry id="UnaryTests_enfCancelRiskLevelFromState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRiskLevelEvent">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRiskLevelToState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRiskLevelStatus">
+          <text>"CLOSED"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRiskLevelAction">
+          <text>"Cancel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRiskLevelTaskId">
+          <text>"ReviewRisksAndSetLevel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRiskLevelWarningText">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRiskLevelCategories">
+          <text>"ReviewRisksAndSetLevel"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfCancelNoticeServed">
+        <inputEntry id="UnaryTests_enfCancelNoticeServedFromState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelNoticeServedEvent">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelNoticeServedToState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelNoticeServedStatus">
+          <text>"CLOSED"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfCancelNoticeServedAction">
+          <text>"Cancel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelNoticeServedTaskId">
+          <text>"MarkNoticeOfEvictionServed"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelNoticeServedWarningText">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelNoticeServedCategories">
+          <text>"MarkNoticeOfEvictionServed"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfCancelReschedule">
+        <inputEntry id="UnaryTests_enfCancelRescheduleFromState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRescheduleEvent">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRescheduleToState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRescheduleStatus">
+          <text>"CLOSED"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRescheduleAction">
+          <text>"Cancel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRescheduleTaskId">
+          <text>"RescheduleEviction"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRescheduleWarningText">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRescheduleCategories">
+          <text>"RescheduleEviction"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfCancelUpdatedRisk">
+        <inputEntry id="UnaryTests_enfCancelUpdatedRiskFromState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelUpdatedRiskEvent">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelUpdatedRiskToState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelUpdatedRiskStatus">
+          <text>"CLOSED"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfCancelUpdatedRiskAction">
+          <text>"Cancel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelUpdatedRiskTaskId">
+          <text>"ReviewUpdatedRiskInformation"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelUpdatedRiskWarningText">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelUpdatedRiskCategories">
+          <text>"ReviewUpdatedRiskInformation"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_11kloew">
         <inputEntry id="UnaryTests_11epwat">
           <text></text>
@@ -76,6 +222,9 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0qljs5l">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfStatusCatchAll">
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0g5ch6y">

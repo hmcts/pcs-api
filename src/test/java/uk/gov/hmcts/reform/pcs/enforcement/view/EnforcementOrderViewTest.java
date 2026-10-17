@@ -1,0 +1,524 @@
+package uk.gov.hmcts.reform.pcs.enforcement.view;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT_OF_RESTITUTION;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT_OF_RESTITUTION;
+
+@ExtendWith(MockitoExtension.class)
+class EnforcementOrderViewTest {
+
+    private static final long CASE_REFERENCE = 1234L;
+    private static final UUID CLAIM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
+    private static final LocalDateTime BAILIFF_DATE = LocalDateTime.of(2026, 6, 25, 10, 0);
+
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
+
+    @Mock
+    private EnforcementOrderRepository enforcementOrderRepository;
+
+    @Mock
+    private PcsCaseService pcsCaseService;
+
+    private EnforcementOrderView underTest;
+
+    @BeforeEach
+    void setUp() {
+        // The real current-enforcement ordering, so these tests cover what the tab shows.
+        underTest = new EnforcementOrderView(draftCaseDataService,
+                                             new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository));
+    }
+
+    @ParameterizedTest
+    @MethodSource("enforcementDraftScenarios")
+    void shouldSetUnsubmittedEnforcementDataFlag(State state, boolean hasDraftData, YesOrNo expectedFlag) {
+        // Given
+        if (state == State.CASE_ISSUED) {
+            when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(hasDraftData);
+        }
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, state);
+
+        // Then
+        if (state == State.CASE_ISSUED) {
+            verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
+            assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
+            if (hasDraftData) {
+                verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
+            }
+        } else {
+            verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
+        }
+    }
+
+    @Test
+    void shouldNotPopulateEnforcementOrderWhenCaseNotIssued() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.PENDING_CASE_ISSUED);
+
+        // Then
+        verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
+        assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    @Test
+    void shouldKeepViewDerivedFieldsWhenDraftReplacesEnforcementOrder() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        EnforcementOrder draftOrder = EnforcementOrder.builder()
+            .deleteDraftApplication(YesOrNo.NO)
+            .confirmEvictionSummaryMarkup("stale draft markup")
+            .showConfirmEvictionJourney(YesOrNo.NO)
+            .formattedEvictionDate("stale draft date")
+            .formattedDefendantNames("draft defendant names")
+            .formattedPropertyAddress("draft property address")
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder().enforcementOrder(draftOrder).build()));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder()
+                                  .confirmEvictionSummaryMarkup("case view markup")
+                                  .showConfirmEvictionJourney(YesOrNo.YES)
+                                  .formattedEvictionDate("Friday, 6 November 2026 at 10:00AM")
+                                  .build())
+            .build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        EnforcementOrder result = pcsCase.getEnforcementOrder();
+        assertThat(result.getDeleteDraftApplication()).isEqualTo(YesOrNo.NO);
+        assertThat(result.getConfirmEvictionSummaryMarkup()).isEqualTo("case view markup");
+        assertThat(result.getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getFormattedEvictionDate()).isEqualTo("Friday, 6 November 2026 at 10:00AM");
+        assertThat(result.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldKeepTheDraftsPropertyAddressAndDefendantNamesSoAResumeStillHasThem() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        EnforcementOrder draftOrder = EnforcementOrder.builder()
+            .formattedDefendantNames("draft defendant names")
+            .formattedPropertyAddress("draft property address")
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder().enforcementOrder(draftOrder).build()));
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        EnforcementOrder result = pcsCase.getEnforcementOrder();
+        assertThat(result.getFormattedDefendantNames()).isEqualTo("draft defendant names");
+        assertThat(result.getFormattedPropertyAddress()).isEqualTo("draft property address");
+    }
+
+    @Test
+    void shouldKeepCurrentEnforcementOrderWhenDraftHasNone() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder().build()));
+
+        EnforcementOrder currentOrder = EnforcementOrder.builder()
+            .confirmEvictionSummaryMarkup("case view markup")
+            .showConfirmEvictionJourney(YesOrNo.YES)
+            .formattedDefendantNames("defendant names")
+            .formattedPropertyAddress("property address")
+            .build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(currentOrder).build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        EnforcementOrder result = pcsCase.getEnforcementOrder();
+        assertThat(result).isSameAs(currentOrder);
+        assertThat(result.getConfirmEvictionSummaryMarkup()).isEqualTo("case view markup");
+        assertThat(result.getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getFormattedDefendantNames()).isEqualTo("defendant names");
+        assertThat(result.getFormattedPropertyAddress()).isEqualTo("property address");
+        assertThat(result.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldShowTheLiveEnforcementStatusOverMoreRecentlyUpdatedFinishedOnes() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(
+            enforcement(EnforcementStatus.CLOSED, Instant.parse("2026-10-01T00:00:00Z")),
+            enforcement(EnforcementStatus.AWAITING_SCHEDULING, Instant.parse("2026-09-01T00:00:00Z")),
+            enforcement(EnforcementStatus.REJECTED, Instant.parse("2026-10-02T00:00:00Z"))
+        ));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus())
+            .isEqualTo(EnforcementStatus.AWAITING_SCHEDULING);
+    }
+
+    @Test
+    void shouldShowTheMostRecentlyUpdatedStatusWhenNoEnforcementIsLive() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(
+            enforcement(EnforcementStatus.CLOSED, null),
+            enforcement(EnforcementStatus.REJECTED, Instant.parse("2026-10-02T00:00:00Z")),
+            enforcement(EnforcementStatus.CLOSED, Instant.parse("2026-10-01T00:00:00Z")),
+            enforcement(null, Instant.parse("2026-10-03T00:00:00Z"))
+        ));
+        PCSCase pcsCase = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().formattedDefendantNames("names").build())
+            .build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus()).isEqualTo(EnforcementStatus.REJECTED);
+        assertThat(pcsCase.getEnforcementOrder().getFormattedDefendantNames()).isEqualTo("names");
+    }
+
+    @Test
+    void shouldLeaveTheStatusUnsetWhenTheClaimHasNoEnforcement() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of());
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    @Test
+    void shouldNotLookUpEnforcementsWhenTheCaseHasNoClaim() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(List.of());
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+        underTest.setEnforcementStatusFields(null, pcsCase);
+
+        // Then
+        verifyNoInteractions(enforcementOrderRepository);
+        assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    @Test
+    void shouldKeepTheCaseViewStatusWhenDraftReplacesEnforcementOrder() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        EnforcementOrder draftOrder = EnforcementOrder.builder()
+            .enforcementStatus(EnforcementStatus.AWAITING_PAYMENT)
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder().enforcementOrder(draftOrder).build()));
+        PCSCase pcsCase = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().enforcementStatus(EnforcementStatus.CLOSED).build())
+            .build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus()).isEqualTo(EnforcementStatus.CLOSED);
+    }
+
+    @Test
+    void shouldListEveryEnforcementWithTheLiveOneFirstThenNewestFirst() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity legacy = enforcementOfType(WARRANT, EnforcementStatus.CLOSED, null);
+        EnforcementOrderEntity olderClosed =
+            enforcementOfType(WARRANT, EnforcementStatus.CLOSED, Instant.parse("2026-02-01T10:00:00Z"));
+        EnforcementOrderEntity live =
+            enforcementOfType(WARRANT_OF_RESTITUTION, EnforcementStatus.AWAITING_SCHEDULING,
+                        Instant.parse("2026-08-01T10:00:00Z"));
+        EnforcementOrderEntity laterRejected =
+            enforcementOfType(WRIT, EnforcementStatus.REJECTED, Instant.parse("2026-09-01T10:00:00Z"));
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID))
+            .thenReturn(List.of(legacy, olderClosed, live, laterRejected));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements())
+            .extracting(ListValue::getId)
+            .containsExactly(idOf(live), idOf(laterRejected), idOf(olderClosed), idOf(legacy));
+        assertThat(pcsCase.getEnforcementOrder().getEnforcementStatus())
+            .isEqualTo(EnforcementStatus.AWAITING_SCHEDULING);
+    }
+
+    @Test
+    void shouldShowTheTypeStatusAndStatusUpdatedDateOfEachEnforcement() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        // 23:30 UTC on 1 July is 00:30 on 2 July in London (BST).
+        EnforcementOrderEntity writ =
+            enforcementOfType(WRIT_OF_RESTITUTION, EnforcementStatus.TRANSFERRED_TO_HIGH_COURT,
+                        Instant.parse("2026-07-01T23:30:00Z"));
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(writ));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements())
+            .singleElement()
+            .extracting(ListValue::getValue)
+            .isEqualTo(EnforcementSummary.builder()
+                           .enforcementType(WRIT_OF_RESTITUTION)
+                           .status(EnforcementStatus.TRANSFERRED_TO_HIGH_COURT)
+                           .statusUpdatedDate(LocalDate.of(2026, 7, 2))
+                           .build());
+    }
+
+    @ParameterizedTest
+    @MethodSource("scheduledEvictionScenarios")
+    void shouldShowTheScheduledEvictionDateForWarrantsOnly(SelectEnforcementType type,
+                                                           LocalDateTime expectedEvictionDate) {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity enforcement =
+            enforcementOfType(type, EnforcementStatus.CLAIMANT_CONFIRMED, Instant.parse("2026-06-01T10:00:00Z"));
+        enforcement.setBailiffDate(BAILIFF_DATE);
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(enforcement));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements().getFirst().getValue().getScheduledEvictionDate())
+            .isEqualTo(expectedEvictionDate);
+    }
+
+    @Test
+    void shouldShowTheWarrantOrWritNumberOnceApproved() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity enforcement =
+            enforcementOfType(WARRANT, EnforcementStatus.AWAITING_SCHEDULING, Instant.parse("2026-06-01T10:00:00Z"));
+        enforcement.setEnforcementNumber("WP-000001");
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(enforcement));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements().getFirst().getValue().getEnforcementNumber())
+            .isEqualTo("WP-000001");
+    }
+
+    @ParameterizedTest
+    @MethodSource("highCourtTransferScenarios")
+    void shouldShowTheDateOfTransferToTheHighCourtForWritsOnly(SelectEnforcementType type,
+                                                               LocalDate expectedTransferDate) {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity enforcement =
+            enforcementOfType(type, EnforcementStatus.TRANSFERRED_TO_HIGH_COURT,
+                              Instant.parse("2026-07-03T10:00:00Z"));
+        // 23:30 UTC on 1 July is 00:30 on 2 July in London (BST).
+        enforcement.setApprovedAt(Instant.parse("2026-07-01T23:30:00Z"));
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(enforcement));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements().getFirst().getValue().getHighCourtTransferDate())
+            .isEqualTo(expectedTransferDate);
+    }
+
+    @Test
+    void shouldFallBackToTheLegacyEnforcementTypeAndLeaveAnUnknownTypeUnset() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        EnforcementOrderEntity legacyType = enforcementOfType(null, EnforcementStatus.CLOSED,
+                                                              Instant.parse("2026-02-01T10:00:00Z"));
+        legacyType.setEnforcementOrder(EnforcementOrder.builder().selectEnforcementType(WARRANT).build());
+        EnforcementOrderEntity unknownType = enforcementOfType(null, EnforcementStatus.CLOSED,
+                                                               Instant.parse("2026-01-01T10:00:00Z"));
+        unknownType.setEnforcementOrder(EnforcementOrder.builder()
+                                            .chooseEnforcementType(chosenType("SOMETHING_ELSE"))
+                                            .build());
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(unknownType, legacyType));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements())
+            .extracting(listValue -> listValue.getValue().getEnforcementType())
+            .containsExactly(WARRANT, null);
+    }
+
+    @Test
+    void shouldLeaveTheEnforcementListUnsetWhenTheClaimHasNoEnforcementWithAStatus() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntityWithClaim();
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID))
+            .thenReturn(List.of(enforcementOfType(WARRANT, null, Instant.parse("2026-02-01T10:00:00Z"))));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    @Test
+    void shouldKeepTheCaseViewEnforcementListWhenDraftReplacesEnforcementOrder() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        List<ListValue<EnforcementSummary>> draftList = List.of(summary("draft"));
+        List<ListValue<EnforcementSummary>> caseViewList = List.of(summary("case view"));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder()
+                                        .enforcementOrder(EnforcementOrder.builder().enforcements(draftList).build())
+                                        .build()));
+        PCSCase pcsCase = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().enforcements(caseViewList).build())
+            .build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEnforcements()).isSameAs(caseViewList);
+    }
+
+    private static ListValue<EnforcementSummary> summary(String id) {
+        return ListValue.<EnforcementSummary>builder().id(id).value(new EnforcementSummary()).build();
+    }
+
+    private static String idOf(EnforcementOrderEntity enforcement) {
+        return enforcement.getId().toString();
+    }
+
+    private static DynamicStringList chosenType(String code) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement.builder().code(code).label(code).build())
+            .build();
+    }
+
+    private static EnforcementOrderEntity enforcementOfType(SelectEnforcementType type, EnforcementStatus status,
+                                                      Instant statusUpdatedAt) {
+        EnforcementOrderEntity enforcement = enforcement(status, statusUpdatedAt);
+        enforcement.setId(UUID.randomUUID());
+        if (type != null) {
+            enforcement.setEnforcementOrder(EnforcementOrder.builder()
+                                                .chooseEnforcementType(chosenType(type.name()))
+                                                .build());
+        }
+        return enforcement;
+    }
+
+    private static Stream<Arguments> scheduledEvictionScenarios() {
+        return Stream.of(
+            Arguments.of(WARRANT, BAILIFF_DATE),
+            Arguments.of(WARRANT_OF_RESTITUTION, BAILIFF_DATE),
+            Arguments.of(WRIT, null),
+            Arguments.of(WRIT_OF_RESTITUTION, null)
+        );
+    }
+
+    private static Stream<Arguments> highCourtTransferScenarios() {
+        return Stream.of(
+            Arguments.of(WRIT, LocalDate.of(2026, 7, 2)),
+            Arguments.of(WRIT_OF_RESTITUTION, LocalDate.of(2026, 7, 2)),
+            Arguments.of(WARRANT, null),
+            Arguments.of(WARRANT_OF_RESTITUTION, null)
+        );
+    }
+
+    private static PcsCaseEntity pcsCaseEntityWithClaim() {
+        ClaimEntity claim = new ClaimEntity();
+        claim.setId(CLAIM_ID);
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(List.of(claim));
+        return pcsCaseEntity;
+    }
+
+    private static EnforcementOrderEntity enforcement(EnforcementStatus status, Instant statusUpdatedAt) {
+        EnforcementOrderEntity enforcement = new EnforcementOrderEntity();
+        enforcement.setStatus(status);
+        enforcement.setStatusUpdatedAt(statusUpdatedAt);
+        return enforcement;
+    }
+
+    private static Stream<Arguments> enforcementDraftScenarios() {
+        return Stream.of(
+            Arguments.of(State.CASE_ISSUED, true, YesOrNo.YES),
+            Arguments.of(State.CASE_ISSUED, false, YesOrNo.NO),
+            Arguments.of(State.PENDING_CASE_ISSUED, false, YesOrNo.NO)
+        );
+    }
+}

@@ -174,6 +174,84 @@
           <text>"manual"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_enfDecideEnforcement">
+        <inputEntry id="UnaryTests_enfDecideEnforcement">
+          <text>"decideEnforcement"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfDecideEnforcementTaskType">
+          <text>"ReviewClaimantWarrantApplication"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfDecideEnforcementMode">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfAllocateBailiff">
+        <inputEntry id="UnaryTests_enfAllocateBailiff">
+          <text>"allocateBailiff"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateBailiffTaskType">
+          <text>"AllocateCaseToBailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfAllocateBailiffMode">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfSetRiskLevel">
+        <inputEntry id="UnaryTests_enfSetRiskLevel">
+          <text>"setRiskLevel"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfSetRiskLevelTaskType">
+          <text>"ReviewRisksAndSetLevel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfSetRiskLevelMode">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfSetRiskLevelUpdated">
+        <description>Set risk level also closes the task raised when the claimant changed their risk answers</description>
+        <inputEntry id="UnaryTests_enfSetRiskLevelUpdated">
+          <text>"setRiskLevel"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfSetRiskLevelUpdatedTaskType">
+          <text>"ReviewUpdatedRiskInformation"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfSetRiskLevelUpdatedMode">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfMarkNoticeServed">
+        <inputEntry id="UnaryTests_enfMarkNoticeServed">
+          <text>"markNoticeOfEvictionServed"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeServedTaskType">
+          <text>"MarkNoticeOfEvictionServed"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfMarkNoticeServedMode">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfRescheduleEvictionCompletion">
+        <inputEntry id="UnaryTests_enfRescheduleEvictionCompletion">
+          <text>"rescheduleEviction"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionTaskType">
+          <text>"RescheduleEviction"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRescheduleEvictionMode">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfRecordWarrantReturnCompletion">
+        <inputEntry id="UnaryTests_enfRecordWarrantReturnCompletion">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfRecordWarrantReturnTaskType">
+          <text>"RecordWarrantReturn"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfRecordWarrantReturnMode">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_0lcd9te">
         <description>No associated task</description>
         <inputEntry id="UnaryTests_1drz8vr">

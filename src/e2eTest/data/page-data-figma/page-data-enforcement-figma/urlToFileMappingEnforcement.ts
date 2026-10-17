@@ -1,3 +1,5 @@
+import {checkYourAnswersEnforcement} from "@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data";
+
 export default {
     'enforceTheOrderenforcementApplication': 'enforcementApplication',
     'enforceTheOrdernameAndAddressForEviction': 'nameAndAddressForEviction',
@@ -61,4 +63,7 @@ export default {
     'enforceTheOrdershareEvidenceWithJudge': 'shareEvidenceWithJudge',
     'confirmEvictionconfirmEvictionDetails': 'confirmEvictionDetails',
     'confirmEvictionevictionDate': 'evictionDate',
+    'enforceTheOrderenforcementMissedPayments': 'missedPayments',
+    'enforceTheOrderenforcementCannotApplyforWarrantInfo': 'cannotApplyforWarrantInfo',
+    'enforceTheOrder/submit': 'checkYourAnswersEnforcement',
 };

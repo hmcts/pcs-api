@@ -280,6 +280,13 @@ bulk-print:
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
+enforcement-draft-deletion:
+  schedule: ${ENFORCEMENT_DRAFT_DELETION_SCHEDULE:DAILY|02:30}
+  discard-after-days: ${ENFORCEMENT_DRAFT_DELETION_DISCARD_AFTER_DAYS:30}
+  request:
+    max-retries: ${ENFORCEMENT_DRAFT_DELETION_REQUEST_MAX_RETRIES:3}
+    backoff-delay-seconds: ${ENFORCEMENT_DRAFT_DELETION_REQUEST_BACKOFF_DELAY_SECONDS:10s}
+
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
   # silently posting to AAT.
@@ -389,3 +396,24 @@ frontend:
 docweave:
   templates:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
+
+enforcement-notify:
+  # GOV.UK Notify template ids for the enforcement emails in the HDPI-7538 notification table, keyed by
+  # EnforcementEmail.templateKey. Notify has no API that creates a template: each one has to be written by a
+  # person signed in to notifications.service.gov.uk, who then copies its id here. None of them has been
+  # written yet, so every key below is blank and nothing is emailed in any environment. An email with no
+  # template id is skipped and logged at WARN naming the key to set — it never fails the case event.
+  # EnforcementEmail lists the personalisation each template has to accept.
+  templates:
+    warrant-application-received: ${ENFORCEMENT_WARRANT_APPLICATION_RECEIVED_TEMPLATE_ID:}
+    writ-application-received: ${ENFORCEMENT_WRIT_APPLICATION_RECEIVED_TEMPLATE_ID:}
+    warrant-of-restitution-application-received: ${ENFORCEMENT_WARRANT_RESTITUTION_APPLICATION_TEMPLATE_ID:}
+    writ-of-restitution-application-received: ${ENFORCEMENT_WRIT_RESTITUTION_APPLICATION_TEMPLATE_ID:}
+    warrant-approved: ${ENFORCEMENT_WARRANT_APPROVED_TEMPLATE_ID:}
+    writ-approved: ${ENFORCEMENT_WRIT_APPROVED_TEMPLATE_ID:}
+    application-rejected: ${ENFORCEMENT_APPLICATION_REJECTED_TEMPLATE_ID:}
+    eviction-scheduled: ${ENFORCEMENT_EVICTION_SCHEDULED_TEMPLATE_ID:}
+    eviction-rescheduled: ${ENFORCEMENT_EVICTION_RESCHEDULED_TEMPLATE_ID:}
+    claimant-confirmed-attendance: ${ENFORCEMENT_CLAIMANT_CONFIRMED_ATTENDANCE_TEMPLATE_ID:}
+    claimant-declined-attendance: ${ENFORCEMENT_CLAIMANT_DECLINED_ATTENDANCE_TEMPLATE_ID:}
+    warrant-return: ${ENFORCEMENT_WARRANT_RETURN_TEMPLATE_ID:}

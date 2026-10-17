@@ -1,0 +1,402 @@
+package uk.gov.hmcts.reform.pcs.enforcement.view;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+import static uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.MarkupContent.CONFIRM_EVICTION_DEADLINE_IMMEDIATE;
+
+@ExtendWith(MockitoExtension.class)
+class EnforcementOrderMediatorTest {
+
+    @Mock
+    private EnforcementOrderRepository enforcementOrderRepository;
+    @Mock
+    private PcsCaseService pcsCaseService;
+
+    // 01/04/2026 10:00 in London (BST), well over 72 hours before the eviction dates used below
+    private static final Instant NOW = Instant.parse("2026-04-01T09:00:00Z");
+
+    private EnforcementOrderMediator underTest;
+
+    private PCSCase pcsCase;
+
+    @BeforeEach
+    void beforeEach() {
+        underTest = new EnforcementOrderMediator(
+            new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
+            Clock.fixed(NOW, UK_ZONE_ID));
+        pcsCase = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build())
+            .build();
+    }
+
+    @Test
+    void shouldSetShowConfirmEvictionJourneyToYesWhenBailiffDateExists() {
+        // Given
+        LocalDateTime bailiffDate = LocalDateTime.parse("2026-04-15T10:00:00");
+
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(enforcementOrderEntity));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertEquals(YesOrNo.YES, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        String formattedEvictionDate = pcsCase.getEnforcementOrder().getFormattedEvictionDate();
+        assertEquals(underTest.formatDate(bailiffDate), formattedEvictionDate);
+        assertNotNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains("Confirm the eviction date"));
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains(formattedEvictionDate));
+        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
+    }
+
+    @Test
+    void shouldSetShowConfirmEvictionJourneyToNoWhenBailiffDateIsNull() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(null);
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(enforcementOrderEntity));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertEquals(YesOrNo.NO, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getFormattedEvictionDate());
+        assertNotNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains("You cannot enforce the order at the moment"));
+        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, mode = EnumSource.Mode.EXCLUDE,
+        names = "AWAITING_CLAIMANT_CONFIRMATION")
+    void shouldNotOfferTheJourneyWhenTheWarrantIsNotAwaitingTheClaimantsConfirmation(EnforcementStatus status) {
+        // Given a warrant that keeps its bailiff date after moving on, for example a closed one
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity enforcementOrderEntity =
+            createEnforcementOrderEntity(LocalDateTime.parse("2026-04-15T10:00:00"));
+        enforcementOrderEntity.setStatus(status);
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(enforcementOrderEntity));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertEquals(YesOrNo.NO, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains("You cannot enforce the order at the moment"));
+    }
+
+    @Test
+    void shouldFormatBailiffDateCorrectlyInMarkup() {
+        // Given
+        LocalDateTime bailiffDate = LocalDateTime.parse("2026-05-20T14:30:00");
+
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of(enforcementOrderEntity));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
+        String expectedDate = bailiffDate.atZone(ZoneId.of("UTC")).format(outputFormatter);
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup().contains(expectedDate));
+    }
+
+    @Test
+    void shouldCalculateDeadlineDateAsMinus72HoursFromBailiffDate() {
+        // Given
+        LocalDateTime bailiffDate = LocalDateTime.parse("2026-05-20T14:30:00");
+
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(enforcementOrderEntity));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
+        String expectedDeadline = bailiffDate.atZone(ZoneId.of("UTC")).minusHours(72).format(outputFormatter);
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup().contains(expectedDeadline));
+    }
+
+    @Test
+    void shouldTellTheClaimantToConfirmNowWhenTheEvictionIsLessThan72HoursAway() {
+        // Given an eviction tomorrow morning, which the bailiff can schedule
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(LocalDateTime.parse("2026-04-02T10:00:00"))));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        String markup = pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup();
+        assertThat(markup).contains(CONFIRM_EVICTION_DEADLINE_IMMEDIATE)
+            .doesNotContain("You must confirm the eviction details before");
+    }
+
+    @Test
+    void shouldNotNameADeadlineInThePast() {
+        // Given an eviction later today
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(LocalDateTime.parse("2026-04-01T16:00:00"))));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup())
+            .doesNotContain("29 March 2026")
+            .contains(CONFIRM_EVICTION_DEADLINE_IMMEDIATE);
+    }
+
+    @Test
+    void shouldNameTheDeadlineWhenTheEvictionIsMoreThan72HoursAway() {
+        // Given an eviction four days away
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(LocalDateTime.parse("2026-04-05T10:00:00"))));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup())
+            .contains("You must confirm the eviction details before 2 April 2026.");
+    }
+
+    @Test
+    void shouldUseTheCurrentEnforcementRatherThanAnOlderOne() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity olderRejected = createEnforcementOrderEntity(null);
+        olderRejected.setStatus(EnforcementStatus.REJECTED);
+        EnforcementOrderEntity scheduled = createEnforcementOrderEntity(LocalDateTime.parse("2026-04-15T10:00:00"));
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of(olderRejected, scheduled));
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertEquals(YesOrNo.YES, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+    }
+
+    @Test
+    void shouldCreateEnforcementOrderWhenCaseHasNone() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(createEnforcementOrderEntity(null)));
+        PCSCase caseWithoutEnforcementOrder = PCSCase.builder().build();
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, caseWithoutEnforcementOrder);
+
+        // Then
+        assertNotNull(caseWithoutEnforcementOrder.getEnforcementOrder());
+        assertEquals(YesOrNo.NO, caseWithoutEnforcementOrder.getEnforcementOrder().getShowConfirmEvictionJourney());
+    }
+
+    @Test
+    void shouldNotProcessWhenCaseEntityIsNull() {
+        // When
+        underTest.handleEnforcementRequirements(null, pcsCase);
+
+        // Then
+        assertNull(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
+        verify(enforcementOrderRepository, never()).findByClaimId(any());
+    }
+
+    @Test
+    void shouldNotProcessWhenPcsCaseIsNull() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, null);
+
+        // Then
+        assertNull(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
+        verify(enforcementOrderRepository, never()).findByClaimId(any());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenClaimsListIsNull() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(null);
+
+        // When
+        var result = underTest.getEnforcementOrder(pcsCaseEntity);
+
+        // Then
+        assertTrue(result.isEmpty());
+        verify(enforcementOrderRepository, never()).findByClaimId(any());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenClaimsListIsEmpty() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(new ArrayList<>());
+
+        // When
+        var result = underTest.getEnforcementOrder(pcsCaseEntity);
+
+        // Then
+        assertTrue(result.isEmpty());
+        verify(enforcementOrderRepository, never()).findByClaimId(any());
+    }
+
+    @Test
+    void shouldReturnEnforcementOrderWhenFound() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(LocalDateTime.now());
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
+            .thenReturn(List.of(enforcementOrderEntity));
+
+        // When
+        var result = underTest.getEnforcementOrder(pcsCaseEntity);
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals(enforcementOrderEntity, result.get());
+        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
+    }
+
+    @Test
+    void shouldReturnEmptyWhenEnforcementOrderNotFound() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of());
+
+        // When
+        var result = underTest.getEnforcementOrder(pcsCaseEntity);
+
+        // Then
+        assertTrue(result.isEmpty());
+        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
+    }
+
+    @Test
+    void shouldNotSetMarkupWhenEnforcementOrderNotPresent() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
+
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of());
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertNull(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
+        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("formatDateArguments")
+    void formatDate(String testName, LocalDateTime input, String expected) {
+        assertThat(underTest.formatDate(input)).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> formatDateArguments() {
+        return Stream.of(
+            Arguments.of("morning time",
+                         LocalDateTime.of(2025, 6, 9,  9, 30),
+                         "Monday, 9 June 2025 at 9:30am"),
+            Arguments.of("afternoon time",
+                         LocalDateTime.of(2025, 6, 9, 14,  0),
+                         "Monday, 9 June 2025 at 2:00pm"),
+            Arguments.of("midnight",
+                         LocalDateTime.of(2025, 6, 9,  0,  0),
+                         "Monday, 9 June 2025 at 12:00am"),
+            Arguments.of("noon",
+                         LocalDateTime.of(2025, 6, 9, 12,  0),
+                         "Monday, 9 June 2025 at 12:00pm"),
+            Arguments.of("single digit day",
+                         LocalDateTime.of(2025, 1, 3,  8, 15),
+                         "Friday, 3 January 2025 at 8:15am")
+        );
+    }
+
+    private PcsCaseEntity createPcsCaseEntity() {
+        PcsCaseEntity entity = new PcsCaseEntity();
+        ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setId(UUID.randomUUID());
+        entity.setClaims(List.of(claimEntity));
+        return entity;
+    }
+
+    private EnforcementOrderEntity createEnforcementOrderEntity(LocalDateTime bailiffDate) {
+        EnforcementOrderEntity entity = new EnforcementOrderEntity();
+        entity.setId(UUID.randomUUID());
+        entity.setBailiffDate(bailiffDate);
+        entity.setStatus(EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION);
+        return entity;
+    }
+
+}

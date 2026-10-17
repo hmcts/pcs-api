@@ -50,7 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
@@ -672,10 +672,6 @@ public class PCSCase {
     )
     private ComponentLauncher caseFileView;
 
-    @CCD(searchable = false)
-    private String formattedDefendantNames;
-    private String formattedPropertyAddress;
-
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
@@ -749,12 +745,6 @@ public class PCSCase {
         access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private DynamicList caseManagementCategory;
-
-    @CCD(searchable = false)
-    private String confirmEvictionSummaryMarkup;
-
-    @CCD(searchable = false, access = {ClaimantAccess.class})
-    private YesOrNo showConfirmEvictionJourney;
 
     @CCD(access = DocumentAccess.class)
     private List<ListValue<GeneralApplication>> genApps;

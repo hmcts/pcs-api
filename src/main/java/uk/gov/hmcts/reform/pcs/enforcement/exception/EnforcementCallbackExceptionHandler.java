@@ -1,0 +1,63 @@
+package uk.gov.hmcts.reform.pcs.enforcement.exception;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.runtime.CallbackController;
+
+import java.util.List;
+
+/**
+ * A decentralised start handler can only return case data, so an enforcement event that must not start
+ * throws instead. This turns the exception into a callback response with an error, which CCD shows to
+ * the user in place of the event.
+ *
+ * <p>These handlers only cover the start callbacks. A decentralised event's start runs through
+ * {@code CallbackController#aboutToStart}, but its submit runs through the SDK's package-private
+ * {@code ServicePersistenceController}, which this advice cannot be scoped to, so a submit handler must
+ * return its errors on the {@code SubmitResponse} rather than throw.</p>
+ */
+@Slf4j
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@ControllerAdvice(assignableTypes = CallbackController.class)
+public class EnforcementCallbackExceptionHandler {
+
+    @ExceptionHandler(LiveEnforcementExistsException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleLiveEnforcementExists(
+        LiveEnforcementExistsException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
+
+    @ExceptionHandler(NoEnforcementAwaitingReviewException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleNoEnforcementAwaitingReview(
+        NoEnforcementAwaitingReviewException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
+
+    @ExceptionHandler(NoEnforcementException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleNoEnforcement(NoEnforcementException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
+
+    @ExceptionHandler(EnforcementEventNotAvailableException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleEventNotAvailable(
+        EnforcementEventNotAvailableException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
+}

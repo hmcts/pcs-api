@@ -33,5 +33,15 @@ public enum EventId {
     legalRepDocumentUpload,
     manageParties,
     defendantPaperResponse,
-    legalRepresentativeContactDetails
+    legalRepresentativeContactDetails,
+    resumeEnforcementOrder,
+    deleteDraftApplication,
+    decideEnforcement,
+    addBailiffNote,
+    allocateBailiff,
+    setRiskLevel,
+    scheduleEviction,
+    rescheduleEviction,
+    markNoticeOfEvictionServed,
+    recordWarrantReturn
 }

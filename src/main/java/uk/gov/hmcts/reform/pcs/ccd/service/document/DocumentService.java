@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,9 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
@@ -85,10 +80,11 @@ public class DocumentService {
         return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
     }
 
-    public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
-        return documentRepository.saveAll(
-            createDocumentEntities(getWarrantOfRestitutionDocuments(enforcementOrder))
-        );
+    /**
+     * Builds and persists document entities for the given documents as supplied, without renaming them.
+     */
+    public List<DocumentEntity> createDocuments(List<DocumentHolder> documents) {
+        return documentRepository.saveAll(createDocumentEntities(documents));
     }
 
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
@@ -134,12 +130,6 @@ public class DocumentService {
         return allDocuments;
     }
 
-    private List<DocumentHolder> getWarrantOfRestitutionDocuments(EnforcementOrder enforcementOrder) {
-
-        return new ArrayList<>(mapEvidenceOfDefendantsDocumentsWithType(
-                enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments()));
-    }
-
     private List<DocumentHolder> mapDocumentsWithType(
             List<ListValue<Document>> docs, DocumentType type) {
 
@@ -175,22 +165,6 @@ public class DocumentService {
             .toList();
     }
 
-    private List<DocumentHolder> mapEvidenceOfDefendantsDocumentsWithType(
-            List<ListValue<EvidenceOfDefendants>> documents) {
-
-        if (CollectionUtils.isEmpty(documents)) {
-            return Collections.emptyList();
-        }
-
-        return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> DocumentHolder.builder()
-                .document(doc.getDocument())
-                .type(mapEvidenceDocumentTypeToDocumentType(doc.getDocumentType()))
-                .description(doc.getDescription())
-                .build())
-            .toList();
-    }
-
     private List<DocumentEntity> createDocumentEntities(
             List<DocumentHolder> documents) {
 
@@ -200,7 +174,8 @@ public class DocumentService {
                         .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(categoryIdFor(holder.getType()))
+                        .categoryId(StringUtils.isNotBlank(holder.getCategoryId())
+                                        ? holder.getCategoryId() : categoryIdFor(holder.getType()))
                         .type(holder.getType())
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
@@ -495,23 +470,6 @@ public class DocumentService {
         return mapDocumentTypeToCategory(documentType)
             .map(CaseFileCategory::getId)
             .orElse(DEFAULT_CATEGORY_ID);
-    }
-
-    private DocumentType mapEvidenceDocumentTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {
-        return switch (evidenceDocumentType) {
-            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
-            case POLICE_REPORT -> DocumentType.POLICE_REPORT;
-            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
-            case OTHER -> DocumentType.OTHER;
-        };
-    }
-
-    @Builder
-    @Data
-    private static class DocumentHolder {
-        private Document document;
-        private DocumentType type;
-        private String description;
     }
 
     public DocumentType resolveDocumentType(LegalRepDocument legalRepDoc) {
