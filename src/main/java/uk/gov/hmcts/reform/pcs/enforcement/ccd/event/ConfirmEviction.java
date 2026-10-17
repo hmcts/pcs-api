@@ -15,6 +15,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.ConfirmEvictionConfigurer;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
+
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
@@ -26,6 +30,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
     private final ConfirmEvictionConfigurer confirmEvictionConfigurer;
+    private final ClaimantEvictionConfirmationService claimantEvictionConfirmationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -44,6 +49,11 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        claimantEvictionConfirmationService.recordAttendance(
+            eventPayload.caseReference(),
+            Optional.ofNullable(eventPayload.caseData().getEnforcementOrder())
+                .map(EnforcementOrder::getClaimantCanAttendEviction)
+                .orElse(null));
         return SubmitResponse.defaultResponse();
     }
 

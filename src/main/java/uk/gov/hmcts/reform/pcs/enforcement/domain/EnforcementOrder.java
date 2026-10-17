@@ -106,6 +106,13 @@ public class EnforcementOrder {
     private YesOrNo showConfirmEvictionJourney;
 
     /**
+     * The claimant's answer in "Confirm the eviction details". It is only used on submit, to move the
+     * enforcement status, and is not stored.
+     */
+    @CCD(label = "Can you attend the eviction on this date?", searchable = false, access = {ClaimantAccess.class})
+    private YesOrNo claimantCanAttendEviction;
+
+    /**
      * The status of the case's current enforcement, set for the case view. It is read only: the status is
      * held on the enforcement record and no event edits this field.
      */
