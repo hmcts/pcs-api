@@ -9,6 +9,8 @@ import { LONG_TIMEOUT } from 'playwright.config';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { user } from '@data/user-data';
 import { performAction } from '@utils/controller-enforcement';
+import { isLocalStack, localUsers, signInToIdamSimulator } from '@config/local-stack.config';
+import { recordSignedInRole } from './session';
 
 export const DECIDE_ENFORCEMENT = 'Decide enforcement';
 
@@ -49,24 +51,50 @@ export async function signInAsHearingCentreAdmin(page: Page): Promise<void> {
   await page.context().clearCookies();
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.hearingCenterAdmin);
+  if (isLocalStack()) {
+    await signInToIdamSimulator(page, localUsers.hearingCentreAdmin);
+  } else {
+    await performAction('login', user.hearingCenterAdmin);
+  }
   await dismissCookieBanner(page, 'analytics');
+  recordSignedInRole('hearing-centre-admin');
 }
 
 function caseDetails(page: Page) {
   return page.locator('dl.govuk-summary-list').filter({ hasText: decideEnforcement.propertyAddressKey });
 }
 
+/** The 16-digit reference as XUI renders it in a case-details summary list: four dash-separated groups. */
+export const withDashes = (caseReference: string): string => caseReference.replace(/(.{4})(?=.)/g, '$1-');
+
+/**
+ * The read-only case details at the top of an enforcement event page.
+ *
+ * `decideEnforcement` renders them as a GOV.UK summary list with `Case number` / `Property address` /
+ * `Parties` keys. The bailiff events (`setRiskLevel`, `addBailiffNote`, …) render the same three facts from
+ * a markdown page label instead, so they come out as paragraphs. Both are checked.
+ */
 export async function expectCaseDetailsHeader(page: Page, world: EnforcementWorld, partyNames: string): Promise<void> {
-  const header = caseDetails(page).first();
-  await expect(header).toBeVisible({ timeout: LONG_TIMEOUT });
-  await expect(header).toContainText(decideEnforcement.caseNumberKey);
-  await expect(header).toContainText(String(world.caseReference));
-  await expect(header).toContainText(decideEnforcement.propertyAddressKey);
-  await expect(header).toContainText(decideEnforcement.partiesKey);
+  const dashedReference = withDashes(String(world.caseReference));
+  const summaryList = caseDetails(page).first();
+
+  if (await summaryList.count()) {
+    await expect(summaryList).toBeVisible({ timeout: LONG_TIMEOUT });
+    await expect(summaryList).toContainText(decideEnforcement.caseNumberKey);
+    await expect(summaryList).toContainText(dashedReference);
+    await expect(summaryList).toContainText(decideEnforcement.propertyAddressKey);
+    await expect(summaryList).toContainText(decideEnforcement.partiesKey);
+  } else {
+    // XUI also shows the case number in the case header above the event, hence .first().
+    await expect(page.getByRole('paragraph').filter({ hasText: `Case number: ${dashedReference}` }).first())
+      .toBeVisible({ timeout: LONG_TIMEOUT });
+    // XUI renders these paragraphs with surrounding whitespace, so the text is not anchored.
+    await expect(page.getByRole('paragraph').filter({ hasText: 'Property address:' }).first()).toBeVisible();
+  }
   // "claimant name vs defendant name": the case name pcs-api builds for the case.
   if (/ vs /.test(partyNames)) {
-    await expect(header).toContainText(' vs ');
+    const partiesOn = (await summaryList.count()) ? summaryList : page.locator('body');
+    await expect(partiesOn).toContainText(' vs ');
   }
 }
 
@@ -98,7 +126,15 @@ export function decisionRow(page: Page) {
   return page.locator('tr, .govuk-summary-list__row').filter({ hasText: decideEnforcement.decisionQuestion }).first();
 }
 
+/**
+ * The confirmation panel XUI renders from `DecideEnforcementConfirmation`. Scoped to `#confirmation-body`
+ * because the case number and property address also appear in the case header above it.
+ */
+export function confirmationPanel(page: Page) {
+  return page.locator('#confirmation-body');
+}
+
 /** The confirmation markup from DecideEnforcementConfirmation, e.g. "Warrant approved" or "Writ rejected". */
 export async function expectConfirmation(page: Page, title: string): Promise<void> {
-  await expect(page.getByText(title, { exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
+  await expect(confirmationPanel(page).getByText(title, { exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
 }

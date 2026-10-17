@@ -45,6 +45,10 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
         users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
                                                               "caseworker-pcs-solicitor",  "caseworker-pcs"));
+        // The e2e suite's defendant solicitor. createCaseAPI.action.ts hardcodes this address when it links
+        // a defendant solicitor to a party, so the local stack has to know it by the same name as AAT.
+        users.put("pcs-org1-solicitor2@test.com", List.of("pui-case-manager", "caseworker",
+                                                          "caseworker-pcs-solicitor", "caseworker-pcs"));
         users.put("citizen@pcs.com", List.of("citizen"));
         users.put("data.store.idam.system.user@gmail.com", List.of());
         users.put("ccd.import@pcs.com", List.of("ccd-import"));
@@ -55,6 +59,12 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("exui-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import"));
         users.put("prd-admin-user@localhost", List.of());
         users.put("master.caa@gmail.com", List.of("caseworker-caa"));
+        // Bailiff staff for the enforcement journeys. The bailiff roles are RAS organisation roles
+        // (UserRole.BAILIFF, BAILIFF_ADMIN, BAILIFF_MANAGER), granted in cftlib-am-role-assignments.json;
+        // the IDAM roles here only get them into XUI.
+        users.put("pcs-bailiff@localhost", List.of("caseworker", "caseworker-pcs"));
+        users.put("pcs-bailiff-admin@localhost", List.of("caseworker", "caseworker-pcs"));
+        users.put("pcs-bailiff-manager@localhost", List.of("caseworker", "caseworker-pcs"));
 
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {

@@ -18,8 +18,6 @@ Feature: Add a bailiff note
       | hearing-centre-admin       |
       | hearing-centre-team-leader |
 
-    # No bailiff, bailiff-admin or bailiff-manager test users yet (HDPI-7539).
-    @pending
     Examples:
       | role                       |
       | bailiff                    |
@@ -53,6 +51,9 @@ Feature: Add a bailiff note
       | Breathing space              |
       | Closed                       |
 
+  # AddBailiffNotePage renders only the case number and property address. Unlike FindBailiffPage, which
+  # includes ${bailiffAllocationCaseName}, it has no parties line, so "claimant name vs defendant name" is
+  # not shown. Everything else in this scenario passes.
   @HDPI-7593 @pending
   Scenario: Add bailiff note screen
     Given I am signed in to XUI as a bailiff
@@ -61,7 +62,7 @@ Feature: Add a bailiff note
     And I see the "Add note" text box
     And the "Previous" button is disabled
 
-  @HDPI-7593 @pending
+  @HDPI-7593
   Scenario Outline: Note validation
     Given I am signed in to XUI as a bailiff
     And I am on the "Add bailiff note" screen

@@ -6,6 +6,13 @@ import * as fs from 'fs';
 import {LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { uploadTestDocuments } from '@utils/common/uploadDocument.utils';
+import {
+  applyLocalServiceUrls,
+  isLocalStack,
+  localDocumentStoreIsUp,
+  localUsers,
+  signInToIdamSimulator,
+} from '@config/local-stack.config';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
@@ -15,7 +22,9 @@ const NIGHTLY_ENV_SLUGS = new Set(['aat', 'demo', 'perftest', 'ithc']);
 function applyPlaywrightServiceUrls(): void {
   const e = (process.env.ENVIRONMENT || '').toLowerCase();
 
-  if (NIGHTLY_ENV_SLUGS.has(e)) {
+  if (isLocalStack()) {
+    applyLocalServiceUrls();
+  } else if (NIGHTLY_ENV_SLUGS.has(e)) {
     process.env.MANAGE_CASE_BASE_URL ||= `https://manage-case.${e}.platform.hmcts.net`;
     process.env.DATA_STORE_URL_BASE ||= `http://ccd-data-store-api-${e}.service.core-compute-${e}.internal`;
     process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
@@ -39,7 +48,27 @@ async function globalSetupConfig(): Promise<void> {
   await getAccessToken();
   await getS2SToken();
   await authenticateAndSaveState();
-  await uploadTestDocuments();
+  if (!isLocalStack()) {
+    await uploadTestDocuments();
+  } else if (await localDocumentStoreIsUp()) {
+    await uploadTestDocuments();
+  } else {
+    // cftlib always starts CDAM, but dm-store behind it only runs with LOCAL_DOC_SERVICES=true. Without it
+    // there is nowhere to put a document, so the suite skips the upload; local cases are built from the
+    // `createTestCase` fixtures, which reference no documents.
+    console.log('\n⚠️  dm-store is not running (boot cftlib with LOCAL_DOC_SERVICES=true). Skipping document upload.\n');
+  }
+}
+
+/** The user whose session the suite runs as: the claimant's legal representative. */
+function suiteUser(): { email: string; password: string } {
+  if (isLocalStack()) {
+    return { email: localUsers.claimantSolicitor, password: process.env.IDAM_PCS_USER_PASSWORD as string };
+  }
+  return {
+    email: user.localAuthorityOrg1Usr1.email as string,
+    password: user.localAuthorityOrg1Usr1.password as string,
+  };
 }
 
 async function authenticateAndSaveState(): Promise<string> {
@@ -50,7 +79,8 @@ async function authenticateAndSaveState(): Promise<string> {
       'MANAGE_CASE_BASE_URL is not set (export it, or set ENVIRONMENT to aat|demo|perftest|ithc for default manage-case URL).'
     );
   }
-  if (!user.localAuthorityOrg1Usr1.email || !user.localAuthorityOrg1Usr1.password) {
+  const { email, password } = suiteUser();
+  if (!email || !password) {
     throw new Error('Login failed: missing credentials. Set IDAM_PCS_USER_PASSWORD.');
   }
 
@@ -66,15 +96,20 @@ async function authenticateAndSaveState(): Promise<string> {
 
     await dismissCookieBanner(page, 'additional');
 
-    await page.waitForSelector('#email', { timeout: LONG_TIMEOUT });
-    await page.locator('#email').fill(user.localAuthorityOrg1Usr1.email);
-    await page.getByRole('button', { name: 'Continue' }).click(); 
-    const pwdHeader = page.getByLabel('Enter your password', { exact: true });
-    await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
-    await page.locator('#password').fill(user.localAuthorityOrg1Usr1.password);
-    await page.getByRole('button', { name: 'Continue' }).click(); 
+    if (isLocalStack()) {
+      // The IDAM simulator serves one form with #username and #password, not AAT's two-step journey.
+      await signInToIdamSimulator(page, email);
+    } else {
+      await page.waitForSelector('#email', { timeout: LONG_TIMEOUT });
+      await page.locator('#email').fill(email);
+      await page.getByRole('button', { name: 'Continue' }).click();
+      const pwdHeader = page.getByLabel('Enter your password', { exact: true });
+      await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
+      await page.locator('#password').fill(password);
+      await page.getByRole('button', { name: 'Continue' }).click();
 
-    await page.waitForURL((url) => !url.href.includes('/enter-password'), { timeout: LONG_TIMEOUT });
+      await page.waitForURL((url) => !url.href.includes('/enter-password'), { timeout: LONG_TIMEOUT });
+    }
 
     await page.waitForLoadState('load');
 
@@ -127,9 +162,10 @@ export const getAccessToken = async (): Promise<void> => {
       'IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL are not set (set ENVIRONMENT to aat|demo|perftest|ithc, preview defaults AAT, or export both URLs)'
     );
   }
+  const { email, password } = suiteUser();
   process.env.BEARER_TOKEN = await new IdamUtils().generateIdamToken({
-    username: user.localAuthorityOrg1Usr1.email,
-    password: user.localAuthorityOrg1Usr1.password,
+    username: email,
+    password,
     grantType: 'password',
     clientId: 'pcs-api',
     clientSecret: process.env.PCS_API_IDAM_SECRET as string,
