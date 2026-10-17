@@ -29,6 +29,13 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @Slf4j
 public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
+    /**
+     * EnforcementOrderMediator sets this for the case view only while the claim's current enforcement is
+     * awaiting the claimant's confirmation, which is the only time ClaimantEvictionConfirmationService records
+     * an answer. Without it the journey is offered on every issued case and silently records nothing.
+     */
+    static final String SHOW_CONFIRM_EVICTION_JOURNEY = "showConfirmEvictionJourney=\"Yes\"";
+
     private final ConfirmEvictionConfigurer confirmEvictionConfigurer;
     private final ClaimantEvictionConfirmationService claimantEvictionConfirmationService;
 
@@ -42,7 +49,8 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(ShowConditions.and(ShowConditions.featureFlagsEnabled(ENFORCEMENT),
+                                                 SHOW_CONFIRM_EVICTION_JOURNEY))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));

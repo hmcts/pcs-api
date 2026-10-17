@@ -84,9 +84,13 @@ class EnforcementOrderMediatorTest {
 
         // Then
         assertEquals(YesOrNo.YES, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        String formattedEvictionDate = pcsCase.getEnforcementOrder().getFormattedEvictionDate();
+        assertEquals(underTest.formatDate(bailiffDate), formattedEvictionDate);
         assertNotNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
         assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
             .contains("Confirm the eviction date"));
+        assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
+            .contains(formattedEvictionDate));
         verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
@@ -104,6 +108,7 @@ class EnforcementOrderMediatorTest {
 
         // Then
         assertEquals(YesOrNo.NO, pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getEnforcementOrder().getFormattedEvictionDate());
         assertNotNull(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup());
         assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup()
             .contains("You cannot enforce the order at the moment"));

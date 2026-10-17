@@ -115,6 +115,13 @@ public class EnforcementOrder {
     private YesOrNo showConfirmEvictionJourney;
 
     /**
+     * The scheduled eviction date the claimant is being asked to confirm, set for the case view alongside
+     * {@link #showConfirmEvictionJourney} and shown on the "The eviction date" page.
+     */
+    @CCD(searchable = false, access = {ClaimantAccess.class})
+    private String formattedEvictionDate;
+
+    /**
      * The claimant's answer in "Confirm the eviction details". It is only used on submit, to move the
      * enforcement status, and is not stored.
      */
