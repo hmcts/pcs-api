@@ -116,6 +116,7 @@ class EnforcementOrderViewTest {
             .deleteDraftApplication(YesOrNo.NO)
             .confirmEvictionSummaryMarkup("stale draft markup")
             .showConfirmEvictionJourney(YesOrNo.NO)
+            .formattedEvictionDate("stale draft date")
             .formattedDefendantNames("draft defendant names")
             .formattedPropertyAddress("draft property address")
             .build();
@@ -126,6 +127,7 @@ class EnforcementOrderViewTest {
             .enforcementOrder(EnforcementOrder.builder()
                                   .confirmEvictionSummaryMarkup("case view markup")
                                   .showConfirmEvictionJourney(YesOrNo.YES)
+                                  .formattedEvictionDate("Friday, 6 November 2026 at 10:00AM")
                                   .build())
             .build();
 
@@ -137,9 +139,29 @@ class EnforcementOrderViewTest {
         assertThat(result.getDeleteDraftApplication()).isEqualTo(YesOrNo.NO);
         assertThat(result.getConfirmEvictionSummaryMarkup()).isEqualTo("case view markup");
         assertThat(result.getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
-        assertThat(result.getFormattedDefendantNames()).isNull();
-        assertThat(result.getFormattedPropertyAddress()).isNull();
+        assertThat(result.getFormattedEvictionDate()).isEqualTo("Friday, 6 November 2026 at 10:00AM");
         assertThat(result.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldKeepTheDraftsPropertyAddressAndDefendantNamesSoAResumeStillHasThem() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
+        EnforcementOrder draftOrder = EnforcementOrder.builder()
+            .formattedDefendantNames("draft defendant names")
+            .formattedPropertyAddress("draft property address")
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
+            .thenReturn(Optional.of(PCSCase.builder().enforcementOrder(draftOrder).build()));
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
+
+        // Then
+        EnforcementOrder result = pcsCase.getEnforcementOrder();
+        assertThat(result.getFormattedDefendantNames()).isEqualTo("draft defendant names");
+        assertThat(result.getFormattedPropertyAddress()).isEqualTo("draft property address");
     }
 
     @Test
