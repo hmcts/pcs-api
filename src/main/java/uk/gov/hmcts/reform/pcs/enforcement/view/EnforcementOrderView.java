@@ -5,9 +5,16 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -16,10 +23,36 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @RequiredArgsConstructor
 public class EnforcementOrderView {
 
+    private static final Comparator<EnforcementOrderEntity> CURRENT_FIRST =
+        Comparator.comparing((EnforcementOrderEntity enforcement) -> enforcement.getStatus().isLive())
+            .thenComparing(EnforcementOrderEntity::getStatusUpdatedAt,
+                           Comparator.nullsFirst(Comparator.<Instant>naturalOrder()))
+            .reversed();
+
     private final DraftCaseDataService draftCaseDataService;
+    private final EnforcementOrderRepository enforcementOrderRepository;
 
     public void setCaseFields(PCSCase pcsCase, long caseReference, State state) {
         setHasEnforcementDraftData(caseReference, state, pcsCase);
+    }
+
+    /**
+     * Shows the status of the claim's current enforcement: the live one if there is one, otherwise the one
+     * whose status changed most recently. Leaves the field unset when the claim has no enforcement.
+     */
+    public void setEnforcementStatus(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
+        if (pcsCaseEntity == null || pcsCase == null) {
+            return;
+        }
+        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
+        if (claims == null || claims.isEmpty()) {
+            return;
+        }
+        enforcementOrderRepository.findByClaimId(claims.getFirst().getId()).stream()
+            .filter(enforcement -> enforcement.getStatus() != null)
+            .min(CURRENT_FIRST)
+            .map(EnforcementOrderEntity::getStatus)
+            .ifPresent(status -> enforcementOrderOf(pcsCase).setEnforcementStatus(status));
     }
 
     private void setHasEnforcementDraftData(long caseReference, State state, PCSCase pcsCase) {
@@ -52,6 +85,7 @@ public class EnforcementOrderView {
         draftOrder.setShowConfirmEvictionJourney(current.getShowConfirmEvictionJourney());
         draftOrder.setFormattedDefendantNames(current.getFormattedDefendantNames());
         draftOrder.setFormattedPropertyAddress(current.getFormattedPropertyAddress());
+        draftOrder.setEnforcementStatus(current.getEnforcementStatus());
         return draftOrder;
     }
 

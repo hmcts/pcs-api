@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementStatusReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.RawWarrantRestDetails;
@@ -103,4 +104,11 @@ public class EnforcementOrder {
 
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
+
+    /**
+     * The status of the case's current enforcement, set for the case view. It is read only: the status is
+     * held on the enforcement record and no event edits this field.
+     */
+    @CCD(label = "Enforcement status", searchable = false, access = {EnforcementStatusReadAccess.class})
+    private EnforcementStatus enforcementStatus;
 }

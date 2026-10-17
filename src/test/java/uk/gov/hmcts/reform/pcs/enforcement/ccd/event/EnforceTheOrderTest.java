@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
@@ -46,12 +47,14 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
@@ -394,6 +397,36 @@ class EnforceTheOrderTest extends BaseEventTest {
                 .anyMatch(item ->
                         item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
         assertThat(warrantOfRestitutionOptionExists).isFalse();
+    }
+
+    @Test
+    void shouldRefuseToStartWhenTheCaseHasALiveEnforcement() {
+        // Given
+        when(enforcementOrderService.hasLiveEnforcement(TEST_CASE_REFERENCE)).thenReturn(true);
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementOrder.builder().build())
+                .build();
+
+        // When / Then
+        assertThatThrownBy(() -> callStartHandler(caseData))
+                .isInstanceOf(LiveEnforcementExistsException.class)
+                .hasMessage("There is already a live warrant or writ on this case");
+        verify(feeApplier, never()).applyFeeAmount(any(), any(), any());
+    }
+
+    @Test
+    void shouldStartWhenTheCaseHasNoLiveEnforcement() {
+        // Given
+        when(enforcementOrderService.hasLiveEnforcement(TEST_CASE_REFERENCE)).thenReturn(false);
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementOrder.builder().build())
+                .build();
+
+        // When
+        PCSCase result = callStartHandler(caseData);
+
+        // Then
+        assertThat(result.getEnforcementOrder().getChooseEnforcementType()).isNotNull();
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {

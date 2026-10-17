@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,10 +22,12 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +66,16 @@ public class EnforcementOrderEntity {
 
     @Column(name = "bailiff_date")
     private LocalDateTime bailiffDate;
+
+    /**
+     * Change this only through EnforcementStatusTransitions, which enforces the allowed transitions.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private EnforcementStatus status;
+
+    @Column(name = "status_updated_at")
+    private Instant statusUpdatedAt;
 
     @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;

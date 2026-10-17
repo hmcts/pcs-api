@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -94,6 +95,9 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        if (enforcementOrderService.hasLiveEnforcement(eventPayload.caseReference())) {
+            throw new LiveEnforcementExistsException();
+        }
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.getEnforcementOrder().setFormattedPropertyAddress(addressFormatter
                 .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
