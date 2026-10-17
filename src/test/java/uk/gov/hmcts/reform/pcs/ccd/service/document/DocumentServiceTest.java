@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureCaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
@@ -492,6 +493,28 @@ class DocumentServiceTest {
         assertThat(entity.getType()).isEqualTo(DocumentType.WITNESS_STATEMENT);
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.EVIDENCE.getId());
         assertThat(entity.getDescription()).isNull();
+    }
+
+    @Test
+    void shouldCreateDocumentsInTheSuppliedCategoryOverTheOneForTheirType() {
+        // Given
+        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        DocumentHolder documentHolder = DocumentHolder.builder()
+            .document(Document.builder()
+                .url("http://dm-store/documents/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                .filename("statement.pdf")
+                .build())
+            .type(DocumentType.WITNESS_STATEMENT)
+            .categoryId(FeatureCaseFileCategory.ENFORCEMENT.getId())
+            .build();
+
+        // When
+        List<DocumentEntity> entities = underTest.createDocuments(List.of(documentHolder));
+
+        // Then
+        assertThat(entities).extracting(DocumentEntity::getCategoryId)
+            .containsExactly(FeatureCaseFileCategory.ENFORCEMENT.getId());
     }
 
     @Test

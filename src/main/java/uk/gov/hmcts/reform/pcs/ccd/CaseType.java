@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureCaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -247,12 +248,22 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
-                .categoryID(category.getId())
-                .categoryLabel(category.getLabel())
-                .displayOrder(category.getDisplayOrder())
-                .build();
+            addCaseFileCategory(builder, category.getId(), category.getLabel(), category.getDisplayOrder());
         }
+        for (FeatureCaseFileCategory category : FeatureCaseFileCategory.values()) {
+            addCaseFileCategory(builder, category.getId(), category.getLabel(), category.getDisplayOrder());
+        }
+    }
+
+    // The SDK asks for a role but does not write it to Categories.json: CCD categories have no role
+    // restriction, so everyone who can see Case File View sees every folder, even an empty one.
+    private void addCaseFileCategory(ConfigBuilder<PCSCase, State, AccessProfile> builder,
+                                     String id, String label, int displayOrder) {
+        builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
+            .categoryID(id)
+            .categoryLabel(label)
+            .displayOrder(displayOrder)
+            .build();
     }
 
     /**
