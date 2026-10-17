@@ -76,6 +76,34 @@ class EnforcementApplicationPageTest extends BasePageTest {
     }
 
     @Test
+    void shouldSetFormattedDefendantNames_SurnameOnly() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant(null, "Smith"));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Smith</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_FirstNameOnly() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant("Jess", "  "));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Jess</div>");
+    }
+
+    @Test
     void shouldSetFormattedDefendantNames_MultipleDefendant() {
         // Given
         PCSCase caseData = createCaseWithDefendants(

@@ -16,10 +16,16 @@ public class EnforcementStatementOfTruthService {
     private final StatementOfTruthMapper statementOfTruthMapper;
     private final StatementOfTruthRepository statementOfTruthRepository;
 
+    /**
+     * Persists the statement of truth the claimant signed, if the application captured one. A draft submitted
+     * without reaching the statement of truth page has none, and leaves enf_case.sot_id null.
+     */
     @Transactional
     public void processStatementOfTruth(StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement,
                                         EnforcementOrderEntity enforcementOrderEntity) {
-
+        if (statementOfTruthDetailsEnforcement == null) {
+            return;
+        }
         StatementOfTruthEntity statementOfTruthEntity =
                 statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement);
         enforcementOrderEntity.setStatementOfTruth(statementOfTruthRepository.save(statementOfTruthEntity));

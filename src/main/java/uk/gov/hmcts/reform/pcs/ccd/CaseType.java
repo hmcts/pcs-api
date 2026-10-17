@@ -284,7 +284,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("riskAssessment", "Risk assessment")
             .forRoles(INTERNAL_TAB_ROLES)
-            .showCondition("enforcementStatus!=\"\"")
+            .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "enforcementStatus!=\"\""))
             .field("enforcementStatus", NEVER_SHOW)
             .field("bailiffNotes")
             .field("currentRiskLevel")
