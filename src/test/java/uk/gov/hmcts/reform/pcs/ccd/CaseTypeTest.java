@@ -200,9 +200,9 @@ class CaseTypeTest {
         assertThat(riskAssessmentTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(riskAssessmentTab.getShowCondition()).isEqualTo("enforcementStatus!=\"\"");
         assertThat(riskAssessmentTab.getFields()).extracting(TabField::getId)
-            .containsExactly("enforcementStatus", "bailiffNotes");
+            .containsExactly("enforcementStatus", "bailiffNotes", "currentRiskLevel", "currentRiskLevelReason");
         assertThat(riskAssessmentTab.getFields()).extracting(TabField::getShowCondition)
-            .containsExactly(NEVER_SHOW, null);
+            .containsExactly(NEVER_SHOW, null, null, null);
     }
 
     @Test

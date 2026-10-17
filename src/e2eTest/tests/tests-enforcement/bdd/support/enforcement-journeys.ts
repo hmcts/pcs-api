@@ -56,6 +56,9 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
   'Confirm the eviction date': { label: caseSummary.confirmEvictionEvent, firstPageHeader: confirmEvictionDetails.mainHeader },
   // pcs-api AddBailiffNote: the event name and its one page's label.
   'Add a bailiff note': { label: 'Add a bailiff note', firstPageHeader: 'Add bailiff note' },
+  // pcs-api AllocateBailiff and SetRiskLevel: the event names and their first page labels.
+  'Allocate case to bailiff': { label: 'Allocate case to bailiff', firstPageHeader: 'Find the bailiff\'s name' },
+  'Set risk level': { label: 'Set risk level', firstPageHeader: 'Set risk level' },
 };
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */

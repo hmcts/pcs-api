@@ -1,7 +1,10 @@
-// Bailiff journeys (features 03-05, 07-11, 17). None of the bailiff events exist yet.
+// Bailiff journeys (features 03-05, 07-11, 17).
+// "Allocate case to bailiff" (03) and "Set risk level" (04) are built in pcs-api, but every scenario signs in as a
+// bailiff, bailiff admin or bailiff manager and most start from a WA task. Neither exists yet (HDPI-7539, HDPI-8627),
+// so their steps stay pending and both features stay @pending.
 import { pendingSteps } from '../fixtures/pending';
 
-pendingSteps({ ticket: 'HDPI-7356', summary: 'Allocate case to bailiff' }, [
+pendingSteps({ ticket: 'HDPI-7539', summary: 'Allocate case to bailiff needs bailiff test users and WA tasks' }, [
   'no {string} screen is shown',
   'I type part of a bailiff\'s name or email address',
   'I see matching bailiff users for the case\'s court location',
@@ -25,7 +28,7 @@ pendingSteps({ ticket: 'HDPI-7356', summary: 'Allocate case to bailiff' }, [
   'a PCS case {string} with a warrant of possession allocated to me',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7343', summary: 'Set risk level' }, [
+pendingSteps({ ticket: 'HDPI-7539', summary: 'Set risk level needs bailiff test users and WA tasks' }, [
   'the {string} screen opens with heading {string}',
   'I see the case number and the property address',
   'I see the question {string} with options {string} and {string}',

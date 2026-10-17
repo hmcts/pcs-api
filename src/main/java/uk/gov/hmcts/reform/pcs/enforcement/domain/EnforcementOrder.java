@@ -131,4 +131,12 @@ public class EnforcementOrder {
      */
     @CCD(label = "Bailiff note", searchable = false, access = {BailiffNoteReadAccess.class})
     private List<ListValue<BailiffNote>> bailiffNotes;
+
+    @JsonUnwrapped
+    @CCD
+    private BailiffAllocationDetails bailiffAllocationDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private RiskLevelDetails riskLevelDetails;
 }

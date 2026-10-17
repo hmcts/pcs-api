@@ -240,7 +240,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(INTERNAL_TAB_ROLES)
             .showCondition("enforcementStatus!=\"\"")
             .field("enforcementStatus", NEVER_SHOW)
-            .field("bailiffNotes");
+            .field("bailiffNotes")
+            .field("currentRiskLevel")
+            .field("currentRiskLevelReason");
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
