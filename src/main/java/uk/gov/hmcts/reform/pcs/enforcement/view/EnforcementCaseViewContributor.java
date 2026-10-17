@@ -13,12 +13,14 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
 
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final EnforcementOrderView enforcementOrderView;
+    private final BailiffNoteView bailiffNoteView;
 
     @Override
     public void contribute(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
         enforcementOrderMediator.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
         enforcementOrderView.setEnforcementStatus(pcsCaseEntity, pcsCase);
+        bailiffNoteView.setBailiffNotes(pcsCaseEntity, pcsCase);
     }
 
 }

@@ -52,7 +52,12 @@ public enum UserRole implements HasRole {
     JUDGE("judge", Set.of(R), RAS),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", Permission.CRU, IDAM),
-    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM);
+    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM),
+    BAILIFF("bailiff", Permission.CRU, RAS),
+    BAILIFF_ADMIN("bailiff-admin", Permission.CRU, RAS),
+    BAILIFF_MANAGER("bailiff-manager", Permission.CRU, RAS),
+    // RAS case role (no brackets) of the bailiff an enforcement is allocated to: a bailiff on that case.
+    ALLOCATED_BAILIFF("allocated-bailiff", Permission.CRU, RAS, AccessProfile.BAILIFF);
 
     @JsonValue
     private final String role;

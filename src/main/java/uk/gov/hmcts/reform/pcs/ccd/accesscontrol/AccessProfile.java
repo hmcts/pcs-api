@@ -56,7 +56,10 @@ public enum AccessProfile implements HasRole {
     GS_PROFILE("GS_profile", Set.of(R)),
     SYSTEM_USER("pcs-system-update", CRU),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", CRU),
-    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", CRU);
+    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", CRU),
+    BAILIFF("bailiff", CRU),
+    BAILIFF_ADMIN("bailiff-admin", CRU),
+    BAILIFF_MANAGER("bailiff-manager", CRU);
 
 
     @JsonValue

@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffNote;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -179,6 +181,8 @@ class EnforcementOrderServiceTest {
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WRIT);
         enforcementOrder.setEnforcementStatus(EnforcementStatus.CLOSED);
+        enforcementOrder.setBailiffNotes(List.of(new ListValue<>("1", new BailiffNote())));
+        enforcementOrder.setBailiffNoteText("note");
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(strategyFactory.getStrategy(WRIT)).thenReturn(mock(EnforcementTypeStrategy.class));
 
@@ -189,6 +193,8 @@ class EnforcementOrderServiceTest {
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
         verify(enforcementOrderRepository).save(savedCaptor.capture());
         assertThat(savedCaptor.getValue().getEnforcementOrder().getEnforcementStatus()).isNull();
+        assertThat(savedCaptor.getValue().getEnforcementOrder().getBailiffNotes()).isNull();
+        assertThat(savedCaptor.getValue().getEnforcementOrder().getBailiffNoteText()).isNull();
         assertThat(savedCaptor.getValue().getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);
     }
 

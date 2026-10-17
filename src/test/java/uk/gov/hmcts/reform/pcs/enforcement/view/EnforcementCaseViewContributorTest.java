@@ -22,6 +22,8 @@ class EnforcementCaseViewContributorTest {
     @Mock
     private EnforcementOrderView enforcementOrderView;
     @Mock
+    private BailiffNoteView bailiffNoteView;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private PCSCase pcsCase;
@@ -35,10 +37,11 @@ class EnforcementCaseViewContributorTest {
         underTest.contribute(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
 
         // Then
-        InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView);
+        InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
         inOrder.verify(enforcementOrderView).setEnforcementStatus(pcsCaseEntity, pcsCase);
+        inOrder.verify(bailiffNoteView).setBailiffNotes(pcsCaseEntity, pcsCase);
         inOrder.verifyNoMoreInteractions();
     }
 

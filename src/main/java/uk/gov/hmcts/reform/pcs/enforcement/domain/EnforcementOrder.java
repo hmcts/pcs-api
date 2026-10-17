@@ -8,8 +8,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffNoteReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementStatusReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
@@ -18,7 +20,11 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOf
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
+import java.util.List;
+
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 /**
  * The main domain model representing an enforcement order.
@@ -111,4 +117,18 @@ public class EnforcementOrder {
      */
     @CCD(label = "Enforcement status", searchable = false, access = {EnforcementStatusReadAccess.class})
     private EnforcementStatus enforcementStatus;
+
+    /**
+     * The note being added in the "Add a bailiff note" event. It is saved to the enforcement on submit,
+     * not to the case.
+     */
+    @CCD(label = "Add note", typeOverride = TextArea, max = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT, searchable = false)
+    private String bailiffNoteText;
+
+    /**
+     * The current enforcement's saved bailiff notes, newest first, set for the case view. Read only and
+     * internal: the notes are held on the enforcement record.
+     */
+    @CCD(label = "Bailiff note", searchable = false, access = {BailiffNoteReadAccess.class})
+    private List<ListValue<BailiffNote>> bailiffNotes;
 }

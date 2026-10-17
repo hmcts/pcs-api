@@ -22,4 +22,15 @@ class EnforcementCallbackExceptionHandlerTest {
             .containsExactly("There is already a live warrant or writ on this case");
         assertThat(response.getBody().getData()).isNull();
     }
+
+    @Test
+    void shouldReturnTheNoEnforcementErrorToCcd() {
+        ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> response =
+            underTest.handleNoEnforcement(new NoEnforcementException());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getErrors()).containsExactly("There is no warrant on this case");
+        assertThat(response.getBody().getData()).isNull();
+    }
 }

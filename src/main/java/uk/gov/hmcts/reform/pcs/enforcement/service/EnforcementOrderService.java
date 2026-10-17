@@ -99,6 +99,9 @@ public class EnforcementOrderService {
         // The status is held on the enf_case.status column and only copied onto the case view, so do not
         // store a copy of it in the enforcement order JSON.
         enforcementOrder.setEnforcementStatus(null);
+        // Bailiff notes are held on enf_bailiff_note, so do not copy the case view's notes into the JSON either.
+        enforcementOrder.setBailiffNotes(null);
+        enforcementOrder.setBailiffNoteText(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
