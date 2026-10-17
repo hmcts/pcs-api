@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.MarkNoticeO
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
 import java.time.Clock;
@@ -33,6 +34,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -99,6 +101,9 @@ class MarkNoticeOfEvictionServedTest extends BaseEventTest {
 
     @Test
     void shouldRecordTheServiceAndConfirm() {
+        when(evictionScheduleService.markNoticeServed(anyLong(), any(), anyString(), isNull()))
+            .thenReturn(EnforcementChange.made("WP-00000042"));
+
         SubmitResponse<State> response = callSubmitHandler(
             caseWith(LocalDateTime.parse("2026-03-15T08:00"), YesOrNo.NO, "ignored"));
 
@@ -106,11 +111,26 @@ class MarkNoticeOfEvictionServedTest extends BaseEventTest {
             TEST_CASE_REFERENCE, LocalDateTime.parse("2026-03-15T08:00"), "by hand to the occupant", null);
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getConfirmationHeader()).isEqualTo("# 'Notice of eviction' marked as served");
+        assertThat(response.getConfirmationBody())
+            .isEqualTo("Case number: 0000-0000-0000-1234\n\nWarrant number: WP-00000042");
+    }
+
+    @Test
+    void shouldLeaveTheWarrantNumberOutOfTheConfirmationWhenTheWarrantHasNone() {
+        when(evictionScheduleService.markNoticeServed(anyLong(), any(), anyString(), isNull()))
+            .thenReturn(EnforcementChange.made(null));
+
+        SubmitResponse<State> response = callSubmitHandler(
+            caseWith(LocalDateTime.parse("2026-03-15T08:00"), YesOrNo.NO, null));
+
         assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
     }
 
     @Test
     void shouldPassOnTheBailiffNote() {
+        when(evictionScheduleService.markNoticeServed(anyLong(), any(), anyString(), anyString()))
+            .thenReturn(EnforcementChange.made("WP-00000042"));
+
         callSubmitHandler(caseWith(LocalDateTime.parse("2026-03-15T08:00"), YesOrNo.YES,
                                    "Spoke to occupant at the door"));
 
@@ -131,13 +151,14 @@ class MarkNoticeOfEvictionServedTest extends BaseEventTest {
 
     @Test
     void shouldReturnAnErrorWhenTheNoticeIsNoLongerDue() {
-        doThrow(new EnforcementEventNotAvailableException("Not now"))
-            .when(evictionScheduleService).markNoticeServed(anyLong(), any(), anyString(), isNull());
+        when(evictionScheduleService.markNoticeServed(anyLong(), any(), anyString(), isNull()))
+            .thenReturn(EnforcementChange.refused("Not now"));
 
         SubmitResponse<State> response = callSubmitHandler(
             caseWith(LocalDateTime.parse("2026-03-15T08:00"), YesOrNo.NO, null));
 
         assertThat(response.getErrors()).containsExactly("Not now");
+        assertThat(response.getConfirmationHeader()).isNull();
     }
 
     private static PCSCase caseWith(LocalDateTime servedAt, YesOrNo addNote, String note) {

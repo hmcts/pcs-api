@@ -68,8 +68,9 @@ class BailiffAllocationServiceTest {
         givenActiveAllocations(enforcement);
         when(securityContextService.getCurrentUserId()).thenReturn("manager-id");
 
-        underTest.allocate(CASE_REFERENCE, SAM);
+        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
 
+        assertThat(allocated.refused()).isFalse();
         BailiffAllocationEntity saved = savedAllocation();
         assertThat(saved.getEnforcementOrder()).isSameAs(enforcement);
         assertThat(saved.getBailiffUserId()).isEqualTo("sam-id");
@@ -115,7 +116,9 @@ class BailiffAllocationServiceTest {
     void shouldRefuseWhenTheClaimHasNoEnforcement() {
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> underTest.allocate(CASE_REFERENCE, SAM)).isInstanceOf(NoEnforcementException.class);
+        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+
+        assertThat(allocated.errors()).containsExactly(NoEnforcementException.MESSAGE);
         verify(bailiffAllocationRepository, never()).save(any());
     }
 
@@ -124,9 +127,9 @@ class BailiffAllocationServiceTest {
     void shouldRefuseAWarrantThatIsNotApprovedOrNotLive(EnforcementStatus status) {
         givenCurrentEnforcement(status);
 
-        assertThatThrownBy(() -> underTest.allocate(CASE_REFERENCE, SAM))
-            .isInstanceOf(EnforcementEventNotAvailableException.class)
-            .hasMessage(BailiffAllocationService.NOT_AVAILABLE_MESSAGE);
+        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+
+        assertThat(allocated.errors()).containsExactly(BailiffAllocationService.NOT_AVAILABLE_MESSAGE);
         verify(bailiffAllocationRepository, never()).save(any());
     }
 

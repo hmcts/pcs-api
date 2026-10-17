@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevelDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -129,6 +129,8 @@ class SetRiskLevelTest extends BaseEventTest {
     @ParameterizedTest
     @EnumSource(RiskLevel.class)
     void shouldSaveTheRiskLevelAndConfirmIt(RiskLevel level) {
+        when(riskLevelService.setRiskLevel(anyLong(), any(), anyString())).thenReturn(EnforcementChange.made());
+
         SubmitResponse<State> response = callSubmitHandler(caseWith(level, "Known history of violence"));
 
         verify(riskLevelService).setRiskLevel(TEST_CASE_REFERENCE, level, "Known history of violence");
@@ -156,6 +158,8 @@ class SetRiskLevelTest extends BaseEventTest {
 
     @Test
     void shouldAcceptAReasonOf6800CharactersAndRefuseALongerOne() {
+        when(riskLevelService.setRiskLevel(anyLong(), any(), anyString())).thenReturn(EnforcementChange.made());
+
         assertThat(callSubmitHandler(caseWith(RiskLevel.HIGH, "a".repeat(6800))).getErrors()).isNullOrEmpty();
         assertThat(callSubmitHandler(caseWith(RiskLevel.HIGH, "a".repeat(6801))).getErrors())
             .containsExactly("The reason must be 6,800 characters or fewer");
@@ -163,6 +167,9 @@ class SetRiskLevelTest extends BaseEventTest {
 
     @Test
     void shouldNotNeedAReasonForMedium() {
+        when(riskLevelService.setRiskLevel(TEST_CASE_REFERENCE, RiskLevel.MEDIUM, null))
+            .thenReturn(EnforcementChange.made());
+
         SubmitResponse<State> response = callSubmitHandler(caseWith(RiskLevel.MEDIUM, null));
 
         assertThat(response.getErrors()).isNullOrEmpty();
@@ -171,12 +178,13 @@ class SetRiskLevelTest extends BaseEventTest {
 
     @Test
     void shouldShowTheErrorWhenTheRiskLevelCanNoLongerBeSet() {
-        doThrow(new EnforcementEventNotAvailableException("closed"))
-            .when(riskLevelService).setRiskLevel(TEST_CASE_REFERENCE, RiskLevel.MEDIUM, null);
+        when(riskLevelService.setRiskLevel(TEST_CASE_REFERENCE, RiskLevel.MEDIUM, null))
+            .thenReturn(EnforcementChange.refused("closed"));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(RiskLevel.MEDIUM, null));
 
         assertThat(response.getErrors()).containsExactly("closed");
+        assertThat(response.getConfirmationHeader()).isNull();
     }
 
     private static PCSCase caseWith(RiskLevel level, String reason) {

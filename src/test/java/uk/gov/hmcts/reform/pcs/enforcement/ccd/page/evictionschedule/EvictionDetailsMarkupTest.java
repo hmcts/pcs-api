@@ -46,13 +46,24 @@ class EvictionDetailsMarkupTest {
 
     @Test
     void shouldTellTheBailiffToPrintTheNoticeOfEviction() {
-        String body = EvictionConfirmationFormat.scheduledBody("1234-5678-9101-1121", 1234567891011121L);
+        String body = EvictionConfirmationFormat.scheduledBody("1234-5678-9101-1121", 1234567891011121L,
+                                                               "WP-00000042");
 
         assertThat(body)
             .startsWith("Case number: 1234-5678-9101-1121")
+            .contains("Warrant number: WP-00000042")
             .contains("You need to")
             .contains("Print the 'notice of eviction' (form N54)")
             .contains("href=\"/cases/case-details/1234567891011121#Case%20File%20View\"")
             .contains("Go to case file view (same service, opens in a new tab)");
+    }
+
+    @Test
+    void shouldLeaveOutTheWarrantNumberWhenTheWarrantHasNone() {
+        String body = EvictionConfirmationFormat.scheduledBody("1234-5678-9101-1121", 1234567891011121L, null);
+
+        assertThat(body)
+            .startsWith("Case number: 1234-5678-9101-1121")
+            .doesNotContain("Warrant number");
     }
 }
