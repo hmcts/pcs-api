@@ -24,6 +24,18 @@ class EnforcementCallbackExceptionHandlerTest {
     }
 
     @Test
+    void shouldReturnTheNoApplicationAwaitingReviewErrorToCcd() {
+        ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> response =
+            underTest.handleNoEnforcementAwaitingReview(new NoEnforcementAwaitingReviewException());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getErrors())
+            .containsExactly("There is no warrant or writ application waiting for a decision on this case");
+        assertThat(response.getBody().getData()).isNull();
+    }
+
+    @Test
     void shouldReturnTheNoEnforcementErrorToCcd() {
         ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> response =
             underTest.handleNoEnforcement(new NoEnforcementException());
@@ -35,13 +47,13 @@ class EnforcementCallbackExceptionHandlerTest {
     }
 
     @Test
-    void shouldReturnTheActionNotAvailableErrorToCcd() {
+    void shouldReturnTheEventNotAvailableErrorToCcd() {
         ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> response =
-            underTest.handleEnforcementActionNotAvailable(new EnforcementActionNotAvailableException("Not now"));
+            underTest.handleEventNotAvailable(new EnforcementEventNotAvailableException("Not yet"));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getErrors()).containsExactly("Not now");
+        assertThat(response.getBody().getErrors()).containsExactly("Not yet");
         assertThat(response.getBody().getData()).isNull();
     }
 }

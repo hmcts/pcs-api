@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionSch
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.ScheduleEvictionConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementActionNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService.EvictionDetails;
@@ -173,7 +173,7 @@ class ScheduleEvictionTest extends BaseEventTest {
 
     @Test
     void shouldReturnAnErrorWhenTheWarrantHasMovedOn() {
-        doThrow(new EnforcementActionNotAvailableException("Not now"))
+        doThrow(new EnforcementEventNotAvailableException("Not now"))
             .when(evictionScheduleService).schedule(anyLong(), any(), anyBoolean());
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(LocalDateTime.parse("2026-06-25T10:00"),

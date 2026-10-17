@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionSch
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.RescheduleEvictionConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementActionNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService.EvictionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
@@ -73,11 +73,11 @@ class RescheduleEvictionTest extends BaseEventTest {
 
     @Test
     void shouldRefuseToStartBeforeTheClaimantHasAnswered() {
-        doThrow(new EnforcementActionNotAvailableException(EvictionScheduleService.CANNOT_RESCHEDULE_ERROR))
+        doThrow(new EnforcementEventNotAvailableException(EvictionScheduleService.CANNOT_RESCHEDULE_ERROR))
             .when(evictionScheduleService).checkCanReschedule(TEST_CASE_REFERENCE);
 
         assertThatThrownBy(() -> callStartHandler(PCSCase.builder().build()))
-            .isInstanceOf(EnforcementActionNotAvailableException.class);
+            .isInstanceOf(EnforcementEventNotAvailableException.class);
     }
 
     @Test

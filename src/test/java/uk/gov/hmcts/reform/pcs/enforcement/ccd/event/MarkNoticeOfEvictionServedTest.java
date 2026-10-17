@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionSch
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.MarkNoticeOfEvictionServedConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementActionNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
 import java.time.Clock;
@@ -73,11 +73,11 @@ class MarkNoticeOfEvictionServedTest extends BaseEventTest {
 
     @Test
     void shouldRefuseToStartWhenTheNoticeIsNotDue() {
-        doThrow(new EnforcementActionNotAvailableException(EvictionScheduleService.CANNOT_MARK_NOTICE_SERVED_ERROR))
+        doThrow(new EnforcementEventNotAvailableException(EvictionScheduleService.CANNOT_MARK_NOTICE_SERVED_ERROR))
             .when(evictionScheduleService).checkCanMarkNoticeServed(TEST_CASE_REFERENCE);
 
         assertThatThrownBy(() -> callStartHandler(PCSCase.builder().build()))
-            .isInstanceOf(EnforcementActionNotAvailableException.class);
+            .isInstanceOf(EnforcementEventNotAvailableException.class);
     }
 
     @Test
@@ -131,7 +131,7 @@ class MarkNoticeOfEvictionServedTest extends BaseEventTest {
 
     @Test
     void shouldReturnAnErrorWhenTheNoticeIsNoLongerDue() {
-        doThrow(new EnforcementActionNotAvailableException("Not now"))
+        doThrow(new EnforcementEventNotAvailableException("Not now"))
             .when(evictionScheduleService).markNoticeServed(anyLong(), any(), anyString(), isNull());
 
         SubmitResponse<State> response = callSubmitHandler(

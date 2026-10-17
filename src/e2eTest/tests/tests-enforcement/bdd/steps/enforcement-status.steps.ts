@@ -5,7 +5,6 @@ pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement status model' }, [
   'the case has a warrant of possession with status {string}',
   'a new enforcement of type {string} is added to the case with status {string}',
   'the enforcement status changes to {string}',
-  'a PCS case {string} with an enforcement of type {string} with status {string}',
   'the enforcement status is still {string}',
   'the case has no live warrant',
   'the enforcement status is {string}',

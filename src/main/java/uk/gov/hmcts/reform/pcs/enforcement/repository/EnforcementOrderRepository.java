@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.enforcement.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 
@@ -16,4 +17,12 @@ public interface EnforcementOrderRepository extends JpaRepository<EnforcementOrd
      * never match.
      */
     boolean existsByClaimIdAndStatusNotIn(UUID claimId, Collection<EnforcementStatus> statuses);
+
+    List<EnforcementOrderEntity> findByClaimIdAndStatus(UUID claimId, EnforcementStatus status);
+
+    /**
+     * The next value of enf_case_number_seq, from which warrant and writ numbers are built.
+     */
+    @Query(value = "SELECT nextval('enf_case_number_seq')", nativeQuery = true)
+    long nextEnforcementNumberSequenceValue();
 }

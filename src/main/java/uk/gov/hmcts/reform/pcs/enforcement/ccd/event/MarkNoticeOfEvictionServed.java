@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionSch
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.MarkNoticeOfEvictionServedConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementActionNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
@@ -93,7 +93,7 @@ public class MarkNoticeOfEvictionServed implements CCDConfig<PCSCase, State, Use
         try {
             evictionScheduleService.markNoticeServed(
                 caseReference, servedAt, schedule.getNoticeOfEvictionServedHow(), bailiffNote);
-        } catch (NoEnforcementException | EnforcementActionNotAvailableException ex) {
+        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
             return SubmitResponse.<State>builder().errors(List.of(ex.getMessage())).build();
         }
         // TODO HDPI-7658: show the warrant number once warrants are numbered.

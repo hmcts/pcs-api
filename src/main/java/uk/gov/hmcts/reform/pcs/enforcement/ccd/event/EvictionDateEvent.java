@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionDet
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementActionNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 
@@ -116,7 +116,7 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
         LocalDateTime evictionDateTime = schedule.getEvictionDateTime().truncatedTo(ChronoUnit.MINUTES);
         try {
             save(caseReference, evictionDateTime, schedule.getEvictionDispenseWithService() == YesOrNo.YES);
-        } catch (NoEnforcementException | EnforcementActionNotAvailableException ex) {
+        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
             return SubmitResponse.<State>builder().errors(List.of(ex.getMessage())).build();
         }
         return SubmitResponse.<State>builder()

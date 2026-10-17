@@ -1,3 +1,5 @@
+# Built in pcs-api as the allocateBailiff event. @pending until bailiff, bailiff-admin and bailiff-manager test
+# users (HDPI-7539) and the WA tasks (HDPI-8627) exist: every scenario signs in as one and most open a task.
 @HDPI-7342 @enforcement @bailiff @work-allocation @pending
 Feature: Allocate an enforcement to a bailiff
   As a bailiff, bailiff administrator or bailiff manager

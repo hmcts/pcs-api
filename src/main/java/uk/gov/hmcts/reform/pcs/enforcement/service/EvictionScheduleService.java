@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementActionNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -95,7 +95,7 @@ public class EvictionScheduleService {
      * Checks the eviction can be scheduled on the claim's live warrant.
      *
      * @throws NoEnforcementException if the claim has no live enforcement
-     * @throws EnforcementActionNotAvailableException if the warrant is not awaiting scheduling
+     * @throws EnforcementEventNotAvailableException if the warrant is not awaiting scheduling
      */
     public void checkCanSchedule(long caseReference) {
         requireLiveEnforcement(caseReference, EvictionScheduleService::canSchedule, CANNOT_SCHEDULE_ERROR);
@@ -176,7 +176,7 @@ public class EvictionScheduleService {
             .filter(current -> current.getStatus() != null && current.getStatus().isLive())
             .orElseThrow(NoEnforcementException::new);
         if (!available.test(enforcement)) {
-            throw new EnforcementActionNotAvailableException(notAvailableError);
+            throw new EnforcementEventNotAvailableException(notAvailableError);
         }
         return enforcement;
     }

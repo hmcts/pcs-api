@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 import uk.gov.hmcts.reform.pcs.enforcement.view.EnforcementOrderMediator;
 
@@ -53,6 +54,9 @@ class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private EnforcementOrderMediator enforcementOrderMediator;
+
+    @Autowired
+    private ClaimantEvictionConfirmationService claimantEvictionConfirmationService;
 
     @Autowired
     private EntityManager entityManager;
@@ -94,6 +98,24 @@ class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
         assertThat(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
         assertThat(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup())
             .contains("Thursday, 25 June 2099 at 10:00am");
+    }
+
+    @Test
+    @DisplayName("schedule, then the claimant confirms they can attend: the warrant is claimant confirmed")
+    void schedulingThenClaimantConfirmingAttendance() {
+        long caseReference = 6666777788889999L;
+        final UUID id = savedEnforcement(caseReference, EnforcementStatus.AWAITING_SCHEDULING).getId();
+
+        evictionScheduleService.schedule(caseReference, EVICTION, false);
+        entityManager.flush();
+        claimantEvictionConfirmationService.recordAttendance(caseReference, YesOrNo.YES);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT status FROM enf_case WHERE id = ?", String.class, id)).isEqualTo("CLAIMANT_CONFIRMED");
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT bailiff_date FROM enf_case WHERE id = ?", LocalDateTime.class, id)).isEqualTo(EVICTION);
     }
 
     @Test

@@ -113,11 +113,41 @@ public class EnforcementOrder {
     private YesOrNo showConfirmEvictionJourney;
 
     /**
+     * The claimant's answer in "Confirm the eviction details". It is only used on submit, to move the
+     * enforcement status, and is not stored.
+     */
+    @CCD(label = "Can you attend the eviction on this date?", searchable = false, access = {ClaimantAccess.class})
+    private YesOrNo claimantCanAttendEviction;
+
+    /**
      * The status of the case's current enforcement, set for the case view. It is read only: the status is
      * held on the enforcement record and no event edits this field.
      */
     @CCD(label = "Enforcement status", searchable = false, access = {EnforcementStatusReadAccess.class})
     private EnforcementStatus enforcementStatus;
+
+    /**
+     * Every warrant and writ on the claim, newest first, set for the case view and shown on the "Enforcement
+     * status" tab. Read only, like {@link #enforcementStatus}: the enforcement records hold the data and no
+     * event edits this field.
+     */
+    @CCD(label = "Warrants and writs", searchable = false, access = {EnforcementStatusReadAccess.class})
+    private List<ListValue<EnforcementSummary>> enforcements;
+
+    /**
+     * "Claimant vs defendants", set for the decideEnforcement header.
+     */
+    @CCD(searchable = false)
+    private String formattedCaseName;
+
+    /**
+     * Only set during decideEnforcement. The decision is recorded on the enforcement record.
+     */
+    @CCD(label = "Do you want to accept or reject this application?", searchable = false)
+    private EnforcementDecision enforcementDecision;
+
+    @CCD(label = "Reason for rejecting the application", typeOverride = TextArea, searchable = false)
+    private String enforcementRejectionReason;
 
     /**
      * The note being added in the "Add a bailiff note" event. It is saved to the enforcement on submit,
@@ -132,6 +162,14 @@ public class EnforcementOrder {
      */
     @CCD(label = "Bailiff note", searchable = false, access = {BailiffNoteReadAccess.class})
     private List<ListValue<BailiffNote>> bailiffNotes;
+
+    @JsonUnwrapped
+    @CCD
+    private BailiffAllocationDetails bailiffAllocationDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private RiskLevelDetails riskLevelDetails;
 
     /**
      * The fields of the schedule, reschedule and notice of eviction events (HDPI-7344, HDPI-7549, HDPI-7346).

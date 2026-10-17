@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementActionNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -89,7 +89,7 @@ class EvictionScheduleServiceTest {
         EnforcementOrderEntity enforcement = current(status);
 
         assertThatThrownBy(() -> underTest.schedule(CASE_REFERENCE, EVICTION, false))
-            .isInstanceOfAny(EnforcementActionNotAvailableException.class, NoEnforcementException.class);
+            .isInstanceOfAny(EnforcementEventNotAvailableException.class, NoEnforcementException.class);
         assertThat(enforcement.getBailiffDate()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
     }
@@ -116,7 +116,7 @@ class EvictionScheduleServiceTest {
         current(AWAITING_CLAIMANT_CONFIRMATION);
 
         assertThatThrownBy(() -> underTest.checkCanSchedule(CASE_REFERENCE))
-            .isInstanceOf(EnforcementActionNotAvailableException.class)
+            .isInstanceOf(EnforcementEventNotAvailableException.class)
             .hasMessage(EvictionScheduleService.CANNOT_SCHEDULE_ERROR);
     }
 
@@ -141,7 +141,7 @@ class EvictionScheduleServiceTest {
         current(status);
 
         assertThatThrownBy(() -> underTest.checkCanReschedule(CASE_REFERENCE))
-            .isInstanceOfAny(EnforcementActionNotAvailableException.class, NoEnforcementException.class);
+            .isInstanceOfAny(EnforcementEventNotAvailableException.class, NoEnforcementException.class);
     }
 
     @Test
@@ -218,7 +218,7 @@ class EvictionScheduleServiceTest {
         enforcement.setNoticeServedAt(SERVED);
 
         assertThatThrownBy(() -> underTest.markNoticeServed(CASE_REFERENCE, SERVED, "by hand", null))
-            .isInstanceOf(EnforcementActionNotAvailableException.class)
+            .isInstanceOf(EnforcementEventNotAvailableException.class)
             .hasMessage(EvictionScheduleService.CANNOT_MARK_NOTICE_SERVED_ERROR);
         verify(enforcementOrderRepository, never()).save(any());
     }
@@ -228,7 +228,7 @@ class EvictionScheduleServiceTest {
         scheduled(AWAITING_CLAIMANT_CONFIRMATION, true);
 
         assertThatThrownBy(() -> underTest.checkCanMarkNoticeServed(CASE_REFERENCE))
-            .isInstanceOf(EnforcementActionNotAvailableException.class);
+            .isInstanceOf(EnforcementEventNotAvailableException.class);
     }
 
     @Test
