@@ -5,13 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION;
@@ -26,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIM
 @RequiredArgsConstructor
 public class ClaimantEvictionConfirmationService {
 
-    private final PcsCaseService pcsCaseService;
+    private final CurrentEnforcementService currentEnforcementService;
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
 
@@ -63,13 +60,8 @@ public class ClaimantEvictionConfirmationService {
     }
 
     private Optional<EnforcementOrderEntity> findLiveEnforcement(long caseReference) {
-        List<ClaimEntity> claims = pcsCaseService.loadCase(caseReference).getClaims();
-        if (claims == null || claims.isEmpty()) {
-            return Optional.empty();
-        }
-        // A claim can have at most one live enforcement
-        return enforcementOrderRepository.findByClaimId(claims.getFirst().getId()).stream()
-            .filter(enforcement -> enforcement.getStatus() != null && enforcement.getStatus().isLive())
-            .findFirst();
+        // A claim can have at most one live enforcement, and it is always the current one.
+        return currentEnforcementService.findCurrentEnforcement(caseReference)
+            .filter(enforcement -> enforcement.getStatus().isLive());
     }
 }

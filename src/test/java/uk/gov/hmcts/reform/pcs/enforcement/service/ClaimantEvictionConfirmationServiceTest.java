@@ -50,7 +50,7 @@ class ClaimantEvictionConfirmationServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new ClaimantEvictionConfirmationService(
-            pcsCaseService, enforcementOrderRepository,
+            new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository), enforcementOrderRepository,
             new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)));
     }
 

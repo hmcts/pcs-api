@@ -95,10 +95,36 @@ public class EnforcementOrderService {
         return true;
     }
 
+    /**
+     * Moves the claim's application that is awaiting payment on to awaiting review, as paying the fee will.
+     * Only the enforcement testing-support endpoint calls this until the payment handler lands (HDPI-2877).
+     *
+     * @return whether an application was awaiting payment
+     */
+    @Transactional
+    public boolean recordFeePaid(long caseReference) {
+        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseService.loadCase(caseReference));
+        return enforcementOrderRepository
+            .findByClaimIdAndStatus(claimEntity.getId(), EnforcementStatus.AWAITING_PAYMENT)
+            .stream()
+            .findFirst()
+            .map(enforcement -> {
+                enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
+                enforcementOrderRepository.save(enforcement);
+                return true;
+            })
+            .orElse(false);
+    }
+
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
-        // The status is held on the enf_case.status column and only copied onto the case view, so do not
-        // store a copy of it in the enforcement order JSON.
+        // The status is held on the enf_case.status column and only copied onto the case view, and the list of
+        // enforcements is built from the enf_case rows for the case view, so do not store a copy of either in the
+        // enforcement order JSON.
         enforcementOrder.setEnforcementStatus(null);
+        enforcementOrder.setEnforcements(null);
+        // Bailiff notes are held on enf_bailiff_note, so do not copy the case view's notes into the JSON either.
+        enforcementOrder.setBailiffNotes(null);
+        enforcementOrder.setBailiffNoteText(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);

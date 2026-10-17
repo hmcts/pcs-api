@@ -29,4 +29,21 @@ public class EnforcementCallbackExceptionHandler {
                                      .errors(List.of(ex.getMessage()))
                                      .build());
     }
+
+    @ExceptionHandler(NoEnforcementAwaitingReviewException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleNoEnforcementAwaitingReview(
+        NoEnforcementAwaitingReviewException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
+
+    @ExceptionHandler(NoEnforcementException.class)
+    public ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> handleNoEnforcement(NoEnforcementException ex) {
+        log.info("Enforcement event refused: {}", ex.getMessage());
+        return ResponseEntity.ok(AboutToStartOrSubmitResponse.builder()
+                                     .errors(List.of(ex.getMessage()))
+                                     .build());
+    }
 }

@@ -131,7 +131,6 @@ pendingSteps({ ticket: 'HDPI-7552', summary: 'Review updated risk information' }
 ]);
 
 pendingSteps({ ticket: 'HDPI-7593', summary: 'Add a bailiff note' }, [
-  'the {string} event is not available',
   'I see the {string} text box',
   'I enter {string} and select {string}',
   'I add the bailiff note {string}',
