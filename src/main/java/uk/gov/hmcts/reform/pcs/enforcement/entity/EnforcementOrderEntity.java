@@ -78,6 +78,21 @@ public class EnforcementOrderEntity {
     @Column(name = "status_updated_at")
     private Instant statusUpdatedAt;
 
+    /**
+     * The warrant or writ number, given when the caseworker approves the application.
+     */
+    @Column(name = "enforcement_number")
+    private String enforcementNumber;
+
+    /**
+     * When the caseworker approved the application. For a writ this is the date of transfer to the High Court.
+     */
+    @Column(name = "approved_at")
+    private Instant approvedAt;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
     @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 

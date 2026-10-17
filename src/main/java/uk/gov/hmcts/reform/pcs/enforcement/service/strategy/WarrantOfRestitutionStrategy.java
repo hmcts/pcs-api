@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
@@ -12,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantOfRestitutionReposi
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDocumentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WarrantOfRestitutionMapper;
-
-import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -44,8 +41,7 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
         if (enforcementOrder.getWarrantOfRestitutionDetails() != null
                 && !CollectionUtils.isEmpty(
                         enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments())) {
-            List<DocumentEntity> documentEntities = enforcementDocumentService.createAllDocuments(enforcementOrder);
-            enforcementOrderEntity.addDocuments(documentEntities);
+            enforcementDocumentService.createAllDocuments(enforcementOrderEntity, enforcementOrder);
             enforcementOrderRepository.save(enforcementOrderEntity);
         }
     }

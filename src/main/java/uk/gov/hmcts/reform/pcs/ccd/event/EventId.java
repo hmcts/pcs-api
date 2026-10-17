@@ -36,6 +36,7 @@ public enum EventId {
     legalRepresentativeContactDetails,
     resumeEnforcementOrder,
     deleteDraftApplication,
+    decideEnforcement,
     addBailiffNote,
     allocateBailiff,
     setRiskLevel
