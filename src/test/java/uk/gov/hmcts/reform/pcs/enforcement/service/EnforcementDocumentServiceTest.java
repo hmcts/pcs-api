@@ -12,9 +12,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureCaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentCategoryMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
@@ -26,11 +28,12 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,6 +59,9 @@ class EnforcementDocumentServiceTest {
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
+    private PcsCaseEntity pcsCaseEntity;
+    private EnforcementOrderEntity enforcementOrderEntity;
+
     private EnforcementDocumentService underTest;
 
     @BeforeEach
@@ -65,74 +71,63 @@ class EnforcementDocumentServiceTest {
                                                               documentCategoryMapper, taskDescriptionService,
                                                               camundaService);
         underTest = new EnforcementDocumentService(documentService);
+
+        pcsCaseEntity = PcsCaseEntity.builder().build();
+        enforcementOrderEntity = EnforcementOrderEntity.builder()
+            .claim(ClaimEntity.builder().pcsCase(pcsCaseEntity).build())
+            .build();
     }
 
     @ParameterizedTest
     @EnumSource(EvidenceDocumentType.class)
     void shouldMapAllEvidenceDocumentTypes(EvidenceDocumentType evidenceDocumentType) {
         // Given
-        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
-                .document(Document.builder()
-                        .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-                        .filename("file-WITNESS_STATEMENT")
-                        .binaryUrl("bin-WITNESS_STATEMENT")
-                        .categoryId("cat-WITNESS_STATEMENT")
-                        .build())
-                .documentType(evidenceDocumentType)
-                .build();
-
-        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
-                List.of(ListValue.<EvidenceOfDefendants>builder()
-                        .id("1").value(evidenceDocument).build());
-
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
-                        .additionalDocuments(evidenceDocuments)
-                        .build())
-                .build();
+        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+        EnforcementOrder enforcementOrder = enforcementOrderWithEvidence(evidenceDocumentType);
 
         // When
-        underTest.createAllDocuments(enforcementOrder);
+        underTest.createAllDocuments(enforcementOrderEntity, enforcementOrder);
 
         // Then
         DocumentType expectedDocumentType = DocumentType.valueOf(evidenceDocumentType.name());
 
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
-
-        assertThat(capturedEntities)
+        assertThat(documentEntityListCaptor.getValue())
                 .extracting(DocumentEntity::getType)
                 .containsExactly(expectedDocumentType);
     }
 
+    @ParameterizedTest
+    @EnumSource(EvidenceDocumentType.class)
+    void shouldFileEveryEvidenceDocumentInTheEnforcementFolder(EvidenceDocumentType evidenceDocumentType) {
+        // Given
+        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+        EnforcementOrder enforcementOrder = enforcementOrderWithEvidence(evidenceDocumentType);
+
+        // When
+        List<DocumentEntity> entities = underTest.createAllDocuments(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        assertThat(entities)
+            .extracting(DocumentEntity::getCategoryId)
+            .containsExactly(FeatureCaseFileCategory.ENFORCEMENT.getId());
+    }
+
     @Test
-    void shouldPersistNullCategoryForPoliceReportEvidenceDocuments() {
-        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
-            .document(Document.builder()
-                .url("url-POLICE_REPORT")
-                .filename("file-POLICE_REPORT")
-                .binaryUrl("bin-POLICE_REPORT")
-                .build())
-            .documentType(EvidenceDocumentType.POLICE_REPORT)
-            .build();
+    void shouldAttachTheDocumentsToTheCaseAndTheEnforcementOrder() {
+        // Given
+        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+        EnforcementOrder enforcementOrder = enforcementOrderWithEvidence(EvidenceDocumentType.POLICE_REPORT);
 
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
-                .additionalDocuments(List.of(ListValue.<EvidenceOfDefendants>builder()
-                    .id("1")
-                    .value(evidenceDocument)
-                    .build()))
-                .build())
-            .build();
+        // When
+        List<DocumentEntity> entities = underTest.createAllDocuments(enforcementOrderEntity, enforcementOrder);
 
-        underTest.createAllDocuments(enforcementOrder);
-
-        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
-
-        assertThat(capturedEntities).hasSize(1);
-        assertThat(capturedEntities.getFirst().getCategoryId())
-            .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+        // Then
+        assertThat(entities).hasSize(1);
+        DocumentEntity document = entities.getFirst();
+        assertThat(document.getPcsCase()).isSameAs(pcsCaseEntity);
+        assertThat(pcsCaseEntity.getDocuments()).containsExactly(document);
+        assertThat(enforcementOrderEntity.getDocuments()).containsExactly(document);
     }
 
     @Test
@@ -147,10 +142,32 @@ class EnforcementDocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        List<DocumentEntity> entities = underTest.createAllDocuments(enforcementOrder);
+        List<DocumentEntity> entities = underTest.createAllDocuments(enforcementOrderEntity, enforcementOrder);
 
         // Then
         assertThat(entities).isEmpty();
         verify(documentRepository).saveAll(List.of());
+        assertThat(pcsCaseEntity.getDocuments()).isEmpty();
+        assertThat(enforcementOrderEntity.getDocuments()).isEmpty();
+    }
+
+    private static EnforcementOrder enforcementOrderWithEvidence(EvidenceDocumentType evidenceDocumentType) {
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
+                .document(Document.builder()
+                        .url("url-" + evidenceDocumentType + "/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                        .filename("file-" + evidenceDocumentType)
+                        .binaryUrl("bin-" + evidenceDocumentType)
+                        .build())
+                .documentType(evidenceDocumentType)
+                .build();
+
+        return EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .additionalDocuments(List.of(ListValue.<EvidenceOfDefendants>builder()
+                                .id("1")
+                                .value(evidenceDocument)
+                                .build()))
+                        .build())
+                .build();
     }
 }
