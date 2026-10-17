@@ -43,6 +43,7 @@ import {
   vulnerableAdultsChildren,
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
+import { decideEnforcement } from './decide-enforcement';
 
 
 /** XUI events the steps can drive today, keyed by the name the feature files use. */
@@ -51,6 +52,8 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
   // The requirements and the case summary markup call it "Confirm the eviction date";
   // pcs-api names the event "Confirm the eviction details".
   'Confirm the eviction date': { label: caseSummary.confirmEvictionEvent, firstPageHeader: confirmEvictionDetails.mainHeader },
+  // A caseworker event: sign in as a hearing centre admin first.
+  [decideEnforcement.eventName]: { label: decideEnforcement.eventName, firstPageHeader: decideEnforcement.mainHeader },
 };
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */

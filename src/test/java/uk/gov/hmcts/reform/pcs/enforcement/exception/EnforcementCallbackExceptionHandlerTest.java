@@ -22,4 +22,16 @@ class EnforcementCallbackExceptionHandlerTest {
             .containsExactly("There is already a live warrant or writ on this case");
         assertThat(response.getBody().getData()).isNull();
     }
+
+    @Test
+    void shouldReturnTheNoApplicationAwaitingReviewErrorToCcd() {
+        ResponseEntity<AboutToStartOrSubmitResponse<Object, Object>> response =
+            underTest.handleNoEnforcementAwaitingReview(new NoEnforcementAwaitingReviewException());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getErrors())
+            .containsExactly("There is no warrant or writ application waiting for a decision on this case");
+        assertThat(response.getBody().getData()).isNull();
+    }
 }

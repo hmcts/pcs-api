@@ -1,5 +1,6 @@
 // Case set-up, signing in and moving around the case in XUI. Shared by every feature.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import {
   createIssuedCase,
@@ -9,6 +10,16 @@ import {
   startEvent,
   xuiEvents,
 } from '../support/enforcement-journeys';
+import {
+  DECIDE_ENFORCEMENT,
+  chooseDecision,
+  clickContinue,
+  decideEnforcement,
+  expectCaseDetailsHeader,
+  expectCaseDetailsNotEditable,
+  signInAsHearingCentreAdmin,
+  submitDecision,
+} from '../support/decide-enforcement';
 
 /** Tickets that deliver the enforcement events the steps cannot drive yet. */
 const eventTickets: Record<string, string> = {
@@ -90,7 +101,6 @@ pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the li
 ]);
 
 pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a role other than the claimant legal representative' }, [
-  'I am signed in to XUI as a hearing centre admin',
   'I am signed in to XUI as a bailiff manager',
   'I am signed in to XUI as a bailiff',
   'I am signed in to XUI as the allocated bailiff',
@@ -101,14 +111,6 @@ pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a role other than th
 ]);
 
 pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
-  'the {string} journey opens',
-  'I see the case number, the possession property address and {string}',
-  'none of these are editable',
-  'the {string} button is disabled',
-  'I am on the {string} screen',
-  'I select {string}',
-  'I return to the case summary',
-  'I submit the {string} event',
   'the {string} screen opens',
   'the warrant number is not shown in the header',
   'I see the {string} confirmation with the case number and warrant number',
@@ -130,3 +132,84 @@ pendingSteps({ ticket: 'HDPI-7539', summary: 'Opening the case as a role other t
   'a bailiff opens the case',
   'a hearing centre admin opens the case',
 ]);
+
+// Generic XUI steps. Only "Decide enforcement" drives them today; any other event stays pending.
+const genericStepPending = { summary: 'Generic XUI step for an enforcement event that does not exist yet' };
+
+function inDecideEnforcement(world: EnforcementWorld): boolean {
+  return world.currentEvent === DECIDE_ENFORCEMENT;
+}
+
+Given('I am signed in to XUI as a hearing centre admin', async ({ page }) => {
+  await signInAsHearingCentreAdmin(page);
+  await openCaseSummary(page);
+});
+
+Then('the {string} journey opens', async ({ page, world, $tags }, eventName: string) => {
+  if (eventName !== DECIDE_ENFORCEMENT || !inDecideEnforcement(world)) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+});
+
+Given('I am on the {string} screen', async ({ page, world, $tags }, screen: string) => {
+  if (screen !== DECIDE_ENFORCEMENT) {
+    return markPending(genericStepPending, $tags);
+  }
+  await openCaseSummary(page);
+  await startEvent(DECIDE_ENFORCEMENT);
+  world.currentEvent = DECIDE_ENFORCEMENT;
+});
+
+Then('I see the case number, the possession property address and {string}', async ({ page, world, $tags }, partyNames: string) => {
+  if (!inDecideEnforcement(world)) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expectCaseDetailsHeader(page, world, partyNames);
+});
+
+Then('none of these are editable', async ({ page, world, $tags }) => {
+  if (!inDecideEnforcement(world)) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expectCaseDetailsNotEditable(page);
+});
+
+Then('the {string} button is disabled', async ({ page, world, $tags }, button: string) => {
+  if (!inDecideEnforcement(world)) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('button', { name: button, exact: true })).toBeDisabled();
+});
+
+When('I select {string}', async ({ page, world, $tags }, option: string) => {
+  if (!inDecideEnforcement(world)) {
+    return markPending(genericStepPending, $tags);
+  }
+  switch (option) {
+    case decideEnforcement.acceptRadioOption:
+    case decideEnforcement.rejectRadioOption:
+      return chooseDecision(page, option);
+    case decideEnforcement.continueButton:
+      return clickContinue(page);
+    case decideEnforcement.cancelLink:
+      return page.getByText(decideEnforcement.cancelLink, { exact: true }).click();
+    default:
+      return markPending(genericStepPending, $tags);
+  }
+});
+
+Then('I return to the case summary', async ({ page, world, $tags }) => {
+  if (!inDecideEnforcement(world)) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page).toHaveURL(new RegExp(`/cases/case-details/.*${world.caseReference}(#.*)?$`));
+  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeHidden();
+});
+
+When('I submit the {string} event', async ({ page, world, $tags }, eventName: string) => {
+  if (eventName !== DECIDE_ENFORCEMENT || !inDecideEnforcement(world)) {
+    return markPending(genericStepPending, $tags);
+  }
+  await submitDecision(page);
+});
