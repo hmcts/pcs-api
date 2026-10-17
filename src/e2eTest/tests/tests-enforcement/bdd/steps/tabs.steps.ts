@@ -1,10 +1,12 @@
 // Enforcement status tab, risk assessment tab, case file view documents and defendant visibility (features 12-14).
-import { Given, Then } from '../fixtures/enforcement.fixtures';
+import { Given, Then, When } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
-import { expectCaseTab, seedWarrantApplication } from '../support/enforcement-journeys';
+import { expectCaseTab, requireCaseReference, seedWarrantApplication } from '../support/enforcement-journeys';
+import { ENFORCEMENT_STATUS_TAB, openCaseTab } from '../support/enforcement-status-tab';
+import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 
 /** Tabs the steps can check today, with the ticket that delivers each of the others. */
-const builtTabs = ['Enforcement status'];
+const builtTabs = ['Enforcement status', 'Risk assessment'];
 const tabTickets: Record<string, string> = { 'Risk assessment': 'HDPI-7350' };
 
 function tabNotBuilt(tabName: string) {
@@ -33,6 +35,30 @@ Then('the {string} tab is {string}', async ({ page, $tags }, tabName: string, vi
   await expectCaseTab(page, tabName, visibility === 'shown');
 });
 
+/** The two tabs the enforcement work adds; any other tab name is still someone else's feature. */
+const ENFORCEMENT_TABS = [ENFORCEMENT_STATUS_TAB, RISK_ASSESSMENT_TAB];
+
+When('I open the {string} tab', async ({ page, world, $tags }, tabName: string) => {
+  if (!ENFORCEMENT_TABS.includes(tabName)) {
+    return markPending(tabNotBuilt(tabName), $tags);
+  }
+  await openCaseTab(page, requireCaseReference(world), tabName);
+});
+
+When('the {string} tab is opened', async ({ page, world, $tags }, tabName: string) => {
+  if (!ENFORCEMENT_TABS.includes(tabName)) {
+    return markPending(tabNotBuilt(tabName), $tags);
+  }
+  await openCaseTab(page, requireCaseReference(world), tabName);
+});
+
+Given('I am on the {string} tab', async ({ page, world, $tags }, tabName: string) => {
+  if (!ENFORCEMENT_TABS.includes(tabName)) {
+    return markPending(tabNotBuilt(tabName), $tags);
+  }
+  await openCaseTab(page, requireCaseReference(world), tabName);
+});
+
 Then('there is no {string} tab', async ({ page, $tags }, tabName: string) => {
   if (!builtTabs.includes(tabName)) {
     return markPending(tabNotBuilt(tabName), $tags);
@@ -50,16 +76,13 @@ pendingSteps({ ticket: 'HDPI-8442', summary: 'Enforcement documents in case file
 ]);
 
 pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
-  'I open the {string} tab',
   'the {string} tab shows my answers under {string}',
-  'I am on the {string} tab',
   'the case has no generated warrant or writ',
   'the case has a warrant of possession {string}',
   'a bailiff opens the {string} tab',
   'I see {string} as a heading',
   'I see the sections {string}, {string}, {string} and {string}',
   'the claimant has completed {string}',
-  'the {string} tab is opened',
   '{string} shows:',
   'the case has a writ of possession {string} approved by a judge\'s order dated {string}',
   'a caseworker opens the {string} tab',
@@ -79,7 +102,6 @@ pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
   '{string} shows {string}',
   'I see the claimant\'s answers to:',
   'the claimant legal representative opens the {string} tab',
-  'a PCS case {string} with a warrant of possession',
   'the eviction has been scheduled',
   'the notice of eviction has not been served',
   'the bailiff marks the notice of eviction as served',

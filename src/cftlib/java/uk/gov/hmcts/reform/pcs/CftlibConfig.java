@@ -55,6 +55,12 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("exui-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import"));
         users.put("prd-admin-user@localhost", List.of());
         users.put("master.caa@gmail.com", List.of("caseworker-caa"));
+        // Bailiff staff for the enforcement journeys. The bailiff roles are RAS organisation roles
+        // (UserRole.BAILIFF, BAILIFF_ADMIN, BAILIFF_MANAGER), granted in cftlib-am-role-assignments.json;
+        // the IDAM roles here only get them into XUI.
+        users.put("pcs-bailiff@localhost", List.of("caseworker", "caseworker-pcs"));
+        users.put("pcs-bailiff-admin@localhost", List.of("caseworker", "caseworker-pcs"));
+        users.put("pcs-bailiff-manager@localhost", List.of("caseworker", "caseworker-pcs"));
 
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {

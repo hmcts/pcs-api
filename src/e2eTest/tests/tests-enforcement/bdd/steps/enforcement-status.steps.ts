@@ -1,19 +1,66 @@
-// Enforcement status model (feature 19 and status assertions elsewhere). pcs-api has no enforcement status yet.
-import { pendingSteps } from '../fixtures/pending';
+// Enforcement status model (feature 19 and status assertions elsewhere).
+//
+// The status lives on the `enforcements` collection and is visible on the "Enforcement status" tab, so the
+// assertions read it from there. What is still missing is any way to *put* an enforcement into an arbitrary
+// status: pcs-api's only enforcement testing-support endpoint is `fee-paid`, so a scenario can only reach a
+// status by driving the real events. Steps that need a status set up for them stay pending on HDPI-7419.
+import { Given, Then, expect } from '../fixtures/enforcement.fixtures';
+import { markPending, pendingSteps } from '../fixtures/pending';
+import { enforcementRows, expectEnforcementStatus, openCaseTab } from '../support/enforcement-status-tab';
+import { requireCaseReference } from '../support/enforcement-journeys';
 
-pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement status model' }, [
-  'the case has a warrant of possession with status {string}',
+/** Statuses a scenario can reach with the events and testing support that exist today. */
+const REACHABLE_STATUSES = new Set(['Awaiting payment', 'Awaiting review']);
+
+Then('the enforcement status changes to {string}', async ({ page, world }, status: string) => {
+  await expectEnforcementStatus(page, requireCaseReference(world), status);
+});
+
+Then('the enforcement status is {string}', async ({ page, world }, status: string) => {
+  await expectEnforcementStatus(page, requireCaseReference(world), status);
+});
+
+Then('the enforcement status is still {string}', async ({ page, world }, status: string) => {
+  await expectEnforcementStatus(page, requireCaseReference(world), status);
+});
+
+Then('the case has no live warrant', async ({ page, world }) => {
+  await openCaseTab(page, requireCaseReference(world), 'Enforcement status');
+  const live = (await enforcementRows(page)).filter(
+    row => !['Closed', 'Rejected', 'Transferred to the High Court'].includes(row['Status'])
+  );
+  expect(live, 'no live enforcement on the case').toHaveLength(0);
+});
+
+// The status a scenario needs is only reachable by driving the real events; there is no testing-support
+// endpoint that forces one (HDPI-7419).
+Given('the case has a warrant of possession with status {string}', async ({ page, world, $tags }, status: string) => {
+  if (!REACHABLE_STATUSES.has(status)) {
+    return markPending({ ticket: 'HDPI-7419', summary: `setting an enforcement to "${status}"` }, $tags);
+  }
+  await expectEnforcementStatus(page, requireCaseReference(world), status);
+});
+
+Given('the case has a warrant with status {string}', async ({ page, world, $tags }, status: string) => {
+  if (!REACHABLE_STATUSES.has(status)) {
+    return markPending({ ticket: 'HDPI-7419', summary: `setting an enforcement to "${status}"` }, $tags);
+  }
+  await expectEnforcementStatus(page, requireCaseReference(world), status);
+});
+
+pendingSteps({ ticket: 'HDPI-7419', summary: 'Setting up an enforcement in an arbitrary status' }, [
   'a new enforcement of type {string} is added to the case with status {string}',
-  'the enforcement status changes to {string}',
-  'the enforcement status is still {string}',
-  'the case has no live warrant',
-  'the enforcement status is {string}',
   'a {string} enforcement is added to the case with status {string}',
-  'the case has a warrant with status {string}',
-  'the case state is {string}',
   'a warrant moves from {string} to {string}',
+  'the enforcement status changes',
+]);
+
+pendingSteps({ ticket: 'HDPI-7419', summary: 'Asserting the CCD case state alongside the enforcement status' }, [
+  'the case state is {string}',
   'the case state is still {string}',
+]);
+
+pendingSteps({ summary: 'Asserting event availability for a role the suite cannot reach that status as' }, [
   'the {string} event is {string}',
   'the {string}, {string}, {string} and {string} events are available',
-  'the enforcement status changes',
 ]);

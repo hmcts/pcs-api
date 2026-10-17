@@ -6,6 +6,7 @@ import { initializeEnforcementExecutor, performAction } from '@utils/controller-
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { submitCaseApiData } from '@data/api-data';
+import { resetSignedInRole } from '../support/session';
 
 export type EnforcementType =
   | 'warrant of possession'
@@ -30,6 +31,14 @@ export class EnforcementWorld {
   applicationType?: EnforcementType;
   /** The XUI event this scenario is in, once started. */
   currentEvent?: string;
+  /** Set once the warrant has been approved through "Decide enforcement", so it is live with a number. */
+  warrantApproved = false;
+  /** The bailiff the scenario allocated the warrant to, if any. */
+  allocatedBailiff?: string;
+  /** The risk level the scenario chose in "Set risk level". */
+  riskLevel?: string;
+  /** The note text the scenario typed into "Add a bailiff note". */
+  enteredNote?: string;
 }
 
 type EnforcementFixtures = {
@@ -49,6 +58,7 @@ export const test = base.extend<EnforcementFixtures>({
     async ({ page, world }, use) => {
       initializeExecutor(page);
       initializeEnforcementExecutor(page);
+      resetSignedInRole();
       defendantDetails.length = 0;
       moneyMap.clear();
       fieldsMap.clear();

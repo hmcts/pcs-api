@@ -9,6 +9,8 @@ import { LONG_TIMEOUT } from 'playwright.config';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { user } from '@data/user-data';
 import { performAction } from '@utils/controller-enforcement';
+import { isLocalStack, localUsers, signInToIdamSimulator } from '@config/local-stack.config';
+import { recordSignedInRole } from './session';
 
 export const DECIDE_ENFORCEMENT = 'Decide enforcement';
 
@@ -49,19 +51,27 @@ export async function signInAsHearingCentreAdmin(page: Page): Promise<void> {
   await page.context().clearCookies();
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.hearingCenterAdmin);
+  if (isLocalStack()) {
+    await signInToIdamSimulator(page, localUsers.hearingCentreAdmin);
+  } else {
+    await performAction('login', user.hearingCenterAdmin);
+  }
   await dismissCookieBanner(page, 'analytics');
+  recordSignedInRole('hearing-centre-admin');
 }
 
 function caseDetails(page: Page) {
   return page.locator('dl.govuk-summary-list').filter({ hasText: decideEnforcement.propertyAddressKey });
 }
 
+/** The 16-digit reference as XUI renders it in a case-details summary list: four dash-separated groups. */
+export const withDashes = (caseReference: string): string => caseReference.replace(/(.{4})(?=.)/g, '$1-');
+
 export async function expectCaseDetailsHeader(page: Page, world: EnforcementWorld, partyNames: string): Promise<void> {
   const header = caseDetails(page).first();
   await expect(header).toBeVisible({ timeout: LONG_TIMEOUT });
   await expect(header).toContainText(decideEnforcement.caseNumberKey);
-  await expect(header).toContainText(String(world.caseReference));
+  await expect(header).toContainText(withDashes(String(world.caseReference)));
   await expect(header).toContainText(decideEnforcement.propertyAddressKey);
   await expect(header).toContainText(decideEnforcement.partiesKey);
   // "claimant name vs defendant name": the case name pcs-api builds for the case.
@@ -98,7 +108,15 @@ export function decisionRow(page: Page) {
   return page.locator('tr, .govuk-summary-list__row').filter({ hasText: decideEnforcement.decisionQuestion }).first();
 }
 
+/**
+ * The confirmation panel XUI renders from `DecideEnforcementConfirmation`. Scoped to `#confirmation-body`
+ * because the case number and property address also appear in the case header above it.
+ */
+export function confirmationPanel(page: Page) {
+  return page.locator('#confirmation-body');
+}
+
 /** The confirmation markup from DecideEnforcementConfirmation, e.g. "Warrant approved" or "Writ rejected". */
 export async function expectConfirmation(page: Page, title: string): Promise<void> {
-  await expect(page.getByText(title, { exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
+  await expect(confirmationPanel(page).getByText(title, { exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
 }
