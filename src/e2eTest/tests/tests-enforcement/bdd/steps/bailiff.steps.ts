@@ -29,9 +29,11 @@ import {
   dashedCaseNumber,
   errorSummary,
   expectBailiffConfirmation,
+  expectBailiffConfirmationWithWarrantNumber,
   riskAssessmentFields,
   setRiskLevel,
 } from '../support/bailiff-events';
+import { expectEvictionResult, isEvictionResult } from './schedule-eviction.steps';
 
 
 // ---------------------------------------------------------------------------
@@ -40,9 +42,9 @@ import {
 
 // The allocation itself cannot be made (HDPI-7356 / HDPI-8189), but a bailiff reaches the warrant through
 // their `bailiff` organisation role regardless, which is what the rest of the scenario needs.
-Given('a PCS case {string} with a warrant of possession allocated to me', async ({ page, world }, _reference: string) => {
+Given('a PCS case {string} with a warrant of possession allocated to me', async ({ page, context, world }, _reference: string) => {
   const { setUpWarrantAtStatus, AWAITING_BAILIFF_ALLOCATION } = await import('../support/approve-warrant');
-  await setUpWarrantAtStatus(page, world, AWAITING_BAILIFF_ALLOCATION);
+  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
   approximatePrecondition(
     'HDPI-8189',
     'no bailiff is allocated: allocateBailiff needs staff reference data cftlib does not run, and the '
@@ -123,6 +125,34 @@ Then('{string} is pre-selected', async ({ page }, level: string) => {
 Then('I can change it to {string}', async ({ page }, level: string) => {
   await chooseRiskLevel(page, level);
   await expect(page.getByRole('radio', { name: level, exact: true })).toBeChecked();
+});
+
+/**
+ * The built `confirmEviction` only asks "Can you attend the eviction on this date?" — it does not collect
+ * the dates the claimant is not available. Recorded as approximated so the rest of the scenario can run;
+ * the scenario that actually lists those dates stays pending.
+ */
+Given('the claimant said they are not available on {string} and {string}', async ({}, first: string, second: string) => {
+  approximatePrecondition(
+    'HDPI-7547',
+    `the claimant's unavailable dates (${first}, ${second}) are not captured: confirmEviction only asks `
+      + 'whether they can attend'
+  );
+});
+
+/**
+ * The confirmation screens that name both numbers: schedule and reschedule eviction, mark notice served and
+ * record warrant return (#3016). `SetRiskLevel` and `AddBailiffNote` still show only the case number, so a
+ * scenario asserting a warrant number on those two fails here rather than being quietly weakened.
+ */
+Then('I see the confirmation {string} with the case number and warrant number', async ({ page, world }, header: string) => {
+  expect(world.warrantNumber, 'a warrant number generated when the application was approved').toBeDefined();
+  await expectBailiffConfirmationWithWarrantNumber(
+    page,
+    header,
+    requireCaseReference(world),
+    world.warrantNumber as string
+  );
 });
 
 Then('I see the case number and the property address', async ({ page, world }) => {
@@ -206,6 +236,9 @@ Then('I see {string}', async ({ page, world, $tags }, result: string) => {
       await expectBailiffConfirmation(page, 'Bailiff note added', requireCaseReference(world));
       return;
     default:
+      if (isEvictionResult(result)) {
+        return expectEvictionResult(page, result);
+      }
       return markPending({ summary: `asserting "${result}"` }, $tags);
   }
 });
@@ -269,20 +302,9 @@ pendingSteps({ ticket: 'HDPI-8189', summary: 'The allocated-bailiff case role is
 ]);
 
 pendingSteps({ ticket: 'HDPI-7344', summary: 'Schedule eviction cannot be reached: it needs a bailiff allocation' }, [
-  'I am the allocated bailiff',
   'I see an {string} table with claimant type, claimant name and defendant names',
   'the case has two defendants whose names are not known',
   'the {string} table shows {string} once',
-  'I enter the date {string} and time {string}',
-  'I select {string} next to the eviction date',
-  'I return to the {string} screen with my previous answer',
-  'selecting {string} returns me to {string}',
-  'I see the case summary',
-  'no eviction date is saved',
-  'I have entered an eviction date of {string} at {string}',
-  'I see {string} under {string}',
-  'I see a link {string}',
-  'the {string} tab shows the scheduled eviction date and time under {string}',
   'it is stored in the {string} folder in case file view',
   'it is visible to internal users only',
   'a {string} document is generated without a seal',
@@ -291,14 +313,8 @@ pendingSteps({ ticket: 'HDPI-7344', summary: 'Schedule eviction cannot be reache
 ]);
 
 pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reached: it needs a scheduled eviction' }, [
-  'the claimant said they are not available on {string} and {string}',
   'I see the dates {string} and {string} listed as dates the claimant is not available',
   'the dates are not editable',
-  'I enter a date in the past',
-  'I see an error that the date must be today or in the future',
-  'I have entered a new eviction date',
-  'the screen is titled {string}',
-  'I can {string} my answers',
   'I have entered a new eviction date of {string} at {string}',
   'the {string} tab {string} shows only the new date and time',
   'a new sealed {string} is stored in the {string} folder',
@@ -307,14 +323,7 @@ pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reac
 ]);
 
 pendingSteps({ ticket: 'HDPI-7346', summary: 'Mark \'notice of eviction\' as served cannot be reached: it needs a scheduled eviction' }, [
-  'a PCS case {string} with a scheduled eviction',
-  'the court has not given permission to dispense with service',
-  'I am not asked about permission to dispense with service',
-  'I select {string} without answering',
-  'I see errors for {string} and {string}',
   'I enter a served date of {string} and time {string}',
-  'I enter 501 characters for {string}',
-  'I see an error that the answer must be 500 characters or fewer',
   'I answer {string} to {string}',
   'I enter the note {string}',
   'the note is shown under {string} on the {string} tab with my name, date and time',
@@ -330,7 +339,6 @@ pendingSteps({ ticket: 'HDPI-7346', summary: 'Mark \'notice of eviction\' as ser
   'it shows that the eviction is without notice',
   'the notice served date and time show as {string}',
   'defendants cannot see the {string} tab',
-  'the notice of eviction has been served',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7552', summary: 'Review updated risk information' }, [
@@ -354,18 +362,8 @@ pendingSteps({ ticket: 'HDPI-7552', summary: 'Review updated risk information' }
 
 pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return cannot be reached: it needs a bailiff allocation' }, [
   'the eviction is scheduled for today',
-  'I see a mandatory {string} drop down with {string} and {string}',
-  'I choose the {string} return',
-  'I see a mandatory {string} drop down with {string}, {string} and {string}',
-  'I see a mandatory {string} drop down',
-  'I chose the {string} return',
-  'I choose the outcome {string}',
-  'the {string} options are {string}',
-  'I see a mandatory {string} drop down with {string}, {string}, {string}, {string}, {string}, {string}, {string}, {string}, {string}, {string}, {string} and {string}',
-  'I chose the outcome {string}',
   'I enter the eviction date {string} and time {string}',
   'I see an error that the time cannot be in the future',
-  'I choose the return name {string}',
   'the {string} text box is {string}',
   'I have chosen a return',
   'no return is saved',

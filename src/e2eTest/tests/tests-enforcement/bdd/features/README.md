@@ -82,6 +82,15 @@ ENVIRONMENT=local npx playwright test --project enforcement-bdd
 `ENVIRONMENT=local` is the only variable you need: [`config/local-stack.config.ts`](../../../config/local-stack.config.ts)
 defaults every service URL to its cftlib port. Override any of them by exporting it yourself.
 
+Testing-support shortcuts used by the suite (both need `testing-support.enabled=true`, which
+`ENABLE_TESTING_SUPPORT=true` sets):
+
+- `POST /testing-support/enforcement/{caseReference}/fee-paid` — "Awaiting payment" → "Awaiting review".
+  S2S header only.
+- `POST /testing-support/enforcement/{caseReference}/allocate-bailiff` with `{"userId","name","email"}` —
+  allocates the warrant and moves "Awaiting bailiff allocation" → "Awaiting scheduling". Needs a **user**
+  bearer token as well as S2S, because the service records who made the allocation.
+
 | Variable | Local default | Notes |
 |---|---|---|
 | `MANAGE_CASE_BASE_URL` | `http://localhost:3000` | XUI |
@@ -139,14 +148,39 @@ ENVIRONMENT=local npx playwright test --project enforcement-bdd-demo --grep-inve
 
 Videos land in `test-results/<spec>-<scenario>-enforcement-bdd-demo/video.webm`.
 
+### Reaching an enforcement status
+
+Only `fee-paid` and `allocate-bailiff` are testing-support shortcuts; every other status is reached by
+submitting the real event. `setUpWarrantAtStatus` in
+[`support/approve-warrant.ts`](../support/approve-warrant.ts) drives the chain and records an approximated
+precondition when it cannot reach the status a scenario asks for.
+
+| Status | How it is reached |
+|---|---|
+| `Awaiting payment` | the `Create Enforcement Warrant Basic Case` fixture |
+| `Awaiting review` | `POST /testing-support/enforcement/{ref}/fee-paid` |
+| `Awaiting bailiff allocation` | `decideEnforcement` → Accept, as a hearing centre admin |
+| `Awaiting scheduling` | `POST /testing-support/enforcement/{ref}/allocate-bailiff` |
+| `Awaiting claimant confirmation` | `scheduleEviction`, as the bailiff, answering "No" to dispensing with service |
+| `Claimant confirmed` / `Claimant unable to attend` | `confirmEviction`, as the claimant |
+| `Breathing space`, `Closed`, `Rejected`, `Transferred to the High Court` | no route yet (HDPI-7419) |
+
 ### What a local stack cannot do
 
-- **Allocate a bailiff.** `FindBailiffPage`'s StaffUser type-ahead needs staff reference data; cftlib runs
-  no rd-staff, so XUI degrades the field to a raw `IdamId` input and CCD's "IdamId is required" fires
-  before the page's own "Choose a bailiff" mid-event. (HDPI-7356)
-- **Reach any status after "Awaiting bailiff allocation"**, because that needs an allocated bailiff. This
-  is what blocks features 05, 07, 08 and 11, not the events themselves — all four are built.
-- **Create work allocation tasks.** Nothing creates them in any environment yet. (HDPI-8627)
+- **Allocate a bailiff through the event.** `FindBailiffPage`'s StaffUser type-ahead needs staff reference
+  data; cftlib runs no rd-staff, so XUI degrades the field to a raw `IdamId` input and CCD's "IdamId is
+  required" fires before the page's own "Choose a bailiff" mid-event. Feature 03 stays pending for that
+  reason. The `allocate-bailiff` testing-support endpoint goes through `BailiffAllocationService` instead,
+  so features 05, 07, 08 and 11 *are* reachable. (HDPI-7356)
+- **Generate documents.** There are no Docmosis templates, so anything asserting a generated warrant,
+  notice of eviction or notice of appointment stays pending. Document *storage* works once dm-store is up.
+- **Create work allocation tasks.** Nothing creates them in any environment yet. A step that merely states
+  a task exists is recorded as an approximated precondition so the scenario still runs; a step that
+  interacts with one stays pending. (HDPI-8627)
+- **Control the clock.** Several scenarios say "today is 08/07/2026" to put a time in the future; nothing
+  can set the app's clock, so those stay pending.
+- **Sign in as a defendant legal representative.** Linking one to a party goes through pcs-api testing
+  support into CCD's case-users API, which answers 500 "Failed to create CCD case" locally.
 
 ## Open questions
 

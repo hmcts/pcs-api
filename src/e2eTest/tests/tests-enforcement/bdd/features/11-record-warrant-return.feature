@@ -18,8 +18,6 @@ Feature: Bailiff records the warrant return
       | hearing-centre-admin       |
       | hearing-centre-team-leader |
 
-    # No bailiff, bailiff-admin or bailiff-manager test users yet (HDPI-7539).
-    @pending
     Examples:
       | role            |
       | bailiff         |
@@ -38,7 +36,8 @@ Feature: Bailiff records the warrant return
       | defendant legal representative |
       | judge                          |
 
-  # There is no allocated bailiff test user yet (HDPI-7539), so every scenario below is pending.
+  # The bailiff is allocated through the pcs-api testing-support allocate-bailiff endpoint, because the
+  # allocateBailiff event needs staff reference data cftlib does not run (HDPI-7356).
   Rule: The allocated bailiff records the return
 
   Background:
@@ -57,6 +56,8 @@ Feature: Bailiff records the warrant return
     When I start the "Record warrant return" event
     Then I see the error "There is no warrant on this case"
 
+  # RecordWarrantReturnPage renders only the case number and property address: no parties line and
+  # ${warrantReturnEvictionDetailsMarkup} produces no "Eviction details" table.
   @HDPI-7347 @pending
   Scenario: Record warrant return screen
     When I start the "Record warrant return" event
@@ -65,13 +66,16 @@ Feature: Bailiff records the warrant return
     And I see the "Eviction details" table with claimant type, claimant name and defendant names
     And I see a mandatory "Return" drop down with "Final" and "Interim"
 
+  # Choosing "Final" reveals the Outcome drop down but not a Return name: the three Return name fields are
+  # shown by the chosen outcome, so no Return name appears until an outcome is picked. The Outcome half of
+  # this scenario passes; the Return name half does not match the show conditions.
   @HDPI-7347 @pending
   Scenario: Final return asks for outcome and return name
     When I choose the "Final" return
     Then I see a mandatory "Outcome" drop down with "Eviction successful", "Eviction unsuccessful" and "Eviction cancelled"
     And I see a mandatory "Return name" drop down
 
-  @HDPI-7347 @pending
+  @HDPI-7347
   Scenario Outline: Final return names depend on the outcome
     Given I chose the "Final" return
     When I choose the outcome "<outcome>"
@@ -83,7 +87,7 @@ Feature: Bailiff records the warrant return
       | Eviction unsuccessful | Warrant withdrawn, Warrant suspended by Order, Possession Order set aside, Unable to gain access to the property, Claimant did not confirm eviction, No locksmith in attendance (Claimant failed to arrange), No animal handler in attendance (Claimant failed to arrange), No Claimant or agent in attendance for eviction, No reply to request for additional information, Eviction unsuccessful - other, Warrant expired, Warrant issued in error |
       | Eviction cancelled    | Warrant withdrawn, Warrant suspended by Order, Possession Order set aside, Unable to gain access to the property, Claimant did not confirm eviction, No locksmith in attendance (Claimant failed to arrange), No animal handler in attendance (Claimant failed to arrange), No Claimant or agent in attendance for eviction, No reply to request for additional information, Eviction unsuccessful - other, Warrant expired, Warrant issued in error |
 
-  @HDPI-7347 @pending
+  @HDPI-7347
   Scenario: Interim return names
     When I choose the "Interim" return
     Then I see a mandatory "Return name" drop down with "Application unsuccessful & warrant returned to bailiff", "Request for additional information", "No animal handler in attendance (Parties unaware of animal)", "No Police presence (Police refused to attend when asked to)", "Children left unattended in property", "Crowds or protests", "Obstruction by Defendants", "Safeguarding or vulnerability concerns", "Defendant states they are in Breathing Space (Standard or Mental Health)", "Claimant advised Defendant in Breathing Space", "Other interim return" and "Reopen warrant"

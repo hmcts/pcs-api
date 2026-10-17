@@ -5,12 +5,10 @@
 // status: pcs-api's only enforcement testing-support endpoint is `fee-paid`, so a scenario can only reach a
 // status by driving the real events. Steps that need a status set up for them stay pending on HDPI-7419.
 import { Given, Then, expect } from '../fixtures/enforcement.fixtures';
-import { markPending, pendingSteps } from '../fixtures/pending';
+import { pendingSteps } from '../fixtures/pending';
 import { enforcementRows, expectEnforcementStatus, openCaseTab } from '../support/enforcement-status-tab';
+import { setUpWarrantAtStatus } from '../support/approve-warrant';
 import { requireCaseReference } from '../support/enforcement-journeys';
-
-/** Statuses a scenario can reach with the events and testing support that exist today. */
-const REACHABLE_STATUSES = new Set(['Awaiting payment', 'Awaiting review']);
 
 Then('the enforcement status changes to {string}', async ({ page, world }, status: string) => {
   await expectEnforcementStatus(page, requireCaseReference(world), status);
@@ -32,20 +30,17 @@ Then('the case has no live warrant', async ({ page, world }) => {
   expect(live, 'no live enforcement on the case').toHaveLength(0);
 });
 
-// The status a scenario needs is only reachable by driving the real events; there is no testing-support
-// endpoint that forces one (HDPI-7419).
-Given('the case has a warrant of possession with status {string}', async ({ page, world, $tags }, status: string) => {
-  if (!REACHABLE_STATUSES.has(status)) {
-    return markPending({ ticket: 'HDPI-7419', summary: `setting an enforcement to "${status}"` }, $tags);
-  }
-  await expectEnforcementStatus(page, requireCaseReference(world), status);
+/**
+ * Puts a warrant on the case in the given status. Used mid-scenario, after a case already exists, so it
+ * builds a fresh case with a warrant: the enforcement fixture is the only local route to one and the case
+ * the scenario started with carries no enforcement.
+ */
+Given('the case has a warrant of possession with status {string}', async ({ page, context, world }, status: string) => {
+  await setUpWarrantAtStatus(page, context, world, status);
 });
 
-Given('the case has a warrant with status {string}', async ({ page, world, $tags }, status: string) => {
-  if (!REACHABLE_STATUSES.has(status)) {
-    return markPending({ ticket: 'HDPI-7419', summary: `setting an enforcement to "${status}"` }, $tags);
-  }
-  await expectEnforcementStatus(page, requireCaseReference(world), status);
+Given('the case has a warrant with status {string}', async ({ page, context, world }, status: string) => {
+  await setUpWarrantAtStatus(page, context, world, status);
 });
 
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Setting up an enforcement in an arbitrary status' }, [

@@ -71,7 +71,9 @@ export async function localDocumentStoreIsUp(): Promise<boolean> {
  */
 export const localUsers = {
   claimantSolicitor: 'pcs-solicitor1@test.com',
-  defendantSolicitor: 'pcs-defendant-solicitor@test.com',
+  // Must match user.defendantSolicitor.email: createCaseAPI.action.ts hardcodes that address when
+  // linking a defendant solicitor to a party, so an override here alone would not be enough.
+  defendantSolicitor: 'pcs-org1-solicitor2@test.com',
   hearingCentreAdmin: 'caseworker@pcs.com',
   hearingCentreTeamLeader: 'pcs-hearing-centre-team-leader-01@localhost',
   bailiff: 'pcs-bailiff@localhost',
@@ -201,11 +203,46 @@ export async function recordFeePaid(caseReference: string): Promise<void> {
  * case come from the base claim — one defendant, John Doe — whatever the enforcement fixture's own
  * `parties` / `allDefendants` say.
  */
+/**
+ * The property address every test-case-generation fixture uses. The enforcement actions assert the address
+ * shown on each page, and locally the case comes from a fixture rather than `createCasePayload`.
+ */
+export const fixturePropertyAddress = {
+  AddressLine1: '1 Rse Way',
+  AddressLine2: '',
+  PostTown: 'London',
+  PostCode: 'SW11 1PD',
+} as const;
+
 export const basicClaimFixtureClaim = {
   defendant1: { nameKnown: 'YES', addressKnown: 'NO', firstName: 'John', lastName: 'Doe' },
   addAnotherDefendant: 'NO',
   additionalDefendants: [],
 } as const;
+
+/**
+ * Waits for the claim's service request to exist before the suite tries to pay it.
+ *
+ * pcs-api creates it on a db-scheduler task rather than in the submit, so it appears some seconds after
+ * the case does. `updatePaymentAPI` only retries for ten seconds, which is not always enough on a loaded
+ * local stack, and it then fails with "No payment information found".
+ */
+export async function waitForServiceRequest(caseReference: string, timeoutMs = 90_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const response = await Axios.get(`${process.env.CASE_API_URL}/testing-support/fee-payment-info/${caseReference}`, {
+      headers: { ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}` },
+      validateStatus: () => true,
+    });
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      return;
+    }
+    await new Promise(resolve => setTimeout(resolve, 2_000));
+  }
+  throw new Error(
+    `No service request was created for case ${caseReference} within ${timeoutMs}ms, so its fee cannot be paid.`
+  );
+}
 
 /** The IDAM id of a local user, read from the simulator's userinfo endpoint rather than derived. */
 export async function localIdamUserId(email: string): Promise<string> {

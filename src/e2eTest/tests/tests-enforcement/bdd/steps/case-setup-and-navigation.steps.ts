@@ -10,6 +10,7 @@ import {
   openCaseSummary,
   signInAs,
   startEvent,
+  startEventAllowingRefusal,
   xuiEvents,
 } from '../support/enforcement-journeys';
 import {
@@ -23,6 +24,8 @@ import {
   submitDecision,
 } from '../support/decide-enforcement';
 import { AWAITING_BAILIFF_ALLOCATION, setUpWarrantAtStatus } from '../support/approve-warrant';
+import { RESCHEDULE_EVICTION, SCHEDULE_EVICTION, scheduleEviction } from '../support/schedule-eviction';
+import { MARK_NOTICE_SERVED, noticeServed } from '../support/notice-served';
 import {
   ADD_BAILIFF_NOTE,
   SET_RISK_LEVEL,
@@ -57,12 +60,12 @@ Given('a PCS case {string} with a possession order made', async ({ world }, _ref
   await createIssuedCase(world);
 });
 
-Given('a PCS case {string} with a warrant of possession with status {string}', async ({ page, world }, _reference: string, status: string) => {
-  await setUpWarrantAtStatus(page, world, status);
+Given('a PCS case {string} with a warrant of possession with status {string}', async ({ page, context, world }, _reference: string, status: string) => {
+  await setUpWarrantAtStatus(page, context, world, status);
 });
 
-Given('a PCS case {string} with a warrant of possession', async ({ page, world }, _reference: string) => {
-  await setUpWarrantAtStatus(page, world, AWAITING_BAILIFF_ALLOCATION);
+Given('a PCS case {string} with a warrant of possession', async ({ page, context, world }, _reference: string) => {
+  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
 });
 
 // The claimant legal representative is the storage-state user from config/global-setup.config.ts, who also
@@ -87,7 +90,13 @@ Given('there is no live enforcement on the case', async ({ world }) => {
 // Internal users and the defendant's legal representative sign in in place of the storage-state user.
 Given('I am signed in to XUI as a {string}', async ({ page, context, $tags }, role: string) => {
   if (!canSignInAs(role)) {
-    return markPending({ ticket: 'HDPI-7539', summary: `signing in as a ${role}: there is no ${role} test user yet` }, $tags);
+    return markPending(
+      {
+        ticket: 'HDPI-7539',
+        summary: `signing in as a ${role}: no ${role} the suite can use in this environment`,
+      },
+      $tags
+    );
   }
   await signInAs(role, page, context);
 });
@@ -123,11 +132,27 @@ Then('the {string} event is not available', async ({ page, $tags }, eventName: s
   expect(await nextStepOptions(page)).not.toContain(event.label);
 });
 
-When('I start the {string} event', async ({ $tags }, eventName: string) => {
+When('I start the {string} event', async ({ page, world, $tags }, eventName: string) => {
   if (!xuiEvents[eventName]) {
     return markPending(eventNotBuilt(eventName), $tags);
   }
-  await startEvent(eventName);
+  // A scenario that signed in as another role is on the XUI landing page, not the case.
+  await openCaseSummary(page);
+  // A start callback can refuse the event; the scenario then asserts the error it gave.
+  world.startEventError = await startEventAllowingRefusal(page, eventName);
+  if (!world.startEventError) {
+    world.currentEvent = eventName;
+  }
+});
+
+/**
+ * The message a start callback refused the event with. CCD puts a generic "Unable to proceed because there
+ * are one or more callback Errors or Warnings" in the error summary and the real message in a separate
+ * "Errors" list, so the specific text is matched on the page.
+ */
+Then('I see the error {string}', async ({ world }, message: string) => {
+  expect(world.startEventError, 'the event to have been refused by its start callback').toBeDefined();
+  expect(world.startEventError).toContain(message);
 });
 
 When('I start the {string} event from the next steps drop down', async ({ page, world, $tags }, eventName: string) => {
@@ -145,7 +170,6 @@ Then('the case reference is unchanged', async ({ page, world }) => {
 });
 
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the live enforcement' }, [
-  'I see the error {string}',
 ]);
 
 // The cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json) make these sign-ins real.
@@ -184,10 +208,6 @@ pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not
   'the {string} screen opens',
   'the warrant number is not shown in the header',
   'I see the {string} confirmation with the case number and warrant number',
-  'I submit the event',
-  'the question {string} is mandatory',
-  'the answer defaults to {string}',
-  'I see the confirmation {string} with the case number and warrant number',
   'today is {string} and the time is {string}',
   'the {string} screen shows my answers with {string} links',
   'I open {string}',
@@ -227,6 +247,9 @@ const screenEvents: Record<string, string> = {
   [DECIDE_ENFORCEMENT]: DECIDE_ENFORCEMENT,
   [setRiskLevel.pageLabel]: SET_RISK_LEVEL,
   [addBailiffNote.pageLabel]: ADD_BAILIFF_NOTE,
+  [scheduleEviction.pageLabel]: SCHEDULE_EVICTION,
+  [noticeServed.pageLabel]: MARK_NOTICE_SERVED,
+  [RESCHEDULE_EVICTION]: RESCHEDULE_EVICTION,
 };
 
 Given('I am on the {string} screen', async ({ page, world, $tags }, screen: string) => {
@@ -262,14 +285,16 @@ Then('the {string} button is disabled', async ({ page, world, $tags }, button: s
 });
 
 When('I select {string}', async ({ page, world, $tags }, option: string) => {
-  if (!world.currentEvent) {
-    return markPending(genericStepPending, $tags);
-  }
+  // Continue and Cancel are on every enforcement event page, so they do not need to know which event
+  // the scenario is in.
   if (option === decideEnforcement.cancelLink) {
     return page.getByText(decideEnforcement.cancelLink, { exact: true }).click();
   }
   if (option === decideEnforcement.continueButton) {
     return clickContinue(page);
+  }
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
   }
   if (world.currentEvent === SET_RISK_LEVEL && (option === setRiskLevel.high || option === setRiskLevel.medium)) {
     return chooseRiskLevel(page, option);
@@ -294,8 +319,20 @@ Then('I return to the case summary', async ({ page, world, $tags }) => {
 });
 
 When('I submit the {string} event', async ({ page, world, $tags }, eventName: string) => {
-  if (eventName !== DECIDE_ENFORCEMENT || !inDecideEnforcement(world)) {
-    return markPending(genericStepPending, $tags);
+  if (eventName === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
+    return submitDecision(page);
   }
-  await submitDecision(page);
+  // The eviction events use CCD's own check-your-answers, so submitting is "Save and continue". Only
+  // possible when the scenario actually started the event and answered its page; several scenarios submit
+  // without any set-up because they are really about what the submit produces (documents, notifications),
+  // which does not exist yet.
+  if (eventName === SCHEDULE_EVICTION || eventName === RESCHEDULE_EVICTION) {
+    if (world.currentEvent !== eventName) {
+      return markPending(genericStepPending, $tags);
+    }
+    await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
+    world.currentEvent = undefined;
+    return;
+  }
+  return markPending(genericStepPending, $tags);
 });

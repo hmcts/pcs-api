@@ -33,12 +33,22 @@ export class EnforcementWorld {
   currentEvent?: string;
   /** Set once the warrant has been approved through "Decide enforcement", so it is live with a number. */
   warrantApproved = false;
+  /** The warrant number generated on approval, e.g. WP-00000006. */
+  warrantNumber?: string;
   /** The bailiff the scenario allocated the warrant to, if any. */
   allocatedBailiff?: string;
   /** The risk level the scenario chose in "Set risk level". */
   riskLevel?: string;
   /** The note text the scenario typed into "Add a bailiff note". */
   enteredNote?: string;
+  /** The eviction date and time the scenario entered in "Schedule eviction". */
+  evictionDate?: string;
+  /** Set once an eviction has actually been scheduled on the warrant. */
+  evictionScheduled = false;
+  /** Whether the claimant said they could attend, once they have answered. */
+  claimantConfirmedEviction?: boolean;
+  /** The error a start callback gave when the scenario last tried to open an event, if any. */
+  startEventError?: string;
 }
 
 type EnforcementFixtures = {

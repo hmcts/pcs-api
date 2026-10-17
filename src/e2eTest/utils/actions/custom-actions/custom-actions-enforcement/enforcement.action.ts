@@ -41,12 +41,19 @@ import {
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 import Axios from "axios";
+import { fixturePropertyAddress, isLocalStack } from '@config/local-stack.config';
+
+// A local run builds its cases from the test-case-generation fixtures, which use their own address,
+// rather than from createCasePayload.
+const propertyAddress = isLocalStack()
+  ? fixturePropertyAddress
+  : createCaseApiData.createCasePayload.propertyAddress;
 
 export const addressInfo = {
-  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
-  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
-  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
-  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
+  buildingStreet: propertyAddress.AddressLine1,
+  addressLine2: propertyAddress.AddressLine2,
+  townCity: propertyAddress.PostTown,
+  engOrWalPostcode: propertyAddress.PostCode
 };
 
 export let defendantDetails: string[] = [];
@@ -316,7 +323,12 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
     defendantDetails = defendantDetails.map(fullName =>
       fullName?.trim() === 'Person unknown' ? 'Name not known' : fullName
     );
-    await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
+    // Joined on the populated parts only: an address with no second line would otherwise produce a double
+    // space, which the formLabelValue comparison counts as an extra empty token.
+    await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader,
+      [addressInfo.buildingStreet, addressInfo.addressLine2, addressInfo.townCity, addressInfo.engOrWalPostcode]
+        .filter(part => part && part.trim())
+        .join(' '));
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
   }

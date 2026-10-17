@@ -45,6 +45,21 @@ export const riskAssessmentFields = {
 
 export const continueButton = (page: Page) => page.getByRole('button', { name: 'Continue', exact: true });
 
+/**
+ * Asserts a bailiff confirmation that names both numbers. `ConfirmationNumbers.caseAndWarrant` renders
+ * "Case number: ..." and "Warrant number: ..." as separate paragraphs, and omits the warrant number only
+ * for a warrant that never had one.
+ */
+export async function expectBailiffConfirmationWithWarrantNumber(
+  page: Page,
+  header: string,
+  caseReference: string,
+  warrantNumber: string
+): Promise<void> {
+  await expectBailiffConfirmation(page, header, caseReference);
+  await expect(page.locator('#confirmation-body').getByText(`Warrant number: ${warrantNumber}`)).toBeVisible();
+}
+
 /** The dashed case number the bailiff confirmations render. */
 export const dashedCaseNumber = (caseReference: string): string => caseReference.replace(/(.{4})(?=.)/g, '$1-');
 
