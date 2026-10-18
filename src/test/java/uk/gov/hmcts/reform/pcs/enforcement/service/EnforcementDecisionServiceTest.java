@@ -57,6 +57,8 @@ class EnforcementDecisionServiceTest {
     private EnforcementDocumentScheduler enforcementDocumentScheduler;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
         new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC));
@@ -125,6 +127,12 @@ class EnforcementDecisionServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleApprovalDocument(enforcement.getId(), type);
         verify(enforcementNotificationService).notifyClaimantOfApproval(CASE_REFERENCE, type, number);
+        if (approvedStatus == EnforcementStatus.AWAITING_BAILIFF_ALLOCATION) {
+            verify(enforcementWaTaskService).warrantAwaitingBailiff(CASE_REFERENCE, enforcement.getId());
+        } else {
+            // An approved writ goes to the High Court, so no bailiff allocation task is created.
+            verifyNoInteractions(enforcementWaTaskService);
+        }
     }
 
     @Test
@@ -144,7 +152,7 @@ class EnforcementDecisionServiceTest {
 
         assertThatThrownBy(() -> underTest.accept(CASE_REFERENCE)).isInstanceOf(IllegalStateException.class);
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -155,7 +163,7 @@ class EnforcementDecisionServiceTest {
             .containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
         verifyNoInteractions(enforcementNumberGenerator);
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -173,7 +181,7 @@ class EnforcementDecisionServiceTest {
         assertThat(enforcement.getRejectionReason()).isEqualTo("The order has been set aside");
         assertThat(enforcement.getEnforcementNumber()).isNull();
         assertThat(enforcement.getApprovedAt()).isNull();
-        verifyNoInteractions(enforcementNumberGenerator, enforcementDocumentScheduler);
+        verifyNoInteractions(enforcementNumberGenerator, enforcementDocumentScheduler, enforcementWaTaskService);
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfRejection(
             CASE_REFERENCE, SelectEnforcementType.WARRANT, "The order has been set aside");
@@ -186,7 +194,7 @@ class EnforcementDecisionServiceTest {
         assertThat(underTest.reject(CASE_REFERENCE, reason).errors())
             .containsExactly(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -196,7 +204,7 @@ class EnforcementDecisionServiceTest {
         assertThat(underTest.reject(CASE_REFERENCE, "reason").errors())
             .containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     /**

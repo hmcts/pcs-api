@@ -47,6 +47,8 @@ class ClaimantRiskAssessmentServiceTest {
     private CurrentEnforcementService currentEnforcementService;
     @Mock
     private RiskAssessmentUpdateRepository riskAssessmentUpdateRepository;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private ClaimantRiskAssessmentService underTest;
     private EnforcementOrderEntity warrant;
@@ -54,7 +56,7 @@ class ClaimantRiskAssessmentServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new ClaimantRiskAssessmentService(currentEnforcementService, riskAssessmentUpdateRepository,
-                                                      new ClaimantRiskAnswersMapper(),
+                                                      new ClaimantRiskAnswersMapper(), enforcementWaTaskService,
                                                       Clock.fixed(NOW, ZoneOffset.UTC));
         warrant = EnforcementOrderEntity.builder()
             .id(UUID.randomUUID())
@@ -67,6 +69,7 @@ class ClaimantRiskAssessmentServiceTest {
     @Test
     void shouldSaveTheAnswersWhenOneHasChanged() {
         givenCurrentEnforcement(warrant);
+        UUID updateId = givenSaveAssignsAnId();
 
         boolean recorded = underTest.recordAnswers(CASE_REFERENCE,
                                                    submittedAnswers(YesNoNotSure.NO, VerticalYesNo.YES));
@@ -78,6 +81,7 @@ class ClaimantRiskAssessmentServiceTest {
         assertThat(saved.getValue().getUpdatedAt()).isEqualTo(NOW);
         assertThat(saved.getValue().getAnswers().getIsDifficultToAccessProperty()).isEqualTo(VerticalYesNo.YES);
         assertThat(saved.getValue().getAnswers().getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.NO);
+        verify(enforcementWaTaskService).riskAnswersChanged(CASE_REFERENCE, updateId);
     }
 
     @Test
@@ -88,6 +92,7 @@ class ClaimantRiskAssessmentServiceTest {
 
         assertThat(recorded).isFalse();
         verify(riskAssessmentUpdateRepository, never()).save(any());
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -106,6 +111,7 @@ class ClaimantRiskAssessmentServiceTest {
 
         assertThat(recorded).isFalse();
         verify(riskAssessmentUpdateRepository, never()).save(any());
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -117,7 +123,7 @@ class ClaimantRiskAssessmentServiceTest {
                                                    submittedAnswers(YesNoNotSure.YES, VerticalYesNo.NO));
 
         assertThat(recorded).isFalse();
-        verifyNoInteractions(riskAssessmentUpdateRepository);
+        verifyNoInteractions(riskAssessmentUpdateRepository, enforcementWaTaskService);
     }
 
     @Test
@@ -125,7 +131,7 @@ class ClaimantRiskAssessmentServiceTest {
         boolean recorded = underTest.recordAnswers(CASE_REFERENCE, EnforcementOrder.builder().build());
 
         assertThat(recorded).isFalse();
-        verifyNoInteractions(currentEnforcementService, riskAssessmentUpdateRepository);
+        verifyNoInteractions(currentEnforcementService, riskAssessmentUpdateRepository, enforcementWaTaskService);
     }
 
     @Test
@@ -150,6 +156,19 @@ class ClaimantRiskAssessmentServiceTest {
 
         assertThat(eventData.getChooseEnforcementType()).isNull();
         assertThat(eventData.getWarrantDetails()).isNull();
+    }
+
+    /**
+     * The update row's id keys the task, and the database assigns it on save.
+     */
+    private UUID givenSaveAssignsAnId() {
+        UUID id = UUID.randomUUID();
+        when(riskAssessmentUpdateRepository.save(any())).thenAnswer(invocation -> {
+            RiskAssessmentUpdateEntity update = invocation.getArgument(0);
+            update.setId(id);
+            return update;
+        });
+        return id;
     }
 
     private void givenCurrentEnforcement(EnforcementOrderEntity enforcement) {

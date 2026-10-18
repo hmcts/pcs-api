@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_SCHEDULING;
@@ -51,6 +52,8 @@ class BailiffAllocationServiceTest {
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private BailiffAllocationService underTest;
 
@@ -59,13 +62,14 @@ class BailiffAllocationServiceTest {
         Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
         underTest = new BailiffAllocationService(currentEnforcementService, new EnforcementStatusTransitions(clock),
                                                  bailiffAllocationRepository, enforcementOrderRepository,
-                                                 securityContextService, clock);
+                                                 securityContextService, enforcementWaTaskService, clock);
     }
 
     @Test
     void shouldAllocateAWarrantAwaitingAllocationAndMoveItToAwaitingScheduling() {
         EnforcementOrderEntity enforcement = givenCurrentEnforcement(AWAITING_BAILIFF_ALLOCATION);
         givenActiveAllocations(enforcement);
+        givenSaveAssignsAnId();
         when(securityContextService.getCurrentUserId()).thenReturn("manager-id");
 
         EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
@@ -82,6 +86,7 @@ class BailiffAllocationServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_SCHEDULING);
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementWaTaskService).bailiffAllocated(CASE_REFERENCE, saved.getId());
     }
 
     @Test
@@ -89,14 +94,18 @@ class BailiffAllocationServiceTest {
         EnforcementOrderEntity enforcement = givenCurrentEnforcement(CLAIMANT_CONFIRMED);
         BailiffAllocationEntity previous = allocation(enforcement, "alex-id");
         givenActiveAllocations(enforcement, previous);
+        givenSaveAssignsAnId();
 
         underTest.allocate(CASE_REFERENCE, SAM);
 
         assertThat(previous.getEndedAt()).isEqualTo(NOW);
         verify(bailiffAllocationRepository).saveAllAndFlush(List.of(previous));
-        assertThat(savedAllocation().getBailiffUserId()).isEqualTo("sam-id");
+        BailiffAllocationEntity saved = savedAllocation();
+        assertThat(saved.getBailiffUserId()).isEqualTo("sam-id");
         assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
         verify(enforcementOrderRepository, never()).save(any());
+        // The new allocation's own risk task: the open bailiff tasks follow the allocated-bailiff role.
+        verify(enforcementWaTaskService).bailiffAllocated(CASE_REFERENCE, saved.getId());
     }
 
     @Test
@@ -110,6 +119,7 @@ class BailiffAllocationServiceTest {
         assertThat(current.getEndedAt()).isNull();
         verify(bailiffAllocationRepository, never()).save(any());
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_SCHEDULING);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -120,6 +130,7 @@ class BailiffAllocationServiceTest {
 
         assertThat(allocated.errors()).containsExactly(NoEnforcementException.MESSAGE);
         verify(bailiffAllocationRepository, never()).save(any());
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @ParameterizedTest
@@ -131,6 +142,7 @@ class BailiffAllocationServiceTest {
 
         assertThat(allocated.errors()).containsExactly(BailiffAllocationService.NOT_AVAILABLE_MESSAGE);
         verify(bailiffAllocationRepository, never()).save(any());
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -160,6 +172,17 @@ class BailiffAllocationServiceTest {
             .build();
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(enforcement));
         return enforcement;
+    }
+
+    /**
+     * The allocation's id keys the risk task, and the database assigns it on save.
+     */
+    private void givenSaveAssignsAnId() {
+        when(bailiffAllocationRepository.save(any())).thenAnswer(invocation -> {
+            BailiffAllocationEntity allocation = invocation.getArgument(0);
+            allocation.setId(UUID.randomUUID());
+            return allocation;
+        });
     }
 
     private void givenActiveAllocations(EnforcementOrderEntity enforcement, BailiffAllocationEntity... active) {

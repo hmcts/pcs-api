@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailabl
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService.Eviction;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -62,6 +63,7 @@ public class EvictionScheduleService {
     private final BailiffNoteService bailiffNoteService;
     private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
+    private final EnforcementWaTaskService enforcementWaTaskService;
 
     /*
      * The rules below are what the start and submit callbacks check on the claim's live enforcement, and what
@@ -137,19 +139,18 @@ public class EvictionScheduleService {
         }
         EnforcementOrderEntity enforcement = live.change();
         setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
-            caseReference, "the eviction notices and the claimant's email", () -> {
+            caseReference, "the eviction notices, the claimant's email and the eviction tasks", () -> {
                 enforcementDocumentScheduler.scheduleEvictionNotices(enforcement.getId());
                 // TODO HDPI-7355: email the notice of appointment to the claimant.
                 enforcementNotificationService.notifyClaimantOfScheduledEviction(caseReference, evictionDateTime);
+                enforcementWaTaskService.evictionScheduled(caseReference, enforcement.getId(),
+                                                           new Eviction(evictionDateTime, dispenseWithService));
             });
         if (scheduled.refused()) {
             return EnforcementChange.refused(scheduled.errors());
         }
-        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
-        // TODO HDPI-7346 / HDPI-8627: create the "Mark notice of eviction as served" WA task for the allocated
-        //  bailiff when service is not dispensed with.
-        // TODO HDPI-7347: create the "Record warrant return" WA task due on the eviction date.
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
@@ -167,20 +168,24 @@ public class EvictionScheduleService {
             return EnforcementChange.refused(live.errors());
         }
         EnforcementOrderEntity enforcement = live.change();
+        // Read before the new date overwrites them, so the previous appointment's tasks can be cancelled.
+        final Eviction previous = new Eviction(enforcement.getBailiffDate(),
+                                               Boolean.TRUE.equals(enforcement.getDispenseWithService()));
         setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
+        // "Reschedule eviction" is closed by XUI through the task-completion DMN.
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
-            caseReference, "the new eviction notices and the claimant's email", () -> {
+            caseReference, "the new eviction notices, the claimant's email and the eviction tasks", () -> {
                 // A new notice of eviction and notice of appointment, keeping the originals in the Enforcement
                 // folder.
                 enforcementDocumentScheduler.scheduleEvictionNotices(enforcement.getId());
                 enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
+                enforcementWaTaskService.evictionRescheduled(caseReference, enforcement.getId(), previous,
+                                                             new Eviction(evictionDateTime, dispenseWithService));
             });
         if (scheduled.refused()) {
             return EnforcementChange.refused(scheduled.errors());
         }
-        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
-        // TODO HDPI-7549: complete the "Reschedule eviction" WA task, and move the "Record warrant return" task
-        //  (HDPI-7347) to the new eviction date.
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
@@ -206,7 +211,7 @@ public class EvictionScheduleService {
         if (bailiffNote != null) {
             bailiffNoteService.addNote(caseReference, bailiffNote);
         }
-        // TODO HDPI-7346: complete the "Mark notice of eviction as served" WA task.
+        // "Mark notice of eviction as served" is closed by XUI through the task-completion DMN.
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 

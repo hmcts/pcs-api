@@ -81,7 +81,8 @@ public class RiskLevelService {
         enforcement.setRiskLevelReason(high ? reason : null);
         enforcement.setRiskLevelSetAt(Instant.now(utcClock));
         enforcementOrderRepository.save(enforcement);
-        // TODO(HDPI-8627): complete the "Review risks and set level" task.
+        // "Review risks and set level" and "Review updated risk information" are both closed by XUI through
+        // the task-completion DMN, which has a row for each against this event.
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 

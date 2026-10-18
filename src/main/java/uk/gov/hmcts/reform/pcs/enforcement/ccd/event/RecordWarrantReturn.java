@@ -40,8 +40,10 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
  * closed warrant to reopen it. The return is kept as the warrant's history, moves its status as the return
  * name requires, and emails the claimant.
  *
- * <p>TODO HDPI-9520: create a "Record warrant return" WA task on the eviction date and complete it on submit.
- * Work allocation for enforcement is not configured yet.</p>
+ * <p>The "Record warrant return" task is created when the eviction is scheduled, due on the eviction date
+ * ({@link uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService}), and closed by XUI through
+ * the task-completion DMN when this event is submitted from it. Recording a return also cancels the
+ * warrant's other open tasks, and asks for a new bailiff allocation when the return reopens it.</p>
  */
 @Component
 @AllArgsConstructor

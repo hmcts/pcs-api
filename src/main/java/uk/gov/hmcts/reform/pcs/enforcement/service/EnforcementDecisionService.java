@@ -38,6 +38,7 @@ public class EnforcementDecisionService {
     private final EnforcementNumberGenerator enforcementNumberGenerator;
     private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
+    private final EnforcementWaTaskService enforcementWaTaskService;
 
     public boolean hasEnforcementAwaitingReview(long caseReference) {
         return findAwaitingReview(caseReference).isPresent();
@@ -69,12 +70,17 @@ public class EnforcementDecisionService {
         enforcementOrderRepository.save(enforcement);
 
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
-            caseReference, "the approved warrant or writ and the claimant's email", () -> {
+            caseReference, "the approved warrant or writ, the claimant's email and the allocation task", () -> {
                 // TODO HDPI-9566: generate the warrant or writ in Welsh when the claimant asked for Welsh
                 //  documents.
                 enforcementDocumentScheduler.scheduleApprovalDocument(enforcement.getId(), enforcementType);
                 enforcementNotificationService.notifyClaimantOfApproval(caseReference, enforcementType,
                                                                         enforcementNumber);
+                if (enforcement.getStatus() == AWAITING_BAILIFF_ALLOCATION) {
+                    // An approved writ goes to a High Court Enforcement Officer, so it gets no bailiff and no
+                    // task.
+                    enforcementWaTaskService.warrantAwaitingBailiff(caseReference, enforcement.getId());
+                }
             });
         if (scheduled.refused()) {
             return EnforcementChange.refused(scheduled.errors());

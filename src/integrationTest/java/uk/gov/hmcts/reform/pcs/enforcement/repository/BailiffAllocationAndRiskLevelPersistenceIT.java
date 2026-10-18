@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.sql.Timestamp;
@@ -263,7 +264,7 @@ class BailiffAllocationAndRiskLevelPersistenceIT extends AbstractPostgresContain
         when(securityContextService.getCurrentUserId()).thenReturn("manager-id");
         return new BailiffAllocationService(currentEnforcementService, new EnforcementStatusTransitions(clock),
                                             bailiffAllocationRepository, enforcementOrderRepository,
-                                            securityContextService, clock);
+                                            securityContextService, mock(EnforcementWaTaskService.class), clock);
     }
 
     private void insertAllocation(UUID enforcementId, String bailiffUserId, Instant endedAt) {
