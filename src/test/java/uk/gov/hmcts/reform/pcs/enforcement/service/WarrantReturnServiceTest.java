@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -42,6 +43,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -329,6 +332,23 @@ class WarrantReturnServiceTest {
                                interim(InterimWarrantReturnName.OBSTRUCTION_BY_DEFENDANTS, null));
 
         verifyNoInteractions(bailiffAllocationRepository);
+    }
+
+    /**
+     * The bailiff is asked to try again rather than given an unexplained 500, and the return is rolled back
+     * with the task changes it asked for.
+     */
+    @Test
+    void shouldRefuseTheReturnWhenItsTaskChangesCannotBeRequested() {
+        givenWarrant(CLAIMANT_CONFIRMED);
+        doThrow(new DataIntegrityViolationException("scheduled_tasks")).when(enforcementWaTaskService)
+            .warrantReturnRecorded(anyLong(), any(), any(), any(), any());
+
+        EnforcementChange<RecordedWarrantReturn> recorded = underTest.recordReturn(
+            CASE_REFERENCE, interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order"));
+
+        assertThat(recorded.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        assertThat(recorded.change()).isNull();
     }
 
     @Test

@@ -41,13 +41,16 @@ public class ClaimantEvictionConfirmationService {
 
     /**
      * Saves any change to the claimant's risk assessment answers (HDPI-7552), then records whether they can
-     * attend, in one transaction. A refusal from {@link #recordAttendance} is passed back for the submit handler
-     * to answer with, which rolls the risk answers back with it.
+     * attend, in one transaction. A refusal from either is passed back for the submit handler to answer with,
+     * which rolls the whole confirmation back with it.
      */
     @Transactional
     public EnforcementChange<Void> recordConfirmation(long caseReference, YesOrNo canAttend,
                                                       EnforcementOrder submitted) {
-        claimantRiskAssessmentService.recordAnswers(caseReference, submitted);
+        EnforcementChange<Boolean> riskAnswers = claimantRiskAssessmentService.recordAnswers(caseReference, submitted);
+        if (riskAnswers.refused()) {
+            return EnforcementChange.refused(riskAnswers.errors());
+        }
         return recordAttendance(caseReference, canAttend);
     }
 

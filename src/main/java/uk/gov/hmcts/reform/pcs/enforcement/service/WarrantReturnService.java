@@ -208,8 +208,14 @@ public class WarrantReturnService {
         // Cancels the warrant's tasks the return has made obsolete, and asks for a new bailiff allocation
         // when the return reopened it. Keyed on this return, so a reopened warrant gets a second allocation
         // task rather than being deduped against the first.
-        enforcementWaTaskService.warrantReturnRecorded(caseReference, warrant.getId(), savedReturn.getId(),
-                                                       warrant.getBailiffDate(), statusAfterReturn);
+        EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+            caseReference, "the warrant's task changes for this return",
+            () -> enforcementWaTaskService.warrantReturnRecorded(caseReference, warrant.getId(),
+                                                                 savedReturn.getId(), warrant.getBailiffDate(),
+                                                                 statusAfterReturn));
+        if (scheduled.refused()) {
+            return EnforcementChange.refused(scheduled.errors());
+        }
         if (statusAfterReturn == CLOSED) {
             // TODO HDPI-8189: end the allocated bailiff's "allocated-bailiff" AM case role (end date today).
             // The allocation row itself is ended above; pcs-api cannot write AM case roles yet, see

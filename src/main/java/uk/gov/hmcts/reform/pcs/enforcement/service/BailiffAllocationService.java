@@ -152,7 +152,12 @@ public class BailiffAllocationService {
             //  granted to the allocated-bailiff role rather than to a user, so rewriting the assignment is
             //  what moves them. Assigning each task through wa-task-management-api would need a user token
             //  and pcs_api on its authorised-services list.
-            enforcementWaTaskService.bailiffAllocated(caseReference, allocation.getId());
+            EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+                caseReference, "the allocated bailiff's risk assessment task",
+                () -> enforcementWaTaskService.bailiffAllocated(caseReference, allocation.getId()));
+            if (scheduled.refused()) {
+                return EnforcementChange.refused(scheduled.errors());
+            }
         }
 
         if (enforcement.getStatus() == AWAITING_BAILIFF_ALLOCATION) {
