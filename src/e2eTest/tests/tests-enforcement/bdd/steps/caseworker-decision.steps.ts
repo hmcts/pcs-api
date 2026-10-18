@@ -114,7 +114,6 @@ When('I enter a reason for rejecting', async ({ page }) => {
 Then('I see the {string} confirmation screen with the case number, property address and party names', async ({ page, world }, title: string) => {
   await expectConfirmation(page, title);
   const panel = confirmationPanel(page);
-  // DecideEnforcementConfirmation renders the raw long; XUI formats any 16-digit reference with dashes.
   await expect(panel.getByText(`Case number: ${withDashes(String(world.caseReference))}`)).toBeVisible();
   await expect(panel.getByText(/^Property address: .+/)).toBeVisible();
   await expect(panel.getByText(/ vs /).first()).toBeVisible();

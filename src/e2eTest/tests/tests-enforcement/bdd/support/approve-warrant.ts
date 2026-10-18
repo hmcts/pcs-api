@@ -70,7 +70,7 @@ export async function approveApplicationAsCaseworker(
   await chooseDecision(page, decideEnforcement.acceptRadioOption);
   await goToCheckYourAnswers(page);
   await submitDecision(page);
-  await expectConfirmation(page, `${kind} approved`);
+  await expectConfirmation(page, new RegExp(`^${kind} of (possession|restitution) approved$`));
   // The number is generated on approval and is what the later bailiff confirmations quote.
   const numberLabel = `${kind} number:`;
   const numberLine = await page.locator('#confirmation-body').getByText(new RegExp(`${numberLabel} \\S+`)).first().innerText();

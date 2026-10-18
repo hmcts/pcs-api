@@ -135,14 +135,17 @@ export function decisionRow(page: Page) {
 }
 
 /**
- * The confirmation panel XUI renders from `DecideEnforcementConfirmation`. Scoped to `#confirmation-body`
+ * The confirmation body XUI renders from `DecideEnforcementConfirmation`. Scoped to `#confirmation-body`
  * because the case number and property address also appear in the case header above it.
  */
 export function confirmationPanel(page: Page) {
   return page.locator('#confirmation-body');
 }
 
-/** The confirmation markup from DecideEnforcementConfirmation, e.g. "Warrant approved" or "Writ rejected". */
-export async function expectConfirmation(page: Page, title: string): Promise<void> {
-  await expect(confirmationPanel(page).getByText(title, { exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
+/**
+ * The confirmation heading from DecideEnforcementConfirmation, e.g. "Warrant of possession approved" or
+ * "Writ of restitution rejected". XUI renders the confirmation header as the page heading.
+ */
+export async function expectConfirmation(page: Page, title: string | RegExp): Promise<void> {
+  await expect(page.getByRole('heading', { name: title, exact: typeof title === 'string' })).toBeVisible({ timeout: LONG_TIMEOUT });
 }

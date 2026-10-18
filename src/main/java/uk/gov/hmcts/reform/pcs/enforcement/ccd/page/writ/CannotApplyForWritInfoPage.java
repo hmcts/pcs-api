@@ -26,8 +26,10 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
             <p class="govuk-body govuk-!-font-weight-bold">How to transfer your claim to
             the High Court</p>
             <p class="govuk-body">You must make an application if you want to transfer your claim to the High Court.</p>
-            <p><a id="cannotApplyForWritInfo-link" class="govuk-link">
-            Transfer your claim from the County Court to the High Court</a>
+            <p class="govuk-body"><a id="cannotApplyForWritInfo-link" class="govuk-link"
+            href="https://www.gov.uk/government/publications/form-n244-application-notice"
+            target="_blank" rel="noreferrer noopener">
+            Transfer your claim from the County Court to the High Court (GOV.UK, opens in a new tab)</a>
             (make an application)</p>
             """;
 

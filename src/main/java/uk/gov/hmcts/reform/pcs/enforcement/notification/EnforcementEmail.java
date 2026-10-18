@@ -28,7 +28,7 @@ public enum EnforcementEmail {
      * 01-claimant-applies-for-enforcement.feature, "Claimant is notified that the application was received". Sent
      * when the application reaches awaiting review: once the fee is paid, or on submit for a type with no fee.
      * HDPI-7538 gives the warrant and writ of possession wording; the restitution wording is still TBC
-     * (OPEN-QUESTIONS 17).
+     * (OPEN-QUESTIONS 51).
      */
     WARRANT_APPLICATION_RECEIVED("Request for a warrant received", "warrant-application-received"),
     WRIT_APPLICATION_RECEIVED("Request for a writ received", "writ-application-received"),
@@ -62,7 +62,7 @@ public enum EnforcementEmail {
     /**
      * 06-claimant-confirms-eviction.feature, "Claimant confirms they can attend" and "Claimant cannot attend".
      * Sent by {@code ClaimantEvictionConfirmationService} when the answer moves the warrant on. HDPI-7538 has the
-     * wording for the confirmation only; the "declines attendance" wording is TBC (OPEN-QUESTIONS 17).
+     * wording for the confirmation only; the "declines attendance" wording is TBC (OPEN-QUESTIONS 51).
      */
     CLAIMANT_CONFIRMED_ATTENDANCE(
         "Claimant confirms attendance at the eviction date", "claimant-confirmed-attendance", "evictionDateTime"),
@@ -112,7 +112,7 @@ public enum EnforcementEmail {
     /**
      * The email telling the claimant their application was approved, or null for a type whose content the
      * service has not written yet. HDPI-7538 names an approval email for a warrant and for a writ of
-     * possession only; the restitution wording is TBC (OPEN-QUESTIONS 17), and nothing is sent until it
+     * possession only; the restitution wording is TBC (OPEN-QUESTIONS 51), and nothing is sent until it
      * exists.
      */
     public static EnforcementEmail forApproval(SelectEnforcementType enforcementType) {
@@ -129,7 +129,7 @@ public enum EnforcementEmail {
     /**
      * The email telling the claimant their application was rejected, or null for a type whose content the
      * service has not written yet. HDPI-7538 names a rejection email for a warrant of possession only; the
-     * writ and restitution wording is TBC (OPEN-QUESTIONS 17).
+     * writ and restitution wording is TBC (OPEN-QUESTIONS 51).
      */
     public static EnforcementEmail forRejection(SelectEnforcementType enforcementType) {
         if (enforcementType == null) {

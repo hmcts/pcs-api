@@ -47,7 +47,7 @@ Feature: Caseworker decides an enforcement application
   Scenario: Approving a warrant of possession generates the sealed warrant
     Given I have accepted the application
     When I submit the "Decide enforcement" event
-    Then I see the "Warrant approved" confirmation screen with the case number, property address and party names
+    Then I see the "Warrant of possession approved" confirmation screen with the case number, property address and party names
     And a warrant number is assigned to the enforcement
     And a "warrant of possession" document is generated with the county court seal
     And the document is date and time stamped in "DD/MM/YYYY HH:MM AM/PM" format
@@ -63,7 +63,7 @@ Feature: Caseworker decides an enforcement application
     Given the enforcement is of type "writ of possession"
     And I have accepted the application
     When I submit the "Decide enforcement" event
-    Then I see the "Writ approved" confirmation screen
+    Then I see the "Writ of possession approved" confirmation screen
     And a writ number is assigned to the enforcement
     And a "writ of possession" document is generated with the High Court seal
     And the document is visible to the claimant and internal users
@@ -83,8 +83,8 @@ Feature: Caseworker decides an enforcement application
       | warrant of possession  | county court | internal users                 |
       | writ of possession     | High Court   | claimant and internal users    |
 
-    # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #30) and a writ of
-    # restitution is never offered (OPEN-QUESTIONS #58).
+    # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #12) and a writ of
+    # restitution is never offered (OPEN-QUESTIONS #11).
     @pending
     Examples:
       | type                   | seal         | visible to                     |
@@ -111,7 +111,7 @@ Feature: Caseworker decides an enforcement application
     When I select "Reject"
     And I enter a reason for rejecting
     And I submit the "Decide enforcement" event
-    Then I see the "Warrant rejected" confirmation screen
+    Then I see the "Warrant of possession rejected" confirmation screen
     And no warrant is generated
     And the enforcement status changes to "Rejected"
     And the "Risk assessment" tab is not shown

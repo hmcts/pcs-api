@@ -36,7 +36,7 @@ public class RepeatWarrantFeeWaiver {
     static final int FREE_REPEAT_WARRANT_MONTHS = 12;
 
     /**
-     * Other reasons are "TBC from service" on HDPI-8424 (OPEN-QUESTIONS 6).
+     * Other reasons are "TBC from service" on HDPI-8424 (OPEN-QUESTIONS 8).
      */
     static final Set<WarrantReturnName> FREE_REPEAT_WARRANT_RETURN_NAMES = Collections.unmodifiableSet(
         EnumSet.of(WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER));

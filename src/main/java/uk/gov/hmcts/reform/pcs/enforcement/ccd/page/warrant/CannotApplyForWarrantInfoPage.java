@@ -22,8 +22,10 @@ public class CannotApplyForWarrantInfoPage implements CcdPageConfiguration {
             <p class="govuk-body">If the defendants have breached a different term in the order,
              you still need permission from a judge.  For example, if they have breached an order
               to reduce their antisocial behaviour.</p>
-            <p><a id="cannotApplyForWarrantInfo-link" class="govuk-link" target="_blank" href="#">
-        Ask the judge for permission to apply for a warrant of possession (opens in a new tab, GOV.UK).</a></p>
+            <p class="govuk-body"><a id="cannotApplyForWarrantInfo-link" class="govuk-link"
+             href="https://www.gov.uk/government/publications/form-n244-application-notice"
+             target="_blank" rel="noreferrer noopener">
+        Ask the judge for permission to apply for a warrant of possession (GOV.UK, opens in a new tab)</a>.</p>
             """;
 
     @Override

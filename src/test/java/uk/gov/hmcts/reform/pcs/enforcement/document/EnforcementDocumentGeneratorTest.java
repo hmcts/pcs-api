@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureCaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -26,8 +27,12 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffAllocationEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.repository.BailiffAllocationRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -72,6 +77,10 @@ class EnforcementDocumentGeneratorTest {
     private AddressMapper addressMapper;
     @Mock
     private AddressFormatter addressFormatter;
+    @Mock
+    private LocationReferenceService locationReferenceService;
+    @Mock
+    private BailiffAllocationRepository bailiffAllocationRepository;
 
     private final EnforcementDocumentTemplates templates = new EnforcementDocumentTemplates();
     private EnforcementDocumentGenerator underTest;
@@ -87,7 +96,8 @@ class EnforcementDocumentGeneratorTest {
         underTest = new EnforcementDocumentGenerator(enforcementOrderRepository, templates, docAssemblyService,
                                                      documentImportService, new CaseReferenceFormatter(),
                                                      caseNameFormatter, addressMapper, addressFormatter,
-                                                     new MapperConfig().modelMapper(), UK_CLOCK);
+                                                     new MapperConfig().modelMapper(), UK_CLOCK,
+                                                     locationReferenceService, bailiffAllocationRepository);
 
         pcsCase = new PcsCaseEntity();
         pcsCase.setCaseReference(CASE_REFERENCE);
@@ -154,6 +164,72 @@ class EnforcementDocumentGeneratorTest {
     }
 
     @Test
+    void shouldNameTheCaseManagementCourtTheAllocatedBailiffAndTheLanguageUsed() {
+        pcsCase.setCaseManagementLocation(20262);
+        when(locationReferenceService.getCourtVenues(List.of(20262))).thenReturn(List.of(
+            courtVenue("Central London County Court", "Thomas More Building, Royal Courts of Justice, Strand",
+                       "WC2A 2LL")));
+        when(bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(ENFORCEMENT_ID))
+            .thenReturn(List.of(BailiffAllocationEntity.builder().bailiffName("Bailey Bailiff").build()));
+        enforcementOrder.getWarrantDetails().setLanguageUsed(LanguageUsed.ENGLISH_AND_WELSH);
+
+        EnforcementDocumentPayload payload =
+            underTest.buildPayload(enforcement, EnforcementOutput.NOTICE_OF_APPOINTMENT, pcsCase);
+
+        assertThat(payload.getCourtName()).isEqualTo("Central London County Court");
+        assertThat(payload.getCourtAddress())
+            .isEqualTo("Thomas More Building\nRoyal Courts of Justice\nStrand\nWC2A 2LL");
+        assertThat(payload.getBailiffName()).isEqualTo("Bailey Bailiff");
+        assertThat(payload.getLanguage()).isEqualTo("English and Welsh");
+    }
+
+    @Test
+    void shouldNameTheBailiffByEmailWhenTheAllocationHasNoName() {
+        when(bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(ENFORCEMENT_ID))
+            .thenReturn(List.of(BailiffAllocationEntity.builder().bailiffEmail("bailiff@justice.gov.uk").build()));
+
+        EnforcementDocumentPayload payload =
+            underTest.buildPayload(enforcement, EnforcementOutput.NOTICE_OF_APPOINTMENT, pcsCase);
+
+        assertThat(payload.getBailiffName()).isEqualTo("bailiff@justice.gov.uk");
+    }
+
+    @Test
+    void shouldLeaveTheCourtBailiffAndLanguageOutWhenThereAreNone() {
+        EnforcementDocumentPayload payload =
+            underTest.buildPayload(enforcement, EnforcementOutput.WARRANT_OF_POSSESSION, pcsCase);
+
+        assertThat(payload.getCourtName()).isNull();
+        assertThat(payload.getCourtAddress()).isNull();
+        assertThat(payload.getBailiffName()).isNull();
+        assertThat(payload.getLanguage()).isNull();
+        verifyNoInteractions(locationReferenceService);
+    }
+
+    @Test
+    void shouldLeaveTheCourtOutWhenLocationReferenceDataHasNoVenue() {
+        pcsCase.setCaseManagementLocation(20262);
+        when(locationReferenceService.getCourtVenues(List.of(20262))).thenReturn(List.of());
+
+        EnforcementDocumentPayload payload =
+            underTest.buildPayload(enforcement, EnforcementOutput.WARRANT_OF_POSSESSION, pcsCase);
+
+        assertThat(payload.getCourtName()).isNull();
+        assertThat(payload.getCourtAddress()).isNull();
+    }
+
+    @Test
+    void shouldTakeTheLanguageFromTheWritAnswers() {
+        enforcement.setEnforcementOrder(buildEnforcementOrderWithSpecifiedType(SelectEnforcementType.WRIT));
+        enforcement.getEnforcementOrder().getWritDetails().setLanguageUsed(LanguageUsed.WELSH);
+
+        EnforcementDocumentPayload payload =
+            underTest.buildPayload(enforcement, EnforcementOutput.WRIT_OF_POSSESSION, pcsCase);
+
+        assertThat(payload.getLanguage()).isEqualTo("Welsh");
+    }
+
+    @Test
     void shouldSendTheClaimantsAnswersToTheTemplateAsJson() throws Exception {
         EnforcementDocumentPayload payload =
             underTest.buildPayload(enforcement, EnforcementOutput.RISK_ASSESSMENT, pcsCase);
@@ -203,5 +279,17 @@ class EnforcementDocumentGeneratorTest {
             .isInstanceOf(DocAssemblyException.class);
         verifyNoInteractions(documentImportService);
         verify(enforcementOrderRepository, never()).save(any());
+    }
+
+    private static CourtVenue courtVenue(String courtName, String courtAddress, String postcode) {
+        return new CourtVenue(
+            null, null, null, null, null, null, null, null, null, null,
+            courtAddress,
+            postcode,
+            null, null, null, null, null, null, null, null,
+            courtName,
+            null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null
+        );
     }
 }

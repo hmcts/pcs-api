@@ -127,7 +127,7 @@ class EnforcementOrderViewTest {
             .enforcementOrder(EnforcementOrder.builder()
                                   .confirmEvictionSummaryMarkup("case view markup")
                                   .showConfirmEvictionJourney(YesOrNo.YES)
-                                  .formattedEvictionDate("Friday, 6 November 2026 at 10:00AM")
+                                  .formattedEvictionDate("Friday 6 November 2026 at 10:00am")
                                   .build())
             .build();
 
@@ -139,7 +139,7 @@ class EnforcementOrderViewTest {
         assertThat(result.getDeleteDraftApplication()).isEqualTo(YesOrNo.NO);
         assertThat(result.getConfirmEvictionSummaryMarkup()).isEqualTo("case view markup");
         assertThat(result.getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
-        assertThat(result.getFormattedEvictionDate()).isEqualTo("Friday, 6 November 2026 at 10:00AM");
+        assertThat(result.getFormattedEvictionDate()).isEqualTo("Friday 6 November 2026 at 10:00am");
         assertThat(result.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
     }
 

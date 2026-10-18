@@ -3,14 +3,11 @@ package uk.gov.hmcts.reform.pcs.enforcement.notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.enforcement.util.EvictionDateFormat;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.util.AfterCommit;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -32,18 +29,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EnforcementNotificationService {
 
-    /**
-     * "Thursday 25 June 2026 at 10:00am", the same wording the eviction confirmation screens use. It is
-     * repeated here rather than taken from
-     * {@code uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionConfirmationFormat}
-     * because the enforcement slices must stay free of cycles and the ccd slice already depends on this one.
-     * {@code EnforcementNotificationServiceTest} asserts the two agree.
-     */
-    private static final DateTimeFormatter DATE_AT_TIME = new DateTimeFormatterBuilder()
-        .appendPattern("EEEE d MMMM yyyy 'at' hh:mm")
-        .appendText(ChronoField.AMPM_OF_DAY, Map.of(0L, "am", 1L, "pm"))
-        .toFormatter(Locale.UK);
-
     private final EnforcementNotificationSender sender;
 
     /**
@@ -58,7 +43,7 @@ public class EnforcementNotificationService {
      * Tells the claimant the caseworker approved their application, with the warrant or writ number.
      *
      * <p>Only a warrant and a writ of possession have an approval email: the restitution wording is TBC
-     * (OPEN-QUESTIONS 17), so nothing is sent for those types.</p>
+     * (OPEN-QUESTIONS 51), so nothing is sent for those types.</p>
      */
     public void notifyClaimantOfApproval(long caseReference, SelectEnforcementType enforcementType,
                                          String enforcementNumber) {
@@ -70,7 +55,7 @@ public class EnforcementNotificationService {
      * Tells the claimant the caseworker rejected their application, with the caseworker's reason.
      *
      * <p>Only a warrant of possession has a rejection email: the writ and restitution wording is TBC
-     * (OPEN-QUESTIONS 17), so nothing is sent for those types.</p>
+     * (OPEN-QUESTIONS 51), so nothing is sent for those types.</p>
      */
     public void notifyClaimantOfRejection(long caseReference, SelectEnforcementType enforcementType,
                                           String rejectionReason) {
@@ -114,7 +99,7 @@ public class EnforcementNotificationService {
      * at 10:00am".
      */
     private static Map<String, Object> evictionPersonalisation(LocalDateTime evictionDateTime) {
-        String formatted = evictionDateTime == null ? "" : DATE_AT_TIME.format(evictionDateTime);
+        String formatted = evictionDateTime == null ? "" : EvictionDateFormat.format(evictionDateTime);
         return Map.of(EnforcementEmail.EVICTION_DATE_TIME, formatted);
     }
 

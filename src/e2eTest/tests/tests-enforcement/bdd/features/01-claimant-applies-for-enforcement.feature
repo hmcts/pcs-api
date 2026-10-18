@@ -24,7 +24,7 @@ Feature: Claimant applies for enforcement of a possession order
   # Runs locally against cftlib: the case comes from the "Make A Claim Basic Case" fixture (one defendant, no
   # arrears, no suspended order), which the journey helpers adapt to. The warrant of restitution journey still
   # ends on placeholder pages with no statement of truth, and "Enforce the order" does not offer a writ of
-  # restitution (OPEN-QUESTIONS #58).
+  # restitution (OPEN-QUESTIONS #11).
   Scenario Outline: Claimant applies for a <type>
     When I start the "Enforce the order" event
     And I choose to apply for a "<type>"
@@ -82,7 +82,7 @@ Feature: Claimant applies for enforcement of a possession order
   # Locally Docmosis is a wiremock stub that returns one placeholder PDF for every document, so the answers are
   # checked in the data pcs-api sends Docmosis to fill the template with (support/docmosis-renders.ts). The
   # warrant of restitution journey cannot be submitted yet: it ends on placeholder pages, with no language or
-  # statement of truth page (OPEN-QUESTIONS #30).
+  # statement of truth page (OPEN-QUESTIONS #12).
   @HDPI-7555
   Scenario Outline: Enforcement application output contains the answers for the enforcement type
     When I submit and pay for a "<type>" application
