@@ -31,11 +31,8 @@ public class WarrantReturnNotificationService {
      * (email or post), once the notice of eviction has been served on them. The content is TBC, and serving
      * the notice (HDPI-7346) is not modelled on this branch.</p>
      *
-     * <p>The send runs in a transaction of its own, so a failure to schedule the email cannot undo the
-     * recorded return. Call it only once the return has committed — {@code RecordWarrantReturn} defers it
-     * with {@link uk.gov.hmcts.reform.pcs.enforcement.util.AfterCommit} — because that transaction commits
-     * independently of the caller's, and the claimant must not be told about a return that is then rolled
-     * back.</p>
+     * <p>The email is queued in the caller's transaction, so it is committed or rolled back with the recorded
+     * return.</p>
      */
     public boolean notifyClaimant(long caseReference, WarrantReturnName returnName, String additionalDetails) {
         Optional<String> body = WarrantReturnClaimantEmails.body(returnName, additionalDetails);

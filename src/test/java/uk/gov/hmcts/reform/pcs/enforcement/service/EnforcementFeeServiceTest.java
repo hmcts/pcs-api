@@ -12,7 +12,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -95,7 +94,7 @@ class EnforcementFeeServiceTest {
     void shouldScheduleAServiceRequestForTheEnforcementPaidByTheClaimant() {
         PcsCaseEntity pcsCase = givenACaseWithAClaimant();
 
-        underTest.requestPaymentAfterCommit(pcsCase, ENFORCEMENT_ID, FEE);
+        underTest.requestPayment(pcsCase, ENFORCEMENT_ID, FEE);
 
         SchedulableInstance<?> instance = scheduled(1).getFirst();
         assertThat(instance.getTaskInstance().getTaskName()).isEqualTo("fees-and-pay-task");
@@ -112,26 +111,23 @@ class EnforcementFeeServiceTest {
     }
 
     @Test
-    void shouldWaitForTheTransactionToCommit() {
+    void shouldScheduleInsideTheCurrentTransaction() {
         PcsCaseEntity pcsCase = givenACaseWithAClaimant();
         TransactionSynchronizationManager.initSynchronization();
 
-        underTest.requestPaymentAfterCommit(pcsCase, ENFORCEMENT_ID, FEE);
-        verifyNoInteractions(schedulerClient);
+        underTest.requestPayment(pcsCase, ENFORCEMENT_ID, FEE);
 
-        List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
-        synchronizations.forEach(TransactionSynchronization::afterCommit);
         assertThat(scheduled(1)).hasSize(1);
+        assertThat(TransactionSynchronizationManager.getSynchronizations()).isEmpty();
     }
 
     @Test
-    void shouldNotThrowWhenSchedulingFailsAfterTheCommit() {
+    void shouldFailTheEventWhenSchedulingFails() {
         PcsCaseEntity pcsCase = givenACaseWithAClaimant();
         doThrow(new IllegalStateException("database down")).when(schedulerClient).scheduleIfNotExists(any());
 
-        underTest.requestPaymentAfterCommit(pcsCase, ENFORCEMENT_ID, FEE);
-
-        verify(schedulerClient).scheduleIfNotExists(any());
+        assertThatThrownBy(() -> underTest.requestPayment(pcsCase, ENFORCEMENT_ID, FEE))
+            .isInstanceOf(IllegalStateException.class);
     }
 
     private PcsCaseEntity givenACaseWithAClaimant() {

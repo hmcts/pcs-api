@@ -32,6 +32,12 @@ public class EnforcementDraftDeletionScheduledTask {
     private final DraftEnforcementDeletionService draftEnforcementDeletionService;
     private final FeatureToggleService featureToggleService;
 
+    /**
+     * Fails startup when {@code discardAfterDays} is less than 1, rather than leaving the sweep to fail on every
+     * run: a smaller value puts the cutoff at or after now, so the sweep would delete every enforcement draft.
+     *
+     * @throws IllegalArgumentException if {@code discardAfterDays} is less than 1
+     */
     public EnforcementDraftDeletionScheduledTask(
             @Value("${enforcement-draft-deletion.schedule}") String schedule,
             @Value("${enforcement-draft-deletion.discard-after-days}") int discardAfterDays,
@@ -40,6 +46,11 @@ public class EnforcementDraftDeletionScheduledTask {
             @DurationUnit(ChronoUnit.SECONDS) Duration backoffDelay,
             DraftEnforcementDeletionService draftEnforcementDeletionService,
             FeatureToggleService featureToggleService) {
+        if (discardAfterDays < 1) {
+            throw new IllegalArgumentException(
+                "ENFORCEMENT_DRAFT_DELETION_DISCARD_AFTER_DAYS (enforcement-draft-deletion.discard-after-days) "
+                    + "must be at least 1, but was " + discardAfterDays);
+        }
         this.schedule = schedule;
         this.discardAfterDays = discardAfterDays;
         this.maxRetries = maxRetries;

@@ -129,6 +129,8 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
     @Autowired
     private EnforcementFeePaidSimulator enforcementFeePaidSimulator;
     @Autowired
+    private EnforcementFeeService enforcementFeeService;
+    @Autowired
     private SchedulerClient schedulerClient;
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -286,6 +288,28 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
         assertThat(feePaymentRepository.findByServiceRequestReference(serviceRequest).orElseThrow()
                        .getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
         verify(sender).send(caseReference, EnforcementEmail.WARRANT_APPLICATION_RECEIVED, Map.of());
+    }
+
+    @Test
+    @DisplayName("the service request is queued in the caller's transaction: dropped on rollback, kept on commit")
+    void serviceRequestFollowsTheTransaction() {
+        UUID enforcementId = UUID.randomUUID();
+        enforcementIds.add(enforcementId);
+        TaskInstanceId taskInstance = TaskInstanceId.of(FEES_AND_PAY_TASK_DESCRIPTOR.getTaskName(),
+                                                        EnforcementFeeService.instanceId(enforcementId));
+        TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+
+        transaction.executeWithoutResult(status -> {
+            enforcementFeeService.requestPayment(
+                pcsCaseRepository.findByCaseReference(caseReference).orElseThrow(), enforcementId, WARRANT_FEE);
+            assertThat(schedulerClient.getScheduledExecution(taskInstance)).isPresent();
+            status.setRollbackOnly();
+        });
+        assertThat(schedulerClient.getScheduledExecution(taskInstance)).isEmpty();
+
+        transaction.executeWithoutResult(status -> enforcementFeeService.requestPayment(
+            pcsCaseRepository.findByCaseReference(caseReference).orElseThrow(), enforcementId, WARRANT_FEE));
+        assertThat(schedulerClient.getScheduledExecution(taskInstance)).isPresent();
     }
 
     @Test

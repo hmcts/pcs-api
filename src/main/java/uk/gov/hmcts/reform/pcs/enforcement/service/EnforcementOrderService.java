@@ -113,7 +113,7 @@ public class EnforcementOrderService {
             log.info("Enforcement {} on case {} is a free repeat warrant", savedEntity.getId(), caseReference);
         }
         if (paymentOutstanding) {
-            enforcementFeeService.requestPaymentAfterCommit(pcsCaseEntity, savedEntity.getId(), feeOwed.orElseThrow());
+            enforcementFeeService.requestPayment(pcsCaseEntity, savedEntity.getId(), feeOwed.orElseThrow());
         } else {
             enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
             enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);

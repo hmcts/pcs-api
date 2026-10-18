@@ -11,7 +11,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionConfirmationFormat;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
@@ -20,7 +19,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.eq;
@@ -157,38 +156,26 @@ class EnforcementNotificationServiceTest {
     }
 
     @Test
-    void shouldWaitForTheEventToCommitBeforeEmailing() {
+    void shouldQueueTheEmailInsideTheEventTransaction() {
         TransactionSynchronizationManager.initSynchronization();
 
         underTest.notifyClaimantOfScheduledEviction(CASE_REFERENCE, EVICTION_DATE_TIME);
-
-        verifyNoInteractions(sender);
-
-        TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
 
         verify(sender).send(eq(CASE_REFERENCE), eq(EnforcementEmail.EVICTION_SCHEDULED), any());
-    }
-
-    @Test
-    void shouldNotEmailWhenTheEventIsRolledBack() {
-        TransactionSynchronizationManager.initSynchronization();
-
-        underTest.notifyClaimantOfScheduledEviction(CASE_REFERENCE, EVICTION_DATE_TIME);
-        TransactionSynchronizationManager.getSynchronizations().forEach(
-            synchronization -> synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
-
-        verifyNoInteractions(sender);
+        assertThat(TransactionSynchronizationManager.getSynchronizations()).isEmpty();
     }
 
     /**
-     * A failure to schedule the email must not fail the event that recorded the decision.
+     * A failure to queue the email fails the event, so the decision is rolled back rather than recorded
+     * without its email.
      */
     @Test
-    void shouldNotThrowWhenTheEmailCannotBeScheduled() {
-        when(sender.send(anyLong(), any(), any())).thenThrow(new IllegalStateException("Notify is down"));
+    void shouldFailTheEventWhenTheEmailCannotBeQueued() {
+        when(sender.send(anyLong(), any(), any())).thenThrow(new IllegalStateException("database down"));
 
-        assertThatNoException().isThrownBy(
-            () -> underTest.notifyClaimantOfApproval(CASE_REFERENCE, SelectEnforcementType.WARRANT, "W123456"));
+        assertThatThrownBy(
+            () -> underTest.notifyClaimantOfApproval(CASE_REFERENCE, SelectEnforcementType.WARRANT, "W123456"))
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
