@@ -68,6 +68,7 @@ public class WarrantReturnService {
     private final WarrantReturnValidator warrantReturnValidator;
     private final SecurityContextService securityContextService;
     private final BailiffAllocationService bailiffAllocationService;
+    private final EnforcementWaTaskService enforcementWaTaskService;
     private final Clock utcClock;
 
     public WarrantReturnService(CurrentEnforcementService currentEnforcementService,
@@ -76,6 +77,7 @@ public class WarrantReturnService {
                                 WarrantReturnValidator warrantReturnValidator,
                                 SecurityContextService securityContextService,
                                 BailiffAllocationService bailiffAllocationService,
+                                EnforcementWaTaskService enforcementWaTaskService,
                                 @Qualifier("utcClock") Clock utcClock) {
         this.currentEnforcementService = currentEnforcementService;
         this.warrantReturnRepository = warrantReturnRepository;
@@ -83,6 +85,7 @@ public class WarrantReturnService {
         this.warrantReturnValidator = warrantReturnValidator;
         this.securityContextService = securityContextService;
         this.bailiffAllocationService = bailiffAllocationService;
+        this.enforcementWaTaskService = enforcementWaTaskService;
         this.utcClock = utcClock;
     }
 
@@ -182,7 +185,7 @@ public class WarrantReturnService {
         boolean finalReturn = details.getType() == WarrantReturnType.FINAL;
         boolean successfulEviction = WarrantReturnValidator.isSuccessfulEviction(details);
 
-        warrantReturnRepository.save(WarrantReturnEntity.builder()
+        WarrantReturnEntity savedReturn = warrantReturnRepository.save(WarrantReturnEntity.builder()
             .enforcementOrder(warrant)
             .returnType(details.getType())
             .outcome(finalReturn ? details.getOutcome() : null)
@@ -202,10 +205,15 @@ public class WarrantReturnService {
             // A closed warrant has no bailiff, and a reopened one is waiting for a new allocation.
             bailiffAllocationService.endActiveAllocations(warrant);
         }
+        // Cancels the warrant's tasks the return has made obsolete, and asks for a new bailiff allocation
+        // when the return reopened it. Keyed on this return, so a reopened warrant gets a second allocation
+        // task rather than being deduped against the first.
+        enforcementWaTaskService.warrantReturnRecorded(caseReference, warrant.getId(), savedReturn.getId(),
+                                                       warrant.getBailiffDate(), statusAfterReturn);
         if (statusAfterReturn == CLOSED) {
             // TODO HDPI-8189: end the allocated bailiff's "allocated-bailiff" AM case role (end date today).
             // The allocation row itself is ended above; pcs-api cannot write AM case roles yet, see
-            // BailiffAllocationService. Cancelling the enforcement's open bailiff tasks is HDPI-8627.
+            // BailiffAllocationService.
             log.info("Warrant {} closed by return {}", warrant.getId(), returnName);
         }
         return EnforcementChange.made(

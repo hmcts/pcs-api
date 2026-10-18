@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
@@ -202,19 +204,21 @@ class RecordWarrantReturnTest extends BaseEventTest {
     }
 
     /**
-     * A failure to queue the email fails the submit, so the return is rolled back rather than recorded without
-     * its email.
+     * A failure to queue the email is answered as an error, which rolls the return back rather than recording
+     * it without its email: the bailiff is asked to try again instead of being given an unexplained 500.
      */
     @Test
-    void shouldFailTheSubmitWhenTheEmailCannotBeQueued() {
+    void shouldRefuseTheSubmitWhenTheEmailCannotBeQueued() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
             .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
         when(warrantReturnNotificationService.notifyClaimant(anyLong(), any(), any()))
-            .thenThrow(new IllegalStateException("database down"));
+            .thenThrow(new DataIntegrityViolationException("case_notification"));
 
-        assertThatThrownBy(() -> callSubmitHandler(caseWith(details)))
-            .isInstanceOf(IllegalStateException.class);
+        SubmitResponse<State> response = callSubmitHandler(caseWith(details));
+
+        assertThat(response.getErrors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        assertThat(response.getConfirmationHeader()).isNull();
     }
 
     @Test

@@ -28,6 +28,7 @@ public class ClaimantRiskAssessmentService {
     private final CurrentEnforcementService currentEnforcementService;
     private final RiskAssessmentUpdateRepository riskAssessmentUpdateRepository;
     private final ClaimantRiskAnswersMapper claimantRiskAnswersMapper;
+    private final EnforcementWaTaskService enforcementWaTaskService;
     private final Clock utcClock;
 
     /**
@@ -95,13 +96,14 @@ public class ClaimantRiskAssessmentService {
         if (current.isEmpty() || current.get().normalised().equals(answers)) {
             return false;
         }
-        riskAssessmentUpdateRepository.save(RiskAssessmentUpdateEntity.builder()
+        RiskAssessmentUpdateEntity update = riskAssessmentUpdateRepository.save(RiskAssessmentUpdateEntity.builder()
             .enforcementOrder(enforcement)
             .answers(answers)
             .updatedAt(Instant.now(utcClock))
             .build());
-        // TODO HDPI-7552: create a "Review updated risk information" task for the allocated bailiff. It needs
-        // Work Allocation (HDPI-8627).
+        // One task per change: the update row is written in this transaction and keys the request, and the
+        // method has already returned for answers that did not change.
+        enforcementWaTaskService.riskAnswersChanged(caseReference, update.getId());
         return true;
     }
 

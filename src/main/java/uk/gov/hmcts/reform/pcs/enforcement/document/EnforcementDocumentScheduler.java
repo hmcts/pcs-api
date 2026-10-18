@@ -13,11 +13,13 @@ import java.util.UUID;
 /**
  * Schedules the enforcement documents an event has to produce, one db-scheduler task per document.
  *
- * <p>Every method is safe to call from an event's submit handler. The tasks are written in the event's
- * transaction, which db-scheduler joins ({@code DataSourceConfiguration}), so a rollback drops them with the
- * data they describe and a commit keeps both: an event can never commit without queueing its documents.
- * Nothing here talks to Docmosis, so a Docmosis outage cannot fail the event: the task retries on its own.
- * A failure to write a task fails the event.</p>
+ * <p>The tasks are written in the caller's transaction, which db-scheduler joins
+ * ({@code DataSourceConfiguration}), so a rollback drops them with the data they describe and a commit keeps
+ * both: an event can never commit without queueing its documents. Nothing here talks to Docmosis, so a
+ * Docmosis outage cannot fail the event: the task retries on its own.</p>
+ *
+ * <p>A failure to write a task is thrown, so a submit handler has to call these through
+ * {@code EnforcementSideEffects} to answer it as an error rather than a 500.</p>
  *
  * <p>A document an enforcement has only one of is scheduled under an instance id made from the enforcement
  * and the document, so scheduling it twice is a no-op. The notices are generated again on every schedule and

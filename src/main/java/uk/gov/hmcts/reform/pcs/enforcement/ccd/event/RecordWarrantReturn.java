@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
@@ -39,8 +40,10 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
  * closed warrant to reopen it. The return is kept as the warrant's history, moves its status as the return
  * name requires, and emails the claimant.
  *
- * <p>TODO HDPI-9520: create a "Record warrant return" WA task on the eviction date and complete it on submit.
- * Work allocation for enforcement is not configured yet.</p>
+ * <p>The "Record warrant return" task is created when the eviction is scheduled, due on the eviction date
+ * ({@link uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService}), and closed by XUI through
+ * the task-completion DMN when this event is submitted from it. Recording a return also cancels the
+ * warrant's other open tasks, and asks for a new bailiff allocation when the return reopens it.</p>
  */
 @Component
 @AllArgsConstructor
@@ -108,8 +111,15 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         }
         WarrantReturnName returnName = recorded.change().returnName();
 
-        // Queued in the submit transaction, so the email is committed or rolled back with the return.
-        warrantReturnNotificationService.notifyClaimant(caseReference, returnName, details.getAdditionalDetails());
+        // Queued in the submit transaction, so the email is committed or rolled back with the return. A
+        // failure to queue it is answered as an error, which rolls the return back too.
+        EnforcementChange<Void> notified = EnforcementSideEffects.schedule(
+            caseReference, "the claimant's warrant return email",
+            () -> warrantReturnNotificationService.notifyClaimant(caseReference, returnName,
+                                                                  details.getAdditionalDetails()));
+        if (notified.refused()) {
+            return SubmitResponse.<State>builder().errors(notified.errors()).build();
+        }
 
         return SubmitResponse.<State>builder()
             .confirmationHeader(CONFIRMATION_HEADER.formatted(returnName.getLabel()))

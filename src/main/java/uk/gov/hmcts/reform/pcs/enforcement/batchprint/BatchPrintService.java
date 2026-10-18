@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Produces a bailiff's batch print (HDPI-8012): one PDF holding, for each case in turn, its warrant, risk
@@ -30,7 +33,8 @@ import java.util.concurrent.Semaphore;
  * batch print the instance is building, and each case is merged into a temp file of its own
  * ({@link BatchPrintPdfMerger}). That bounds both the load on CDAM and the documents held in memory, whatever
  * the number of cases or of bailiffs printing at once. A document that cannot be fetched or read leaves only its
- * case out, and the bailiff is told which.
+ * case out, and the bailiff is told which; a request that cannot get its turn at those slots within
+ * {@link #MAX_WAIT_FOR_A_SLOT} is refused whole with {@link BatchPrintBusyException}.
  */
 @Slf4j
 @Service
@@ -38,33 +42,55 @@ public class BatchPrintService {
 
     static final int MAX_CONCURRENT_CASES = 6;
 
+    /**
+     * How long a request will wait, in total, for its turn at the case slots. {@link #print} runs on the
+     * request thread, so an unbounded wait holds that thread for as long as every other batch print being
+     * built takes, which outlives the gateway's own timeout and leaves the bailiff nothing to read.
+     */
+    static final Duration MAX_WAIT_FOR_A_SLOT = Duration.ofSeconds(30);
+
     private final BatchPrintPlanner batchPrintPlanner;
     private final LetterDocumentFetcher letterDocumentFetcher;
     private final BatchPrintPdfMerger pdfMerger;
     private final Semaphore caseSlots;
+    private final Duration maxWaitForASlot;
 
     @Autowired
     public BatchPrintService(BatchPrintPlanner batchPrintPlanner,
                              LetterDocumentFetcher letterDocumentFetcher,
                              BatchPrintPdfMerger pdfMerger) {
-        this(batchPrintPlanner, letterDocumentFetcher, pdfMerger, MAX_CONCURRENT_CASES);
+        this(batchPrintPlanner, letterDocumentFetcher, pdfMerger, MAX_CONCURRENT_CASES, MAX_WAIT_FOR_A_SLOT);
     }
 
     BatchPrintService(BatchPrintPlanner batchPrintPlanner,
                       LetterDocumentFetcher letterDocumentFetcher,
                       BatchPrintPdfMerger pdfMerger,
-                      int maxConcurrentCases) {
+                      int maxConcurrentCases,
+                      Duration maxWaitForASlot) {
         this.batchPrintPlanner = batchPrintPlanner;
         this.letterDocumentFetcher = letterDocumentFetcher;
         this.pdfMerger = pdfMerger;
         this.caseSlots = new Semaphore(maxConcurrentCases, true);
+        this.maxWaitForASlot = maxWaitForASlot;
     }
 
+    /**
+     * Builds the batch print, as a temp file the caller owns and has to delete.
+     *
+     * @throws BatchPrintBusyException if the instance is too busy to fetch this request's documents
+     */
     public BatchPrint print(String bailiffUserId, List<String> caseReferences) {
         BatchPrintPlan plan = batchPrintPlanner.plan(bailiffUserId, caseReferences);
 
-        List<CaseFile> caseFiles = mergeEachCase(plan.included());
+        Instant waitUntil = Instant.now().plus(maxWaitForASlot);
+        List<CaseFile> caseFiles = mergeEachCase(plan.included(), waitUntil);
         try {
+            if (caseFiles.stream().anyMatch(CaseFile::tooBusy)) {
+                log.warn("Batch print for bailiff {} refused: no slot for {} of its {} case(s) within {}",
+                         bailiffUserId, caseFiles.stream().filter(CaseFile::tooBusy).count(), caseFiles.size(),
+                         maxWaitForASlot);
+                throw new BatchPrintBusyException();
+            }
             List<ExcludedCase> unavailable = caseFiles.stream()
                 .filter(caseFile -> caseFile.file() == null)
                 .map(caseFile -> ExcludedCase.of(caseFile.caseReference(), BatchPrintExclusion.DOCUMENT_UNAVAILABLE))
@@ -83,11 +109,11 @@ public class BatchPrintService {
     /**
      * Each case's merged file, in the order given, with no file for a case that could not be fetched or merged.
      */
-    private List<CaseFile> mergeEachCase(List<PrintableCase> printableCases) {
+    private List<CaseFile> mergeEachCase(List<PrintableCase> printableCases, Instant waitUntil) {
         List<Future<CaseFile>> futures = new ArrayList<>();
         // Closing the executor waits for every case, so none is still being written once this returns.
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            printableCases.forEach(printable -> futures.add(executor.submit(() -> mergeCase(printable))));
+            printableCases.forEach(printable -> futures.add(executor.submit(() -> mergeCase(printable, waitUntil))));
         }
         List<CaseFile> caseFiles = new ArrayList<>();
         for (int i = 0; i < futures.size(); i++) {
@@ -99,14 +125,16 @@ public class BatchPrintService {
         return caseFiles;
     }
 
-    private CaseFile mergeCase(PrintableCase printable) {
+    private CaseFile mergeCase(PrintableCase printable, Instant waitUntil) {
         try {
-            caseSlots.acquire();
+            if (!caseSlots.tryAcquire(millisUntil(waitUntil), TimeUnit.MILLISECONDS)) {
+                return CaseFile.busy(printable.caseReference());
+            }
             try {
                 List<byte[]> documents = printable.documents().stream()
                     .map(document -> letterDocumentFetcher.fetchBytes(document.documentId()))
                     .toList();
-                return new CaseFile(printable.caseReference(), pdfMerger.mergeCase(documents));
+                return CaseFile.merged(printable.caseReference(), pdfMerger.mergeCase(documents));
             } finally {
                 caseSlots.release();
             }
@@ -120,21 +148,34 @@ public class BatchPrintService {
         }
     }
 
-    private BatchPrintFile mergeCases(List<Path> caseFiles) {
+    private static long millisUntil(Instant waitUntil) {
+        return Math.max(0, Duration.between(Instant.now(), waitUntil).toMillis());
+    }
+
+    private Path mergeCases(List<Path> caseFiles) {
         try {
-            return new BatchPrintFile(pdfMerger.mergeCases(caseFiles));
+            return pdfMerger.mergeCases(caseFiles);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to merge the batch print", e);
         }
     }
 
     /**
-     * One case's merged documents, or no file when they could not be fetched or merged.
+     * One case's merged documents; no file when they could not be fetched or merged, and too busy when the
+     * case never got a slot to fetch them in.
      */
-    private record CaseFile(String caseReference, Path file) {
+    private record CaseFile(String caseReference, Path file, boolean tooBusy) {
+
+        static CaseFile merged(String caseReference, Path file) {
+            return new CaseFile(caseReference, file, false);
+        }
 
         static CaseFile unavailable(String caseReference) {
-            return new CaseFile(caseReference, null);
+            return new CaseFile(caseReference, null, false);
+        }
+
+        static CaseFile busy(String caseReference) {
+            return new CaseFile(caseReference, null, true);
         }
 
         void delete() {

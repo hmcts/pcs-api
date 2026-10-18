@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -55,6 +57,8 @@ class ClaimantEvictionConfirmationServiceTest {
     private ClaimantRiskAssessmentService claimantRiskAssessmentService;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private ClaimantEvictionConfirmationService underTest;
 
@@ -63,7 +67,7 @@ class ClaimantEvictionConfirmationServiceTest {
         underTest = new ClaimantEvictionConfirmationService(
             new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository), enforcementOrderRepository,
             new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)), claimantRiskAssessmentService,
-            enforcementNotificationService);
+            enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -79,6 +83,7 @@ class ClaimantEvictionConfirmationServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfConfirmedAttendance(CASE_REFERENCE, EVICTION);
         verify(enforcementNotificationService, never()).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -94,6 +99,33 @@ class ClaimantEvictionConfirmationServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
         verify(enforcementNotificationService, never()).notifyClaimantOfConfirmedAttendance(anyLong(), any());
+        verify(enforcementWaTaskService).claimantCannotAttend(CASE_REFERENCE, enforcement.getId(), EVICTION);
+    }
+
+    /**
+     * The claimant is asked to try again rather than given an unexplained 500, and their answer is rolled
+     * back with the email.
+     */
+    @Test
+    void shouldRefuseTheAnswerWhenTheClaimantsEmailCannotBeQueued() {
+        givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION));
+        doThrow(new DataIntegrityViolationException("case_notification"))
+            .when(enforcementNotificationService).notifyClaimantOfConfirmedAttendance(anyLong(), any());
+
+        EnforcementChange<Void> recorded = underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
+
+        assertThat(recorded.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
+    void shouldRefuseTheAnswerWhenTheRescheduleTaskCannotBeRequested() {
+        givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION));
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).claimantCannotAttend(anyLong(), any(), any());
+
+        EnforcementChange<Void> recorded = underTest.recordAttendance(CASE_REFERENCE, YesOrNo.NO);
+
+        assertThat(recorded.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
     }
 
     @Test
@@ -140,7 +172,7 @@ class ClaimantEvictionConfirmationServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(status);
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(EARLIER);
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -152,7 +184,7 @@ class ClaimantEvictionConfirmationServiceTest {
 
         assertThat(enforcement.getStatus()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -163,7 +195,7 @@ class ClaimantEvictionConfirmationServiceTest {
             .containsExactly(ClaimantEvictionConfirmationService.NO_LIVE_EVICTION_ERROR);
 
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -182,7 +214,8 @@ class ClaimantEvictionConfirmationServiceTest {
     void shouldNotChangeAnythingWhenThereIsNoAnswer() {
         assertThat(underTest.recordAttendance(CASE_REFERENCE, null).refused()).isFalse();
 
-        verifyNoInteractions(pcsCaseService, enforcementOrderRepository, enforcementNotificationService);
+        verifyNoInteractions(pcsCaseService, enforcementOrderRepository, enforcementNotificationService,
+                             enforcementWaTaskService);
     }
 
     private List<EnforcementOrderEntity> givenEnforcements(EnforcementOrderEntity... enforcements) {

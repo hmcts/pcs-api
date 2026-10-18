@@ -5,12 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockFilterChain;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import uk.gov.hmcts.reform.pcs.controllers.RestExceptionHandler;
 import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintController.BatchPrintRequest;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffDirectoryService;
@@ -22,6 +25,9 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,9 +59,11 @@ class BatchPrintControllerTest {
     private FeatureToggleService featureToggleService;
 
     private BatchPrintController underTest;
+    private MockHttpServletRequest httpRequest;
 
     @BeforeEach
     void setUp() {
+        httpRequest = new MockHttpServletRequest();
         underTest = new BatchPrintController(idamAuthenticator, batchPrintService, batchPrintPlanner,
                                              bailiffDirectoryService, featureToggleService);
         UserInfo userInfo = mock(UserInfo.class);
@@ -68,15 +76,15 @@ class BatchPrintControllerTest {
     }
 
     @Test
-    void shouldReturnThePdfNamingThePrintedAndLeftOutCases() {
-        Resource pdf = new ByteArrayResource(new byte[] {'%', 'P', 'D', 'F'});
+    void shouldReturnThePdfNamingThePrintedAndLeftOutCases() throws IOException {
+        Path pdf = Files.createTempFile("batch-print-controller-test-", ".pdf");
         BatchPrintPlan plan = new BatchPrintPlan(
             List.of(new PrintableCase("1111111111111111", "WP-1", List.of(), List.of())),
             List.of(ExcludedCase.of("2222222222222222", BatchPrintExclusion.NOT_ALLOCATED),
                     ExcludedCase.of("not-a-case", BatchPrintExclusion.INVALID_REFERENCE)));
         when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(pdf, plan));
 
-        ResponseEntity<?> response = underTest.print(AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
+        ResponseEntity<?> response = underTest.print(httpRequest, AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PDF);
@@ -86,7 +94,27 @@ class BatchPrintControllerTest {
             .isEqualTo("1111111111111111");
         assertThat(response.getHeaders().getFirst(BatchPrintController.EXCLUDED_HEADER))
             .isEqualTo("2222222222222222=NOT_ALLOCATED");
-        assertThat(response.getBody()).isSameAs(pdf);
+        assertThat(response.getBody()).isEqualTo(new FileSystemResource(pdf));
+    }
+
+    /**
+     * Whether or not Spring goes on to write the body, the request is left holding the temp file for
+     * {@link BatchPrintFileCleanupFilter} to delete.
+     */
+    @Test
+    void shouldHaveTheTempFileDeletedWhenTheRequestFinishes() throws Exception {
+        Path pdf = Files.createTempFile("batch-print-controller-test-", ".pdf");
+        BatchPrintPlan plan = new BatchPrintPlan(
+            List.of(new PrintableCase("1111111111111111", "WP-1", List.of(), List.of())), List.of());
+        when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(pdf, plan));
+
+        underTest.print(httpRequest, AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
+        assertThat(pdf).exists();
+
+        new BatchPrintFileCleanupFilter().doFilter(httpRequest, new MockHttpServletResponse(),
+                                                   new MockFilterChain());
+
+        assertThat(pdf).doesNotExist();
     }
 
     @Test
@@ -95,11 +123,24 @@ class BatchPrintControllerTest {
             List.of(), List.of(ExcludedCase.of("2222222222222222", BatchPrintExclusion.NOT_ALLOCATED)));
         when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(null, plan));
 
-        ResponseEntity<?> response = underTest.print(AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
+        ResponseEntity<?> response = underTest.print(httpRequest, AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThat(response.getBody()).isEqualTo(plan);
+    }
+
+    @Test
+    void shouldAskTheBailiffToRetryWhenTooManyBatchPrintsAreBeingProduced() {
+        when(batchPrintService.print(BAILIFF, CHOSEN)).thenThrow(new BatchPrintBusyException());
+
+        ResponseEntity<?> response = underTest.print(httpRequest, AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("60");
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
+        assertThat(response.getBody())
+            .isEqualTo(new RestExceptionHandler.Error(BatchPrintBusyException.MESSAGE));
     }
 
     @Test
@@ -131,7 +172,7 @@ class BatchPrintControllerTest {
         when(bailiffDirectoryService.isBailiff(BAILIFF)).thenReturn(false);
         BatchPrintRequest request = new BatchPrintRequest(CHOSEN);
 
-        assertThatThrownBy(() -> underTest.print(AUTHORIZATION, S2S, request))
+        assertThatThrownBy(() -> underTest.print(httpRequest, AUTHORIZATION, S2S, request))
             .isInstanceOf(CaseAccessException.class);
         assertThatThrownBy(() -> underTest.check(AUTHORIZATION, S2S, request))
             .isInstanceOf(CaseAccessException.class);
@@ -146,7 +187,7 @@ class BatchPrintControllerTest {
             .thenThrow(new InvalidAuthTokenException("expired"));
         BatchPrintRequest request = new BatchPrintRequest(CHOSEN);
 
-        assertThatThrownBy(() -> underTest.print("Bearer expired", S2S, request))
+        assertThatThrownBy(() -> underTest.print(httpRequest, "Bearer expired", S2S, request))
             .isInstanceOf(InvalidAuthTokenException.class);
         verifyNoInteractions(bailiffDirectoryService, batchPrintService);
     }
@@ -156,7 +197,8 @@ class BatchPrintControllerTest {
         when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(false);
         BatchPrintRequest request = new BatchPrintRequest(CHOSEN);
 
-        assertThat(underTest.print(AUTHORIZATION, S2S, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(underTest.print(httpRequest, AUTHORIZATION, S2S, request).getStatusCode())
+            .isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(underTest.check(AUTHORIZATION, S2S, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(underTest.allocatedWarrants(AUTHORIZATION, S2S, null, null).getStatusCode())
             .isEqualTo(HttpStatus.NOT_FOUND);

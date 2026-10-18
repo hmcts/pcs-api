@@ -43,6 +43,7 @@ public class BailiffAllocationService {
     private final BailiffAllocationRepository bailiffAllocationRepository;
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final SecurityContextService securityContextService;
+    private final EnforcementWaTaskService enforcementWaTaskService;
     private final Clock utcClock;
 
     /**
@@ -132,29 +133,34 @@ public class BailiffAllocationService {
 
         if (!alreadyAllocated) {
             endActiveAllocations(enforcement);
-            bailiffAllocationRepository.save(BailiffAllocationEntity.builder()
-                                                 .enforcementOrder(enforcement)
-                                                 .bailiffUserId(bailiff.userId())
-                                                 .bailiffName(bailiff.name())
-                                                 .bailiffEmail(bailiff.email())
-                                                 .allocatedByUserId(securityContextService.getCurrentUserId())
-                                                 .startedAt(now)
-                                                 .build());
+            BailiffAllocationEntity allocation =
+                bailiffAllocationRepository.save(BailiffAllocationEntity.builder()
+                                                     .enforcementOrder(enforcement)
+                                                     .bailiffUserId(bailiff.userId())
+                                                     .bailiffName(bailiff.name())
+                                                     .bailiffEmail(bailiff.email())
+                                                     .allocatedByUserId(securityContextService.getCurrentUserId())
+                                                     .startedAt(now)
+                                                     .build());
             // TODO(HDPI-8189): create the allocated-bailiff CASE role assignment for the bailiff in AM, and
             //  delete the previous bailiff's, so the "Roles and access" tab and case access follow the
             //  allocation. This needs a RAS write client (POST /am/role-assignments with
             //  replaceExisting=true and a per-case process and reference), an AM approval rule for
             //  allocated-bailiff, and RAS in the environments PCS deploys to. Until then the allocation
             //  lives only in enf_bailiff_allocation.
-            // TODO(HDPI-8627): reassign the case's open bailiff tasks to the new bailiff.
+            //  Reallocation needs nothing beyond that role assignment: the warrant's open bailiff tasks are
+            //  granted to the allocated-bailiff role rather than to a user, so rewriting the assignment is
+            //  what moves them. Assigning each task through wa-task-management-api would need a user token
+            //  and pcs_api on its authorised-services list.
+            enforcementWaTaskService.bailiffAllocated(caseReference, allocation.getId());
         }
 
         if (enforcement.getStatus() == AWAITING_BAILIFF_ALLOCATION) {
             enforcementStatusTransitions.transition(enforcement, AWAITING_SCHEDULING);
             enforcementOrderRepository.save(enforcement);
         }
-        // TODO(HDPI-8627): complete the "Allocate case to bailiff" task and create the "Review risks and set
-        //  level" task, assigned to the allocated bailiff.
+        // "Allocate case to bailiff" is closed by XUI through the task-completion DMN when the caseworker
+        // opens the event from the task.
         log.info("Enforcement {} allocated to bailiff {}", enforcement.getId(), bailiff.userId());
         return EnforcementChange.made();
     }

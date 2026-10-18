@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementFeeService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RepeatWarrantFeeWaiver;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
 
@@ -153,7 +154,7 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
         enforcementStatusTransitions.transition(first, AWAITING_REVIEW);
         enforcementOrderRepository.saveAndFlush(first);
 
-        assertThat(enforcementDecisionService.accept(1500000000000004L)).isPresent();
+        assertThat(enforcementDecisionService.accept(1500000000000004L).change()).isNotNull();
         entityManager.flush();
         entityManager.clear();
         EnforcementOrderEntity approved = enforcementOrderRepository.findById(first.getId()).orElseThrow();
@@ -189,12 +190,13 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
             enforcementOrderRepository, new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
             pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
             enforcementStatusTransitions, waiver, mock(EnforcementNotificationService.class),
-            mock(EnforcementDocumentScheduler.class), mock(EnforcementFeeService.class, RETURNS_MOCKS));
+            mock(EnforcementDocumentScheduler.class), mock(EnforcementFeeService.class, RETURNS_MOCKS),
+            mock(EnforcementWaTaskService.class));
         List<UUID> before = enforcementIds(claimId);
         long caseReference = caseReferences.get(claimId);
 
-        boolean paymentOutstanding =
-            enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder(enforcementType)).isPresent();
+        boolean paymentOutstanding = enforcementOrderService
+            .saveAndClearDraftData(caseReference, enforcementOrder(enforcementType)).change() != null;
         entityManager.flush();
         entityManager.clear();
 

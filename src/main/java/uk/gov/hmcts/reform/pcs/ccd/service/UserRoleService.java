@@ -59,7 +59,7 @@ public class UserRoleService {
      * {@link #getCurrentUserCaseRoles(long, Collection)} when the caller needs to know which side of the case
      * the user is on.
      */
-    public UserRoles getCurrentUserCaseRoles(long caseReference) {
+    public UserRoles getCurrentUserCaseRolesWithoutGroupAccess(long caseReference) {
         return getCurrentUserCaseRoles(caseReference, Set.of());
     }
 

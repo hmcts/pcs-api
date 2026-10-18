@@ -42,6 +42,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -59,6 +60,7 @@ class WarrantReturnServiceTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final Instant NOW = Instant.parse("2026-07-08T09:00:00Z");
     private static final String USER_ID = "bailiff-uid";
+    private static final UUID RETURN_ID = UUID.randomUUID();
 
     @Mock
     private CurrentEnforcementService currentEnforcementService;
@@ -70,6 +72,8 @@ class WarrantReturnServiceTest {
     private BailiffAllocationRepository bailiffAllocationRepository;
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private WarrantReturnService underTest;
 
@@ -84,8 +88,16 @@ class WarrantReturnServiceTest {
             new WarrantReturnValidator(Clock.fixed(NOW, UK_ZONE_ID)),
             securityContextService,
             new BailiffAllocationService(currentEnforcementService, transitions, bailiffAllocationRepository,
-                                         enforcementOrderRepository, securityContextService, utcClock),
+                                         enforcementOrderRepository, securityContextService,
+                                         enforcementWaTaskService, utcClock),
+            enforcementWaTaskService,
             utcClock);
+        // The return row's id keys its work allocation requests, and the database assigns it on save.
+        lenient().when(warrantReturnRepository.save(any())).thenAnswer(invocation -> {
+            WarrantReturnEntity warrantReturn = invocation.getArgument(0);
+            warrantReturn.setId(RETURN_ID);
+            return warrantReturn;
+        });
     }
 
     @Test
@@ -197,6 +209,8 @@ class WarrantReturnServiceTest {
         assertThat(saved.getRecordedBy()).isEqualTo(USER_ID);
         assertThat(warrant.getStatus()).isEqualTo(CLOSED);
         assertThat(warrant.getStatusUpdatedAt()).isEqualTo(NOW);
+        verify(enforcementWaTaskService)
+            .warrantReturnRecorded(CASE_REFERENCE, warrant.getId(), RETURN_ID, null, CLOSED);
     }
 
     @Test
@@ -252,6 +266,31 @@ class WarrantReturnServiceTest {
         underTest.recordReturn(CASE_REFERENCE, interim(InterimWarrantReturnName.REOPEN_WARRANT, "Suspension lifted"));
 
         assertThat(warrant.getStatus()).isEqualTo(AWAITING_BAILIFF_ALLOCATION);
+        verify(enforcementWaTaskService).warrantReturnRecorded(
+            CASE_REFERENCE, warrant.getId(), RETURN_ID, null, AWAITING_BAILIFF_ALLOCATION);
+    }
+
+    @Test
+    void shouldTellWorkAllocationTheStatusAReturnLeavesTheWarrantInAndTheEvictionItHadScheduled() {
+        EnforcementOrderEntity warrant = givenWarrant(CLAIMANT_CONFIRMED);
+        LocalDateTime eviction = LocalDateTime.of(2026, 7, 10, 10, 0);
+        warrant.setBailiffDate(eviction);
+
+        underTest.recordReturn(CASE_REFERENCE,
+                               interim(InterimWarrantReturnName.DEFENDANT_STATES_BREATHING_SPACE, null));
+
+        verify(enforcementWaTaskService).warrantReturnRecorded(
+            CASE_REFERENCE, warrant.getId(), RETURN_ID, eviction, BREATHING_SPACE);
+    }
+
+    @Test
+    void shouldTellWorkAllocationAboutAReturnThatLeavesTheStatusAlone() {
+        EnforcementOrderEntity warrant = givenWarrant(CLAIMANT_CONFIRMED);
+
+        underTest.recordReturn(CASE_REFERENCE, interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order"));
+
+        verify(enforcementWaTaskService)
+            .warrantReturnRecorded(CASE_REFERENCE, warrant.getId(), RETURN_ID, null, CLAIMANT_CONFIRMED);
     }
 
     @Test
@@ -302,6 +341,7 @@ class WarrantReturnServiceTest {
         assertThat(recorded.errors()).containsExactly("Enter additional details");
         verify(warrantReturnRepository, never()).save(any());
         assertThat(warrant.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -313,6 +353,7 @@ class WarrantReturnServiceTest {
 
         assertThat(recorded.errors()).containsExactly(NoEnforcementException.MESSAGE);
         verify(warrantReturnRepository, never()).save(any());
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -324,6 +365,7 @@ class WarrantReturnServiceTest {
 
         assertThat(recorded.errors()).containsExactly(WarrantReturnService.NOT_ALLOCATED_MESSAGE);
         verify(warrantReturnRepository, never()).save(any());
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test

@@ -108,7 +108,7 @@ class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
         long caseReference = 1414141414141414L;
         UUID id = save(savedClaim(caseReference), SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_REVIEW);
 
-        EnforcementDecisionOutcome outcome = enforcementDecisionService.accept(caseReference).orElseThrow();
+        EnforcementDecisionOutcome outcome = enforcementDecisionService.accept(caseReference).change();
         entityManager.flush();
         entityManager.clear();
 

@@ -6,10 +6,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.pcs.controllers.RestExceptionHandler;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffDirectoryService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
@@ -46,6 +49,10 @@ import java.util.stream.Collectors;
  * why any case is left out with {@code POST /check}, and downloads the file with {@code POST}. The file
  * endpoint names the printed and left-out cases in the {@value #INCLUDED_HEADER} and {@value #EXCLUDED_HEADER}
  * headers too, because a case can drop out between the check and the download.
+ *
+ * <p>The file endpoint answers 503 with a {@code Retry-After} when the instance is already producing as many
+ * batch prints as it will fetch documents for, rather than holding the request thread until the gateway gives
+ * up on it.
  */
 @RestController
 @RequestMapping("/enforcement/batch-print")
@@ -61,6 +68,11 @@ public class BatchPrintController {
     static final String INCLUDED_HEADER = "Batch-Print-Included-Cases";
     static final String EXCLUDED_HEADER = "Batch-Print-Excluded-Cases";
     private static final String FILE_NAME = "enforcement-documents.pdf";
+    /**
+     * How long to ask a bailiff to wait after a refusal: long enough for the batch prints ahead of theirs to
+     * finish, rather than coming straight back and being refused again.
+     */
+    private static final String RETRY_AFTER_SECONDS = "60";
 
     private final IdamAuthenticator idamAuthenticator;
     private final BatchPrintService batchPrintService;
@@ -144,7 +156,9 @@ public class BatchPrintController {
         content = @Content())
     @ApiResponse(responseCode = "404", description = "Enforcement is not enabled", content = @Content())
     @ApiResponse(responseCode = "422", description = "None of the cases can be printed; the body says why")
+    @ApiResponse(responseCode = "503", description = "Too many batch prints are being produced; retry later")
     public ResponseEntity<?> print(
+        HttpServletRequest httpRequest,
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @RequestHeader("ServiceAuthorization") String serviceAuthorization,
         @Valid @RequestBody BatchPrintRequest request) {
@@ -152,19 +166,29 @@ public class BatchPrintController {
         if (!enforcementEnabled()) {
             return ResponseEntity.notFound().build();
         }
-        BatchPrint batchPrint = batchPrintService.print(bailiffUserId(authorization), request.caseReferences());
+        BatchPrint batchPrint;
+        try {
+            batchPrint = batchPrintService.print(bailiffUserId(authorization), request.caseReferences());
+        } catch (BatchPrintBusyException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, RETRY_AFTER_SECONDS)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new RestExceptionHandler.Error(e.getMessage()));
+        }
         if (batchPrint.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(batchPrint.plan());
         }
+        // The file is streamed after this method returns, and may never be streamed at all.
+        BatchPrintFileCleanupFilter.deleteWhenRequestFinishes(httpRequest, batchPrint.pdf());
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_PDF)
             .header(HttpHeaders.CONTENT_DISPOSITION,
                     ContentDisposition.attachment().filename(FILE_NAME).build().toString())
             .header(INCLUDED_HEADER, includedHeader(batchPrint.plan()))
             .header(EXCLUDED_HEADER, excludedHeader(batchPrint.plan()))
-            .body(batchPrint.pdf());
+            .body(new FileSystemResource(batchPrint.pdf()));
     }
 
     private boolean enforcementEnabled() {

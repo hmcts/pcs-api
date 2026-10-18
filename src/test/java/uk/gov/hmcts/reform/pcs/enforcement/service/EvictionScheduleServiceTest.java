@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailabl
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService.Eviction;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -28,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -56,6 +59,8 @@ class EvictionScheduleServiceTest {
     private EnforcementDocumentScheduler enforcementDocumentScheduler;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private EvictionScheduleService underTest;
 
@@ -64,7 +69,7 @@ class EvictionScheduleServiceTest {
         underTest = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
                                                 new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)),
                                                 bailiffNoteService, enforcementNotificationService,
-                                                enforcementDocumentScheduler);
+                                                enforcementDocumentScheduler, enforcementWaTaskService);
     }
 
     @Test
@@ -84,6 +89,8 @@ class EvictionScheduleServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfScheduledEviction(CASE_REFERENCE, EVICTION);
+        verify(enforcementWaTaskService).evictionScheduled(CASE_REFERENCE, enforcement.getId(),
+                                                           new Eviction(EVICTION, false));
     }
 
     @Test
@@ -94,6 +101,8 @@ class EvictionScheduleServiceTest {
 
         assertThat(enforcement.getDispenseWithService()).isTrue();
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
+        verify(enforcementWaTaskService).evictionScheduled(CASE_REFERENCE, enforcement.getId(),
+                                                           new Eviction(EVICTION, true));
     }
 
     @ParameterizedTest
@@ -111,6 +120,7 @@ class EvictionScheduleServiceTest {
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementDocumentScheduler);
         verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -148,6 +158,56 @@ class EvictionScheduleServiceTest {
             .hasMessage(EvictionScheduleService.CANNOT_SCHEDULE_ERROR);
     }
 
+    /**
+     * The bailiff is asked to try again rather than given an unexplained 500, and the refusal rolls the date
+     * they entered back with the notices.
+     */
+    @Test
+    void shouldRefuseTheScheduleWhenItsNoticesCannotBeQueued() {
+        current(AWAITING_SCHEDULING);
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementDocumentScheduler).scheduleEvictionNotices(any());
+
+        EnforcementChange<String> scheduled = underTest.schedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(scheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
+    void shouldRefuseTheScheduleWhenItsTasksCannotBeRequested() {
+        current(AWAITING_SCHEDULING);
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).evictionScheduled(anyLong(), any(), any());
+
+        EnforcementChange<String> scheduled = underTest.schedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(scheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
+    void shouldRefuseTheRescheduleWhenTheClaimantsEmailCannotBeQueued() {
+        EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
+        enforcement.setBailiffDate(EVICTION);
+        doThrow(new DataIntegrityViolationException("case_notification"))
+            .when(enforcementNotificationService).notifyClaimantOfRescheduledEviction(anyLong(), any());
+
+        EnforcementChange<String> rescheduled = underTest.reschedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(rescheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
+    void shouldRefuseTheRescheduleWhenItsTasksCannotBeRequested() {
+        EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
+        enforcement.setBailiffDate(EVICTION);
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).evictionRescheduled(anyLong(), any(), any(), any());
+
+        EnforcementChange<String> rescheduled = underTest.reschedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(rescheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
     @ParameterizedTest
     @EnumSource(value = EnforcementStatus.class, names = {"CLAIMANT_UNABLE_TO_ATTEND", "CLAIMANT_CONFIRMED"})
     void shouldRescheduleOnceTheClaimantHasAnswered(EnforcementStatus status) {
@@ -164,6 +224,25 @@ class EvictionScheduleServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfRescheduledEviction(CASE_REFERENCE, newDate);
+        verify(enforcementWaTaskService).evictionRescheduled(CASE_REFERENCE, enforcement.getId(),
+                                                             new Eviction(EVICTION, false),
+                                                             new Eviction(newDate, false));
+    }
+
+    @Test
+    void shouldReplaceTheWarrantReturnTaskWithOneDueOnTheNewEvictionDate() {
+        EnforcementOrderEntity enforcement = current(CLAIMANT_UNABLE_TO_ATTEND);
+        enforcement.setBailiffDate(EVICTION);
+        enforcement.setDispenseWithService(true);
+        LocalDateTime newDate = EVICTION.plusDays(7);
+
+        underTest.reschedule(CASE_REFERENCE, newDate, false);
+
+        // The previous appointment dispensed with service and the new one does not, so the notice task is
+        // created for the first time here rather than left alone.
+        verify(enforcementWaTaskService).evictionRescheduled(CASE_REFERENCE, enforcement.getId(),
+                                                             new Eviction(EVICTION, true),
+                                                             new Eviction(newDate, false));
     }
 
     @ParameterizedTest
@@ -186,6 +265,7 @@ class EvictionScheduleServiceTest {
 
         assertThat(rescheduled.refused()).isTrue();
         verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -235,6 +315,8 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_CLAIMANT_CONFIRMATION);
         verify(enforcementOrderRepository).save(enforcement);
         verify(bailiffNoteService, never()).addNote(anyLong(), anyString());
+        // XUI closes the task through the completion DMN, so marking the notice served creates nothing.
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
