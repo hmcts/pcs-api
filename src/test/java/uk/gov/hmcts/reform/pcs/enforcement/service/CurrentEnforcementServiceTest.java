@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -112,6 +114,34 @@ class CurrentEnforcementServiceTest {
         when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(live));
 
         assertThat(underTest.findCurrentEnforcement(CASE_REFERENCE)).contains(live);
+    }
+
+    @Test
+    void shouldLoadTheEnforcementsOnceWhileTheyAreLoadedOnce() {
+        EnforcementOrderEntity live = enforcement(EnforcementStatus.AWAITING_SCHEDULING, EARLIER);
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of(live));
+        PcsCaseEntity pcsCase = caseWithClaim();
+
+        CurrentEnforcementService.withEnforcementsLoadedOnce(() -> {
+            assertThat(underTest.findCurrentEnforcement(pcsCase)).contains(live);
+            CurrentEnforcementService.withEnforcementsLoadedOnce(
+                () -> assertThat(underTest.findEnforcementsCurrentFirst(pcsCase)).containsExactly(live));
+            assertThat(underTest.findCurrentEnforcement(caseWithClaim())).contains(live);
+        });
+
+        verify(enforcementOrderRepository, times(1)).findByClaimId(CLAIM_ID);
+    }
+
+    @Test
+    void shouldLoadTheEnforcementsAgainOutsideLoadedOnce() {
+        when(enforcementOrderRepository.findByClaimId(CLAIM_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWithClaim();
+
+        CurrentEnforcementService.withEnforcementsLoadedOnce(() -> underTest.findCurrentEnforcement(pcsCase));
+        underTest.findCurrentEnforcement(pcsCase);
+        underTest.findCurrentEnforcement(pcsCase);
+
+        verify(enforcementOrderRepository, times(3)).findByClaimId(CLAIM_ID);
     }
 
     private static PcsCaseEntity caseWithClaim() {

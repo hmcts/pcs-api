@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseViewContributor;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 @Component
 @AllArgsConstructor
@@ -22,8 +23,16 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final ClaimantEnforcementDocumentView claimantEnforcementDocumentView;
     private final DefendantEnforcementView defendantEnforcementView;
 
+    /**
+     * Every view below reads the claim's enforcements, so they are loaded once for all of them.
+     */
     @Override
     public void contribute(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
+        CurrentEnforcementService.withEnforcementsLoadedOnce(() -> setFields(pcsCaseEntity, pcsCase, caseReference,
+                                                                             state));
+    }
+
+    private void setFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
         enforcementOrderMediator.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
         enforcementOrderView.setEnforcementStatusFields(pcsCaseEntity, pcsCase);

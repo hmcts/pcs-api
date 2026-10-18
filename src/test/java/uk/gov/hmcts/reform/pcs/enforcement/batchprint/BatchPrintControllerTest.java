@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,7 +54,7 @@ class BatchPrintControllerTest {
 
     @Test
     void shouldReturnThePdfNamingThePrintedAndLeftOutCases() {
-        byte[] pdf = {'%', 'P', 'D', 'F'};
+        Resource pdf = new ByteArrayResource(new byte[] {'%', 'P', 'D', 'F'});
         BatchPrintPlan plan = new BatchPrintPlan(
             List.of(new PrintableCase("1111111111111111", "WP-1", List.of(), List.of())),
             List.of(ExcludedCase.of("2222222222222222", BatchPrintExclusion.NOT_ALLOCATED),

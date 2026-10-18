@@ -15,8 +15,10 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffAllocationEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.repository.AllocatedWarrantRow;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.BailiffAllocationRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffEnforcementRules;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 import java.time.Instant;
@@ -247,33 +249,32 @@ class BatchPrintPlannerTest {
 
     @Test
     void shouldListTheBailiffsLiveWarrantsSoonestEvictionFirstWithinTheRange() {
-        EnforcementOrderEntity later = listedWarrant(CASE_ONE, CLAIMANT_CONFIRMED,
-                                                     LocalDateTime.of(2026, 10, 16, 10, 0));
-        EnforcementOrderEntity sooner = listedWarrant(CASE_TWO, AWAITING_CLAIMANT_CONFIRMATION,
-                                                      LocalDateTime.of(2026, 10, 13, 9, 30));
-        EnforcementOrderEntity nextWeek = listedWarrant(3333333333333333L, CLAIMANT_CONFIRMED,
-                                                        LocalDateTime.of(2026, 10, 20, 9, 0));
-        EnforcementOrderEntity closed = listedWarrant(4444444444444444L, CLOSED, LocalDateTime.of(2026, 10, 14, 9, 0));
-        when(bailiffAllocationRepository.findActiveByBailiffUserId("bob-id")).thenReturn(List.of(
-            allocation(later, BAILIFF), allocation(sooner, BAILIFF), allocation(nextWeek, BAILIFF),
-            allocation(closed, BAILIFF)));
+        AllocatedWarrantRow later = listedWarrant(CASE_ONE, CLAIMANT_CONFIRMED,
+                                                  LocalDateTime.of(2026, 10, 16, 10, 0));
+        AllocatedWarrantRow sooner = listedWarrant(CASE_TWO, AWAITING_CLAIMANT_CONFIRMATION,
+                                                   LocalDateTime.of(2026, 10, 13, 9, 30));
+        AllocatedWarrantRow nextWeek = listedWarrant(3333333333333333L, CLAIMANT_CONFIRMED,
+                                                     LocalDateTime.of(2026, 10, 20, 9, 0));
+        when(bailiffAllocationRepository.findAllocatedWarrants(BAILIFF, BailiffEnforcementRules.APPROVED_LIVE_STATUSES))
+            .thenReturn(List.of(later, sooner, nextWeek));
 
         List<AllocatedWarrant> warrants = underTest.allocatedWarrants(
             "BOB-ID", LocalDate.of(2026, 10, 12), LocalDate.of(2026, 10, 18));
 
-        assertThat(warrants).extracting(AllocatedWarrant::caseReference)
-            .containsExactly(String.valueOf(CASE_TWO), String.valueOf(CASE_ONE));
-        assertThat(warrants.getFirst().evictionDate()).isEqualTo(LocalDateTime.of(2026, 10, 13, 9, 30));
-        assertThat(warrants.getFirst().status()).isEqualTo(AWAITING_CLAIMANT_CONFIRMATION);
+        assertThat(warrants).containsExactly(
+            new AllocatedWarrant(String.valueOf(CASE_TWO), "WP-" + CASE_TWO, AWAITING_CLAIMANT_CONFIRMATION,
+                                 LocalDateTime.of(2026, 10, 13, 9, 30)),
+            new AllocatedWarrant(String.valueOf(CASE_ONE), "WP-" + CASE_ONE, CLAIMANT_CONFIRMED,
+                                 LocalDateTime.of(2026, 10, 16, 10, 0)));
     }
 
     @Test
     void shouldListUnscheduledWarrantsLastWhenThereIsNoRange() {
-        EnforcementOrderEntity unscheduled = listedWarrant(CASE_ONE, EnforcementStatus.AWAITING_SCHEDULING, null);
-        EnforcementOrderEntity scheduled = listedWarrant(CASE_TWO, CLAIMANT_CONFIRMED,
-                                                         LocalDateTime.of(2026, 10, 13, 9, 30));
-        when(bailiffAllocationRepository.findActiveByBailiffUserId("bob-id"))
-            .thenReturn(List.of(allocation(unscheduled, BAILIFF), allocation(scheduled, BAILIFF)));
+        AllocatedWarrantRow unscheduled = listedWarrant(CASE_ONE, EnforcementStatus.AWAITING_SCHEDULING, null);
+        AllocatedWarrantRow scheduled = listedWarrant(CASE_TWO, CLAIMANT_CONFIRMED,
+                                                      LocalDateTime.of(2026, 10, 13, 9, 30));
+        when(bailiffAllocationRepository.findAllocatedWarrants(BAILIFF, BailiffEnforcementRules.APPROVED_LIVE_STATUSES))
+            .thenReturn(List.of(unscheduled, scheduled));
 
         assertThat(underTest.allocatedWarrants(BAILIFF, null, null)).extracting(AllocatedWarrant::caseReference)
             .containsExactly(String.valueOf(CASE_TWO), String.valueOf(CASE_ONE));
@@ -317,18 +318,9 @@ class BatchPrintPlannerTest {
         return warrant;
     }
 
-    private static EnforcementOrderEntity listedWarrant(long caseReference, EnforcementStatus status,
-                                                        LocalDateTime evictionDate) {
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(caseReference).build();
-        EnforcementOrderEntity warrant = EnforcementOrderEntity.builder()
-            .id(UUID.randomUUID())
-            .claim(ClaimEntity.builder().pcsCase(pcsCase).build())
-            .status(status)
-            .enforcementNumber("WP-" + caseReference)
-            .bailiffDate(evictionDate)
-            .build();
-        warrant.setWarrantDetails(WarrantEntity.builder().build());
-        return warrant;
+    private static AllocatedWarrantRow listedWarrant(long caseReference, EnforcementStatus status,
+                                                     LocalDateTime evictionDate) {
+        return new AllocatedWarrantRow(caseReference, "WP-" + caseReference, status, evictionDate);
     }
 
     private static BailiffAllocationEntity allocation(EnforcementOrderEntity enforcement, String bailiffUserId) {
