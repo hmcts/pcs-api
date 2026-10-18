@@ -3,8 +3,7 @@
  *
  * `setRiskLevel` and `addBailiffNote` are single-page events that go straight from Continue to a
  * confirmation screen — neither uses `showSummary()`, so there is no check-your-answers step. Their
- * confirmations carry the dashed case number and nothing else: the warrant number the feature files describe
- * is not rendered by `SetRiskLevel` or `AddBailiffNote`, and no ticket covers adding it.
+ * confirmations name the dashed case number and the warrant number.
  *
  * `allocateBailiff` is one page, "Find the bailiff's name", then check your answers. Its one field is XUI's
  * StaffUser type-ahead (`FindBailiffPage`, display context `#ARGUMENT(CATEGORY-ADMIN)`), which lists the
@@ -17,6 +16,7 @@ import { LONG_TIMEOUT } from 'playwright.config';
 import { localUserName, localUsers } from '@config/local-stack.config';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { openCaseSummary, requireCaseReference, startEvent } from './enforcement-journeys';
+import { errorSummaries } from './error-summary';
 import { answerRow } from './schedule-eviction';
 
 export const ALLOCATE_BAILIFF = 'Allocate case to bailiff';
@@ -145,9 +145,9 @@ export async function chooseRiskLevel(page: Page, level: string, reason?: string
   }
 }
 
-/** The error summary CCD renders for a failed page. */
+/** The first error summary XUI renders for a failed page. Check messages with `expectSingleErrorMessage`. */
 export function errorSummary(page: Page) {
-  return page.locator('.govuk-error-summary, .error-summary').first();
+  return errorSummaries(page).first();
 }
 
 /** Starts "Allocate case to bailiff" from the case summary, which opens on "Find the bailiff's name". */

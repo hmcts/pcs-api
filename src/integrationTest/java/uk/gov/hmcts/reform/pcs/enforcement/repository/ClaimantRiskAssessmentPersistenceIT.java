@@ -46,6 +46,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -196,7 +198,7 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
      * The Risk assessment tab as a bailiff sees it.
      */
     private EnforcementOrder caseView(long caseReference) {
-        when(userRoleService.getCurrentUserCaseRoles(caseReference))
+        when(userRoleService.getCurrentUserCaseRoles(eq(caseReference), anyCollection()))
             .thenReturn(new UserRoles("user", List.of("bailiff")));
         PCSCase pcsCase = PCSCase.builder().build();
         riskAssessmentTabView.setRiskAssessmentTab(

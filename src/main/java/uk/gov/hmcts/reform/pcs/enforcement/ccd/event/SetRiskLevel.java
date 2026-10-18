@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.risklevel.SetRiskLevelConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.setRiskLevel;
@@ -38,6 +40,12 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @Component
 @AllArgsConstructor
 public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
+
+    /**
+     * Offered while the current enforcement is an approved, live warrant (EnforcementEventAvailabilityView). The
+     * start callback still refuses otherwise.
+     */
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canSetRiskLevel=\"Yes\"");
 
     static final int MAX_REASON_LENGTH = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
     static final String RISK_LEVEL_REQUIRED_ERROR = "Choose a risk level";
@@ -56,7 +64,7 @@ public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
                 .forStates(AddBailiffNote.STATES)
                 .name("Set risk level")
                 .grant(Permission.CRUD, BAILIFF_STAFF_ROLES)
-                .showCondition(featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .endButtonLabel("Continue");
         setRiskLevelConfigurer.configurePages(new PageBuilder(eventBuilder));
@@ -89,13 +97,14 @@ public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
                 return errorResponse(REASON_TOO_LONG_ERROR);
             }
         }
-        EnforcementChange<Void> set = riskLevelService.setRiskLevel(caseReference, riskLevel, reason);
+        EnforcementChange<String> set = riskLevelService.setRiskLevel(caseReference, riskLevel, reason);
         if (set.refused()) {
             return errorResponse(set.errors());
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader("# Risk level set to " + riskLevel.getLabel())
-            .confirmationBody("Case number: " + caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
+            .confirmationBody(ConfirmationNumbers.caseAndWarrant(
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), set.change()))
             .build();
     }
 

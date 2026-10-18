@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -13,10 +14,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,10 +37,16 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUE
 class EnforcementSubmitEventTest {
 
     private static final long CASE_REFERENCE = 123456789L;
-    private static final String FEE_AMOUNT = "122.21";
+    private static final FeeDetails FEE = FeeDetails.builder()
+        .code("FEE0380")
+        .feeAmount(new BigDecimal("148.00"))
+        .version(5)
+        .build();
 
     @Mock
     private EnforcementOrderService enforcementOrderService;
+    @Spy
+    private MoneyFormatter moneyFormatter = new MoneyFormatter();
 
     @InjectMocks
     private EnforcementSubmitEvent event;
@@ -42,9 +55,11 @@ class EnforcementSubmitEventTest {
     @EnumSource(value = SelectEnforcementType.class, names = {"WARRANT", "WRIT"})
     void submit_savesEnforcementOrderAndAsksForTheFee(SelectEnforcementType enforcementType) {
         EnforcementOrder enforcementOrder = enforcementOrder(enforcementType);
-        enforcementOrder.setWarrantFeeAmount(FEE_AMOUNT);
-        enforcementOrder.setWritFeeAmount(FEE_AMOUNT);
-        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder)).thenReturn(true);
+        // The amount shown is the one the service request is raised for, not the one on the case data.
+        enforcementOrder.setWarrantFeeAmount("£1");
+        enforcementOrder.setWritFeeAmount("£1");
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
+            .thenReturn(Optional.of(FEE));
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
@@ -52,7 +67,8 @@ class EnforcementSubmitEventTest {
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
         assertThat(response.getConfirmationBody())
-            .contains("Pay %s for HM Courts and Tribunals Service".formatted(FEE_AMOUNT))
+            .contains("Pay £148 for HM Courts and Tribunals Service")
+            .contains("This costs £148")
             .contains("/cases/case-details/%d#Service%%20Request".formatted(CASE_REFERENCE));
     }
 
@@ -60,6 +76,8 @@ class EnforcementSubmitEventTest {
     @EnumSource(value = SelectEnforcementType.class, names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
     void submit_savesARestitutionApplicationWithoutAPaymentPanel(SelectEnforcementType enforcementType) {
         EnforcementOrder enforcementOrder = enforcementOrder(enforcementType);
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
+            .thenReturn(Optional.empty());
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
@@ -73,8 +91,9 @@ class EnforcementSubmitEventTest {
     @Test
     void submit_doesNotAskForTheFeeForAFreeRepeatWarrant() {
         EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
-        enforcementOrder.setWarrantFeeAmount(FEE_AMOUNT);
-        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder)).thenReturn(false);
+        enforcementOrder.setWarrantFeeAmount("£148");
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
+            .thenReturn(Optional.empty());
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
@@ -84,13 +103,15 @@ class EnforcementSubmitEventTest {
     }
 
     @Test
-    void submit_doesNotAskForAFeeWhenTheFeeLookupFoundNone() {
+    void submit_refusesAnApplicationWhoseFeeCannotBeLookedUp() {
         EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
-        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder)).thenReturn(true);
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
+            .thenThrow(new FeeNotFoundException("Unable to retrieve fee: ENFORCEMENT_WARRANT_FEE"));
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
-        assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
+        assertThat(response.getErrors()).containsExactly(EnforcementSubmitEvent.FEE_UNAVAILABLE_ERROR);
+        assertThat(response.getState()).isNull();
         assertThat(response.getConfirmationBody()).isNull();
     }
 

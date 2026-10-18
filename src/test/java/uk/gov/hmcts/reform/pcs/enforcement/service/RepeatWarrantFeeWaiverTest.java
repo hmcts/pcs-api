@@ -40,7 +40,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantRe
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER;
 
 // 15-repeat-enforcement.feature "Fee for a further warrant" and 01 "Repeat warrant within 12 months of a
-// suspended warrant is free" (HDPI-8424, OPEN-QUESTIONS 6 and 57).
+// suspended warrant is free" (HDPI-8424, OPEN-QUESTIONS 8 and 9).
 @ExtendWith(MockitoExtension.class)
 class RepeatWarrantFeeWaiverTest {
 

@@ -8,6 +8,7 @@ import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference } from '../support/enforcement-journeys';
+import { basicClaimFixtureClaim } from '@config/local-stack.config';
 import {
   ENFORCEMENT_STATUS_TAB,
   expectEnforcementSection,
@@ -20,6 +21,7 @@ import {
   SCHEDULE_EVICTION,
   answerRow,
   dispenseWithServiceRadio,
+  evictionDetailsRows,
   enterEvictionDateTime,
   evictionDateErrors,
   expectCheckYourAnswers,
@@ -27,6 +29,12 @@ import {
   expectEvictionError,
   scheduleEviction,
 } from '../support/schedule-eviction';
+import { MARK_NOTICE_SERVED, markNoticeServedAsBailiff, submitNoticeServed } from '../support/notice-served';
+import { caseChangedForDefendants } from '../support/defendant-visibility';
+import { ADD_BAILIFF_NOTE, SET_RISK_LEVEL } from '../support/bailiff-events';
+
+/** Events that submit from their only page, without a check your answers. */
+const SINGLE_PAGE_EVENTS = [SET_RISK_LEVEL, ADD_BAILIFF_NOTE];
 
 // The warrant was allocated to the bailiff the scenario signs in as, through testing support.
 Given('I am the allocated bailiff', async ({ world }) => {
@@ -174,15 +182,26 @@ Then('the {string} tab shows the scheduled eviction date and time under {string}
 });
 
 /**
- * Saves and continues from CCD's check-your-answers, which is how these events are submitted. Pending when
- * the scenario never started an event, which is the case for the ones that are really about the documents
- * or notifications a submit is meant to produce.
+ * Saves and continues from CCD's check-your-answers, which is how these events are submitted; "Set risk
+ * level" and "Add a bailiff note" have no check your answers and submit from their one page with "Continue".
+ * Pending when the scenario never started an event, which is the case for the ones that are really about the
+ * documents or notifications a submit is meant to produce. "Mark notice of eviction as served" is the
+ * exception: a scenario whose journey it is but that never started it has the bailiff run it end to end.
  */
-When('I submit the event', async ({ page, world, $tags }) => {
+When('I submit the event', async ({ page, context, world, $tags }) => {
+  if (world.currentEvent === MARK_NOTICE_SERVED) {
+    return submitNoticeServed(page, world);
+  }
+  if (!world.currentEvent && world.journey === MARK_NOTICE_SERVED && !world.noticeServed) {
+    await markNoticeServedAsBailiff(page, context, world);
+    caseChangedForDefendants(world);
+    return;
+  }
   if (!world.currentEvent) {
     return markPending({ summary: 'submitting an event the scenario never started' }, $tags);
   }
-  await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
+  const submitButton = SINGLE_PAGE_EVENTS.includes(world.currentEvent) ? 'Continue' : scheduleEviction.saveAndContinue;
+  await page.getByRole('button', { name: submitButton, exact: true }).click();
   world.currentEvent = undefined;
 });
 
@@ -213,4 +232,19 @@ Then('the {string} tab {string} shows only the new date and time', async ({ page
   expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
   expect(world.evictionDate, 'the new eviction date entered by this scenario').toBeDefined();
   await expectEvictionShown(page, requireCaseReference(world), section, world.evictionDate as string);
+});
+
+// The claimant and defendant come from the fixture claim every local case is built from.
+Then('I see an {string} table with claimant type, claimant name and defendant names', async ({ page, world }, table: string) => {
+  expect(table).toBe('Eviction details');
+  expect(world.currentEvent).toBe(SCHEDULE_EVICTION);
+  const rows = await evictionDetailsRows(page);
+  expect(Object.keys(rows)).toEqual(['Claimant type', 'Claimant name', 'Defendant names']);
+  expect(rows['Claimant type'], 'the claimant type').toMatch(/\S/);
+  expect(rows['Claimant name'], 'the claimant name').toMatch(/\S/);
+  const { firstName, lastName } = basicClaimFixtureClaim.defendant1;
+  expect(rows['Defendant names']).toBe(`${firstName} ${lastName}`);
+  // The details are a rendered label, not fields.
+  await expect(page.locator('dl.govuk-summary-list').filter({ hasText: 'Defendant names' }).locator('input, select, textarea'))
+    .toHaveCount(0);
 });

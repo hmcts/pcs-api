@@ -188,7 +188,7 @@ public class EnforcementOrder {
     private String riskAssessmentClaimantMarkdown;
 
     /**
-     * "Claimant vs defendants", set for the decideEnforcement header.
+     * "Claimant vs defendants", set for the decideEnforcement header and the addBailiffNote page.
      */
     @CCD(searchable = false)
     private String formattedCaseName;
@@ -254,4 +254,11 @@ public class EnforcementOrder {
     @JsonUnwrapped(prefix = "latestWarrantReturn")
     @CCD
     private LatestWarrantReturn latestWarrantReturn;
+
+    /**
+     * The flags that gate the enforcement events, set for the case view.
+     */
+    @JsonUnwrapped
+    @CCD
+    private EnforcementEventAvailability eventAvailability;
 }

@@ -49,6 +49,11 @@ properties([
       defaultValue: false,
       description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile (off by default; enable when needed).'
     ),
+    booleanParam(
+      name: 'ENFORCEMENT_BDD_TESTS',
+      defaultValue: true,
+      description: 'Run the enforcement BDD suite (yarn test:enforcement:bdd, Chrome; on by default). Ignores PLAYWRIGHT_SPEC and PLAYWRIGHT_GREP_TAG: it runs every scenario not tagged @pending or @open-question.'
+    ),
     string(
       name: 'PLAYWRIGHT_SPEC',
       defaultValue: '',
@@ -119,6 +124,10 @@ def getE2eMatrix() {
     [flag: 'MOBILE_ANDROID_TESTS', suite: 'mobile-android', browser: 'MobileAndroid', label: 'Mobile Android (Pixel 5)'],
     [flag: 'MOBILE_IOS_TESTS', suite: 'mobile-ios', browser: 'MobileIos', label: 'Mobile iOS (WebKit)'],
     [flag: 'MOBILE_IPAD_TESTS', suite: 'mobile-ipad', browser: 'MobileIpad', label: 'Mobile iPad (WebKit)'],
+    // The feature files carry no @nightly tag and bddgen's specs do not match *.spec.ts path keywords, so the
+    // nightly title grep and spec filter are cleared for this suite.
+    [flag: 'ENFORCEMENT_BDD_TESTS', suite: 'enforcement:bdd', browser: 'EnforcementBdd', label: 'Enforcement BDD (Chrome)',
+      env: ['E2E_TEST_SCOPE=', 'E2E_SPEC=']],
   ]
 }
 
@@ -135,7 +144,7 @@ def runE2eStage(gradleBuilder, Map row) {
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
       catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        withEnv(["E2E_SUITE=${row.suite}"]) {
+        withEnv(["E2E_SUITE=${row.suite}"] + (row.env ?: [])) {
           gradleBuilder.gradle('runE2eTests')
         }
       }

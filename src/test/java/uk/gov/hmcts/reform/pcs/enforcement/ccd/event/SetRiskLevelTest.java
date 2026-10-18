@@ -38,6 +38,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 @ExtendWith(MockitoExtension.class)
 class SetRiskLevelTest extends BaseEventTest {
 
+    private static final String WARRANT_NUMBER = "WP-00000001";
+
     @Mock
     private SetRiskLevelConfigurer setRiskLevelConfigurer;
     @Mock
@@ -54,8 +56,8 @@ class SetRiskLevelTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeGatedOnTheEnforcementFeatureFlag() {
-        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\"");
+    void shouldOnlyBeOfferedForAnApprovedLiveWarrant() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canSetRiskLevel=\"Yes\"");
     }
 
     @Test
@@ -129,14 +131,16 @@ class SetRiskLevelTest extends BaseEventTest {
     @ParameterizedTest
     @EnumSource(RiskLevel.class)
     void shouldSaveTheRiskLevelAndConfirmIt(RiskLevel level) {
-        when(riskLevelService.setRiskLevel(anyLong(), any(), anyString())).thenReturn(EnforcementChange.made());
+        when(riskLevelService.setRiskLevel(anyLong(), any(), anyString()))
+            .thenReturn(EnforcementChange.made(WARRANT_NUMBER));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(level, "Known history of violence"));
 
         verify(riskLevelService).setRiskLevel(TEST_CASE_REFERENCE, level, "Known history of violence");
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getConfirmationHeader()).isEqualTo("# Risk level set to " + level.getLabel());
-        assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
+        assertThat(response.getConfirmationBody())
+            .isEqualTo("Case number: 0000-0000-0000-1234\n\nWarrant number: " + WARRANT_NUMBER);
     }
 
     @Test
@@ -158,7 +162,8 @@ class SetRiskLevelTest extends BaseEventTest {
 
     @Test
     void shouldAcceptAReasonOf6800CharactersAndRefuseALongerOne() {
-        when(riskLevelService.setRiskLevel(anyLong(), any(), anyString())).thenReturn(EnforcementChange.made());
+        when(riskLevelService.setRiskLevel(anyLong(), any(), anyString()))
+            .thenReturn(EnforcementChange.made(WARRANT_NUMBER));
 
         assertThat(callSubmitHandler(caseWith(RiskLevel.HIGH, "a".repeat(6800))).getErrors()).isNullOrEmpty();
         assertThat(callSubmitHandler(caseWith(RiskLevel.HIGH, "a".repeat(6801))).getErrors())
@@ -168,7 +173,7 @@ class SetRiskLevelTest extends BaseEventTest {
     @Test
     void shouldNotNeedAReasonForMedium() {
         when(riskLevelService.setRiskLevel(TEST_CASE_REFERENCE, RiskLevel.MEDIUM, null))
-            .thenReturn(EnforcementChange.made());
+            .thenReturn(EnforcementChange.made(WARRANT_NUMBER));
 
         SubmitResponse<State> response = callSubmitHandler(caseWith(RiskLevel.MEDIUM, null));
 

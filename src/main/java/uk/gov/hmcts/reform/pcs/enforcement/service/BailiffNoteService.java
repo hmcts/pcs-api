@@ -24,17 +24,28 @@ public class BailiffNoteService {
     private final SecurityContextService securityContextService;
     private final Clock utcClock;
 
+    /**
+     * Whether bailiff staff can add a note: the claim has an enforcement, live or not. "Add a bailiff note" is
+     * offered on this, and its start and submit refuse on it.
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    public static boolean canAddBailiffNote(EnforcementOrderEntity currentEnforcement) {
+        return currentEnforcement != null;
+    }
+
     public boolean hasEnforcement(long caseReference) {
-        return currentEnforcementService.findCurrentEnforcement(caseReference).isPresent();
+        return canAddBailiffNote(currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null));
     }
 
     /**
      * Saves the note against the claim's current enforcement, with the signed-in user's IDAM name.
      *
+     * @return the enforcement's warrant or writ number, or null if it has none
      * @throws NoEnforcementException if the claim has no enforcement
      */
     @Transactional
-    public void addNote(long caseReference, String note) {
+    public String addNote(long caseReference, String note) {
         EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
             .orElseThrow(NoEnforcementException::new);
         UserInfo author = securityContextService.getCurrentUserDetails();
@@ -46,6 +57,7 @@ public class BailiffNoteService {
                                        .authorFirstName(author.getGivenName())
                                        .authorLastName(author.getFamilyName())
                                        .build());
+        return enforcement.getEnforcementNumber();
     }
 
     /**

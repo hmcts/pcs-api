@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
-import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.AllocateBailiffRequest;
 import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.DefendantCaseRoleRequest;
 import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.SeedDocumentRequest;
@@ -53,7 +52,7 @@ class EnforcementTestingSupportControllerTest {
         new BailiffUser("60d20156-049f-3f7f-881d-fce79ba89b76", "Bob Bailiff", "pcs-bailiff@localhost");
 
     @Mock
-    private EnforcementOrderService enforcementOrderService;
+    private EnforcementFeePaidSimulator enforcementFeePaidSimulator;
     @Mock
     private BailiffAllocationService bailiffAllocationService;
     @Mock
@@ -69,7 +68,7 @@ class EnforcementTestingSupportControllerTest {
 
     @Test
     void shouldReturnNoContentWhenTheFeeIsRecorded() {
-        when(enforcementOrderService.recordFeePaid(CASE_REFERENCE)).thenReturn(true);
+        when(enforcementFeePaidSimulator.recordFeePaid(CASE_REFERENCE)).thenReturn(true);
 
         assertThat(underTest.recordFeePaid(S2S_TOKEN, CASE_REFERENCE).getStatusCode())
             .isEqualTo(HttpStatus.NO_CONTENT);
@@ -77,7 +76,7 @@ class EnforcementTestingSupportControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenNoApplicationIsAwaitingPayment() {
-        when(enforcementOrderService.recordFeePaid(CASE_REFERENCE)).thenReturn(false);
+        when(enforcementFeePaidSimulator.recordFeePaid(CASE_REFERENCE)).thenReturn(false);
 
         assertThat(underTest.recordFeePaid(S2S_TOKEN, CASE_REFERENCE).getStatusCode())
             .isEqualTo(HttpStatus.NOT_FOUND);

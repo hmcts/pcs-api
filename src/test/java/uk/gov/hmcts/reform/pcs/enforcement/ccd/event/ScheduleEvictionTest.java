@@ -68,9 +68,8 @@ class ScheduleEvictionTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeAvailableOnlyWhenTheWarrantIsAwaitingSchedulingAndEnforcementIsEnabled() {
-        assertConfiguredShowConditions(
-            "featureFlags.enforcementEnabled=\"YES\" AND enforcementStatus=\"AWAITING_SCHEDULING\"");
+    void shouldOnlyBeOfferedWhenTheWarrantIsAwaitingSchedulingAndEnforcementIsEnabled() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canScheduleEviction=\"Yes\"");
     }
 
     @Test
@@ -133,6 +132,17 @@ class ScheduleEvictionTest extends BaseEventTest {
         assertThat(schedule.getEvictionDispenseWithService()).isEqualTo(YesOrNo.NO);
         assertThat(schedule.getEvictionDateTime()).isNull();
         assertThat(schedule.getEvictionDetailsMarkup()).contains("Private landlord", "Acme", "Person(s) unknown");
+    }
+
+    @Test
+    void shouldStartWithTheCaseNameForThePartiesLine() {
+        when(evictionDetailsService.getEvictionDetails(TEST_CASE_REFERENCE))
+            .thenReturn(new EvictionDetails("Private landlord", List.of("Acme"), List.of("John Doe")));
+        PCSCase caseData = PCSCase.builder().caseNameHmctsInternal("Acme vs John Doe").build();
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getFormattedCaseName()).isEqualTo("Acme vs John Doe");
     }
 
     @Test

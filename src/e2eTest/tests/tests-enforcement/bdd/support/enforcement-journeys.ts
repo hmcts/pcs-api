@@ -6,7 +6,7 @@ import { BrowserContext, Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld, SubmitCasePayload } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction as performCommonAction } from '@utils/controller';
 import { performAction, performValidation } from '@utils/controller-enforcement';
@@ -17,6 +17,7 @@ import { caseSummary } from '@data/page-data';
 import { user, users } from '@data/user-data';
 import { staff } from '@data/user-data/staff.user.data';
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, currentSignedInRole, recordSignedInRole } from './session';
 import {
   assignDefendantCaseRole,
@@ -128,17 +129,13 @@ async function createIssuedCaseLocally(): Promise<SubmitCasePayload> {
   return basicClaimFixtureClaim as unknown as SubmitCasePayload;
 }
 
-/** Submits a warrant of possession application through the API, as the warrant of restitution spec does. */
+/**
+ * Gives the scenario a warrant of possession application, as the warrant of restitution spec does: on preview
+ * and AAT by submitting `enforceTheOrder` through the API on the scenario's case. A local run creates a new case
+ * from the Create-Enforcement-Warrant fixture instead, which is the route the local suite has been run with.
+ */
 export async function seedWarrantApplication(world: EnforcementWorld): Promise<void> {
   if (isLocalStack()) {
-    // `enforceCasePayloadNoJourney` carries nine fields that no longer exist anywhere in pcs-api
-    // (warrantAmountOwed, warrantRepaymentChoice, warrantIsSuspendedOrder, warrantEvictEveryone,
-    // warrantShowPeopleWhoWillBeEvictedPage, warrantAreLegalCostsToBeClaimed, warrantAmountOfLegalCosts,
-    // warrantHaveLandRegistryFeesBeenPaid, warrantAmountOfLandRegistryFees) — they went with the money and
-    // evict-selection pages — so CCD rejects the event with "No field found". This is not local-only: the
-    // same payload is sent on AAT. Until it is pruned, the Create-Enforcement-Warrant fixture, which goes
-    // through pcs-api's own JSON parsing rather than CCD field validation, is the only route to a seeded
-    // warrant.
     await createCaseWithWarrant(world);
     return;
   }
@@ -161,15 +158,13 @@ export async function createCaseWithWarrant(world: EnforcementWorld): Promise<vo
 }
 
 /**
- * A case issued with a writ of possession application already submitted, awaiting payment. Only a local stack
- * can seed one: AAT has no route to a writ application other than the claimant journey.
+ * A case issued with a writ of possession application already submitted, awaiting payment, created from the
+ * Create-Enforcement-Writ fixture through the `createTestCase` event. The event exists wherever testing support
+ * is on (a local stack booted with ENABLE_TESTING_SUPPORT=true, preview and AAT); there is no API payload for a
+ * writ application.
  */
-export async function createCaseWithWrit(world: EnforcementWorld): Promise<boolean> {
-  if (!isLocalStack()) {
-    return false;
-  }
+export async function createCaseWithWrit(world: EnforcementWorld): Promise<void> {
   await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWrit);
-  return true;
 }
 
 async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture: TestCaseFixture): Promise<void> {
@@ -191,9 +186,22 @@ async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture
 export async function openCaseSummary(page: Page): Promise<void> {
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
-  }).toPass({ timeout: VERY_LONG_TIMEOUT });
+  await page
+    .waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`, { timeout: LONG_TIMEOUT })
+    .catch(() => undefined);
+  if (isOnCaseSummary(page)) {
+    return;
+  }
+  // XUI sometimes opens a just-created case on its first tab and drops the #Summary fragment; select the tab.
+  const summaryTab = page.getByRole('tab', { name: caseSummary.mainHeader, exact: true });
+  await expect(summaryTab).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  await summaryTab.click();
+  await expect.poll(() => isOnCaseSummary(page), { timeout: LONG_TIMEOUT }).toBe(true);
+}
+
+function isOnCaseSummary(page: Page): boolean {
+  const url = page.url();
+  return url.includes('/cases/case-details/') && url.includes(String(process.env.CASE_NUMBER)) && url.endsWith('#Summary');
 }
 
 /**
@@ -266,6 +274,9 @@ export async function startEventAllowingRefusal(page: Page, eventName: string): 
 
 export async function chooseApplicationType(type: EnforcementType, world: EnforcementWorld, page: Page): Promise<void> {
   world.applicationType = type;
+  // The check your answers validation compares the page with every answer recorded in the test, so a second
+  // application in the same scenario would be checked against the first one's answers too.
+  CYAStore.getInstance().clearAll();
   switch (type) {
     case 'warrant of possession':
       await performAction('selectApplicationType', {

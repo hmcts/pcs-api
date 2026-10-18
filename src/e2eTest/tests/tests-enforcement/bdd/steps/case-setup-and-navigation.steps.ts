@@ -1,6 +1,7 @@
 // Case set-up, signing in and moving around the case in XUI. Shared by every feature.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import type { Page } from '@playwright/test';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import {
   canSignInAs,
@@ -8,12 +9,14 @@ import {
   createIssuedCase,
   nextStepOptions,
   openCaseSummary,
+  requireCaseReference,
   signInAs,
   signInRoleFor,
   startEvent,
   startEventAllowingRefusal,
   xuiEvents,
 } from '../support/enforcement-journeys';
+import { enforcementRows } from '../support/enforcement-status-tab';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
@@ -25,11 +28,13 @@ import {
   submitDecision,
 } from '../support/decide-enforcement';
 import { isLocalStack, localUsers } from '@config/local-stack.config';
+import { user as testUsers } from '@data/user-data';
+import { LONG_TIMEOUT } from 'playwright.config';
 import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionAsBailiff, setUpWarrantAtStatus } from '../support/approve-warrant';
 import {
   CITIZEN_DEFENDANT,
   DEFENDANT_LEGAL_REPRESENTATIVE,
-  canSetUpDefendants,
+  canLinkCitizenDefendant,
   linkCitizenDefendant,
   viewAsEachDefendant,
 } from '../support/defendant-visibility';
@@ -119,20 +124,20 @@ When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-// Users the suite has no sign-in for in this environment, such as a defendant on a local stack, wait on
+// Users the suite has no sign-in for in this environment, such as a bailiff outside a local stack, wait on
 // HDPI-7539.
 When('a {string} opens the case', async ({ page, context, world, $tags }, user: string) => {
   world.openedAs = user;
   world.defendantViews = undefined;
-  if (user === DEFENDANT_LEGAL_REPRESENTATIVE && isLocalStack()) {
+  if (user === DEFENDANT_LEGAL_REPRESENTATIVE) {
     // The tab checks read the case data CCD gives this user as well as their XUI tabs.
-    world.defendantLegalRepresentative = localUsers.defendantSolicitor;
+    world.defendantLegalRepresentative = isLocalStack() ? localUsers.defendantSolicitor : testUsers.defendantSolicitor.email;
     world.citizenDefendant = undefined;
   }
   if (user === CITIZEN_DEFENDANT) {
     // Not an XUI user: their view is the case data CCD gives them, which is what pcs-frontend renders.
-    if (!canSetUpDefendants()) {
-      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case' }, $tags);
+    if (!canLinkCitizenDefendant()) {
+      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case: only a local stack has a citizen user' }, $tags);
     }
     await linkCitizenDefendant(world);
     world.defendantLegalRepresentative = undefined;
@@ -171,7 +176,11 @@ Then('the {string} event is available in the next steps drop down', async ({ pag
   await expect.poll(() => nextStepOptions(page)).toContain(event.label);
 });
 
-Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+/**
+ * An enforcement event that cannot be used is hidden by its show condition rather than offered and then refused
+ * by its start callback, so "not available" means missing from the next step drop down.
+ */
+async function expectNotOffered(page: Page, $tags: string[], eventName: string): Promise<void> {
   const event = xuiEvents[eventName];
   if (!event) {
     return markPending(eventNotBuilt(eventName), $tags);
@@ -179,6 +188,14 @@ Then('the {string} event is not available', async ({ page, $tags }, eventName: s
   // Wait for the drop down to load with the user's other events before checking this one is missing.
   await expect.poll(async () => (await nextStepOptions(page)).length).toBeGreaterThan(0);
   expect(await nextStepOptions(page)).not.toContain(event.label);
+}
+
+Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
+});
+
+Then('the {string} event is not offered in the next steps drop down', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
 });
 
 When('I start the {string} event', async ({ page, world, $tags }, eventName: string) => {
@@ -213,9 +230,16 @@ When('I start the {string} event from the next steps drop down', async ({ page, 
   world.currentEvent = eventName;
 });
 
+// The earlier and the new enforcements are all on the case the scenario started with, and it still opens under
+// that reference. The page itself proves nothing: the steps before may have signed someone else in.
 Then('the case reference is unchanged', async ({ page, world }) => {
-  expect(world.caseReference, 'a case created by this scenario').toBeDefined();
-  expect(page.url()).toContain(String(world.caseReference));
+  const caseReference = requireCaseReference(world);
+  const numbers = (await enforcementRows(caseReference)).map(row => row.number);
+  expect(numbers, `the enforcements on case ${caseReference}`).toEqual(
+    expect.arrayContaining([...world.earlierWarrantNumbers, ...(world.warrantNumber ? [world.warrantNumber] : [])])
+  );
+  await openCaseSummary(page);
+  expect(page.url()).toContain(caseReference);
 });
 
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the live enforcement' }, [
@@ -241,26 +265,50 @@ Given('I am signed in to XUI as the allocated bailiff', async ({ page, context }
   await signInAs('bailiff', page, context);
 });
 
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a specific named bailiff needs staff reference data' }, [
-  'I am signed in to XUI as bailiff {string}',
-]);
-
 pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement work allocation tasks' }, [
   'I am signed in to XUI as a bailiff with open enforcement tasks',
 ]);
 
-pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
-  'the {string} screen opens',
-  'the warrant number is not shown in the header',
-  'I see the {string} confirmation with the case number and warrant number',
-  'today is {string} and the time is {string}',
-  'the {string} screen shows my answers with {string} links',
+const genericStepPending = { summary: 'Generic XUI step for an enforcement event that does not exist yet' };
+
+pendingSteps(genericStepPending, [
   'I open {string}',
   '{string}',
 ]);
 
+/**
+ * The event page the scenario is on names the case and the property, but neither the warrant number nor
+ * anything that would give it away.
+ */
+Then('the warrant number is not shown in the header', async ({ page, world, $tags }) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  expect(world.warrantNumber, 'a warrant number generated when the warrant was approved').toBeDefined();
+  const event = xuiEvents[world.currentEvent];
+  if (event) {
+    await expect(page.getByRole('heading', { name: event.firstPageHeader })).toBeVisible();
+  }
+  const form = page.locator('ccd-case-edit-page');
+  await expect(form.getByRole('paragraph').filter({ hasText: 'Case number:' }).first()).toBeVisible();
+  await expect(form).not.toContainText('Warrant number');
+  await expect(page.locator('body')).not.toContainText(world.warrantNumber as string);
+});
+
+/** CCD's check your answers for the event the scenario is in: every answer has a Change link. */
+Then('the {string} screen shows my answers with {string} links', async ({ page, world, $tags }, screen: string, link: string) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: screen })).toBeVisible({ timeout: LONG_TIMEOUT });
+  const answers = page.locator('ccd-case-edit-submit tr').filter({ has: page.locator('td') });
+  await expect(answers.first()).toBeVisible();
+  for (const answer of await answers.all()) {
+    await expect(answer.getByRole('link', { name: new RegExp(`^${link}\\b`) })).toBeVisible();
+  }
+});
+
 // Generic XUI steps. Only "Decide enforcement" drives them today; any other event stays pending.
-const genericStepPending = { summary: 'Generic XUI step for an enforcement event that does not exist yet' };
 
 function inDecideEnforcement(world: EnforcementWorld): boolean {
   return world.currentEvent === DECIDE_ENFORCEMENT;
@@ -271,11 +319,27 @@ Given('I am signed in to XUI as a hearing centre admin', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-Then('the {string} journey opens', async ({ page, world, $tags }, eventName: string) => {
-  if (eventName !== DECIDE_ENFORCEMENT || !inDecideEnforcement(world)) {
+// The feature files name a journey by its event or by its first page's heading. Only an event the scenario
+// started itself counts: opening one from a task waits on HDPI-8627.
+Then('the {string} journey opens', async ({ page, world, $tags }, journey: string) => {
+  if (journey === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
+    await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+    return;
+  }
+  const started = world.currentEvent ? xuiEvents[world.currentEvent] : undefined;
+  if (!started || (journey !== world.currentEvent && journey !== started.firstPageHeader)) {
     return markPending(genericStepPending, $tags);
   }
-  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+  await expect(page.getByRole('heading', { name: started.firstPageHeader })).toBeVisible();
+});
+
+/**
+ * Nothing can set the app's clock. The scenarios use it to put a date and time in the future; those rows stay
+ * pending at their error assertion, and the rest quote dates that are already in the past.
+ */
+Given('today is {string} and the time is {string}', async ({ $tags }, date: string, time: string) => {
+  const ticket = $tags.find(tag => /^@HDPI-\d+$/.test(tag) && tag !== '@HDPI-7342')?.slice(1) ?? 'HDPI-7342';
+  approximatePrecondition(ticket, `the clock is not set to ${date} ${time}; the app uses the real time`);
 });
 
 /**
@@ -307,10 +371,23 @@ Given('I am on the {string} screen', async ({ page, world, $tags }, screen: stri
   world.currentEvent = event;
 });
 
+/** Events whose first page has the case number and property address but no "claimant name vs defendant name" line. */
+const eventsWithoutPartiesLine: Record<string, string> = {
+  [MARK_NOTICE_SERVED]: 'HDPI-7346',
+};
+
 // Every built event's first page carries the same read-only case-details summary list.
 Then('I see the case number, the possession property address and {string}', async ({ page, world, $tags }, partyNames: string) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
+  }
+  const partiesTicket = eventsWithoutPartiesLine[world.currentEvent];
+  if (partiesTicket && / vs /.test(partyNames)) {
+    await expectCaseDetailsHeader(page, world, '');
+    return markPending({
+      ticket: partiesTicket,
+      summary: `"${world.currentEvent}" shows the case number and property address but no "${partyNames}" line`,
+    }, $tags);
   }
   await expectCaseDetailsHeader(page, world, partyNames);
 });
@@ -390,4 +467,13 @@ When('I submit the {string} event', async ({ page, context, world, $tags }, even
     return;
   }
   return markPending(genericStepPending, $tags);
+});
+
+/** The first page of an event the scenario has started, by the name the feature files give that screen. */
+Then('the {string} screen opens', async ({ page, world, $tags }, screen: string) => {
+  const event = screenEvents[screen];
+  if (!event || world.currentEvent !== event) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: screen, exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
 });

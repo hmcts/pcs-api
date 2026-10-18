@@ -5,13 +5,13 @@
 // today, and the update is made today. The steps assert today's date and record the gap as an approximated
 // precondition. The "Review updated risk information" task is not created (HDPI-8627).
 import { BrowserContext, Page } from '@playwright/test';
-import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
+import { Given, Then, When, expect, test } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
 import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
 import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
-import { openCaseTab, tabSections, todayTabDate } from '../support/enforcement-status-tab';
+import { activeTab, openCaseTab, tabSections, todayTabDate } from '../support/enforcement-status-tab';
 import { SET_RISK_LEVEL, chooseRiskLevel, continueButton, expectBailiffConfirmation } from '../support/bailiff-events';
 import { allocateBailiff, confirmEvictionAsClaimant, scheduleEvictionAsBailiff } from '../support/approve-warrant';
 import {
@@ -185,4 +185,22 @@ Then('I see the original and updated answers side by side in a table', async ({ 
   for (const column of Object.values(claimantRiskAssessmentFields)) {
     await expect(page.locator('.mat-tab-body-active th[scope="col"]', { hasText: column }).first()).toBeVisible();
   }
+});
+
+/**
+ * The "Important" banner above the internal sections lists every question the claimant changed. The items
+ * are not links: XUI picks the tab from the URL fragment, so an in-page link would change tab. OPEN-QUESTIONS
+ * 30 proposes a plain list, which is what is checked; the links are recorded as not checked.
+ */
+Then('I see an important banner with links to each question whose answer changed', async ({ page, world }) => {
+  expect(world.changedRiskQuestions?.length, 'risk questions the claimant changed').toBeGreaterThan(0);
+  const banner = activeTab(page).locator('.govuk-notification-banner');
+  await expect(banner.getByRole('heading', { name: 'Important' })).toBeVisible();
+  await expect(banner).toContainText(UPDATE_BANNER);
+  const listed = (await banner.getByRole('listitem').allInnerTexts()).map(item => item.trim());
+  expect(listed).toEqual(expect.arrayContaining(world.changedRiskQuestions as string[]));
+  test.info().annotations.push({
+    type: 'open question',
+    description: 'OPEN-QUESTIONS 30: the banner lists the changed questions without linking to them',
+  });
 });

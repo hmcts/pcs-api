@@ -7,13 +7,16 @@
  * representative, and the case data CCD returns to each defendant, which is what pcs-frontend renders for a
  * citizen and what XUI's Case File View lists.
  *
- * Both defendants are given their case role through pcs-api testing support, which only a local stack has
- * users for, so outside a local stack these steps stay pending.
+ * Both defendants are given their case role through pcs-api testing support, which preview and AAT have too.
+ * The legal representative is the permanent defendant solicitor everywhere; only a local stack has a citizen
+ * user (the IDAM simulator's), so outside it the steps that need the citizen stay pending (HDPI-7539).
  */
 import { BrowserContext, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
+import { approximatePrecondition } from '../fixtures/pending';
 import type { DefendantView, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { assignDefendantCaseRole, caseDataAs, isLocalStack, localUsers } from '@config/local-stack.config';
+import { user } from '@data/user-data';
 import { expectCaseTab, openCaseSummary, requireCaseReference, signInAs } from './enforcement-journeys';
 
 export const DEFENDANT_LEGAL_REPRESENTATIVE = 'defendant legal representative';
@@ -53,14 +56,16 @@ const OTHER_ENFORCEMENT_FIELDS = [
   'hasUnsubmittedEnforcementData',
 ];
 
-export function canSetUpDefendants(): boolean {
+/** Whether there is a citizen user to link as a defendant: only the local stack's IDAM simulator has one. */
+export function canLinkCitizenDefendant(): boolean {
   return isLocalStack();
 }
 
-/** Gives the local defendant solicitor the [DEFENDANTSOLICITOR] case role on the scenario's case. */
+/** Gives the defendant solicitor the [DEFENDANTSOLICITOR] case role on the scenario's case. */
 export async function linkDefendantLegalRepresentative(world: EnforcementWorld): Promise<void> {
-  await assignDefendantCaseRole(requireCaseReference(world), localUsers.defendantSolicitor, '[DEFENDANTSOLICITOR]');
-  world.defendantLegalRepresentative = localUsers.defendantSolicitor;
+  const email = isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email;
+  await assignDefendantCaseRole(requireCaseReference(world), email, '[DEFENDANTSOLICITOR]');
+  world.defendantLegalRepresentative = email;
 }
 
 /** Gives the local citizen the [DEFENDANT] case role on the scenario's case, as their access code would. */
@@ -161,5 +166,53 @@ export function expectOnlyNoticesOfEviction(views: DefendantView[]): void {
     const filenames = enforcementDocuments(view).map(document => document.value?.document_filename ?? '');
     expect(filenames.filter(filename => !filename.startsWith('Notice of eviction - ')),
       `enforcement documents other than the notice of eviction the ${view.who} gets`).toEqual([]);
+  }
+}
+
+/**
+ * Links both defendants if the scenario has not: a defendant legal representative and a citizen, given their
+ * case roles through testing support. Feature 08 talks about "defendants" without setting any up.
+ */
+export async function ensureDefendantsLinked(world: EnforcementWorld): Promise<void> {
+  if (world.defendantLegalRepresentative || world.citizenDefendant) {
+    return;
+  }
+  approximatePrecondition(
+    'HDPI-7539',
+    canLinkCitizenDefendant()
+      ? 'the defendant legal representative and a citizen defendant are given their case roles through testing support'
+      : 'the defendant legal representative is given their case role through testing support; there is no citizen user outside a local stack'
+  );
+  await linkDefendantLegalRepresentative(world);
+  if (canLinkCitizenDefendant()) {
+    await linkCitizenDefendant(world);
+  }
+  caseChangedForDefendants(world);
+}
+
+/** The linked defendants, by who they are and their email. */
+function linkedDefendants(world: EnforcementWorld): { who: string; email: string }[] {
+  return [
+    ...(world.defendantLegalRepresentative ? [{ who: DEFENDANT_LEGAL_REPRESENTATIVE, email: world.defendantLegalRepresentative }] : []),
+    ...(world.citizenDefendant ? [{ who: CITIZEN_DEFENDANT, email: world.citizenDefendant }] : []),
+  ];
+}
+
+/**
+ * Waits until the case data CCD gives the defendant carries a notice of eviction in the Enforcement folder.
+ * pcs-api generates the notice after the schedule commits, so it can arrive after the notice is served.
+ */
+export async function expectNoticeOfEvictionVisibleTo(world: EnforcementWorld, who?: string): Promise<void> {
+  const caseReference = requireCaseReference(world);
+  const defendants = linkedDefendants(world).filter(defendant => !who || defendant.who === who);
+  expect(defendants, `a linked ${who ?? 'defendant'}`).not.toHaveLength(0);
+  for (const defendant of defendants) {
+    await expect
+      .poll(async () => {
+        const view: DefendantView = { who: defendant.who, inXui: false, caseData: await caseDataAs(caseReference, defendant.email) };
+        return enforcementDocuments(view).map(document => document.value?.document_filename ?? '')
+          .some(filename => filename.startsWith('Notice of eviction - '));
+      }, { message: `a notice of eviction the ${defendant.who} gets`, timeout: 120_000, intervals: [2_000, 5_000] })
+      .toBe(true);
   }
 }

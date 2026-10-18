@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.bailiffnote.AddBailiffNoteConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffNoteService;
 import java.util.EnumSet;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addBailiffNote;
@@ -36,6 +38,12 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
 
+    /**
+     * Offered once the claim has an enforcement (EnforcementEventAvailabilityView). The start callback still
+     * refuses otherwise.
+     */
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canAddBailiffNote=\"Yes\"");
+
     static final int MAX_NOTE_LENGTH = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
     static final String CONFIRMATION_HEADER = "# Bailiff note added";
     static final String NOTE_REQUIRED_ERROR = "Enter a note";
@@ -45,7 +53,7 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
      * Enforcement is held apart from the case state, so the event is available in every state a case can be
      * in once it has been issued. Before that there can be no enforcement.
      */
-    static final State[] STATES = EnumSet.complementOf(EnumSet.of(
+    public static final State[] STATES = EnumSet.complementOf(EnumSet.of(
         State.AWAITING_SUBMISSION_TO_HMCTS,
         State.AWAITING_RESUBMISSION_TO_HMCTS,
         State.PENDING_CASE_ISSUED
@@ -63,7 +71,7 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
                 .forStates(STATES)
                 .name("Add a bailiff note")
                 .grant(Permission.CRUD, BAILIFF_STAFF_ROLES)
-                .showCondition(featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .endButtonLabel("Continue");
         addBailiffNoteConfigurer.configurePages(new PageBuilder(eventBuilder));
@@ -74,9 +82,13 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
             throw new NoEnforcementException();
         }
         PCSCase pcsCase = eventPayload.caseData();
-        if (pcsCase.getEnforcementOrder() != null) {
-            pcsCase.getEnforcementOrder().setBailiffNoteText(null);
+        if (pcsCase.getEnforcementOrder() == null) {
+            pcsCase.setEnforcementOrder(new EnforcementOrder());
         }
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+        enforcementOrder.setBailiffNoteText(null);
+        // For the page's "claimant vs defendants" line, as on decideEnforcement.
+        enforcementOrder.setFormattedCaseName(pcsCase.getCaseNameHmctsInternal());
         return pcsCase;
     }
 
@@ -91,14 +103,16 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
         if (note.length() > MAX_NOTE_LENGTH) {
             return errorResponse(NOTE_TOO_LONG_ERROR);
         }
+        String warrantNumber;
         try {
-            bailiffNoteService.addNote(caseReference, note);
+            warrantNumber = bailiffNoteService.addNote(caseReference, note);
         } catch (NoEnforcementException ex) {
             return errorResponse(ex.getMessage());
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader(CONFIRMATION_HEADER)
-            .confirmationBody("Case number: " + caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
+            .confirmationBody(ConfirmationNumbers.caseAndWarrant(
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), warrantNumber))
             .build();
     }
 

@@ -6,6 +6,7 @@ import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/
 import {
   CLAIMANT_LEGAL_REPRESENTATIVE,
   createCaseWithWarrant,
+  createCaseWithWrit,
   expectCaseTab,
   openCaseSummary,
   requireCaseReference,
@@ -13,6 +14,7 @@ import {
   startEvent,
 } from '../support/enforcement-journeys';
 import { enforcementNumber } from '../support/enforcement-status-tab';
+import { expectSingleErrorMessage } from '../support/error-summary';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
@@ -36,7 +38,7 @@ Given('a PCS case {string} with an enforcement of type {string} with status {str
   await createCaseWithWarrant(world);
   world.applicationType = type;
   if (status === 'Awaiting review') {
-    approximatePrecondition('HDPI-2877', 'pcs-api cannot take the enforcement fee yet; the fee is recorded as paid through testing support');
+    approximatePrecondition('HDPI-2877', 'a local stack has no Payments service; the enforcement fee is paid through testing support');
     await recordEnforcementFeePaid();
   }
 });
@@ -46,10 +48,22 @@ Given('a {string} task exists on the case', async ({}, task: string) => {
   approximatePrecondition('HDPI-8627', `the "${task}" task is not created yet`);
 });
 
+/**
+ * The Background seeds a warrant of possession. A writ of possession can only be seeded from the
+ * Create-Enforcement-Writ fixture, so the scenario carries on with a new case that has a writ awaiting review
+ * instead.
+ */
 Given('the enforcement is of type {string}', async ({ world, $tags }, type: string) => {
-  if (type !== world.applicationType) {
+  if (type === world.applicationType) {
+    return;
+  }
+  if (type !== 'writ of possession') {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} through the API` }, $tags);
   }
+  await createCaseWithWrit(world);
+  world.applicationType = type;
+  approximatePrecondition('HDPI-7419', 'the writ of possession is on a new case seeded from the writ fixture, not the Background case');
+  await recordEnforcementFeePaid();
 });
 
 When('I select {string} without choosing an option', async ({ page, world }, button: string) => {
@@ -59,7 +73,7 @@ When('I select {string} without choosing an option', async ({ page, world }, but
 });
 
 Then('I see an error asking me to choose accept or reject', async ({ page }) => {
-  await expect(page.locator('.govuk-error-summary, .error-summary').first()).toContainText(decideEnforcement.decisionQuestion);
+  await expectSingleErrorMessage(page, decideEnforcement.decisionQuestion);
   await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
 });
 
@@ -102,7 +116,6 @@ When('I enter a reason for rejecting', async ({ page }) => {
 Then('I see the {string} confirmation screen with the case number, property address and party names', async ({ page, world }, title: string) => {
   await expectConfirmation(page, title);
   const panel = confirmationPanel(page);
-  // DecideEnforcementConfirmation renders the raw long; XUI formats any 16-digit reference with dashes.
   await expect(panel.getByText(`Case number: ${withDashes(String(world.caseReference))}`)).toBeVisible();
   await expect(panel.getByText(/^Property address: .+/)).toBeVisible();
   await expect(panel.getByText(/ vs /).first()).toBeVisible();
@@ -119,6 +132,12 @@ Then('a warrant number is assigned to the enforcement', async ({ page, world }) 
   await expect.poll(() => enforcementNumber(page, requireCaseReference(world))).toMatch(/^W[PR]-\d{8,}$/);
 });
 
+// The number format is a placeholder until HDPI-7353 agrees it (pcs-api EnforcementNumberGenerator).
+Then('a writ number is assigned to the enforcement', async ({ page, world }) => {
+  await expect(confirmationPanel(page).getByText(/^Writ number: H[PR]-\d{8,}$/)).toBeVisible();
+  await expect.poll(() => enforcementNumber(page, requireCaseReference(world))).toMatch(/^H[PR]-\d{8,}$/);
+});
+
 async function acceptTheApplication(page: Page, world: EnforcementWorld): Promise<void> {
   await openCaseSummary(page);
   await startEvent(DECIDE_ENFORCEMENT);
@@ -127,15 +146,9 @@ async function acceptTheApplication(page: Page, world: EnforcementWorld): Promis
   await goToCheckYourAnswers(page);
 }
 
-pendingSteps({ ticket: 'HDPI-9566', summary: 'Sealed warrant and writ documents' }, [
-  'the document is date and time stamped in {string} format',
+pendingSteps({ ticket: 'HDPI-9566', summary: 'Welsh warrant and writ documents' }, [
   'the claimant has the {string} case flag',
   'the warrant is generated in Welsh',
-  'no warrant is generated',
-]);
-
-pendingSteps({ ticket: 'HDPI-7353', summary: 'Writ number' }, [
-  'a writ number is assigned to the enforcement',
 ]);
 
 pendingSteps({ summary: 'Checking the case history after the decision' }, [

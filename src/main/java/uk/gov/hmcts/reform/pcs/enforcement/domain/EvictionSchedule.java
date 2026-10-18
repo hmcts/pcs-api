@@ -64,6 +64,13 @@ public class EvictionSchedule {
     private YesOrNo noticeOfEvictionAddBailiffNote;
 
     /**
+     * Set for the case view: whether the bailiff can schedule the eviction on the current enforcement. It gates
+     * the "Schedule eviction" event.
+     */
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private YesOrNo canScheduleEviction;
+
+    /**
      * Set for the case view: whether the bailiff can reschedule the current enforcement's eviction. It gates
      * the "Reschedule eviction" event.
      */

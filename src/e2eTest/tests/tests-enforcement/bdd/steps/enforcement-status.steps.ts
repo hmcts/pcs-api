@@ -4,21 +4,33 @@
 // assertions read it from the case data: the "Enforcement status" tab only appears once a warrant or writ has
 // been generated, and an application awaiting payment or review has a status too.
 //
-// What is still missing is any way to *put* an enforcement into an arbitrary status: pcs-api's only
-// enforcement testing-support endpoint is `fee-paid`, so a scenario can only reach a status by driving the
-// real events. Steps that need a status set up for them stay pending on HDPI-7419.
-import { Given, Then, expect } from '../fixtures/enforcement.fixtures';
-import { pendingSteps } from '../fixtures/pending';
+// A scenario reaches a status by driving the real events, with the testing-support shortcuts for the fee and the
+// bailiff allocation (`support/approve-warrant.ts`). Statuses no event reaches yet stay pending on HDPI-7419.
+import { Given, Step, Then, expect } from '../fixtures/enforcement.fixtures';
+import { markPending, pendingSteps } from '../fixtures/pending';
 import { currentEnforcement, enforcementRows, expectEnforcementStatus } from '../support/enforcement-status-tab';
-import { setUpWarrantAtStatus } from '../support/approve-warrant';
-import { requireCaseReference } from '../support/enforcement-journeys';
+import { bringWarrantToStatus, canSetUpStatus, setUpWarrantAtStatus } from '../support/approve-warrant';
+import { createIssuedCase, requireCaseReference } from '../support/enforcement-journeys';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
+/** "unchanged" is the status the warrant had when the scenario last submitted a return. */
 Then('the enforcement status changes to {string}', async ({ page, world }, status: string) => {
-  await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
+  const expected = status === 'unchanged' ? world.statusBeforeReturn : status;
+  expect(expected, 'the status before the return the scenario submitted').toBeDefined();
+  await expectEnforcementStatus(page, requireCaseReference(world), expected as string, world.earlierWarrantNumbers.length);
 });
 
-Then('the enforcement status is {string}', async ({ page, world }, status: string) => {
+/**
+ * As a Given (or an And after one), puts the scenario's warrant in the status, which the Background may have
+ * set up differently. Elsewhere, asserts it. A status no event can reach yet is pending (HDPI-7419).
+ */
+Step('the enforcement status is {string}', async ({ page, context, world, $bddContext, $tags }, status: string) => {
+  if ($bddContext.bddTestData.steps[$bddContext.stepIndex]?.keywordType === 'Context') {
+    if (!canSetUpStatus(status)) {
+      return markPending({ ticket: 'HDPI-7419', summary: `a warrant in "${status}" cannot be set up` }, $tags);
+    }
+    return bringWarrantToStatus(page, context, world, status);
+  }
   await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
 
@@ -26,7 +38,16 @@ Then('the enforcement status is still {string}', async ({ page, world }, status:
   await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
 
-Then('the case has no live warrant', async ({ world }) => {
+/**
+ * A warrant cannot be taken off a case, and a closed one still takes "Reopen warrant", so the scenario moves
+ * to a new issued case with no enforcement on it.
+ */
+Given('the case has no live warrant', async ({ world }) => {
+  await createIssuedCase(world);
+  world.enforcementSeeded = false;
+  world.warrantApproved = false;
+  world.warrantNumber = undefined;
+  world.allocatedBailiff = undefined;
   const live = (await enforcementRows(requireCaseReference(world))).filter(
     row => !['Closed', 'Rejected', 'Transferred to the High Court'].includes(row.status ?? '')
   );

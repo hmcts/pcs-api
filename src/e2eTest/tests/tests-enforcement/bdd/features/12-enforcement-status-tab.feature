@@ -22,7 +22,7 @@ Feature: Enforcement status tab
     Then I see "WP-0001" as a heading
     And I see the sections "Eviction notice", "Scheduled eviction", "Claimant eviction confirmation" and "Eviction outcome"
 
-  # "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 44), so the other
+  # "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 25), so the other
   # three answers do not exist yet.
   @HDPI-7351 @pending
   Scenario: Claimant eviction confirmation section
@@ -42,9 +42,9 @@ Feature: Enforcement status tab
     Then I see "HC-0001" as a heading
     And I see "Date of transfer to the High Court" as "12/05/2026"
 
-  # Needs a closed warrant followed by a warrant of restitution on the same case, which the suite cannot set
-  # up (HDPI-7419).
-  @HDPI-7351 @HDPI-7537 @pending
+  # The generation dates are illustrative: the warrant is closed with a final return, then the warrant of
+  # restitution is applied for and approved, both today.
+  @HDPI-7351 @HDPI-7537
   Scenario: More than one warrant or writ is listed newest first
     Given the case has a closed warrant "WP-0001" generated on "01/02/2026"
     And a live warrant of restitution "WR-0002" generated on "01/08/2026"
@@ -80,7 +80,8 @@ Feature: Enforcement status tab
     Then they see the warrant number, "Eviction notice", "Scheduled eviction" and "Eviction outcome"
     And they do not see "Claimant eviction confirmation"
 
-  @HDPI-7351 @pending
+  # Local stack only: the defendants are given their case roles through pcs-api testing support.
+  @HDPI-7351
   Scenario: Defendants never see writs
     Given the case has a writ of possession
     When a defendant opens the case

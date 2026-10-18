@@ -97,7 +97,7 @@ public class EnforcementStatusTransitions {
         allow(allowed, CLAIMANT_CONFIRMED, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
         // the bailiff reschedules an eviction the claimant has already confirmed. Not in the feature's
         // transition table, but its event availability rules offer "Reschedule eviction" in Claimant confirmed
-        // (HDPI-7549, open question 13).
+        // (HDPI-7549, OPEN-QUESTIONS 7).
         allow(allowed, CLAIMANT_CONFIRMED, AWAITING_CLAIMANT_CONFIRMATION);
         // the bailiff records "Reopen warrant"
         allow(allowed, CLOSED, AWAITING_BAILIFF_ALLOCATION);
@@ -105,7 +105,7 @@ public class EnforcementStatusTransitions {
         // be recorded at any point after a bailiff is allocated, not only once the claimant has confirmed, and
         // closes the warrant, puts it in breathing space or sends it back for scheduling. A warrant in breathing
         // space can still take a return (19-enforcement-status-model.feature event availability), which is how
-        // it leaves breathing space (OPEN-QUESTIONS 11).
+        // it leaves breathing space (OPEN-QUESTIONS 4).
         allow(allowed, AWAITING_SCHEDULING, CLOSED, BREATHING_SPACE);
         allow(allowed, AWAITING_CLAIMANT_CONFIRMATION, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
         allow(allowed, CLAIMANT_UNABLE_TO_ATTEND, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);

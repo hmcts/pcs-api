@@ -33,12 +33,16 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategy;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -52,6 +56,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -70,6 +75,8 @@ class EnforcementOrderServiceTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
+    private CurrentEnforcementService currentEnforcementService;
+    @Mock
     private EnforcementTypeStrategyFactory strategyFactory;
     @Mock
     private EnforcementDocumentScheduler enforcementDocumentScheduler;
@@ -77,6 +84,8 @@ class EnforcementOrderServiceTest {
     private RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
+    @Mock
+    private EnforcementFeeService enforcementFeeService;
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
         new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC));
@@ -88,11 +97,17 @@ class EnforcementOrderServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final Instant NOW = Instant.parse("2026-10-16T10:15:30Z");
+    private static final FeeDetails FEE = FeeDetails.builder().code("FEE0380").feeAmount(new BigDecimal("148")).build();
 
     @BeforeEach
     void stubSaveToReturnTheEnforcementItWasGiven() {
         lenient().when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    @BeforeEach
+    void stubTheFeeLookUp() {
+        lenient().when(enforcementFeeService.lookUpFee(any())).thenReturn(FEE);
     }
 
     @Test
@@ -277,12 +292,12 @@ class EnforcementOrderServiceTest {
         when(repeatWarrantFeeWaiver.isFeeWaived(claimId, WARRANT)).thenReturn(waived);
 
         // When
-        boolean paymentOutstanding = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+        Optional<FeeDetails> feeOwed = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
         verify(enforcementOrderRepository).save(savedCaptor.capture());
-        assertThat(paymentOutstanding).isEqualTo(!waived);
+        assertThat(feeOwed.isPresent()).isEqualTo(!waived);
         assertThat(savedCaptor.getValue().getStatus())
             .isEqualTo(waived ? EnforcementStatus.AWAITING_REVIEW : EnforcementStatus.AWAITING_PAYMENT);
         if (waived) {
@@ -303,10 +318,10 @@ class EnforcementOrderServiceTest {
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(mock(EnforcementTypeStrategy.class));
 
         // When
-        boolean paymentOutstanding = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+        Optional<FeeDetails> feeOwed = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        assertThat(paymentOutstanding).isFalse();
+        assertThat(feeOwed).isEmpty();
         verifyNoInteractions(repeatWarrantFeeWaiver);
     }
 
@@ -379,18 +394,36 @@ class EnforcementOrderServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldReportWhetherTheClaimHasALiveEnforcement(boolean live) {
+    @EnumSource(EnforcementStatus.class)
+    void shouldReportWhetherTheClaimHasALiveEnforcement(EnforcementStatus status) {
         // Given
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(buildPcsCaseEntity(pcsCaseId, claimId));
-        when(enforcementOrderRepository.existsByClaimIdAndStatusNotIn(claimId, EnforcementStatus.notLive()))
-            .thenReturn(live);
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE))
+            .thenReturn(Optional.of(EnforcementOrderEntity.builder().status(status).build()));
 
         // When
         boolean result = enforcementOrderService.hasLiveEnforcement(CASE_REFERENCE);
 
         // Then
-        assertThat(result).isEqualTo(live);
+        assertThat(result).isEqualTo(status.isLive());
+    }
+
+    @Test
+    void shouldReportNoLiveEnforcementWhenTheClaimHasNone() {
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        assertThat(enforcementOrderService.hasLiveEnforcement(CASE_REFERENCE)).isFalse();
+    }
+
+    @ParameterizedTest
+    @EnumSource(EnforcementStatus.class)
+    void shouldOnlyLetTheClaimantApplyWhenTheCurrentEnforcementIsNotLive(EnforcementStatus status) {
+        assertThat(EnforcementOrderService.canApplyForEnforcement(
+            EnforcementOrderEntity.builder().status(status).build())).isEqualTo(!status.isLive());
+    }
+
+    @Test
+    void shouldLetTheClaimantApplyWhenTheClaimHasNoEnforcement() {
+        assertThat(EnforcementOrderService.canApplyForEnforcement(null)).isTrue();
     }
 
     private static Stream<Arguments> enforcementOrderTypes() {
@@ -402,36 +435,88 @@ class EnforcementOrderServiceTest {
 
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
-    void shouldMoveTheApplicationAwaitingPaymentToAwaitingReviewWhenTheFeeIsPaid(SelectEnforcementType type) {
+    void shouldRaiseAServiceRequestForTheFeeOwed(SelectEnforcementType enforcementType) {
+        // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(enforcementType)).thenReturn(mock(EnforcementTypeStrategy.class));
+
+        // When
+        Optional<FeeDetails> feeOwed = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
+        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        assertThat(feeOwed).contains(FEE);
+        verify(enforcementFeeService).lookUpFee(enforcementType);
+        verify(enforcementFeeService).requestPayment(pcsCaseEntity, savedCaptor.getValue().getId(), FEE);
+    }
+
+    @Test
+    void shouldRaiseNoServiceRequestForAFreeRepeatWarrant() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(WARRANT)).thenReturn(mock(EnforcementTypeStrategy.class));
+        when(repeatWarrantFeeWaiver.isFeeWaived(claimId, WARRANT)).thenReturn(true);
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verifyNoInteractions(enforcementFeeService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SelectEnforcementType.class, names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
+    void shouldRaiseNoServiceRequestForATypeWithNoFee(SelectEnforcementType enforcementType) {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(enforcementType)).thenReturn(mock(EnforcementTypeStrategy.class));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verifyNoInteractions(enforcementFeeService);
+    }
+
+    @Test
+    void shouldSaveNothingWhenTheFeeOwedCannotBeLookedUp() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WRIT);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(enforcementFeeService.lookUpFee(WRIT)).thenThrow(new FeeNotFoundException("Unable to retrieve fee"));
+
+        // When
+        assertThatThrownBy(() -> enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
+            .isInstanceOf(FeeNotFoundException.class);
+
+        // Then
+        verify(enforcementOrderRepository, never()).save(any());
+        verify(enforcementFeeService, never()).requestPayment(any(), any(), any());
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
+    }
+
+    @ParameterizedTest
+    @MethodSource("enforcementOrderTypes")
+    void shouldMoveAPaidApplicationToAwaitingReview(SelectEnforcementType type) {
         EnforcementOrderEntity awaitingPayment = new EnforcementOrderEntity();
         awaitingPayment.setId(UUID.randomUUID());
         awaitingPayment.setEnforcementOrder(buildEnforcementOrderWithSpecifiedType(type));
         awaitingPayment.setStatus(EnforcementStatus.AWAITING_PAYMENT);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(enforcementOrderRepository.findByClaimIdAndStatus(claimId, EnforcementStatus.AWAITING_PAYMENT))
-            .thenReturn(List.of(awaitingPayment));
 
-        boolean recorded = enforcementOrderService.recordFeePaid(CASE_REFERENCE);
+        enforcementOrderService.moveToAwaitingReview(CASE_REFERENCE, awaitingPayment);
 
-        assertThat(recorded).isTrue();
         assertThat(awaitingPayment.getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
         assertThat(awaitingPayment.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementOrderRepository).save(awaitingPayment);
         verify(enforcementDocumentScheduler).scheduleApplicationDocuments(awaitingPayment.getId(), type);
         verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, type);
-    }
-
-    @Test
-    void shouldRecordNoFeeWhenNoApplicationIsAwaitingPayment() {
-        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(enforcementOrderRepository.findByClaimIdAndStatus(claimId, EnforcementStatus.AWAITING_PAYMENT))
-            .thenReturn(List.of());
-
-        assertThat(enforcementOrderService.recordFeePaid(CASE_REFERENCE)).isFalse();
-        verify(enforcementOrderRepository, org.mockito.Mockito.never()).save(any());
-        verifyNoInteractions(enforcementDocumentScheduler);
-        verifyNoInteractions(enforcementNotificationService);
     }
 }

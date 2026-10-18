@@ -2,9 +2,9 @@
 //
 // Reachable because the warrant can be driven to "Awaiting claimant confirmation": allocate a bailiff
 // through pcs-api testing support, then schedule an eviction answering "No" to dispensing with service.
-// What is still missing is the generated notice of eviction (HDPI-8442 / no Docmosis templates), the WA
-// task (HDPI-8627) and control of the clock, which several scenarios need in order to put the served time
-// in the future. What defendants see once the notice is served is feature 14 (defendant-visibility.steps.ts).
+// What is still missing is the WA task (HDPI-8627), a "claimant name vs defendant name" line on the page, and
+// control of the clock, which several scenarios need in order to put the served time in the future. What
+// defendants see once the notice is served uses feature 14's checks (support/defendant-visibility.ts).
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
@@ -15,12 +15,22 @@ import {
   setUpWarrantAtStatus,
 } from '../support/approve-warrant';
 import {
+  DEFAULT_SERVED_HOW,
   MARK_NOTICE_SERVED,
   ensureOnNoticeServedPage,
+  enterServedAt,
   enterServedYesterday,
   markNoticeServedAsBailiff,
   noticeServed,
 } from '../support/notice-served';
+import {
+  CITIZEN_DEFENDANT,
+  ensureDefendantsLinked,
+  expectEnforcementTab,
+  expectNoEnforcementFields,
+  expectNoticeOfEvictionVisibleTo,
+  viewAsEachDefendant,
+} from '../support/defendant-visibility';
 import {
   RESCHEDULE_EVICTION,
   dispenseWithServiceRadio,
@@ -34,6 +44,7 @@ import { expectBailiffConfirmationWithWarrantNumber } from '../support/bailiff-e
 import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 import { expectEnforcementSection, openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import { localUserName, localUsers } from '@config/local-stack.config';
+import { expectSingleErrorMessage } from '../support/error-summary';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
 Given('a PCS case {string} with a scheduled eviction', async ({ page, context, world }, _reference: string) => {
@@ -56,10 +67,8 @@ When('I select {string} without answering', async ({ page }, button: string) => 
 });
 
 Then('I see errors for {string} and {string}', async ({ page }, first: string, second: string) => {
-  const summary = page.locator('.govuk-error-summary, .error-summary').first();
-  await expect(summary).toBeVisible();
-  await expect(summary).toContainText(first);
-  await expect(summary).toContainText(second);
+  await expectSingleErrorMessage(page, first);
+  await expectSingleErrorMessage(page, second);
 });
 
 Then('I am not asked about permission to dispense with service', async ({ page }) => {
@@ -81,7 +90,7 @@ When('I enter 501 characters for {string}', async ({ page, $tags }, field: strin
 });
 
 Then('I see an error that the answer must be 500 characters or fewer', async ({ page }) => {
-  await expect(page.getByText(noticeServed.tooLongError).first()).toBeVisible();
+  await expectSingleErrorMessage(page, noticeServed.tooLongError);
 });
 
 // Two uses. In feature 08 it follows the bailiff's own submit, so it checks the confirmation. In features 12
@@ -190,5 +199,78 @@ Then(
     expect(newest?.['Note']).toBe(world.enteredNote);
     expect(newest?.['Added by']).toBe(localUserName(localUsers.bailiff));
     expect(newest?.['Date and time']).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+  }
+);
+
+/** Enters the served date and time, and a "how" and "No" to a bailiff note so that only the date is being tested. */
+When('I enter a served date of {string} and time {string}', async ({ page, world }, date: string, time: string) => {
+  await ensureOnNoticeServedPage(page);
+  world.currentEvent = MARK_NOTICE_SERVED;
+  await enterServedAt(page, date, time);
+  await page.locator(noticeServed.fields.servedHow).fill(DEFAULT_SERVED_HOW);
+  await page.locator(`${noticeServed.fields.addNote}_No`).check();
+});
+
+When('I answer {string} to {string}', async ({ page, world, $tags }, answer: string, question: string) => {
+  if (question !== noticeServed.addNoteQuestion || (answer !== 'Yes' && answer !== 'No')) {
+    return markPending({ summary: `answering "${answer}" to "${question}"` }, $tags);
+  }
+  await ensureOnNoticeServedPage(page);
+  world.currentEvent = MARK_NOTICE_SERVED;
+  await page.locator(`${noticeServed.fields.addNote}_${answer}`).check();
+});
+
+When('I enter the note {string}', async ({ page, world }, note: string) => {
+  expect(world.currentEvent).toBe(MARK_NOTICE_SERVED);
+  await page.locator(noticeServed.fields.noteText).fill(note);
+  world.enteredNote = note;
+});
+
+Given('I have answered the questions', async ({ page, world, $tags }) => {
+  if (world.journey !== MARK_NOTICE_SERVED) {
+    return markPending({ summary: `answering the questions of "${world.journey}"` }, $tags);
+  }
+  await ensureOnNoticeServedPage(page);
+  world.currentEvent = MARK_NOTICE_SERVED;
+  await enterServedYesterday(page);
+  await page.locator(noticeServed.fields.servedHow).fill(DEFAULT_SERVED_HOW);
+  await page.locator(`${noticeServed.fields.addNote}_No`).check();
+});
+
+// What defendants see once the notice is served. The checks are feature 14's: the XUI tabs for the defendant's
+// legal representative, and the case data CCD gives each defendant.
+Then('defendants can see the {string} tab', async ({ page, context, world }, tabName: string) => {
+  await ensureDefendantsLinked(world);
+  await expectEnforcementTab(page, await viewAsEachDefendant(page, context, world), tabName, true);
+});
+
+Then('defendants cannot see the {string} tab', async ({ page, context, world }, tabName: string) => {
+  await ensureDefendantsLinked(world);
+  const views = await viewAsEachDefendant(page, context, world);
+  await expectEnforcementTab(page, views, tabName, false);
+  expectNoEnforcementFields(views);
+});
+
+// XUI draws the Enforcement folder for everyone (OPEN-QUESTIONS 46); what pcs-api controls is that the
+// defendant gets a document in it.
+Then('defendants can see the {string} folder in case file view', async ({ world }, folder: string) => {
+  expect(folder).toBe('Enforcement');
+  await ensureDefendantsLinked(world);
+  await expectNoticeOfEvictionVisibleTo(world);
+});
+
+Then('the {string} is visible to defendants', async ({ world }, document: string) => {
+  expect(document).toBe('notice of eviction');
+  await ensureDefendantsLinked(world);
+  await expectNoticeOfEvictionVisibleTo(world);
+});
+
+Then(
+  'citizen defendants see the {string} under {string} in pcs-frontend',
+  async ({ world }, document: string, _heading: string) => {
+    expect(document).toBe('notice of eviction');
+    approximatePrecondition('HDPI-7539', 'pcs-frontend is not run; the citizen\'s view is the case data CCD gives them');
+    await ensureDefendantsLinked(world);
+    await expectNoticeOfEvictionVisibleTo(world, CITIZEN_DEFENDANT);
   }
 );

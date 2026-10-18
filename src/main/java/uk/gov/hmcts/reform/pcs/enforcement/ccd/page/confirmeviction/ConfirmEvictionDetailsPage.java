@@ -6,36 +6,30 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
 public class ConfirmEvictionDetailsPage implements CcdPageConfiguration, CcdPage {
 
-    public static final String CONFIRM_EVICTION_DETAILS_CONTENT  = """
+    public static final String CONFIRM_EVICTION_DETAILS_CONTENT = """
                     <p class="govuk-body">
-                        The bailiff has arranged a date for the eviction and they need you to confirm if you are
-                        available.
-                    </p>
-                    <p class="govuk-body">
-                        They will also ask you to confirm if the person being evicted poses any risk.
+                        The bailiff has arranged a date for the eviction. They need you to confirm if you can
+                        attend on that date.
                     </p>
                     <p class="govuk-body">
                         The bailiff needs this information to carry out the eviction safely. If you do not provide it,
                         they may not be able to complete the eviction.
                     </p>
-                    <p class="govuk-body govuk-!-font-weight-bold govuk-!-font-size-24">What you’ll need
-                    </p>
-                    <p class="govuk-body govuk-!-margin-bottom-0">You’ll need to know:</p>
+                    <h2 class="govuk-heading-m">What we will ask you</h2>
+                    <p class="govuk-body govuk-!-margin-bottom-0">We will ask:</p>
                     <ul class="govuk-list govuk-list--bullet">
-                        <li class="govuk-!-font-size-19">who will attend the eviction (you, or someone else)</li>
-                        <li class="govuk-!-font-size-19">if you (or they) can attend the eviction on the date suggested
-                        by the bailiff</li>
-                    </ul>
-                    <p class="govuk-body govuk-!-margin-bottom-0">We will also ask you to:</p>
-                    <ul class="govuk-list govuk-list--bullet">
-                        <li class="govuk-!-font-size-19">describe the person who will be evicted</li>
-                        <li class="govuk-!-font-size-19">tell us how to access the property</li>
-                        <li class="govuk-!-font-size-19">book a locksmith (this is to make sure that the person being
-                        evicted cannot return to the property)</li>
+                        <li class="govuk-!-font-size-19">if you can attend the eviction on the date the bailiff
+                        has arranged</li>
+                        <li class="govuk-!-font-size-19">if anyone living at the property poses a risk to the
+                        bailiff</li>
+                        <li class="govuk-!-font-size-19">if anyone living at the property is vulnerable</li>
+                        <li class="govuk-!-font-size-19">how the bailiff can get into the property</li>
+                        <li class="govuk-!-font-size-19">if there is anything else that could help with the
+                        eviction</li>
                     </ul>
                     <p class="govuk-body">
-                       Once you have confirmed the eviction date, we’ll send you an email reminding you to book a
-                       locksmith.
+                        We will show you the answers you gave when you applied for the warrant. Check them and change
+                        any that are no longer correct.
                     </p>
                     """;
 

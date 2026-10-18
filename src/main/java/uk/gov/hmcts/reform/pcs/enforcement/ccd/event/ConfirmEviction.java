@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.ConfirmEvict
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 
 import java.util.Optional;
 
@@ -71,12 +72,19 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
         return pcsCase;
     }
 
+    /**
+     * Records the answers, or tells the claimant nothing was recorded because the eviction moved on while the
+     * journey was open. Answering with errors rolls back the risk answers as well.
+     */
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         EnforcementOrder submitted = eventPayload.caseData().getEnforcementOrder();
-        claimantEvictionConfirmationService.recordConfirmation(
+        EnforcementChange<Void> recorded = claimantEvictionConfirmationService.recordConfirmation(
             eventPayload.caseReference(),
             Optional.ofNullable(submitted).map(EnforcementOrder::getClaimantCanAttendEviction).orElse(null),
             submitted);
+        if (recorded.refused()) {
+            return SubmitResponse.<State>builder().errors(recorded.errors()).build();
+        }
         return SubmitResponse.defaultResponse();
     }
 

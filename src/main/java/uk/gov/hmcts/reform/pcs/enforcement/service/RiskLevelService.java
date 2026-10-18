@@ -31,6 +31,16 @@ public class RiskLevelService {
     private final Clock utcClock;
 
     /**
+     * Whether bailiff staff can set the risk level of the claim's current enforcement: it is an approved, live
+     * warrant. "Set risk level" is offered on this, and its start and submit refuse on it.
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    public static boolean canSetRiskLevel(EnforcementOrderEntity currentEnforcement) {
+        return currentEnforcement != null && BailiffEnforcementRules.isApprovedLiveWarrant(currentEnforcement);
+    }
+
+    /**
      * The claim's current enforcement, if bailiffs can set its risk level. For a start callback: it refuses by
      * throwing, which
      * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
@@ -42,7 +52,7 @@ public class RiskLevelService {
     public EnforcementOrderEntity getEnforcementForRiskLevel(long caseReference) {
         EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
             .orElseThrow(NoEnforcementException::new);
-        if (!BailiffEnforcementRules.isApprovedLiveWarrant(enforcement)) {
+        if (!canSetRiskLevel(enforcement)) {
             throw new EnforcementEventNotAvailableException(NOT_AVAILABLE_MESSAGE);
         }
         return enforcement;
@@ -51,11 +61,12 @@ public class RiskLevelService {
     /**
      * Saves the risk level. A medium level has no reason, so any earlier reason is removed.
      *
-     * @return made, or the errors to show when the claim has no approved, live warrant
+     * @return made, with the warrant's number (null for a warrant that has none), or the errors to show when
+     *     the claim has no approved, live warrant
      * @throws IllegalArgumentException if the level is missing, or is high without a reason
      */
     @Transactional
-    public EnforcementChange<Void> setRiskLevel(long caseReference, RiskLevel riskLevel, String reason) {
+    public EnforcementChange<String> setRiskLevel(long caseReference, RiskLevel riskLevel, String reason) {
         Objects.requireNonNull(riskLevel, "riskLevel");
         boolean high = riskLevel == RiskLevel.HIGH;
         if (high && (reason == null || reason.isBlank())) {
@@ -71,7 +82,7 @@ public class RiskLevelService {
         enforcement.setRiskLevelSetAt(Instant.now(utcClock));
         enforcementOrderRepository.save(enforcement);
         // TODO(HDPI-8627): complete the "Review risks and set level" task.
-        return EnforcementChange.made();
+        return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
     /**
@@ -82,7 +93,7 @@ public class RiskLevelService {
         if (current.isEmpty()) {
             return EnforcementChange.refused(NoEnforcementException.MESSAGE);
         }
-        if (!BailiffEnforcementRules.isApprovedLiveWarrant(current.get())) {
+        if (!canSetRiskLevel(current.get())) {
             return EnforcementChange.refused(NOT_AVAILABLE_MESSAGE);
         }
         return EnforcementChange.made(current.get());

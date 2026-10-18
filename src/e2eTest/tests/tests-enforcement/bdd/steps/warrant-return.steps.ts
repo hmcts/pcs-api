@@ -1,20 +1,34 @@
 // Bailiff records the warrant return (feature 11).
 //
 // `recordWarrantReturn` is available from "Awaiting scheduling" onwards, which the testing-support
-// allocate-bailiff endpoint reaches, so the drop-down structure and the role checks are real. One final
-// return is submitted and checked on the "Enforcement status" tab; the 25 status transitions each need their
-// own fresh case, so they stay pending (HDPI-8424 / HDPI-7419).
+// allocate-bailiff endpoint reaches, so the drop-down structure, the role checks and every return name's
+// status transition are real. Each example of the transition outline gets its own case from the feature's
+// background.
+import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import { approximatePrecondition, markPending } from '../fixtures/pending';
 import { requireCaseReference } from '../support/enforcement-journeys';
-import { expectEnforcementSection, tabDateOf, tabTime } from '../support/enforcement-status-tab';
+import {
+  currentEnforcement,
+  expectEnforcementSection,
+  expectEnforcementStatus,
+  tabDateOf,
+  tabTime,
+} from '../support/enforcement-status-tab';
 import { expectCheckYourAnswers, resolveEvictionDate, resolveEvictionTime } from '../support/schedule-eviction';
 import {
+  REOPEN_WARRANT,
   RECORD_WARRANT_RETURN,
+  SUITE_ADDITIONAL_DETAILS,
+  answerWarrantReturn,
   chooseOutcome,
   chooseReturnName,
   chooseReturnType,
   ensureOnWarrantReturnPage,
+  expectEvictionDetailsTable,
   optionsOf,
+  recordWarrantReturn,
   returnDropDown,
   visibleReturnNameDropDown,
   warrantReturn,
@@ -40,11 +54,29 @@ When('I choose the return name {string}', async ({ page }, returnName: string) =
   await chooseReturnName(page, returnName);
 });
 
-/** "I see a mandatory X drop down" — present, and with no value chosen it cannot be submitted. */
+/**
+ * "I see a mandatory X drop down" — present, and with no value chosen it cannot be submitted.
+ *
+ * A final return's "Return name" list depends on the outcome, so pcs-api shows it only once an outcome is
+ * chosen. When the scenario has not chosen one, the first outcome is chosen to bring the drop down up.
+ */
 Then('I see a mandatory {string} drop down', async ({ page }, label: string) => {
   await ensureOnWarrantReturnPage(page);
-  const field = label === 'Return name' ? await visibleReturnNameDropDown(page) : returnDropDown(page, label);
-  await expect(field).toBeVisible();
+  if (label !== 'Return name') {
+    await expect(returnDropDown(page, label)).toBeVisible();
+    return;
+  }
+  const outcome = page.locator(warrantReturn.outcomeField);
+  const outcomes = (await outcome.isVisible()) ? await optionsOf(outcome) : [];
+  const chosenOutcome = outcomes.length ? (await outcome.locator('option:checked').textContent())?.trim() : undefined;
+  if (outcomes.length && !outcomes.includes(chosenOutcome ?? '')) {
+    approximatePrecondition(
+      'HDPI-7347',
+      `a final return's "Return name" is shown once an outcome is chosen, so "${warrantReturn.evictionSuccessful}" was chosen`
+    );
+    await chooseOutcome(page, warrantReturn.evictionSuccessful);
+  }
+  await expect(await visibleReturnNameDropDown(page)).toBeVisible();
 });
 
 Then('I see a mandatory {string} drop down with {string} and {string}', async ({ page }, label: string, first: string, second: string) => {
@@ -135,3 +167,61 @@ Then(
     });
   }
 );
+
+Then('I see the {string} table with claimant type, claimant name and defendant names', async ({ page }, heading: string) => {
+  expect(heading).toBe(warrantReturn.evictionDetailsHeading);
+  await expectEvictionDetailsTable(page);
+});
+
+/** Answers the page with a successful final return, ready for "Continue". */
+Given('I have completed the {string} screen', async ({ page, world, $tags }, screen: string) => {
+  if (screen !== warrantReturn.pageLabel) {
+    return markPending({ summary: `completing the "${screen}" screen` }, $tags);
+  }
+  await ensureOnWarrantReturnPage(page);
+  world.currentEvent = RECORD_WARRANT_RETURN;
+  await answerWarrantReturn(page, warrantReturn.evictionSuccessful);
+});
+
+const CLOSED = 'Closed';
+/** A final return name that closes the warrant and needs no eviction date. */
+const CLOSING_RETURN = 'Warrant expired';
+
+/**
+ * Records the return and remembers the status it was recorded against, for "unchanged". "Reopen warrant"
+ * can only be recorded on a closed warrant, so a live one is closed first.
+ */
+async function submitReturn(
+  page: Page,
+  world: EnforcementWorld,
+  returnName: string,
+  additionalDetails?: string
+): Promise<void> {
+  const caseReference = requireCaseReference(world);
+  if (returnName.toLowerCase() === REOPEN_WARRANT.toLowerCase()
+    && (await currentEnforcement(caseReference)).status !== CLOSED) {
+    approximatePrecondition('HDPI-8424', `only a closed warrant can be reopened, so it was closed first with "${CLOSING_RETURN}"`);
+    await recordWarrantReturn(page, CLOSING_RETURN);
+    await expectEnforcementStatus(page, caseReference, CLOSED);
+  }
+  world.statusBeforeReturn = (await currentEnforcement(caseReference)).status;
+  world.currentEvent = RECORD_WARRANT_RETURN;
+  const label = await recordWarrantReturn(page, returnName, additionalDetails);
+  world.submittedReturn = { returnName: label, additionalDetails: additionalDetails ?? SUITE_ADDITIONAL_DETAILS };
+  world.currentEvent = undefined;
+}
+
+When('I submit a return with return name {string}', async ({ page, world }, returnName: string) => {
+  await submitReturn(page, world, returnName);
+});
+
+When(
+  'I submit a return with return name {string} and additional details {string}',
+  async ({ page, world }, returnName: string, additionalDetails: string) => {
+    await submitReturn(page, world, returnName, additionalDetails);
+  }
+);
+
+When('I submit a return that closes the enforcement', async ({ page, world }) => {
+  await submitReturn(page, world, warrantReturn.evictionSuccessful);
+});

@@ -18,7 +18,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 /**
  * The bailiff gives a new eviction date once the claimant has said whether they can attend (HDPI-7549,
  * HDPI-7550, HDPI-7551). Available when the claimant cannot attend and, from the event availability rules, when
- * they have confirmed (open question 13).
+ * they have confirmed (OPEN-QUESTIONS 7).
  */
 @Component
 public class RescheduleEviction extends EvictionDateEvent {
