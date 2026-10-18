@@ -26,13 +26,15 @@ Feature: Bailiff reviews an updated claimant risk assessment
     When I select the banner link for "Is anyone living at the property vulnerable?"
     Then I am taken to that question in the "Claimant risk assessment" section
 
-  @HDPI-7552
+  # Asserts one cell of the table the filmed scenario above already shows.
+  @HDPI-7552 @not-filmed
   Scenario: Unchanged answers leave the updated column blank
     Given the claimant did not change "Is it difficult to access the property?"
     When I open the "Risk assessment" tab
     Then the "Updated answer" for that question is blank
 
-  @HDPI-7552
+  # Asserts the dates on the table the filmed scenario above already shows.
+  @HDPI-7552 @not-filmed
   Scenario: Answer dates are shown
     When I open the "Risk assessment" tab
     Then the original answers are dated "25/02/2026"
