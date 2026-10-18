@@ -67,10 +67,11 @@ public class DefendantEnforcementView {
             pcsCaseEntity);
         // With no enforcement on the claim the fields hold the viewer's own draft, if any, and the event flags.
         // "Enforce the order" is offered to the claimant side then, so its flag is taken away from restricted
-        // viewers.
+        // viewers. Internal users keep the flags without a lookup of their case roles on every case view.
         if (enforcements.isEmpty() && !hasEnforcementDocuments) {
             EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
             if (enforcementOrder.getEventAvailability() != null
+                && !enforcementViewerService.isInternalWithoutCaseRoles()
                 && enforcementViewerService.currentViewer(pcsCaseEntity, pcsCase, caseReference).isRestricted()) {
                 enforcementOrder.setEventAvailability(null);
             }

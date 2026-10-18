@@ -111,10 +111,7 @@ const DECISION_SETTLE_MS = 25_000;
 
 // A rejected application gets no warrant. The application documents were generated when the fee was paid, so
 // once they are in the folder and the decision has had time to schedule one, there is no warrant beside them.
-Then('no warrant is generated', async ({ world, $tags }) => {
-  if (!isLocalStack()) {
-    return markPending(localStackOnly, $tags);
-  }
+Then('no warrant is generated', async ({ world }) => {
   const caseReference = requireCaseReference(world);
   await expectEnforcementDocument(caseReference, documentTitle('enforcement application', world));
   await new Promise(resolve => setTimeout(resolve, DECISION_SETTLE_MS));

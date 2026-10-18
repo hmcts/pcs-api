@@ -84,6 +84,19 @@ public class EnforcementViewerService {
         return viewerWith(roles == null ? List.of() : roles);
     }
 
+    /**
+     * Whether the current user is internal on their IDAM and AM organisational roles alone, holding an internal
+     * role and no group-access role for either side. Unlike {@link #currentViewer} it needs no lookup of the
+     * user's case roles, which CCD answers per case, so it suits deciding what to offer rather than what to show.
+     */
+    public boolean isInternalWithoutCaseRoles() {
+        if (securityContextService.isSystemUser() || securityContextService.isIdamSystemUser()) {
+            return true;
+        }
+        Collection<String> roles = userRoleService.getCurrentUserOrganisationalRoles().roles();
+        return viewerWith(roles == null ? List.of() : roles) == EnforcementViewer.INTERNAL;
+    }
+
     static EnforcementViewer viewerWith(Collection<String> roles) {
         if (roles.stream().anyMatch(DEFENDANT_SIDE_ROLES::contains)) {
             return EnforcementViewer.RESTRICTED;

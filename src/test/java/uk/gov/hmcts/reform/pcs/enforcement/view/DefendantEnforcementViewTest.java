@@ -37,8 +37,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION;
@@ -281,6 +284,7 @@ class DefendantEnforcementViewTest {
         pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(YesOrNo.NO);
         pcsCase.getEnforcementOrder().setEventAvailability(eventFlagsWithNoEnforcement());
         when(currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity)).thenReturn(List.of());
+        givenCurrentUserHasOrganisationalRoles("caseworker-pcs-solicitor");
         givenCurrentUserHasRoles("caseworker-pcs-solicitor", defendantRole.getRole());
 
         // When
@@ -292,12 +296,13 @@ class DefendantEnforcementViewTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = UserRole.class, names = {"CLAIMANT_SOLICITOR", "CLAIMANT", "BAILIFF", "HEARING_CENTRE_ADMIN"})
-    void shouldLeaveEveryoneElseTheEventFlagsWhenTheClaimHasNoEnforcement(UserRole role) {
+    @EnumSource(value = UserRole.class, names = {"CLAIMANT_SOLICITOR", "CLAIMANT"})
+    void shouldLeaveTheClaimantSideTheEventFlagsWhenTheClaimHasNoEnforcement(UserRole role) {
         // Given
         PCSCase pcsCase = PCSCase.builder().enforcementOrder(new EnforcementOrder()).build();
         pcsCase.getEnforcementOrder().setEventAvailability(eventFlagsWithNoEnforcement());
         when(currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity)).thenReturn(List.of());
+        givenCurrentUserHasOrganisationalRoles("caseworker-pcs-solicitor");
         givenCurrentUserHasRoles("caseworker-pcs-solicitor", role.getRole());
 
         // When
@@ -305,6 +310,27 @@ class DefendantEnforcementViewTest {
 
         // Then
         assertThat(pcsCase.getEnforcementOrder().getEventAvailability()).isEqualTo(eventFlagsWithNoEnforcement());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"BAILIFF", "HEARING_CENTRE_ADMIN", "JUDGE"})
+    void shouldLeaveInternalUsersTheEventFlagsWithoutLookingUpTheirCaseRoles(UserRole role) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(new EnforcementOrder()).build();
+        pcsCase.getEnforcementOrder().setEventAvailability(eventFlagsWithNoEnforcement());
+        when(currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity)).thenReturn(List.of());
+        givenCurrentUserHasOrganisationalRoles("caseworker-pcs", role.getRole());
+
+        // When
+        underTest.restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEventAvailability()).isEqualTo(eventFlagsWithNoEnforcement());
+        verify(userRoleService, never()).getCurrentUserCaseRoles(anyLong(), anyCollection());
+    }
+
+    private void givenCurrentUserHasOrganisationalRoles(String... roles) {
+        when(userRoleService.getCurrentUserOrganisationalRoles()).thenReturn(new UserRoles("user-id", List.of(roles)));
     }
 
     private static EnforcementEventAvailability eventFlagsWithNoEnforcement() {

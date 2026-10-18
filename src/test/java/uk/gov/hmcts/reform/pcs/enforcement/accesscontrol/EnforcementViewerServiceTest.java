@@ -21,7 +21,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -128,5 +131,39 @@ class EnforcementViewerServiceTest {
             .thenReturn(new UserRoles("user-id", List.of("judge")));
 
         assertThat(underTest.currentViewer(null, null, CASE_REFERENCE)).isEqualTo(EnforcementViewer.INTERNAL);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"JUDGE", "HEARING_CENTRE_ADMIN", "BAILIFF", "CTSC_ADMIN"})
+    void shouldTreatAnInternalOrganisationalRoleAsInternalWithoutCaseRoles(UserRole role) {
+        when(userRoleService.getCurrentUserOrganisationalRoles())
+            .thenReturn(new UserRoles("user-id", List.of("caseworker-pcs", role.getRole())));
+
+        assertThat(underTest.isInternalWithoutCaseRoles()).isTrue();
+        verify(userRoleService, never()).getCurrentUserCaseRoles(anyLong(), anyCollection());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"GA_CLAIMANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR"})
+    void shouldNotTreatAGroupAccessSolicitorAsInternalWithoutCaseRoles(UserRole role) {
+        when(userRoleService.getCurrentUserOrganisationalRoles())
+            .thenReturn(new UserRoles("user-id", List.of("caseworker-pcs-solicitor", "judge", role.getRole())));
+
+        assertThat(underTest.isInternalWithoutCaseRoles()).isFalse();
+    }
+
+    @Test
+    void shouldNotTreatAUserWithNoOrganisationalRolesAsInternalWithoutCaseRoles() {
+        when(userRoleService.getCurrentUserOrganisationalRoles()).thenReturn(new UserRoles("user-id", null));
+
+        assertThat(underTest.isInternalWithoutCaseRoles()).isFalse();
+    }
+
+    @Test
+    void shouldTreatTheSystemUserAsInternalWithoutCaseRoles() {
+        when(securityContextService.isSystemUser()).thenReturn(true);
+
+        assertThat(underTest.isInternalWithoutCaseRoles()).isTrue();
+        verifyNoInteractions(userRoleService);
     }
 }

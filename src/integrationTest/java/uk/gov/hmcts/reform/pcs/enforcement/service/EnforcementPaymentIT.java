@@ -20,7 +20,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
-import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
@@ -152,12 +151,6 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
      */
     @MockitoBean
     private OrganisationService organisationService;
-    /**
-     * A case view looks up the viewer's case roles to filter what defendants see (DefendantEnforcementView); the
-     * SDK test support does not answer it, so the mock gives the viewer no case roles.
-     */
-    @MockitoBean
-    private CaseAssignmentApi caseAssignmentApi;
 
     private final List<UUID> enforcementIds = new ArrayList<>();
     private long caseReference;
