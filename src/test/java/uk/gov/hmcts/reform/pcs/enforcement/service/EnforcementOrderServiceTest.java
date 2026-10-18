@@ -71,6 +71,8 @@ class EnforcementOrderServiceTest {
     @Mock
     private EnforcementTypeStrategyFactory strategyFactory;
     @Mock
+    private RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
+    @Mock
     private EnforcementNotificationService enforcementNotificationService;
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
@@ -255,6 +257,44 @@ class EnforcementOrderServiceTest {
         assertThat(savedCaptor.getValue().getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
         assertThat(savedCaptor.getValue().getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, enforcementType);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldStartAWarrantAwaitingReviewWhenItsFeeIsWaived(boolean waived) {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(WARRANT)).thenReturn(mock(EnforcementTypeStrategy.class));
+        when(repeatWarrantFeeWaiver.isFeeWaived(claimId, WARRANT)).thenReturn(waived);
+
+        // When
+        boolean paymentOutstanding = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
+        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        assertThat(paymentOutstanding).isEqualTo(!waived);
+        assertThat(savedCaptor.getValue().getStatus())
+            .isEqualTo(waived ? EnforcementStatus.AWAITING_REVIEW : EnforcementStatus.AWAITING_PAYMENT);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SelectEnforcementType.class, names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
+    void shouldReportThatAnApplicationWithNoFeeOwesNothing(SelectEnforcementType enforcementType) {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(enforcementType)).thenReturn(mock(EnforcementTypeStrategy.class));
+
+        // When
+        boolean paymentOutstanding = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        assertThat(paymentOutstanding).isFalse();
+        verifyNoInteractions(repeatWarrantFeeWaiver);
     }
 
     @Test

@@ -11,15 +11,15 @@ import { setUpWarrantAtStatus } from '../support/approve-warrant';
 import { requireCaseReference } from '../support/enforcement-journeys';
 
 Then('the enforcement status changes to {string}', async ({ page, world }, status: string) => {
-  await expectEnforcementStatus(page, requireCaseReference(world), status);
+  await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
 
 Then('the enforcement status is {string}', async ({ page, world }, status: string) => {
-  await expectEnforcementStatus(page, requireCaseReference(world), status);
+  await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
 
 Then('the enforcement status is still {string}', async ({ page, world }, status: string) => {
-  await expectEnforcementStatus(page, requireCaseReference(world), status);
+  await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
 
 Then('the case has no live warrant', async ({ page, world }) => {

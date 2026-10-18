@@ -4,12 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -34,9 +32,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -89,8 +85,7 @@ class WarrantReturnServiceTest {
             securityContextService,
             new BailiffAllocationService(currentEnforcementService, transitions, bailiffAllocationRepository,
                                          enforcementOrderRepository, securityContextService, utcClock),
-            utcClock,
-            Clock.fixed(NOW, UK_ZONE_ID));
+            utcClock);
     }
 
     @Test
@@ -351,94 +346,6 @@ class WarrantReturnServiceTest {
         assertThat(underTest.findLatestReturn(pcsCase)).isEmpty();
     }
 
-    // 15-repeat-enforcement.feature "Fee for a further warrant" (HDPI-8424, OPEN-QUESTIONS 6).
-    @ParameterizedTest(name = "{0}, {1} months ago: free {2}")
-    @CsvSource({
-        "WARRANT_SUSPENDED_BY_ORDER, 6, true",
-        "WARRANT_SUSPENDED_BY_ORDER, 12, true",
-        "WARRANT_SUSPENDED_BY_ORDER, 13, false",
-        "EVICTION_SUCCESSFUL, 6, false",
-        "POSSESSION_ORDER_SET_ASIDE, 6, false",
-        "WARRANT_WITHDRAWN, 1, false"
-    })
-    void shouldMakeTheNextWarrantFreeOnlyAfterASuspensionWithin12Months(WarrantReturnName returnName, int monthsAgo,
-                                                                       boolean free) {
-        LocalDate today = LocalDate.of(2026, 7, 8);
-        Instant generated = today.minusMonths(monthsAgo).atStartOfDay(UK_ZONE_ID).toInstant();
-
-        assertThat(WarrantReturnService.isFreeRepeatWarrant(returnName, generated, today)).isEqualTo(free);
-    }
-
-    @Test
-    void shouldChargeTheNextWarrantTheDayAfter12Months() {
-        LocalDate today = LocalDate.of(2026, 7, 9);
-        Instant generated = LocalDate.of(2025, 7, 8).atTime(23, 30).atZone(UK_ZONE_ID).toInstant();
-
-        assertThat(WarrantReturnService.isFreeRepeatWarrant(WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER, generated,
-                                                            today)).isFalse();
-        assertThat(WarrantReturnService.isFreeRepeatWarrant(WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER, null,
-                                                            today)).isFalse();
-    }
-
-    @Test
-    void shouldUseTheClaimsMostRecentFinalReturnForTheFeeWaiver() {
-        PcsCaseEntity pcsCase = caseWithClaim();
-        UUID claimId = pcsCase.getClaims().getFirst().getId();
-        when(warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claimId)).thenReturn(List.of(
-            warrantReturn(WarrantReturnType.INTERIM, WarrantReturnName.REOPEN_WARRANT, NOW.minusSeconds(60)),
-            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER, NOW.minusSeconds(120)),
-            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.EVICTION_SUCCESSFUL, NOW.minusSeconds(180))
-        ));
-
-        assertThat(underTest.isNextWarrantFree(pcsCase)).isTrue();
-    }
-
-    @Test
-    void shouldMeasureTheFreePeriodFromWhenTheWarrantWasApprovedNotWhenTheReturnWasRecorded() {
-        PcsCaseEntity pcsCase = caseWithClaim();
-        UUID claimId = pcsCase.getClaims().getFirst().getId();
-        when(warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claimId)).thenReturn(List.of(
-            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER,
-                          NOW.minusSeconds(60), LocalDate.of(2025, 6, 7).atStartOfDay(UK_ZONE_ID).toInstant())
-        ));
-
-        assertThat(underTest.isNextWarrantFree(pcsCase)).isFalse();
-    }
-
-    @Test
-    void shouldChargeTheNextWarrantWhenTheWarrantHasNoApprovalTime() {
-        PcsCaseEntity pcsCase = caseWithClaim();
-        UUID claimId = pcsCase.getClaims().getFirst().getId();
-        when(warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claimId)).thenReturn(List.of(
-            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER,
-                          NOW.minusSeconds(60), null)
-        ));
-
-        assertThat(underTest.isNextWarrantFree(pcsCase)).isFalse();
-    }
-
-    @Test
-    void shouldChargeTheNextWarrantWhenTheLastFinalReturnWasNotASuspension() {
-        PcsCaseEntity pcsCase = caseWithClaim();
-        UUID claimId = pcsCase.getClaims().getFirst().getId();
-        when(warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claimId)).thenReturn(List.of(
-            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.EVICTION_SUCCESSFUL, NOW.minusSeconds(60)),
-            warrantReturn(WarrantReturnType.FINAL, WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER, NOW.minusSeconds(120))
-        ));
-
-        assertThat(underTest.isNextWarrantFree(pcsCase)).isFalse();
-    }
-
-    @Test
-    void shouldChargeTheNextWarrantWithoutAnyReturnsOrClaim() {
-        PcsCaseEntity pcsCase = caseWithClaim();
-        when(warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(any())).thenReturn(List.of());
-
-        assertThat(underTest.isNextWarrantFree(pcsCase)).isFalse();
-        assertThat(underTest.isNextWarrantFree(new PcsCaseEntity())).isFalse();
-        assertThat(underTest.isNextWarrantFree(null)).isFalse();
-    }
-
     private EnforcementOrderEntity givenWarrant(EnforcementStatus status) {
         EnforcementOrderEntity warrant = enforcement(SelectEnforcementType.WARRANT, status);
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(warrant));
@@ -481,30 +388,5 @@ class WarrantReturnServiceTest {
             .interimReturnName(returnName)
             .additionalDetails(additionalDetails)
             .build();
-    }
-
-    private static WarrantReturnEntity warrantReturn(WarrantReturnType type, WarrantReturnName name,
-                                                     Instant recordedAt) {
-        return warrantReturn(type, name, recordedAt, NOW.minus(Duration.ofDays(30)));
-    }
-
-    private static WarrantReturnEntity warrantReturn(WarrantReturnType type, WarrantReturnName name,
-                                                     Instant recordedAt, Instant warrantApprovedAt) {
-        EnforcementOrderEntity warrant = enforcement(SelectEnforcementType.WARRANT, CLOSED);
-        warrant.setApprovedAt(warrantApprovedAt);
-        return WarrantReturnEntity.builder()
-            .enforcementOrder(warrant)
-            .returnType(type)
-            .returnName(name)
-            .recordedAt(recordedAt)
-            .build();
-    }
-
-    private static PcsCaseEntity caseWithClaim() {
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
-        ClaimEntity claim = new ClaimEntity();
-        claim.setId(UUID.randomUUID());
-        pcsCase.addClaim(claim);
-        return pcsCase;
     }
 }

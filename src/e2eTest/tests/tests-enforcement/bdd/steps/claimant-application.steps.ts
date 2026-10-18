@@ -12,6 +12,7 @@ import {
   submitApplication,
 } from '../support/enforcement-journeys';
 import { Page } from '@playwright/test';
+import { PAY_PANEL_TITLE } from '../support/repeat-enforcement';
 
 const enforcementTypes: EnforcementType[] = ['warrant of possession', 'writ of possession', 'warrant of restitution', 'writ of restitution'];
 
@@ -41,6 +42,7 @@ async function applyFor(type: EnforcementType, world: EnforcementWorld, page: Pa
   await answerApplicationQuestions(type, world);
   await signStatementOfTruth(type);
   await submitApplication();
+  world.askedToPayFee = await page.getByText(PAY_PANEL_TITLE).first().isVisible().catch(() => false);
 }
 
 When('I choose to apply for a {string}', async ({ page, world, $tags }, type: string) => {
@@ -80,21 +82,7 @@ pendingSteps({ summary: 'Paying the enforcement fee by service request' }, [
   'I submit and pay for a {string} application',
 ]);
 
-pendingSteps({ ticket: 'HDPI-8424', summary: 'Repeat warrant fee rules' }, [
-  'the case has a closed warrant with return name {string}',
-  'that warrant was generated less than 12 calendar months ago',
-  'I am not asked to pay a fee',
-]);
-
 pendingSteps({ ticket: 'HDPI-8424', summary: 'Further enforcement on the same case' }, [
-  'the case has a warrant {string} closed with return name {string}',
-  'I apply and pay for a new {string}',
-  'the caseworker approves it',
-  'the case has two warrants, {string} closed and {string} live',
-  'the case has a closed warrant with return name {string} generated {string} ago',
-  'I apply for a new {string}',
-  'I am {string} the warrant fee',
-  'the case has a warrant closed with return name {string}',
   'I apply for a {string} explaining how the defendants returned to the property',
   'I upload evidence',
   'bailiff events other than {string} are not available',

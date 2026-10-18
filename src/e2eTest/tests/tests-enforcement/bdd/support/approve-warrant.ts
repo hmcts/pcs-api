@@ -33,9 +33,18 @@ import {
  * Records the enforcement fee as paid, signs in as a hearing centre admin and accepts the application.
  * Leaves the warrant in "Awaiting bailiff allocation" with a warrant number, and the browser signed in
  * as the hearing centre admin.
+ *
+ * Pass `feeOutstanding: false` for an application that is already awaiting review: one whose fee was
+ * paid or waived, or a type with no fee.
  */
-export async function approveWarrantAsCaseworker(page: Page, world: EnforcementWorld): Promise<void> {
-  await recordEnforcementFeePaid();
+export async function approveWarrantAsCaseworker(
+  page: Page,
+  world: EnforcementWorld,
+  { feeOutstanding = true }: { feeOutstanding?: boolean } = {}
+): Promise<void> {
+  if (feeOutstanding) {
+    await recordEnforcementFeePaid();
+  }
   await signInAsHearingCentreAdmin(page);
   await openCaseSummary(page);
   await startEvent(DECIDE_ENFORCEMENT);
