@@ -47,6 +47,14 @@ public class EnforcementNotificationService {
     private final EnforcementNotificationSender sender;
 
     /**
+     * Tells the claimant their application has been received and is waiting for a caseworker's review. Call it
+     * when the application reaches awaiting review: when the fee is paid, or on submit for a type with no fee.
+     */
+    public void notifyClaimantOfApplicationReceived(long caseReference, SelectEnforcementType enforcementType) {
+        notifyAfterCommit(caseReference, EnforcementEmail.forApplicationReceived(enforcementType), Map.of());
+    }
+
+    /**
      * Tells the claimant the caseworker approved their application, with the warrant or writ number.
      *
      * <p>Only a warrant and a writ of possession have an approval email: the restitution wording is TBC
@@ -84,6 +92,21 @@ public class EnforcementNotificationService {
     public void notifyClaimantOfRescheduledEviction(long caseReference, LocalDateTime evictionDateTime) {
         notifyAfterCommit(caseReference, EnforcementEmail.EVICTION_RESCHEDULED,
                           evictionPersonalisation(evictionDateTime));
+    }
+
+    /**
+     * Tells the claimant they have confirmed they can attend the eviction on this date.
+     */
+    public void notifyClaimantOfConfirmedAttendance(long caseReference, LocalDateTime evictionDateTime) {
+        notifyAfterCommit(caseReference, EnforcementEmail.CLAIMANT_CONFIRMED_ATTENDANCE,
+                          evictionPersonalisation(evictionDateTime));
+    }
+
+    /**
+     * Tells the claimant the court has their answer that they cannot attend the eviction.
+     */
+    public void notifyClaimantOfDeclinedAttendance(long caseReference) {
+        notifyAfterCommit(caseReference, EnforcementEmail.CLAIMANT_DECLINED_ATTENDANCE, Map.of());
     }
 
     /**
