@@ -23,13 +23,13 @@ Feature: Risk assessment tab
       | type                   |
       | warrant of restitution |
 
-  @HDPI-7350
+  @HDPI-7350 @not-filmed
   Scenario: Tab is not shown for a writ
     Given the case has only a writ of possession
     When an internal user opens the case
     Then there is no "Risk assessment" tab
 
-  @HDPI-7350
+  @HDPI-7350 @not-filmed
   Scenario: Tab is not shown before the warrant is generated
     Given the claimant's warrant application is "Awaiting review"
     When an internal user opens the case

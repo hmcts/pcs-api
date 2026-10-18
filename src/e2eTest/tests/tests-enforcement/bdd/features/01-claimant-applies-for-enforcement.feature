@@ -16,6 +16,7 @@ Feature: Claimant applies for enforcement of a possession order
 
   # The event is still offered in the next-step drop down while an enforcement is live; it is the
   # EnforceTheOrder start callback that refuses it.
+  @not-filmed
   Scenario: Enforce the order is refused while an enforcement is live
     Given the case has a warrant of possession with status "Awaiting scheduling"
     When I start the "Enforce the order" event

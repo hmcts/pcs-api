@@ -19,7 +19,7 @@ Feature: Bailiff schedules the eviction
 
   # No route to a case that is awaiting scheduling and has no live warrant at the same time: the only way
   # to close an enforcement is recordWarrantReturn, which itself needs a live warrant.
-  @HDPI-7344 @HDPI-7419 @pending
+  @HDPI-7344 @HDPI-7419 @pending @not-filmed
   Scenario: Schedule eviction is not available without a live warrant
     Given the case has no live warrant
     When I start the "Schedule eviction" event
@@ -48,12 +48,16 @@ Feature: Bailiff schedules the eviction
     And I select "Continue"
     Then I see "<result>"
 
+    @not-filmed
     Examples:
       | date       | time  | result                                 |
       |            |       | an error that date and time are needed |
       | 31/02/2026 | 10:00 | an error that the date is not valid    |
       | yesterday  | 10:00 | an error that the date must be today or in the future |
       | tomorrow   | 25:00 | an error that the time is not valid    |
+
+    Examples:
+      | date       | time  | result                                 |
       | tomorrow   | 10:00 | the 'Check your answers' screen        |
 
   @HDPI-7344
@@ -62,14 +66,14 @@ Feature: Bailiff schedules the eviction
     Then the question "Has the court given permission to dispense with service?" is mandatory
     And the answer defaults to "No"
 
-  @HDPI-7546
+  @HDPI-7546 @not-filmed
   Scenario: Changing an answer from check your answers
     Given I am on the "Check your answers" screen
     When I select "Change" next to the eviction date
     Then I return to the "Schedule eviction" screen with my previous answer
     And selecting "Continue" returns me to "Check your answers"
 
-  @HDPI-7546
+  @HDPI-7546 @not-filmed
   Scenario: Cancelling from check your answers discards the schedule
     Given I am on the "Check your answers" screen
     When I select "Cancel"

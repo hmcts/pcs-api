@@ -7,7 +7,7 @@ Feature: Enforcement status tab
   Background:
     Given a PCS case "1234-5678-9101-1121"
 
-  @HDPI-7351
+  @HDPI-7351 @not-filmed
   Scenario: Tab is not shown before any warrant or writ has been generated
     Given the case has no generated warrant or writ
     When an internal user opens the case
@@ -86,7 +86,7 @@ Feature: Enforcement status tab
     When a defendant opens the case
     Then there is no "Enforcement status" tab
 
-  @HDPI-7537
+  @HDPI-7537 @not-filmed
   Scenario: Warrant number is not shown in the case header
     Given the case has a warrant of possession "WP-0001"
     When a bailiff opens the case

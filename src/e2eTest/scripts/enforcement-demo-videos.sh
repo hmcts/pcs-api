@@ -10,7 +10,9 @@
 # Runs against a local cftlib stack (ENVIRONMENT=local), one feature at a time with one worker, in the
 # `enforcement-bdd-demo` Playwright project, which records every scenario at human speed (see
 # tests/tests-enforcement/bdd/support/demo-pacing.ts). Feature 19 (the status model) is technical design and
-# is never filmed.
+# is never filmed. Scenarios tagged @pending or @not-filmed are left out: @not-filmed marks the unhappy and edge
+# cases (form validation, cancel, change from check your answers, refusals, access denied) that the demo does
+# not need, unless the user story calls them out. CI's enforcement-bdd project still runs them.
 #
 # Writes:
 #   <output dir>/<feature>.mp4        the stitched video, when at least one scenario passed
@@ -220,7 +222,7 @@ for feature in "${FEATURES[@]}"; do
   fi
 
   ENVIRONMENT=local E2E_WORKERS=1 CI=1 PLAYWRIGHT_JSON_OUTPUT_FILE="$report" \
-    npx playwright test --project enforcement-bdd-demo --grep-invert '@pending' \
+    npx playwright test --project enforcement-bdd-demo --grep-invert '@pending|@not-filmed' \
     --reporter=list,json --output="$raw_dir" \
     ".features-gen/enforcement/$feature.feature.spec.js"
   log "Playwright exited with $? for $feature"

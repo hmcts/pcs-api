@@ -148,8 +148,14 @@ of the email.
 `--project enforcement-bdd-demo` records one video per scenario (`video: 'on'`, `trace: 'on'`,
 `retries: 0`). It is a separate project so that CI's `enforcement-bdd` keeps `retain-on-failure`.
 
+The demo shows the happy path of each journey. Scenarios tagged `@not-filmed` (form validation, mandatory-field
+errors, cancel, change from check your answers, refusals, access denied, boundary checks) are left out of it,
+unless the user story calls the behaviour out; the tag can sit on a scenario or on one `Examples` block of an
+outline. The demo project excludes them itself (`grepInvert`), and `scripts/enforcement-demo-videos.sh` passes
+`--grep-invert '@pending|@not-filmed'`. CI's `enforcement-bdd` project still runs every one of them.
+
 ```bash
-ENVIRONMENT=local npx playwright test --project enforcement-bdd-demo --grep-invert '@pending'
+ENVIRONMENT=local npx playwright test --project enforcement-bdd-demo --grep-invert '@pending|@not-filmed'
 ```
 
 Videos land in `test-results/<spec>-<scenario>-enforcement-bdd-demo/video.webm`.

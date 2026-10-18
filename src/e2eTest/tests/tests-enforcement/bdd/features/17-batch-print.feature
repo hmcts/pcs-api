@@ -27,7 +27,7 @@ Feature: Batch print enforcement documents across cases
     When I batch print that case
     Then only the latest notice of eviction is included
 
-  @HDPI-8012
+  @HDPI-8012 @not-filmed
   Scenario: Cases I am not allocated to are excluded
     Given I select a case where I am not the allocated bailiff
     When I choose "Print enforcement documents"

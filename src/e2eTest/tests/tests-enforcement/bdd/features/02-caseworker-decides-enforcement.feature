@@ -17,13 +17,13 @@ Feature: Caseworker decides an enforcement application
     And none of these are editable
     And the "Previous" button is disabled
 
-  @HDPI-8656
+  @HDPI-8656 @not-filmed
   Scenario: Caseworker must choose accept or reject
     Given I am on the "Decide enforcement" screen
     When I select "Continue" without choosing an option
     Then I see an error asking me to choose accept or reject
 
-  @HDPI-8656
+  @HDPI-8656 @not-filmed
   Scenario: Caseworker cancels the decision
     Given I am on the "Decide enforcement" screen
     When I select "Cancel"
@@ -37,7 +37,7 @@ Feature: Caseworker decides an enforcement application
     Then the "Check your answers" screen shows my decision with a "Change" link
     And I see the case number, the possession property address and "claimant name vs defendant name"
 
-  @HDPI-9565
+  @HDPI-9565 @not-filmed
   Scenario: Caseworker changes their decision from check your answers
     Given I am on the "Check your answers" screen having accepted
     When I select "Change" next to the decision

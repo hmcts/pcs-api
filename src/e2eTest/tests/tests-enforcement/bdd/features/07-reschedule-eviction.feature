@@ -27,7 +27,7 @@ Feature: Bailiff reschedules the eviction
     Then I see the dates "26/06/2026" and "29/06/2026" listed as dates the claimant is not available
     And the dates are not editable
 
-  @HDPI-7549
+  @HDPI-7549 @not-filmed
   Scenario: Rescheduling validates the date and time like scheduling
     Given I am on the "Reschedule eviction" screen
     When I enter a date in the past

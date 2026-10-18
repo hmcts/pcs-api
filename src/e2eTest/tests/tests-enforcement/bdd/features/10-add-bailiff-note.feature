@@ -24,7 +24,7 @@ Feature: Add a bailiff note
       | bailiff-admin              |
       | bailiff-manager            |
 
-  @HDPI-7593 @HDPI-7539
+  @HDPI-7593 @HDPI-7539 @not-filmed
   Scenario Outline: Other users cannot add a bailiff note
     Given I am signed in to XUI as a "<user>"
     When I open the case
@@ -69,10 +69,14 @@ Feature: Add a bailiff note
     When I enter "<note>" and select "Continue"
     Then I see "<result>"
 
+    @not-filmed
     Examples:
       | note                 | result                                   |
       |                      | the standard XUI error that a note is needed |
       | 6,801 characters     | the standard XUI error for too many characters |
+
+    Examples:
+      | note                 | result                                   |
       | Dog on site * (large) | the confirmation screen                  |
 
   @HDPI-7593 @HDPI-7350 @pending

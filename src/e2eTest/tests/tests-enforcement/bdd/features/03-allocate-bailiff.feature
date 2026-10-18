@@ -29,7 +29,7 @@ Feature: Allocate an enforcement to a bailiff
     Then I see matching bailiff users for the case's court location
     And users without a bailiff role are not listed
 
-  @HDPI-7356
+  @HDPI-7356 @not-filmed
   Scenario: Bailiff must be chosen
     Given I am on the "Find the bailiff's name" screen
     When I select "Continue" without choosing a bailiff
@@ -42,13 +42,13 @@ Feature: Allocate an enforcement to a bailiff
     Then the "Check your answers" screen shows "Sam Jones" and "sam.jones@justice.gov.uk"
     And no "Confirm length of assignment" screen is shown
 
-  @HDPI-8183
+  @HDPI-8183 @not-filmed
   Scenario: Changing the bailiff from check your answers
     Given I am on the "Check your answers" screen
     When I select "Change"
     Then I return to "Find the bailiff's name" with "Sam Jones" still selected
 
-  @HDPI-8183
+  @HDPI-8183 @not-filmed
   Scenario: Cancelling discards the allocation
     Given I am on the "Check your answers" screen
     When I select "Cancel"

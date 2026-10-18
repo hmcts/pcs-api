@@ -42,7 +42,7 @@ Feature: Claimant confirms the eviction appointment
     Then the updated answer is stored alongside my original answer with today's date
     And a "Review updated risk information" task is created for the allocated bailiff
 
-  @HDPI-7552
+  @HDPI-7552 @not-filmed
   Scenario: Claimant confirms without changing the risk assessment
     When I start the "Confirm the eviction date" event
     And I do not change any risk assessment answers
