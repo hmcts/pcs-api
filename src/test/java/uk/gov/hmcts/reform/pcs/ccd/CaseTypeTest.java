@@ -239,15 +239,13 @@ class CaseTypeTest {
     }
 
     @Test
-    void shouldShowTheEnforcementStatusTabToInternalUsersAndTheClaimantSideOnly() {
+    void shouldOfferTheEnforcementStatusTabToInternalUsersAndBothSides() {
         assertThat(CaseType.ENFORCEMENT_STATUS_TAB_ROLES)
             .doesNotHaveDuplicates()
             .contains(CaseType.INTERNAL_TAB_ROLES)
             .contains(AccessProfile.CLAIMANT, AccessProfile.PCS_SOLICITOR, AccessProfile.GA_CLAIMANT_SOLICITOR)
-            .doesNotContain(AccessProfile.CITIZEN,
-                            AccessProfile.DEFENDANT,
-                            AccessProfile.DEFENDANT_SOLICITOR,
-                            AccessProfile.GA_DEFENDANT_SOLICITOR);
+            .contains(AccessProfile.DEFENDANT, AccessProfile.GA_DEFENDANT_SOLICITOR)
+            .doesNotContain(AccessProfile.CITIZEN);
     }
 
     @Test

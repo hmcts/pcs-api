@@ -11,8 +11,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOL
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 /**
- * Read only access to the enforcement status for internal users and the claimant side. Defendants get none,
- * because they cannot see enforcement information.
+ * Read only access to the enforcement status for internal users and the claimant side. Defendants get none.
+ * A defendant's legal representative holds {@code caseworker-pcs-solicitor} as well, though, so
+ * {@link uk.gov.hmcts.reform.pcs.enforcement.view.DefendantEnforcementView} also leaves these fields unset
+ * whenever the user is a defendant on the case.
  */
 public class EnforcementStatusReadAccess implements HasAccessControl {
 

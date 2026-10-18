@@ -65,9 +65,7 @@ Feature: Enforcement status tab
       | hearing centre admin           | has not been served | shown      |
       | judge                          | has not been served | shown      |
 
-    # Pending: defendants seeing the enforcement once the notice is served (HDPI-7539), and there is no
-    # defendant the suite can sign in as on a local stack.
-    @pending
+    # Local stack only: the defendants are given their case roles through pcs-api testing support.
     Examples:
       | user                           | served              | visibility |
       | defendant legal representative | has not been served | hidden     |
@@ -75,7 +73,7 @@ Feature: Enforcement status tab
       | defendant legal representative | has been served     | shown      |
       | citizen defendant              | has been served     | shown      |
 
-  @HDPI-7351 @pending
+  @HDPI-7351
   Scenario: Defendants see a reduced set of sections
     Given the notice of eviction has been served
     When a defendant opens the "Enforcement status" tab

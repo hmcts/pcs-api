@@ -165,6 +165,25 @@ class EnforcementStatusTabMarkdownTest {
             .contains("&lt;script&gt;alert(1)&lt;/script&gt;<br><br>&#36;{caseTitleMarkdown}");
     }
 
+    @Test
+    void shouldLeaveTheClaimantsSectionOutForDefendants() {
+        EnforcementOrderEntity enforcement = warrant("WP-00000001", EnforcementStatus.CLAIMANT_UNABLE_TO_ATTEND)
+            .bailiffDate(LocalDateTime.of(2027, 6, 30, 9, 30))
+            .noticeServedAt(LocalDateTime.of(2027, 6, 1, 10, 0))
+            .claimantCanAttend(false)
+            .build();
+
+        String markdown = EnforcementStatusTabMarkdown.renderForDefendants(List.of(new Entry(enforcement, null)));
+
+        assertThat(markdown)
+            .contains("<h2 class=\"govuk-heading-l\">WP-00000001</h2>")
+            .contains(">Eviction notice</h3>")
+            .contains(">Scheduled eviction</h3>")
+            .contains(">Eviction outcome</h3>")
+            .doesNotContain("Claimant eviction confirmation")
+            .doesNotContain("attend on");
+    }
+
     private static String render(EnforcementOrderEntity enforcement, WarrantReturnEntity latestReturn) {
         return EnforcementStatusTabMarkdown.render(List.of(new Entry(enforcement, latestReturn)));
     }

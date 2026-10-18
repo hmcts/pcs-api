@@ -103,6 +103,24 @@ class EnforcementStatusTabViewTest {
     }
 
     @Test
+    void shouldRenderTheDefendantsTabFromTheGivenWarrantsWithoutTheClaimantsSection() {
+        EnforcementOrderEntity served = enforcement("WP-00000001", EnforcementStatus.CLAIMANT_CONFIRMED,
+                                                    Instant.parse("2026-02-01T10:00:00Z"));
+
+        String markdown = underTest.defendantTabMarkdown(List.of(served));
+
+        assertThat(markdown).contains("WP-00000001").doesNotContain("Claimant eviction confirmation");
+        verifyNoInteractions(currentEnforcementService);
+    }
+
+    @Test
+    void shouldGiveDefendantsNoTabWhenNoGivenWarrantIsGenerated() {
+        assertThat(underTest.defendantTabMarkdown(List.of())).isNull();
+        assertThat(underTest.defendantTabMarkdown(
+            List.of(enforcement("WP-1", EnforcementStatus.AWAITING_REVIEW, null)))).isNull();
+    }
+
+    @Test
     void shouldDoNothingWithoutACase() {
         underTest.setEnforcementStatusTab(null, PCSCase.builder().build());
         underTest.setEnforcementStatusTab(pcsCaseEntity, null);

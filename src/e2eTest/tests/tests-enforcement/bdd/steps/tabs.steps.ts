@@ -26,12 +26,24 @@ import {
   AWAITING_BAILIFF_ALLOCATION,
   approveApplicationAsCaseworker,
   restoreClaimantSession,
+  scheduleEvictionOnApprovedWarrant,
   setUpWarrantAtStatus,
 } from '../support/approve-warrant';
 import { ADD_BAILIFF_NOTE, SET_RISK_LEVEL, addBailiffNote, chooseRiskLevel, continueButton } from '../support/bailiff-events';
 import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { fixturePropertyAddress, isLocalStack } from '@config/local-stack.config';
+import { markNoticeServedAsBailiff } from '../support/notice-served';
+import {
+  CITIZEN_DEFENDANT,
+  DEFENDANT_LEGAL_REPRESENTATIVE,
+  canSetUpDefendants,
+  defendantViews,
+  expectEnforcementTab,
+} from '../support/defendant-visibility';
+
+/** Whether a scenario opened the case as one of the defendants. */
+const isDefendant = (user?: string): boolean => user === CITIZEN_DEFENDANT || user === DEFENDANT_LEGAL_REPRESENTATIVE;
 
 /** The two tabs the enforcement work adds; any other tab name is still someone else's feature. */
 const ENFORCEMENT_TABS = [ENFORCEMENT_STATUS_TAB, RISK_ASSESSMENT_TAB];
@@ -131,11 +143,16 @@ Given('the case has only a writ of possession', async ({ page, context, world, $
   }
 });
 
-Given('the notice of eviction {string}', async ({ $tags }, served: string) => {
-  if (served !== 'has not been served') {
+Given('the notice of eviction {string}', async ({ page, context, world, $tags }, served: string) => {
+  if (served === 'has not been served') {
+    // True by construction: the scenario never marks the notice of eviction as served.
+    return;
+  }
+  if (served !== 'has been served' || !canSetUpDefendants()) {
     return markPending({ ticket: 'HDPI-7539', summary: 'defendants seeing the enforcement once the notice is served' }, $tags);
   }
-  // True by construction: the scenario never marks the notice of eviction as served.
+  await scheduleEvictionOnApprovedWarrant(page, context, world);
+  await markNoticeServedAsBailiff(page, context, world);
 });
 
 Given('no risk level or bailiff note has been added', async ({ world }) => {
@@ -202,12 +219,17 @@ Given('I am on the {string} tab', async ({ page, world, $tags }, tabName: string
   await openCaseTab(page, requireCaseReference(world), tabName);
 });
 
-Then('the {string} tab is {string}', async ({ page, $tags }, tabName: string, visibility: string) => {
+Then('the {string} tab is {string}', async ({ page, context, world, $tags }, tabName: string, visibility: string) => {
   if (!ENFORCEMENT_TABS.includes(tabName)) {
     return markPending(tabNotBuilt(tabName), $tags);
   }
   if (visibility !== 'shown' && visibility !== 'hidden') {
     throw new Error(`Unknown tab visibility "${visibility}". Expected "shown" or "hidden"`);
+  }
+  if (isDefendant(world.openedAs)) {
+    // Checks the case data CCD gives the defendant as well as, for a legal representative, the XUI tab.
+    await expectEnforcementTab(page, await defendantViews(page, context, world), tabName, visibility === 'shown');
+    return;
   }
   await expectCaseTab(page, tabName, visibility === 'shown');
 });
@@ -277,7 +299,12 @@ Then('I see the claimant\'s answers to:', async ({ page }, table: DataTable) => 
   }
 });
 
-Then('the risk level and bailiff notes are {string}', async ({ page, world }, visibility: string) => {
+Then('the risk level and bailiff notes are {string}', async ({ page, context, world }, visibility: string) => {
+  if (isDefendant(world.openedAs)) {
+    expect(visibility, 'defendants never see the risk level or bailiff notes').toBe('hidden');
+    await expectEnforcementTab(page, await defendantViews(page, context, world), RISK_ASSESSMENT_TAB, false);
+    return;
+  }
   const tab = page.getByRole('tab', { name: RISK_ASSESSMENT_TAB, exact: true });
   if (!(await tab.count())) {
     expect(visibility, 'no "Risk assessment" tab, so nothing on it is shown').toBe('hidden');
@@ -357,35 +384,13 @@ pendingSteps({ ticket: 'HDPI-7350', summary: 'XUI sanitises case markdown, so th
 ]);
 
 pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
-  'the eviction has been scheduled',
-  'the notice of eviction has not been served',
-  'the bailiff marks the notice of eviction as served',
-  'the bailiff answered {string} to {string}',
-  'the eviction takes place',
   'the case {string} tab shows the event that changed it, who submitted it and when',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7539', summary: 'Defendant visibility of enforcement' }, [
   'the case has a writ of possession',
   'I see the {string} table with claimant type, claimant name and defendant names',
-  'a defendant opens the {string} tab',
-  'they see the warrant number, {string}, {string} and {string}',
-  'they do not see {string}',
   'a defendant opens the case',
-  'the defendant is represented in XUI by a legal representative',
-  'a second defendant is a citizen using pcs-frontend',
-  'each defendant views the case',
-  'they do not see the {string} tab',
-  'they do not see the {string} folder in case file view',
-  'they do not see any enforcement events in the case {string} tab',
-  'the defendant legal representative sees the {string} tab',
-  'the defendant legal representative sees the {string} folder with the {string}',
-  'the citizen defendant sees the {string} under {string} in pcs-frontend',
-  'defendants do not see the {string} tab',
-  'defendants do not see the {string} folder',
-  'a defendant views the case',
-  'they do not see the risk assessment document',
-  'they do not see bailiff notes',
   'a defendant views case file view',
   'they do not see the {string} document',
   'the defendants could see the enforcement for that warrant',

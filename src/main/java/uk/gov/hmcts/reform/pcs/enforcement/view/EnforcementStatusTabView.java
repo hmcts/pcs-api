@@ -41,12 +41,7 @@ public class EnforcementStatusTabView {
         if (pcsCaseEntity == null || pcsCase == null) {
             return;
         }
-        List<Entry> entries = currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity).stream()
-            .filter(enforcement -> enforcement.getStatus().isGenerated())
-            .sorted(NEWEST_FIRST)
-            .map(enforcement -> new Entry(enforcement,
-                                          warrantReturnService.findLatestReturn(enforcement).orElse(null)))
-            .toList();
+        List<Entry> entries = entries(currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity));
         if (entries.isEmpty()) {
             if (pcsCase.getEnforcementOrder() != null) {
                 pcsCase.getEnforcementOrder().setEnforcementStatusTabMarkdown(null);
@@ -54,6 +49,25 @@ public class EnforcementStatusTabView {
             return;
         }
         enforcementOrderOf(pcsCase).setEnforcementStatusTabMarkdown(EnforcementStatusTabMarkdown.render(entries));
+    }
+
+    /**
+     * The tab for a defendant, rendered from the enforcements they may see only
+     * ({@link uk.gov.hmcts.reform.pcs.enforcement.service.DefendantEnforcementRules}) and without the
+     * claimant's sections; null, which hides the tab, when none of them has been generated.
+     */
+    public String defendantTabMarkdown(List<EnforcementOrderEntity> visibleToDefendants) {
+        List<Entry> entries = entries(visibleToDefendants);
+        return entries.isEmpty() ? null : EnforcementStatusTabMarkdown.renderForDefendants(entries);
+    }
+
+    private List<Entry> entries(List<EnforcementOrderEntity> enforcements) {
+        return enforcements.stream()
+            .filter(enforcement -> enforcement.getStatus() != null && enforcement.getStatus().isGenerated())
+            .sorted(NEWEST_FIRST)
+            .map(enforcement -> new Entry(enforcement,
+                                          warrantReturnService.findLatestReturn(enforcement).orElse(null)))
+            .toList();
     }
 
     private static EnforcementOrder enforcementOrderOf(PCSCase pcsCase) {

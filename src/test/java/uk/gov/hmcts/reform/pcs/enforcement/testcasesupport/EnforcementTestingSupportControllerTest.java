@@ -2,16 +2,22 @@ package uk.gov.hmcts.reform.pcs.enforcement.testcasesupport;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.AllocateBailiffRequest;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.DefendantCaseRoleRequest;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -49,6 +55,8 @@ class EnforcementTestingSupportControllerTest {
     private BailiffAllocationService bailiffAllocationService;
     @Mock
     private IdamAuthenticator idamAuthenticator;
+    @Mock
+    private CaseRoleAssignmentService caseRoleAssignmentService;
     @Mock
     private EnforcementBackdateService enforcementBackdateService;
     @InjectMocks
@@ -130,6 +138,26 @@ class EnforcementTestingSupportControllerTest {
 
         assertThat(underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST).getBody())
             .containsExactly("first reason", "second reason");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"DEFENDANT", "DEFENDANT_SOLICITOR"})
+    void shouldGiveTheUserTheDefendantCaseRole(UserRole role) {
+        ResponseEntity<Void> response = underTest.assignDefendantCaseRole(
+            S2S_TOKEN, CASE_REFERENCE, new DefendantCaseRoleRequest("user-id", role.getRole()));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(caseRoleAssignmentService).assignRasRole(CASE_REFERENCE, "user-id", role);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[CLAIMANTSOLICITOR]", "[CREATOR]", "hearing-centre-admin", "DEFENDANT"})
+    void shouldRefuseAnyOtherCaseRole(String caseRole) {
+        ResponseEntity<Void> response = underTest.assignDefendantCaseRole(
+            S2S_TOKEN, CASE_REFERENCE, new DefendantCaseRoleRequest("user-id", caseRole));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(caseRoleAssignmentService);
     }
 
     @Test

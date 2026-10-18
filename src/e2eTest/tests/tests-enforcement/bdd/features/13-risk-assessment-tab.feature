@@ -85,8 +85,7 @@ Feature: Risk assessment tab
       | hearing centre team leader     | shown  | shown             |
       | claimant legal representative  | shown  | hidden            |
 
-    # Pending: there is no defendant the suite can sign in as on a local stack (HDPI-7539).
-    @pending
+    # Local stack only: the defendants are given their case roles through pcs-api testing support.
     Examples:
       | user                           | tab    | internal sections |
       | defendant legal representative | hidden | hidden            |

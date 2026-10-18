@@ -19,7 +19,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final WarrantReturnView warrantReturnView;
     private final EnforcementStatusTabView enforcementStatusTabView;
     private final RiskAssessmentTabView riskAssessmentTabView;
-    private final EnforcementDocumentVisibility enforcementDocumentVisibility;
+    private final DefendantEnforcementView defendantEnforcementView;
 
     @Override
     public void contribute(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
@@ -32,7 +32,8 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
         warrantReturnView.setLatestWarrantReturn(pcsCaseEntity, pcsCase);
         enforcementStatusTabView.setEnforcementStatusTab(pcsCaseEntity, pcsCase);
         riskAssessmentTabView.setRiskAssessmentTab(pcsCaseEntity, pcsCase, caseReference);
-        enforcementDocumentVisibility.hideFromDefendants(pcsCase, caseReference);
+        // Last, so that it restricts everything the views above set.
+        defendantEnforcementView.restrictForDefendants(pcsCaseEntity, pcsCase, caseReference);
     }
 
 }

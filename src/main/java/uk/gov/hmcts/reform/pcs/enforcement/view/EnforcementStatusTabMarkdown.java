@@ -65,20 +65,32 @@ final class EnforcementStatusTabMarkdown {
     }
 
     /**
-     * Renders the entries in the order given.
+     * Renders the entries in the order given, for internal users and the claimant side.
      */
     static String render(List<Entry> entries) {
+        return renderSections(entries, false);
+    }
+
+    /**
+     * Renders the entries in the order given for a defendant: without the "Claimant eviction confirmation"
+     * section, which is the claimant's own answer (12-enforcement-status-tab.feature).
+     */
+    static String renderForDefendants(List<Entry> entries) {
+        return renderSections(entries, true);
+    }
+
+    private static String renderSections(List<Entry> entries, boolean forDefendants) {
         List<String> blocks = new ArrayList<>();
         for (Entry entry : entries) {
             if (!blocks.isEmpty()) {
                 blocks.add(TabMarkup.sectionBreak());
             }
-            blocks.addAll(section(entry));
+            blocks.addAll(section(entry, forDefendants));
         }
         return TabMarkup.lines(blocks);
     }
 
-    private static List<String> section(Entry entry) {
+    private static List<String> section(Entry entry, boolean forDefendants) {
         EnforcementOrderEntity enforcement = entry.enforcement();
         SelectEnforcementType type = SelectEnforcementType.from(enforcement.getEnforcementOrder());
         List<String> blocks = new ArrayList<>();
@@ -103,8 +115,10 @@ final class EnforcementStatusTabMarkdown {
         blocks.add(evictionNotice(enforcement));
         blocks.add(heading(3, SCHEDULED_EVICTION));
         blocks.add(scheduledEviction(enforcement));
-        blocks.add(heading(3, CLAIMANT_EVICTION_CONFIRMATION));
-        blocks.add(claimantConfirmation(enforcement));
+        if (!forDefendants) {
+            blocks.add(heading(3, CLAIMANT_EVICTION_CONFIRMATION));
+            blocks.add(claimantConfirmation(enforcement));
+        }
         blocks.add(heading(3, EVICTION_OUTCOME));
         blocks.add(evictionOutcome(entry.latestReturn()));
         return blocks;

@@ -97,9 +97,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     };
 
     /**
-     * Internal users and the claimant side, for the Enforcement status and Risk assessment tabs. Defendants are
-     * left out until the notice of eviction can be marked as served (HDPI-7346), which is when they may see a
-     * warrant; they never see writs or the risk assessment.
+     * Internal users, the claimant side and defendants, for the Enforcement status tab. Defendants only see the
+     * tab once a warrant's notice of eviction has been served: until then the enforcement module leaves
+     * {@code enforcementStatusTabMarkdown} unset for them, and the tab's show condition hides it. They never
+     * see writs, and never see the Risk assessment tabs.
      */
     static final AccessProfile[] ENFORCEMENT_STATUS_TAB_ROLES = {
         AccessProfile.JUDGE,
@@ -114,7 +115,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.BAILIFF_MANAGER,
         AccessProfile.CLAIMANT,
         AccessProfile.PCS_SOLICITOR,
-        AccessProfile.GA_CLAIMANT_SOLICITOR
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
+        AccessProfile.DEFENDANT,
+        AccessProfile.GA_DEFENDANT_SOLICITOR
     };
 
     static final AccessProfile[] CLAIMANT_SIDE_TAB_ROLES = {
@@ -277,7 +280,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     /**
      * A section for each generated warrant and writ on the case (12-enforcement-status-tab.feature). The
      * enforcement module renders the sections into enforcementStatusTabMarkdown, and only sets it once a warrant
-     * or writ has been generated, which is what shows the tab.
+     * or writ has been generated, which is what shows the tab. For defendants it is rendered from the warrants
+     * they may see only, without the claimant's sections, and left unset until there is one.
      */
     private void buildEnforcementStatusTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("enforcementStatus", "Enforcement status")

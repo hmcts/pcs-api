@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
+import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -83,6 +84,13 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private EnforcementNotificationSender sender;
+
+    /**
+     * A case view looks up the viewer's case roles to filter what defendants see (DefendantEnforcementView); the
+     * SDK test support does not answer it, so the mock gives the viewer no case roles.
+     */
+    @MockitoBean
+    private CaseAssignmentApi caseAssignmentApi;
 
     private long caseReference;
     private Actor bailiff;

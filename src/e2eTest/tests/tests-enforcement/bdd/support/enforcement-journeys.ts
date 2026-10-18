@@ -19,6 +19,7 @@ import { staff } from '@data/user-data/staff.user.data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, currentSignedInRole, recordSignedInRole } from './session';
 import {
+  assignDefendantCaseRole,
   basicClaimFixtureClaim,
   createCaseFromFixture,
   isLocalStack,
@@ -494,9 +495,9 @@ const signInUsers: Record<string, () => string | undefined> = {
   'hearing-centre-team-leader': () =>
     isLocalStack() ? localUsers.hearingCentreTeamLeader : staff.pcs_hearing_centre_team_leader_email,
   judge: () => (isLocalStack() ? localUsers.judge : users.find(candidate => candidate.user === 'County Court Judge')?.email),
-  // Not signable in on a local stack: linking a defendant solicitor to a party goes through pcs-api
-  // testing support into CCD's case-users API, which answers 500 "Failed to create CCD case" there.
-  'defendant legal representative': () => (isLocalStack() ? undefined : user.defendantSolicitor.email),
+  // On a local stack signInAs gives this user the [DEFENDANTSOLICITOR] case role through pcs-api testing
+  // support, because link-defendant-solicitor-to-party answers 500 "Failed to create CCD case" there.
+  'defendant legal representative': () => (isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email),
   bailiff: () => (isLocalStack() ? localUsers.bailiff : undefined),
   'bailiff-admin': () => (isLocalStack() ? localUsers.bailiffAdmin : undefined),
   'bailiff-manager': () => (isLocalStack() ? localUsers.bailiffManager : undefined),
@@ -525,7 +526,8 @@ export function canSignInAs(role: string): boolean {
 
 /**
  * Signs in to XUI as `role` in place of the storage-state user, as the case tabs specs do. A defendant
- * legal representative is first linked to the scenario's case so that they can open it.
+ * legal representative is first linked to the scenario's case so that they can open it: by Notice of Change
+ * on AAT, by a [DEFENDANTSOLICITOR] case role on a local stack.
  */
 export async function signInAs(role: string, page: Page, context: BrowserContext): Promise<void> {
   if (role === CLAIMANT_LEGAL_REPRESENTATIVE) {
@@ -542,7 +544,11 @@ export async function signInAs(role: string, page: Page, context: BrowserContext
     throw new Error(`No XUI user to sign in as "${role}"`);
   }
   if (role === 'defendant legal representative') {
-    await performCommonAction('getCaseAPIDynamic', { req: 'Link Solicitor', email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    if (isLocalStack()) {
+      await assignDefendantCaseRole(String(process.env.CASE_NUMBER), email, '[DEFENDANTSOLICITOR]');
+    } else {
+      await performCommonAction('getCaseAPIDynamic', { req: 'Link Solicitor', email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    }
   }
   await signInFresh(email, page, context);
   recordSignedInRole(role);

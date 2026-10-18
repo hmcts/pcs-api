@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffNoteReadAccess;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.DefendantVisibleEnforcementAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementStatusReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.RiskLevelReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
@@ -151,16 +152,19 @@ public class EnforcementOrder {
     /**
      * Every warrant and writ on the claim, newest first, set for the case view and shown on the "Enforcement
      * status" tab. Read only, like {@link #enforcementStatus}: the enforcement records hold the data and no
-     * event edits this field.
+     * event edits this field. Defendants only get the warrants they may see, and only this field
+     * ({@link uk.gov.hmcts.reform.pcs.enforcement.view.DefendantEnforcementView}).
      */
-    @CCD(label = "Warrants and writs", searchable = false, access = {EnforcementStatusReadAccess.class})
+    @CCD(label = "Warrants and writs", searchable = false, access = {DefendantVisibleEnforcementAccess.class})
     private List<ListValue<EnforcementSummary>> enforcements;
 
     /**
      * The "Enforcement status" tab: a section for each generated warrant and writ, newest first. Set for the case
-     * view, and only when the claim has a generated warrant or writ, which is what shows the tab.
+     * view, and only when the claim has a generated warrant or writ, which is what shows the tab. Defendants get
+     * it rendered from the warrants they may see only
+     * ({@link uk.gov.hmcts.reform.pcs.enforcement.view.DefendantEnforcementView}).
      */
-    @CCD(searchable = false, access = {EnforcementStatusReadAccess.class})
+    @CCD(searchable = false, access = {DefendantVisibleEnforcementAccess.class})
     private String enforcementStatusTabMarkdown;
 
     /**
@@ -230,8 +234,8 @@ public class EnforcementOrder {
     /**
      * Whether defendants may see the current enforcement, set for the case view. Read only and internal: it is
      * derived on the enforcement record, true once the notice of eviction is served and false when service is
-     * dispensed with (HDPI-7658). Nothing reads it yet. Defendant access to the enforcement status tab and the
-     * case file view folder is to be driven from it later (HDPI-7539, HDPI-8442).
+     * dispensed with (HDPI-7658). Defendant access to the enforcement is driven from the enforcement record
+     * itself ({@link uk.gov.hmcts.reform.pcs.enforcement.service.DefendantEnforcementRules}), not from this field.
      */
     @CCD(label = "Defendants can see the enforcement", searchable = false, access = {InternalTabAccess.class})
     private YesOrNo defendantsCanSeeEnforcement;

@@ -24,7 +24,15 @@ import {
   signInAsHearingCentreAdmin,
   submitDecision,
 } from '../support/decide-enforcement';
+import { isLocalStack, localUsers } from '@config/local-stack.config';
 import { AWAITING_BAILIFF_ALLOCATION, setUpWarrantAtStatus } from '../support/approve-warrant';
+import {
+  CITIZEN_DEFENDANT,
+  DEFENDANT_LEGAL_REPRESENTATIVE,
+  canSetUpDefendants,
+  linkCitizenDefendant,
+  viewAsEachDefendant,
+} from '../support/defendant-visibility';
 import { RESCHEDULE_EVICTION, SCHEDULE_EVICTION, scheduleEviction } from '../support/schedule-eviction';
 import { MARK_NOTICE_SERVED, noticeServed } from '../support/notice-served';
 import {
@@ -113,7 +121,24 @@ When('I open the case', async ({ page }) => {
 
 // Users the suite has no sign-in for in this environment, such as a defendant on a local stack, wait on
 // HDPI-7539.
-When('a {string} opens the case', async ({ page, context, $tags }, user: string) => {
+When('a {string} opens the case', async ({ page, context, world, $tags }, user: string) => {
+  world.openedAs = user;
+  world.defendantViews = undefined;
+  if (user === DEFENDANT_LEGAL_REPRESENTATIVE && isLocalStack()) {
+    // The tab checks read the case data CCD gives this user as well as their XUI tabs.
+    world.defendantLegalRepresentative = localUsers.defendantSolicitor;
+    world.citizenDefendant = undefined;
+  }
+  if (user === CITIZEN_DEFENDANT) {
+    // Not an XUI user: their view is the case data CCD gives them, which is what pcs-frontend renders.
+    if (!canSetUpDefendants()) {
+      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case' }, $tags);
+    }
+    await linkCitizenDefendant(world);
+    world.defendantLegalRepresentative = undefined;
+    await viewAsEachDefendant(page, context, world);
+    return;
+  }
   const role = signInRoleFor(user);
   if (!canSignInAs(role)) {
     return markPending({ ticket: 'HDPI-7539', summary: `opening the case as a ${user}` }, $tags);

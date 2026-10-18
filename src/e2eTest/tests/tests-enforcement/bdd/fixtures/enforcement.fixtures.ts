@@ -18,6 +18,12 @@ export type EnforcementType =
 
 export type SubmitCasePayload = ReturnType<typeof submitCaseApiData.submitCasePayload>;
 
+/**
+ * What one defendant saw of the case: the case data CCD gave them, and whether that came with an XUI page
+ * (the legal representative) or not (a citizen, who uses pcs-frontend).
+ */
+export type DefendantView = { who: string; inXui: boolean; caseData: Record<string, unknown> };
+
 /** Per-scenario state shared between steps. */
 export class EnforcementWorld {
   /**
@@ -54,6 +60,17 @@ export class EnforcementWorld {
   evictionDate?: string;
   /** Set once an eviction has actually been scheduled on the warrant. */
   evictionScheduled = false;
+  /** Whether the eviction was scheduled with the court's permission to dispense with service. */
+  serviceDispensedWith?: boolean;
+  /** Set once the bailiff has marked the notice of eviction as served. */
+  noticeServed = false;
+  /** The defendant legal representative and citizen defendant given a case role on this scenario's case. */
+  defendantLegalRepresentative?: string;
+  citizenDefendant?: string;
+  /** What each defendant last saw of the case, captured by a "defendant views the case" step. */
+  defendantViews?: DefendantView[];
+  /** Who the last "a <user> opens the case" step opened it as. A citizen defendant has no XUI session. */
+  openedAs?: string;
   /** Whether the claimant said they could attend, once they have answered. */
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */

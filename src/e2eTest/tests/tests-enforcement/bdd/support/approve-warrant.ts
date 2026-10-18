@@ -84,14 +84,15 @@ export async function approveApplicationAsCaseworker(
  * Schedules the eviction as the allocated bailiff, which moves the warrant from "Awaiting scheduling" to
  * "Awaiting claimant confirmation" and sets the bailiff date that `markNoticeOfEvictionServed` needs.
  *
- * Answers "No" to dispensing with service, because a warrant whose service is dispensed with has no notice
- * of eviction to mark as served.
+ * Answers "No" to dispensing with service unless told otherwise, because a warrant whose service is
+ * dispensed with has no notice of eviction to mark as served.
  */
 export async function scheduleEvictionAsBailiff(
   page: Page,
   context: BrowserContext,
   world: EnforcementWorld,
-  daysAhead = 14
+  daysAhead = 14,
+  dispenseWithService: 'Yes' | 'No' = 'No'
 ): Promise<void> {
   const { signInAs } = await import('./enforcement-journeys');
   const {
@@ -110,7 +111,7 @@ export async function scheduleEvictionAsBailiff(
   when.setDate(when.getDate() + daysAhead);
   const date = `${String(when.getDate()).padStart(2, '0')}/${String(when.getMonth() + 1).padStart(2, '0')}/${when.getFullYear()}`;
   await enterEvictionDateTime(page, date, '10:00');
-  await dispenseWithServiceRadio(page, 'No').check();
+  await dispenseWithServiceRadio(page, dispenseWithService).check();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await expectCheckYourAnswers(page);
   await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
@@ -119,6 +120,7 @@ export async function scheduleEvictionAsBailiff(
 
   world.evictionDate = `${date} 10:00`;
   world.evictionScheduled = true;
+  world.serviceDispensedWith = dispenseWithService === 'Yes';
 }
 
 /**
@@ -289,4 +291,27 @@ async function driveWarrantToStatus(
     `"${status}" cannot be set up: no event or testing-support route reaches it. The warrant is in `
       + '"Awaiting claimant confirmation".'
   );
+}
+
+/**
+ * Schedules the eviction on a case whose warrant has already been approved, allocating the bailiff first if
+ * no one has been, and hands the session back to the claimant's legal representative.
+ */
+export async function scheduleEvictionOnApprovedWarrant(
+  page: Page,
+  context: BrowserContext,
+  world: EnforcementWorld,
+  dispenseWithService: 'Yes' | 'No' = 'No'
+): Promise<void> {
+  expect(world.warrantApproved, 'an approved warrant to schedule the eviction on').toBe(true);
+  try {
+    if (!world.allocatedBailiff) {
+      await allocateBailiff(world);
+      approximatePrecondition('HDPI-7356', 'the bailiff was allocated through pcs-api testing support');
+    }
+    await scheduleEvictionAsBailiff(page, context, world, 14, dispenseWithService);
+  } finally {
+    await restoreClaimantSession(page, context);
+  }
+  world.defendantViews = undefined;
 }
