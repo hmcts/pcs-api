@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +24,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+// Unwrapped with a prefix, which Jackson prepends as is: the CCD field ids are prefix + UpperCamelCase.
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class LatestWarrantReturn {
 
     @CCD(label = "Return", searchable = false, access = {EnforcementStatusReadAccess.class})

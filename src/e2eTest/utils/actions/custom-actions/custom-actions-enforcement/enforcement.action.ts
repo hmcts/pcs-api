@@ -7,6 +7,7 @@ import {
   evidenceUpload
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
+import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import {
   createCaseApiData,
   paymentApiData,
@@ -253,6 +254,8 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
     await performAction('clickButton', enforcementApplication.continueButton);
     await performValidation('errorMessage', { header: enforcementApplication.errorErrorMessageHeader, message: enforcementApplication.errMessageDynamic });
     await performAction('clickButton', enforcementApplication.continueButton);
+    cyaStore.discardAnswersTo(question1);
+    cyaStore.discardAnswersTo(question2);
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
     await performAction('clickRadioButton', { question: question2, option: enforcementApplication.yesRadioOptionHidden });
   }
