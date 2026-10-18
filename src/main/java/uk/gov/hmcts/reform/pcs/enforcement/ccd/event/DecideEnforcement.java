@@ -36,7 +36,7 @@ public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
     /**
      * enforceTheOrder moves the case to PENDING_ENFORCEMENT_ISSUED when it is submitted through XUI, while the
      * enforcement test cases stay in CASE_ISSUED. Which case states should allow enforcement events is still open
-     * (requirements README, open question 1); the start callback is what gates the event.
+     * (OPEN-QUESTIONS 1); the start callback is what gates the event.
      */
     static final State[] STATES = {State.CASE_ISSUED, State.PENDING_ENFORCEMENT_ISSUED};
 

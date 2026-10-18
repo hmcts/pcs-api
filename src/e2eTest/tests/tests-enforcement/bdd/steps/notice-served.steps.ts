@@ -2,9 +2,9 @@
 //
 // Reachable because the warrant can be driven to "Awaiting claimant confirmation": allocate a bailiff
 // through pcs-api testing support, then schedule an eviction answering "No" to dispensing with service.
-// What is still missing is the WA task (HDPI-8627), a "claimant name vs defendant name" line on the page, and
-// control of the clock, which several scenarios need in order to put the served time in the future. What
-// defendants see once the notice is served uses feature 14's checks (support/defendant-visibility.ts).
+// What is still missing is the WA task (HDPI-8627) and a "claimant name vs defendant name" line on the page.
+// The served time in the future is reachable: "today is ..." moves pcs-api's clock (support/test-clock.ts).
+// What defendants see once the notice is served uses feature 14's checks (support/defendant-visibility.ts).
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
@@ -251,7 +251,7 @@ Then('defendants cannot see the {string} tab', async ({ page, context, world }, 
   expectNoEnforcementFields(views);
 });
 
-// XUI draws the Enforcement folder for everyone (OPEN-QUESTIONS 46); what pcs-api controls is that the
+// XUI draws the Enforcement folder for everyone (OPEN-QUESTIONS 50); what pcs-api controls is that the
 // defendant gets a document in it.
 Then('defendants can see the {string} folder in case file view', async ({ world }, folder: string) => {
   expect(folder).toBe('Enforcement');

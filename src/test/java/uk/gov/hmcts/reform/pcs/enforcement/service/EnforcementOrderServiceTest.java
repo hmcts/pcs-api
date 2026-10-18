@@ -104,7 +104,7 @@ class EnforcementOrderServiceTest {
 
     @BeforeEach
     void stubSaveToReturnTheEnforcementItWasGiven() {
-        lenient().when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+        lenient().when(enforcementOrderRepository.saveAndFlush(any(EnforcementOrderEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
@@ -231,7 +231,7 @@ class EnforcementOrderServiceTest {
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
                 ArgumentCaptor.forClass(EnforcementOrderEntity.class);
         InOrder inOrder = inOrder(enforcementOrderRepository, strategy);
-        inOrder.verify(enforcementOrderRepository).save(any(EnforcementOrderEntity.class));
+        inOrder.verify(enforcementOrderRepository).saveAndFlush(any(EnforcementOrderEntity.class));
         inOrder.verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
@@ -276,7 +276,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        verify(enforcementOrderRepository).saveAndFlush(savedCaptor.capture());
         assertThat(savedCaptor.getValue().getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
         assertThat(savedCaptor.getValue().getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementDocumentScheduler)
@@ -300,7 +300,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        verify(enforcementOrderRepository).saveAndFlush(savedCaptor.capture());
         assertThat(submitted.change() != null).isEqualTo(!waived);
         assertThat(savedCaptor.getValue().getStatus())
             .isEqualTo(waived ? EnforcementStatus.AWAITING_REVIEW : EnforcementStatus.AWAITING_PAYMENT);
@@ -401,7 +401,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        verify(enforcementOrderRepository).saveAndFlush(savedCaptor.capture());
         assertThat(savedCaptor.getValue().getEnforcementOrder().getEnforcementStatus()).isNull();
         assertThat(savedCaptor.getValue().getEnforcementOrder().getBailiffNotes()).isNull();
         assertThat(savedCaptor.getValue().getEnforcementOrder().getBailiffNoteText()).isNull();
@@ -428,7 +428,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        verify(enforcementOrderRepository).saveAndFlush(savedCaptor.capture());
         assertThat(savedCaptor.getValue().getEnforcementOrder().getEnforcements()).isNull();
     }
 
@@ -487,7 +487,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        verify(enforcementOrderRepository).save(savedCaptor.capture());
+        verify(enforcementOrderRepository).saveAndFlush(savedCaptor.capture());
         assertThat(submitted.change()).isEqualTo(FEE);
         verify(enforcementFeeService).lookUpFee(enforcementType);
         verify(enforcementFeeService).requestPayment(pcsCaseEntity, savedCaptor.getValue().getId(), FEE);
@@ -538,7 +538,7 @@ class EnforcementOrderServiceTest {
             .isInstanceOf(FeeNotFoundException.class);
 
         // Then
-        verify(enforcementOrderRepository, never()).save(any());
+        verify(enforcementOrderRepository, never()).saveAndFlush(any());
         verify(enforcementFeeService, never()).requestPayment(any(), any(), any());
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }

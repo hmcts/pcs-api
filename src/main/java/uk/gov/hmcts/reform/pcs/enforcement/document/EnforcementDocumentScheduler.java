@@ -68,6 +68,11 @@ public class EnforcementDocumentScheduler {
         outputs.forEach(output -> schedule(enforcementId, output));
     }
 
+    /**
+     * Queues the document to be generated straight away. The time is the real one, not the injected clock's:
+     * db-scheduler decides when a task is due against the real system clock, so a task scheduled from a clock
+     * the end to end tests have moved forwards would wait for the real time to catch up.
+     */
     private void schedule(UUID enforcementId, EnforcementOutput output) {
         schedulerClient.scheduleIfNotExists(
             EnforcementDocumentGenerationComponent.ENFORCEMENT_DOCUMENT_TASK_DESCRIPTOR

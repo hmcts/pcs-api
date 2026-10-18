@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -64,16 +65,25 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             log.error("Could not look up the {} fee to submit the enforcement on case {}",
                       enforcementType, caseReference, e);
             return errorResponse(FEE_UNAVAILABLE_ERROR);
+        } catch (DataIntegrityViolationException e) {
+            if (!LiveEnforcementExistsException.isConstraintViolation(e)) {
+                throw e;
+            }
+            log.info("Case {}: another live enforcement was created while this application was being submitted",
+                     caseReference);
+            return errorResponse(LiveEnforcementExistsException.MESSAGE);
         }
         if (submitted.refused()) {
             return SubmitResponse.<State>builder().errors(submitted.errors()).build();
         }
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         // An application that owes nothing (restitution, or a free repeat warrant) gets no payment panel.
+        Optional<String> formattedFee = Optional.ofNullable(submitted.change())
+            .map(fee -> moneyFormatter.formatFee(fee.getFeeAmount()));
         return SubmitResponse.<State>builder()
-            .confirmationBody(Optional.ofNullable(submitted.change())
-                                  .map(fee -> getPaymentConfirmationMarkdown(
-                                      moneyFormatter.formatFee(fee.getFeeAmount()), caseReference))
+            .confirmationHeader(formattedFee.map(EnforcementSubmitEvent::paymentConfirmationHeader).orElse(null))
+            .confirmationBody(formattedFee
+                                  .map(fee -> paymentConfirmationBody(fee, caseReference))
                                   .orElse(null))
             .state(PENDING_ENFORCEMENT_ISSUED)
             .build();
@@ -83,14 +93,12 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         return SubmitResponse.<State>builder().errors(List.of(error)).build();
     }
 
-    private static String getPaymentConfirmationMarkdown(String enforcementFee, long caseReference) {
-        return """
-            ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Pay %s for HM Courts and Tribunals Service to
-            review your application</span>
-            </div>
+    private static String paymentConfirmationHeader(String enforcementFee) {
+        return "# Pay %s for HM Courts and Tribunals Service to review your application".formatted(enforcementFee);
+    }
 
+    private static String paymentConfirmationBody(String enforcementFee, long caseReference) {
+        return """
             <div class="govuk-body">
             We have saved your application, but you still need to pay for it before we can review it.
             This costs %s
@@ -104,7 +112,7 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             <a href="/cases/case-details/%d#Service%%20Request"
                     class="govuk-link govuk-link--no-visited-state">Pay your application fee</a>.
             </div>
-            """.formatted(enforcementFee, enforcementFee, caseReference);
+            """.formatted(enforcementFee, caseReference);
     }
 
 }

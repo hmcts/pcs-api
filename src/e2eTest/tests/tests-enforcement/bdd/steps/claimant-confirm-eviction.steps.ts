@@ -1,7 +1,7 @@
 // Claimant confirms the eviction appointment (feature 06). "Confirm the eviction details" exists in pcs-api with
 // an information page, "Can you attend the eviction on this date?" and the warrant's risk pages; the risk
 // assessment steps are in claimant-risk-assessment.steps.ts. The contacts, the access confirmation and the
-// unavailable dates the feature describes are not asked for yet (OPEN-QUESTIONS 25).
+// unavailable dates the feature describes are not asked for yet (OPEN-QUESTIONS 29).
 import { Given, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, pendingSteps } from '../fixtures/pending';
 import { CONFIRM_EVICTION, answerAttendance, continueToCheckYourAnswers } from '../support/claimant-risk-assessment';
@@ -25,7 +25,7 @@ When('I answer that I cannot attend', async ({ page, world }) => {
   await continueToCheckYourAnswers(page);
 });
 
-pendingSteps({ ticket: 'HDPI-7547', summary: 'Confirm the eviction only asks whether the claimant can attend (OPEN-QUESTIONS 25)' }, [
+pendingSteps({ ticket: 'HDPI-7547', summary: 'Confirm the eviction only asks whether the claimant can attend (OPEN-QUESTIONS 29)' }, [
   'I provide a contact in my organisation and a contact for the day of the eviction',
   'I confirm I will arrange for someone to gain access to, and secure, the property',
   'I give the dates I am not available',

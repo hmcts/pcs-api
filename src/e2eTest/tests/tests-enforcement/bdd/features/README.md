@@ -154,6 +154,11 @@ unless the user story calls the behaviour out; the tag can sit on a scenario or 
 outline. The demo project excludes them itself (`grepInvert`), and `scripts/enforcement-demo-videos.sh` passes
 `--grep-invert '@pending|@not-filmed'`. CI's `enforcement-bdd` project still runs every one of them.
 
+A `Scenario Outline` whose table covers a rule exhaustively (every return name, every role, every enforcement
+status) is split into a small filmed `Examples` block holding one row per distinct behaviour and a
+`@not-filmed` block holding the rest, so the video shows the behaviour once instead of replaying the whole
+journey per data value. The split keeps every row in `enforcement-bdd`.
+
 ```bash
 ENVIRONMENT=local npx playwright test --project enforcement-bdd-demo --grep-invert '@pending|@not-filmed'
 ```
@@ -186,7 +191,7 @@ precondition when it cannot reach the status a scenario asks for.
   so features 05, 07, 08 and 11 *are* reachable. (HDPI-7356)
 - **Read generated documents.** pcs-api generates every enforcement document (application, risk
   assessment, warrant or writ, notice of eviction, notice of appointment) and files it in the Enforcement
-  folder, but from stand-in Docmosis templates until the real ones exist (OPEN-QUESTIONS 38), and locally
+  folder, but from stand-in Docmosis templates until the real ones exist (OPEN-QUESTIONS 42), and locally
   `bootWithCCD` renders every template as the wiremock stub's placeholder PDF. The document steps
   (`steps/documents.steps.ts`) therefore check that a document of the right name is in the folder and who can
   see it, through the data store as each user; its content, date stamp and seal are not checked, and the
@@ -194,8 +199,15 @@ precondition when it cannot reach the status a scenario asks for.
 - **Create work allocation tasks.** Nothing creates them in any environment yet. A step that merely states
   a task exists is recorded as an approximated precondition so the scenario still runs; a step that
   interacts with one stays pending. (HDPI-8627)
-- **Control the clock.** Several scenarios say "today is 08/07/2026" to put a time in the future; nothing
-  can set the app's clock, so those stay pending.
+- **Control CCD's clock.** "Given today is 08/07/2026 and the time is 10:00" moves pcs-api's clock, through
+  `POST /testing-support/clock` (`support/test-clock.ts`), so every rule pcs-api measures against "now"
+  follows it: the eviction date must be today or in the future, the served date and the recorded eviction
+  cannot be in the future, the claimant's 72 hour confirmation deadline and the 12 calendar month free
+  repeat warrant period. CCD keeps its own clock, so the dates CCD stamps on the case stay on the real time,
+  and pcs-api queues its db-scheduler tasks from the real time, so moving the clock backwards is always safe
+  while moving it forwards leaves a task queued in the meantime waiting. The offset is process wide, so a
+  scenario that sets the clock cannot run alongside one that depends on the real date: run those on their
+  own worker (`E2E_WORKERS=1`). It is put back after each scenario that moved it.
 - **Link a defendant legal representative through Notice of Change.** pcs-api's
   `link-defendant-solicitor-to-party` answers 500 "Failed to create CCD case" locally, so `signInAs` gives the
   local defendant solicitor the `[DEFENDANTSOLICITOR]` case role instead, through

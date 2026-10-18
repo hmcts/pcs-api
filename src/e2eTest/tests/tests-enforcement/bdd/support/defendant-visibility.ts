@@ -149,7 +149,7 @@ export function enforcementDocuments(view: DefendantView): CaseDocument[] {
 
 /**
  * No defendant gets an enforcement document. CCD categories cannot be restricted by role, so XUI still draws
- * the Enforcement folder, empty (OPEN-QUESTIONS 46); what pcs-api controls is that nothing is in it.
+ * the Enforcement folder, empty (OPEN-QUESTIONS 50); what pcs-api controls is that nothing is in it.
  */
 export function expectNoEnforcementDocuments(views: DefendantView[]): void {
   for (const view of views) {
