@@ -13,7 +13,7 @@ import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
 import {
   allocateBailiffViaTestingSupport,
-  localIdamUserId,
+  idamUserId,
   localUserName,
   localUsers,
 } from '@config/local-stack.config';
@@ -267,7 +267,7 @@ export async function bringWarrantToStatus(
  * event itself. This goes through `BailiffAllocationService` instead, for the same outcome.
  */
 export async function allocateBailiff(world: EnforcementWorld, email: string = localUsers.bailiff): Promise<void> {
-  const userId = await localIdamUserId(email);
+  const userId = await idamUserId(email);
   await allocateBailiffViaTestingSupport(requireCaseReference(world), {
     userId,
     name: localUserName(email),

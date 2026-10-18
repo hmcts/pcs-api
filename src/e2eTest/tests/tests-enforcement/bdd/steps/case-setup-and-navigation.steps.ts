@@ -27,12 +27,13 @@ import {
   submitDecision,
 } from '../support/decide-enforcement';
 import { isLocalStack, localUsers } from '@config/local-stack.config';
+import { user as testUsers } from '@data/user-data';
 import { LONG_TIMEOUT } from 'playwright.config';
 import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionAsBailiff, setUpWarrantAtStatus } from '../support/approve-warrant';
 import {
   CITIZEN_DEFENDANT,
   DEFENDANT_LEGAL_REPRESENTATIVE,
-  canSetUpDefendants,
+  canLinkCitizenDefendant,
   linkCitizenDefendant,
   viewAsEachDefendant,
 } from '../support/defendant-visibility';
@@ -122,20 +123,20 @@ When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-// Users the suite has no sign-in for in this environment, such as a defendant on a local stack, wait on
+// Users the suite has no sign-in for in this environment, such as a bailiff outside a local stack, wait on
 // HDPI-7539.
 When('a {string} opens the case', async ({ page, context, world, $tags }, user: string) => {
   world.openedAs = user;
   world.defendantViews = undefined;
-  if (user === DEFENDANT_LEGAL_REPRESENTATIVE && isLocalStack()) {
+  if (user === DEFENDANT_LEGAL_REPRESENTATIVE) {
     // The tab checks read the case data CCD gives this user as well as their XUI tabs.
-    world.defendantLegalRepresentative = localUsers.defendantSolicitor;
+    world.defendantLegalRepresentative = isLocalStack() ? localUsers.defendantSolicitor : testUsers.defendantSolicitor.email;
     world.citizenDefendant = undefined;
   }
   if (user === CITIZEN_DEFENDANT) {
     // Not an XUI user: their view is the case data CCD gives them, which is what pcs-frontend renders.
-    if (!canSetUpDefendants()) {
-      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case' }, $tags);
+    if (!canLinkCitizenDefendant()) {
+      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case: only a local stack has a citizen user' }, $tags);
     }
     await linkCitizenDefendant(world);
     world.defendantLegalRepresentative = undefined;

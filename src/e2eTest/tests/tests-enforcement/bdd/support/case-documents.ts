@@ -13,7 +13,8 @@
  */
 import Axios from 'axios';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { localIdamToken, localUsers } from '@config/local-stack.config';
+import { idamToken, isLocalStack, localUsers } from '@config/local-stack.config';
+import { user } from '@data/user-data';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 
@@ -25,10 +26,13 @@ const GENERATION_TIMEOUT = 2 * VERY_LONG_TIMEOUT;
 
 export type DocumentViewer = 'internal user' | 'claimant';
 
-const viewerEmails: Record<DocumentViewer, string> = {
-  'internal user': localUsers.hearingCentreAdmin,
-  claimant: localUsers.claimantSolicitor,
-};
+/** The internal user is a hearing centre admin; the claimant is the suite's claimant legal representative. */
+function viewerEmail(viewer: DocumentViewer): string {
+  if (viewer === 'internal user') {
+    return isLocalStack() ? localUsers.hearingCentreAdmin : user.hearingCenterAdmin.email;
+  }
+  return isLocalStack() ? localUsers.claimantSolicitor : (user.localAuthorityOrg1Usr1.email as string);
+}
 
 interface CaseFileDocument {
   filename: string;
@@ -48,7 +52,7 @@ export function documentTitle(name: string, world: EnforcementWorld): string {
 
 /** The enforcement documents `viewer` can see on the case. */
 export async function enforcementDocuments(caseReference: string, viewer: DocumentViewer): Promise<string[]> {
-  const token = await localIdamToken(viewerEmails[viewer]);
+  const token = await idamToken(viewerEmail(viewer));
   const response = await Axios.get(`${process.env.DATA_STORE_URL_BASE}/cases/${caseReference}`, {
     headers: {
       Authorization: `Bearer ${token}`,

@@ -12,7 +12,7 @@ import {
   allocateBailiffViaTestingSupport,
   isLocalStack,
   localDocumentStoreIsUp,
-  localIdamUserId,
+  idamUserId,
   localUserName,
   localUsers,
 } from '@config/local-stack.config';
@@ -74,7 +74,7 @@ async function requireDocumentStore(tags: string[]): Promise<void> {
 /** Allocates the case's warrant to another bailiff user, as `allocateBailiff` does for the default one. */
 async function allocateTo(caseReference: string, email: string): Promise<void> {
   await allocateBailiffViaTestingSupport(caseReference, {
-    userId: await localIdamUserId(email),
+    userId: await idamUserId(email),
     name: localUserName(email),
     email,
   });
