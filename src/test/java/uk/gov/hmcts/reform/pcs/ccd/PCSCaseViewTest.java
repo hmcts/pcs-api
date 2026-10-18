@@ -311,7 +311,8 @@ class PCSCaseViewTest {
         // Then
         assertThat(pcsCase.getCaseAccessGroups())
             .extracting(group -> group.getValue().getCaseAccessGroupId())
-            .containsExactly("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
+            .containsExactly("PCS:PCS:prof-org-claimant-access:claimant:J1XJ9VJ",
+                             "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
     }
 
     @Test

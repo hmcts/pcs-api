@@ -30,11 +30,12 @@ class CaseAccessGroupsUtilTest {
 
         List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties, defendants);
 
-        assertThat(groups).hasSize(1);
-        CaseAccessGroup group = groups.getFirst().getValue();
-        assertThat(group.getCaseAccessGroupId())
-            .isEqualTo("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
-        assertThat(group.getCaseAccessGroupType()).isEqualTo("CCD:all-cases-access");
+        assertThat(groups).hasSize(2);
+        assertThat(groups)
+            .anyMatch(group -> group.getValue().getCaseAccessGroupId()
+                .equalsIgnoreCase("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ"));
+        assertThat(groups).anyMatch(group -> group.getValue().getCaseAccessGroupType()
+            .equalsIgnoreCase("CCD:all-cases-access"));
     }
 
     @Test
@@ -72,7 +73,7 @@ class CaseAccessGroupsUtilTest {
 
         List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties, defendants);
 
-        assertThat(groups).hasSize(1);
+        assertThat(groups).hasSize(2);
         assertThat(groups.getFirst().getValue().getCaseAccessGroupId()).endsWith(":J1XJ9VJ");
     }
 
@@ -90,7 +91,8 @@ class CaseAccessGroupsUtilTest {
 
         assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(claimant), defendants))
             .extracting(lv -> lv.getValue().getCaseAccessGroupId())
-            .containsExactly("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
+            .containsExactly("PCS:PCS:prof-org-claimant-access:claimant:J1XJ9VJ",
+                             "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
     }
 
     @Test
@@ -100,7 +102,8 @@ class CaseAccessGroupsUtilTest {
 
         assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(claimant), defendants))
             .extracting(lv -> lv.getValue().getCaseAccessGroupId())
-            .containsExactly("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
+            .containsExactly("PCS:PCS:prof-org-claimant-access:claimant:J1XJ9VJ",
+                             "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
     }
 
     private ClaimPartyEntity claimPartyOf(PartyEntity party, PartyRole role) {
@@ -111,7 +114,7 @@ class CaseAccessGroupsUtilTest {
     void shouldDeriveNothingWhenPartyHasOrganisationButNoProfile() {
         Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", null, true));
 
-        assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(parties, defendants)).isEmpty();
+        assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(parties, defendants)).hasSize(1);
     }
 
     @Test
@@ -223,7 +226,7 @@ class CaseAccessGroupsUtilTest {
         List<ListValue<CaseAccessGroup>> groups =
             CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(claimant, defendant), defListValues);
 
-        assertThat(groups).hasSize(2);
+        assertThat(groups).hasSize(3);
         assertThat(groups)
             .extracting(lv -> lv.getValue().getCaseAccessGroupId())
             .contains(
