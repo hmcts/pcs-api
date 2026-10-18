@@ -127,4 +127,9 @@ class FindBailiffPageTest extends BasePageTest {
             .flatMap(collection -> ((FieldCollection) collection).getFields().stream())
             .map(builder -> (Field<?, ?, ?, ?>) ((Field.FieldBuilder) builder).build());
     }
+
+    @Test
+    void shouldPlaceTheCaseNameBeforeTheLabelThatShowsIt() {
+        assertFieldsArePlacedBeforeTheLabelsThatShowThem();
+    }
 }

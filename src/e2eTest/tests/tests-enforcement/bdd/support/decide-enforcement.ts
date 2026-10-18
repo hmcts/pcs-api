@@ -2,7 +2,7 @@
  * The caseworker "Decide enforcement" event (feature 02). pcs-api: uk.gov.hmcts.reform.pcs.enforcement.ccd.event.DecideEnforcement.
  */
 import Axios from 'axios';
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { LONG_TIMEOUT } from 'playwright.config';
@@ -82,8 +82,9 @@ export async function expectCaseDetailsHeader(page: Page, world: EnforcementWorl
     await expect(summaryList).toBeVisible({ timeout: LONG_TIMEOUT });
     await expect(summaryList).toContainText(decideEnforcement.caseNumberKey);
     await expect(summaryList).toContainText(dashedReference);
-    await expect(summaryList).toContainText(decideEnforcement.propertyAddressKey);
-    await expect(summaryList).toContainText(decideEnforcement.partiesKey);
+    // The values as well as the keys: XUI renders a ${...} it cannot fill as an empty string.
+    await expect(summaryValue(summaryList, decideEnforcement.propertyAddressKey)).toHaveText(/\S/);
+    await expect(summaryValue(summaryList, decideEnforcement.partiesKey)).toHaveText(/\S/);
   } else {
     // XUI also shows the case number in the case header above the event, hence .first().
     await expect(page.getByRole('paragraph').filter({ hasText: `Case number: ${dashedReference}` }).first())
@@ -93,9 +94,15 @@ export async function expectCaseDetailsHeader(page: Page, world: EnforcementWorl
   }
   // "claimant name vs defendant name": the case name pcs-api builds for the case.
   if (/ vs /.test(partyNames)) {
-    const partiesOn = (await summaryList.count()) ? summaryList : page.locator('body');
+    const partiesOn = (await summaryList.count())
+      ? summaryValue(summaryList, decideEnforcement.partiesKey)
+      : page.locator('body');
     await expect(partiesOn).toContainText(' vs ');
   }
+}
+
+function summaryValue(summaryList: Locator, key: string): Locator {
+  return summaryList.locator('.govuk-summary-list__row').filter({ hasText: key }).locator('.govuk-summary-list__value');
 }
 
 export async function expectCaseDetailsNotEditable(page: Page): Promise<void> {

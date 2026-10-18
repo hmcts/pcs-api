@@ -48,13 +48,19 @@ public class RecordWarrantReturnPage implements CcdPageConfiguration, CcdPage {
             .page(pageKey, this::midEvent)
             .pageLabel(PAGE_LABEL)
             .label(pageKey + "-line-separator", "---")
-            .label(pageKey + "-eviction-details", "${warrantReturnEvictionDetailsMarkup}")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantReturn)
+            // Before the label, which XUI otherwise renders blank (see DecideEnforcementPage).
             // RetainHiddenValue, or the markup is dropped on the way to check your answers and the whole
             // eviction-details table is blank when the bailiff presses Previous. The event drops
             // NEVER_SHOW fields from the summary, so this does not reach check your answers itself.
             .readonly(WarrantReturnDetails::getEvictionDetailsMarkup, NEVER_SHOW, true)
+            .done()
+            .done()
+            // Outside the warrantReturn scope, which would prefix the label's id.
+            .label(pageKey + "-eviction-details", "${warrantReturnEvictionDetailsMarkup}")
+            .complex(PCSCase::getEnforcementOrder)
+            .complex(EnforcementOrder::getWarrantReturn)
             .mandatory(WarrantReturnDetails::getType)
             .mandatory(WarrantReturnDetails::getOutcome, FINAL)
             .mandatory(WarrantReturnDetails::getSuccessfulReturnName, SUCCESSFUL)
