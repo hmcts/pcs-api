@@ -76,7 +76,7 @@ class BailiffNotePersistenceIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("lists an enforcement's notes newest first, and only that enforcement's")
     void listsNotesNewestFirstPerEnforcement() {
-        EnforcementOrderEntity closed = savedEnforcement(2222333344445555L);
+        EnforcementOrderEntity closed = savedEnforcement(2222333344445555L, EnforcementStatus.CLOSED);
         EnforcementOrderEntity live = savedEnforcement(2222333344445555L);
         UUID older = saveNote(live, "older", FIRST_FEB, "Sam", "Jones");
         UUID newer = saveNote(live, "newer", THIRD_FEB, "Alex", "Smith");
@@ -146,6 +146,10 @@ class BailiffNotePersistenceIT extends AbstractPostgresContainerIT {
     }
 
     private EnforcementOrderEntity savedEnforcement(long caseReference) {
+        return savedEnforcement(caseReference, EnforcementStatus.AWAITING_SCHEDULING);
+    }
+
+    private EnforcementOrderEntity savedEnforcement(long caseReference, EnforcementStatus status) {
         ClaimEntity claim = pcsCaseRepository.findByCaseReference(caseReference)
             .map(pcsCase -> pcsCase.getClaims().getFirst())
             .orElseGet(() -> savedClaim(caseReference));
@@ -158,7 +162,7 @@ class BailiffNotePersistenceIT extends AbstractPostgresContainerIT {
         enforcement.setClaim(claim);
         enforcement.setEnforcementOrder(EnforcementOrder.builder().build());
         enforcement.setStatementOfTruth(statementOfTruthRepository.save(statementOfTruth));
-        enforcement.setStatus(EnforcementStatus.AWAITING_SCHEDULING);
+        enforcement.setStatus(status);
         enforcement.setStatusUpdatedAt(Instant.now());
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcement);
         entityManager.flush();

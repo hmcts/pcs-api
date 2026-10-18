@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -63,6 +64,13 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             log.error("Could not look up the {} fee to submit the enforcement on case {}",
                       enforcementType, caseReference, e);
             return errorResponse(FEE_UNAVAILABLE_ERROR);
+        } catch (DataIntegrityViolationException e) {
+            if (!LiveEnforcementExistsException.isConstraintViolation(e)) {
+                throw e;
+            }
+            log.info("Case {}: another live enforcement was created while this application was being submitted",
+                     caseReference);
+            return errorResponse(LiveEnforcementExistsException.MESSAGE);
         }
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         // An application that owes nothing (restitution, or a free repeat warrant) gets no payment panel.
