@@ -29,6 +29,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
@@ -76,6 +77,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
@@ -87,6 +89,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       }
@@ -104,6 +107,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
@@ -199,6 +203,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
@@ -232,6 +237,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
