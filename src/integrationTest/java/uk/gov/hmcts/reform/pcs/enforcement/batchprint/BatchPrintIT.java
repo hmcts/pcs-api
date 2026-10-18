@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.enforcement.batchprint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
+import feign.Request;
 import jakarta.persistence.EntityManager;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -29,6 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -47,10 +52,13 @@ import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantRepository;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -119,12 +127,18 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
     private OAuth2AuthorizedClientManager authorizedClientManager;
     @MockitoBean
     private CaseDocumentClientApi caseDocumentClientApi;
+    @MockitoBean
+    private RoleAssignmentApi roleAssignmentApi;
+    @MockitoBean
+    private FeatureToggleService featureToggleService;
 
     @BeforeEach
     void setUp() {
         idamHelper.stubIdamSystemUser(authorizedClientManager, "system-token");
         when(authTokenGenerator.generate()).thenReturn("s2s-token");
         when(idamUserInfoApi.getUserInfo(anyString())).thenReturn(UserInfo.builder().uid("BOB-ID").build());
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(true);
+        givenAmRoles("BOB-ID", "bailiff");
 
         EnforcementOrderEntity first = warrant(FIRST, "WP-00000001", LocalDateTime.of(2026, 10, 15, 10, 0), BAILIFF);
         document(first, DocumentType.WARRANT_OF_POSSESSION, "Warrant 1", 1);
@@ -212,6 +226,52 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("refuses a user whose IDAM token is not valid with 401")
+    void refusesAnInvalidToken() throws Exception {
+        Request request = Request.create(Request.HttpMethod.GET, "/o/userinfo", Map.of(), null,
+                                         StandardCharsets.UTF_8, null);
+        when(idamUserInfoApi.getUserInfo("Bearer expired-token"))
+            .thenThrow(new FeignException.Unauthorized("expired", request, null, Map.of()));
+
+        mockMvc.perform(batchPrintAs("Bearer expired-token", "", FIRST))
+            .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/enforcement/batch-print/cases")
+                            .header(AUTHORIZATION, "Bearer expired-token")
+                            .header(SERVICE_AUTHORIZATION, "s2s"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("refuses with 403 a user still allocated a warrant who no longer has the bailiff role in AM")
+    void refusesAUserWithoutTheBailiffRole() throws Exception {
+        givenAmRoles("BOB-ID", "hearing-centre-admin");
+
+        mockMvc.perform(batchPrint("", FIRST))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(batchPrint("/check", FIRST))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(get("/enforcement/batch-print/cases")
+                            .header(AUTHORIZATION, BAILIFF_TOKEN)
+                            .header(SERVICE_AUTHORIZATION, "s2s"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("answers 404 on every endpoint while the enforcement-enabled flag is off")
+    void answersNotFoundWhileEnforcementIsOff() throws Exception {
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(false);
+
+        mockMvc.perform(batchPrint("", FIRST))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(batchPrint("/check", FIRST))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/enforcement/batch-print/cases")
+                            .header(AUTHORIZATION, BAILIFF_TOKEN)
+                            .header(SERVICE_AUTHORIZATION, "s2s"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
     @DisplayName("indexes active allocations by lower-cased bailiff id (V050)")
     void indexesActiveAllocationsByBailiff() {
         assertThat(jdbcTemplate.queryForObject(
@@ -221,11 +281,26 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
             .contains("WHERE (ended_at IS NULL)");
     }
 
-    private RequestBuilder batchPrint(String path, long... caseReferences)
+    private void givenAmRoles(String userId, String roleName) {
+        when(roleAssignmentApi.getRoles(anyString(), anyString(), eq(userId)))
+            .thenReturn(RoleAssignmentResponse.builder()
+                            .roleAssignment(List.of(RoleAssignment.builder()
+                                                        .actorId(userId)
+                                                        .roleType("ORGANISATION")
+                                                        .roleName(roleName)
+                                                        .build()))
+                            .build());
+    }
+
+    private RequestBuilder batchPrint(String path, long... caseReferences) throws IOException {
+        return batchPrintAs(BAILIFF_TOKEN, path, caseReferences);
+    }
+
+    private RequestBuilder batchPrintAs(String authorization, String path, long... caseReferences)
         throws IOException {
         List<String> references = Arrays.stream(caseReferences).mapToObj(String::valueOf).toList();
         return post("/enforcement/batch-print" + path)
-            .header(AUTHORIZATION, BAILIFF_TOKEN)
+            .header(AUTHORIZATION, authorization)
             .header(SERVICE_AUTHORIZATION, "s2s")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(Map.of("caseReferences", references)));

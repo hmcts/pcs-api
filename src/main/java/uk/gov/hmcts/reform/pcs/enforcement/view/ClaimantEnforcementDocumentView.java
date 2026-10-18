@@ -4,18 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureCaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementViewer;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementViewerService;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementOutput;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Keeps the internal-only enforcement documents (the warrants and the notice of eviction, see
@@ -30,18 +28,12 @@ public class ClaimantEnforcementDocumentView {
 
     private static final String ENFORCEMENT_CATEGORY_ID = FeatureCaseFileCategory.ENFORCEMENT.getId();
 
-    private static final Set<String> CLAIMANT_ROLES = Stream.of(
-        UserRole.CREATOR,
-        UserRole.CLAIMANT_SOLICITOR,
-        UserRole.GA_CLAIMANT_SOLICITOR,
-        UserRole.CLAIMANT
-    ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
-
-    private final UserRoleService userRoleService;
+    private final EnforcementViewerService enforcementViewerService;
 
     /**
      * Removes the internal-only enforcement documents from the case file when the current user is on the
-     * claimant side of the case.
+     * claimant side of the case. Everyone else who is not an internal user is left to
+     * {@link DefendantEnforcementView}, which shows them a served warrant's notice of eviction.
      */
     public void restrictForClaimants(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference) {
         if (pcsCase == null) {
@@ -55,7 +47,8 @@ public class ClaimantEnforcementDocumentView {
         if (internalOnly.isEmpty()) {
             return;
         }
-        if (!isClaimant(userRoleService.getCurrentUserCaseRoles(caseReference).roles())) {
+        EnforcementViewer viewer = enforcementViewerService.currentViewer(pcsCaseEntity, pcsCase, caseReference);
+        if (viewer != EnforcementViewer.CLAIMANT) {
             return;
         }
         pcsCase.setAllDocuments(allDocuments.stream()
@@ -80,9 +73,5 @@ public class ClaimantEnforcementDocumentView {
         return document != null
             && document.getValue() != null
             && ENFORCEMENT_CATEGORY_ID.equals(document.getValue().getCategoryId());
-    }
-
-    private static boolean isClaimant(Collection<String> roles) {
-        return roles != null && roles.stream().anyMatch(CLAIMANT_ROLES::contains);
     }
 }
