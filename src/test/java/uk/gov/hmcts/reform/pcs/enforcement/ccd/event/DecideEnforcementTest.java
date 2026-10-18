@@ -63,9 +63,9 @@ class DecideEnforcementTest extends BaseEventTest {
     @Test
     void shouldShowTheHeaderAndTheDecisionFields() {
         assertThat(getEventFieldIds()).containsExactly(
-            "decideEnforcement-caseDetails",
             "formattedPropertyAddress",
             "formattedCaseName",
+            "decideEnforcement-caseDetails",
             "enforcementDecision",
             "enforcementRejectionReason");
     }

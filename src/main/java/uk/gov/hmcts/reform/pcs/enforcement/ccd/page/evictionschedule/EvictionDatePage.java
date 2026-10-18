@@ -36,10 +36,11 @@ public class EvictionDatePage implements CcdPageConfiguration {
             .page(pageId, this::midEvent)
             .pageLabel(pageLabel)
             .label(pageId + "-line-separator", "---")
-            .label(pageId + "-eviction-details", "${evictionDetailsMarkup}")
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getEvictionSchedule)
+                    // Before the label, which XUI otherwise renders blank (see DecideEnforcementPage).
                     .readonly(EvictionSchedule::getEvictionDetailsMarkup, NEVER_SHOW, true)
+                    .label(pageId + "-eviction-details", "${evictionDetailsMarkup}")
                     .mandatory(EvictionSchedule::getEvictionDateTime)
                     .mandatory(EvictionSchedule::getEvictionDispenseWithService)
                 .done()
