@@ -1,5 +1,5 @@
 // Notifications (GOV.UK Notify emails, dashboard notifications) and work allocation tasks (feature 18 and others).
-import { Given, When } from '../fixtures/enforcement.fixtures';
+import { Given, Then, When } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { openCaseSummary, startEvent, xuiEvents } from '../support/enforcement-journeys';
 
@@ -41,6 +41,21 @@ Given('{string} is the allocated bailiff with an open {string} task', async ({},
 Given('the enforcement has open {string} and {string} tasks', async ({}, first: string, second: string) =>
   noTasksYet(`the "${first}" and "${second}" tasks are not created`));
 
+// Closing a task is approximated the same way, so a scenario about the event submit is still filmed. In the work
+// allocation feature (18) the task is the point of the scenario, so there it stays pending.
+Then('the {string} task is completed', async ({ $tags }, task: string) => {
+  if ($tags.includes('@work-allocation')) {
+    return markPending({ ticket: 'HDPI-8627', summary: `completing the "${task}" task` }, $tags);
+  }
+  noTasksYet(`the "${task}" task is not created, so it cannot be completed`);
+});
+
+Then('open bailiff tasks for the enforcement are cancelled', async () =>
+  noTasksYet('no bailiff tasks are created, so none are cancelled'));
+
+Then('open bailiff tasks are cancelled', async () =>
+  noTasksYet('no bailiff tasks are created, so none are cancelled'));
+
 pendingSteps({ ticket: 'HDPI-7538', summary: 'Enforcement notifications' }, [
   'the claimant receives the {string} email',
   'the claimant receives the {string} email telling them to give the writ to a High Court Enforcement Officer',
@@ -57,7 +72,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'Enforcement work allocation tasks'
   'a {string} work allocation task is created',
   'the task is due in 10 working days',
   'I select the {string} task from the case {string} tab',
-  'the {string} task is completed',
   'an {string} task is created',
   'I select the {string} task',
   'a {string} task is created and assigned to {string}',
@@ -71,8 +85,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'Enforcement work allocation tasks'
   'the scheduled task job runs',
   'a {string} task is created and assigned to me',
   'selecting the task opens the {string} journey',
-  'open bailiff tasks for the enforcement are cancelled',
-  'open bailiff tasks are cancelled',
   'I select the tasks for the three cases',
   'a {string} task is created for {string}',
   'the {string} event is submitted',

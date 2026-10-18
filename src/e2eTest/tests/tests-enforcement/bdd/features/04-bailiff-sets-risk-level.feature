@@ -35,9 +35,9 @@ Feature: Bailiff sets the eviction risk level
     And the hint "You can enter up to 6,800 characters."
     And the text box accepts letters, numbers and special characters up to 6,800 characters
 
-  # Runs up to the task completion, which needs WA (HDPI-8627). The warrant number on the confirmation needs a
-  # pcs-api built with it (SetRiskLevel now uses ConfirmationNumbers.caseAndWarrant).
-  @HDPI-7343 @HDPI-7350 @pending
+  # The warrant number on the confirmation needs a pcs-api built with it (SetRiskLevel uses
+  # ConfirmationNumbers.caseAndWarrant). The task completion is approximated until WA tasks exist (HDPI-8627).
+  @HDPI-7343 @HDPI-7350
   Scenario Outline: Setting the risk level
     Given I am on the "Set risk level" screen
     When I select "<level>" and provide any required reason
