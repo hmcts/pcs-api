@@ -1,4 +1,4 @@
-@HDPI-7342 @enforcement @bailiff @pending
+@HDPI-7342 @enforcement @bailiff
 Feature: Bailiff reviews an updated claimant risk assessment
   As a bailiff
   I want to know when the claimant changes the risk assessment
@@ -12,14 +12,14 @@ Feature: Bailiff reviews an updated claimant risk assessment
     And a "Review updated risk information" task is assigned to me
     And I am signed in to XUI as the allocated bailiff
 
-  @HDPI-7552 @HDPI-7350
+  @HDPI-7552 @HDPI-7350 @pending
   Scenario: Risk assessment tab highlights the changes
     When I open the "Risk assessment" tab
     Then I see an important banner with links to each question whose answer changed
     And I see the print button, the bailiff notes and the current risk level "Medium"
     And I see the original and updated answers side by side in a table
 
-  @HDPI-7552
+  @HDPI-7552 @pending
   Scenario: Banner link jumps to the changed question
     Given I am on the "Risk assessment" tab
     When I select the banner link for "Is anyone living at the property vulnerable?"
@@ -37,13 +37,13 @@ Feature: Bailiff reviews an updated claimant risk assessment
     Then the original answers are dated "25/02/2026"
     And the updated answers are dated "06/03/2026"
 
-  @HDPI-7552 @HDPI-7343
+  @HDPI-7552 @HDPI-7343 @pending
   Scenario: Task opens set risk level with the current level pre-selected
     When I select the "Review updated risk information" task
     Then the "Set risk level" journey opens with "Medium" pre-selected
     And I can change it
 
-  @HDPI-7552
+  @HDPI-7552 @pending
   Scenario: Completing set risk level clears the banner and the task
     Given I have started the "Set risk level" journey from the task
     When I submit the risk level "High" with a reason

@@ -13,9 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffNoteService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
@@ -46,6 +48,10 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
     private BailiffNoteService bailiffNoteService;
+    @Mock
+    private ClaimantRiskAssessmentService claimantRiskAssessmentService;
+    @Mock
+    private EnforcementNotificationService enforcementNotificationService;
 
     private PcsCaseEntity pcsCaseEntity;
     private EnforcementOrderEntity enforcement;
@@ -70,9 +76,11 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
         EnforcementStatusTransitions transitions = new EnforcementStatusTransitions(clock);
         mediator = new EnforcementOrderMediator(currentEnforcementService, clock);
         evictionScheduleService = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
-                                                              transitions, bailiffNoteService);
+                                                              transitions, bailiffNoteService,
+                                                              enforcementNotificationService);
         claimantEvictionConfirmationService = new ClaimantEvictionConfirmationService(
-            currentEnforcementService, enforcementOrderRepository, transitions);
+            currentEnforcementService, enforcementOrderRepository, transitions, claimantRiskAssessmentService,
+            enforcementNotificationService);
     }
 
     @ParameterizedTest

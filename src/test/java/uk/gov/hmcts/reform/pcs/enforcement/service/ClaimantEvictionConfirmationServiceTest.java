@@ -5,23 +5,29 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -39,11 +45,16 @@ class ClaimantEvictionConfirmationServiceTest {
     private static final UUID CLAIM_ID = UUID.randomUUID();
     private static final Instant NOW = Instant.parse("2026-10-17T09:00:00Z");
     private static final Instant EARLIER = Instant.parse("2026-10-01T09:00:00Z");
+    private static final LocalDateTime EVICTION = LocalDateTime.parse("2026-10-25T10:00");
 
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
+    @Mock
+    private ClaimantRiskAssessmentService claimantRiskAssessmentService;
+    @Mock
+    private EnforcementNotificationService enforcementNotificationService;
 
     private ClaimantEvictionConfirmationService underTest;
 
@@ -51,7 +62,8 @@ class ClaimantEvictionConfirmationServiceTest {
     void setUp() {
         underTest = new ClaimantEvictionConfirmationService(
             new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository), enforcementOrderRepository,
-            new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)));
+            new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)), claimantRiskAssessmentService,
+            enforcementNotificationService);
     }
 
     @Test
@@ -65,6 +77,8 @@ class ClaimantEvictionConfirmationServiceTest {
         assertThat(enforcement.getClaimantCanAttend()).isTrue();
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementNotificationService).notifyClaimantOfConfirmedAttendance(CASE_REFERENCE, EVICTION);
+        verify(enforcementNotificationService, never()).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
     }
 
     @Test
@@ -78,6 +92,22 @@ class ClaimantEvictionConfirmationServiceTest {
         assertThat(enforcement.getClaimantCanAttend()).isFalse();
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementNotificationService).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
+        verify(enforcementNotificationService, never()).notifyClaimantOfConfirmedAttendance(anyLong(), any());
+    }
+
+    @Test
+    void shouldRecordTheRiskAnswersThenTheAttendanceAnswer() {
+        EnforcementOrderEntity enforcement = givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION))
+            .getFirst();
+        EnforcementOrder submitted = EnforcementOrder.builder().claimantCanAttendEviction(YesOrNo.YES).build();
+
+        underTest.recordConfirmation(CASE_REFERENCE, YesOrNo.YES, submitted);
+
+        InOrder inOrder = inOrder(claimantRiskAssessmentService, enforcementOrderRepository);
+        inOrder.verify(claimantRiskAssessmentService).recordAnswers(CASE_REFERENCE, submitted);
+        inOrder.verify(enforcementOrderRepository).save(enforcement);
+        assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
     }
 
     @Test
@@ -106,6 +136,7 @@ class ClaimantEvictionConfirmationServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(status);
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(EARLIER);
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -116,6 +147,7 @@ class ClaimantEvictionConfirmationServiceTest {
 
         assertThat(enforcement.getStatus()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -125,6 +157,7 @@ class ClaimantEvictionConfirmationServiceTest {
         underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
 
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -142,7 +175,7 @@ class ClaimantEvictionConfirmationServiceTest {
     void shouldNotChangeAnythingWhenThereIsNoAnswer() {
         underTest.recordAttendance(CASE_REFERENCE, null);
 
-        verifyNoInteractions(pcsCaseService, enforcementOrderRepository);
+        verifyNoInteractions(pcsCaseService, enforcementOrderRepository, enforcementNotificationService);
     }
 
     private List<EnforcementOrderEntity> givenEnforcements(EnforcementOrderEntity... enforcements) {
@@ -157,6 +190,7 @@ class ClaimantEvictionConfirmationServiceTest {
             .id(UUID.randomUUID())
             .status(status)
             .statusUpdatedAt(status == null ? null : EARLIER)
+            .bailiffDate(EVICTION)
             .build();
     }
 }

@@ -49,7 +49,7 @@ Feature: Claimant confirms the eviction appointment
     And I submit the event
     Then no "Review updated risk information" task is created
 
-  @HDPI-7350 @pending
+  @HDPI-7350 @HDPI-7552
   Scenario: Claimant sees their original and updated answers on the risk assessment tab
     Given I have updated my risk assessment
     When I open the "Risk assessment" tab

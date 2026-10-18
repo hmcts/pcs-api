@@ -87,8 +87,9 @@ export const localUsers = {
 export type LocalUserKey = keyof typeof localUsers;
 
 /**
- * Display names for the local users, as the IDAM simulator holds them. `BailiffAllocationService` stores
- * the bailiff's name alongside the allocation, so the allocation shortcut needs a real one.
+ * Display names for the local users, as the IDAM simulator holds them (`CftlibConfig.nameStaffUsers`) and
+ * wiremock's staff reference data stub lists them. `BailiffAllocationService` stores the bailiff's name
+ * alongside the allocation, so the allocation shortcut needs a real one.
  */
 export const localUserNames: Record<string, string> = {
   [localUsers.bailiff]: 'Bob Bailiff',
@@ -259,9 +260,10 @@ export async function localIdamUserId(email: string): Promise<string> {
  * Allocates the case's current warrant to a bailiff through pcs-api testing support, moving it from
  * "Awaiting bailiff allocation" to "Awaiting scheduling".
  *
- * The real `allocateBailiff` event cannot be driven outside AAT: its StaffUser type-ahead needs staff
- * reference data that neither cftlib nor a preview environment runs. This is the same shortcut as
- * `fee-paid` — it goes through `BailiffAllocationService`, so the outcome matches the event.
+ * A shortcut for scenarios that only need the warrant allocated, like `fee-paid`: it goes through
+ * `BailiffAllocationService`, so the outcome matches the `allocateBailiff` event. Locally that event can be
+ * driven too, because wiremock stubs the staff reference data its StaffUser type-ahead reads; a preview
+ * environment has no such stub.
  *
  * Needs a user bearer token as well as the S2S one, because the service records who made the allocation.
  */

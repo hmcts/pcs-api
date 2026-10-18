@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -84,6 +85,42 @@ class EnforcementNotificationServiceTest {
 
         assertThat(personalisationSentFor(EnforcementEmail.EVICTION_RESCHEDULED))
             .containsExactly(Map.entry(EnforcementEmail.EVICTION_DATE_TIME, "Thursday 25 June 2026 at 10:00am"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, WARRANT_APPLICATION_RECEIVED",
+        "WRIT, WRIT_APPLICATION_RECEIVED",
+        "WARRANT_OF_RESTITUTION, WARRANT_OF_RESTITUTION_APPLICATION_RECEIVED",
+        "WRIT_OF_RESTITUTION, WRIT_OF_RESTITUTION_APPLICATION_RECEIVED",
+    })
+    void shouldTellTheClaimantTheApplicationWasReceived(SelectEnforcementType enforcementType,
+                                                       EnforcementEmail email) {
+        underTest.notifyClaimantOfApplicationReceived(CASE_REFERENCE, enforcementType);
+
+        assertThat(personalisationSentFor(email)).isEmpty();
+    }
+
+    @Test
+    void shouldNotEmailThatAnApplicationOfUnknownTypeWasReceived() {
+        underTest.notifyClaimantOfApplicationReceived(CASE_REFERENCE, null);
+
+        verifyNoInteractions(sender);
+    }
+
+    @Test
+    void shouldTellTheClaimantTheyConfirmedTheEvictionDate() {
+        underTest.notifyClaimantOfConfirmedAttendance(CASE_REFERENCE, EVICTION_DATE_TIME);
+
+        assertThat(personalisationSentFor(EnforcementEmail.CLAIMANT_CONFIRMED_ATTENDANCE))
+            .containsExactly(Map.entry(EnforcementEmail.EVICTION_DATE_TIME, "Thursday 25 June 2026 at 10:00am"));
+    }
+
+    @Test
+    void shouldTellTheClaimantTheySaidTheyCannotAttend() {
+        underTest.notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
+
+        assertThat(personalisationSentFor(EnforcementEmail.CLAIMANT_DECLINED_ATTENDANCE)).isEmpty();
     }
 
     /**

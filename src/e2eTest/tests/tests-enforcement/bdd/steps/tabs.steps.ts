@@ -373,7 +373,6 @@ pendingSteps({ ticket: 'HDPI-7419', summary: 'Setting up a closed warrant and a 
   'the case has a closed warrant {string} generated on {string}',
   'a live warrant of restitution {string} generated on {string}',
   '{string} is listed above {string}',
-  'the {string} tab lists {string} above {string}',
   'a {string} has been generated',
   'the previous warrant ended with {string}',
   'the claimant applies for a warrant of restitution',

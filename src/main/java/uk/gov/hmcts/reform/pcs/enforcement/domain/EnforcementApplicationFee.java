@@ -10,7 +10,9 @@ import java.util.function.Function;
  * has a fee code or a fee amount.
  *
  * <p>Both the confirmation screen's payment panel and the status a submitted application starts in come from
- * the single mapping below, so they cannot disagree about whether a type is paid for.</p>
+ * the single mapping below, so they cannot disagree about whether a type is paid for. A free repeat warrant
+ * (HDPI-8424) is a payable type whose fee is waived: EnforcementOrderService decides that, and the
+ * confirmation screen follows its answer.</p>
  */
 public final class EnforcementApplicationFee {
 

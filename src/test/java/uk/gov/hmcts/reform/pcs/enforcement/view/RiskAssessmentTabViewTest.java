@@ -13,19 +13,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.ClaimantRiskAnswers;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffNoteEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.RiskAssessmentUpdateEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffNoteService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +48,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.TRANS
 class RiskAssessmentTabViewTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
+    private static final Instant UPDATED_AT = Instant.parse("2026-03-06T10:00:00Z");
 
     @Mock
     private CurrentEnforcementService currentEnforcementService;
@@ -49,13 +56,16 @@ class RiskAssessmentTabViewTest {
     private BailiffNoteService bailiffNoteService;
     @Mock
     private UserRoleService userRoleService;
+    @Mock
+    private ClaimantRiskAssessmentService claimantRiskAssessmentService;
 
     private RiskAssessmentTabView underTest;
     private final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
     @BeforeEach
     void setUp() {
-        underTest = new RiskAssessmentTabView(currentEnforcementService, bailiffNoteService, userRoleService);
+        underTest = new RiskAssessmentTabView(currentEnforcementService, bailiffNoteService, userRoleService,
+                                             claimantRiskAssessmentService);
         lenient().when(bailiffNoteService.getNotes(any())).thenReturn(List.of());
         signedInWith("bailiff");
     }
@@ -234,6 +244,73 @@ class RiskAssessmentTabViewTest {
         assertThat(enforcementOrder.getShowRiskAssessmentTab()).isEqualTo(YesOrNo.NO);
         assertThat(enforcementOrder.getRiskAssessmentPrintMarkdown()).isNull();
         assertThat(enforcementOrder.getRiskAssessmentClaimantMarkdown()).isNull();
+    }
+
+    @Test
+    void shouldShowTheUpdatedAnswersAndAskBailiffStaffToReviewThem() {
+        EnforcementOrderEntity warrant = warrant(EnforcementStatus.CLAIMANT_CONFIRMED);
+        warrant.setRiskLevel(RiskLevel.MEDIUM);
+        warrant.setRiskLevelSetAt(UPDATED_AT.minusSeconds(60));
+        givenEnforcements(warrant);
+        givenUpdate(warrant);
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        underTest.setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+        assertThat(enforcementOrder.getRiskAssessmentInternalMarkdown())
+            .startsWith("<div class=\"govuk-notification-banner\"")
+            .contains("<li>Is anyone living at the property vulnerable?</li>")
+            .doesNotContain("<li>Is it difficult to access the property?</li>");
+        assertThat(enforcementOrder.getRiskAssessmentClaimantMarkdown())
+            .contains("The claimant updated this information on 6 March 2026")
+            .contains("<th scope=\"col\" class=\"govuk-table__header\">Updated answer</th>")
+            .doesNotContain(RiskAssessmentTabMarkdown.UPDATE_BANNER);
+    }
+
+    @Test
+    void shouldStopAskingForAReviewOnceTheRiskLevelIsSetAfterTheUpdate() {
+        EnforcementOrderEntity warrant = warrant(EnforcementStatus.CLAIMANT_CONFIRMED);
+        warrant.setRiskLevel(RiskLevel.HIGH);
+        warrant.setRiskLevelReason("Reviewed");
+        warrant.setRiskLevelSetAt(UPDATED_AT.plusSeconds(60));
+        givenEnforcements(warrant);
+        givenUpdate(warrant);
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        underTest.setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        assertThat(pcsCase.getEnforcementOrder().getRiskAssessmentInternalMarkdown())
+            .doesNotContain(RiskAssessmentTabMarkdown.UPDATE_BANNER);
+        assertThat(pcsCase.getEnforcementOrder().getRiskAssessmentClaimantMarkdown()).contains("Updated answer");
+    }
+
+    @Test
+    void shouldTellTheClaimantSideTheyUpdatedTheirAnswersWithoutTheReviewBanner() {
+        signedInWith("caseworker-pcs-solicitor", "[CLAIMANTSOLICITOR]");
+        EnforcementOrderEntity warrant = warrant(EnforcementStatus.CLAIMANT_CONFIRMED);
+        givenEnforcements(warrant);
+        givenUpdate(warrant);
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        underTest.setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        assertThat(pcsCase.getEnforcementOrder().getRiskAssessmentClaimantMarkdown())
+            .contains("You updated this information on 6 March 2026 when you confirmed the eviction")
+            .doesNotContain(RiskAssessmentTabMarkdown.UPDATE_BANNER);
+    }
+
+    private void givenUpdate(EnforcementOrderEntity warrant) {
+        ClaimantRiskAnswers original = ClaimantRiskAnswers.builder()
+            .anyRiskToBailiff(YesNoNotSure.NO)
+            .vulnerablePeoplePresent(YesNoNotSure.NO)
+            .isDifficultToAccessProperty(VerticalYesNo.NO)
+            .additionalInformationSelect(VerticalYesNo.NO)
+            .build();
+        ClaimantRiskAnswers updated = original.toBuilder().vulnerablePeoplePresent(YesNoNotSure.YES).build();
+        when(claimantRiskAssessmentService.getOriginalAnswers(warrant)).thenReturn(Optional.of(original));
+        when(claimantRiskAssessmentService.getLatestUpdate(warrant)).thenReturn(Optional.of(
+            RiskAssessmentUpdateEntity.builder().answers(updated).updatedAt(UPDATED_AT).build()));
     }
 
     private void givenEnforcements(EnforcementOrderEntity... enforcements) {

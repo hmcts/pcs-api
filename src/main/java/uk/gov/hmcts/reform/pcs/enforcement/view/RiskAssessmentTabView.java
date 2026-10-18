@@ -11,10 +11,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.RiskAssessmentUpdateEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffEnforcementRules;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffNoteService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +56,7 @@ public class RiskAssessmentTabView {
     private final CurrentEnforcementService currentEnforcementService;
     private final BailiffNoteService bailiffNoteService;
     private final UserRoleService userRoleService;
+    private final ClaimantRiskAssessmentService claimantRiskAssessmentService;
 
     /**
      * Every field is set either way rather than left alone, because a draft "Enforce the order" may have
@@ -80,14 +84,37 @@ public class RiskAssessmentTabView {
         EnforcementOrderEntity enforcement = warrant.get();
         EnforcementOrder enforcementOrder = enforcementOrderOf(pcsCase);
         enforcementOrder.setShowRiskAssessmentTab(YesOrNo.YES);
+        RiskAssessmentTabMarkdown.ClaimantAnswers application = claimantAnswers(enforcement);
+        Optional<RiskAssessmentUpdateEntity> update = claimantRiskAssessmentService.getLatestUpdate(enforcement);
+        RiskAssessmentTabMarkdown.ClaimantAnswers original = update.isEmpty()
+            ? application
+            : claimantRiskAssessmentService.getOriginalAnswers(enforcement)
+                .map(answers -> RiskAssessmentTabMarkdown.withRiskAnswers(application, answers))
+                .orElse(application);
+        RiskAssessmentTabMarkdown.ClaimantAnswers updated = update
+            .map(latest -> RiskAssessmentTabMarkdown.withRiskAnswers(application, latest.getAnswers().normalised()))
+            .orElse(null);
+        Instant updatedAt = update.map(RiskAssessmentUpdateEntity::getUpdatedAt).orElse(null);
+
+        String internal = RiskAssessmentTabMarkdown.internalSections(
+            bailiffNoteService.getNotes(enforcement), enforcement.getRiskLevel(), enforcement.getRiskLevelReason());
+        if (updated != null && isAfterRiskLevelSet(updatedAt, enforcement.getRiskLevelSetAt())) {
+            internal = TabMarkup.lines(List.of(RiskAssessmentTabMarkdown.updateBanner(original, updated), internal));
+        }
         setMarkdown(
             enforcementOrder,
             RiskAssessmentTabMarkdown.printButton(CaseType.getJurisdictionId(), CaseType.getCaseType(), caseReference),
-            RiskAssessmentTabMarkdown.internalSections(
-                bailiffNoteService.getNotes(enforcement), enforcement.getRiskLevel(), enforcement.getRiskLevelReason()),
+            internal,
             RiskAssessmentTabMarkdown.claimantSection(
-                claimantAnswers(enforcement), enforcement.getSubmittedAt(), claimantSide)
+                original, enforcement.getSubmittedAt(), updated, updatedAt, claimantSide)
         );
+    }
+
+    /**
+     * The claimant's change waits for the bailiff's review until the risk level is set after it (HDPI-7552).
+     */
+    private static boolean isAfterRiskLevelSet(Instant updatedAt, Instant riskLevelSetAt) {
+        return riskLevelSetAt == null || riskLevelSetAt.isBefore(updatedAt);
     }
 
     private static RiskAssessmentTabMarkdown.ClaimantAnswers claimantAnswers(EnforcementOrderEntity enforcement) {

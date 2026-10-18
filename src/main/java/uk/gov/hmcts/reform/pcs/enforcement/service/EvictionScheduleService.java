@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.LocalDateTime;
@@ -58,6 +59,7 @@ public class EvictionScheduleService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final BailiffNoteService bailiffNoteService;
+    private final EnforcementNotificationService enforcementNotificationService;
 
     public static boolean canSchedule(EnforcementOrderEntity enforcement) {
         return enforcement.getStatus() == AWAITING_SCHEDULING;
@@ -129,8 +131,8 @@ public class EvictionScheduleService {
         //  it is served (DefendantEnforcementRules). There is no Docmosis template for it in pcs-api yet.
         // TODO HDPI-7355 / HDPI-8442: generate the unsealed notice of appointment into the Enforcement folder,
         //  visible to the claimant, and email it to them. There is no Docmosis template for it yet.
-        // TODO HDPI-7538: send the claimant the "Bailiff schedules the eviction date" email and the "Confirm the
-        //  eviction date" dashboard notification. The Notify templates do not exist yet.
+        enforcementNotificationService.notifyClaimantOfScheduledEviction(caseReference, evictionDateTime);
+        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7346 / HDPI-8627: create the "Mark notice of eviction as served" WA task for the allocated
         //  bailiff when service is not dispensed with.
         // TODO HDPI-7347: create the "Record warrant return" WA task due on the eviction date.
@@ -153,8 +155,8 @@ public class EvictionScheduleService {
         setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
         // TODO HDPI-7354 / HDPI-7355: generate a new notice of eviction and notice of appointment, keeping the
         //  originals in the Enforcement folder. There are no Docmosis templates for them yet.
-        // TODO HDPI-7538: send the claimant the "Bailiff reschedules the eviction date" email and the "Confirm
-        //  the eviction date" dashboard notification. The Notify templates do not exist yet.
+        enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
+        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7549: complete the "Reschedule eviction" WA task, and move the "Record warrant return" task
         //  (HDPI-7347) to the new eviction date.
         return EnforcementChange.made(live.change().getEnforcementNumber());

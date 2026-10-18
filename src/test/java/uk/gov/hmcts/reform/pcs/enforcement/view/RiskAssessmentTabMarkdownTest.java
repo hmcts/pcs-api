@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.ClaimantRiskAnswers;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.common.PropertyAccessDetails;
@@ -169,6 +170,64 @@ class RiskAssessmentTabMarkdownTest {
             .contains(row("Does anyone at the property pose a risk to the bailiff?", "I&rsquo;m not sure"))
             .doesNotContain("Do you want to evict everyone at the property?", "Who do you want to evict?",
                             "dates of birth");
+    }
+
+    @Test
+    void shouldShowOriginalAndUpdatedAnswersSideBySideWithUnchangedAnswersLeftBlank() {
+        RiskAssessmentTabMarkdown.ClaimantAnswers original = warrantAnswers();
+        RiskAssessmentTabMarkdown.ClaimantAnswers updated = RiskAssessmentTabMarkdown.withRiskAnswers(
+            original, ClaimantRiskAnswers.builder()
+                .anyRiskToBailiff(YesNoNotSure.YES)
+                .riskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION, RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .violentDetails("Threw a chair")
+                .firearmsDetails("Shotgun licence")
+                .vulnerablePeoplePresent(YesNoNotSure.NO)
+                .isDifficultToAccessProperty(VerticalYesNo.YES)
+                .clarificationOnAccessDifficultyText("Gated")
+                .additionalInformationSelect(VerticalYesNo.NO)
+                .build());
+
+        String markdown = RiskAssessmentTabMarkdown.claimantSection(
+            original, Instant.parse("2026-02-25T10:00:00Z"), updated, Instant.parse("2026-03-06T10:00:00Z"), false);
+
+        assertThat(markdown)
+            .contains("Information provided by the claimant on 25 February 2026")
+            .contains("The claimant updated this information on 6 March 2026 when they confirmed the eviction")
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">"
+                          + "Is anyone living at the property vulnerable?</th>"
+                          + "<td class=\"govuk-table__cell\">Yes</td><td class=\"govuk-table__cell\">No</td>")
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">How are they vulnerable?</th>"
+                          + "<td class=\"govuk-table__cell\">Elderly parent</td>"
+                          + "<td class=\"govuk-table__cell\">Not answered</td>")
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">Is it difficult to access the property?</th>"
+                          + "<td class=\"govuk-table__cell\">Yes</td><td class=\"govuk-table__cell\"></td>")
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">Who do you want to evict?</th>")
+            .doesNotContain("\n\n");
+    }
+
+    @Test
+    void shouldListOnlyTheChangedQuestionsInTheBanner() {
+        RiskAssessmentTabMarkdown.ClaimantAnswers original = warrantAnswers();
+        RiskAssessmentTabMarkdown.ClaimantAnswers updated = RiskAssessmentTabMarkdown.withRiskAnswers(
+            original, ClaimantRiskAnswers.builder()
+                .anyRiskToBailiff(YesNoNotSure.NO)
+                .vulnerablePeoplePresent(YesNoNotSure.YES)
+                .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS)
+                .vulnerableReasonText("Elderly parent")
+                .isDifficultToAccessProperty(VerticalYesNo.YES)
+                .clarificationOnAccessDifficultyText("Gated")
+                .additionalInformationSelect(VerticalYesNo.NO)
+                .build());
+
+        String banner = RiskAssessmentTabMarkdown.updateBanner(original, updated);
+
+        assertThat(banner)
+            .contains(RiskAssessmentTabMarkdown.UPDATE_BANNER)
+            .contains("<li>Does anyone at the property pose a risk to the bailiff?</li>")
+            .contains("<li>What kind of risks do they pose to the bailiff?</li>")
+            .doesNotContain("<li>Is anyone living at the property vulnerable?</li>")
+            .doesNotContain("<li>Who do you want to evict?</li>")
+            .doesNotContain("\n\n");
     }
 
     private static RiskAssessmentTabMarkdown.ClaimantAnswers warrantAnswers() {

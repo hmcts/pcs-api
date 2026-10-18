@@ -33,22 +33,34 @@ import {
  * Records the enforcement fee as paid, signs in as a hearing centre admin and accepts the application.
  * Leaves the warrant in "Awaiting bailiff allocation" with a warrant number, and the browser signed in
  * as the hearing centre admin.
+ *
+ * Pass `feeOutstanding: false` for an application that is already awaiting review: one whose fee was
+ * paid or waived, or a type with no fee.
  */
-export async function approveWarrantAsCaseworker(page: Page, world: EnforcementWorld): Promise<void> {
-  await approveApplicationAsCaseworker(page, world, 'Warrant');
+export async function approveWarrantAsCaseworker(
+  page: Page,
+  world: EnforcementWorld,
+  options: { feeOutstanding?: boolean } = {}
+): Promise<void> {
+  await approveApplicationAsCaseworker(page, world, 'Warrant', options);
 }
 
 /**
  * Records the fee as paid and accepts the application as a hearing centre admin. A warrant is left in
  * "Awaiting bailiff allocation", a writ in "Transferred to the High Court"; either way with a number, which is
  * recorded as `world.warrantNumber`, and the browser signed in as the hearing centre admin.
+ *
+ * Pass `feeOutstanding: false` for an application that is already awaiting review.
  */
 export async function approveApplicationAsCaseworker(
   page: Page,
   world: EnforcementWorld,
-  kind: 'Warrant' | 'Writ'
+  kind: 'Warrant' | 'Writ',
+  { feeOutstanding = true }: { feeOutstanding?: boolean } = {}
 ): Promise<void> {
-  await recordEnforcementFeePaid();
+  if (feeOutstanding) {
+    await recordEnforcementFeePaid();
+  }
   await signInAsHearingCentreAdmin(page);
   await openCaseSummary(page);
   await startEvent(DECIDE_ENFORCEMENT);
@@ -112,30 +124,35 @@ export async function scheduleEvictionAsBailiff(
  * The claimant answers "Can you attend the eviction on this date?" through `confirmEviction`, moving the
  * warrant from "Awaiting claimant confirmation" to "Claimant confirmed" or "Claimant unable to attend".
  *
- * Two pages — an information page, then the question — followed by CCD's check-your-answers.
+ * An information page, the question, then the warrant's risk pages pre-filled with the claimant's answers,
+ * followed by CCD's check-your-answers. `changeRiskAnswer` names one risk question whose answer the claimant
+ * changes to "Yes" on the way through (HDPI-7552); otherwise every risk answer is left as it is.
  */
 export async function confirmEvictionAsClaimant(
   page: Page,
   context: BrowserContext,
   world: EnforcementWorld,
-  canAttend: boolean
+  canAttend: boolean,
+  changeRiskAnswer?: string
 ): Promise<void> {
   const { CLAIMANT_LEGAL_REPRESENTATIVE } = await import('./session');
   const { signInAs } = await import('./enforcement-journeys');
+  const claimantRiskAssessment = await import('./claimant-risk-assessment');
 
   await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
   await openCaseSummary(page);
-  await startEvent('Confirm the eviction date');
+  await startEvent(claimantRiskAssessment.CONFIRM_EVICTION);
 
-  const continueButton = page.getByRole('button', { name: 'Continue', exact: true });
-  await continueButton.click();
-  const answer = page.locator(`#claimantCanAttendEviction_${canAttend ? 'Yes' : 'No'}`);
-  await expect(answer).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
-  await answer.check();
-  await continueButton.click();
-  await page.getByRole('button', { name: 'Save and continue', exact: true }).click();
-  await expect(page.getByText(/has been updated with event: Confirm the eviction details/))
-    .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  await claimantRiskAssessment.answerAttendance(page, canAttend);
+  if (changeRiskAnswer) {
+    await claimantRiskAssessment.changeRiskAnswer(page, changeRiskAnswer, 'Yes');
+    world.changedRiskQuestions = [
+      ...(world.changedRiskQuestions ?? []),
+      claimantRiskAssessment.tabQuestion(changeRiskAnswer),
+    ];
+  }
+  await claimantRiskAssessment.continueToCheckYourAnswers(page);
+  await claimantRiskAssessment.submitConfirmEviction(page);
 
   world.claimantConfirmedEviction = canAttend;
 }
@@ -175,10 +192,10 @@ const SETTABLE_STATUSES = [
  * Allocates the approved warrant to a bailiff through pcs-api testing support, which moves it to
  * "Awaiting scheduling" and unblocks the schedule / reschedule / notice-served / warrant-return journeys.
  *
- * The `allocateBailiff` event cannot be driven outside AAT (its StaffUser type-ahead needs staff reference
- * data), so this goes through `BailiffAllocationService` instead, for the same outcome.
+ * A shortcut for scenarios that only need the warrant allocated: feature 03 drives the `allocateBailiff`
+ * event itself. This goes through `BailiffAllocationService` instead, for the same outcome.
  */
-export async function allocateBailiff(world: EnforcementWorld, email = localUsers.bailiff): Promise<void> {
+export async function allocateBailiff(world: EnforcementWorld, email: string = localUsers.bailiff): Promise<void> {
   const userId = await localIdamUserId(email);
   await allocateBailiffViaTestingSupport(requireCaseReference(world), {
     userId,

@@ -33,6 +33,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
+
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -299,6 +300,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
      * <p>The claimant side sees the tab with only their own risk answers: the bailiff notes and risk level are
      * internal. The SDK grants read on every field of a tab to the tab's roles, so the claimant side has a tab
      * of its own, with the same label, that leaves the internal field out.
+     *
+     * <p>The claimant's answers include any they changed while confirming the eviction (HDPI-7552). The banner
+     * asking bailiff staff to review a change is part of the internal field.
      */
     private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("riskAssessment", "Risk assessment")

@@ -85,7 +85,9 @@ public class EnforcementOrderEntity {
     private String enforcementNumber;
 
     /**
-     * When the caseworker approved the application. For a writ this is the date of transfer to the High Court.
+     * When the caseworker approved the application. For a warrant this is when it was generated, which the free
+     * repeat warrant period is measured from (RepeatWarrantFeeWaiver); for a writ it is the date of transfer to
+     * the High Court.
      */
     @Column(name = "approved_at")
     private Instant approvedAt;
