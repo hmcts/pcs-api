@@ -153,7 +153,7 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
         enforcementStatusTransitions.transition(first, AWAITING_REVIEW);
         enforcementOrderRepository.saveAndFlush(first);
 
-        assertThat(enforcementDecisionService.accept(1500000000000004L)).isPresent();
+        assertThat(enforcementDecisionService.accept(1500000000000004L).change()).isNotNull();
         entityManager.flush();
         entityManager.clear();
         EnforcementOrderEntity approved = enforcementOrderRepository.findById(first.getId()).orElseThrow();
@@ -193,8 +193,8 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
         List<UUID> before = enforcementIds(claimId);
         long caseReference = caseReferences.get(claimId);
 
-        boolean paymentOutstanding =
-            enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder(enforcementType)).isPresent();
+        boolean paymentOutstanding = enforcementOrderService
+            .saveAndClearDraftData(caseReference, enforcementOrder(enforcementType)).change() != null;
         entityManager.flush();
         entityManager.clear();
 

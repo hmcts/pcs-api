@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 
@@ -45,36 +45,38 @@ public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
             .map(EnforcementOrder::getEnforcementDecision)
             .orElse(null);
         if (decision == null) {
-            return errorResponse(NO_DECISION_MESSAGE);
+            return errorResponse(List.of(NO_DECISION_MESSAGE));
         }
         String rejectionReason = enforcementOrder.getEnforcementRejectionReason();
         if (decision == EnforcementDecision.REJECT && StringUtils.isBlank(rejectionReason)) {
-            return errorResponse(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
+            return errorResponse(List.of(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE));
         }
 
-        Optional<EnforcementDecisionOutcome> outcome = switch (decision) {
+        // A refusal here is another caseworker having decided the same application while this event was open,
+        // or the decision's documents and email not being queued.
+        EnforcementChange<EnforcementDecisionOutcome> decided = switch (decision) {
             case ACCEPT -> enforcementDecisionService.accept(caseReference);
             case REJECT -> enforcementDecisionService.reject(caseReference, rejectionReason);
         };
-        if (outcome.isEmpty()) {
-            // Another caseworker decided the same application while this event was open.
-            return errorResponse(NoEnforcementAwaitingReviewException.MESSAGE);
+        if (decided.refused()) {
+            return errorResponse(decided.errors());
         }
+        EnforcementDecisionOutcome outcome = decided.change();
 
         String propertyAddress = addressFormatter.formatMediumAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER);
         // Either decision returns the case to CASE_ISSUED. PENDING_ENFORCEMENT_ISSUED, which enforceTheOrder
         // moves the case to, offers no events of its own, so a case left there after an approval can neither
         // confirm the eviction nor use any core event; the enforcement's own status tracks its progress.
         return SubmitResponse.<State>builder()
-            .confirmationHeader(DecideEnforcementConfirmation.header(outcome.get()))
+            .confirmationHeader(DecideEnforcementConfirmation.header(outcome))
             .confirmationBody(DecideEnforcementConfirmation.body(
-                outcome.get(), caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), propertyAddress,
+                outcome, caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), propertyAddress,
                 pcsCase.getCaseNameHmctsInternal()))
             .state(State.CASE_ISSUED)
             .build();
     }
 
-    private static SubmitResponse<State> errorResponse(String error) {
-        return SubmitResponse.<State>builder().errors(List.of(error)).build();
+    private static SubmitResponse<State> errorResponse(List<String> errors) {
+        return SubmitResponse.<State>builder().errors(errors).build();
     }
 }

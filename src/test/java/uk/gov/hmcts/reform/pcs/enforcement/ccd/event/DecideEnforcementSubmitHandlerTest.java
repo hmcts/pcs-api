@@ -21,10 +21,10 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -65,7 +65,7 @@ class DecideEnforcementSubmitHandlerTest {
     void shouldApproveTheApplicationAndConfirmIt(SelectEnforcementType type, String number, String title,
                                                  String numberLine, String whatNext) {
         when(enforcementDecisionService.accept(CASE_REFERENCE))
-            .thenReturn(Optional.of(new EnforcementDecisionOutcome(type, ACCEPT, number)));
+            .thenReturn(EnforcementChange.made(new EnforcementDecisionOutcome(type, ACCEPT, number)));
         givenFormattedAddress();
 
         SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null));
@@ -89,7 +89,7 @@ class DecideEnforcementSubmitHandlerTest {
     void shouldRejectTheApplicationAndPutTheCaseBackSoTheClaimantCanApplyAgain(SelectEnforcementType type,
                                                                                String title) {
         when(enforcementDecisionService.reject(CASE_REFERENCE, "No possession order"))
-            .thenReturn(Optional.of(new EnforcementDecisionOutcome(type, REJECT, null)));
+            .thenReturn(EnforcementChange.made(new EnforcementDecisionOutcome(type, REJECT, null)));
         givenFormattedAddress();
 
         SubmitResponse<State> response = underTest.submit(payload(REJECT, "No possession order"));
@@ -137,7 +137,8 @@ class DecideEnforcementSubmitHandlerTest {
 
     @Test
     void shouldReportAnApplicationAlreadyDecidedByAnotherCaseworkerAsAnError() {
-        when(enforcementDecisionService.accept(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(enforcementDecisionService.accept(CASE_REFERENCE))
+            .thenReturn(EnforcementChange.refused(NoEnforcementAwaitingReviewException.MESSAGE));
 
         SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null));
 
@@ -149,7 +150,8 @@ class DecideEnforcementSubmitHandlerTest {
 
     @Test
     void shouldReportARejectionOfAnApplicationAlreadyDecidedAsAnError() {
-        when(enforcementDecisionService.reject(CASE_REFERENCE, "No possession order")).thenReturn(Optional.empty());
+        when(enforcementDecisionService.reject(CASE_REFERENCE, "No possession order"))
+            .thenReturn(EnforcementChange.refused(NoEnforcementAwaitingReviewException.MESSAGE));
 
         SubmitResponse<State> response = underTest.submit(payload(REJECT, "No possession order"));
 

@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
@@ -108,8 +109,15 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         }
         WarrantReturnName returnName = recorded.change().returnName();
 
-        // Queued in the submit transaction, so the email is committed or rolled back with the return.
-        warrantReturnNotificationService.notifyClaimant(caseReference, returnName, details.getAdditionalDetails());
+        // Queued in the submit transaction, so the email is committed or rolled back with the return. A
+        // failure to queue it is answered as an error, which rolls the return back too.
+        EnforcementChange<Void> notified = EnforcementSideEffects.schedule(
+            caseReference, "the claimant's warrant return email",
+            () -> warrantReturnNotificationService.notifyClaimant(caseReference, returnName,
+                                                                  details.getAdditionalDetails()));
+        if (notified.refused()) {
+            return SubmitResponse.<State>builder().errors(notified.errors()).build();
+        }
 
         return SubmitResponse.<State>builder()
             .confirmationHeader(CONFIRMATION_HEADER.formatted(returnName.getLabel()))

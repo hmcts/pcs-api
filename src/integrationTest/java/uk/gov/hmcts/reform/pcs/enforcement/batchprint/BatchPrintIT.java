@@ -59,6 +59,8 @@ import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -66,7 +68,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -161,6 +166,8 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("prints each chosen case in turn, latest documents only, leaving out a case that is not mine")
     void printsTheChosenCases() throws Exception {
+        Set<Path> tempFilesBefore = batchPrintTempFiles();
+
         MvcResult result = mockMvc.perform(batchPrint("", FIRST, NOT_MINE, SECOND))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_PDF))
@@ -172,6 +179,18 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
             assertThat(pdf.getNumberOfPages()).isEqualTo(5);
             assertThat(pageTexts(pdf)).containsExactly(
                 "Warrant 1", "Risk assessment 1", "Rescheduled notice 1", "Warrant 2", "Notice 2");
+        }
+        assertThat(batchPrintTempFiles()).isEqualTo(tempFilesBefore);
+    }
+
+    /**
+     * The batch print is streamed from a temp file, so nothing of it may be left in the filesystem once the
+     * request is over: {@link BatchPrintFileCleanupFilter} runs in the real filter chain to see to that.
+     */
+    private static Set<Path> batchPrintTempFiles() throws IOException {
+        try (Stream<Path> tempFiles = Files.list(Path.of(System.getProperty("java.io.tmpdir")))) {
+            return tempFiles.filter(file -> file.getFileName().toString().startsWith("batch-print-"))
+                .collect(Collectors.toSet());
         }
     }
 

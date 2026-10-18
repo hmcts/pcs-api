@@ -63,7 +63,7 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
         }
 
         UserRoles userRoles =
-            userRoleService.getCurrentUserCaseRoles(ctx.caseReference());
+            userRoleService.getCurrentUserCaseRolesWithoutGroupAccess(ctx.caseReference());
 
         return !genAppVisibilityService.getVisibleGenAppsToUser(
             ctx.caseEntity().getGenApps(),

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -32,8 +33,10 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
 import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementFeePaidSimulator;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
+import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -45,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -70,6 +74,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
      */
     private static final AtomicLong WARRANT_NUMBERS = new AtomicLong(90_000_000L);
     private static final String SEND_EMAIL_TASK = "send-email-task";
+    private static final String ENFORCEMENT_DOCUMENT_TASK = "enforcement-document-generation-task";
 
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
@@ -278,6 +283,30 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertNoEmailQueued();
     }
 
+    /**
+     * The failure the refusal checks cannot see coming: the eviction date is saved, and its email cannot be
+     * queued. The bailiff has to be told to try again, not given a 500 at the end of a journey they completed,
+     * and nothing of the event may survive.
+     */
+    @Test
+    @DisplayName("Schedule eviction whose email cannot be queued is refused, and records nothing")
+    void scheduleEvictionWhoseEmailCannotBeQueuedIsRefused() {
+        givenEnforcement(SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_SCHEDULING);
+        doThrow(new NotificationException("Failed to save Case Notification.",
+                                          new DataIntegrityViolationException("case_notification")))
+            .when(sender).send(eq(caseReference), any(), any());
+
+        var rejected = events.event(caseReference, EventId.scheduleEviction.name(), caseWith(evictionDate()))
+            .as(bailiff)
+            .submitExpectingErrors();
+
+        assertThat(rejected.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        assertThat(storedEnforcement().getStatus()).isEqualTo(EnforcementStatus.AWAITING_SCHEDULING);
+        assertThat(storedEnforcement().getBailiffDate()).isNull();
+        assertNoEmailQueued();
+        assertNoDocumentQueued();
+    }
+
     @Test
     @DisplayName("Recording the fee as paid queues the application received email")
     void feePaidQueuesTheEmail() {
@@ -317,6 +346,15 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertThat(jdbcTemplate.queryForObject(
             "SELECT count(*) FROM scheduled_tasks WHERE task_name = ? AND convert_from(task_data, 'UTF8') LIKE ?",
             Integer.class, SEND_EMAIL_TASK, "%" + claimantEmail + "%")).isZero();
+    }
+
+    /**
+     * The documents an event queues go back with its email, because both are written in the one transaction.
+     */
+    private void assertNoDocumentQueued() {
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT count(*) FROM scheduled_tasks WHERE task_name = ? AND task_instance LIKE ?",
+            Integer.class, ENFORCEMENT_DOCUMENT_TASK, storedEnforcement().getId() + "%")).isZero();
     }
 
     private int queuedNotifications() {

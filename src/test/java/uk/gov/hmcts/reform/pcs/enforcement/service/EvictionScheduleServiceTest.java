@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -146,6 +148,33 @@ class EvictionScheduleServiceTest {
         assertThatThrownBy(() -> underTest.checkCanSchedule(CASE_REFERENCE))
             .isInstanceOf(EnforcementEventNotAvailableException.class)
             .hasMessage(EvictionScheduleService.CANNOT_SCHEDULE_ERROR);
+    }
+
+    /**
+     * The bailiff is asked to try again rather than given an unexplained 500, and the refusal rolls the date
+     * they entered back with the notices.
+     */
+    @Test
+    void shouldRefuseTheScheduleWhenItsNoticesCannotBeQueued() {
+        current(AWAITING_SCHEDULING);
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementDocumentScheduler).scheduleEvictionNotices(any());
+
+        EnforcementChange<String> scheduled = underTest.schedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(scheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
+    void shouldRefuseTheRescheduleWhenTheClaimantsEmailCannotBeQueued() {
+        EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
+        enforcement.setBailiffDate(EVICTION);
+        doThrow(new DataIntegrityViolationException("case_notification"))
+            .when(enforcementNotificationService).notifyClaimantOfRescheduledEviction(anyLong(), any());
+
+        EnforcementChange<String> rescheduled = underTest.reschedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(rescheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
     }
 
     @ParameterizedTest

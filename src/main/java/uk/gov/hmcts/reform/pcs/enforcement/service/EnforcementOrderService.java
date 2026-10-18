@@ -89,18 +89,24 @@ public class EnforcementOrderService {
      * Saves the submitted application and deletes the draft. An application that owes a fee is saved awaiting
      * payment, and a Payments service request is raised for the fee once the transaction commits.
      *
-     * @return the fee the application owes, or empty when it owes nothing
+     * @return a change that was made, carrying the fee the application owes or null when it owes nothing, or
+     *     the errors to show the claimant instead
      * @throws FeeNotFoundException if the application owes a fee that the Fees Register cannot give, before
      *     anything is saved
      */
     @Transactional
-    public Optional<FeeDetails> saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
-        Optional<FeeDetails> feeOwed = createEnforcementOrder(caseReference, enforcementOrder);
+    public EnforcementChange<FeeDetails> saveAndClearDraftData(long caseReference,
+                                                               EnforcementOrder enforcementOrder) {
+        EnforcementChange<FeeDetails> submitted = createEnforcementOrder(caseReference, enforcementOrder);
+        if (submitted.refused()) {
+            return submitted;
+        }
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
-        return feeOwed;
+        return submitted;
     }
 
-    private Optional<FeeDetails> createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
+    private EnforcementChange<FeeDetails> createEnforcementOrder(long caseReference,
+                                                                 EnforcementOrder enforcementOrder) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
@@ -125,13 +131,23 @@ public class EnforcementOrderService {
         if (!paymentOutstanding && EnforcementApplicationFee.isPayable(enforcementType)) {
             log.info("Enforcement {} on case {} is a free repeat warrant", savedEntity.getId(), caseReference);
         }
+        EnforcementChange<Void> scheduled;
         if (paymentOutstanding) {
-            enforcementFeeService.requestPayment(pcsCaseEntity, savedEntity.getId(), feeOwed.orElseThrow());
+            FeeDetails fee = feeOwed.orElseThrow();
+            scheduled = EnforcementSideEffects.schedule(caseReference, "the application's fee payment request",
+                () -> enforcementFeeService.requestPayment(pcsCaseEntity, savedEntity.getId(), fee));
         } else {
-            enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
-            enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);
+            scheduled = EnforcementSideEffects.schedule(
+                caseReference, "the application documents and the claimant's email", () -> {
+                    enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference,
+                                                                                       enforcementType);
+                    enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);
+                });
         }
-        return feeOwed;
+        if (scheduled.refused()) {
+            return EnforcementChange.refused(scheduled.errors());
+        }
+        return EnforcementChange.made(feeOwed.orElse(null));
     }
 
     /**
@@ -150,6 +166,10 @@ public class EnforcementOrderService {
      * Moves a paid application on to awaiting review, tells the claimant it has been received and generates the
      * application documents, which the features describe as produced once the claimant has submitted and paid.
      * {@link EnforcementPaymentCallbackHandler} calls this when Payments reports the fee paid.
+     *
+     * <p>A failure to queue the email or the documents is thrown here, unlike in the submit handlers, and
+     * rolls the whole callback back: there is no user waiting on a screen to refuse, and the right answer to
+     * Payments is a failure it will send again rather than a success for work that was not queued.</p>
      */
     void moveToAwaitingReview(long caseReference, EnforcementOrderEntity enforcement) {
         enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);

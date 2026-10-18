@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -47,56 +47,75 @@ public class EnforcementDecisionService {
      * Approves the application: a warrant goes on to bailiff allocation, a writ is transferred to the High Court.
      * Gives it a warrant or writ number and records when it was approved.
      *
-     * <p>Returns empty, rather than throwing, when the claim has no application awaiting review: the submit
-     * handler runs inside the transaction the SDK opens for the event, so an exception out of this method would
-     * mark that transaction rollback-only and the caller could not turn it into an error for the caseworker.</p>
+     * <p>Refuses, rather than throwing, whatever stops the decision being recorded: the submit handler runs
+     * inside the transaction the SDK opens for the event, so an exception out of this method would mark that
+     * transaction rollback-only and the caller could not turn it into an error for the caseworker.</p>
      *
-     * @return the outcome, or empty if no application is awaiting review
+     * @return the outcome, or the errors to show the caseworker instead
      */
     @Transactional
-    public Optional<EnforcementDecisionOutcome> accept(long caseReference) {
-        return findAwaitingReview(caseReference).map(enforcement -> {
-            SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
+    public EnforcementChange<EnforcementDecisionOutcome> accept(long caseReference) {
+        Optional<EnforcementOrderEntity> awaitingReview = findAwaitingReview(caseReference);
+        if (awaitingReview.isEmpty()) {
+            return EnforcementChange.refused(NoEnforcementAwaitingReviewException.MESSAGE);
+        }
+        EnforcementOrderEntity enforcement = awaitingReview.get();
+        SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
 
-            enforcementStatusTransitions.transition(enforcement, approvedStatus(enforcementType));
-            enforcement.setApprovedAt(enforcement.getStatusUpdatedAt());
-            String enforcementNumber = enforcementNumberGenerator.next(enforcementType);
-            enforcement.setEnforcementNumber(enforcementNumber);
+        enforcementStatusTransitions.transition(enforcement, approvedStatus(enforcementType));
+        enforcement.setApprovedAt(enforcement.getStatusUpdatedAt());
+        String enforcementNumber = enforcementNumberGenerator.next(enforcementType);
+        enforcement.setEnforcementNumber(enforcementNumber);
+        enforcementOrderRepository.save(enforcement);
 
-            // TODO HDPI-9566: generate the warrant or writ in Welsh when the claimant asked for Welsh documents.
-            enforcementDocumentScheduler.scheduleApprovalDocument(enforcement.getId(), enforcementType);
-            enforcementOrderRepository.save(enforcement);
-            enforcementNotificationService.notifyClaimantOfApproval(caseReference, enforcementType, enforcementNumber);
-            log.info("Enforcement {} on case {} approved as {}", enforcement.getId(), caseReference,
-                     enforcementNumber);
-            return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.ACCEPT, enforcementNumber);
-        });
+        EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+            caseReference, "the approved warrant or writ and the claimant's email", () -> {
+                // TODO HDPI-9566: generate the warrant or writ in Welsh when the claimant asked for Welsh
+                //  documents.
+                enforcementDocumentScheduler.scheduleApprovalDocument(enforcement.getId(), enforcementType);
+                enforcementNotificationService.notifyClaimantOfApproval(caseReference, enforcementType,
+                                                                        enforcementNumber);
+            });
+        if (scheduled.refused()) {
+            return EnforcementChange.refused(scheduled.errors());
+        }
+        log.info("Enforcement {} on case {} approved as {}", enforcement.getId(), caseReference, enforcementNumber);
+        return EnforcementChange.made(
+            new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.ACCEPT, enforcementNumber));
     }
 
     /**
      * Rejects the application. No number is given, and the claimant can apply again because a rejected
      * enforcement is not live.
      *
-     * @return the outcome, or empty if no application is awaiting review
-     * @throws EnforcementEventNotAvailableException if no rejection reason was given
+     * @return the outcome, or the errors to show the caseworker instead
      */
     @Transactional
-    public Optional<EnforcementDecisionOutcome> reject(long caseReference, String rejectionReason) {
+    public EnforcementChange<EnforcementDecisionOutcome> reject(long caseReference, String rejectionReason) {
         if (StringUtils.isBlank(rejectionReason)) {
-            throw new EnforcementEventNotAvailableException(NO_REJECTION_REASON_MESSAGE);
+            return EnforcementChange.refused(NO_REJECTION_REASON_MESSAGE);
         }
-        return findAwaitingReview(caseReference).map(enforcement -> {
-            final SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
+        Optional<EnforcementOrderEntity> awaitingReview = findAwaitingReview(caseReference);
+        if (awaitingReview.isEmpty()) {
+            return EnforcementChange.refused(NoEnforcementAwaitingReviewException.MESSAGE);
+        }
+        EnforcementOrderEntity enforcement = awaitingReview.get();
+        final SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
 
-            enforcementStatusTransitions.transition(enforcement, REJECTED);
-            enforcement.setRejectionReason(rejectionReason.trim());
+        enforcementStatusTransitions.transition(enforcement, REJECTED);
+        enforcement.setRejectionReason(rejectionReason.trim());
+        enforcementOrderRepository.save(enforcement);
 
-            enforcementOrderRepository.save(enforcement);
-            enforcementNotificationService.notifyClaimantOfRejection(
-                caseReference, enforcementType, enforcement.getRejectionReason());
-            log.info("Enforcement {} on case {} rejected", enforcement.getId(), caseReference);
-            return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.REJECT, null);
-        });
+        EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+            caseReference, "the claimant's rejection email",
+            () -> enforcementNotificationService.notifyClaimantOfRejection(
+                caseReference, enforcementType, enforcement.getRejectionReason()));
+        if (scheduled.refused()) {
+            return EnforcementChange.refused(scheduled.errors());
+        }
+        log.info("Enforcement {} on case {} rejected", enforcement.getId(), caseReference);
+        return EnforcementChange.made(
+            new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.REJECT, null));
     }
 
     static EnforcementStatus approvedStatus(SelectEnforcementType enforcementType) {

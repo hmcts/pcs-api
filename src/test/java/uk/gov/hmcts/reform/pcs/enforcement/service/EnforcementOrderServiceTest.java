@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffNote;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
@@ -53,6 +54,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -61,6 +63,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
 import static uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDataUtil.buildPcsCaseEntity;
@@ -292,12 +295,13 @@ class EnforcementOrderServiceTest {
         when(repeatWarrantFeeWaiver.isFeeWaived(claimId, WARRANT)).thenReturn(waived);
 
         // When
-        Optional<FeeDetails> feeOwed = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+        EnforcementChange<FeeDetails> submitted =
+            enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
         verify(enforcementOrderRepository).saveAndFlush(savedCaptor.capture());
-        assertThat(feeOwed.isPresent()).isEqualTo(!waived);
+        assertThat(submitted.change() != null).isEqualTo(!waived);
         assertThat(savedCaptor.getValue().getStatus())
             .isEqualTo(waived ? EnforcementStatus.AWAITING_REVIEW : EnforcementStatus.AWAITING_PAYMENT);
         if (waived) {
@@ -318,11 +322,46 @@ class EnforcementOrderServiceTest {
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(mock(EnforcementTypeStrategy.class));
 
         // When
-        Optional<FeeDetails> feeOwed = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+        EnforcementChange<FeeDetails> submitted =
+            enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        assertThat(feeOwed).isEmpty();
+        assertThat(submitted.change()).isNull();
         verifyNoInteractions(repeatWarrantFeeWaiver);
+    }
+
+    /**
+     * The claimant is asked to submit again rather than given an unexplained 500, and the application is
+     * rolled back with the documents it could not queue, draft and all.
+     */
+    @Test
+    void shouldRefuseAFreeApplicationWhoseDocumentsCannotBeQueued() {
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(buildPcsCaseEntity(pcsCaseId, claimId));
+        when(strategyFactory.getStrategy(WARRANT_OF_RESTITUTION)).thenReturn(mock(EnforcementTypeStrategy.class));
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementDocumentScheduler).scheduleApplicationDocuments(any(), any());
+
+        EnforcementChange<FeeDetails> submitted =
+            enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        assertThat(submitted.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        verifyNoInteractions(draftCaseDataService);
+    }
+
+    @Test
+    void shouldRefuseAPayableApplicationWhoseServiceRequestCannotBeQueued() {
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(buildPcsCaseEntity(pcsCaseId, claimId));
+        when(strategyFactory.getStrategy(WARRANT)).thenReturn(mock(EnforcementTypeStrategy.class));
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementFeeService).requestPayment(any(), any(), any());
+
+        EnforcementChange<FeeDetails> submitted =
+            enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        assertThat(submitted.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        verifyNoInteractions(draftCaseDataService);
     }
 
     @Test
@@ -443,12 +482,13 @@ class EnforcementOrderServiceTest {
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(mock(EnforcementTypeStrategy.class));
 
         // When
-        Optional<FeeDetails> feeOwed = enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+        EnforcementChange<FeeDetails> submitted =
+            enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> savedCaptor = ArgumentCaptor.forClass(EnforcementOrderEntity.class);
         verify(enforcementOrderRepository).saveAndFlush(savedCaptor.capture());
-        assertThat(feeOwed).contains(FEE);
+        assertThat(submitted.change()).isEqualTo(FEE);
         verify(enforcementFeeService).lookUpFee(enforcementType);
         verify(enforcementFeeService).requestPayment(pcsCaseEntity, savedCaptor.getValue().getId(), FEE);
     }

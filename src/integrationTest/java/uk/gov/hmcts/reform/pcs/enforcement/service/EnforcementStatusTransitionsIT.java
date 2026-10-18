@@ -296,7 +296,7 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         long caseReference = nextCaseReference();
         final UUID id = savedEnforcement(caseReference, AWAITING_REVIEW).getId();
 
-        assertThat(enforcementDecisionService.accept(caseReference)).isPresent();
+        assertThat(enforcementDecisionService.accept(caseReference).refused()).isFalse();
         entityManager.flush();
         entityManager.clear();
 
@@ -309,7 +309,7 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         long caseReference = nextCaseReference();
         final UUID id = savedEnforcement(caseReference, AWAITING_REVIEW).getId();
 
-        assertThat(enforcementDecisionService.reject(caseReference, "Not eligible")).isPresent();
+        assertThat(enforcementDecisionService.reject(caseReference, "Not eligible").refused()).isFalse();
         entityManager.flush();
         entityManager.clear();
 

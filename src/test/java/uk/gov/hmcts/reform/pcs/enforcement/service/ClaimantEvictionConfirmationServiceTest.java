@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -94,6 +96,21 @@ class ClaimantEvictionConfirmationServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
         verify(enforcementNotificationService, never()).notifyClaimantOfConfirmedAttendance(anyLong(), any());
+    }
+
+    /**
+     * The claimant is asked to try again rather than given an unexplained 500, and their answer is rolled
+     * back with the email.
+     */
+    @Test
+    void shouldRefuseTheAnswerWhenTheClaimantsEmailCannotBeQueued() {
+        givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION));
+        doThrow(new DataIntegrityViolationException("case_notification"))
+            .when(enforcementNotificationService).notifyClaimantOfConfirmedAttendance(anyLong(), any());
+
+        EnforcementChange<Void> recorded = underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
+
+        assertThat(recorded.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
     }
 
     @Test

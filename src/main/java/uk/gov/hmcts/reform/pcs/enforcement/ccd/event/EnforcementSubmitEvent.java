@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -57,9 +58,9 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             return errorResponse(LiveEnforcementExistsException.MESSAGE);
         }
 
-        Optional<FeeDetails> feeOwed;
+        EnforcementChange<FeeDetails> submitted;
         try {
-            feeOwed = enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+            submitted = enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
         } catch (FeeNotFoundException e) {
             log.error("Could not look up the {} fee to submit the enforcement on case {}",
                       enforcementType, caseReference, e);
@@ -72,9 +73,13 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
                      caseReference);
             return errorResponse(LiveEnforcementExistsException.MESSAGE);
         }
+        if (submitted.refused()) {
+            return SubmitResponse.<State>builder().errors(submitted.errors()).build();
+        }
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         // An application that owes nothing (restitution, or a free repeat warrant) gets no payment panel.
-        Optional<String> formattedFee = feeOwed.map(fee -> moneyFormatter.formatFee(fee.getFeeAmount()));
+        Optional<String> formattedFee = Optional.ofNullable(submitted.change())
+            .map(fee -> moneyFormatter.formatFee(fee.getFeeAmount()));
         return SubmitResponse.<State>builder()
             .confirmationHeader(formattedFee.map(EnforcementSubmitEvent::paymentConfirmationHeader).orElse(null))
             .confirmationBody(formattedFee

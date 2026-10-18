@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,9 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterDocumentFetcher;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -51,6 +53,16 @@ class BatchPrintServiceTest {
     void setUp() {
         pdfMerger = new RecordingMerger();
         underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger);
+    }
+
+    /**
+     * The batch print file outlives print(): in the service it is the request that deletes it.
+     */
+    @AfterEach
+    void deleteTempFiles() throws IOException {
+        for (Path file : pdfMerger.created) {
+            Files.deleteIfExists(file);
+        }
     }
 
     @Test
@@ -114,7 +126,8 @@ class BatchPrintServiceTest {
     @Test
     void shouldFetchSeveralCasesAtOnceButNoMoreThanTheLimit() throws IOException {
         int limit = 3;
-        underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger, limit);
+        underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger, limit,
+                                          BatchPrintService.MAX_WAIT_FOR_A_SLOT);
         List<PrintableCase> cases = IntStream.range(0, 12)
             .mapToObj(i -> printable(String.valueOf(1000000000000000L + i), document(BatchPrintDocumentKind.WARRANT)))
             .toList();
@@ -139,7 +152,7 @@ class BatchPrintServiceTest {
     }
 
     @Test
-    void shouldDeleteEveryTempFileOnceTheFileHasBeenRead() throws IOException {
+    void shouldLeaveOnlyTheBatchPrintFileBehind() throws IOException {
         PrintableDocument warrantOne = document(BatchPrintDocumentKind.WARRANT);
         PrintableDocument warrantTwo = document(BatchPrintDocumentKind.WARRANT);
         when(batchPrintPlanner.plan(BAILIFF, CHOSEN)).thenReturn(new BatchPrintPlan(
@@ -151,19 +164,38 @@ class BatchPrintServiceTest {
 
         assertThat(pdfMerger.created).hasSize(3);
         assertThat(pdfMerger.created.subList(0, 2)).noneMatch(Files::exists);
-        assertThat(pdfMerger.created.get(2)).exists();
-        assertThat(batchPrint.pdf().contentLength()).isPositive();
+        assertThat(batchPrint.pdf()).isEqualTo(pdfMerger.created.get(2)).exists();
+        assertThat(Files.size(batchPrint.pdf())).isPositive();
+    }
 
-        pageTexts(batchPrint);
+    /**
+     * A case that cannot get a slot is not left out of the file: the bailiff is refused, because a batch print
+     * that silently omits cases would be printed and acted on as if it were complete.
+     */
+    @Test
+    void shouldRefuseTheWholeRequestAndLeaveNoFileWhenNoSlotComesFree() throws IOException {
+        underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger, 1,
+                                          Duration.ofMillis(50));
+        List<String> twoCases = CHOSEN.subList(0, 2);
+        when(batchPrintPlanner.plan(BAILIFF, twoCases)).thenReturn(new BatchPrintPlan(
+            List.of(printable(twoCases.get(0), document(BatchPrintDocumentKind.WARRANT)),
+                    printable(twoCases.get(1), document(BatchPrintDocumentKind.WARRANT))),
+            List.of()));
+        byte[] pdf = onePagePdf("Warrant");
+        when(letterDocumentFetcher.fetchBytes(any())).thenAnswer(invocation -> {
+            Thread.sleep(500);
+            return pdf;
+        });
 
-        assertThat(pdfMerger.created).noneMatch(Files::exists);
+        assertThatThrownBy(() -> underTest.print(BAILIFF, twoCases))
+            .isInstanceOf(BatchPrintBusyException.class)
+            .hasMessage(BatchPrintBusyException.MESSAGE);
+
+        assertThat(pdfMerger.created).hasSize(1).noneMatch(Files::exists);
     }
 
     private static List<String> pageTexts(BatchPrint batchPrint) throws IOException {
-        byte[] bytes;
-        try (InputStream input = batchPrint.pdf().getInputStream()) {
-            bytes = input.readAllBytes();
-        }
+        byte[] bytes = Files.readAllBytes(batchPrint.pdf());
         try (PDDocument pdf = Loader.loadPDF(bytes)) {
             PDFTextStripper stripper = new PDFTextStripper();
             List<String> texts = new ArrayList<>();
