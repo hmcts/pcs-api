@@ -110,12 +110,15 @@ export default defineConfig({
     // Demo recording: one video per scenario, headed-size viewport, no retries hiding a re-run.
     // A separate project so CI's `enforcement-bdd` keeps `video: 'retain-on-failure'`; nothing selects
     // this one unless you ask for it by name. It runs at human speed: `slowMo` (DEMO_SLOW_MO, ms) on every
-    // browser action, and the BDD fixtures hold each new page and each When/Then step for DEMO_HOLD_MS
+    // browser action, and the BDD fixtures hold each new page and each When/Then step for DEMO_HOLD_MS, caption
+    // every step, and show every click, selection and piece of typing with a visible pointer
     // (tests-enforcement/bdd/support/demo-pacing.ts). scripts/enforcement-demo-videos.sh stitches the videos.
     {
       name: 'enforcement-bdd-demo',
       testDir: enforcementBddTestDir,
       retries: 0,
+      // Human-speed actions (a visible pointer, typed text) make a long journey take several times longer.
+      timeout: 1800 * 1000,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',

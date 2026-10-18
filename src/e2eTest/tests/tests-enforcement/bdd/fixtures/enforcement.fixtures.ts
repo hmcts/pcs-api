@@ -164,4 +164,4 @@ export const test = base.extend<EnforcementFixtures>({
 
 export { expect } from '@utils/test-fixtures';
 
-export const { Given, When, Then, Step, Before, AfterStep } = createBdd(test);
+export const { Given, When, Then, Step, Before, BeforeStep, AfterStep } = createBdd(test);
