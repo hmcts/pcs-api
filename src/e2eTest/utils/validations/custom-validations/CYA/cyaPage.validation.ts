@@ -135,6 +135,12 @@ export class CYAStore {
     }
   }
 
+  /** Drops answers already captured for a question, for journeys that answer it again after an error page. */
+  discardAnswersTo(question: string): void {
+    const mapped = this.normalizeText(this.getMappedQuestion(question));
+    this.qaObjects = this.qaObjects.filter(qa => this.normalizeText(qa.question) !== mapped);
+  }
+
   getQAObjects(): QAObject[] {
     return [...this.qaObjects];
   }

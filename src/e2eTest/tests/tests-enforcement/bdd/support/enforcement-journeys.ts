@@ -478,9 +478,26 @@ export async function signStatementOfTruth(type: 'warrant of possession' | 'writ
   }
 }
 
-export async function submitApplication(): Promise<void> {
+/** The panel heading pcs-api's submit confirmation shows when the application still owes its fee. */
+export const PAY_PANEL_TITLE = /Pay .+ for HM Courts and Tribunals Service/;
+
+/**
+ * Submits from check your answers and returns to the case. pcs-api shows a confirmation page asking for the
+ * fee when the application owes one, and none for a free application, which goes straight back to the case.
+ * Returns whether the confirmation asked for the fee.
+ */
+export async function submitApplication(page: Page): Promise<boolean> {
   await performAction('clickButton', checkYourAnswers.submitApplicationButton);
+  const closeConfirmation = page.getByRole('button', { name: 'Close and Return to case details' });
+  const updatedBanner = page.locator('div.alert-message');
+  await expect(closeConfirmation.or(updatedBanner).first()).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  let askedToPayFee = false;
+  if (await closeConfirmation.isVisible()) {
+    askedToPayFee = await page.getByText(PAY_PANEL_TITLE).first().isVisible();
+    await closeConfirmation.click();
+  }
   await performValidation('bannerAlert', 'Case #.* has been updated with event: Enforce the order');
+  return askedToPayFee;
 }
 
 /** The case this scenario created. Fails with a clear message if no "Given a PCS case ..." step ran. */

@@ -14,7 +14,6 @@ import {
 } from '../support/enforcement-journeys';
 import { recordEnforcementFeePaid } from '../support/decide-enforcement';
 import { Page } from '@playwright/test';
-import { PAY_PANEL_TITLE } from '../support/repeat-enforcement';
 
 const enforcementTypes: EnforcementType[] = ['warrant of possession', 'writ of possession', 'warrant of restitution', 'writ of restitution'];
 
@@ -43,8 +42,7 @@ async function applyFor(type: EnforcementType, world: EnforcementWorld, page: Pa
   await chooseApplicationType(type, world, page);
   await answerApplicationQuestions(type, world);
   await signStatementOfTruth(type);
-  await submitApplication();
-  world.askedToPayFee = await page.getByText(PAY_PANEL_TITLE).first().isVisible().catch(() => false);
+  world.askedToPayFee = await submitApplication(page);
 }
 
 When('I choose to apply for a {string}', async ({ page, world, $tags }, type: string) => {
@@ -67,8 +65,8 @@ When('I sign the statement of truth', async ({ world, $tags }) => {
   await signStatementOfTruth(type);
 });
 
-When('I submit the application', async () => {
-  await submitApplication();
+When('I submit the application', async ({ page, world }) => {
+  world.askedToPayFee = await submitApplication(page);
 });
 
 Given('I have submitted an application for a {string}', async ({ page, world, $tags }, type: string) => {
