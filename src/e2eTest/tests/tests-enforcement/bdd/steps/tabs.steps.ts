@@ -437,5 +437,16 @@ pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
 ]);
 
 pendingSteps({ ticket: 'HDPI-7539', summary: 'Defendant visibility of enforcement' }, [
+<<<<<<< /tmp/m.ours
   'I see the {string} table with claimant type, claimant name and defendant names',
+=======
+  'the case has a writ of possession',
+  'a defendant opens the case',
+  'a defendant views case file view',
+  'they do not see the {string} document',
+  'the defendants could see the enforcement for that warrant',
+  'defendants can no longer see any enforcement information',
+  'they stay unable to see it until the bailiff records a return on the warrant of restitution',
+  'defendants cannot see any enforcement information',
+>>>>>>> /tmp/m.theirs
 ]);

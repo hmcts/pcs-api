@@ -6,7 +6,7 @@
  * a hearing centre admin can submit. Nothing else puts a warrant into "Closed".
  */
 import { BrowserContext, Page, expect } from '@playwright/test';
-import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import {
   AWAITING_SCHEDULING,
@@ -26,16 +26,7 @@ import {
   submitApplication,
 } from './enforcement-journeys';
 import { EnforcementRow, enforcementRows } from './enforcement-status-tab';
-import {
-  RECORD_WARRANT_RETURN,
-  chooseOutcome,
-  chooseReturnType,
-  visibleReturnNameDropDown,
-  warrantReturn,
-} from './warrant-return';
-
-/** Final return names that record a successful eviction; every other closing name is "Eviction unsuccessful". */
-const SUCCESSFUL_RETURN_NAMES = ['eviction successful'];
+import { RECORD_WARRANT_RETURN, recordWarrantReturn } from './warrant-return';
 
 /**
  * Puts a closed warrant of possession on a new case: approved, allocated, then closed by a final return
@@ -85,55 +76,7 @@ async function recordFinalReturn(page: Page, context: BrowserContext, returnName
   await signInAs('hearing-centre-admin', page, context);
   await openCaseSummary(page);
   await startEvent(RECORD_WARRANT_RETURN);
-
-  const successful = SUCCESSFUL_RETURN_NAMES.includes(returnName.toLowerCase());
-  await chooseReturnType(page, warrantReturn.final);
-  await chooseOutcome(page, successful ? warrantReturn.evictionSuccessful : warrantReturn.evictionUnsuccessful);
-  await chooseReturnNameIgnoringCase(page, returnName);
-  if (successful) {
-    await enterEvictionDateTime(page, yesterday());
-  }
-  // Optional for most names and mandatory for some; always giving it keeps one route for all of them.
-  await page.getByLabel(warrantReturn.additionalDetailsLabel).fill('Recorded by the enforcement BDD suite');
-
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('button', { name: 'Save and continue', exact: true }).click();
-  await expect(page.getByRole('heading', { name: /Outcome recorded as/ })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
-}
-
-/**
- * The feature files write return names in sentence case ("Warrant suspended by order"); pcs-api's labels
- * keep the capitals of the HDPI-8424 list ("Warrant suspended by Order"). Matches the option ignoring case.
- */
-async function chooseReturnNameIgnoringCase(page: Page, returnName: string): Promise<void> {
-  const field = await visibleReturnNameDropDown(page);
-  const labels = (await field.locator('option').allTextContents()).map(label => label.trim());
-  const label = labels.find(option => option.toLowerCase() === returnName.toLowerCase());
-  if (!label) {
-    throw new Error(`No return name "${returnName}" offered. Offered: ${labels.join(', ')}`);
-  }
-  await field.selectOption({ label });
-}
-
-function yesterday(): Date {
-  const date = new Date();
-  date.setDate(date.getDate() - 1);
-  return date;
-}
-
-async function enterEvictionDateTime(page: Page, when: Date): Promise<void> {
-  const parts: Record<string, string> = {
-    day: String(when.getDate()).padStart(2, '0'),
-    month: String(when.getMonth() + 1).padStart(2, '0'),
-    year: String(when.getFullYear()),
-    hour: '10',
-    minute: '00',
-  };
-  for (const [field, value] of Object.entries(parts)) {
-    const input = page.locator(`#warrantReturnEvictionDateTime-${field}`);
-    await expect(input).toBeVisible({ timeout: LONG_TIMEOUT });
-    await input.fill(value);
-  }
+  await recordWarrantReturn(page, returnName);
 }
 
 /**

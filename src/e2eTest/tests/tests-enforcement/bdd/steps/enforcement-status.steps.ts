@@ -11,11 +11,14 @@ import { Given, Then, expect } from '../fixtures/enforcement.fixtures';
 import { pendingSteps } from '../fixtures/pending';
 import { currentEnforcement, enforcementRows, expectEnforcementStatus } from '../support/enforcement-status-tab';
 import { setUpWarrantAtStatus } from '../support/approve-warrant';
-import { requireCaseReference } from '../support/enforcement-journeys';
+import { createIssuedCase, requireCaseReference } from '../support/enforcement-journeys';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
+/** "unchanged" is the status the warrant had when the scenario last submitted a return. */
 Then('the enforcement status changes to {string}', async ({ page, world }, status: string) => {
-  await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
+  const expected = status === 'unchanged' ? world.statusBeforeReturn : status;
+  expect(expected, 'the status before the return the scenario submitted').toBeDefined();
+  await expectEnforcementStatus(page, requireCaseReference(world), expected as string, world.earlierWarrantNumbers.length);
 });
 
 Then('the enforcement status is {string}', async ({ page, world }, status: string) => {
@@ -26,7 +29,16 @@ Then('the enforcement status is still {string}', async ({ page, world }, status:
   await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
 
-Then('the case has no live warrant', async ({ world }) => {
+/**
+ * A warrant cannot be taken off a case, and a closed one still takes "Reopen warrant", so the scenario moves
+ * to a new issued case with no enforcement on it.
+ */
+Given('the case has no live warrant', async ({ world }) => {
+  await createIssuedCase(world);
+  world.enforcementSeeded = false;
+  world.warrantApproved = false;
+  world.warrantNumber = undefined;
+  world.allocatedBailiff = undefined;
   const live = (await enforcementRows(requireCaseReference(world))).filter(
     row => !['Closed', 'Rejected', 'Transferred to the High Court'].includes(row.status ?? '')
   );

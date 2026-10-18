@@ -96,6 +96,8 @@ export class EnforcementWorld {
   aliases: Record<string, string> = {};
   /** The warrant return the scenario recorded in "Record warrant return", if any. */
   recordedReturn?: { type: string; outcome: string; returnName: string; date: string; time: string };
+  /** The status of the warrant just before the scenario last submitted a return. */
+  statusBeforeReturn?: string;
   /**
    * Warrant numbers of the enforcements this scenario closed before applying again, oldest first. Once set,
    * the status steps read the current enforcement (the first the "Enforcement status" tab lists) rather

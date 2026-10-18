@@ -25,6 +25,7 @@ import {
   submitDecision,
 } from '../support/decide-enforcement';
 import { isLocalStack, localUsers } from '@config/local-stack.config';
+import { LONG_TIMEOUT } from 'playwright.config';
 import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionAsBailiff, setUpWarrantAtStatus } from '../support/approve-warrant';
 import {
   CITIZEN_DEFENDANT,
@@ -249,15 +250,44 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement wo
   'I am signed in to XUI as a bailiff with open enforcement tasks',
 ]);
 
-pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
+const genericStepPending = { summary: 'Generic XUI step for an enforcement event that does not exist yet' };
+
+pendingSteps(genericStepPending, [
   'the {string} screen opens',
   'I see the {string} confirmation with the case number and warrant number',
+<<<<<<< /tmp/m.ours
+=======
+  'today is {string} and the time is {string}',
+>>>>>>> /tmp/m.theirs
   'I open {string}',
   '{string}',
 ]);
 
+/** The event page the scenario is on quotes neither the warrant number nor anything that would give it away. */
+Then('the warrant number is not shown in the header', async ({ page, world, $tags }) => {
+  const event = world.currentEvent ? xuiEvents[world.currentEvent] : undefined;
+  if (!event) {
+    return markPending(genericStepPending, $tags);
+  }
+  expect(world.warrantNumber, 'a warrant number generated when the warrant was approved').toBeDefined();
+  await expect(page.getByRole('heading', { name: event.firstPageHeader })).toBeVisible();
+  await expect(page.locator('body')).not.toContainText(world.warrantNumber as string);
+});
+
+/** CCD's check your answers for the event the scenario is in: every answer has a Change link. */
+Then('the {string} screen shows my answers with {string} links', async ({ page, world, $tags }, screen: string, link: string) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: screen })).toBeVisible({ timeout: LONG_TIMEOUT });
+  const answers = page.locator('ccd-case-edit-submit tr').filter({ has: page.locator('td') });
+  await expect(answers.first()).toBeVisible();
+  for (const answer of await answers.all()) {
+    await expect(answer.getByRole('link', { name: new RegExp(`^${link}\\b`) })).toBeVisible();
+  }
+});
+
 // Generic XUI steps. Only "Decide enforcement" drives them today; any other event stays pending.
-const genericStepPending = { summary: 'Generic XUI step for an enforcement event that does not exist yet' };
 
 function inDecideEnforcement(world: EnforcementWorld): boolean {
   return world.currentEvent === DECIDE_ENFORCEMENT;
