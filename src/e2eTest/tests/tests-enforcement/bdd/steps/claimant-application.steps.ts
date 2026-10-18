@@ -1,16 +1,18 @@
 // Claimant legal representative applies for enforcement through "Enforce the order" (features 01 and 15).
 import { Given, When } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld } from '../fixtures/enforcement.fixtures';
-import { markPending, pendingSteps } from '../fixtures/pending';
+import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import type { PendingScope } from '../fixtures/pending';
 import {
   answerApplicationQuestions,
   chooseApplicationType,
   openCaseSummary,
+  requireCaseReference,
   signStatementOfTruth,
   startEvent,
   submitApplication,
 } from '../support/enforcement-journeys';
+import { recordEnforcementFeePaid } from '../support/decide-enforcement';
 import { Page } from '@playwright/test';
 import { PAY_PANEL_TITLE } from '../support/repeat-enforcement';
 
@@ -77,10 +79,24 @@ When('I submit an application for a {string}', async ({ page, world, $tags }, ty
   await applyFor(asEnforcementType(type), world, page, $tags);
 });
 
-pendingSteps({ summary: 'Paying the enforcement fee by service request' }, [
-  'I pay the {string} fee using a service request',
-  'I submit and pay for a {string} application',
-]);
+/**
+ * pcs-api cannot take an enforcement fee yet (HDPI-2877): the fee is recorded as paid through pcs-api
+ * testing support, which moves the application from "Awaiting payment" to "Awaiting review" as payment would.
+ */
+async function payEnforcementFee(): Promise<void> {
+  approximatePrecondition('HDPI-2877', 'the enforcement fee is recorded as paid through testing support, not paid by service request');
+  await recordEnforcementFeePaid();
+}
+
+When('I pay the {string} fee using a service request', async ({ world }, _feeCode: string) => {
+  requireCaseReference(world);
+  await payEnforcementFee();
+});
+
+When('I submit and pay for a {string} application', async ({ page, world, $tags }, type: string) => {
+  await applyFor(asEnforcementType(type), world, page, $tags);
+  await payEnforcementFee();
+});
 
 pendingSteps({ ticket: 'HDPI-8424', summary: 'Further enforcement on the same case' }, [
   'I apply for a {string} explaining how the defendants returned to the property',

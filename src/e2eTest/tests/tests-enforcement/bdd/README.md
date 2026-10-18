@@ -40,7 +40,7 @@ When a journey is built, swap its expressions in `pendingSteps(...)` for real st
 
 ## What runs today
 
-- Journey 01: "Enforce the order" for a warrant of possession, writ of possession and warrant of restitution (up to the status check, which is pending on HDPI-7419). The warrant of restitution is only offered once a warrant exists, so the step seeds one through the API first.
+- Journey 01: "Enforce the order" for a warrant of possession and a writ of possession, end to end on a local stack too: the statement of truth, the submit, and the new enforcement "Awaiting payment" on the "Enforcement status" tab. Paying the fee is the `fee-paid` testing-support endpoint (HDPI-2877), after which the status is "Awaiting review". The warrant of restitution journey still ends on placeholder pages, and a writ of restitution is never offered (OPEN-QUESTIONS 58), so both stay `@pending`, as do the repeat-warrant, document, email and WA task scenarios.
 - Journey 06: "Confirm the eviction date" availability and start. pcs-api calls the event "Confirm the eviction details".
 - Journey 02: "Decide enforcement" as a hearing centre admin: the mandatory decision, cancel, check your answers and change, approving a warrant of possession (confirmation and warrant number) and rejecting (confirmation). pcs-api cannot take the enforcement fee yet (HDPI-2877), so the background seeds a warrant application through the API and moves it to "Awaiting review" with the `POST /testing-support/enforcement/{caseReference}/fee-paid` testing-support endpoint. Documents, notifications, the WA task, the status tab and writs stay pending.
 - Journey 12: the claimant legal representative sees the "Enforcement status" tab once a warrant application is on the case. The warrant is a submitted application rather than an approved, generated one, because "Decide enforcement" (HDPI-8656) does not exist yet.
@@ -52,3 +52,11 @@ When a journey is built, swap its expressions in `pendingSteps(...)` for real st
 - Journey 15 and the free repeat warrant in journey 01: a closed warrant is built by approving a seeded application, allocating it through testing support and recording a final return as a hearing centre admin. A second warrant after a failed eviction and the one-live-enforcement refusal run. The free repeat warrant scenarios also need `POST /testing-support/enforcement/{caseReference}/backdate` (`support/warrant-backdate.ts`) to move the first warrant's generation date back; the fee outline stays out of `test:enforcement:bdd` while it is tagged `@open-question`. Restitution after re-entry, breathing space and the reopened-case scenarios stay `@pending`.
 
 Each scenario creates its own case through the API. The case reference in the feature files is illustrative.
+
+## Demo videos
+
+`scripts/enforcement-demo-videos.sh <output dir>` runs features 01 to 18 one at a time in the `enforcement-bdd-demo` project against a local stack and stitches each feature's passing scenarios into `<output dir>/<feature>.mp4`, with a title card before each scenario. That project records every scenario and runs at human speed: `slowMo` on every browser action (`DEMO_SLOW_MO`, default 350ms) and a hold on each new page and after each When and Then step (`DEMO_HOLD_MS`, default 1500ms, see `support/demo-pacing.ts`). Other projects are unaffected.
+
+## Time-based rules
+
+`support/backdate-enforcement.ts` calls `POST /testing-support/enforcement/{caseReference}/backdate`, which moves every timestamp of one enforcement (eviction date and time, approval, status change, notes, allocations, returns, documents) into the past by an ISO-8601 period and/or duration, so the 72-hour and 12-month rules can be exercised without waiting.

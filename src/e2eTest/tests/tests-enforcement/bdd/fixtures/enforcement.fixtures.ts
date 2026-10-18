@@ -7,6 +7,8 @@ import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-act
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { submitCaseApiData } from '@data/api-data';
 import { resetSignedInRole } from '../support/session';
+import { demoHoldMs } from '../support/demo-pacing';
+import { disablePagePacing, enablePagePacing } from '@utils/page-pacing';
 
 export type EnforcementType =
   | 'warrant of possession'
@@ -82,14 +84,19 @@ export const test = base.extend<EnforcementFixtures>({
   },
   // Same per-test set-up and tear-down as the tests-enforcement specs' beforeEach/afterEach.
   enforcementExecutor: [
-    async ({ page, world }, use) => {
+    async ({ page, world }, use, testInfo) => {
       initializeExecutor(page);
       initializeEnforcementExecutor(page);
       resetSignedInRole();
       defendantDetails.length = 0;
       moneyMap.clear();
       fieldsMap.clear();
+      const holdMs = demoHoldMs(testInfo);
+      if (holdMs > 0) {
+        enablePagePacing(page, holdMs);
+      }
       await use();
+      disablePagePacing();
       defendantDetails.length = 0;
       moneyMap.clear();
       fieldsMap.clear();
@@ -104,4 +111,4 @@ export const test = base.extend<EnforcementFixtures>({
 
 export { expect } from '@utils/test-fixtures';
 
-export const { Given, When, Then, Step, Before } = createBdd(test);
+export const { Given, When, Then, Step, Before, AfterStep } = createBdd(test);

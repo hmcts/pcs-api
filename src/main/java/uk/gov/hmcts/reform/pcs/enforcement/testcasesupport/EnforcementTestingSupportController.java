@@ -25,18 +25,21 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
+import java.time.Duration;
+import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Test-only shortcuts for enforcement, for the two points where the end to end tests cannot drive the real
- * journey.
+ * Test-only shortcuts for enforcement, for the points where the end to end tests cannot drive the real
+ * journey or cannot wait for it.
  *
  * <p>pcs-api cannot take an enforcement fee yet (HDPI-2877), so an application never reaches "Awaiting
  * review" on its own. And {@code allocateBailiff} cannot be driven without staff reference data, so without
  * a shortcut no warrant can get past "Awaiting bailiff allocation" and the schedule, reschedule,
- * notice-of-eviction and warrant-return journeys are all untestable.
+ * notice-of-eviction and warrant-return journeys are all untestable. The 72 hour and 12 month rules are
+ * measured from when things happened, so {@code backdate} moves those times into the past.
  */
 @Slf4j
 @RestController
@@ -49,6 +52,7 @@ public class EnforcementTestingSupportController {
     private final EnforcementOrderService enforcementOrderService;
     private final BailiffAllocationService bailiffAllocationService;
     private final IdamAuthenticator idamAuthenticator;
+    private final EnforcementBackdateService enforcementBackdateService;
 
     @Operation(summary = "Record the fee as paid for the case's enforcement application awaiting payment")
     @PostMapping("/{caseReference}/fee-paid")
@@ -103,6 +107,30 @@ public class EnforcementTestingSupportController {
     }
 
     /**
+     * Moves the timestamps of one of the case's enforcements into the past, for the rules measured from them:
+     * the claimant's 72 hours to confirm an eviction and the free repeat warrant within 12 months of the first
+     * being generated. See {@link EnforcementBackdateService}.
+     */
+    @Operation(summary = "Move an enforcement's eviction, generated, return and other timestamps into the past")
+    @PostMapping("/{caseReference}/backdate")
+    public ResponseEntity<Void> backdate(
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable long caseReference,
+        @RequestBody BackdateRequest request) {
+
+        if (request.period() == null && request.duration() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        log.info("Testing support: backdating enforcement {} on case {} by {} and {}",
+                 request.enforcementNumber() == null ? "(current)" : request.enforcementNumber(), caseReference,
+                 request.period(), request.duration());
+        return enforcementBackdateService
+            .backdate(caseReference, request.enforcementNumber(), request.period(), request.duration())
+            .<ResponseEntity<Void>>map(id -> ResponseEntity.noContent().build())
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
      * Runs {@code action} with the bearer token's user on the security context, restoring it afterwards.
      */
     private <T> T runAsCaller(String authorization, Supplier<T> action) {
@@ -124,5 +152,12 @@ public class EnforcementTestingSupportController {
         @NotBlank String userId,
         @NotBlank String name,
         @NotBlank String email) {
+    }
+
+    /**
+     * How far back to move the enforcement, as an ISO-8601 period ({@code P12M}), duration ({@code PT73H}) or
+     * both, and which enforcement: its warrant or writ number, or the case's current enforcement when omitted.
+     */
+    public record BackdateRequest(Period period, Duration duration, String enforcementNumber) {
     }
 }
