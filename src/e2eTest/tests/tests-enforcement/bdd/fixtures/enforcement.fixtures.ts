@@ -9,6 +9,7 @@ import { submitCaseApiData } from '@data/api-data';
 import { resetSignedInRole } from '../support/session';
 import { demoHoldMs } from '../support/demo-pacing';
 import { disablePagePacing, enablePagePacing } from '@utils/page-pacing';
+import type { BatchPrintFile, BatchPrintPlan } from '../support/batch-print';
 
 export type EnforcementType =
   | 'warrant of possession'
@@ -107,6 +108,19 @@ export class EnforcementWorld {
   checkedDocuments: string[] = [];
   /** The generated document the scenario's "the document" and "it" steps refer to. */
   currentDocument?: string;
+  /** Batch print (feature 17): the cases set up as allocated to the bailiff, in the order the feature lists them. */
+  batchPrintCases: string[] = [];
+  /** The real case standing in for each reference the batch print feature quotes. */
+  batchPrintCaseFor: Record<string, string> = {};
+  /** The cases chosen for the next batch print, in print order. */
+  batchPrintSelection: string[] = [];
+  /** A chosen case allocated to another bailiff. */
+  notAllocatedCase?: string;
+  /** The file name of the latest notice of eviction filed on the case. */
+  latestNoticeOfEviction?: string;
+  /** What pcs-api said the last batch print would contain, and the file it then produced. */
+  batchPrintPlan?: BatchPrintPlan;
+  batchPrintFile?: BatchPrintFile;
 }
 
 type EnforcementFixtures = {

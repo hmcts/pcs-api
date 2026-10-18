@@ -92,6 +92,10 @@ Testing-support shortcuts used by the suite (all need `testing-support.enabled=t
   bearer token as well as S2S, because the service records who made the allocation.
 - `POST /testing-support/enforcement/{caseReference}/defendant-case-role` with `{"userId","caseRole"}` — gives
   the user `[DEFENDANT]` or `[DEFENDANTSOLICITOR]` on the case through CCD's case-users API. S2S header only.
+- `POST /testing-support/enforcement/{caseReference}/documents` with `{"kind","title"}` (`kind` is `WARRANT`,
+  `RISK_ASSESSMENT` or `NOTICE_OF_EVICTION`) — files a placeholder PDF of that kind in the Enforcement folder,
+  against the current enforcement, as the type pcs-api generates it as. Batch print takes it as the latest of
+  its kind. Uploads through CDAM, so needs `LOCAL_DOC_SERVICES=true`. S2S header only.
 
 | Variable | Local default | Notes |
 |---|---|---|
