@@ -416,7 +416,6 @@ pendingSteps({ ticket: 'HDPI-8189', summary: 'The allocated-bailiff case role is
 ]);
 
 pendingSteps({ ticket: 'HDPI-7344', summary: 'Schedule eviction cannot be reached: it needs a bailiff allocation' }, [
-  'I see an {string} table with claimant type, claimant name and defendant names',
   'the case has two defendants whose names are not known',
   'the {string} table shows {string} once',
   'I answered {string} to {string}',

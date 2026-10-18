@@ -136,6 +136,17 @@ class ScheduleEvictionTest extends BaseEventTest {
     }
 
     @Test
+    void shouldStartWithTheCaseNameForThePartiesLine() {
+        when(evictionDetailsService.getEvictionDetails(TEST_CASE_REFERENCE))
+            .thenReturn(new EvictionDetails("Private landlord", List.of("Acme"), List.of("John Doe")));
+        PCSCase caseData = PCSCase.builder().caseNameHmctsInternal("Acme vs John Doe").build();
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getFormattedCaseName()).isEqualTo("Acme vs John Doe");
+    }
+
+    @Test
     void shouldScheduleAndConfirm() {
         when(evictionScheduleService.schedule(anyLong(), any(), anyBoolean()))
             .thenReturn(EnforcementChange.made("WP-00000042"));

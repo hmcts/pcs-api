@@ -8,6 +8,7 @@ import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference } from '../support/enforcement-journeys';
+import { basicClaimFixtureClaim } from '@config/local-stack.config';
 import {
   ENFORCEMENT_STATUS_TAB,
   expectEnforcementSection,
@@ -20,6 +21,7 @@ import {
   SCHEDULE_EVICTION,
   answerRow,
   dispenseWithServiceRadio,
+  evictionDetailsRows,
   enterEvictionDateTime,
   evictionDateErrors,
   expectCheckYourAnswers,
@@ -213,4 +215,19 @@ Then('the {string} tab {string} shows only the new date and time', async ({ page
   expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
   expect(world.evictionDate, 'the new eviction date entered by this scenario').toBeDefined();
   await expectEvictionShown(page, requireCaseReference(world), section, world.evictionDate as string);
+});
+
+// The claimant and defendant come from the fixture claim every local case is built from.
+Then('I see an {string} table with claimant type, claimant name and defendant names', async ({ page, world }, table: string) => {
+  expect(table).toBe('Eviction details');
+  expect(world.currentEvent).toBe(SCHEDULE_EVICTION);
+  const rows = await evictionDetailsRows(page);
+  expect(Object.keys(rows)).toEqual(['Claimant type', 'Claimant name', 'Defendant names']);
+  expect(rows['Claimant type'], 'the claimant type').toMatch(/\S/);
+  expect(rows['Claimant name'], 'the claimant name').toMatch(/\S/);
+  const { firstName, lastName } = basicClaimFixtureClaim.defendant1;
+  expect(rows['Defendant names']).toBe(`${firstName} ${lastName}`);
+  // The details are a rendered label, not fields.
+  await expect(page.locator('dl.govuk-summary-list').filter({ hasText: 'Defendant names' }).locator('input, select, textarea'))
+    .toHaveCount(0);
 });

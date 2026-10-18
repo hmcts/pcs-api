@@ -42,6 +42,9 @@ export function applyLocalServiceUrls(): void {
   // (docker-compose-documents.yml). Both must point at localhost, never the AAT defaults.
   process.env.CDAM_URL ||= 'http://localhost:4455';
   process.env.DM_STORE ||= 'http://localhost:4506';
+  // wiremock-local stands in for Docmosis, among others; its request journal keeps what each document was
+  // rendered from.
+  process.env.WIREMOCK_URL ||= 'http://localhost:8083';
   // The simulator ignores the password; the suite only checks that one is set.
   process.env.IDAM_PCS_USER_PASSWORD ||= 'local';
   process.env.PCS_API_IDAM_SECRET ||= 'local';

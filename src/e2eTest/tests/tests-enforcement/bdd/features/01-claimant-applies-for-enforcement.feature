@@ -79,7 +79,11 @@ Feature: Claimant applies for enforcement of a possession order
     Then an unsealed "enforcement application" document is stored in the "Enforcement" folder
     And no "risk assessment" document is generated
 
-  @HDPI-7555 @pending
+  # Locally Docmosis is a wiremock stub that returns one placeholder PDF for every document, so the answers are
+  # checked in the data pcs-api sends Docmosis to fill the template with (support/docmosis-renders.ts). The
+  # warrant of restitution journey cannot be submitted yet: it ends on placeholder pages, with no language or
+  # statement of truth page (OPEN-QUESTIONS #30).
+  @HDPI-7555
   Scenario Outline: Enforcement application output contains the answers for the enforcement type
     When I submit and pay for a "<type>" application
     Then the "enforcement application" document contains "<questions>"
@@ -88,6 +92,10 @@ Feature: Claimant applies for enforcement of a possession order
       | type                   | questions                                                                                                                                                                                     |
       | warrant of possession  | what do you want to apply for, breathing space, missed payments, correct name and address, defendants' dates of birth, language used, statement of truth                                      |
       | writ of possession     | what do you want to apply for, correct name and address, breathing space, missed payments, High Court Enforcement Officer hired, who you hired, language used, statement of truth             |
+
+    @pending
+    Examples:
+      | type                   | questions                                                                                                                                                                                     |
       | warrant of restitution | what do you want to apply for, how the defendants returned to the property, evidence submitted, language used, statement of truth                                                            |
 
   @HDPI-7538 @pending

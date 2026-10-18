@@ -9,12 +9,12 @@
  * Documents are recognised by file name. pcs-api names each one "<title> - <warrant number or case number>",
  * from `EnforcementOutput.title`, because until the real Docmosis templates exist every document is rendered
  * from a stand-in template (locally, as the wiremock stub's placeholder PDF), so the content cannot tell them
- * apart. The same is why a seal cannot be checked.
+ * apart. What each was rendered from is in `docmosis-renders.ts`.
  */
 import Axios from 'axios';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { localIdamToken, localUsers } from '@config/local-stack.config';
-import { expect, test } from '../fixtures/enforcement.fixtures';
+import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 
 export const ENFORCEMENT_FOLDER = 'Enforcement';
@@ -93,13 +93,6 @@ export async function expectHiddenFrom(caseReference: string, title: string, vie
   ).toBe(false);
 }
 
-/** Records that a seal or other content was not checked, because the document came from a stand-in template. */
-export function noteStandInTemplate(what: string): void {
-  test.info().annotations.push({
-    type: 'stand-in template',
-    description: `OPEN-QUESTIONS 19: ${what} is not checked, because the document is rendered from a stand-in template`,
-  });
-}
 
 function capitalise(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);

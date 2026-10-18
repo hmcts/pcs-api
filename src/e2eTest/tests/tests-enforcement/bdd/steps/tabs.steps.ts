@@ -355,11 +355,6 @@ Then('the case header does not show {string}', async ({ page, world }, number: s
   await expect(page.locator('ccd-case-header')).not.toContainText(actual(world, number));
 });
 
-// The documents are rendered from stand-in templates until the real ones exist, so there is nothing to read.
-pendingSteps({ ticket: 'HDPI-7555', summary: 'The enforcement application template (OPEN-QUESTIONS 19)' }, [
-  'the {string} document contains {string}',
-]);
-
 pendingSteps({ ticket: 'HDPI-7547', summary: 'Confirm the eviction only asks whether the claimant can attend' }, [
   'the claimant has completed {string}',
   '{string} shows:',

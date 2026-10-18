@@ -1,6 +1,6 @@
 // Generated enforcement documents in the Enforcement folder of case file view (features 01, 02 and 05).
 import { Then, expect } from '../fixtures/enforcement.fixtures';
-import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import type { EnforcementType, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
 import type { PendingScope } from '../fixtures/pending';
 import { isLocalStack } from '@config/local-stack.config';
@@ -12,8 +12,8 @@ import {
   enforcementDocuments,
   expectEnforcementDocument,
   expectHiddenFrom,
-  noteStandInTemplate,
 } from '../support/case-documents';
+import { docmosisRender, noteCheckedOnRenderData } from '../support/docmosis-renders';
 
 /** Reading case file view as the claimant and as an internal user needs the cftlib users and the IDAM simulator. */
 const localStackOnly: PendingScope = {
@@ -38,6 +38,16 @@ async function expectGenerated(world: EnforcementWorld, name: string): Promise<s
   world.currentDocument = title;
   world.checkedDocuments.push(title);
   return title;
+}
+
+/**
+ * The seal pcs-api asked Docmosis to put on the document: "County Court", "High Court", or none. The stub's
+ * placeholder PDF carries no seal, so the request is what can be checked.
+ */
+async function expectSeal(world: EnforcementWorld, title: string, seal: string | undefined): Promise<void> {
+  const render = await docmosisRender(requireCaseReference(world), title);
+  expect(render.data.seal?.toLowerCase() ?? undefined, `the seal on "${title}…"`).toBe(seal?.toLowerCase());
+  noteCheckedOnRenderData(seal ? `the ${seal} seal` : 'that the document is unsealed');
 }
 
 async function expectVisibleToClaimantAndInternalUsers(world: EnforcementWorld, title: string): Promise<void> {
@@ -71,8 +81,7 @@ Then(
       return markPending(localStackOnly, $tags);
     }
     requireEnforcementFolder(folder);
-    await expectGenerated(world, name);
-    noteStandInTemplate(`that the ${name} is unsealed`);
+    await expectSeal(world, await expectGenerated(world, name), undefined);
   }
 );
 
@@ -100,32 +109,28 @@ Then('a {string} document is generated with the county court seal', async ({ wor
   if (!isLocalStack()) {
     return markPending(localStackOnly, $tags);
   }
-  await expectGenerated(world, name);
-  noteStandInTemplate('the county court seal');
+  await expectSeal(world, await expectGenerated(world, name), 'County Court');
 });
 
 Then('a {string} document is generated with the High Court seal', async ({ world, $tags }, name: string) => {
   if (!isLocalStack()) {
     return markPending(localStackOnly, $tags);
   }
-  await expectGenerated(world, name);
-  noteStandInTemplate('the High Court seal');
+  await expectSeal(world, await expectGenerated(world, name), 'High Court');
 });
 
 Then('a {string} document is generated with the {string} seal', async ({ world, $tags }, name: string, seal: string) => {
   if (!isLocalStack()) {
     return markPending(localStackOnly, $tags);
   }
-  await expectGenerated(world, name);
-  noteStandInTemplate(`the ${seal} seal`);
+  await expectSeal(world, await expectGenerated(world, name), seal);
 });
 
 Then('a {string} document is generated without a seal', async ({ world, $tags }, name: string) => {
   if (!isLocalStack()) {
     return markPending(localStackOnly, $tags);
   }
-  await expectGenerated(world, name);
-  noteStandInTemplate(`that the ${name} is unsealed`);
+  await expectSeal(world, await expectGenerated(world, name), undefined);
 });
 
 for (const subject of ['the document', 'it']) {
@@ -164,4 +169,68 @@ Then('it is visible to {string}', async ({ world, $tags }, viewers: string) => {
     return expectVisibleToClaimantAndInternalUsers(world, title);
   }
   throw new Error(`Unknown viewers "${viewers}". Expected "internal users" or "claimant and internal users"`);
+});
+
+// The answers the "Enforce the order" journeys in support/enforcement-journeys.ts give, by the question the
+// feature names and the field of the enforcement order pcs-api renders the application from.
+type ExpectedAnswers = Record<string, Record<string, unknown>>;
+
+const statementOfTruth = (prefix: string) => ({
+  [`${prefix}Certification`]: ['CERTIFY'],
+  [`${prefix}CompletedBy`]: 'LEGAL_REPRESENTATIVE',
+  [`${prefix}FullNameLegalRep`]: expect.any(String),
+});
+
+const applicationAnswers: Partial<Record<EnforcementType, ExpectedAnswers>> = {
+  'warrant of possession': {
+    'what do you want to apply for': { chooseEnforcementType: expect.objectContaining({ valueCode: 'WARRANT' }) },
+    'breathing space': { warrantDefendantInBreathingSpace: 'NO' },
+    'missed payments': { warrantDefendantMissedPayments: 'YES' },
+    'correct name and address': { warrantCorrectNameAndAddress: 'YES' },
+    "defendants' dates of birth": { warrantDefendantsDOBKnown: 'NO' },
+    'language used': { warrantEnforcementLanguageUsed: 'ENGLISH' },
+    'statement of truth': statementOfTruth('warrant'),
+  },
+  'writ of possession': {
+    'what do you want to apply for': { chooseEnforcementType: expect.objectContaining({ valueCode: 'WRIT' }) },
+    'correct name and address': { writCorrectNameAndAddress: 'YES' },
+    'breathing space': { writDefendantInBreathingSpace: 'NO' },
+    'missed payments': { writDefendantMissedPayments: 'YES' },
+    'High Court Enforcement Officer hired': { writHasHiredHighCourtEnforcementOfficer: 'NO' },
+    // Only asked when an officer was hired; the journey answers that none was.
+    'who you hired': { writHceoDetails: undefined },
+    'language used': { writEnforcementLanguageUsed: 'ENGLISH' },
+    'statement of truth': statementOfTruth('writ'),
+  },
+};
+
+Then('the {string} document contains {string}', async ({ world, $tags }, name: string, questions: string) => {
+  if (!isLocalStack()) {
+    return markPending(localStackOnly, $tags);
+  }
+  const type = world.applicationType as EnforcementType;
+  const answers = applicationAnswers[type];
+  if (name !== 'enforcement application' || !answers) {
+    return markPending({ summary: `reading the ${name} for a ${type}` }, $tags);
+  }
+  const title = await expectGenerated(world, name);
+  const order = (await docmosisRender(requireCaseReference(world), title)).data.enforcementOrder ?? {};
+  for (const question of questions.split(',').map(item => item.trim())) {
+    const expected = answers[question];
+    expect(expected, `a known answer for "${question}"`).toBeDefined();
+    for (const [field, value] of Object.entries(expected as Record<string, unknown>)) {
+      expect(order[field], `"${question}" (${field}) in the ${name}`).toEqual(value);
+    }
+  }
+  noteCheckedOnRenderData(`each answer in the ${name}`);
+});
+
+Then('the document is date and time stamped in {string} format', async ({ world, $tags }, format: string) => {
+  if (!isLocalStack()) {
+    return markPending(localStackOnly, $tags);
+  }
+  expect(format).toBe('DD/MM/YYYY HH:MM AM/PM');
+  const render = await docmosisRender(requireCaseReference(world), requireCurrentDocument(world));
+  expect(render.data.generatedAt, 'the generation time stamp').toMatch(/^\d{2}\/\d{2}\/\d{4} (0\d|1[0-2]):[0-5]\d (AM|PM)$/);
+  noteCheckedOnRenderData('the date and time stamp');
 });

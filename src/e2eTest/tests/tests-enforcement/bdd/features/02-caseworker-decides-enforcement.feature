@@ -58,7 +58,7 @@ Feature: Caseworker decides an enforcement application
     And the "Review claimant warrant application" task is completed
     And the case "History" tab shows the "Decide enforcement" event
 
-  @HDPI-9566 @HDPI-7353 @HDPI-7538 @open-question @pending
+  @HDPI-9566 @HDPI-7353 @HDPI-7538 @open-question
   Scenario: Approving a writ of possession generates the sealed writ for the claimant
     Given the enforcement is of type "writ of possession"
     And I have accepted the application
@@ -81,12 +81,13 @@ Feature: Caseworker decides an enforcement application
     Examples:
       | type                   | seal         | visible to                     |
       | warrant of possession  | county court | internal users                 |
+      | writ of possession     | High Court   | claimant and internal users    |
 
-    # Only a warrant of possession can be seeded through the API today.
+    # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #30) and a writ of
+    # restitution is never offered (OPEN-QUESTIONS #58).
     @pending
     Examples:
       | type                   | seal         | visible to                     |
-      | writ of possession     | High Court   | claimant and internal users    |
       | warrant of restitution | county court | internal users                 |
       | writ of restitution    | High Court   | claimant and internal users    |
 

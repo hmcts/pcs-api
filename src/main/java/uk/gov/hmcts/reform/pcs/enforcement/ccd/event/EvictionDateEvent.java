@@ -99,6 +99,7 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
         if (pcsCase.getEnforcementOrder() == null) {
             pcsCase.setEnforcementOrder(new EnforcementOrder());
         }
+        pcsCase.getEnforcementOrder().setFormattedCaseName(pcsCase.getCaseNameHmctsInternal());
         pcsCase.getEnforcementOrder().setEvictionSchedule(
             EvictionSchedule.builder()
                 .evictionDetailsMarkup(

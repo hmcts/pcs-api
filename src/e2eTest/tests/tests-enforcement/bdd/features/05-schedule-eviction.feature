@@ -25,9 +25,7 @@ Feature: Bailiff schedules the eviction
     When I start the "Schedule eviction" event
     Then I see the error "There is no warrant on this case"
 
-  # EvictionDatePage shows the case number, the property address and the "Eviction details" table, but there
-  # is no parties line, and the table steps are not written yet.
-  @HDPI-7344 @pending
+  @HDPI-7344
   Scenario: Schedule eviction screen shows the eviction details
     When I start the "Schedule eviction" event
     Then I see the case number, the possession property address and "claimant name vs defendant name"

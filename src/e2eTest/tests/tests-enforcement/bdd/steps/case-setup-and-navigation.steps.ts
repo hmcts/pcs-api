@@ -251,7 +251,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement wo
 
 pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
   'the {string} screen opens',
-  'the warrant number is not shown in the header',
   'I see the {string} confirmation with the case number and warrant number',
   'today is {string} and the time is {string}',
   'the {string} screen shows my answers with {string} links',
@@ -320,6 +319,19 @@ Then('none of these are editable', async ({ page, world, $tags }) => {
     return markPending(genericStepPending, $tags);
   }
   await expectCaseDetailsNotEditable(page);
+});
+
+// The bailiff event pages name the case and the property, not the warrant.
+Then('the warrant number is not shown in the header', async ({ page, world, $tags }) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  const form = page.locator('ccd-case-edit-page');
+  await expect(form.getByRole('paragraph').filter({ hasText: 'Case number:' }).first()).toBeVisible();
+  await expect(form).not.toContainText('Warrant number');
+  if (world.warrantNumber) {
+    await expect(form).not.toContainText(world.warrantNumber);
+  }
 });
 
 Then('the {string} button is disabled', async ({ page, world, $tags }, button: string) => {

@@ -6,6 +6,7 @@ import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/
 import {
   CLAIMANT_LEGAL_REPRESENTATIVE,
   createCaseWithWarrant,
+  createCaseWithWrit,
   expectCaseTab,
   openCaseSummary,
   requireCaseReference,
@@ -46,10 +47,21 @@ Given('a {string} task exists on the case', async ({}, task: string) => {
   approximatePrecondition('HDPI-8627', `the "${task}" task is not created yet`);
 });
 
+/**
+ * The Background seeds a warrant of possession. A writ of possession can only be seeded on a local stack, from
+ * the Create-Enforcement-Writ fixture, so the scenario carries on with a new case that has a writ awaiting
+ * review instead.
+ */
 Given('the enforcement is of type {string}', async ({ world, $tags }, type: string) => {
-  if (type !== world.applicationType) {
+  if (type === world.applicationType) {
+    return;
+  }
+  if (type !== 'writ of possession' || !(await createCaseWithWrit(world))) {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} through the API` }, $tags);
   }
+  world.applicationType = type;
+  approximatePrecondition('HDPI-7419', 'the writ of possession is on a new case seeded from the writ fixture, not the Background case');
+  await recordEnforcementFeePaid();
 });
 
 When('I select {string} without choosing an option', async ({ page, world }, button: string) => {
@@ -119,6 +131,12 @@ Then('a warrant number is assigned to the enforcement', async ({ page, world }) 
   await expect.poll(() => enforcementNumber(page, requireCaseReference(world))).toMatch(/^W[PR]-\d{8,}$/);
 });
 
+// The number format is a placeholder until HDPI-7353 agrees it (pcs-api EnforcementNumberGenerator).
+Then('a writ number is assigned to the enforcement', async ({ page, world }) => {
+  await expect(confirmationPanel(page).getByText(/^Writ number: H[PR]-\d{8,}$/)).toBeVisible();
+  await expect.poll(() => enforcementNumber(page, requireCaseReference(world))).toMatch(/^H[PR]-\d{8,}$/);
+});
+
 async function acceptTheApplication(page: Page, world: EnforcementWorld): Promise<void> {
   await openCaseSummary(page);
   await startEvent(DECIDE_ENFORCEMENT);
@@ -128,14 +146,9 @@ async function acceptTheApplication(page: Page, world: EnforcementWorld): Promis
 }
 
 pendingSteps({ ticket: 'HDPI-9566', summary: 'Sealed warrant and writ documents' }, [
-  'the document is date and time stamped in {string} format',
   'the claimant has the {string} case flag',
   'the warrant is generated in Welsh',
   'no warrant is generated',
-]);
-
-pendingSteps({ ticket: 'HDPI-7353', summary: 'Writ number' }, [
-  'a writ number is assigned to the enforcement',
 ]);
 
 pendingSteps({ summary: 'Checking the case history after the decision' }, [

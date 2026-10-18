@@ -20,6 +20,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
  */
 public class EvictionDatePage implements CcdPageConfiguration {
 
+    /**
+     * The parties line under the case number and property address the case title shows.
+     */
+    static final String PARTIES = """
+        <p class="govuk-!-font-size-24 govuk-!-margin-top-0">Parties: ${formattedCaseName}</p>""";
+
     private final String pageId;
     private final String pageLabel;
     private final EvictionScheduleValidator validator;
@@ -35,8 +41,11 @@ public class EvictionDatePage implements CcdPageConfiguration {
         pageBuilder
             .page(pageId, this::midEvent)
             .pageLabel(pageLabel)
-            .label(pageId + "-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
+                // Placed before the label that shows it, which XUI otherwise renders blank.
+                .readonly(EnforcementOrder::getFormattedCaseName, NEVER_SHOW, true)
+                .label(pageId + "-parties", PARTIES)
+                .label(pageId + "-line-separator", "---")
                 .complex(EnforcementOrder::getEvictionSchedule)
                     // Before the label, which XUI otherwise renders blank (see DecideEnforcementPage).
                     .readonly(EvictionSchedule::getEvictionDetailsMarkup, NEVER_SHOW, true)

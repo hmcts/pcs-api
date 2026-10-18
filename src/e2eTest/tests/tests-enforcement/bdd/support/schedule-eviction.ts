@@ -116,3 +116,19 @@ export async function expectCheckYourAnswers(page: Page): Promise<void> {
 /** The check-your-answers row for a question, with its value and Change link. */
 export const answerRow = (page: Page, question: string) =>
   page.locator('tr, .govuk-summary-list__row').filter({ hasText: question }).first();
+
+/**
+ * The read-only "Eviction details" summary list on the schedule and reschedule screens
+ * (`EvictionDetailsMarkup`), as key to value. Several names in one row are separated by line breaks.
+ */
+export async function evictionDetailsRows(page: Page): Promise<Record<string, string>> {
+  const heading = page.getByRole('heading', { name: 'Eviction details', exact: true });
+  await expect(heading).toBeVisible({ timeout: LONG_TIMEOUT });
+  const list = page.locator('dl.govuk-summary-list').filter({ hasText: 'Defendant names' }).first();
+  const rows: Record<string, string> = {};
+  for (const row of await list.locator('.govuk-summary-list__row').all()) {
+    const key = (await row.locator('.govuk-summary-list__key').innerText()).trim();
+    rows[key] = (await row.locator('.govuk-summary-list__value').innerText()).trim();
+  }
+  return rows;
+}

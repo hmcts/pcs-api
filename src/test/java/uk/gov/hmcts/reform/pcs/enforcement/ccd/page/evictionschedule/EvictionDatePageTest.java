@@ -45,6 +45,8 @@ class EvictionDatePageTest extends BasePageTest {
         assertThat(fields.get("evictionDispenseWithService").getContext()).isEqualTo(DisplayContext.Mandatory);
         assertThat(fields.get("evictionDetailsMarkup").getContext()).isEqualTo(DisplayContext.ReadOnly);
         assertThat(fields.get("scheduleEviction-eviction-details").getLabel()).isEqualTo("${evictionDetailsMarkup}");
+        assertThat(fields.get("formattedCaseName").getContext()).isEqualTo(DisplayContext.ReadOnly);
+        assertThat(fields.get("scheduleEviction-parties").getLabel()).contains("Parties: ${formattedCaseName}");
         assertThat(event.getFields().getPageLabels()).containsEntry("scheduleEviction", "Schedule eviction");
     }
 
