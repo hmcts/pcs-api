@@ -81,9 +81,12 @@
           <text>"NewClaimCreateNewHearing"</text>
         </outputEntry>
       </rule>
-      <!-- A return that closes the enforcement cancels the bailiff tasks that are still open on it
+      <!-- A return cancels the bailiff tasks the new enforcement status makes obsolete
            (11-record-warrant-return.feature, HDPI-8189). One rule per process category: several
-           categories in one rule would only cancel tasks carrying all of them. -->
+           categories in one rule would only cancel tasks carrying all of them. A return to
+           AWAITING_SCHEDULING or BREATHING_SPACE voids the eviction date, so the tasks that hang off it
+           go; a return to AWAITING_BAILIFF_ALLOCATION also ends the allocation, so the allocated
+           bailiff's own tasks go too. -->
       <rule id="DecisionRule_enfCancelAllocate">
         <inputEntry id="UnaryTests_enfCancelAllocateFromState">
           <text></text>
@@ -121,7 +124,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_enfCancelRiskLevelStatus">
-          <text>"CLOSED"</text>
+          <text>"CLOSED", "AWAITING_BAILIFF_ALLOCATION"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_enfCancelRiskLevelAction">
           <text>"Cancel"</text>
@@ -147,7 +150,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_enfCancelNoticeServedStatus">
-          <text>"CLOSED"</text>
+          <text>"CLOSED", "AWAITING_SCHEDULING", "BREATHING_SPACE", "AWAITING_BAILIFF_ALLOCATION"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_enfCancelNoticeServedAction">
           <text>"Cancel"</text>
@@ -173,7 +176,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_enfCancelRescheduleStatus">
-          <text>"CLOSED"</text>
+          <text>"CLOSED", "AWAITING_SCHEDULING", "BREATHING_SPACE", "AWAITING_BAILIFF_ALLOCATION"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_enfCancelRescheduleAction">
           <text>"Cancel"</text>
@@ -199,7 +202,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_enfCancelUpdatedRiskStatus">
-          <text>"CLOSED"</text>
+          <text>"CLOSED", "AWAITING_BAILIFF_ALLOCATION"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_enfCancelUpdatedRiskAction">
           <text>"Cancel"</text>
@@ -212,6 +215,60 @@
         </outputEntry>
         <outputEntry id="LiteralExpression_enfCancelUpdatedRiskCategories">
           <text>"ReviewUpdatedRiskInformation"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfCancelRecordReturn">
+        <inputEntry id="UnaryTests_enfCancelRecordReturnFromState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRecordReturnEvent">
+          <text>"recordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRecordReturnToState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRecordReturnStatus">
+          <text>"CLOSED", "AWAITING_SCHEDULING", "BREATHING_SPACE", "AWAITING_BAILIFF_ALLOCATION"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnAction">
+          <text>"Cancel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnTaskId">
+          <text>"RecordWarrantReturn"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnWarningText">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnCategories">
+          <text>"RecordWarrantReturn"</text>
+        </outputEntry>
+      </rule>
+      <!-- A new eviction date needs a new return task due on it, so the one due on the old date goes
+           (07-reschedule-eviction.feature, HDPI-7549). -->
+      <rule id="DecisionRule_enfCancelRecordReturnOnReschedule">
+        <inputEntry id="UnaryTests_enfCancelRecordReturnOnRescheduleFromState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRecordReturnOnRescheduleEvent">
+          <text>"rescheduleEviction"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRecordReturnOnRescheduleToState">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfCancelRecordReturnOnRescheduleStatus">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnOnRescheduleAction">
+          <text>"Cancel"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnOnRescheduleTaskId">
+          <text>"RecordWarrantReturn"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnOnRescheduleWarningText">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfCancelRecordReturnOnRescheduleCategories">
+          <text>"RecordWarrantReturn"</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_11kloew">
