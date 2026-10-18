@@ -70,6 +70,16 @@ public class BailiffDirectoryService {
         }
     }
 
+    /**
+     * Whether the user with this IDAM id has the bailiff organisational role, looked up in AM now.
+     */
+    public boolean isBailiff(String userId) {
+        if (userId == null || userId.isBlank()) {
+            return false;
+        }
+        return hasBailiffRole(userId, systemUpdateUserTokenProvider.getAuthToken());
+    }
+
     private boolean hasBailiffRole(String userId, String systemUserToken) {
         RoleAssignmentResponse response =
             roleAssignmentApi.getRoles(authTokenGenerator.generate(), systemUserToken, userId);

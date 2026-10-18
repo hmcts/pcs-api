@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.enforcement.view;
 
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.StatementOfTruthRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -42,6 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
@@ -79,6 +83,13 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private UserRoleService userRoleService;
+    @MockitoBean
+    private FeatureToggleService featureToggleService;
+
+    @BeforeEach
+    void enableEnforcement() {
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(true);
+    }
 
     @Test
     @DisplayName("before the notice is served a defendant sees no enforcement field or document")
@@ -151,6 +162,21 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("a legal representative with no case role on either side sees what a defendant sees")
+    void solicitorWithNoSideSeesTheDefendantView() {
+        long caseReference = 1414000000000006L;
+        savedWarrantWithDocuments(caseReference);
+        evictionScheduleService.schedule(caseReference, EVICTION, false);
+        flushAndClear();
+
+        // caseworker-pcs-solicitor alone, as when /case-users returns nothing for the user
+        PCSCase solicitorView = caseViewAs(caseReference, UserRole.PCS_SOLICITOR);
+
+        assertThat(solicitorView.getEnforcementOrder()).isNull();
+        assertThat(filenames(solicitorView)).containsExactly("claim.pdf");
+    }
+
+    @Test
     @DisplayName("a without notice eviction stays hidden from defendants")
     void withoutNoticeEvictionStaysHidden() {
         long caseReference = 1414000000000004L;
@@ -193,7 +219,7 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
     }
 
     private PCSCase caseViewAs(long caseReference, UserRole... roles) {
-        when(userRoleService.getCurrentUserCaseRoles(anyLong())).thenReturn(new UserRoles(
+        when(userRoleService.getCurrentUserCaseRoles(anyLong(), anyCollection())).thenReturn(new UserRoles(
             "user-id", Arrays.stream(roles).map(UserRole::getRole).toList()));
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow();
         PCSCase pcsCase = PCSCase.builder().build();

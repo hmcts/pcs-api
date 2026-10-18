@@ -123,6 +123,29 @@ class BailiffDirectoryServiceTest {
         verifyNoInteractions(roleAssignmentApi, idamClient);
     }
 
+    @Test
+    void shouldSayAUserWithTheBailiffOrganisationalRoleIsABailiffWithoutAskingIdam() {
+        givenRoles(role("ORGANISATION", "bailiff"));
+
+        assertThat(underTest.isBailiff(USER_ID)).isTrue();
+        verifyNoInteractions(idamClient);
+    }
+
+    @Test
+    void shouldSayAUserWithOnlyOtherRolesIsNotABailiff() {
+        givenRoles(role("ORGANISATION", "bailiff-manager"), role("CASE", "bailiff"));
+
+        assertThat(underTest.isBailiff(USER_ID)).isFalse();
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    void shouldSayAMissingUserIsNotABailiff(String userId) {
+        assertThat(underTest.isBailiff(userId)).isFalse();
+        verifyNoInteractions(roleAssignmentApi);
+    }
+
     private void givenRoles(RoleAssignment... roles) {
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_TOKEN);

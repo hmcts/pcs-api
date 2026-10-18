@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.enforcement.view;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -18,12 +18,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementViewerService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -39,9 +43,16 @@ class ClaimantEnforcementDocumentViewTest {
 
     @Mock
     private UserRoleService userRoleService;
+    @Mock
+    private SecurityContextService securityContextService;
 
-    @InjectMocks
     private ClaimantEnforcementDocumentView underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new ClaimantEnforcementDocumentView(
+            new EnforcementViewerService(userRoleService, securityContextService));
+    }
 
     private final PcsCaseEntity pcsCaseEntity = caseWithDocuments(
         entity(CLAIM_FORM_ID, CaseFileCategory.STATEMENTS_OF_CASE.getId(), DocumentType.CLAIM),
@@ -58,11 +69,13 @@ class ClaimantEnforcementDocumentViewTest {
         document(NOTICE_OF_APPOINTMENT_ID, "appointment.pdf", ENFORCEMENT);
 
     @ParameterizedTest
-    @EnumSource(value = UserRole.class, names = {"DEFENDANT", "DEFENDANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR"})
-    void shouldLeaveDefendantsToTheDefendantView(UserRole defendantRole) {
+    @EnumSource(value = UserRole.class, names = {
+        "DEFENDANT", "DEFENDANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR", "PCS_SOLICITOR", "PCS_CASE_WORKER"
+    })
+    void shouldLeaveDefendantsAndUsersWithNoSideToTheDefendantView(UserRole role) {
         // Given
         PCSCase pcsCase = caseWith(claimForm, evidence, warrant, noticeOfAppointment);
-        givenCurrentUserHasRoles("citizen", defendantRole.getRole());
+        givenCurrentUserHasRoles("citizen", role.getRole());
 
         // When
         underTest.restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
@@ -87,7 +100,7 @@ class ClaimantEnforcementDocumentViewTest {
 
     @ParameterizedTest
     @EnumSource(value = UserRole.class, names = {
-        "JUDGE", "CTSC_ADMIN", "HEARING_CENTRE_ADMIN", "PCS_CASE_WORKER", "SYSTEM_USER", "BAILIFF"
+        "JUDGE", "CTSC_ADMIN", "HEARING_CENTRE_ADMIN", "HEARING_CENTRE_TEAM_LEADER", "SYSTEM_USER", "BAILIFF"
     })
     void shouldShowEveryEnforcementDocumentToInternalUsers(UserRole role) {
         // Given
@@ -142,7 +155,7 @@ class ClaimantEnforcementDocumentViewTest {
     }
 
     private void givenCurrentUserHasRoles(String... roles) {
-        when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
+        when(userRoleService.getCurrentUserCaseRoles(eq(CASE_REFERENCE), anyCollection()))
             .thenReturn(new UserRoles("user-id", List.of(roles)));
     }
 

@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementViewer;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementViewerService;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -18,12 +18,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Sets the "Risk assessment" tab for the case view (13-risk-assessment-tab.feature, HDPI-7350).
@@ -35,27 +31,16 @@ import java.util.stream.Stream;
  *
  * <p>Defendants never see it (HDPI-7539). A defendant's legal representative holds the same
  * caseworker-pcs-solicitor IDAM role as the claimant's, which the claimant side's tab is granted on, so for a
- * user on the defendant side the tab is hidden and left empty.
+ * user on the defendant side, or whose side of the case cannot be established ({@link EnforcementViewerService}),
+ * the tab is hidden and left empty.
  */
 @Component
 @RequiredArgsConstructor
 public class RiskAssessmentTabView {
 
-    private static final Set<String> CLAIMANT_SIDE_ROLES = Stream.of(
-        UserRole.CLAIMANT_SOLICITOR,
-        UserRole.CLAIMANT,
-        UserRole.GA_CLAIMANT_SOLICITOR
-    ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
-
-    private static final Set<String> DEFENDANT_SIDE_ROLES = Stream.of(
-        UserRole.DEFENDANT,
-        UserRole.DEFENDANT_SOLICITOR,
-        UserRole.GA_DEFENDANT_SOLICITOR
-    ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
-
     private final CurrentEnforcementService currentEnforcementService;
     private final BailiffNoteService bailiffNoteService;
-    private final UserRoleService userRoleService;
+    private final EnforcementViewerService enforcementViewerService;
     private final ClaimantRiskAssessmentService claimantRiskAssessmentService;
 
     /**
@@ -71,9 +56,10 @@ public class RiskAssessmentTabView {
             .findEnforcementsCurrentFirst(pcsCaseEntity).stream()
             .filter(BailiffEnforcementRules::isGeneratedWarrant)
             .findFirst();
-        Collection<String> roles = warrant.isEmpty() ? List.of() : currentUserRoles(caseReference);
-        boolean claimantSide = hasAny(roles, CLAIMANT_SIDE_ROLES);
-        if (warrant.isEmpty() || (!claimantSide && hasAny(roles, DEFENDANT_SIDE_ROLES))) {
+        EnforcementViewer viewer = warrant.isEmpty()
+            ? null
+            : enforcementViewerService.currentViewer(pcsCaseEntity, pcsCase, caseReference);
+        if (viewer == null || viewer.isRestricted()) {
             EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
             if (enforcementOrder != null) {
                 enforcementOrder.setShowRiskAssessmentTab(YesOrNo.NO);
@@ -106,7 +92,7 @@ public class RiskAssessmentTabView {
             RiskAssessmentTabMarkdown.printButton(CaseType.getJurisdictionId(), CaseType.getCaseType(), caseReference),
             internal,
             RiskAssessmentTabMarkdown.claimantSection(
-                original, enforcement.getSubmittedAt(), updated, updatedAt, claimantSide)
+                original, enforcement.getSubmittedAt(), updated, updatedAt, viewer == EnforcementViewer.CLAIMANT)
         );
     }
 
@@ -123,15 +109,6 @@ public class RiskAssessmentTabView {
         boolean restitution = SelectEnforcementType.from(application) == SelectEnforcementType.WARRANT_OF_RESTITUTION
             || enforcement.getWarrantOfRestitutionDetails() != null;
         return RiskAssessmentTabMarkdown.answersOf(application, restitution);
-    }
-
-    private Collection<String> currentUserRoles(long caseReference) {
-        Collection<String> roles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
-        return roles == null ? List.of() : roles;
-    }
-
-    private static boolean hasAny(Collection<String> roles, Set<String> wanted) {
-        return roles.stream().anyMatch(wanted::contains);
     }
 
     private static void setMarkdown(EnforcementOrder enforcementOrder, String print, String internal,
