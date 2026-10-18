@@ -6,7 +6,7 @@ import { BrowserContext, Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld, SubmitCasePayload } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction as performCommonAction } from '@utils/controller';
 import { performAction, performValidation } from '@utils/controller-enforcement';
@@ -192,9 +192,22 @@ async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture
 export async function openCaseSummary(page: Page): Promise<void> {
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
-  }).toPass({ timeout: VERY_LONG_TIMEOUT });
+  await page
+    .waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`, { timeout: LONG_TIMEOUT })
+    .catch(() => undefined);
+  if (isOnCaseSummary(page)) {
+    return;
+  }
+  // XUI sometimes opens a just-created case on its first tab and drops the #Summary fragment; select the tab.
+  const summaryTab = page.getByRole('tab', { name: caseSummary.mainHeader, exact: true });
+  await expect(summaryTab).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  await summaryTab.click();
+  await expect.poll(() => isOnCaseSummary(page), { timeout: LONG_TIMEOUT }).toBe(true);
+}
+
+function isOnCaseSummary(page: Page): boolean {
+  const url = page.url();
+  return url.includes('/cases/case-details/') && url.includes(String(process.env.CASE_NUMBER)) && url.endsWith('#Summary');
 }
 
 /**

@@ -8,12 +8,14 @@ import {
   createIssuedCase,
   nextStepOptions,
   openCaseSummary,
+  requireCaseReference,
   signInAs,
   signInRoleFor,
   startEvent,
   startEventAllowingRefusal,
   xuiEvents,
 } from '../support/enforcement-journeys';
+import { enforcementRows } from '../support/enforcement-status-tab';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
@@ -214,9 +216,16 @@ When('I start the {string} event from the next steps drop down', async ({ page, 
   world.currentEvent = eventName;
 });
 
+// The earlier and the new enforcements are all on the case the scenario started with, and it still opens under
+// that reference. The page itself proves nothing: the steps before may have signed someone else in.
 Then('the case reference is unchanged', async ({ page, world }) => {
-  expect(world.caseReference, 'a case created by this scenario').toBeDefined();
-  expect(page.url()).toContain(String(world.caseReference));
+  const caseReference = requireCaseReference(world);
+  const numbers = (await enforcementRows(caseReference)).map(row => row.number);
+  expect(numbers, `the enforcements on case ${caseReference}`).toEqual(
+    expect.arrayContaining([...world.earlierWarrantNumbers, ...(world.warrantNumber ? [world.warrantNumber] : [])])
+  );
+  await openCaseSummary(page);
+  expect(page.url()).toContain(caseReference);
 });
 
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the live enforcement' }, [
