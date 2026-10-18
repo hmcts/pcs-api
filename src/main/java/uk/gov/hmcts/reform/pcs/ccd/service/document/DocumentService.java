@@ -424,6 +424,8 @@ public class DocumentService {
                  // Defendant access-code letters aren't shown on the case file
                  DEFENDANT_ACCESS_CODE,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
+                 // Filed in the Enforcement folder, which is not a CaseFileCategory
+                 NOTICE_OF_EVICTION,
                  OTHER ->
                 Optional.empty();
         };

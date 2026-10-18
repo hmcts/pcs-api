@@ -1,4 +1,4 @@
-@HDPI-7342 @enforcement @defendant @access @pending
+@HDPI-7342 @enforcement @defendant @access
 Feature: Defendant visibility of enforcement
   As the service
   I want defendants to see enforcement information only once they have been given notice
@@ -42,7 +42,8 @@ Feature: Defendant visibility of enforcement
     And they do not see the risk assessment document
     And they do not see bailiff notes
 
-  @HDPI-9566
+  # No warrant or writ document is generated yet: there are no Docmosis templates for them.
+  @HDPI-9566 @pending
   Scenario Outline: Defendants do not see the warrant itself
     Given a "<type>" has been generated
     When a defendant views case file view
@@ -54,7 +55,8 @@ Feature: Defendant visibility of enforcement
       | warrant of restitution |
       | writ of possession     |
 
-  @HDPI-7539
+  # The warrant of restitution journey cannot be submitted yet, nor a warrant return recorded end to end.
+  @HDPI-7539 @pending
   Scenario: Warrant of restitution hides enforcement from defendants again
     Given the previous warrant ended with "Eviction successful"
     And the defendants could see the enforcement for that warrant

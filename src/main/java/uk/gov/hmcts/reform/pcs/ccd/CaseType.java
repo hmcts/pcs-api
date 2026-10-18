@@ -96,8 +96,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     };
 
     /**
-     * Internal users and the claimant side. Defendants are left out until the notice of eviction can be marked
-     * as served (HDPI-7346), which is when they may see a warrant; they never see writs.
+     * Internal users, the claimant side and defendants. Defendants only see the tab once a warrant's notice of
+     * eviction has been served: until then the enforcement module leaves {@code enforcements} unset for them,
+     * and the tab's show condition hides it. They never see writs.
      */
     static final AccessProfile[] ENFORCEMENT_STATUS_TAB_ROLES = {
         AccessProfile.JUDGE,
@@ -112,7 +113,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.BAILIFF_MANAGER,
         AccessProfile.CLAIMANT,
         AccessProfile.PCS_SOLICITOR,
-        AccessProfile.GA_CLAIMANT_SOLICITOR
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
+        AccessProfile.DEFENDANT,
+        AccessProfile.GA_DEFENDANT_SOLICITOR
     };
 
     @Value("${hmcts.hmctsOrgId}")
@@ -268,7 +271,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     /**
      * Every warrant and writ on the case. The enforcement module fills the {@code enforcements} field for the
-     * case view and restricts who can read it; the tab appears once the case has an enforcement.
+     * case view and restricts who can read it; the tab appears once the field is set, which for defendants is
+     * once a warrant is visible to them.
      */
     private void buildEnforcementStatusTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("enforcementStatus", "Enforcement status")

@@ -125,7 +125,8 @@ public class EvictionScheduleService {
         }
         setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
         // TODO HDPI-7354 / HDPI-8442: generate the sealed notice of eviction (form N54) into the Enforcement
-        //  folder, internal only. There is no Docmosis template for it in pcs-api yet.
+        //  folder, attached to the enforcement as DocumentType.NOTICE_OF_EVICTION so that defendants see it once
+        //  it is served (DefendantEnforcementRules). There is no Docmosis template for it in pcs-api yet.
         // TODO HDPI-7355 / HDPI-8442: generate the unsealed notice of appointment into the Enforcement folder,
         //  visible to the claimant, and email it to them. There is no Docmosis template for it yet.
         // TODO HDPI-7538: send the claimant the "Bailiff schedules the eviction date" email and the "Confirm the
@@ -182,8 +183,6 @@ public class EvictionScheduleService {
             bailiffNoteService.addNote(caseReference, bailiffNote);
         }
         // TODO HDPI-7346: complete the "Mark notice of eviction as served" WA task.
-        // TODO HDPI-7539 / HDPI-8442 / HDPI-7354: let defendants see the enforcement status tab, the Enforcement
-        //  folder and the notice of eviction, driven from defendantsCanSeeEnforcement.
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 

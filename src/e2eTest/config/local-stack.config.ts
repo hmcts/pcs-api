@@ -80,6 +80,8 @@ export const localUsers = {
   bailiffAdmin: 'pcs-bailiff-admin@localhost',
   bailiffManager: 'pcs-bailiff-manager@localhost',
   judge: 'judge@pcs.com',
+  // Has only the IDAM citizen role; a scenario gives it the [DEFENDANT] case role on its case.
+  citizenDefendant: 'citizen@pcs.com',
 } as const;
 
 export type LocalUserKey = keyof typeof localUsers;
@@ -300,4 +302,47 @@ export async function localIdamToken(email: string): Promise<string> {
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
   });
   return response.data.access_token;
+}
+
+/** The defendant case roles `POST /testing-support/enforcement/{caseReference}/defendant-case-role` gives. */
+export type DefendantCaseRole = '[DEFENDANT]' | '[DEFENDANTSOLICITOR]';
+
+/**
+ * Gives a local user a defendant case role on the case through pcs-api testing support, which calls CCD's
+ * case-users API as pcs-api does for a citizen's access code. It stands in for Notice of Change, whose
+ * testing-support route (`link-defendant-solicitor-to-party`) answers 500 on a local stack, and for the access
+ * code a citizen defendant enters in pcs-frontend.
+ */
+export async function assignDefendantCaseRole(
+  caseReference: string,
+  email: string,
+  caseRole: DefendantCaseRole
+): Promise<void> {
+  const userId = await localIdamUserId(email);
+  const response = await Axios.post(
+    `${process.env.CASE_API_URL}/testing-support/enforcement/${caseReference}/defendant-case-role`,
+    { userId, caseRole },
+    {
+      headers: {
+        ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      validateStatus: () => true,
+    }
+  );
+  if (response.status !== 204) {
+    throw new Error(
+      `Giving ${email} the ${caseRole} case role on ${caseReference} returned ${response.status}: ${JSON.stringify(response.data)}`
+    );
+  }
+}
+
+/**
+ * The case data CCD returns to a local user, as pcs-frontend and XUI read it. Used to check what a defendant
+ * can see where there is no UI to look at: pcs-frontend is not part of the local stack, and a Case File View
+ * folder is shown even when it is empty.
+ */
+export async function caseDataAs(caseReference: string, email: string): Promise<Record<string, unknown>> {
+  const response = await dataStoreApi(await localIdamToken(email)).get(`/cases/${caseReference}`);
+  return (response.data?.data ?? {}) as Record<string, unknown>;
 }

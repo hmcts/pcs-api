@@ -30,7 +30,7 @@ class EnforcementCaseViewContributorTest {
     @Mock
     private WarrantReturnView warrantReturnView;
     @Mock
-    private EnforcementDocumentVisibility enforcementDocumentVisibility;
+    private DefendantEnforcementView defendantEnforcementView;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -40,13 +40,13 @@ class EnforcementCaseViewContributorTest {
     private EnforcementCaseViewContributor underTest;
 
     @Test
-    void shouldHandleEnforcementRequirementsThenSetCaseFieldsAndStatusThenHideDocumentsFromDefendants() {
+    void shouldSetTheEnforcementFieldsThenRestrictThemForDefendants() {
         // When
         underTest.contribute(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
 
         // Then
         InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView, riskLevelView,
-                                  evictionScheduleView, warrantReturnView, enforcementDocumentVisibility);
+                                  evictionScheduleView, warrantReturnView, defendantEnforcementView);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
         inOrder.verify(enforcementOrderView).setEnforcementStatusFields(pcsCaseEntity, pcsCase);
@@ -54,7 +54,7 @@ class EnforcementCaseViewContributorTest {
         inOrder.verify(riskLevelView).setRiskAssessmentFields(pcsCaseEntity, pcsCase);
         inOrder.verify(evictionScheduleView).setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         inOrder.verify(warrantReturnView).setLatestWarrantReturn(pcsCaseEntity, pcsCase);
-        inOrder.verify(enforcementDocumentVisibility).hideFromDefendants(pcsCase, CASE_REFERENCE);
+        inOrder.verify(defendantEnforcementView).restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
         inOrder.verifyNoMoreInteractions();
     }
 
