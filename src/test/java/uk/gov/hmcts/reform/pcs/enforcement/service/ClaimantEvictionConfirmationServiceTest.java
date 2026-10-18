@@ -118,6 +118,17 @@ class ClaimantEvictionConfirmationServiceTest {
     }
 
     @Test
+    void shouldRefuseTheAnswerWhenTheRescheduleTaskCannotBeRequested() {
+        givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION));
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).claimantCannotAttend(anyLong(), any(), any());
+
+        EnforcementChange<Void> recorded = underTest.recordAttendance(CASE_REFERENCE, YesOrNo.NO);
+
+        assertThat(recorded.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
     void shouldRecordTheRiskAnswersThenTheAttendanceAnswer() {
         EnforcementOrderEntity enforcement = givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION))
             .getFirst();

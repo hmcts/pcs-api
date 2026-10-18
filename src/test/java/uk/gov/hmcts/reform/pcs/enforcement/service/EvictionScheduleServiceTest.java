@@ -174,11 +174,34 @@ class EvictionScheduleServiceTest {
     }
 
     @Test
+    void shouldRefuseTheScheduleWhenItsTasksCannotBeRequested() {
+        current(AWAITING_SCHEDULING);
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).evictionScheduled(anyLong(), any(), any());
+
+        EnforcementChange<String> scheduled = underTest.schedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(scheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
     void shouldRefuseTheRescheduleWhenTheClaimantsEmailCannotBeQueued() {
         EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
         enforcement.setBailiffDate(EVICTION);
         doThrow(new DataIntegrityViolationException("case_notification"))
             .when(enforcementNotificationService).notifyClaimantOfRescheduledEviction(anyLong(), any());
+
+        EnforcementChange<String> rescheduled = underTest.reschedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(rescheduled.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
+    void shouldRefuseTheRescheduleWhenItsTasksCannotBeRequested() {
+        EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
+        enforcement.setBailiffDate(EVICTION);
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).evictionRescheduled(anyLong(), any(), any(), any());
 
         EnforcementChange<String> rescheduled = underTest.reschedule(CASE_REFERENCE, EVICTION, false);
 

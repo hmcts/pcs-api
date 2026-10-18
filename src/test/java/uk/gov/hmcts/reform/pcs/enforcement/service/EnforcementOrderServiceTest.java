@@ -357,6 +357,21 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
+    void shouldRefuseAFreeApplicationWhoseReviewTaskCannotBeRequested() {
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(buildPcsCaseEntity(pcsCaseId, claimId));
+        when(strategyFactory.getStrategy(WARRANT_OF_RESTITUTION)).thenReturn(mock(EnforcementTypeStrategy.class));
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).applicationAwaitingReview(anyLong(), any());
+
+        EnforcementChange<FeeDetails> submitted =
+            enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        assertThat(submitted.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        verifyNoInteractions(draftCaseDataService);
+    }
+
+    @Test
     void shouldRefuseAPayableApplicationWhoseServiceRequestCannotBeQueued() {
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(buildPcsCaseEntity(pcsCaseId, claimId));

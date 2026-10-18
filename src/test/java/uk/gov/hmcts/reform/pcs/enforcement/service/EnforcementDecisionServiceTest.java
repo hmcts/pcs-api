@@ -223,6 +223,17 @@ class EnforcementDecisionServiceTest {
     }
 
     @Test
+    void shouldRefuseTheApprovalWhenTheAllocationTaskCannotBeRequested() {
+        givenAwaitingReview(SelectEnforcementType.WARRANT);
+        when(enforcementNumberGenerator.next(SelectEnforcementType.WARRANT)).thenReturn("WP-00000001");
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).warrantAwaitingBailiff(anyLong(), any());
+
+        assertThat(underTest.accept(CASE_REFERENCE).errors())
+            .containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
     void shouldRefuseTheRejectionWhenTheClaimantsEmailCannotBeQueued() {
         givenAwaitingReview(SelectEnforcementType.WARRANT);
         doThrow(new DataIntegrityViolationException("case_notification"))
