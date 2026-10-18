@@ -106,6 +106,22 @@ Then('no {string} document is generated', async ({ world }, name: string) => {
   expect(await countEnforcementDocuments(caseReference, documentTitle(name, world)), `no ${name}`).toBe(0);
 });
 
+/** How long pcs-api could take to schedule and file a warrant after the decision: two db-scheduler polls. */
+const DECISION_SETTLE_MS = 25_000;
+
+// A rejected application gets no warrant. The application documents were generated when the fee was paid, so
+// once they are in the folder and the decision has had time to schedule one, there is no warrant beside them.
+Then('no warrant is generated', async ({ world, $tags }) => {
+  if (!isLocalStack()) {
+    return markPending(localStackOnly, $tags);
+  }
+  const caseReference = requireCaseReference(world);
+  await expectEnforcementDocument(caseReference, documentTitle('enforcement application', world));
+  await new Promise(resolve => setTimeout(resolve, DECISION_SETTLE_MS));
+  const warrant = documentTitle('warrant of possession', world);
+  expect(await countEnforcementDocuments(caseReference, warrant), `no "${warrant}…" document`).toBe(0);
+});
+
 Then('a {string} document is generated with the county court seal', async ({ world, $tags }, name: string) => {
   await expectSeal(world, await expectGenerated(world, name), 'County Court', $tags);
 });

@@ -20,6 +20,7 @@ import { expectCheckYourAnswers, resolveEvictionDate, resolveEvictionTime } from
 import {
   REOPEN_WARRANT,
   RECORD_WARRANT_RETURN,
+  SUITE_ADDITIONAL_DETAILS,
   answerWarrantReturn,
   chooseOutcome,
   chooseReturnName,
@@ -205,7 +206,8 @@ async function submitReturn(
   }
   world.statusBeforeReturn = (await currentEnforcement(caseReference)).status;
   world.currentEvent = RECORD_WARRANT_RETURN;
-  await recordWarrantReturn(page, returnName, additionalDetails);
+  const label = await recordWarrantReturn(page, returnName, additionalDetails);
+  world.submittedReturn = { returnName: label, additionalDetails: additionalDetails ?? SUITE_ADDITIONAL_DETAILS };
   world.currentEvent = undefined;
 }
 

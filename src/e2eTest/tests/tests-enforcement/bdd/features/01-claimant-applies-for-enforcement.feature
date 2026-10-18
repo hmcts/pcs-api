@@ -98,7 +98,7 @@ Feature: Claimant applies for enforcement of a possession order
       | type                   | questions                                                                                                                                                                                     |
       | warrant of restitution | what do you want to apply for, how the defendants returned to the property, evidence submitted, language used, statement of truth                                                            |
 
-  @HDPI-7538 @pending
+  @HDPI-7538
   Scenario Outline: Claimant is notified that the application was received
     When I submit and pay for a "<type>" application
     Then the claimant receives the "<template>" email
@@ -107,6 +107,12 @@ Feature: Claimant applies for enforcement of a possession order
       | type                   | template                                   |
       | warrant of possession  | Request for a warrant received             |
       | writ of possession     | Request for a writ received                |
+
+    # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #12) and a writ of
+    # restitution is never offered (OPEN-QUESTIONS #11).
+    @pending
+    Examples:
+      | type                   | template                                   |
       | warrant of restitution | Warrant of restitution application submitted |
       | writ of restitution    | Writ of restitution application submitted  |
 

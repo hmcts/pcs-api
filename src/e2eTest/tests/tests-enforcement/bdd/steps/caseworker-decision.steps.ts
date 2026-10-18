@@ -146,10 +146,9 @@ async function acceptTheApplication(page: Page, world: EnforcementWorld): Promis
   await goToCheckYourAnswers(page);
 }
 
-pendingSteps({ ticket: 'HDPI-9566', summary: 'Sealed warrant and writ documents' }, [
+pendingSteps({ ticket: 'HDPI-9566', summary: 'Welsh warrant and writ documents' }, [
   'the claimant has the {string} case flag',
   'the warrant is generated in Welsh',
-  'no warrant is generated',
 ]);
 
 pendingSteps({ summary: 'Checking the case history after the decision' }, [
