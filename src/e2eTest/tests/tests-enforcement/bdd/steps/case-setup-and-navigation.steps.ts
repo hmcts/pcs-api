@@ -17,6 +17,7 @@ import {
   xuiEvents,
 } from '../support/enforcement-journeys';
 import { enforcementRows } from '../support/enforcement-status-tab';
+import { setClockToUkDateTime } from '../support/test-clock';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
@@ -75,7 +76,7 @@ Given('a PCS case {string}', async ({ world }, _reference: string) => {
 });
 
 Given('a PCS case {string} with a possession order made', async ({ world }, _reference: string) => {
-  approximatePrecondition('HDPI-7342', 'no possession order is made; "Enforce the order" is available once the case is issued (README open question 1)');
+  approximatePrecondition('HDPI-7342', 'no possession order is made; "Enforce the order" is available once the case is issued (OPEN-QUESTIONS 1)');
   await createIssuedCase(world);
 });
 
@@ -334,12 +335,12 @@ Then('the {string} journey opens', async ({ page, world, $tags }, journey: strin
 });
 
 /**
- * Nothing can set the app's clock. The scenarios use it to put a date and time in the future; those rows stay
- * pending at their error assertion, and the rest quote dates that are already in the past.
+ * Moves pcs-api's clock, so that a scenario can put a date and time in the past or the future. Only pcs-api's:
+ * CCD keeps its own clock, so what the scenario did before this step is still stamped with the real date.
+ * The clock is put back after the scenario (support/test-clock.ts).
  */
-Given('today is {string} and the time is {string}', async ({ $tags }, date: string, time: string) => {
-  const ticket = $tags.find(tag => /^@HDPI-\d+$/.test(tag) && tag !== '@HDPI-7342')?.slice(1) ?? 'HDPI-7342';
-  approximatePrecondition(ticket, `the clock is not set to ${date} ${time}; the app uses the real time`);
+Given('today is {string} and the time is {string}', async ({}, date: string, time: string) => {
+  await setClockToUkDateTime(date, time);
 });
 
 /**

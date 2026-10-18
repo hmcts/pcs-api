@@ -22,7 +22,7 @@ Feature: Enforcement status tab
     Then I see "WP-0001" as a heading
     And I see the sections "Eviction notice", "Scheduled eviction", "Claimant eviction confirmation" and "Eviction outcome"
 
-  # "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 25), so the other
+  # "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 29), so the other
   # three answers do not exist yet.
   @HDPI-7351 @pending
   Scenario: Claimant eviction confirmation section
@@ -60,18 +60,24 @@ Feature: Enforcement status tab
 
     Examples:
       | user                           | served              | visibility |
-      | claimant legal representative  | has not been served | shown      |
       | bailiff                        | has not been served | shown      |
-      | hearing centre admin           | has not been served | shown      |
-      | judge                          | has not been served | shown      |
 
     # Local stack only: the defendants are given their case roles through pcs-api testing support.
     Examples:
       | user                           | served              | visibility |
-      | defendant legal representative | has not been served | hidden     |
       | citizen defendant              | has not been served | hidden     |
-      | defendant legal representative | has been served     | shown      |
       | citizen defendant              | has been served     | shown      |
+
+    # The three filmed rows are the three behaviours: an internal user always sees the tab, and a defendant
+    # only sees it once the notice of eviction is served. The rest are other users on the same two rules.
+    @not-filmed
+    Examples:
+      | user                           | served              | visibility |
+      | claimant legal representative  | has not been served | shown      |
+      | hearing centre admin           | has not been served | shown      |
+      | judge                          | has not been served | shown      |
+      | defendant legal representative | has not been served | hidden     |
+      | defendant legal representative | has been served     | shown      |
 
   @HDPI-7351
   Scenario: Defendants see a reduced set of sections

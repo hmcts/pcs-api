@@ -175,7 +175,7 @@ Then('the important banner is removed from the {string} tab', async ({ page, wor
 });
 
 Then('I see the print button, the bailiff notes and the current risk level {string}', async ({ page }, level: string) => {
-  await expect(page.getByRole('link', { name: 'Print', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Print (opens in a new tab)', exact: true })).toBeVisible();
   const sections = await tabSections(page);
   expect(Object.keys(sections)).toContain('Bailiff note');
   expect(sections['Risk assessment level']?.rows['Risk level']).toBe(level);
@@ -190,7 +190,7 @@ Then('I see the original and updated answers side by side in a table', async ({ 
 /**
  * The "Important" banner above the internal sections lists every question the claimant changed. The items
  * are not links: XUI picks the tab from the URL fragment, so an in-page link would change tab. OPEN-QUESTIONS
- * 30 proposes a plain list, which is what is checked; the links are recorded as not checked.
+ * 34 proposes a plain list, which is what is checked; the links are recorded as not checked.
  */
 Then('I see an important banner with links to each question whose answer changed', async ({ page, world }) => {
   expect(world.changedRiskQuestions?.length, 'risk questions the claimant changed').toBeGreaterThan(0);
@@ -201,6 +201,6 @@ Then('I see an important banner with links to each question whose answer changed
   expect(listed).toEqual(expect.arrayContaining(world.changedRiskQuestions as string[]));
   test.info().annotations.push({
     type: 'open question',
-    description: 'OPEN-QUESTIONS 30: the banner lists the changed questions without linking to them',
+    description: 'OPEN-QUESTIONS 34: the banner lists the changed questions without linking to them',
   });
 });

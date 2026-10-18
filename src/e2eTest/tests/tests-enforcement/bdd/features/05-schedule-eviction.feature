@@ -119,4 +119,9 @@ Feature: Bailiff schedules the eviction
     Examples:
       | dispense | task              |
       | No       | is created for me |
+
+    # Nothing to see: the assertion is that no task appears.
+    @not-filmed
+    Examples:
+      | dispense | task              |
       | Yes      | is not created    |

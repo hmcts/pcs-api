@@ -16,11 +16,16 @@ Feature: Add a bailiff note
     Examples:
       | role                       |
       | hearing-centre-admin       |
-      | hearing-centre-team-leader |
 
     Examples:
       | role                       |
       | bailiff                    |
+
+    # One role from each family is filmed; the remaining roles see the same drop down.
+    @not-filmed
+    Examples:
+      | role                       |
+      | hearing-centre-team-leader |
       | bailiff-admin              |
       | bailiff-manager            |
 
@@ -48,11 +53,16 @@ Feature: Add a bailiff note
 
     Examples:
       | status                       |
-      | Awaiting bailiff allocation  |
       | Awaiting scheduling          |
+      | Closed                       |
+
+    # A live warrant and a closed one are the two behaviours; the other statuses open the same screen.
+    @not-filmed
+    Examples:
+      | status                       |
+      | Awaiting bailiff allocation  |
       | Awaiting property visit      |
       | Breathing space              |
-      | Closed                       |
 
   # Needs a pcs-api built with AddBailiffNotePage's "claimant vs defendants" line (${formattedCaseName}, set by
   # the start callback). Against one without it, everything but that line passes; remove @pending once it runs.
@@ -96,7 +106,8 @@ Feature: Add a bailiff note
 
   # The notes are added two days apart, the first moved back with the testing-support backdate endpoint, rather
   # than on the dates given.
-  @HDPI-7593
+  # Reads the tab on notes added by the harness, with no journey to show.
+  @HDPI-7593 @not-filmed
   Scenario: Multiple notes are shown newest first
     Given the case has bailiff notes added on "1 Feb 2026" and "3 Feb 2026"
     When I open the "Risk assessment" tab

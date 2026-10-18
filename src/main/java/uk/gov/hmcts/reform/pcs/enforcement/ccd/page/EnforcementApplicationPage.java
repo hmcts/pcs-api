@@ -79,7 +79,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                               <li class="govuk-!-font-size-19"><a href="https://www.hceoa.org.uk/choosing-a-hceo"
                               rel="noreferrer noopener"
                               target="_blank" class="govuk-link">you can get a quote from a bailiff to find out how
-                              much it will cost</a> (they usually charge by the hour)</li>
+                              much it will cost (HCEOA website, opens in a new tab)</a> (they usually charge by
+                              the hour)</li>
                               <li class="govuk-!-font-size-19">it’s usually faster (6 to 12 weeks, depending on the
                               court you apply to)</li>
                             </ul>

@@ -66,7 +66,7 @@ public class MarkupContent {
              <a href="https://www.gov.uk/find-court-tribunal"
                               rel="noreferrer noopener"
                               target="_blank" class="govuk-link">
-             contact your local court.</a> You will need to tell them your case number
+             contact your local court (GOV.UK, opens in a new tab).</a> You will need to tell them your case number
              (you can find this at the top of this page). If you do not know the name of your local court, select the
              ‘Money’ category and then the ‘Housing’ category to find it.</li>
             </ul>

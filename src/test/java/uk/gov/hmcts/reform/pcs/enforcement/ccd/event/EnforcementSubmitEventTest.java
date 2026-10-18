@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -8,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -23,9 +25,11 @@ import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
@@ -66,8 +70,9 @@ class EnforcementSubmitEventTest {
         verify(enforcementOrderService).saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
+        assertThat(response.getConfirmationHeader())
+            .isEqualTo("# Pay £148 for HM Courts and Tribunals Service to review your application");
         assertThat(response.getConfirmationBody())
-            .contains("Pay £148 for HM Courts and Tribunals Service")
             .contains("This costs £148")
             .contains("/cases/case-details/%d#Service%%20Request".formatted(CASE_REFERENCE));
     }
@@ -84,6 +89,7 @@ class EnforcementSubmitEventTest {
         verify(enforcementOrderService).saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
+        assertThat(response.getConfirmationHeader()).isNull();
         assertThat(response.getConfirmationBody()).isNull();
     }
 
@@ -155,6 +161,30 @@ class EnforcementSubmitEventTest {
         assertThat(response.getState()).isNull();
         assertThat(response.getConfirmationBody()).isNull();
         verify(enforcementOrderService, never()).saveAndClearDraftData(anyLong(), any());
+    }
+
+    @Test
+    void submit_refusesAnApplicationTheDatabaseRejectsAsASecondLiveEnforcement() {
+        EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
+            .thenThrow(new DataIntegrityViolationException(
+                "could not execute statement", new ConstraintViolationException(
+                    "unique constraint violated", new SQLException(),
+                    LiveEnforcementExistsException.CONSTRAINT_NAME)));
+
+        SubmitResponse<State> response = event.submit(payload(enforcementOrder));
+
+        assertThat(response.getErrors()).containsExactly(LiveEnforcementExistsException.MESSAGE);
+        assertThat(response.getState()).isNull();
+    }
+
+    @Test
+    void submit_letsAnyOtherIntegrityViolationThrough() {
+        EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
+        DataIntegrityViolationException failure = new DataIntegrityViolationException("enf_case.claim_id is null");
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder)).thenThrow(failure);
+
+        assertThatThrownBy(() -> event.submit(payload(enforcementOrder))).isSameAs(failure);
     }
 
     private static EnforcementOrder enforcementOrder(SelectEnforcementType enforcementType) {
