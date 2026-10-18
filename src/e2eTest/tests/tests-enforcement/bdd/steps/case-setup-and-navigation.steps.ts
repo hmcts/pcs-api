@@ -224,10 +224,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement wo
   'I am signed in to XUI as a bailiff with open enforcement tasks',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a defendant legal representative linked to the case' }, [
-  'I am signed in as a defendant legal representative',
-]);
-
 pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
   'the {string} screen opens',
   'the warrant number is not shown in the header',

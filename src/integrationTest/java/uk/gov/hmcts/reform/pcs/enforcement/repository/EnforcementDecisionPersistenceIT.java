@@ -77,10 +77,10 @@ class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
         UUID id = save(savedClaim(1212121212121212L), SelectEnforcementType.WARRANT, EnforcementStatus.REJECTED);
         Instant approvedAt = Instant.parse("2026-10-17T09:30:00Z");
         jdbcTemplate.update("UPDATE enf_case SET enforcement_number = ?, approved_at = ?, rejection_reason = ? "
-                                + "WHERE id = ?", "WP-00000001", Timestamp.from(approvedAt), "reason", id);
+                                + "WHERE id = ?", "WP-T0000001", Timestamp.from(approvedAt), "reason", id);
 
         EnforcementOrderEntity reloaded = enforcementOrderRepository.findById(id).orElseThrow();
-        assertThat(reloaded.getEnforcementNumber()).isEqualTo("WP-00000001");
+        assertThat(reloaded.getEnforcementNumber()).isEqualTo("WP-T0000001");
         assertThat(reloaded.getApprovedAt()).isEqualTo(approvedAt);
         assertThat(reloaded.getRejectionReason()).isEqualTo("reason");
     }
@@ -91,10 +91,10 @@ class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
         ClaimEntity claim = savedClaim(1313131313131313L);
         UUID first = save(claim, SelectEnforcementType.WARRANT, EnforcementStatus.CLOSED);
         UUID second = save(claim, SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_BAILIFF_ALLOCATION);
-        jdbcTemplate.update("UPDATE enf_case SET enforcement_number = 'WP-00000099' WHERE id = ?", first);
+        jdbcTemplate.update("UPDATE enf_case SET enforcement_number = 'WP-T0000099' WHERE id = ?", first);
 
         assertThatThrownBy(() -> jdbcTemplate.update(
-            "UPDATE enf_case SET enforcement_number = 'WP-00000099' WHERE id = ?", second))
+            "UPDATE enf_case SET enforcement_number = 'WP-T0000099' WHERE id = ?", second))
             .isInstanceOf(DataIntegrityViolationException.class);
     }
 
