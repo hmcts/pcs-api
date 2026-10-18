@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -16,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailabl
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
@@ -36,7 +33,7 @@ public class EnforcementDecisionService {
         "A reason is needed to reject an enforcement application";
 
     private final EnforcementOrderRepository enforcementOrderRepository;
-    private final PcsCaseService pcsCaseService;
+    private final CurrentEnforcementService currentEnforcementService;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final EnforcementNumberGenerator enforcementNumberGenerator;
     private final EnforcementNotificationService enforcementNotificationService;
@@ -109,15 +106,20 @@ public class EnforcementDecisionService {
         };
     }
 
+    /**
+     * Whether a caseworker can decide the claim's application: the current enforcement is awaiting review. A
+     * claim has at most one live enforcement, so at most one awaiting review, and the current one is the live
+     * one if there is one. "Decide enforcement" is offered on this, and its start and submit refuse on it.
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    public static boolean canDecideEnforcement(EnforcementOrderEntity currentEnforcement) {
+        return currentEnforcement != null && currentEnforcement.getStatus() == AWAITING_REVIEW;
+    }
+
     private Optional<EnforcementOrderEntity> findAwaitingReview(long caseReference) {
-        List<ClaimEntity> claims = pcsCaseService.loadCase(caseReference).getClaims();
-        if (claims == null || claims.isEmpty()) {
-            return Optional.empty();
-        }
-        // A claim has at most one live enforcement, so at most one awaiting review.
-        return enforcementOrderRepository.findByClaimIdAndStatus(claims.getFirst().getId(), AWAITING_REVIEW)
-            .stream()
-            .findFirst();
+        return currentEnforcementService.findCurrentEnforcement(caseReference)
+            .filter(EnforcementDecisionService::canDecideEnforcement);
     }
 
     private static SelectEnforcementType enforcementTypeOf(EnforcementOrderEntity enforcement) {

@@ -68,9 +68,8 @@ class ScheduleEvictionTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeAvailableOnlyWhenTheWarrantIsAwaitingSchedulingAndEnforcementIsEnabled() {
-        assertConfiguredShowConditions(
-            "featureFlags.enforcementEnabled=\"YES\" AND enforcementStatus=\"AWAITING_SCHEDULING\"");
+    void shouldOnlyBeOfferedWhenTheWarrantIsAwaitingSchedulingAndEnforcementIsEnabled() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canScheduleEviction=\"Yes\"");
     }
 
     @Test

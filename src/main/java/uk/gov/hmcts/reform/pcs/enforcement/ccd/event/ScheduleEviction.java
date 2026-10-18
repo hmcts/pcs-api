@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
-import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_SCHEDULING;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 /**
@@ -23,8 +21,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @Component
 public class ScheduleEviction extends EvictionDateEvent {
 
-    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT),
-                                             fieldEquals("enforcementStatus", AWAITING_SCHEDULING));
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canScheduleEviction=\"Yes\"");
 
     private final EvictionScheduleService evictionScheduleService;
 

@@ -98,38 +98,58 @@ public class WarrantReturnService {
      */
     @Transactional(readOnly = true)
     public EnforcementOrderEntity findWarrant(long caseReference) {
-        EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
-            .filter(WarrantReturnService::isWarrant)
-            .orElseThrow(NoEnforcementException::new);
-        EnforcementStatus status = enforcement.getStatus();
-        if (status == AWAITING_BAILIFF_ALLOCATION) {
-            throw new EnforcementEventNotAvailableException(NOT_ALLOCATED_MESSAGE);
-        }
-        if (!RECORDABLE_STATUSES.contains(status)) {
-            // Not approved yet (or rejected), so no warrant has been generated.
-            throw new NoEnforcementException();
-        }
-        return enforcement;
+        EnforcementOrderEntity current = currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null);
+        return switch (refusal(current)) {
+            case NO_WARRANT -> throw new NoEnforcementException();
+            case NOT_ALLOCATED -> throw new EnforcementEventNotAvailableException(NOT_ALLOCATED_MESSAGE);
+            case NONE -> current;
+        };
     }
 
     /**
      * The warrant a return would be recorded against, or why there is none.
      */
     private EnforcementChange<EnforcementOrderEntity> findRecordableWarrant(long caseReference) {
-        Optional<EnforcementOrderEntity> warrant = currentEnforcementService.findCurrentEnforcement(caseReference)
-            .filter(WarrantReturnService::isWarrant);
-        if (warrant.isEmpty()) {
-            return EnforcementChange.refused(NoEnforcementException.MESSAGE);
+        EnforcementOrderEntity current = currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null);
+        return switch (refusal(current)) {
+            case NO_WARRANT -> EnforcementChange.refused(NoEnforcementException.MESSAGE);
+            case NOT_ALLOCATED -> EnforcementChange.refused(NOT_ALLOCATED_MESSAGE);
+            case NONE -> EnforcementChange.made(current);
+        };
+    }
+
+    /**
+     * Why a return cannot be recorded on the claim's current enforcement, or {@link Refusal#NONE} when it can.
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    static Refusal refusal(EnforcementOrderEntity currentEnforcement) {
+        if (currentEnforcement == null || !isWarrant(currentEnforcement)) {
+            return Refusal.NO_WARRANT;
         }
-        EnforcementStatus status = warrant.get().getStatus();
+        EnforcementStatus status = currentEnforcement.getStatus();
         if (status == AWAITING_BAILIFF_ALLOCATION) {
-            return EnforcementChange.refused(NOT_ALLOCATED_MESSAGE);
+            return Refusal.NOT_ALLOCATED;
         }
-        if (!RECORDABLE_STATUSES.contains(status)) {
-            // Not approved yet (or rejected), so no warrant has been generated.
-            return EnforcementChange.refused(NoEnforcementException.MESSAGE);
-        }
-        return EnforcementChange.made(warrant.get());
+        // Not approved yet (or rejected), so no warrant has been generated.
+        return RECORDABLE_STATUSES.contains(status) ? Refusal.NONE : Refusal.NO_WARRANT;
+    }
+
+    /**
+     * Whether "Record warrant return" is offered on the claim's current enforcement. It is hidden only for a
+     * warrant still waiting for a bailiff. With no warrant on the claim it is offered and refused when it starts,
+     * because HDPI-7347 asks for the error "There is no warrant on this case".
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    public static boolean canOfferRecordWarrantReturn(EnforcementOrderEntity currentEnforcement) {
+        return refusal(currentEnforcement) != Refusal.NOT_ALLOCATED;
+    }
+
+    enum Refusal {
+        NONE,
+        NO_WARRANT,
+        NOT_ALLOCATED
     }
 
     /**

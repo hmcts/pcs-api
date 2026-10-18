@@ -56,8 +56,8 @@ class SetRiskLevelTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeGatedOnTheEnforcementFeatureFlag() {
-        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\"");
+    void shouldOnlyBeOfferedForAnApprovedLiveWarrant() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canSetRiskLevel=\"Yes\"");
     }
 
     @Test

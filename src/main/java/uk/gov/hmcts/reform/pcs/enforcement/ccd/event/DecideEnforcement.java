@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.decideenforcement.DecideEnforcementPage;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -25,6 +26,12 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @Component
 @RequiredArgsConstructor
 public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
+
+    /**
+     * Offered while an application is awaiting review (EnforcementEventAvailabilityView). The start callback still
+     * refuses otherwise.
+     */
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canDecideEnforcement=\"Yes\"");
 
     /**
      * enforceTheOrder moves the case to PENDING_ENFORCEMENT_ISSUED when it is submitted through XUI, while the
@@ -44,7 +51,7 @@ public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
                 .forStates(STATES)
                 .name("Decide enforcement")
                 .grant(Permission.CRU, CASEWORKER_ROLES)
-                .showCondition(featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");

@@ -254,4 +254,11 @@ public class EnforcementOrder {
     @JsonUnwrapped(prefix = "latestWarrantReturn")
     @CCD
     private LatestWarrantReturn latestWarrantReturn;
+
+    /**
+     * The flags that gate the enforcement events, set for the case view.
+     */
+    @JsonUnwrapped
+    @CCD
+    private EnforcementEventAvailability eventAvailability;
 }

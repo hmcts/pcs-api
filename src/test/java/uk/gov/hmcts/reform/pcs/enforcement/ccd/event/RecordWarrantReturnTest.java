@@ -77,8 +77,8 @@ class RecordWarrantReturnTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeGatedOnTheEnforcementFeatureFlag() {
-        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\"");
+    void shouldBeHiddenOnlyForAWarrantWaitingForABailiff() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canRecordWarrantReturn=\"Yes\"");
     }
 
     @Test

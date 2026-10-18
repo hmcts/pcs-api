@@ -50,7 +50,14 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
-    // Business requirements to be agreed on for the conditions when this event can be triggered
+    /**
+     * Offered while the claim has no live enforcement (EnforcementEventAvailabilityView), unless the user has a draft,
+     * which "Resume draft application" picks up instead. The start callback still refuses a live enforcement.
+     */
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT),
+                                             "hasUnsubmittedEnforcementData=\"No\"",
+                                             "canApplyForEnforcement=\"Yes\"");
+
     private final EnforcementPageConfigurer enforcementPageConfigurer;
     private final WarrantPageConfigurer warrantPagesConfigurer;
     private final WritPageConfigurer writPageConfigurer;
@@ -72,7 +79,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\""))
+                .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit application");

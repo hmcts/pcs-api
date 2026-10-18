@@ -42,13 +42,14 @@ class EvictionScheduleViewTest {
         underTest.setEvictionScheduleFields(pcsCaseEntity, pcsCase);
 
         EvictionSchedule schedule = pcsCase.getEnforcementOrder().getEvictionSchedule();
+        assertThat(schedule.getCanScheduleEviction()).isEqualTo(YesOrNo.NO);
         assertThat(schedule.getCanRescheduleEviction()).isEqualTo(YesOrNo.YES);
         assertThat(schedule.getCanMarkNoticeOfEvictionServed()).isEqualTo(YesOrNo.YES);
         assertThat(pcsCase.getEnforcementOrder().getDefendantsCanSeeEnforcement()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
-    void shouldOfferNeitherBeforeTheEvictionIsScheduled() {
+    void shouldOfferOnlySchedulingBeforeTheEvictionIsScheduled() {
         when(evictionScheduleService.findCurrentEnforcement(pcsCaseEntity))
             .thenReturn(Optional.of(enforcement(EnforcementStatus.AWAITING_SCHEDULING)));
         PCSCase pcsCase = PCSCase.builder().build();
@@ -56,6 +57,7 @@ class EvictionScheduleViewTest {
         underTest.setEvictionScheduleFields(pcsCaseEntity, pcsCase);
 
         EvictionSchedule schedule = pcsCase.getEnforcementOrder().getEvictionSchedule();
+        assertThat(schedule.getCanScheduleEviction()).isEqualTo(YesOrNo.YES);
         assertThat(schedule.getCanRescheduleEviction()).isEqualTo(YesOrNo.NO);
         assertThat(schedule.getCanMarkNoticeOfEvictionServed()).isEqualTo(YesOrNo.NO);
     }

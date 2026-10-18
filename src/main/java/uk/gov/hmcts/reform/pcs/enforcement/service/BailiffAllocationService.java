@@ -46,6 +46,16 @@ public class BailiffAllocationService {
     private final Clock utcClock;
 
     /**
+     * Whether bailiff staff can allocate the claim's current enforcement to a bailiff: it is an approved, live
+     * warrant. "Allocate case to bailiff" is offered on this, and its start and submit refuse on it.
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    public static boolean canAllocateBailiff(EnforcementOrderEntity currentEnforcement) {
+        return currentEnforcement != null && BailiffEnforcementRules.isApprovedLiveWarrant(currentEnforcement);
+    }
+
+    /**
      * The claim's current enforcement, if it is a warrant bailiffs can be allocated to. For a start callback:
      * it refuses by throwing, which
      * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
@@ -57,7 +67,7 @@ public class BailiffAllocationService {
     public EnforcementOrderEntity getAllocatableEnforcement(long caseReference) {
         EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
             .orElseThrow(NoEnforcementException::new);
-        if (!BailiffEnforcementRules.isApprovedLiveWarrant(enforcement)) {
+        if (!canAllocateBailiff(enforcement)) {
             throw new EnforcementEventNotAvailableException(NOT_AVAILABLE_MESSAGE);
         }
         return enforcement;
@@ -71,7 +81,7 @@ public class BailiffAllocationService {
         if (current.isEmpty()) {
             return EnforcementChange.refused(NoEnforcementException.MESSAGE);
         }
-        if (!BailiffEnforcementRules.isApprovedLiveWarrant(current.get())) {
+        if (!canAllocateBailiff(current.get())) {
             return EnforcementChange.refused(NOT_AVAILABLE_MESSAGE);
         }
         return EnforcementChange.made(current.get());
