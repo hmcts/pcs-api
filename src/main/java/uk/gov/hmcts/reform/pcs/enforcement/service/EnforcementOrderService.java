@@ -92,6 +92,7 @@ public class EnforcementOrderService {
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, claimEntity);
         enforcementStatusTransitions.transition(enforcementOrderEntity,
             EnforcementStatusTransitions.initialStatus(paymentOutstanding));
+        enforcementOrderEntity.setSubmittedAt(enforcementOrderEntity.getStatusUpdatedAt());
         // The writ, writ of restitution and warrant of restitution strategies each save a child row whose
         // enf_case_id is not nullable, and EnforcementOrderEntity has no association to cascade through, so the
         // enforcement has to be persistent before a strategy runs.
@@ -165,6 +166,11 @@ public class EnforcementOrderService {
         // Warrant returns are held on enf_warrant_return.
         enforcementOrder.setWarrantReturn(null);
         enforcementOrder.setLatestWarrantReturn(null);
+        // The tab markdown is rendered for the case view from the enforcement records.
+        enforcementOrder.setEnforcementStatusTabMarkdown(null);
+        enforcementOrder.setRiskAssessmentPrintMarkdown(null);
+        enforcementOrder.setRiskAssessmentInternalMarkdown(null);
+        enforcementOrder.setRiskAssessmentClaimantMarkdown(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);

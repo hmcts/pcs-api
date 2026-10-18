@@ -40,6 +40,22 @@ import {
 export async function approveWarrantAsCaseworker(
   page: Page,
   world: EnforcementWorld,
+  options: { feeOutstanding?: boolean } = {}
+): Promise<void> {
+  await approveApplicationAsCaseworker(page, world, 'Warrant', options);
+}
+
+/**
+ * Records the fee as paid and accepts the application as a hearing centre admin. A warrant is left in
+ * "Awaiting bailiff allocation", a writ in "Transferred to the High Court"; either way with a number, which is
+ * recorded as `world.warrantNumber`, and the browser signed in as the hearing centre admin.
+ *
+ * Pass `feeOutstanding: false` for an application that is already awaiting review.
+ */
+export async function approveApplicationAsCaseworker(
+  page: Page,
+  world: EnforcementWorld,
+  kind: 'Warrant' | 'Writ',
   { feeOutstanding = true }: { feeOutstanding?: boolean } = {}
 ): Promise<void> {
   if (feeOutstanding) {
@@ -52,10 +68,11 @@ export async function approveWarrantAsCaseworker(
   await chooseDecision(page, decideEnforcement.acceptRadioOption);
   await goToCheckYourAnswers(page);
   await submitDecision(page);
-  await expectConfirmation(page, 'Warrant approved');
+  await expectConfirmation(page, `${kind} approved`);
   // The number is generated on approval and is what the later bailiff confirmations quote.
-  const numberLine = await page.locator('#confirmation-body').getByText(/Warrant number: \S+/).first().innerText();
-  world.warrantNumber = numberLine.replace(/^.*Warrant number:\s*/s, '').trim();
+  const numberPattern = new RegExp(`${kind} number: \\S+`);
+  const numberLine = await page.locator('#confirmation-body').getByText(numberPattern).first().innerText();
+  world.warrantNumber = numberLine.replace(new RegExp(`^.*${kind} number:\\s*`, 's'), '').trim();
   world.currentEvent = undefined;
   world.warrantApproved = true;
 }

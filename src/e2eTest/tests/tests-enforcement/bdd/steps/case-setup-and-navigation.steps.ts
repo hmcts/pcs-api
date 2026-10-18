@@ -9,6 +9,7 @@ import {
   nextStepOptions,
   openCaseSummary,
   signInAs,
+  signInRoleFor,
   startEvent,
   startEventAllowingRefusal,
   xuiEvents,
@@ -110,12 +111,30 @@ When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-// Only the claimant legal representative can sign in today: it is the storage-state user from
-// config/global-setup.config.ts. Other users wait on HDPI-7539.
-When('a {string} opens the case', async ({ page, $tags }, user: string) => {
-  if (user !== 'claimant legal representative') {
+// Users the suite has no sign-in for in this environment, such as a defendant on a local stack, wait on
+// HDPI-7539.
+When('a {string} opens the case', async ({ page, context, $tags }, user: string) => {
+  const role = signInRoleFor(user);
+  if (!canSignInAs(role)) {
     return markPending({ ticket: 'HDPI-7539', summary: `opening the case as a ${user}` }, $tags);
   }
+  await signInAs(role, page, context);
+  await openCaseSummary(page);
+});
+
+// "An internal user" is a hearing centre admin, the caseworker every enforcement case is decided by.
+When('an internal user opens the case', async ({ page, context }) => {
+  await signInAs('hearing-centre-admin', page, context);
+  await openCaseSummary(page);
+});
+
+When('a bailiff opens the case', async ({ page, context }) => {
+  await signInAs('bailiff', page, context);
+  await openCaseSummary(page);
+});
+
+When('a hearing centre admin opens the case', async ({ page, context }) => {
+  await signInAs('hearing-centre-admin', page, context);
   await openCaseSummary(page);
 });
 
@@ -217,12 +236,6 @@ pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not
   'the {string} screen shows my answers with {string} links',
   'I open {string}',
   '{string}',
-]);
-
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Opening the case as a role other than the claimant legal representative' }, [
-  'an internal user opens the case',
-  'a bailiff opens the case',
-  'a hearing centre admin opens the case',
 ]);
 
 // Generic XUI steps. Only "Decide enforcement" drives them today; any other event stays pending.

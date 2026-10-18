@@ -54,6 +54,7 @@ public class ClaimantEvictionConfirmationService {
         }
         EnforcementStatus target = canAttend.toBoolean() ? CLAIMANT_CONFIRMED : CLAIMANT_UNABLE_TO_ATTEND;
         enforcementStatusTransitions.transition(enforcement, target);
+        enforcement.setClaimantCanAttend(canAttend.toBoolean());
         enforcementOrderRepository.save(enforcement);
         if (target == CLAIMANT_CONFIRMED) {
             enforcementNotificationService.notifyClaimantOfConfirmedAttendance(
