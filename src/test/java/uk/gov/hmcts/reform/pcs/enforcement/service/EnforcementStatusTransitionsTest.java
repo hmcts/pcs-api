@@ -48,7 +48,7 @@ class EnforcementStatusTransitionsTest {
         new Transition(AWAITING_PAYMENT, "the claimant pays", AWAITING_REVIEW),
         new Transition(AWAITING_REVIEW, "the caseworker approves a warrant", AWAITING_BAILIFF_ALLOCATION),
         new Transition(AWAITING_REVIEW, "the caseworker rejects the application", REJECTED),
-        // README open question 10: an approved writ goes to a High Court Enforcement Officer
+        // OPEN-QUESTIONS 25: an approved writ goes to a High Court Enforcement Officer
         new Transition(AWAITING_REVIEW, "the caseworker approves a writ", TRANSFERRED_TO_HIGH_COURT),
         new Transition(AWAITING_BAILIFF_ALLOCATION, "a bailiff is allocated", AWAITING_SCHEDULING),
         new Transition(AWAITING_SCHEDULING, "the bailiff schedules the eviction", AWAITING_CLAIMANT_CONFIRMATION),

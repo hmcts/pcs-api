@@ -105,7 +105,7 @@ Given('each case has an eviction scheduled this week', async ({ page, context, w
     await scheduleEvictionAsBailiff(page, context, world, 1);
   }
   // pcs-api generates each document on a db-scheduler task after its event commits, so wait for all of them
-  // before printing. Locally each is the wiremock Docmosis stub's placeholder PDF (OPEN-QUESTIONS 38).
+  // before printing. Locally each is the wiremock Docmosis stub's placeholder PDF (OPEN-QUESTIONS 42).
   for (const caseReference of world.batchPrintCases) {
     for (const title of GENERATED_DOCUMENTS) {
       await expectEnforcementDocument(caseReference, title);

@@ -49,12 +49,14 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                               <li class="govuk-!-font-size-19">
                                <a href="https://certificatedbailiffs.justice.gov.uk/searchPublic.do?search"
                                rel="noreferrer noopener" target="_blank" class="govuk-link">search for a High Court
-                               enforcement officer using your postcode</a>
+                               enforcement officer using your postcode (Justice.gov website, opens in a new
+                               tab)</a>
                               </li>
                               <li class="govuk-!-font-size-19">
                                <a href="https://www.hceoa.org.uk/choosing-a-hceo"
                                rel="noreferrer noopener" target="_blank" class="govuk-link">check the full list of High
-                               Court enforcement officers</a> and choose one in your area
+                               Court enforcement officers (HCEOA website, opens in a new tab)</a> and choose one
+                               in your area
                               </li>
                               <li class="govuk-!-font-size-19 govuk-!-padding-bottom-1">search for an HCEO using a
                                search engine

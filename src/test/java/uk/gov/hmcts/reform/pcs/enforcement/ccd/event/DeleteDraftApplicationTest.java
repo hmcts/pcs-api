@@ -72,8 +72,8 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         verify(draftCaseDataService).deleteUnsubmittedCaseData(
                 TEST_CASE_REFERENCE, enforceTheOrder);
 
-        assertThat(submitResponse.getConfirmationBody())
-                .contains("Draft application deleted");
+        assertThat(submitResponse.getConfirmationHeader())
+                .isEqualTo("# Draft application deleted");
     }
 
     @Test
@@ -92,6 +92,6 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(
                 TEST_CASE_REFERENCE, enforceTheOrder);
 
-        assertThat(submitResponse.getConfirmationBody()).isNull();
+        assertThat(submitResponse.getConfirmationHeader()).isNull();
     }
 }

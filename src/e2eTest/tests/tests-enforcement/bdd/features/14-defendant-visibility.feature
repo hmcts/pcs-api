@@ -53,6 +53,11 @@ Feature: Defendant visibility of enforcement
     Examples:
       | type                   |
       | warrant of possession  |
+
+    # Every type gives the same empty case file view for a defendant.
+    @not-filmed
+    Examples:
+      | type                   |
       | warrant of restitution |
       | writ of possession     |
 

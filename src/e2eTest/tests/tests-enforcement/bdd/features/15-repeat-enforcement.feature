@@ -26,8 +26,13 @@ Feature: Further enforcement on the same possession case
     Examples:
       | return name                | age       | charged     |
       | Warrant suspended by order | 6 months  | not charged |
-      | Warrant suspended by order | 13 months | charged     |
       | Eviction successful        | 6 months  | charged     |
+
+    # The 12-month cut-off is a boundary check on the same two outcomes.
+    @not-filmed
+    Examples:
+      | return name                | age       | charged     |
+      | Warrant suspended by order | 13 months | charged     |
 
   # pcs-api starts a warrant of restitution in "Awaiting review", because restitution has no fee, so the
   # "Awaiting payment" check cannot pass until OPEN-QUESTIONS 12 is settled. Feature 14 drives the same application.
