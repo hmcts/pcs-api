@@ -54,7 +54,7 @@ class EnforcementCaseViewContributorTest {
         inOrder.verify(riskLevelView).setRiskAssessmentFields(pcsCaseEntity, pcsCase);
         inOrder.verify(evictionScheduleView).setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         inOrder.verify(warrantReturnView).setLatestWarrantReturn(pcsCaseEntity, pcsCase);
-        inOrder.verify(enforcementDocumentVisibility).hideFromDefendants(pcsCase, CASE_REFERENCE);
+        inOrder.verify(enforcementDocumentVisibility).restrict(pcsCaseEntity, pcsCase, CASE_REFERENCE);
         inOrder.verifyNoMoreInteractions();
     }
 

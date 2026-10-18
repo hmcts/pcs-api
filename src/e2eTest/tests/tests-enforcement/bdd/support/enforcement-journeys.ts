@@ -27,6 +27,7 @@ import {
   testCaseFixtures,
   waitForServiceRequest,
 } from '@config/local-stack.config';
+import type { TestCaseFixture } from '@config/local-stack.config';
 import {
   checkYourAnswers,
   evidenceUpload,
@@ -149,23 +150,35 @@ export async function seedWarrantApplication(world: EnforcementWorld): Promise<v
  */
 export async function createCaseWithWarrant(world: EnforcementWorld): Promise<void> {
   if (isLocalStack()) {
-    const created = await createCaseFromFixture(testCaseFixtures.enforcementWarrant);
-    process.env.CASE_NUMBER = created.id;
-    caseInfo.id = created.id;
-    caseInfo.fid = created.id.replace(/(.{4})(?=.)/g, '$1-');
-    caseInfo.state = created.state;
-    world.caseReference = created.id;
-    world.submitPayload = basicClaimFixtureClaim as unknown as SubmitCasePayload;
-    await performAction('getDefendantDetails', {
-      defendant1NameKnown: basicClaimFixtureClaim.defendant1.nameKnown,
-      additionalDefendants: basicClaimFixtureClaim.addAnotherDefendant,
-      payLoad: basicClaimFixtureClaim,
-    });
-    world.enforcementSeeded = true;
+    await createCaseWithApplicationLocally(world, testCaseFixtures.enforcementWarrant);
     return;
   }
   await createIssuedCase(world);
   await seedWarrantApplication(world);
+}
+
+/**
+ * A case issued with a writ of possession application already submitted. Only the local stack can seed one:
+ * there is no writ `enforceTheOrder` API payload for AAT.
+ */
+export async function createCaseWithWrit(world: EnforcementWorld): Promise<void> {
+  await createCaseWithApplicationLocally(world, testCaseFixtures.enforcementWrit);
+}
+
+async function createCaseWithApplicationLocally(world: EnforcementWorld, fixture: TestCaseFixture): Promise<void> {
+  const created = await createCaseFromFixture(fixture);
+  process.env.CASE_NUMBER = created.id;
+  caseInfo.id = created.id;
+  caseInfo.fid = created.id.replace(/(.{4})(?=.)/g, '$1-');
+  caseInfo.state = created.state;
+  world.caseReference = created.id;
+  world.submitPayload = basicClaimFixtureClaim as unknown as SubmitCasePayload;
+  await performAction('getDefendantDetails', {
+    defendant1NameKnown: basicClaimFixtureClaim.defendant1.nameKnown,
+    additionalDefendants: basicClaimFixtureClaim.addAnotherDefendant,
+    payLoad: basicClaimFixtureClaim,
+  });
+  world.enforcementSeeded = true;
 }
 
 export async function openCaseSummary(page: Page): Promise<void> {

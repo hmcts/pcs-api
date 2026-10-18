@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -53,6 +54,8 @@ class EnforcementDecisionServiceTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private EnforcementNumberGenerator enforcementNumberGenerator;
+    @Mock
+    private EnforcementDocumentScheduler enforcementDocumentScheduler;
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
         new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC));
@@ -111,6 +114,7 @@ class EnforcementDecisionServiceTest {
         assertThat(enforcement.getRejectionReason()).isNull();
         verify(enforcementStatusTransitions).transition(enforcement, approvedStatus);
         verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementDocumentScheduler).scheduleApprovalDocument(enforcement.getId(), type);
     }
 
     @Test
@@ -156,7 +160,7 @@ class EnforcementDecisionServiceTest {
         assertThat(enforcement.getRejectionReason()).isEqualTo("The order has been set aside");
         assertThat(enforcement.getEnforcementNumber()).isNull();
         assertThat(enforcement.getApprovedAt()).isNull();
-        verifyNoInteractions(enforcementNumberGenerator);
+        verifyNoInteractions(enforcementNumberGenerator, enforcementDocumentScheduler);
         verify(enforcementOrderRepository).save(enforcement);
     }
 

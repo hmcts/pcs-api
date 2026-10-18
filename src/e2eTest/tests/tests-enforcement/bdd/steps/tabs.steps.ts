@@ -66,13 +66,9 @@ Then('there is no {string} tab', async ({ page, $tags }, tabName: string) => {
   await expectCaseTab(page, tabName, false);
 });
 
-pendingSteps({ ticket: 'HDPI-8442', summary: 'Enforcement documents in case file view' }, [
-  'an {string} folder is created in case file view',
-  'an unsealed {string} document is stored in the {string} folder',
-  'both documents are visible to the claimant and internal users',
-  'no {string} document is generated',
+// The documents are rendered from stand-in templates until the real ones exist, so there is nothing to read.
+pendingSteps({ ticket: 'HDPI-7555', summary: 'The enforcement application template (OPEN-QUESTIONS 19)' }, [
   'the {string} document contains {string}',
-  'a {string} document is generated with the county court seal',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [

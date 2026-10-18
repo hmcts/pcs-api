@@ -172,8 +172,13 @@ precondition when it cannot reach the status a scenario asks for.
   required" fires before the page's own "Choose a bailiff" mid-event. Feature 03 stays pending for that
   reason. The `allocate-bailiff` testing-support endpoint goes through `BailiffAllocationService` instead,
   so features 05, 07, 08 and 11 *are* reachable. (HDPI-7356)
-- **Generate documents.** There are no Docmosis templates, so anything asserting a generated warrant,
-  notice of eviction or notice of appointment stays pending. Document *storage* works once dm-store is up.
+- **Read generated documents.** pcs-api generates every enforcement document (application, risk
+  assessment, warrant or writ, notice of eviction, notice of appointment) and files it in the Enforcement
+  folder, but from stand-in Docmosis templates until the real ones exist (OPEN-QUESTIONS 19), and locally
+  `bootWithCCD` renders every template as the wiremock stub's placeholder PDF. The document steps
+  (`steps/documents.steps.ts`) therefore check that a document of the right name is in the folder and who can
+  see it, through the data store as each user; its content, date stamp and seal are not checked, and the
+  scenario records a "stand-in template" annotation instead. They need `LOCAL_DOC_SERVICES=true`.
 - **Create work allocation tasks.** Nothing creates them in any environment yet. A step that merely states
   a task exists is recorded as an approximated precondition so the scenario still runs; a step that
   interacts with one stays pending. (HDPI-8627)

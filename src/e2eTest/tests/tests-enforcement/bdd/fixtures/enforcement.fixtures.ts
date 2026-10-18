@@ -49,6 +49,10 @@ export class EnforcementWorld {
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /** The file name prefixes of the generated documents the scenario has found in the Enforcement folder. */
+  checkedDocuments: string[] = [];
+  /** The generated document the scenario's "the document" and "it" steps refer to. */
+  currentDocument?: string;
 }
 
 type EnforcementFixtures = {

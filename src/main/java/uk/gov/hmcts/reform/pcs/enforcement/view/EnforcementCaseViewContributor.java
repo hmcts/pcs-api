@@ -28,7 +28,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
         riskLevelView.setRiskAssessmentFields(pcsCaseEntity, pcsCase);
         evictionScheduleView.setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         warrantReturnView.setLatestWarrantReturn(pcsCaseEntity, pcsCase);
-        enforcementDocumentVisibility.hideFromDefendants(pcsCase, caseReference);
+        enforcementDocumentVisibility.restrict(pcsCaseEntity, pcsCase, caseReference);
     }
 
 }

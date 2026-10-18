@@ -77,7 +77,6 @@ When('I submit an application for a {string}', async ({ page, world, $tags }, ty
 
 pendingSteps({ summary: 'Paying the enforcement fee by service request' }, [
   'I pay the {string} fee using a service request',
-  'I submit and pay for a {string} application',
 ]);
 
 pendingSteps({ ticket: 'HDPI-8424', summary: 'Repeat warrant fee rules' }, [

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementApplicationFee;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -31,6 +32,7 @@ public class EnforcementOrderService {
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
+    private final EnforcementDocumentScheduler enforcementDocumentScheduler;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -86,6 +88,9 @@ public class EnforcementOrderService {
         // enforcement has to be persistent before a strategy runs.
         EnforcementOrderEntity savedEntity = enforcementOrderRepository.save(enforcementOrderEntity);
         strategyFactory.getStrategy(enforcementType).process(savedEntity, enforcementOrder);
+        if (savedEntity.getStatus() == EnforcementStatus.AWAITING_REVIEW) {
+            enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);
+        }
     }
 
     /**
@@ -99,8 +104,9 @@ public class EnforcementOrderService {
      *
      * <p>TODO HDPI-2877: nothing moves an application on from AWAITING_PAYMENT yet, because pcs-api has no
      * enforcement payment callback on this branch. When the enforcement payment handler from hmcts/pcs-api#2941
-     * lands, its PAID path should call {@code enforcementStatusTransitions.transition(entity, AWAITING_REVIEW)}
-     * from inside this package (it must link the fee payment to the enf_case id to find the entity).
+     * lands, its PAID path should call {@link #moveToReview(EnforcementOrderEntity)} from inside this package (it
+     * must link the fee payment to the enf_case id to find the entity), so that the application documents are
+     * generated.
      */
     private static boolean isPaymentOutstanding(SelectEnforcementType enforcementType) {
         return EnforcementApplicationFee.isPayable(enforcementType);
@@ -120,11 +126,21 @@ public class EnforcementOrderService {
             .stream()
             .findFirst()
             .map(enforcement -> {
-                enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
-                enforcementOrderRepository.save(enforcement);
+                moveToReview(enforcement);
                 return true;
             })
             .orElse(false);
+    }
+
+    /**
+     * Moves a paid application on to awaiting review and generates the application documents, which the
+     * features describe as produced once the claimant has submitted and paid.
+     */
+    void moveToReview(EnforcementOrderEntity enforcement) {
+        enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
+        enforcementOrderRepository.save(enforcement);
+        enforcementDocumentScheduler.scheduleApplicationDocuments(
+            enforcement.getId(), SelectEnforcementType.from(enforcement.getEnforcementOrder()));
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {

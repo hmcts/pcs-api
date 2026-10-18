@@ -113,8 +113,10 @@ The first time this is run locally there will be a small additional delay at sta
 spins up. However, it will remain up even when `bootWithCCD` is stopped so restarting pcs-api will not incur that
 additional delay each time.
 
-In order for document generation and viewing of documents in Case File View to work, it is currently necessary
-to be on the VPN as the AAT version of Docmosis is still used. (This does not need `AuthMode.AAT`).
+Generated documents are rendered by a wiremock Docmosis stub (`wiremock/mappings/docmosis/render.json`), so every
+template produces the same one-page placeholder PDF, which is then uploaded to the local dm-store through CDAM and
+shows in Case File View. To render the real templates instead, set `LOCAL_DOCMOSIS=aat` as well and be on the VPN,
+as the AAT version of Docmosis is then used. (This does not need `AuthMode.AAT`).
 
 NOTE: This is a new configuration for running the dm-store locally. If it proves to be practical for developers
 then it may be updated to alwys run when `AuthMode.Local` is set.

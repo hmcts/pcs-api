@@ -23,7 +23,7 @@ import {
   signInAsHearingCentreAdmin,
   submitDecision,
 } from '../support/decide-enforcement';
-import { AWAITING_BAILIFF_ALLOCATION, setUpWarrantAtStatus } from '../support/approve-warrant';
+import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionAsBailiff, setUpWarrantAtStatus } from '../support/approve-warrant';
 import { RESCHEDULE_EVICTION, SCHEDULE_EVICTION, scheduleEviction } from '../support/schedule-eviction';
 import { MARK_NOTICE_SERVED, noticeServed } from '../support/notice-served';
 import {
@@ -318,14 +318,17 @@ Then('I return to the case summary', async ({ page, world, $tags }) => {
   world.currentEvent = undefined;
 });
 
-When('I submit the {string} event', async ({ page, world, $tags }, eventName: string) => {
+When('I submit the {string} event', async ({ page, context, world, $tags }, eventName: string) => {
   if (eventName === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
     return submitDecision(page);
   }
-  // The eviction events use CCD's own check-your-answers, so submitting is "Save and continue". Only
-  // possible when the scenario actually started the event and answered its page; several scenarios submit
-  // without any set-up because they are really about what the submit produces (documents, notifications),
-  // which does not exist yet.
+  // The eviction events use CCD's own check-your-answers, so submitting is "Save and continue". Several
+  // scenarios submit without any set-up because they are really about what the submit produces (documents,
+  // notifications): for Schedule eviction the whole journey is run for them, for Reschedule eviction they
+  // stay pending.
+  if (eventName === SCHEDULE_EVICTION && world.currentEvent !== eventName && !world.evictionScheduled) {
+    return scheduleEvictionAsBailiff(page, context, world);
+  }
   if (eventName === SCHEDULE_EVICTION || eventName === RESCHEDULE_EVICTION) {
     if (world.currentEvent !== eventName) {
       return markPending(genericStepPending, $tags);

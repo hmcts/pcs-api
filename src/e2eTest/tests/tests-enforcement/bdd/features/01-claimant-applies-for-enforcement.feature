@@ -68,7 +68,7 @@ Feature: Claimant applies for enforcement of a possession order
     Then I am not asked to pay a fee
     And the enforcement status changes to "Awaiting review"
 
-  @HDPI-7555 @HDPI-8442 @pending
+  @HDPI-7555 @HDPI-8442
   Scenario: Submitting a warrant application generates the application and risk assessment outputs
     When I submit and pay for a "warrant of possession" application
     Then an "Enforcement" folder is created in case file view
@@ -76,7 +76,7 @@ Feature: Claimant applies for enforcement of a possession order
     And an unsealed "risk assessment" document is stored in the "Enforcement" folder
     And both documents are visible to the claimant and internal users
 
-  @HDPI-7555 @pending
+  @HDPI-7555
   Scenario: Submitting a writ application generates only the application output
     When I submit and pay for a "writ of possession" application
     Then an unsealed "enforcement application" document is stored in the "Enforcement" folder
