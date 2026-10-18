@@ -377,8 +377,6 @@ Then('the case header does not show {string}', async ({ page, world }, number: s
   await expect(page.locator('ccd-case-header')).not.toContainText(actual(world, number));
 });
 
-<<<<<<< /tmp/m.ours
-=======
 // The generation dates are illustrative: both are generated today, the closed warrant first.
 Given(
   'the case has a closed warrant {string} generated on {string}',
@@ -416,12 +414,6 @@ Given('the case has a writ of possession', async ({ page, context, world, $tags 
   }
 });
 
-// The documents are rendered from stand-in templates until the real ones exist, so there is nothing to read.
-pendingSteps({ ticket: 'HDPI-7555', summary: 'The enforcement application template (OPEN-QUESTIONS 19)' }, [
-  'the {string} document contains {string}',
-]);
-
->>>>>>> /tmp/m.theirs
 pendingSteps({ ticket: 'HDPI-7547', summary: 'Confirm the eviction only asks whether the claimant can attend' }, [
   'the claimant has completed {string}',
   '{string} shows:',
@@ -434,19 +426,4 @@ pendingSteps({ ticket: 'HDPI-7350', summary: 'XUI sanitises case markdown, so th
 
 pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
   'the case {string} tab shows the event that changed it, who submitted it and when',
-]);
-
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Defendant visibility of enforcement' }, [
-<<<<<<< /tmp/m.ours
-  'I see the {string} table with claimant type, claimant name and defendant names',
-=======
-  'the case has a writ of possession',
-  'a defendant opens the case',
-  'a defendant views case file view',
-  'they do not see the {string} document',
-  'the defendants could see the enforcement for that warrant',
-  'defendants can no longer see any enforcement information',
-  'they stay unable to see it until the bailiff records a return on the warrant of restitution',
-  'defendants cannot see any enforcement information',
->>>>>>> /tmp/m.theirs
 ]);

@@ -255,22 +255,26 @@ const genericStepPending = { summary: 'Generic XUI step for an enforcement event
 pendingSteps(genericStepPending, [
   'the {string} screen opens',
   'I see the {string} confirmation with the case number and warrant number',
-<<<<<<< /tmp/m.ours
-=======
-  'today is {string} and the time is {string}',
->>>>>>> /tmp/m.theirs
   'I open {string}',
   '{string}',
 ]);
 
-/** The event page the scenario is on quotes neither the warrant number nor anything that would give it away. */
+/**
+ * The event page the scenario is on names the case and the property, but neither the warrant number nor
+ * anything that would give it away.
+ */
 Then('the warrant number is not shown in the header', async ({ page, world, $tags }) => {
-  const event = world.currentEvent ? xuiEvents[world.currentEvent] : undefined;
-  if (!event) {
+  if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
   expect(world.warrantNumber, 'a warrant number generated when the warrant was approved').toBeDefined();
-  await expect(page.getByRole('heading', { name: event.firstPageHeader })).toBeVisible();
+  const event = xuiEvents[world.currentEvent];
+  if (event) {
+    await expect(page.getByRole('heading', { name: event.firstPageHeader })).toBeVisible();
+  }
+  const form = page.locator('ccd-case-edit-page');
+  await expect(form.getByRole('paragraph').filter({ hasText: 'Case number:' }).first()).toBeVisible();
+  await expect(form).not.toContainText('Warrant number');
   await expect(page.locator('body')).not.toContainText(world.warrantNumber as string);
 });
 
@@ -298,16 +302,8 @@ Given('I am signed in to XUI as a hearing centre admin', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-<<<<<<< /tmp/m.ours
-// Only an event the scenario started itself: opening one from a task waits on HDPI-8627.
-Then('the {string} journey opens', async ({ page, world, $tags }, eventName: string) => {
-  const event = xuiEvents[eventName];
-  if (!event || world.currentEvent !== eventName) {
-    return markPending(genericStepPending, $tags);
-  }
-  await expect(page.getByRole('heading', { name: event.firstPageHeader })).toBeVisible();
-=======
-// The feature files name a journey by its event or by its first page's heading.
+// The feature files name a journey by its event or by its first page's heading. Only an event the scenario
+// started itself counts: opening one from a task waits on HDPI-8627.
 Then('the {string} journey opens', async ({ page, world, $tags }, journey: string) => {
   if (journey === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
     await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
@@ -327,16 +323,6 @@ Then('the {string} journey opens', async ({ page, world, $tags }, journey: strin
 Given('today is {string} and the time is {string}', async ({ $tags }, date: string, time: string) => {
   const ticket = $tags.find(tag => /^@HDPI-\d+$/.test(tag) && tag !== '@HDPI-7342')?.slice(1) ?? 'HDPI-7342';
   approximatePrecondition(ticket, `the clock is not set to ${date} ${time}; the app uses the real time`);
-});
-
-Then('the {string} screen shows my answers with {string} links', async ({ page, world, $tags }, screen: string, link: string) => {
-  if (!world.currentEvent || screen !== scheduleEviction.checkYourAnswers) {
-    return markPending(genericStepPending, $tags);
-  }
-  await expect(page.getByRole('heading', { name: screen })).toBeVisible();
-  const rows = page.locator('tr, .govuk-summary-list__row').filter({ has: page.getByRole('link', { name: new RegExp(`^${link}`) }) });
-  await expect(rows.first()).toBeVisible();
->>>>>>> /tmp/m.theirs
 });
 
 /**
@@ -370,8 +356,6 @@ Given('I am on the {string} screen', async ({ page, world, $tags }, screen: stri
 
 /** Events whose first page has the case number and property address but no "claimant name vs defendant name" line. */
 const eventsWithoutPartiesLine: Record<string, string> = {
-  [SCHEDULE_EVICTION]: 'HDPI-7344',
-  [RESCHEDULE_EVICTION]: 'HDPI-7549',
   [MARK_NOTICE_SERVED]: 'HDPI-7346',
 };
 
@@ -396,19 +380,6 @@ Then('none of these are editable', async ({ page, world, $tags }) => {
     return markPending(genericStepPending, $tags);
   }
   await expectCaseDetailsNotEditable(page);
-});
-
-// The bailiff event pages name the case and the property, not the warrant.
-Then('the warrant number is not shown in the header', async ({ page, world, $tags }) => {
-  if (!world.currentEvent) {
-    return markPending(genericStepPending, $tags);
-  }
-  const form = page.locator('ccd-case-edit-page');
-  await expect(form.getByRole('paragraph').filter({ hasText: 'Case number:' }).first()).toBeVisible();
-  await expect(form).not.toContainText('Warrant number');
-  if (world.warrantNumber) {
-    await expect(form).not.toContainText(world.warrantNumber);
-  }
 });
 
 Then('the {string} button is disabled', async ({ page, world, $tags }, button: string) => {
