@@ -1,0 +1,21 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/payments/service-request",
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.ccd_case_number" },
+      { "matchesJsonPath": "$.fees[?(@.code in ['FEE0380', 'FEE0397'])]" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "service_request_reference": "SR-{{request.id}}"
+    },
+    "transformers": ["response-template"]
+  }
+}

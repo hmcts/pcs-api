@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOf
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementFeeService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RepeatWarrantFeeWaiver;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -79,11 +81,12 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
 
     @BeforeEach
     void setUp() {
-        // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for.
+        // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for, and
+        // the fee lookup and service request need the Fees Register and Payments.
         enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
             enforcementStatusTransitions, repeatWarrantFeeWaiver, mock(EnforcementNotificationService.class),
-            enforcementDocumentScheduler);
+            enforcementDocumentScheduler, mock(EnforcementFeeService.class, RETURNS_MOCKS));
     }
 
     @ParameterizedTest

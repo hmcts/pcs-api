@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
-import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementFeePaidSimulator;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -63,7 +63,7 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
     @Autowired
     private EnforcementDecisionService enforcementDecisionService;
     @Autowired
-    private EnforcementOrderService enforcementOrderService;
+    private EnforcementFeePaidSimulator enforcementFeePaidSimulator;
     @Autowired
     private EvictionScheduleService evictionScheduleService;
     @Autowired
@@ -116,7 +116,7 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
         long caseReference = 4102410241024102L;
         UUID id = savedEnforcement(caseReference, SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_PAYMENT);
 
-        transactionTemplate.executeWithoutResult(status -> enforcementOrderService.recordFeePaid(caseReference));
+        transactionTemplate.executeWithoutResult(status -> enforcementFeePaidSimulator.recordFeePaid(caseReference));
 
         assertThat(scheduledInstances(id)).containsExactlyInAnyOrder(
             id + "-WARRANT_OF_POSSESSION_APPLICATION", id + "-RISK_ASSESSMENT");

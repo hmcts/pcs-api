@@ -5,6 +5,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
@@ -13,8 +14,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.W
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT_OF_RESTITUTION;
 
 class EnforcementApplicationFeeTest {
-
-    private static final String AMOUNT = "£122.21";
 
     @Test
     void shouldChargeForAWarrantAndAWritOfPossessionOnly() {
@@ -25,33 +24,15 @@ class EnforcementApplicationFeeTest {
     }
 
     @Test
-    void shouldTakeTheAmountFromTheMatchingCaseDataField() {
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount(AMOUNT)
-            .writFeeAmount("£90.00")
-            .build();
-
-        assertThat(EnforcementApplicationFee.findAmount(enforcementOrder, WARRANT)).contains(AMOUNT);
-        assertThat(EnforcementApplicationFee.findAmount(enforcementOrder, WRIT)).contains("£90.00");
+    void shouldChargeTheWarrantFeeForAWarrantAndTheWritFeeForAWrit() {
+        assertThat(EnforcementApplicationFee.findFeeType(WARRANT)).contains(FeeType.ENFORCEMENT_WARRANT_FEE);
+        assertThat(EnforcementApplicationFee.findFeeType(WRIT)).contains(FeeType.ENFORCEMENT_WRIT_FEE);
     }
 
     @ParameterizedTest
     @EnumSource(value = SelectEnforcementType.class, names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
-    void shouldFindNoAmountForATypeWithNoFee(SelectEnforcementType enforcementType) {
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount(AMOUNT)
-            .writFeeAmount(AMOUNT)
-            .build();
-
-        assertThat(EnforcementApplicationFee.findAmount(enforcementOrder, enforcementType)).isEmpty();
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = SelectEnforcementType.class, names = {"WARRANT", "WRIT"})
-    void shouldStillChargeForATypeWhoseAmountWasNotLookedUp(SelectEnforcementType enforcementType) {
-        assertThat(EnforcementApplicationFee.findAmount(EnforcementOrder.builder().build(), enforcementType))
-            .isEmpty();
-        assertThat(EnforcementApplicationFee.isPayable(enforcementType)).isTrue();
+    void shouldFindNoFeeForARestitutionType(SelectEnforcementType enforcementType) {
+        assertThat(EnforcementApplicationFee.findFeeType(enforcementType)).isEmpty();
     }
 
     @ParameterizedTest

@@ -46,7 +46,8 @@ Feature: Claimant applies for enforcement of a possession order
       | warrant of restitution |
       | writ of restitution    |
 
-  # pcs-api cannot take the fee yet (HDPI-2877): the step records it as paid through testing support.
+  # A local stack has no Payments service: the step pays the fee through testing support, which sends a paid
+  # callback through pcs-api's enforcement payment handler.
   Scenario Outline: Claimant pays the enforcement fee for a <type>
     Given I have submitted an application for a "<type>"
     When I pay the "<fee>" fee using a service request

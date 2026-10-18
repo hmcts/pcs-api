@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +38,7 @@ public class EnforcementOrderService {
     private final RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
     private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
+    private final EnforcementFeeService enforcementFeeService;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -72,24 +75,30 @@ public class EnforcementOrderService {
     }
 
     /**
-     * Saves the submitted application and deletes the draft.
+     * Saves the submitted application and deletes the draft. An application that owes a fee is saved awaiting
+     * payment, and a Payments service request is raised for the fee once the transaction commits.
      *
-     * @return whether the application owes a fee, i.e. whether it was saved awaiting payment
+     * @return the fee the application owes, or empty when it owes nothing
+     * @throws FeeNotFoundException if the application owes a fee that the Fees Register cannot give, before
+     *     anything is saved
      */
     @Transactional
-    public boolean saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
-        boolean paymentOutstanding = createEnforcementOrder(caseReference, enforcementOrder);
+    public Optional<FeeDetails> saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
+        Optional<FeeDetails> feeOwed = createEnforcementOrder(caseReference, enforcementOrder);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
-        return paymentOutstanding;
+        return feeOwed;
     }
 
-    private boolean createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
+    private Optional<FeeDetails> createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
         SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcementOrder);
         // Decided before the new application is saved, so it only sees the claim's earlier enforcements.
         boolean paymentOutstanding = isPaymentOutstanding(claimEntity, enforcementType);
+        final Optional<FeeDetails> feeOwed = paymentOutstanding
+            ? Optional.of(enforcementFeeService.lookUpFee(enforcementType))
+            : Optional.empty();
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, claimEntity);
         enforcementStatusTransitions.transition(enforcementOrderEntity,
@@ -103,11 +112,13 @@ public class EnforcementOrderService {
         if (!paymentOutstanding && EnforcementApplicationFee.isPayable(enforcementType)) {
             log.info("Enforcement {} on case {} is a free repeat warrant", savedEntity.getId(), caseReference);
         }
-        if (!paymentOutstanding) {
+        if (paymentOutstanding) {
+            enforcementFeeService.requestPaymentAfterCommit(pcsCaseEntity, savedEntity.getId(), feeOwed.orElseThrow());
+        } else {
             enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
             enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);
         }
-        return paymentOutstanding;
+        return feeOwed;
     }
 
     /**
@@ -116,12 +127,6 @@ public class EnforcementOrderService {
      * a type with no fee, which is either restitution type, owes nothing. Either way an application that owes
      * nothing goes straight to review. The fee amounts on the submitted case data come from the client, so they
      * are not used to decide this.
-     *
-     * <p>TODO HDPI-2877: nothing moves an application on from AWAITING_PAYMENT yet, because pcs-api has no
-     * enforcement payment callback on this branch. When the enforcement payment handler from hmcts/pcs-api#2941
-     * lands, its PAID path should go through {@link #moveToAwaitingReview} from inside this package, so the claimant
-     * is told the application was received and the application documents are generated (it must link the fee
-     * payment to the enf_case id to find the entity).
      */
     private boolean isPaymentOutstanding(ClaimEntity claimEntity, SelectEnforcementType enforcementType) {
         return EnforcementApplicationFee.isPayable(enforcementType)
@@ -129,28 +134,9 @@ public class EnforcementOrderService {
     }
 
     /**
-     * Moves the claim's application that is awaiting payment on to awaiting review, as paying the fee will.
-     * Only the enforcement testing-support endpoint calls this until the payment handler lands (HDPI-2877).
-     *
-     * @return whether an application was awaiting payment
-     */
-    @Transactional
-    public boolean recordFeePaid(long caseReference) {
-        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseService.loadCase(caseReference));
-        return enforcementOrderRepository
-            .findByClaimIdAndStatus(claimEntity.getId(), EnforcementStatus.AWAITING_PAYMENT)
-            .stream()
-            .findFirst()
-            .map(enforcement -> {
-                moveToAwaitingReview(caseReference, enforcement);
-                return true;
-            })
-            .orElse(false);
-    }
-
-    /**
      * Moves a paid application on to awaiting review, tells the claimant it has been received and generates the
      * application documents, which the features describe as produced once the claimant has submitted and paid.
+     * {@link EnforcementPaymentCallbackHandler} calls this when Payments reports the fee paid.
      */
     void moveToAwaitingReview(long caseReference, EnforcementOrderEntity enforcement) {
         enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);

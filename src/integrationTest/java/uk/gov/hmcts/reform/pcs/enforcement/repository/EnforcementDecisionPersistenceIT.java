@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementFeePaidSimulator;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -48,6 +49,9 @@ class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private EnforcementOrderService enforcementOrderService;
+
+    @Autowired
+    private EnforcementFeePaidSimulator enforcementFeePaidSimulator;
 
     @Autowired
     private StatementOfTruthRepository statementOfTruthRepository;
@@ -160,7 +164,7 @@ class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
         final UUID id = save(savedClaim(caseReference), SelectEnforcementType.WARRANT,
                              EnforcementStatus.AWAITING_PAYMENT);
 
-        assertThat(enforcementOrderService.recordFeePaid(caseReference)).isTrue();
+        assertThat(enforcementFeePaidSimulator.recordFeePaid(caseReference)).isTrue();
         entityManager.flush();
         entityManager.clear();
 

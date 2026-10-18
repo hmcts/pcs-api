@@ -37,7 +37,7 @@ Given('a PCS case {string} with an enforcement of type {string} with status {str
   await createCaseWithWarrant(world);
   world.applicationType = type;
   if (status === 'Awaiting review') {
-    approximatePrecondition('HDPI-2877', 'pcs-api cannot take the enforcement fee yet; the fee is recorded as paid through testing support');
+    approximatePrecondition('HDPI-2877', 'a local stack has no Payments service; the enforcement fee is paid through testing support');
     await recordEnforcementFeePaid();
   }
 });

@@ -8,19 +8,24 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementApplicationFee;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
 
 /**
  * Submits the enforcement application for "Enforce the order" and "Resume draft application": it writes the
- * application to enf_case, deletes the draft and moves the claim to pending enforcement issued.
+ * application to enf_case, deletes the draft and moves the claim to pending enforcement issued. When the
+ * application owes a fee, a Payments service request is raised for it and the confirmation screen sends the
+ * claimant to the case's Service Request tab to pay, as the claim issue and general application fees do.
  */
 @Component("enforcementSubmitEventHandler")
 @Slf4j
@@ -29,8 +34,11 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
 
     static final String NO_ENFORCEMENT_TYPE_ERROR =
         "Select what you want to apply for before submitting this application";
+    static final String FEE_UNAVAILABLE_ERROR =
+        "We could not get the fee for this application. Try submitting it again later";
 
     private final EnforcementOrderService enforcementOrderService;
+    private final MoneyFormatter moneyFormatter;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {
@@ -48,15 +56,21 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             return errorResponse(LiveEnforcementExistsException.MESSAGE);
         }
 
-        boolean paymentOutstanding = enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+        Optional<FeeDetails> feeOwed;
+        try {
+            feeOwed = enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+        } catch (FeeNotFoundException e) {
+            log.error("Could not look up the {} fee to submit the enforcement on case {}",
+                      enforcementType, caseReference, e);
+            return errorResponse(FEE_UNAVAILABLE_ERROR);
+        }
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         // An application that owes nothing (restitution, or a free repeat warrant) gets no payment panel.
         return SubmitResponse.<State>builder()
-            .confirmationBody(paymentOutstanding
-                                  ? EnforcementApplicationFee.findAmount(enforcementOrder, enforcementType)
-                                      .map(feeAmount -> getPaymentConfirmationMarkdown(feeAmount, caseReference))
-                                      .orElse(null)
-                                  : null)
+            .confirmationBody(feeOwed
+                                  .map(fee -> getPaymentConfirmationMarkdown(
+                                      moneyFormatter.formatFee(fee.getFeeAmount()), caseReference))
+                                  .orElse(null))
             .state(PENDING_ENFORCEMENT_ISSUED)
             .build();
     }

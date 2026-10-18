@@ -34,8 +34,9 @@ export const decideEnforcement = {
 };
 
 /**
- * pcs-api cannot take an enforcement fee yet (HDPI-2877), so this records the fee for the case's application as
- * paid through pcs-api testing support. The application moves from "Awaiting payment" to "Awaiting review".
+ * A local stack has no Payments service to take an enforcement fee (HDPI-2877), so this pays the fee for the case's
+ * application through pcs-api testing support, which sends a paid callback through the enforcement payment
+ * handler. The application moves from "Awaiting payment" to "Awaiting review".
  */
 export async function recordEnforcementFeePaid(): Promise<void> {
   const api = Axios.create({
