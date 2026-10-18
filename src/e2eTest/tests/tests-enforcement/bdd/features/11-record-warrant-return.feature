@@ -50,15 +50,13 @@ Feature: Bailiff records the warrant return
     Then a "Record warrant return" task is created and assigned to me
     And selecting the task opens the "Record warrant return" journey
 
-  @HDPI-7347 @pending
+  @HDPI-7347
   Scenario: Record warrant return needs a live warrant
     Given the case has no live warrant
     When I start the "Record warrant return" event
     Then I see the error "There is no warrant on this case"
 
-  # RecordWarrantReturnPage shows the case number, the property address and the "Eviction details" table, but
-  # there is no parties line, and the table steps are not written yet.
-  @HDPI-7347 @pending
+  @HDPI-7347
   Scenario: Record warrant return screen
     When I start the "Record warrant return" event
     Then I see the case number, the possession property address and "claimant name vs defendant name"
@@ -67,9 +65,8 @@ Feature: Bailiff records the warrant return
     And I see a mandatory "Return" drop down with "Final" and "Interim"
 
   # Choosing "Final" reveals the Outcome drop down but not a Return name: the three Return name fields are
-  # shown by the chosen outcome, so no Return name appears until an outcome is picked. The Outcome half of
-  # this scenario passes; the Return name half does not match the show conditions.
-  @HDPI-7347 @pending
+  # shown by the chosen outcome, so the Return name step chooses "Eviction successful" first.
+  @HDPI-7347
   Scenario: Final return asks for outcome and return name
     When I choose the "Final" return
     Then I see a mandatory "Outcome" drop down with "Eviction successful", "Eviction unsuccessful" and "Eviction cancelled"
@@ -126,7 +123,7 @@ Feature: Bailiff records the warrant return
     Then I return to the case summary
     And no return is saved
 
-  @HDPI-8423 @pending
+  @HDPI-8423
   Scenario: Check your answers lets me change the return
     Given I have completed the "Record warrant return" screen
     When I select "Continue"
@@ -140,7 +137,8 @@ Feature: Bailiff records the warrant return
     And the "Enforcement status" tab shows under "Eviction outcome" the return "Final", return name "Eviction successful", outcome and the eviction date and time
     And the "Record warrant return" task is completed
 
-  @HDPI-8424 @HDPI-7419 @pending
+  # "Reopen warrant" is only accepted on a closed warrant, so that example closes the warrant first.
+  @HDPI-8424 @HDPI-7419
   Scenario Outline: Return name moves the enforcement status
     When I submit a return with return name "<return name>"
     Then the enforcement status changes to "<status>"
@@ -199,6 +197,8 @@ Feature: Bailiff records the warrant return
     When I submit a return with return name "Warrant withdrawn"
     Then each defendant is notified by their preferred method, email or post
 
+  # pcs-api ends the bailiff allocation on close but does not write AM case roles yet (HDPI-8189), and
+  # nothing creates enforcement WA tasks (HDPI-8627).
   @HDPI-8189 @pending
   Scenario: Closing the enforcement removes the allocated bailiff
     When I submit a return that closes the enforcement

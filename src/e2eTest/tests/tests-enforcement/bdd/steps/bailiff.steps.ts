@@ -455,17 +455,13 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'Set risk level from the "Review up
   'I submit the risk level {string} with a reason',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return cannot be reached: it needs a bailiff allocation' }, [
+pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return steps not written yet' }, [
   'the eviction is scheduled for today',
   'I enter the eviction date {string} and time {string}',
   'I see an error that the time cannot be in the future',
   'the {string} text box is {string}',
   'I have chosen a return',
   'no return is saved',
-  'I have completed the {string} screen',
-  'I submit a return with return name {string}',
-  'I submit a return with return name {string} and additional details {string}',
   'the notice of eviction was served on the defendants',
-  'I submit a return that closes the enforcement',
   'the bailiff recorded the return {string}',
 ]);
