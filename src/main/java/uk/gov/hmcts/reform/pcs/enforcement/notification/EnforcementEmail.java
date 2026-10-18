@@ -25,8 +25,10 @@ import java.util.List;
 public enum EnforcementEmail {
 
     /**
-     * 01-claimant-applies-for-enforcement.feature, "Claimant is notified that the application was received".
-     * No call site yet: nothing in the application journey schedules it.
+     * 01-claimant-applies-for-enforcement.feature, "Claimant is notified that the application was received". Sent
+     * when the application reaches awaiting review: once the fee is paid, or on submit for a type with no fee.
+     * HDPI-7538 gives the warrant and writ of possession wording; the restitution wording is still TBC
+     * (OPEN-QUESTIONS 17).
      */
     WARRANT_APPLICATION_RECEIVED("Request for a warrant received", "warrant-application-received"),
     WRIT_APPLICATION_RECEIVED("Request for a writ received", "writ-application-received"),
@@ -59,7 +61,8 @@ public enum EnforcementEmail {
 
     /**
      * 06-claimant-confirms-eviction.feature, "Claimant confirms they can attend" and "Claimant cannot attend".
-     * No call site yet: {@code ClaimantEvictionConfirmationService} does not schedule either of them.
+     * Sent by {@code ClaimantEvictionConfirmationService} when the answer moves the warrant on. HDPI-7538 has the
+     * wording for the confirmation only; the "declines attendance" wording is TBC (OPEN-QUESTIONS 17).
      */
     CLAIMANT_CONFIRMED_ATTENDANCE(
         "Claimant confirms attendance at the eviction date", "claimant-confirmed-attendance", "evictionDateTime"),
@@ -87,6 +90,23 @@ public enum EnforcementEmail {
         this.templateName = templateName;
         this.templateKey = templateKey;
         this.personalisation = List.of(personalisation);
+    }
+
+    /**
+     * The email telling the claimant their application has been received, or null for an unknown type. HDPI-7538
+     * names one for every type, so unlike approval and rejection no type is left out here: a type whose wording
+     * is TBC is held back by leaving its template id unset.
+     */
+    public static EnforcementEmail forApplicationReceived(SelectEnforcementType enforcementType) {
+        if (enforcementType == null) {
+            return null;
+        }
+        return switch (enforcementType) {
+            case WARRANT -> WARRANT_APPLICATION_RECEIVED;
+            case WRIT -> WRIT_APPLICATION_RECEIVED;
+            case WARRANT_OF_RESTITUTION -> WARRANT_OF_RESTITUTION_APPLICATION_RECEIVED;
+            case WRIT_OF_RESTITUTION -> WRIT_OF_RESTITUTION_APPLICATION_RECEIVED;
+        };
     }
 
     /**

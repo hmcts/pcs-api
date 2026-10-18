@@ -33,6 +33,13 @@ export class EnforcementWorld {
   applicationType?: EnforcementType;
   /** The XUI event this scenario is in, once started. */
   currentEvent?: string;
+  /**
+   * The event the scenario's journey is about, named by the task its background says exists. Lets a generic
+   * step such as "I am on the "Check your answers" screen" know which event's screen it means.
+   */
+  journey?: string;
+  /** The bailiff chosen in "Allocate case to bailiff", by email. */
+  chosenBailiff?: string;
   /** Set once the warrant has been approved through "Decide enforcement", so it is live with a number. */
   warrantApproved = false;
   /** The warrant number generated on approval, e.g. WP-00000006. */
@@ -51,6 +58,16 @@ export class EnforcementWorld {
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /**
+   * Warrant numbers of the enforcements this scenario closed before applying again, oldest first. Once set,
+   * the status steps read the current enforcement (the first the "Enforcement status" tab lists) rather
+   * than expecting the case to have only one.
+   */
+  earlierWarrantNumbers: string[] = [];
+  /** The illustrative warrant numbers in the feature files (e.g. "WP-0001"), mapped to the numbers pcs-api gave. */
+  warrantAliases: Record<string, string> = {};
+  /** Whether pcs-api's submit confirmation asked for the enforcement fee, once an application is submitted. */
+  askedToPayFee?: boolean;
 }
 
 type EnforcementFixtures = {

@@ -6,3 +6,21 @@ ccd:
   decentralised-runtime:
     noc:
       enabled: true
+
+# bootWithCCD and cftlibTest run with the dev profile and send email to a WireMock Notify stub (NOTIFY_URL), which
+# accepts any template id. These stand-in ids let the enforcement emails reach that stub locally; no
+# such template exists in GOV.UK Notify, and application.yaml leaves every key blank for real environments.
+enforcement-notify:
+  templates:
+    warrant-application-received: 00000000-0000-4000-8000-000000000101
+    writ-application-received: 00000000-0000-4000-8000-000000000102
+    warrant-of-restitution-application-received: 00000000-0000-4000-8000-000000000103
+    writ-of-restitution-application-received: 00000000-0000-4000-8000-000000000104
+    warrant-approved: 00000000-0000-4000-8000-000000000105
+    writ-approved: 00000000-0000-4000-8000-000000000106
+    application-rejected: 00000000-0000-4000-8000-000000000107
+    eviction-scheduled: 00000000-0000-4000-8000-000000000108
+    eviction-rescheduled: 00000000-0000-4000-8000-000000000109
+    claimant-confirmed-attendance: 00000000-0000-4000-8000-000000000110
+    claimant-declined-attendance: 00000000-0000-4000-8000-000000000111
+    warrant-return: 00000000-0000-4000-8000-000000000112

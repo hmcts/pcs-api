@@ -79,9 +79,8 @@ public class EnforcementBackdateService {
     }
 
     private void shift(UUID enforcementId, Period period, Duration duration) {
-        // Write anything pending, then drop the loaded entities before shifting. Hibernate treats the
-        // enforcement_order JSON column as dirty on every flush, and each native update auto-flushes first, so
-        // an enf_case entity left in the persistence context is written back over the shifted values.
+        // Write anything pending, then drop the loaded entities before shifting: the native updates bypass the
+        // persistence context, so an entity left in it would be stale for the rest of the transaction.
         entityManager.flush();
         entityManager.clear();
         for (TimestampColumns table : TIMESTAMP_COLUMNS) {

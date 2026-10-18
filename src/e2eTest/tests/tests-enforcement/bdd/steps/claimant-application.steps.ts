@@ -13,8 +13,8 @@ import {
   submitApplication,
 } from '../support/enforcement-journeys';
 import { recordEnforcementFeePaid } from '../support/decide-enforcement';
-import { backdateEnforcement } from '../support/backdate-enforcement';
 import { Page } from '@playwright/test';
+import { PAY_PANEL_TITLE } from '../support/repeat-enforcement';
 
 const enforcementTypes: EnforcementType[] = ['warrant of possession', 'writ of possession', 'warrant of restitution', 'writ of restitution'];
 
@@ -44,6 +44,7 @@ async function applyFor(type: EnforcementType, world: EnforcementWorld, page: Pa
   await answerApplicationQuestions(type, world);
   await signStatementOfTruth(type);
   await submitApplication();
+  world.askedToPayFee = await page.getByText(PAY_PANEL_TITLE).first().isVisible().catch(() => false);
 }
 
 When('I choose to apply for a {string}', async ({ page, world, $tags }, type: string) => {
@@ -97,26 +98,7 @@ When('I submit and pay for a {string} application', async ({ page, world, $tags 
   await payEnforcementFee();
 });
 
-// "Less than 12 calendar months" is measured from when the warrant was generated (approved): 11 months back
-// keeps it inside the free period, which a warrant generated moments ago trivially is.
-Given('that warrant was generated less than 12 calendar months ago', async ({ world }) => {
-  await backdateEnforcement(requireCaseReference(world), { period: 'P11M', enforcementNumber: world.warrantNumber });
-});
-
-pendingSteps({ ticket: 'HDPI-8424', summary: 'Repeat warrant fee rules' }, [
-  'the case has a closed warrant with return name {string}',
-  'I am not asked to pay a fee',
-]);
-
 pendingSteps({ ticket: 'HDPI-8424', summary: 'Further enforcement on the same case' }, [
-  'the case has a warrant {string} closed with return name {string}',
-  'I apply and pay for a new {string}',
-  'the caseworker approves it',
-  'the case has two warrants, {string} closed and {string} live',
-  'the case has a closed warrant with return name {string} generated {string} ago',
-  'I apply for a new {string}',
-  'I am {string} the warrant fee',
-  'the case has a warrant closed with return name {string}',
   'I apply for a {string} explaining how the defendants returned to the property',
   'I upload evidence',
   'bailiff events other than {string} are not available',

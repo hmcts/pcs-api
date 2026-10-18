@@ -56,7 +56,7 @@ Feature: Claimant applies for enforcement of a possession order
       | warrant of possession | FEE0380 |
       | writ of possession    | FEE0397 |
 
-  @HDPI-8424 @pending
+  @HDPI-8424
   Scenario: Repeat warrant within 12 months of a suspended warrant is free
     Given the case has a closed warrant with return name "Warrant suspended by order"
     And that warrant was generated less than 12 calendar months ago
