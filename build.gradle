@@ -614,6 +614,7 @@ tasks.withType(CftlibExec).configureEach {
   }
 
   environment 'ENABLE_TESTING_SUPPORT', 'true'
+  environment 'ENABLE_TESTING_SUPPORT_CLOCK', 'true'
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs,wa_workflow_api,evidence'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
@@ -688,6 +689,7 @@ tasks.withType(CftlibExec).configureEach {
 
 cftlibTest {
   environment 'ENABLE_TESTING_SUPPORT', 'true'
+  environment 'ENABLE_TESTING_SUPPORT_CLOCK', 'true'
   environment 'DB_SCHEDULER_POLLING_INTERVAL_SECONDS', '2'
 
   // Group access is gated behind a flag in both CCD services, and they read different env vars:

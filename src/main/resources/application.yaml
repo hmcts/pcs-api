@@ -175,6 +175,9 @@ notify:
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
+  # Moving the clock is process-wide, so it is off even where the other testing-support endpoints are on.
+  clock:
+    enabled: ${ENABLE_TESTING_SUPPORT_CLOCK:false}
 
 access-code-form:
   respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}

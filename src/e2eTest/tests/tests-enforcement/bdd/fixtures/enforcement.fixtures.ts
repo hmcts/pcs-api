@@ -7,6 +7,7 @@ import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-act
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { submitCaseApiData } from '@data/api-data';
 import { resetSignedInRole } from '../support/session';
+import { resetClockIfMoved } from '../support/test-clock';
 import { demoHoldMs } from '../support/demo-pacing';
 import { disablePagePacing, enablePagePacing } from '@utils/page-pacing';
 import type { BatchPrintFile, BatchPrintPlan } from '../support/batch-print';
@@ -153,6 +154,7 @@ export const test = base.extend<EnforcementFixtures>({
         enablePagePacing(page, holdMs);
       }
       await use();
+      await resetClockIfMoved();
       disablePagePacing();
       defendantDetails.length = 0;
       moneyMap.clear();
