@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -21,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -64,17 +62,6 @@ public class WarrantReturnService {
         AWAITING_SCHEDULING, AWAITING_CLAIMANT_CONFIRMATION, CLAIMANT_CONFIRMED, CLAIMANT_UNABLE_TO_ATTEND,
         AWAITING_PROPERTY_VISIT, BREATHING_SPACE, CLOSED));
 
-    /**
-     * HDPI-8424: a further warrant is free within 12 calendar months of the first warrant being generated.
-     */
-    static final int FREE_REPEAT_WARRANT_MONTHS = 12;
-
-    /**
-     * HDPI-8424 return names after which the next warrant is free. Other reasons are TBC (OPEN-QUESTIONS 6).
-     */
-    static final Set<WarrantReturnName> FREE_REPEAT_WARRANT_RETURN_NAMES = Collections.unmodifiableSet(
-        EnumSet.of(WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER));
-
     private final CurrentEnforcementService currentEnforcementService;
     private final WarrantReturnRepository warrantReturnRepository;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
@@ -82,7 +69,6 @@ public class WarrantReturnService {
     private final SecurityContextService securityContextService;
     private final BailiffAllocationService bailiffAllocationService;
     private final Clock utcClock;
-    private final Clock ukClock;
 
     public WarrantReturnService(CurrentEnforcementService currentEnforcementService,
                                 WarrantReturnRepository warrantReturnRepository,
@@ -90,8 +76,7 @@ public class WarrantReturnService {
                                 WarrantReturnValidator warrantReturnValidator,
                                 SecurityContextService securityContextService,
                                 BailiffAllocationService bailiffAllocationService,
-                                @Qualifier("utcClock") Clock utcClock,
-                                @Qualifier("ukClock") Clock ukClock) {
+                                @Qualifier("utcClock") Clock utcClock) {
         this.currentEnforcementService = currentEnforcementService;
         this.warrantReturnRepository = warrantReturnRepository;
         this.enforcementStatusTransitions = enforcementStatusTransitions;
@@ -99,7 +84,6 @@ public class WarrantReturnService {
         this.securityContextService = securityContextService;
         this.bailiffAllocationService = bailiffAllocationService;
         this.utcClock = utcClock;
-        this.ukClock = ukClock;
     }
 
     /**
@@ -216,39 +200,6 @@ public class WarrantReturnService {
         return currentEnforcementService.findCurrentEnforcement(pcsCaseEntity)
             .flatMap(enforcement -> warrantReturnRepository
                 .findFirstByEnforcementOrderIdOrderByRecordedAtDesc(enforcement.getId()));
-    }
-
-    /**
-     * HDPI-8424 fee waiver hook: whether a further warrant applied for today would be free. It is free when
-     * the claim's most recent final return is one of {@link #FREE_REPEAT_WARRANT_RETURN_NAMES} and today is
-     * within {@value #FREE_REPEAT_WARRANT_MONTHS} calendar months of that warrant being generated. A warrant
-     * is generated when a caseworker approves the application, which is what enf_case.approved_at records.
-     *
-     * <p>Not wired into the enforcement fee yet: see EnforcementOrderService#isPaymentOutstanding.</p>
-     */
-    @Transactional(readOnly = true)
-    public boolean isNextWarrantFree(PcsCaseEntity pcsCaseEntity) {
-        List<ClaimEntity> claims = pcsCaseEntity == null ? null : pcsCaseEntity.getClaims();
-        if (claims == null || claims.isEmpty()) {
-            return false;
-        }
-        return warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claims.getFirst().getId())
-            .stream()
-            .filter(warrantReturn -> warrantReturn.getReturnType() == WarrantReturnType.FINAL)
-            .findFirst()
-            .map(lastFinal -> isFreeRepeatWarrant(lastFinal.getReturnName(),
-                                                  lastFinal.getEnforcementOrder().getApprovedAt(),
-                                                  LocalDate.now(ukClock)))
-            .orElse(false);
-    }
-
-    static boolean isFreeRepeatWarrant(WarrantReturnName lastFinalReturnName, Instant warrantGeneratedAt,
-                                       LocalDate applicationDate) {
-        if (!FREE_REPEAT_WARRANT_RETURN_NAMES.contains(lastFinalReturnName) || warrantGeneratedAt == null) {
-            return false;
-        }
-        LocalDate generated = warrantGeneratedAt.atZone(UK_ZONE_ID).toLocalDate();
-        return !applicationDate.isAfter(generated.plusMonths(FREE_REPEAT_WARRANT_MONTHS));
     }
 
     static boolean isWarrant(EnforcementOrderEntity enforcement) {

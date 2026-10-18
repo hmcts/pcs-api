@@ -49,6 +49,16 @@ export class EnforcementWorld {
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /**
+   * Warrant numbers of the enforcements this scenario closed before applying again, oldest first. Once set,
+   * the status steps read the current enforcement (the first the "Enforcement status" tab lists) rather
+   * than expecting the case to have only one.
+   */
+  earlierWarrantNumbers: string[] = [];
+  /** The illustrative warrant numbers in the feature files (e.g. "WP-0001"), mapped to the numbers pcs-api gave. */
+  warrantAliases: Record<string, string> = {};
+  /** Whether pcs-api's submit confirmation asked for the enforcement fee, once an application is submitted. */
+  askedToPayFee?: boolean;
 }
 
 type EnforcementFixtures = {
