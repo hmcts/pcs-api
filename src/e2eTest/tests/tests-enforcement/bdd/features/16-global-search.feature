@@ -19,6 +19,11 @@ Feature: Find a case by warrant or writ number
     Examples:
       | reference |
       | WP-0001   |
+
+    # The same search against the case's other warrant number.
+    @not-filmed
+    Examples:
+      | reference |
       | WP-0002   |
 
   # The Background leaves "WP-0002" live, so "Enforce the order" refuses a third application until a

@@ -80,15 +80,21 @@ Feature: Risk assessment tab
     Examples:
       | user                           | tab    | internal sections |
       | bailiff                        | shown  | shown             |
-      | bailiff-manager                | shown  | shown             |
-      | hearing centre team leader     | shown  | shown             |
       | claimant legal representative  | shown  | hidden            |
 
     # Local stack only: the defendants are given their case roles through pcs-api testing support.
     Examples:
       | user                           | tab    | internal sections |
-      | defendant legal representative | hidden | hidden            |
       | citizen defendant              | hidden | hidden            |
+
+    # The three filmed rows are the three views: internal, claimant and defendant. The rest are other users
+    # on the same three rules.
+    @not-filmed
+    Examples:
+      | user                           | tab    | internal sections |
+      | bailiff-manager                | shown  | shown             |
+      | hearing centre team leader     | shown  | shown             |
+      | defendant legal representative | hidden | hidden            |
 
   @HDPI-7350 @open-question
   Scenario: Claimant sees the tab worded for them

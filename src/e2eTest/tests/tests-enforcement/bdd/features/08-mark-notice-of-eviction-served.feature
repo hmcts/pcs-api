@@ -42,8 +42,13 @@ Feature: Bailiff marks the notice of eviction as served
 
     Examples:
       | date       | time  | result                                    |
-      | 07/07/2026 | 16:00 | the 'Check your answers' screen           |
       | 08/07/2026 | 09:00 | the 'Check your answers' screen           |
+
+    # An earlier day reaches the same screen as a time earlier today.
+    @not-filmed
+    Examples:
+      | date       | time  | result                                    |
+      | 07/07/2026 | 16:00 | the 'Check your answers' screen           |
 
   @HDPI-7346 @not-filmed
   Scenario: How the notice was served is limited to 500 characters
@@ -81,7 +86,8 @@ Feature: Bailiff marks the notice of eviction as served
     And the "notice of eviction" is visible to defendants
     And citizen defendants see the "notice of eviction" under "Orders and notices from the court" in pcs-frontend
 
-  @HDPI-7658
+  # Reads the tab on a prepared case; feature 14 films the without-notice journey.
+  @HDPI-7658 @not-filmed
   Scenario: Without notice eviction
     Given the court has given permission to dispense with service
     When I open the "Enforcement status" tab

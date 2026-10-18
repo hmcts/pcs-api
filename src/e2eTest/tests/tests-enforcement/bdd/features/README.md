@@ -154,6 +154,11 @@ unless the user story calls the behaviour out; the tag can sit on a scenario or 
 outline. The demo project excludes them itself (`grepInvert`), and `scripts/enforcement-demo-videos.sh` passes
 `--grep-invert '@pending|@not-filmed'`. CI's `enforcement-bdd` project still runs every one of them.
 
+A `Scenario Outline` whose table covers a rule exhaustively (every return name, every role, every enforcement
+status) is split into a small filmed `Examples` block holding one row per distinct behaviour and a
+`@not-filmed` block holding the rest, so the video shows the behaviour once instead of replaying the whole
+journey per data value. The split keeps every row in `enforcement-bdd`.
+
 ```bash
 ENVIRONMENT=local npx playwright test --project enforcement-bdd-demo --grep-invert '@pending|@not-filmed'
 ```

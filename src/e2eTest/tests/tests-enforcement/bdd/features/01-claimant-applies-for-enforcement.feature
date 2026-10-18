@@ -55,6 +55,11 @@ Feature: Claimant applies for enforcement of a possession order
     Examples:
       | type                  | fee     |
       | warrant of possession | FEE0380 |
+
+    # The writ pays a different fee code through the same screens.
+    @not-filmed
+    Examples:
+      | type                  | fee     |
       | writ of possession    | FEE0397 |
 
   @HDPI-8424
@@ -91,6 +96,12 @@ Feature: Claimant applies for enforcement of a possession order
     Examples:
       | type                   | questions                                                                                                                                                                                     |
       | warrant of possession  | what do you want to apply for, breathing space, missed payments, correct name and address, defendants' dates of birth, language used, statement of truth                                      |
+
+    # Locally the rendered document is a wiremock placeholder, so the per-type question list is an assertion
+    # on the data sent to Docmosis with nothing on screen to show.
+    @not-filmed
+    Examples:
+      | type                   | questions                                                                                                                                                                                     |
       | writ of possession     | what do you want to apply for, correct name and address, breathing space, missed payments, High Court Enforcement Officer hired, who you hired, language used, statement of truth             |
 
     @pending
@@ -106,6 +117,11 @@ Feature: Claimant applies for enforcement of a possession order
     Examples:
       | type                   | template                                   |
       | warrant of possession  | Request for a warrant received             |
+
+    # The writ sends the same confirmation from a differently named template.
+    @not-filmed
+    Examples:
+      | type                   | template                                   |
       | writ of possession     | Request for a writ received                |
 
     # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #12) and a writ of
