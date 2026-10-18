@@ -19,11 +19,14 @@ import uk.gov.hmcts.reform.ccd.document.am.model.Document;
 import uk.gov.hmcts.reform.ccd.document.am.model.DocumentHashToken;
 import uk.gov.hmcts.reform.ccd.document.am.model.DocumentUploadRequest;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementOutput;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDocumentService;
@@ -41,8 +44,10 @@ import java.util.Optional;
 
 /**
  * Files a one-page placeholder PDF in a case's Enforcement folder, against its current enforcement, for the
- * end to end tests (batch print, HDPI-8012). The warrant, risk assessment and notice of eviction are not
- * generated yet (HDPI-9566, HDPI-7354), so without this there is nothing to print.
+ * end to end tests (batch print, HDPI-8012). pcs-api generates the warrant, risk assessment and notice of
+ * eviction itself ({@link uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentGenerator}); this
+ * files a later copy of one, which batch print then takes as the latest, for set-ups the suite cannot drive
+ * yet, such as a rescheduled notice of eviction.
  *
  * <p>The PDF is uploaded through CDAM and attached to the case, as generated documents are, so it can be
  * fetched like a real one. CDAM needs dm-store behind it, which a CFTLib stack only runs with
@@ -103,12 +108,27 @@ public class EnforcementTestDocumentSeeder {
             .contentType(PDF)
             .size((long) pdf.length)
             .categoryId(EnforcementDocumentService.ENFORCEMENT_CATEGORY_ID)
-            .type(kind.getDocumentTypes().iterator().next())
+            .type(documentType(kind, enforcement.get()))
             .build();
         pcsCase.addDocument(document);
         enforcement.get().addDocuments(List.of(document));
         log.info("Testing support: filed placeholder {} '{}' on case {}", kind, title, caseReference);
         return Optional.of(fileName);
+    }
+
+    /**
+     * The type the enforcement document generator files this kind of document as on this enforcement, so the
+     * placeholder is found, and shown or hidden, exactly as a generated one would be.
+     */
+    static DocumentType documentType(BatchPrintDocumentKind kind, EnforcementOrderEntity enforcement) {
+        return switch (kind) {
+            case WARRANT -> Optional.ofNullable(SelectEnforcementType.from(enforcement.getEnforcementOrder()))
+                .map(type -> EnforcementOutput.forApproval(type).getDocumentType())
+                .filter(kind.getDocumentTypes()::contains)
+                .orElse(DocumentType.WARRANT_OF_POSSESSION);
+            case RISK_ASSESSMENT -> EnforcementOutput.RISK_ASSESSMENT.getDocumentType();
+            case NOTICE_OF_EVICTION -> EnforcementOutput.NOTICE_OF_EVICTION.getDocumentType();
+        };
     }
 
     private Document upload(String fileName, byte[] pdf) {

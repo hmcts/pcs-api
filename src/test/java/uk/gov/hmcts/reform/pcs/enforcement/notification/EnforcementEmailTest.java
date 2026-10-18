@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,6 +75,32 @@ class EnforcementEmailTest {
     }
 
     @Test
+    void shouldHaveAnApplicationReceivedEmailForEveryType() {
+        assertThat(EnforcementEmail.forApplicationReceived(SelectEnforcementType.WARRANT))
+            .isEqualTo(EnforcementEmail.WARRANT_APPLICATION_RECEIVED);
+        assertThat(EnforcementEmail.forApplicationReceived(SelectEnforcementType.WRIT))
+            .isEqualTo(EnforcementEmail.WRIT_APPLICATION_RECEIVED);
+        assertThat(EnforcementEmail.forApplicationReceived(SelectEnforcementType.WARRANT_OF_RESTITUTION))
+            .isEqualTo(EnforcementEmail.WARRANT_OF_RESTITUTION_APPLICATION_RECEIVED);
+        assertThat(EnforcementEmail.forApplicationReceived(SelectEnforcementType.WRIT_OF_RESTITUTION))
+            .isEqualTo(EnforcementEmail.WRIT_OF_RESTITUTION_APPLICATION_RECEIVED);
+        assertThat(EnforcementEmail.forApplicationReceived(null)).isNull();
+    }
+
+    /**
+     * The dev profile, which bootWithCCD and cftlibTest run with, sends every email to the local Notify stub.
+     */
+    @Test
+    void shouldHaveAStandInTemplateIdForEveryEmailInTheDevProfile() {
+        Map<String, String> devTemplates = templatesIn("application-dev.yaml");
+
+        assertThat(devTemplates.keySet()).containsExactlyInAnyOrderElementsOf(configuredTemplateKeys());
+        assertThat(devTemplates.values())
+            .allSatisfy(templateId -> assertThat(UUID.fromString(templateId)).isNotNull());
+        assertThat(Set.copyOf(devTemplates.values())).hasSameSizeAs(devTemplates.values());
+    }
+
+    @Test
     void shouldHaveAnApprovalEmailForAWarrantAndAWritOnly() {
         assertThat(EnforcementEmail.forApproval(SelectEnforcementType.WARRANT))
             .isEqualTo(EnforcementEmail.WARRANT_APPROVED);
@@ -98,15 +125,19 @@ class EnforcementEmailTest {
         return List.copyOf(configuredTemplates().keySet());
     }
 
-    @SuppressWarnings("unchecked")
     private static Map<String, String> configuredTemplates() {
+        return templatesIn("application.yaml");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> templatesIn(String resource) {
         try (InputStream applicationYaml = EnforcementEmailTest.class.getClassLoader()
-            .getResourceAsStream("application.yaml")) {
+            .getResourceAsStream(resource)) {
             Map<String, Object> yaml = new Yaml().load(applicationYaml);
             Map<String, Object> enforcementNotify = (Map<String, Object>) yaml.get("enforcement-notify");
             return (Map<String, String>) enforcementNotify.get("templates");
         } catch (Exception ex) {
-            throw new IllegalStateException("Could not read enforcement-notify.templates from application.yaml", ex);
+            throw new IllegalStateException("Could not read enforcement-notify.templates from " + resource, ex);
         }
     }
 }

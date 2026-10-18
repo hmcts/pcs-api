@@ -8,7 +8,13 @@ import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference } from '../support/enforcement-journeys';
-import { ENFORCEMENT_STATUS_TAB, openCaseTab, soleEnforcement } from '../support/enforcement-status-tab';
+import {
+  ENFORCEMENT_STATUS_TAB,
+  expectEnforcementSection,
+  soleEnforcementSection,
+  tabDateOf,
+  tabTime,
+} from '../support/enforcement-status-tab';
 import {
   RESCHEDULE_EVICTION,
   SCHEDULE_EVICTION,
@@ -77,10 +83,9 @@ Then('I see the case summary', async ({ page, world }) => {
 });
 
 Then('no eviction date is saved', async ({ page, world }) => {
-  await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
-  const enforcement = await soleEnforcement(page);
-  // CCD omits the row entirely when the field is empty.
-  expect(enforcement['Scheduled eviction'], 'no scheduled eviction on the enforcement').toBeUndefined();
+  const enforcement = await soleEnforcementSection(page, requireCaseReference(world));
+  expect(enforcement.sections['Scheduled eviction']?.text, 'no scheduled eviction on the warrant')
+    .toBe('Not yet scheduled');
 });
 
 /** The validation outcomes feature 05 names, mapped to the text XUI actually shows. */
@@ -164,10 +169,8 @@ Then('I see a link {string}', async ({ page }, text: string) => {
 
 Then('the {string} tab shows the scheduled eviction date and time under {string}', async ({ page, world }, tabName: string, section: string) => {
   expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
-  expect(section.length, 'a section name from the feature file').toBeGreaterThan(0);
-  await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
-  const enforcement = await soleEnforcement(page);
-  expect(enforcement['Scheduled eviction'], 'the scheduled eviction on the enforcement').toBeDefined();
+  expect(world.evictionDate, 'an eviction date entered by this scenario').toBeDefined();
+  await expectEvictionShown(page, requireCaseReference(world), section, world.evictionDate as string);
 });
 
 /**
@@ -181,4 +184,33 @@ When('I submit the event', async ({ page, world, $tags }) => {
   }
   await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
   world.currentEvent = undefined;
+});
+
+/**
+ * The "Scheduled eviction" section shows exactly the date and time entered, given as "Wednesday 30 June 2027
+ * 09:30" or "30/06/2027 09:30".
+ */
+async function expectEvictionShown(page: Page, caseReference: string, section: string, entered: string): Promise<void> {
+  const time = entered.slice(entered.lastIndexOf(' ') + 1);
+  const date = entered.slice(0, entered.lastIndexOf(' '));
+  await expectEnforcementSection(page, caseReference, section, block => {
+    expect(block?.rows).toEqual({ 'Eviction date': tabDateOf(date), 'Eviction time': tabTime(time) });
+  });
+}
+
+Given('I have entered a new eviction date of {string} at {string}', async ({ page, world }, date: string, time: string) => {
+  await openCaseSummary(page);
+  const { startEvent } = await import('../support/enforcement-journeys');
+  await startEvent(RESCHEDULE_EVICTION);
+  world.currentEvent = RESCHEDULE_EVICTION;
+  await enterEvictionDateTime(page, date, time);
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expectCheckYourAnswers(page);
+  world.evictionDate = `${date} ${time}`;
+});
+
+Then('the {string} tab {string} shows only the new date and time', async ({ page, world }, tabName: string, section: string) => {
+  expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
+  expect(world.evictionDate, 'the new eviction date entered by this scenario').toBeDefined();
+  await expectEvictionShown(page, requireCaseReference(world), section, world.evictionDate as string);
 });

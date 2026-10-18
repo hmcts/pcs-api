@@ -1,19 +1,25 @@
 /**
- * The bailiff events that are built and drivable: `setRiskLevel` and `addBailiffNote`.
+ * The bailiff events that are built and drivable: `allocateBailiff`, `setRiskLevel` and `addBailiffNote`.
  *
- * Both are single-page events that go straight from Continue to a confirmation screen — neither uses
- * `showSummary()`, so there is no check-your-answers step. Their confirmations carry the dashed case
- * number and nothing else: the warrant number the feature files describe is not rendered by
- * `SetRiskLevel` or `AddBailiffNote`, and no ticket covers adding it.
+ * `setRiskLevel` and `addBailiffNote` are single-page events that go straight from Continue to a
+ * confirmation screen — neither uses `showSummary()`, so there is no check-your-answers step. Their
+ * confirmations carry the dashed case number and nothing else: the warrant number the feature files describe
+ * is not rendered by `SetRiskLevel` or `AddBailiffNote`, and no ticket covers adding it.
  *
- * `allocateBailiff` is deliberately absent from this module. Its one field is a StaffUser type-ahead
- * (`FindBailiffPage`, display-context `#ARGUMENT(CATEGORY-ADMIN)`) which needs staff reference data;
- * cftlib runs no rd-staff, so XUI degrades the component to a raw `IdamId` input and CCD's own
- * "IdamId is required" validation fires before the page's "Choose a bailiff" mid-event ever runs.
+ * `allocateBailiff` is one page, "Find the bailiff's name", then check your answers. Its one field is XUI's
+ * StaffUser type-ahead (`FindBailiffPage`, display context `#ARGUMENT(CATEGORY-ADMIN)`), which lists the
+ * PCS staff in staff reference data that hold an ADMIN role. On a local stack staff reference data is
+ * wiremock's stub (`wiremock/mappings/rd-professional/get-users-by-service-name.json`), which lists the
+ * cftlib bailiff users. XUI matches on first and last name only, from the third character typed.
  */
 import { Page, expect } from '@playwright/test';
 import { LONG_TIMEOUT } from 'playwright.config';
+import { localUserName, localUsers } from '@config/local-stack.config';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import { openCaseSummary, requireCaseReference, startEvent } from './enforcement-journeys';
+import { answerRow } from './schedule-eviction';
 
+export const ALLOCATE_BAILIFF = 'Allocate case to bailiff';
 export const SET_RISK_LEVEL = 'Set risk level';
 export const ADD_BAILIFF_NOTE = 'Add a bailiff note';
 
@@ -33,6 +39,63 @@ export const addBailiffNote = {
   noteLabel: 'Add note',
   noteMaxLength: 6800,
 };
+
+export const findBailiff = {
+  pageLabel: "Find the bailiff's name",
+  /** `BailiffAllocationDetails.allocatedBailiff`'s label, the same text as the page's. */
+  fieldLabel: "Find the bailiff's name",
+  emailLabel: 'Email address',
+  checkYourAnswers: 'Check your answers',
+  submitButton: 'Submit',
+  changeLink: 'Change',
+};
+
+/**
+ * The local user standing in for a bailiff the feature files name. Only one cftlib user has the `bailiff`
+ * role, so only the feature's main bailiff has a stand-in. The feature's email addresses are illustrative.
+ */
+const featureBailiffs: Record<string, string> = {
+  'Sam Jones': localUsers.bailiff,
+};
+
+export const standInBailiff = (featureName: string): string | undefined => featureBailiffs[featureName];
+
+/** The StaffUser type-ahead on "Find the bailiff's name". */
+export const bailiffSearchBox = (page: Page) => page.getByLabel(findBailiff.fieldLabel, { exact: true });
+
+/** The option XUI's type-ahead offers for a staff user: "Name (email)". */
+export const bailiffOption = (page: Page, email: string) =>
+  page.getByRole('option', { name: `${localUserName(email)} (${email})`, exact: true });
+
+/** Types the bailiff's first name into the type-ahead and waits for them to be offered. */
+export async function searchForBailiff(page: Page, email: string): Promise<void> {
+  const searchBox = bailiffSearchBox(page);
+  await searchBox.click();
+  await searchBox.pressSequentially(localUserName(email).split(' ')[0]);
+  await expect(bailiffOption(page, email)).toBeVisible({ timeout: LONG_TIMEOUT });
+}
+
+/** Chooses the bailiff in the type-ahead, which then shows their name. */
+export async function chooseBailiff(page: Page, email: string): Promise<void> {
+  await searchForBailiff(page, email);
+  await bailiffOption(page, email).click();
+  await expect(bailiffSearchBox(page)).toHaveValue(localUserName(email));
+}
+
+/** Asserts check your answers names the chosen bailiff and the email address pcs-api looked up for them. */
+export async function expectAllocationCheckYourAnswers(page: Page, email: string): Promise<void> {
+  await expect(page.getByRole('heading', { name: findBailiff.checkYourAnswers })).toBeVisible({
+    timeout: LONG_TIMEOUT,
+  });
+  await expect(answerRow(page, findBailiff.fieldLabel)).toContainText(localUserName(email));
+  await expect(answerRow(page, findBailiff.emailLabel)).toContainText(email);
+}
+
+/** Selects the bailiff's Change link on check your answers, which goes back to "Find the bailiff's name". */
+export async function changeAllocatedBailiff(page: Page): Promise<void> {
+  await answerRow(page, findBailiff.fieldLabel).getByText(findBailiff.changeLink, { exact: true }).click();
+  await expect(page.getByRole('heading', { name: findBailiff.pageLabel })).toBeVisible({ timeout: LONG_TIMEOUT });
+}
 
 /** Tab field labels the risk assessment tab uses for what these events write. */
 export const riskAssessmentFields = {
@@ -85,4 +148,30 @@ export async function chooseRiskLevel(page: Page, level: string, reason?: string
 /** The error summary CCD renders for a failed page. */
 export function errorSummary(page: Page) {
   return page.locator('.govuk-error-summary, .error-summary').first();
+}
+
+/** Starts "Allocate case to bailiff" from the case summary, which opens on "Find the bailiff's name". */
+export async function startAllocation(page: Page, world: EnforcementWorld): Promise<void> {
+  await openCaseSummary(page);
+  await startEvent(ALLOCATE_BAILIFF);
+  world.currentEvent = ALLOCATE_BAILIFF;
+}
+
+/** Starts "Allocate case to bailiff", chooses the bailiff and continues to check your answers. */
+export async function goToAllocationCheckYourAnswers(page: Page, world: EnforcementWorld, email: string): Promise<void> {
+  await startAllocation(page, world);
+  await chooseBailiff(page, email);
+  world.chosenBailiff = email;
+  await continueButton(page).click();
+  await expectAllocationCheckYourAnswers(page, email);
+}
+
+/** Submits the allocation from check your answers and asserts its confirmation. */
+export async function submitAllocation(page: Page, world: EnforcementWorld): Promise<void> {
+  const email = world.chosenBailiff;
+  expect(email, 'a bailiff chosen in "Allocate case to bailiff"').toBeDefined();
+  await page.getByRole('button', { name: findBailiff.submitButton, exact: true }).click();
+  await expectBailiffConfirmation(page, `Case assigned to ${localUserName(email as string)}`, requireCaseReference(world));
+  world.allocatedBailiff = email;
+  world.currentEvent = undefined;
 }

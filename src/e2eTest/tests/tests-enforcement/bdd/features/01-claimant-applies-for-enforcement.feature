@@ -21,14 +21,10 @@ Feature: Claimant applies for enforcement of a possession order
     When I start the "Enforce the order" event
     Then I see the error "There is already a live warrant or writ on this case"
 
-  # NOT broken code: these are expected to pass against AAT, and are pending only on a local cftlib stack.
-  # AAT's submitCasePayload builds a claim with several defendants, rent arrears and a suspended order; the
-  # local test-case-generation fixtures build a much simpler one — a single defendant, no arrears, no
-  # suspended order — so the journey skips the "people you want to evict", money and suspended-order pages.
-  # The shared journey helper now adapts to all three of those, but then diverges a fourth time inside
-  # selectStatementOfTruth, whose parameters assume the money-claim shape. To run these locally, either give
-  # the fixtures rent arrears or make selectStatementOfTruth independent of the claim shape.
-  @pending
+  # Runs locally against cftlib: the case comes from the "Make A Claim Basic Case" fixture (one defendant, no
+  # arrears, no suspended order), which the journey helpers adapt to. The warrant of restitution journey still
+  # ends on placeholder pages with no statement of truth, and "Enforce the order" does not offer a writ of
+  # restitution (OPEN-QUESTIONS #58).
   Scenario Outline: Claimant applies for a <type>
     When I start the "Enforce the order" event
     And I choose to apply for a "<type>"
@@ -42,15 +38,15 @@ Feature: Claimant applies for enforcement of a possession order
       | type                   |
       | warrant of possession  |
       | writ of possession     |
-      | warrant of restitution |
 
     @pending
     Examples:
       | type                   |
+      | warrant of restitution |
       | writ of restitution    |
 
-  @pending
-  Scenario Outline: Claimant pays the enforcement fee
+  # pcs-api cannot take the fee yet (HDPI-2877): the step records it as paid through testing support.
+  Scenario Outline: Claimant pays the enforcement fee for a <type>
     Given I have submitted an application for a "<type>"
     When I pay the "<fee>" fee using a service request
     Then the enforcement status changes to "Awaiting review"
@@ -60,7 +56,7 @@ Feature: Claimant applies for enforcement of a possession order
       | warrant of possession | FEE0380 |
       | writ of possession    | FEE0397 |
 
-  @HDPI-8424 @pending
+  @HDPI-8424
   Scenario: Repeat warrant within 12 months of a suspended warrant is free
     Given the case has a closed warrant with return name "Warrant suspended by order"
     And that warrant was generated less than 12 calendar months ago
@@ -68,7 +64,7 @@ Feature: Claimant applies for enforcement of a possession order
     Then I am not asked to pay a fee
     And the enforcement status changes to "Awaiting review"
 
-  @HDPI-7555 @HDPI-8442 @pending
+  @HDPI-7555 @HDPI-8442
   Scenario: Submitting a warrant application generates the application and risk assessment outputs
     When I submit and pay for a "warrant of possession" application
     Then an "Enforcement" folder is created in case file view
@@ -76,7 +72,7 @@ Feature: Claimant applies for enforcement of a possession order
     And an unsealed "risk assessment" document is stored in the "Enforcement" folder
     And both documents are visible to the claimant and internal users
 
-  @HDPI-7555 @pending
+  @HDPI-7555
   Scenario: Submitting a writ application generates only the application output
     When I submit and pay for a "writ of possession" application
     Then an unsealed "enforcement application" document is stored in the "Enforcement" folder

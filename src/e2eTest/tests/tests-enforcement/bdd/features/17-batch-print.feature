@@ -2,7 +2,7 @@
 # that acts on several cases. The steps call it as the bailiff. Choosing the cases from "My work" is the open
 # question: XUI's task list cannot act on several tasks at once, and nothing creates the bailiff's tasks yet
 # (HDPI-8627), so that scenario stays pending. The rest need dm-store locally (LOCAL_DOC_SERVICES=true),
-# because the warrant, risk assessment and notice of eviction are placeholders filed through CDAM.
+# because pcs-api files the generated warrant, risk assessment and notice of eviction through CDAM.
 @HDPI-7342 @enforcement @bailiff
 Feature: Batch print enforcement documents across cases
   As a bailiff

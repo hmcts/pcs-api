@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.ConfirmEvictionConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 
 import java.util.Optional;
 
@@ -38,12 +39,13 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
     private final ConfirmEvictionConfigurer confirmEvictionConfigurer;
     private final ClaimantEvictionConfirmationService claimantEvictionConfirmationService;
+    private final ClaimantRiskAssessmentService claimantRiskAssessmentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(confirmEviction.name(), this::submit)
+                .decentralisedEvent(confirmEviction.name(), this::submit, this::start)
                 .forState(State.CASE_ISSUED)
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
@@ -56,12 +58,25 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
+    /**
+     * Pre-fills the warrant risk pages with the claimant's current answers, so they only change what is different
+     * (HDPI-7552).
+     */
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase pcsCase = eventPayload.caseData();
+        if (pcsCase.getEnforcementOrder() == null) {
+            pcsCase.setEnforcementOrder(new EnforcementOrder());
+        }
+        claimantRiskAssessmentService.prefillAnswers(eventPayload.caseReference(), pcsCase.getEnforcementOrder());
+        return pcsCase;
+    }
+
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        claimantEvictionConfirmationService.recordAttendance(
+        EnforcementOrder submitted = eventPayload.caseData().getEnforcementOrder();
+        claimantEvictionConfirmationService.recordConfirmation(
             eventPayload.caseReference(),
-            Optional.ofNullable(eventPayload.caseData().getEnforcementOrder())
-                .map(EnforcementOrder::getClaimantCanAttendEviction)
-                .orElse(null));
+            Optional.ofNullable(submitted).map(EnforcementOrder::getClaimantCanAttendEviction).orElse(null),
+            submitted);
         return SubmitResponse.defaultResponse();
     }
 

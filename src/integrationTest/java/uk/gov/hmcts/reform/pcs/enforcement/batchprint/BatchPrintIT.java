@@ -127,18 +127,18 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
         when(idamUserInfoApi.getUserInfo(anyString())).thenReturn(UserInfo.builder().uid("BOB-ID").build());
 
         EnforcementOrderEntity first = warrant(FIRST, "WP-00000001", LocalDateTime.of(2026, 10, 15, 10, 0), BAILIFF);
-        document(first, DocumentType.WARRANT, "Warrant 1", 1);
+        document(first, DocumentType.WARRANT_OF_POSSESSION, "Warrant 1", 1);
         document(first, DocumentType.RISK_ASSESSMENT, "Risk assessment 1", 2);
         document(first, DocumentType.NOTICE_OF_EVICTION, "Original notice 1", 3);
         document(first, DocumentType.NOTICE_OF_EVICTION, "Rescheduled notice 1", 4);
 
         EnforcementOrderEntity second = warrant(SECOND, "WP-00000002", LocalDateTime.of(2026, 10, 13, 9, 0), BAILIFF);
-        document(second, DocumentType.WARRANT, "Warrant 2", 1);
+        document(second, DocumentType.WARRANT_OF_POSSESSION, "Warrant 2", 1);
         document(second, DocumentType.NOTICE_OF_EVICTION, "Notice 2", 2);
 
         EnforcementOrderEntity notMine = warrant(NOT_MINE, "WP-00000003", LocalDateTime.of(2026, 10, 14, 9, 0),
                                                  "alex-id");
-        document(notMine, DocumentType.WARRANT, "Warrant 3", 1);
+        document(notMine, DocumentType.WARRANT_OF_POSSESSION, "Warrant 3", 1);
 
         entityManager.flush();
         entityManager.clear();

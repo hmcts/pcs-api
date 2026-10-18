@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffAllocationEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.BailiffAllocationRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
@@ -27,7 +28,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType.WARRANT_OF_POSSESSION;
 import static uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind.NOTICE_OF_EVICTION;
 import static uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind.RISK_ASSESSMENT;
 import static uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind.WARRANT;
@@ -68,7 +71,7 @@ class BatchPrintPlannerTest {
         EnforcementOrderEntity warrant = givenWarrant(pcsCase, CLAIMANT_CONFIRMED, "WP-00000001", BAILIFF);
         DocumentEntity notice = enforcementDocument(pcsCase, DocumentType.NOTICE_OF_EVICTION, "notice.pdf", 3);
         DocumentEntity risk = enforcementDocument(pcsCase, DocumentType.RISK_ASSESSMENT, "risk.pdf", 2);
-        DocumentEntity warrantDocument = enforcementDocument(pcsCase, DocumentType.WARRANT, "warrant.pdf", 1);
+        DocumentEntity warrantDocument = enforcementDocument(pcsCase, WARRANT_OF_POSSESSION, "warrant.pdf", 1);
         givenEnforcements(pcsCase, warrant);
 
         BatchPrintPlan plan = underTest.plan(BAILIFF, List.of(String.valueOf(CASE_ONE)));
@@ -102,10 +105,29 @@ class BatchPrintPlannerTest {
     }
 
     @Test
+    void shouldPrintAWarrantOfRestitutionAsTheWarrant() {
+        PcsCaseEntity pcsCase = givenCase(CASE_ONE);
+        EnforcementOrderEntity restitution = givenWarrant(pcsCase, CLAIMANT_CONFIRMED, "WR-00000001", BAILIFF);
+        restitution.setWarrantDetails(null);
+        restitution.setWarrantOfRestitutionDetails(WarrantOfRestitutionEntity.builder().build());
+        givenEnforcements(pcsCase, restitution);
+        enforcementDocument(pcsCase, DocumentType.WARRANT_OF_RESTITUTION, "restitution.pdf", 1);
+        enforcementDocument(pcsCase, DocumentType.WRIT_OF_POSSESSION, "writ.pdf", 2);
+
+        BatchPrintPlan plan = underTest.plan(BAILIFF, List.of(String.valueOf(CASE_ONE)));
+
+        assertThat(plan.included()).singleElement().satisfies(printable -> {
+            assertThat(printable.documents()).extracting(PrintableDocument::kind, PrintableDocument::fileName)
+                .containsExactly(tuple(WARRANT, "restitution.pdf"));
+            assertThat(printable.missingDocuments()).containsExactly(RISK_ASSESSMENT, NOTICE_OF_EVICTION);
+        });
+    }
+
+    @Test
     void shouldIgnoreDocumentsOutsideTheEnforcementFolderAndOfOtherTypes() {
         PcsCaseEntity pcsCase = givenCase(CASE_ONE);
         givenEnforcements(pcsCase, givenWarrant(pcsCase, CLAIMANT_CONFIRMED, "WP-00000001", BAILIFF));
-        DocumentEntity elsewhere = enforcementDocument(pcsCase, DocumentType.WARRANT, "uncategorised.pdf", 1);
+        DocumentEntity elsewhere = enforcementDocument(pcsCase, WARRANT_OF_POSSESSION, "uncategorised.pdf", 1);
         elsewhere.setCategoryId("uncategorisedDocuments");
         enforcementDocument(pcsCase, DocumentType.POLICE_REPORT, "police.pdf", 2);
 
@@ -123,7 +145,7 @@ class BatchPrintPlannerTest {
         EnforcementOrderEntity earlier = warrant(pcsCase, CLOSED, "WP-00000001");
         DocumentEntity earlierNotice = enforcementDocument(pcsCase, DocumentType.NOTICE_OF_EVICTION, "old.pdf", 9);
         earlier.addDocuments(List.of(earlierNotice));
-        DocumentEntity currentWarrant = enforcementDocument(pcsCase, DocumentType.WARRANT, "warrant.pdf", 1);
+        DocumentEntity currentWarrant = enforcementDocument(pcsCase, WARRANT_OF_POSSESSION, "warrant.pdf", 1);
         current.addDocuments(List.of(currentWarrant));
         givenEnforcements(pcsCase, current, earlier);
 
@@ -137,7 +159,7 @@ class BatchPrintPlannerTest {
     void shouldLeaveOutACaseAllocatedToAnotherBailiff() {
         PcsCaseEntity pcsCase = givenCase(CASE_ONE);
         givenEnforcements(pcsCase, givenWarrant(pcsCase, CLAIMANT_CONFIRMED, "WP-00000001", OTHER_BAILIFF));
-        enforcementDocument(pcsCase, DocumentType.WARRANT, "warrant.pdf", 1);
+        enforcementDocument(pcsCase, WARRANT_OF_POSSESSION, "warrant.pdf", 1);
 
         BatchPrintPlan plan = underTest.plan(BAILIFF, List.of(String.valueOf(CASE_ONE)));
 
@@ -199,10 +221,10 @@ class BatchPrintPlannerTest {
     void shouldKeepTheChosenOrderAcceptDashesAndPrintARepeatedCaseOnce() {
         PcsCaseEntity first = givenCase(CASE_ONE);
         givenEnforcements(first, givenWarrant(first, CLAIMANT_CONFIRMED, "WP-00000001", BAILIFF));
-        enforcementDocument(first, DocumentType.WARRANT, "one.pdf", 1);
+        enforcementDocument(first, WARRANT_OF_POSSESSION, "one.pdf", 1);
         PcsCaseEntity second = givenCase(CASE_TWO);
         givenEnforcements(second, givenWarrant(second, CLAIMANT_CONFIRMED, "WP-00000002", BAILIFF));
-        enforcementDocument(second, DocumentType.WARRANT, "two.pdf", 1);
+        enforcementDocument(second, WARRANT_OF_POSSESSION, "two.pdf", 1);
 
         BatchPrintPlan plan = underTest.plan(
             BAILIFF, List.of("2222-2222-2222-2222", "1111 1111 1111 1111", String.valueOf(CASE_TWO), "12-34"));
@@ -216,7 +238,7 @@ class BatchPrintPlannerTest {
     void shouldMatchTheBailiffIgnoringCase() {
         PcsCaseEntity pcsCase = givenCase(CASE_ONE);
         givenEnforcements(pcsCase, givenWarrant(pcsCase, CLAIMANT_CONFIRMED, "WP-00000001", "BOB-ID"));
-        enforcementDocument(pcsCase, DocumentType.WARRANT, "warrant.pdf", 1);
+        enforcementDocument(pcsCase, WARRANT_OF_POSSESSION, "warrant.pdf", 1);
 
         BatchPrintPlan plan = underTest.plan("Bob-Id", List.of(String.valueOf(CASE_ONE)));
 

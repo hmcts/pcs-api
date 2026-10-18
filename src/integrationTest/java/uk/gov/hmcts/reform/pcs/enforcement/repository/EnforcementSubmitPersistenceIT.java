@@ -18,14 +18,17 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
+import uk.gov.hmcts.reform.pcs.enforcement.service.RepeatWarrantFeeWaiver;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
 
 import java.util.List;
@@ -61,6 +64,12 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
     private EnforcementStatusTransitions enforcementStatusTransitions;
 
     @Autowired
+    private RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
+
+    @Autowired
+    private EnforcementDocumentScheduler enforcementDocumentScheduler;
+
+    @Autowired
     private EntityManager entityManager;
 
     @Autowired
@@ -73,7 +82,8 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for.
         enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
-            enforcementStatusTransitions);
+            enforcementStatusTransitions, repeatWarrantFeeWaiver, mock(EnforcementNotificationService.class),
+            enforcementDocumentScheduler);
     }
 
     @ParameterizedTest
@@ -99,6 +109,10 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(jdbcTemplate.queryForList(
             "SELECT enf_case_id FROM " + childTable, UUID.class))
             .containsExactly(enforcementId);
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT submitted_at = status_updated_at FROM enf_case WHERE id = ?", Boolean.class, enforcementId))
+            .as("the application is dated by when it was submitted")
+            .isTrue();
     }
 
     private static EnforcementOrder enforcementOrder(SelectEnforcementType enforcementType) {

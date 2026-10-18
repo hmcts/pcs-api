@@ -24,11 +24,17 @@ class BatchPrintPlanTest {
 
     @Test
     void shouldMapEachDocumentTypeToItsKind() {
-        assertThat(BatchPrintDocumentKind.of(DocumentType.WARRANT))
+        assertThat(BatchPrintDocumentKind.of(DocumentType.WARRANT_OF_POSSESSION))
             .contains(BatchPrintDocumentKind.WARRANT);
+        assertThat(BatchPrintDocumentKind.of(DocumentType.WARRANT_OF_RESTITUTION))
+            .contains(BatchPrintDocumentKind.WARRANT);
+        assertThat(BatchPrintDocumentKind.of(DocumentType.RISK_ASSESSMENT))
+            .contains(BatchPrintDocumentKind.RISK_ASSESSMENT);
         assertThat(BatchPrintDocumentKind.of(DocumentType.NOTICE_OF_EVICTION))
             .contains(BatchPrintDocumentKind.NOTICE_OF_EVICTION);
         assertThat(BatchPrintDocumentKind.of(DocumentType.POLICE_REPORT))
+            .isEmpty();
+        assertThat(BatchPrintDocumentKind.of(DocumentType.WRIT_OF_POSSESSION))
             .isEmpty();
     }
 }

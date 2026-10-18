@@ -10,6 +10,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -38,7 +39,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -62,8 +62,6 @@ class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
     private static final LocalDateTime EVICTION = LocalDateTime.now().plusDays(14).withHour(10).withMinute(0);
     private static final LocalDateTime SERVED = LocalDateTime.now().minusDays(1).withHour(10).withMinute(0);
     private static final String BAILIFF_USER_ID = "bailiff-user-id";
-    /** enf_case.enforcement_number is unique, and these cases commit, so each needs its own. */
-    private static final AtomicLong WARRANT_NUMBERS = new AtomicLong();
 
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
@@ -78,6 +76,13 @@ class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private BailiffDirectoryService bailiffDirectoryService;
+    /**
+     * CCD's case-users API, which the case view asks for the viewer's case roles once the claim has an
+     * enforcement (DefendantEnforcementView). The SDK test support does not answer it; unstubbed, the mock
+     * gives the viewer no case roles.
+     */
+    @MockitoBean
+    private CaseAssignmentApi caseAssignmentApi;
 
     private long caseReference;
     private Actor bailiff;
@@ -87,7 +92,9 @@ class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
     void setUp() {
         caseReference = cases.issue();
         bailiff = events.registerActor("Sam", "Jones", "caseworker-pcs", "bailiff");
-        warrantNumber = "WP-%08d".formatted(WARRANT_NUMBERS.incrementAndGet());
+        // enf_case.enforcement_number is unique and these cases commit, so take each number from the sequence
+        // EnforcementNumberGenerator uses, or a later approval in another test could be given the same one.
+        warrantNumber = "WP-%08d".formatted(enforcementOrderRepository.nextEnforcementNumberSequenceValue());
     }
 
     @Test

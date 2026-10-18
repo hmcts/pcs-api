@@ -417,3 +417,34 @@ enforcement-notify:
     claimant-confirmed-attendance: ${ENFORCEMENT_CLAIMANT_CONFIRMED_ATTENDANCE_TEMPLATE_ID:}
     claimant-declined-attendance: ${ENFORCEMENT_CLAIMANT_DECLINED_ATTENDANCE_TEMPLATE_ID:}
     warrant-return: ${ENFORCEMENT_WARRANT_RETURN_TEMPLATE_ID:}
+
+enforcement:
+  documents:
+    request:
+      max-retries: ${ENFORCEMENT_DOCUMENT_MAX_RETRIES:5}
+      backoff-delay-seconds: ${ENFORCEMENT_DOCUMENT_BACKOFF_DELAY_SECONDS:3600s}
+    # Docmosis template for each generated enforcement document, keyed by EnforcementOutput.templateKey. Every
+    # template is rendered with EnforcementDocumentPayload, so switching to a real template is a change here only.
+    templates:
+      # Placeholder (general application summary) until the real enforcement application template exists, HDPI-7555
+      warrant-of-possession-application: ${ENFORCEMENT_WARRANT_OF_POSSESSION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real enforcement application template exists, HDPI-7555
+      writ-of-possession-application: ${ENFORCEMENT_WRIT_OF_POSSESSION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real enforcement application template exists, HDPI-7555
+      warrant-of-restitution-application: ${ENFORCEMENT_WARRANT_OF_RESTITUTION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real enforcement application template exists, HDPI-7555
+      writ-of-restitution-application: ${ENFORCEMENT_WRIT_OF_RESTITUTION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real risk assessment template exists, HDPI-7555
+      risk-assessment: ${ENFORCEMENT_RISK_ASSESSMENT_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real sealed warrant template exists, HDPI-9566 / HDPI-7352
+      warrant-of-possession: ${ENFORCEMENT_WARRANT_OF_POSSESSION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real sealed writ template exists, HDPI-9566 / HDPI-7353
+      writ-of-possession: ${ENFORCEMENT_WRIT_OF_POSSESSION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real sealed warrant template exists, HDPI-9566
+      warrant-of-restitution: ${ENFORCEMENT_WARRANT_OF_RESTITUTION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real sealed writ template exists, HDPI-9566
+      writ-of-restitution: ${ENFORCEMENT_WRIT_OF_RESTITUTION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real notice of eviction (N54) template exists, HDPI-7354
+      notice-of-eviction: ${ENFORCEMENT_NOTICE_OF_EVICTION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      # Placeholder (general application summary) until the real notice of appointment template exists, HDPI-7355
+      notice-of-appointment: ${ENFORCEMENT_NOTICE_OF_APPOINTMENT_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}

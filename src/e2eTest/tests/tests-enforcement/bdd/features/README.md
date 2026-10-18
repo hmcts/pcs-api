@@ -82,7 +82,7 @@ ENVIRONMENT=local npx playwright test --project enforcement-bdd
 `ENVIRONMENT=local` is the only variable you need: [`config/local-stack.config.ts`](../../../config/local-stack.config.ts)
 defaults every service URL to its cftlib port. Override any of them by exporting it yourself.
 
-Testing-support shortcuts used by the suite (both need `testing-support.enabled=true`, which
+Testing-support shortcuts used by the suite (all need `testing-support.enabled=true`, which
 `ENABLE_TESTING_SUPPORT=true` sets):
 
 - `POST /testing-support/enforcement/{caseReference}/fee-paid` — "Awaiting payment" → "Awaiting review".
@@ -90,6 +90,12 @@ Testing-support shortcuts used by the suite (both need `testing-support.enabled=
 - `POST /testing-support/enforcement/{caseReference}/allocate-bailiff` with `{"userId","name","email"}` —
   allocates the warrant and moves "Awaiting bailiff allocation" → "Awaiting scheduling". Needs a **user**
   bearer token as well as S2S, because the service records who made the allocation.
+- `POST /testing-support/enforcement/{caseReference}/defendant-case-role` with `{"userId","caseRole"}` — gives
+  the user `[DEFENDANT]` or `[DEFENDANTSOLICITOR]` on the case through CCD's case-users API. S2S header only.
+- `POST /testing-support/enforcement/{caseReference}/documents` with `{"kind","title"}` (`kind` is `WARRANT`,
+  `RISK_ASSESSMENT` or `NOTICE_OF_EVICTION`) — files a placeholder PDF of that kind in the Enforcement folder,
+  against the current enforcement, as the type pcs-api generates it as. Batch print takes it as the latest of
+  its kind. Uploads through CDAM, so needs `LOCAL_DOC_SERVICES=true`. S2S header only.
 
 | Variable | Local default | Notes |
 |---|---|---|
@@ -172,15 +178,24 @@ precondition when it cannot reach the status a scenario asks for.
   required" fires before the page's own "Choose a bailiff" mid-event. Feature 03 stays pending for that
   reason. The `allocate-bailiff` testing-support endpoint goes through `BailiffAllocationService` instead,
   so features 05, 07, 08 and 11 *are* reachable. (HDPI-7356)
-- **Generate documents.** There are no Docmosis templates, so anything asserting a generated warrant,
-  notice of eviction or notice of appointment stays pending. Document *storage* works once dm-store is up.
+- **Read generated documents.** pcs-api generates every enforcement document (application, risk
+  assessment, warrant or writ, notice of eviction, notice of appointment) and files it in the Enforcement
+  folder, but from stand-in Docmosis templates until the real ones exist (OPEN-QUESTIONS 19), and locally
+  `bootWithCCD` renders every template as the wiremock stub's placeholder PDF. The document steps
+  (`steps/documents.steps.ts`) therefore check that a document of the right name is in the folder and who can
+  see it, through the data store as each user; its content, date stamp and seal are not checked, and the
+  scenario records a "stand-in template" annotation instead. They need `LOCAL_DOC_SERVICES=true`.
 - **Create work allocation tasks.** Nothing creates them in any environment yet. A step that merely states
   a task exists is recorded as an approximated precondition so the scenario still runs; a step that
   interacts with one stays pending. (HDPI-8627)
 - **Control the clock.** Several scenarios say "today is 08/07/2026" to put a time in the future; nothing
   can set the app's clock, so those stay pending.
-- **Sign in as a defendant legal representative.** Linking one to a party goes through pcs-api testing
-  support into CCD's case-users API, which answers 500 "Failed to create CCD case" locally.
+- **Link a defendant legal representative through Notice of Change.** pcs-api's
+  `link-defendant-solicitor-to-party` answers 500 "Failed to create CCD case" locally, so `signInAs` gives the
+  local defendant solicitor the `[DEFENDANTSOLICITOR]` case role instead, through
+  `POST /testing-support/enforcement/{caseReference}/defendant-case-role` (which also gives a citizen
+  `[DEFENDANT]`). pcs-frontend is not part of the stack, so a citizen defendant's view is checked on the case
+  data CCD returns to them.
 
 ## Open questions
 

@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -123,6 +125,33 @@ class EnforcementTestDocumentSeederTest {
             assertThat(document.getNumberOfPages()).isEqualTo(1);
             assertThat(new PDFTextStripper().getText(document)).contains("Warrant", "Case " + CASE_REFERENCE);
         }
+    }
+
+    @Test
+    void shouldFileEachPlaceholderAsTheTypeTheGeneratorFilesItAs() {
+        EnforcementOrderEntity possession = enforcementOf(SelectEnforcementType.WARRANT);
+        EnforcementOrderEntity restitution = enforcementOf(SelectEnforcementType.WARRANT_OF_RESTITUTION);
+
+        assertThat(EnforcementTestDocumentSeeder.documentType(BatchPrintDocumentKind.WARRANT, possession))
+            .isEqualTo(DocumentType.WARRANT_OF_POSSESSION);
+        assertThat(EnforcementTestDocumentSeeder.documentType(BatchPrintDocumentKind.WARRANT, restitution))
+            .isEqualTo(DocumentType.WARRANT_OF_RESTITUTION);
+        assertThat(EnforcementTestDocumentSeeder.documentType(BatchPrintDocumentKind.WARRANT,
+                                                              enforcementOf(SelectEnforcementType.WRIT)))
+            .isEqualTo(DocumentType.WARRANT_OF_POSSESSION);
+        assertThat(EnforcementTestDocumentSeeder.documentType(BatchPrintDocumentKind.WARRANT,
+                                                              EnforcementOrderEntity.builder().build()))
+            .isEqualTo(DocumentType.WARRANT_OF_POSSESSION);
+        assertThat(EnforcementTestDocumentSeeder.documentType(BatchPrintDocumentKind.RISK_ASSESSMENT, possession))
+            .isEqualTo(DocumentType.RISK_ASSESSMENT);
+        assertThat(EnforcementTestDocumentSeeder.documentType(BatchPrintDocumentKind.NOTICE_OF_EVICTION, possession))
+            .isEqualTo(DocumentType.NOTICE_OF_EVICTION);
+    }
+
+    private static EnforcementOrderEntity enforcementOf(SelectEnforcementType type) {
+        return EnforcementOrderEntity.builder()
+            .enforcementOrder(EnforcementOrder.builder().selectEnforcementType(type).build())
+            .build();
     }
 
     private static Document uploaded() {

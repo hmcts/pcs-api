@@ -27,12 +27,19 @@ import {
   PRINTED_KINDS,
   PRINT_ENFORCEMENT_DOCUMENTS,
   checkBatchPrint,
-  fileEnforcementDocuments,
   filePlaceholderDocument,
   printBatch,
 } from '../support/batch-print';
+import { expectEnforcementDocument } from '../support/case-documents';
 
 const NOT_ALLOCATED_REASON = 'You are not the allocated bailiff on this case';
+
+/**
+ * The file name prefixes of the documents pcs-api generates for a warrant of possession by the time its eviction
+ * is scheduled, in print order: the warrant on approval, the risk assessment once the application is paid for,
+ * and the notice of eviction on scheduling.
+ */
+const GENERATED_DOCUMENTS = ['Warrant of possession - ', 'Risk assessment - ', 'Notice of eviction - '];
 
 /** Points the journeys, which work on one case at a time, at `caseReference`. */
 function switchToCase(world: EnforcementWorld, caseReference: string): void {
@@ -96,13 +103,14 @@ Given('each case has an eviction scheduled this week', async ({ page, context, w
   for (const caseReference of world.batchPrintCases) {
     switchToCase(world, caseReference);
     await scheduleEvictionAsBailiff(page, context, world, 1);
-    await fileEnforcementDocuments(caseReference);
   }
-  approximatePrecondition(
-    'HDPI-9566 / HDPI-7354',
-    'the warrant and notice of eviction are not generated yet, and the risk assessment is not a document, so '
-      + 'each case has placeholders filed in its Enforcement folder through pcs-api testing support'
-  );
+  // pcs-api generates each document on a db-scheduler task after its event commits, so wait for all of them
+  // before printing. Locally each is the wiremock Docmosis stub's placeholder PDF (OPEN-QUESTIONS 19).
+  for (const caseReference of world.batchPrintCases) {
+    for (const title of GENERATED_DOCUMENTS) {
+      await expectEnforcementDocument(caseReference, title);
+    }
+  }
   switchToCase(world, world.batchPrintCases[0]);
 });
 
@@ -110,14 +118,14 @@ Given(
   'case {string} has an original and a rescheduled notice of eviction',
   async ({ world }, featureReference: string) => {
     const caseReference = realCase(world, featureReference);
-    await filePlaceholderDocument(caseReference, 'NOTICE_OF_EVICTION', `Original notice of eviction ${caseReference}`);
     world.latestNoticeOfEviction = await filePlaceholderDocument(
       caseReference, 'NOTICE_OF_EVICTION', `Rescheduled notice of eviction ${caseReference}`);
     world.batchPrintSelection = [caseReference];
     approximatePrecondition(
-      'HDPI-7549 / HDPI-7354',
-      'rescheduling does not generate a new notice of eviction yet, so both notices are placeholders filed '
-        + 'through pcs-api testing support'
+      'HDPI-7549',
+      'the original notice of eviction is the one generated when the eviction was scheduled; the suite cannot '
+        + 'reschedule yet (it needs the claimant to confirm first), so the rescheduled notice is a placeholder '
+        + 'filed after it through pcs-api testing support'
     );
   }
 );
@@ -128,7 +136,6 @@ Given(
     await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
     const caseReference = requireCaseReference(world);
     await allocateTo(caseReference, localUsers.bailiffAdmin);
-    await fileEnforcementDocuments(caseReference);
     world.notAllocatedCase = caseReference;
     world.batchPrintSelection = [...world.batchPrintCases, caseReference];
     await signInAsBailiff(page, context);

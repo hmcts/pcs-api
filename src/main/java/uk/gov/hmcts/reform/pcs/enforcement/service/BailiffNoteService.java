@@ -56,4 +56,11 @@ public class BailiffNoteService {
             .map(enforcement -> bailiffNoteRepository.findByEnforcementOrderIdOrderByCreatedAtDesc(enforcement.getId()))
             .orElse(List.of());
     }
+
+    /**
+     * The notes on one enforcement, newest first.
+     */
+    public List<BailiffNoteEntity> getNotes(EnforcementOrderEntity enforcement) {
+        return bailiffNoteRepository.findByEnforcementOrderIdOrderByCreatedAtDesc(enforcement.getId());
+    }
 }

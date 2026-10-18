@@ -1,4 +1,4 @@
-@HDPI-7342 @enforcement @claimant @pending
+@HDPI-7342 @enforcement @claimant
 Feature: Further enforcement on the same possession case
   As a claimant legal representative
   I want to apply for another warrant, writ or restitution on the same case
@@ -29,7 +29,7 @@ Feature: Further enforcement on the same possession case
       | Warrant suspended by order | 13 months | charged     |
       | Eviction successful        | 6 months  | charged     |
 
-  @HDPI-7539 @HDPI-7555
+  @HDPI-7539 @HDPI-7555 @pending
   Scenario: Warrant of restitution after the defendants re-enter
     Given the case has a warrant closed with return name "Eviction successful"
     When I apply for a "warrant of restitution" explaining how the defendants returned to the property
@@ -43,20 +43,20 @@ Feature: Further enforcement on the same possession case
     When I start the "Enforce the order" event
     Then I see the error "There is already a live warrant or writ on this case"
 
-  @HDPI-8424
+  @HDPI-8424 @pending
   Scenario: Breathing space pauses the warrant
     Given the bailiff recorded the return "Defendant states they are in Breathing Space (Standard or Mental Health)"
     Then the enforcement status is "Breathing space"
     And bailiff events other than "Add a bailiff note" are not available
 
-  @open-question
+  @open-question @pending
   Scenario: Enforcement long after the order
     Given the possession order was made 6 years ago
     And the case state is "All final orders issued"
     When I start the "Enforce the order" event
     Then I can apply for a warrant of possession
 
-  @open-question
+  @open-question @pending
   Scenario: Possession case reopened while a warrant is live
     Given the case has a warrant with status "Awaiting scheduling"
     When the defendant's application to set aside the order is listed for a hearing

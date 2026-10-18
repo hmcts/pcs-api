@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.util.List;
@@ -37,6 +39,8 @@ public class EnforcementDecisionService {
     private final PcsCaseService pcsCaseService;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final EnforcementNumberGenerator enforcementNumberGenerator;
+    private final EnforcementNotificationService enforcementNotificationService;
+    private final EnforcementDocumentScheduler enforcementDocumentScheduler;
 
     public boolean hasEnforcementAwaitingReview(long caseReference) {
         return findAwaitingReview(caseReference).isPresent();
@@ -62,13 +66,10 @@ public class EnforcementDecisionService {
             String enforcementNumber = enforcementNumberGenerator.next(enforcementType);
             enforcement.setEnforcementNumber(enforcementNumber);
 
-            // TODO HDPI-9566: generate the sealed warrant (county court seal, internal users only) or writ (High
-            //  Court seal, claimant and internal users), in Welsh when the claimant asked for Welsh documents, and
-            //  store it in the "Enforcement" folder. The Docmosis templates are not in pcs-api yet, so no document
-            //  is made here.
-            // TODO HDPI-7538: email the claimant ("Caseworker generates the warrant of possession" / "Application
-            //  for a writ successful"). Enforcement has no Notify templates yet.
+            // TODO HDPI-9566: generate the warrant or writ in Welsh when the claimant asked for Welsh documents.
+            enforcementDocumentScheduler.scheduleApprovalDocument(enforcement.getId(), enforcementType);
             enforcementOrderRepository.save(enforcement);
+            enforcementNotificationService.notifyClaimantOfApproval(caseReference, enforcementType, enforcementNumber);
             log.info("Enforcement {} on case {} approved as {}", enforcement.getId(), caseReference,
                      enforcementNumber);
             return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.ACCEPT, enforcementNumber);
@@ -93,9 +94,9 @@ public class EnforcementDecisionService {
             enforcementStatusTransitions.transition(enforcement, REJECTED);
             enforcement.setRejectionReason(rejectionReason.trim());
 
-            // TODO HDPI-7538: email the claimant ("Caseworker rejects the warrant of possession application").
-            //  Enforcement has no Notify templates yet.
             enforcementOrderRepository.save(enforcement);
+            enforcementNotificationService.notifyClaimantOfRejection(
+                caseReference, enforcementType, enforcement.getRejectionReason());
             log.info("Enforcement {} on case {} rejected", enforcement.getId(), caseReference);
             return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.REJECT, null);
         });

@@ -61,6 +61,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -228,13 +229,13 @@ class PCSCaseViewTest {
     void shouldSetSearchCriteriaFromIndexer() {
         // Given
         SearchCriteria searchCriteria = SearchCriteria.builder().build();
-        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class))).thenReturn(searchCriteria);
+        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class), anyLong())).thenReturn(searchCriteria);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then - indexing is delegated to the indexer and its result is set on the case
-        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase);
+        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase, CASE_REFERENCE);
         assertThat(pcsCase.getSearchCriteria()).isSameAs(searchCriteria);
     }
 
@@ -249,7 +250,7 @@ class PCSCaseViewTest {
 
             // Then - the indexer is never invoked and SearchCriteria is left null, so the
             // decentralised indexer won't write a global_search document for this case type
-            verify(searchCriteriaIndexer, never()).buildSearchCriteria(any(PCSCase.class));
+            verify(searchCriteriaIndexer, never()).buildSearchCriteria(any(PCSCase.class), anyLong());
             assertThat(pcsCase.getSearchCriteria()).isNull();
         }
     }

@@ -8,10 +8,10 @@
  *   - `POST /enforcement/batch-print/check` says what would be printed and why any case is left out;
  *   - `POST /enforcement/batch-print` returns the PDF, naming the printed and left-out cases in headers.
  *
- * The warrant, risk assessment and notice of eviction are not generated yet (HDPI-9566, HDPI-7354), so the
- * steps file placeholders in each case's Enforcement folder through
- * `POST /testing-support/enforcement/{caseReference}/documents`. That uploads through CDAM, which needs
- * dm-store, which cftlib only runs with `LOCAL_DOC_SERVICES=true`.
+ * The warrant, risk assessment and notice of eviction printed are the ones pcs-api generates as the warrant is
+ * approved and its eviction scheduled. A rescheduled notice of eviction cannot be driven yet, so one is filed
+ * as a placeholder through `POST /testing-support/enforcement/{caseReference}/documents`. Generating and
+ * filing both upload through CDAM, which needs dm-store, which cftlib only runs with `LOCAL_DOC_SERVICES=true`.
  */
 import Axios from 'axios';
 import { localIdamToken, localUsers } from '@config/local-stack.config';
@@ -84,13 +84,6 @@ export async function filePlaceholderDocument(caseReference: string, kind: Docum
     );
   }
   return response.data.fileName;
-}
-
-/** The placeholder warrant, risk assessment and notice of eviction for one case. */
-export async function fileEnforcementDocuments(caseReference: string): Promise<void> {
-  await filePlaceholderDocument(caseReference, 'WARRANT', `Warrant ${caseReference}`);
-  await filePlaceholderDocument(caseReference, 'RISK_ASSESSMENT', `Risk assessment ${caseReference}`);
-  await filePlaceholderDocument(caseReference, 'NOTICE_OF_EVICTION', `Notice of eviction ${caseReference}`);
 }
 
 export async function checkBatchPrint(

@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
@@ -28,21 +30,25 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
+import java.time.Duration;
+import java.time.Period;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
  * Test-only shortcuts for enforcement, for the points where the end to end tests cannot drive the real
- * journey.
+ * journey or cannot wait for it.
  *
  * <p>pcs-api cannot take an enforcement fee yet (HDPI-2877), so an application never reaches "Awaiting
  * review" on its own. And {@code allocateBailiff} cannot be driven without staff reference data, so without
  * a shortcut no warrant can get past "Awaiting bailiff allocation" and the schedule, reschedule,
- * notice-of-eviction and warrant-return journeys are all untestable.
- *
- * <p>The warrant, risk assessment and notice of eviction are not generated yet either, so batch print has
- * nothing to print without placeholders.
+ * notice-of-eviction and warrant-return journeys are all untestable. The 72 hour and 12 month rules are
+ * measured from when things happened, so {@code backdate} moves those times into the past. Viewing a case as
+ * a defendant needs a defendant case role, which locally only this can give. Batch print takes the latest of
+ * each document, and a second notice of eviction needs a reschedule the suite cannot drive yet, so
+ * {@code documents} files placeholders.
  */
 @Slf4j
 @RestController
@@ -52,9 +58,14 @@ import java.util.function.Supplier;
 @Tag(name = "Testing Support")
 public class EnforcementTestingSupportController {
 
+    private static final List<UserRole> DEFENDANT_CASE_ROLES =
+        List.of(UserRole.DEFENDANT, UserRole.DEFENDANT_SOLICITOR);
+
     private final EnforcementOrderService enforcementOrderService;
     private final BailiffAllocationService bailiffAllocationService;
     private final IdamAuthenticator idamAuthenticator;
+    private final CaseRoleAssignmentService caseRoleAssignmentService;
+    private final EnforcementBackdateService enforcementBackdateService;
     private final EnforcementTestDocumentSeeder enforcementTestDocumentSeeder;
 
     @Operation(summary = "Record the fee as paid for the case's enforcement application awaiting payment")
@@ -110,9 +121,61 @@ public class EnforcementTestingSupportController {
     }
 
     /**
+     * Gives a user the {@code [DEFENDANT]} or {@code [DEFENDANTSOLICITOR]} case role through CCD's case-users
+     * API, so that the end to end tests can view a case as a defendant (14-defendant-visibility.feature).
+     *
+     * <p>It stands in for the access code a citizen defendant enters and for Notice of Change. The testing-support
+     * {@code link-defendant-solicitor-to-party} endpoint does not work on a CFTLib stack, and an access code
+     * needs pcs-frontend.
+     */
+    @Operation(summary = "Give a user a defendant case role on the case")
+    @PostMapping("/{caseReference}/defendant-case-role")
+    public ResponseEntity<Void> assignDefendantCaseRole(
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable long caseReference,
+        @Valid @RequestBody DefendantCaseRoleRequest request) {
+
+        Optional<UserRole> role = DEFENDANT_CASE_ROLES.stream()
+            .filter(candidate -> candidate.getRole().equals(request.caseRole()))
+            .findFirst();
+        if (role.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        log.info("Testing support: giving user {} the {} case role on case {}", request.userId(),
+                 request.caseRole(), caseReference);
+        caseRoleAssignmentService.assignRasRole(caseReference, request.userId(), role.get());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Moves the timestamps of one of the case's enforcements into the past, for the rules measured from them:
+     * the claimant's 72 hours to confirm an eviction and the free repeat warrant within 12 months of the first
+     * being generated. See {@link EnforcementBackdateService}.
+     */
+    @Operation(summary = "Move an enforcement's eviction, generated, return and other timestamps into the past")
+    @PostMapping("/{caseReference}/backdate")
+    public ResponseEntity<Void> backdate(
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable long caseReference,
+        @RequestBody BackdateRequest request) {
+
+        if (request.period() == null && request.duration() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        log.info("Testing support: backdating enforcement {} on case {} by {} and {}",
+                 request.enforcementNumber() == null ? "(current)" : request.enforcementNumber(), caseReference,
+                 request.period(), request.duration());
+        return enforcementBackdateService
+            .backdate(caseReference, request.enforcementNumber(), request.period(), request.duration())
+            .<ResponseEntity<Void>>map(id -> ResponseEntity.noContent().build())
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
      * Files a placeholder warrant, risk assessment or notice of eviction in the case's Enforcement folder, against
-     * its current enforcement, so that batch print (HDPI-8012) has something to print before those documents are
-     * generated (HDPI-9566, HDPI-7354). See {@link EnforcementTestDocumentSeeder}.
+     * its current enforcement, as a later copy of one pcs-api generated. Batch print (HDPI-8012) prints only the
+     * latest of each, and the suite cannot reschedule an eviction to generate a second notice of eviction yet.
+     * See {@link EnforcementTestDocumentSeeder}.
      */
     @Operation(summary = "File a placeholder enforcement document in the case's Enforcement folder")
     @PostMapping("/{caseReference}/documents")
@@ -149,6 +212,21 @@ public class EnforcementTestingSupportController {
         @NotBlank String userId,
         @NotBlank String name,
         @NotBlank String email) {
+    }
+
+    /**
+     * The user to give a defendant case role, and the role: {@code [DEFENDANT]} or {@code [DEFENDANTSOLICITOR]}.
+     */
+    public record DefendantCaseRoleRequest(
+        @NotBlank String userId,
+        @NotBlank String caseRole) {
+    }
+
+    /**
+     * How far back to move the enforcement, as an ISO-8601 period ({@code P12M}), duration ({@code PT73H}) or
+     * both, and which enforcement: its warrant or writ number, or the case's current enforcement when omitted.
+     */
+    public record BackdateRequest(Period period, Duration duration, String enforcementNumber) {
     }
 
     /**

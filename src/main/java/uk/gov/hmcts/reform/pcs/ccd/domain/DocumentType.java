@@ -42,9 +42,14 @@ public enum DocumentType implements HasLabel {
     WITHOUT_NOTICE_ORDER("Without notice order"),
     NOTICE_OF_ALLOCATION_TO_TRACK("Notice of allocation to track"),
     GENERAL_APPLICATION("General application"),
-    WARRANT("Warrant"),
+    ENFORCEMENT_APPLICATION("Enforcement application"),
     RISK_ASSESSMENT("Risk assessment"),
+    WARRANT_OF_POSSESSION("Warrant of possession"),
+    WRIT_OF_POSSESSION("Writ of possession"),
+    WARRANT_OF_RESTITUTION("Warrant of restitution"),
+    WRIT_OF_RESTITUTION("Writ of restitution"),
     NOTICE_OF_EVICTION("Notice of eviction"),
+    NOTICE_OF_APPOINTMENT("Notice of appointment"),
     OTHER("Other document");
 
     private final String label;

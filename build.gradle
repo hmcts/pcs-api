@@ -652,6 +652,9 @@ tasks.withType(CftlibExec).configureEach {
   // reasons are fetched) at the local wiremock stub
   environment 'SERVICES_LOCATION_REF_API_URL', 'http://host.docker.internal:8083'
   environment 'RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG', '{"PCS":{"webUrl":"http://localhost:3209","nocBaseUrl":"http://host.docker.internal:3206"}}'
+  // XUI's global search only searches the services listed here. Its default has included PCS only since
+  // rpx-xui-webapp #5254, so name it explicitly for older pinned XUI images.
+  environment 'RSE_LIB_XUI_ENV_GLOBAL_SEARCH_SERVICES', 'PCS'
 
   // wa-task-management-api overrides
   environment 'IDAM_SECURITY_ALLOWED_ISSUER_0', 'http://localhost:5062/o'
@@ -670,6 +673,12 @@ tasks.withType(CftlibExec).configureEach {
 
     // Used by docassembly
     environment 'DM_STORE_APP_URL', 'http://localhost:4506'
+
+    // Docmosis is only reachable on the VPN, so by default docassembly renders every template as the placeholder
+    // PDF the wiremock stub returns (wiremock/mappings/docmosis). LOCAL_DOCMOSIS=aat renders with AAT Docmosis.
+    if (System.getenv("LOCAL_DOCMOSIS") != "aat") {
+      environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:8083/rs/render'
+    }
 
     // CCD validation of document URLs
     environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:4506/documents/[A-Za-z0-9-]+.*'

@@ -1,12 +1,13 @@
 // Bailiff journeys (features 03-05, 07-11). Batch print (17) is in batch-print.steps.ts.
 //
-// What is drivable today: `setRiskLevel` (feature 04) and `addBailiffNote` (feature 10). Both are built,
-// and the cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json) can now reach them, so
-// their steps are implemented.
+// What is drivable today: `allocateBailiff` (feature 03), `setRiskLevel` (feature 04) and `addBailiffNote`
+// (feature 10). All three are built, and the cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json)
+// can reach them, so their steps are implemented. `allocateBailiff`'s StaffUser type-ahead reads staff
+// reference data from wiremock's stub, which lists the cftlib bailiff users.
 //
 // What is not, and why:
-//   * `allocateBailiff` (03) — its StaffUser type-ahead needs staff reference data that cftlib does not
-//     run, so the page degrades to a raw `IdamId` field and the real validation never runs. HDPI-7356.
+//   * the type-ahead's court location filter (OPEN-QUESTIONS 16) and a second named bailiff to reallocate to.
+//     HDPI-7356, HDPI-7539.
 //   * every status after "Awaiting bailiff allocation" — reaching one needs a bailiff allocated, so
 //     `scheduleEviction` (05), `rescheduleEviction` (07), `markNoticeOfEvictionServed` (08) and
 //     `recordWarrantReturn` (11) cannot be started. HDPI-7419.
@@ -18,20 +19,34 @@ import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
 import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
-import { RISK_ASSESSMENT_TAB, expectTabField, isTabVisible, openTabFields } from '../support/case-tabs';
+import { RISK_ASSESSMENT_TAB, expectTabField, openTabFields } from '../support/case-tabs';
+import { openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import {
   ADD_BAILIFF_NOTE,
+  ALLOCATE_BAILIFF,
   SET_RISK_LEVEL,
   addBailiffNote,
+  bailiffSearchBox,
+  chooseBailiff,
   chooseRiskLevel,
   continueButton,
   dashedCaseNumber,
   errorSummary,
   expectBailiffConfirmation,
+  expectAllocationCheckYourAnswers,
   expectBailiffConfirmationWithWarrantNumber,
+  findBailiff,
+  goToAllocationCheckYourAnswers,
   riskAssessmentFields,
+  searchForBailiff,
   setRiskLevel,
+  standInBailiff,
+  startAllocation,
+  submitAllocation,
 } from '../support/bailiff-events';
+import { AWAITING_BAILIFF_ALLOCATION } from '../support/approve-warrant';
+import { expectEnforcementStatus } from '../support/enforcement-status-tab';
+import { localUserName, localUsers } from '@config/local-stack.config';
 import { expectEvictionResult, isEvictionResult } from './schedule-eviction.steps';
 
 
@@ -173,14 +188,20 @@ When('I select {string} and provide any required reason', async ({ page, world }
 });
 
 /**
- * The "Risk assessment" tab is `forRoles(INTERNAL_TAB_ROLES)`, which is the judges, hearing-centre,
- * ctsc, wlu and bailiff profiles. Neither the claimant nor the defendant is in it, so "internal users
- * only" is checked by signing in as the claimant's legal representative and finding no tab.
+ * The risk level, its reason and the bailiff notes are internal. The claimant side sees the "Risk assessment"
+ * tab too, with only the claimant's own risk answers (13-risk-assessment-tab.feature), so "internal users
+ * only" is checked by finding the internal sections as the signed-in bailiff, then signing in as the
+ * claimant's legal representative and finding the tab without them.
  */
 async function expectRiskAssessmentTabInternalOnly(page: Page, context: BrowserContext, caseReference: string): Promise<void> {
-  await expect(await isTabVisible(page, caseReference, RISK_ASSESSMENT_TAB)).toBe(true);
+  await openCaseTab(page, caseReference, RISK_ASSESSMENT_TAB);
+  expect(Object.keys(await tabSections(page))).toEqual(expect.arrayContaining(['Bailiff note', 'Risk assessment level']));
   await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
-  await expect(await isTabVisible(page, caseReference, RISK_ASSESSMENT_TAB)).toBe(false);
+  await openCaseTab(page, caseReference, RISK_ASSESSMENT_TAB);
+  const claimantSections = Object.keys(await tabSections(page));
+  expect(claimantSections).toContain('Claimant risk level');
+  expect(claimantSections).not.toContain('Bailiff note');
+  expect(claimantSections).not.toContain('Risk assessment level');
 }
 
 Then('the risk level is visible to internal users only', async ({ page, context, world }) => {
@@ -254,15 +275,33 @@ pendingSteps({ ticket: 'HDPI-7593', summary: 'The bailiff note confirmation does
   '{string} takes me to the {string} tab',
 ]);
 
+/**
+ * The newest note under the section, with its author and a time in the layout of the quoted example: "1 Feb
+ * 2026 16:20pm" is a day, a short month, a year, a 24-hour time and a lower case am / pm marker.
+ */
+Then(
+  'the note {string} is shown under {string} with {string} and the date and time in {string} format',
+  async ({ page, world }, note: string, section: string, author: string, example: string) => {
+    expect(example).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+    await openCaseTab(page, requireCaseReference(world), RISK_ASSESSMENT_TAB);
+    const [newest] = (await tabSections(page))[section]?.lists ?? [];
+    expect(newest?.[riskAssessmentFields.note]).toBe(note);
+    expect(newest?.[riskAssessmentFields.noteAddedBy]).toBe(author);
+    expect(newest?.[riskAssessmentFields.noteDateTime]).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+  }
+);
+
 Then('the note is visible to internal users only', async ({ page, context, world }) => {
   await expectRiskAssessmentTabInternalOnly(page, context, requireCaseReference(world));
 });
 
-// `bailiffNotes` is a read-only collection on a tab, so there is nothing to edit; asserting the absence of
-// an edit affordance needs the note to be rendered first, which waits on the same ticket as the rest.
-pendingSteps({ ticket: 'HDPI-7593', summary: 'Rendering a saved bailiff note on the risk assessment tab' }, [
-  'the note {string} is shown under {string} with {string} and the date and time in {string} format',
+// The note is markup on the tab, so there is nothing to edit; the scenario around it needs a named bailiff.
+pendingSteps({ ticket: 'HDPI-7593', summary: 'Asserting that a saved bailiff note cannot be edited' }, [
   'the note cannot be edited',
+]);
+
+pendingSteps({ ticket: 'HDPI-7539', summary: 'Defendant visibility of enforcement' }, [
+  'defendants cannot see the {string} tab',
 ]);
 
 // Two notes on two different dates need the clock moved between them; nothing can backdate a note.
@@ -271,21 +310,97 @@ pendingSteps({ ticket: 'HDPI-7593', summary: 'Bailiff notes added on different d
   'the note from {string} is shown first',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7356', summary: 'Allocate case to bailiff needs staff reference data for its type-ahead' }, [
-  'no {string} screen is shown',
-  'I type part of a bailiff\'s name or email address',
+// ---------------------------------------------------------------------------
+// Feature 03: allocate case to bailiff
+// ---------------------------------------------------------------------------
+
+/**
+ * The local user standing in for a bailiff the feature names. Marks the scenario pending when there is none:
+ * the local stack has one user with the `bailiff` role, so a second, named bailiff cannot be chosen.
+ */
+function requireStandIn(name: string, tags: string[]): string {
+  const email = standInBailiff(name);
+  if (!email) {
+    markPending({ ticket: 'HDPI-7539', summary: `no local bailiff user stands in for "${name}"` }, tags);
+  }
+  return email as string;
+}
+
+Then('no {string} screen is shown', async ({ page }, screen: string) => {
+  await expect(page.getByRole('heading', { name: screen, exact: true })).toHaveCount(0);
+});
+
+// XUI's StaffUser type-ahead matches on first and last name only, so the search is by name.
+When('I type part of a bailiff\'s name or email address', async ({ page, world }) => {
+  expect(world.currentEvent).toBe(ALLOCATE_BAILIFF);
+  await searchForBailiff(page, localUsers.bailiff);
+});
+
+pendingSteps({ ticket: 'HDPI-7356', summary: 'The bailiff type-ahead is not filtered by court location (OPEN-QUESTIONS 16)' }, [
   'I see matching bailiff users for the case\'s court location',
+]);
+
+// The type-ahead lists every PCS admin in staff reference data. A user without the bailiff role is refused
+// when the page is continued ("Choose a user who has the bailiff role"), not hidden (OPEN-QUESTIONS 53).
+pendingSteps({ ticket: 'HDPI-7356', summary: 'The type-ahead lists all admin staff, not only bailiffs (OPEN-QUESTIONS 53)' }, [
   'users without a bailiff role are not listed',
-  'I select {string} without choosing a bailiff',
-  'I see an error asking me to choose a bailiff',
-  'I have chosen bailiff {string} {string}',
-  'the {string} screen shows {string} and {string}',
-  'I return to {string} with {string} still selected',
-  'no bailiff is allocated',
-  'I am on the {string} screen with {string} chosen',
-  'I submit the allocation',
-  'I allocate the warrant to {string}',
-  '{string} is the allocated bailiff',
+]);
+
+When('I select {string} without choosing a bailiff', async ({ page, world }, button: string) => {
+  expect(button).toBe('Continue');
+  expect(world.currentEvent).toBe(ALLOCATE_BAILIFF);
+  await continueButton(page).click();
+});
+
+// XUI's own "is required" check on the StaffUser field fires before pcs-api's "Choose a bailiff"; both name
+// the bailiff.
+Then('I see an error asking me to choose a bailiff', async ({ page }) => {
+  await expect(errorSummary(page)).toContainText(/bailiff/i);
+  await expect(page.getByRole('heading', { name: findBailiff.pageLabel })).toBeVisible();
+});
+
+Given('I have chosen bailiff {string} {string}', async ({ page, world, $tags }, name: string, _email: string) => {
+  const email = requireStandIn(name, $tags);
+  await startAllocation(page, world);
+  await chooseBailiff(page, email);
+  world.chosenBailiff = email;
+});
+
+// The email shown is the one pcs-api looked up in IDAM for the chosen bailiff, not the feature's illustrative one.
+Then('the {string} screen shows {string} and {string}', async ({ page, $tags }, screen: string, name: string, _email: string) => {
+  expect(screen).toBe(findBailiff.checkYourAnswers);
+  await expectAllocationCheckYourAnswers(page, requireStandIn(name, $tags));
+});
+
+Then('I return to {string} with {string} still selected', async ({ page, $tags }, screen: string, name: string) => {
+  await expect(page.getByRole('heading', { name: screen })).toBeVisible();
+  await expect(bailiffSearchBox(page)).toHaveValue(localUserName(requireStandIn(name, $tags)));
+});
+
+Then('no bailiff is allocated', async ({ page, world }) => {
+  await expectEnforcementStatus(page, requireCaseReference(world), AWAITING_BAILIFF_ALLOCATION);
+});
+
+Given('I am on the {string} screen with {string} chosen', async ({ page, world, $tags }, screen: string, name: string) => {
+  expect(screen).toBe(findBailiff.checkYourAnswers);
+  await goToAllocationCheckYourAnswers(page, world, requireStandIn(name, $tags));
+});
+
+When('I submit the allocation', async ({ page, world }) => {
+  await submitAllocation(page, world);
+});
+
+When('I allocate the warrant to {string}', async ({ page, world, $tags }, name: string) => {
+  await goToAllocationCheckYourAnswers(page, world, requireStandIn(name, $tags));
+  await submitAllocation(page, world);
+});
+
+Given('{string} is the allocated bailiff', async ({ world, $tags }, name: string) => {
+  const { allocateBailiff } = await import('../support/approve-warrant');
+  await allocateBailiff(world, requireStandIn(name, $tags));
+});
+
+pendingSteps({ ticket: 'HDPI-8011', summary: 'A bailiff with around 500 allocated-bailiff case roles cannot be set up' }, [
   '{string} already has 499 active {string} case roles',
   'the allocation succeeds',
 ]);
@@ -304,18 +419,12 @@ pendingSteps({ ticket: 'HDPI-7344', summary: 'Schedule eviction cannot be reache
   'I see an {string} table with claimant type, claimant name and defendant names',
   'the case has two defendants whose names are not known',
   'the {string} table shows {string} once',
-  'it is stored in the {string} folder in case file view',
-  'it is visible to internal users only',
-  'a {string} document is generated without a seal',
-  'it is visible to the claimant and internal users',
   'I answered {string} to {string}',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reached: it needs a scheduled eviction' }, [
   'I see the dates {string} and {string} listed as dates the claimant is not available',
   'the dates are not editable',
-  'I have entered a new eviction date of {string} at {string}',
-  'the {string} tab {string} shows only the new date and time',
   'a new sealed {string} is stored in the {string} folder',
   'a new unsealed {string} is stored in the {string} folder and sent to the claimant',
   'the original notices are still in the {string} folder',
@@ -325,38 +434,25 @@ pendingSteps({ ticket: 'HDPI-7346', summary: 'Mark \'notice of eviction\' as ser
   'I enter a served date of {string} and time {string}',
   'I answer {string} to {string}',
   'I enter the note {string}',
-  'the note is shown under {string} on the {string} tab with my name, date and time',
   'I have answered the questions',
-  'I served the notice on {string} at {string} {string}',
-  'I see the confirmation with the case number and warrant number',
-  'the {string} tab shows {string} at {string} and {string} under {string}',
   'defendants can see the {string} tab',
   'defendants can see the {string} folder in case file view',
   'the {string} is visible to defendants',
   'citizen defendants see the {string} under {string} in pcs-frontend',
-  'the court has given permission to dispense with service',
-  'it shows that the eviction is without notice',
-  'the notice served date and time show as {string}',
-  'defendants cannot see the {string} tab',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7552', summary: 'Review updated risk information' }, [
-  'the risk level is {string}',
-  'the claimant submitted the original risk assessment on {string}',
-  'the claimant updated the risk assessment on {string} in {string}',
+// The review banner lists the changed questions but does not link to them: XUI routes the tab by the URL
+// fragment, so an in-page link would change tab (HDPI-7350).
+pendingSteps({ ticket: 'HDPI-7350', summary: 'Links from the review banner to the changed questions' }, [
   'I see an important banner with links to each question whose answer changed',
-  'I see the print button, the bailiff notes and the current risk level {string}',
-  'I see the original and updated answers side by side in a table',
   'I select the banner link for {string}',
   'I am taken to that question in the {string} section',
-  'the claimant did not change {string}',
-  'the {string} for that question is blank',
-  'the original answers are dated {string}',
-  'the updated answers are dated {string}',
+]);
+
+pendingSteps({ ticket: 'HDPI-8627', summary: 'Set risk level from the "Review updated risk information" task' }, [
   'the {string} journey opens with {string} pre-selected',
   'I can change it',
   'I submit the risk level {string} with a reason',
-  'the important banner is removed from the {string} tab',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return cannot be reached: it needs a bailiff allocation' }, [
@@ -367,8 +463,6 @@ pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return cannot be re
   'I have chosen a return',
   'no return is saved',
   'I have completed the {string} screen',
-  'I recorded a {string} return with outcome {string} on {string} at {string}',
-  'the {string} tab shows under {string} the return {string}, return name {string}, outcome and the eviction date and time',
   'I submit a return with return name {string}',
   'I submit a return with return name {string} and additional details {string}',
   'the notice of eviction was served on the defendants',
