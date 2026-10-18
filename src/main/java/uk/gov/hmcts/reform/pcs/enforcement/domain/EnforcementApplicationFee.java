@@ -1,18 +1,18 @@
 package uk.gov.hmcts.reform.pcs.enforcement.domain;
 
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
- * Which enforcement types the claimant pays a fee to apply for, and where that fee amount sits on the case
- * data. Only a warrant and a writ of possession have a fee in pcs-api (FEE0380 and FEE0397 via
- * {@code FeeType.ENFORCEMENT_WARRANT_FEE} and {@code FeeType.ENFORCEMENT_WRIT_FEE}); neither restitution type
- * has a fee code or a fee amount.
+ * Which enforcement types the claimant pays a fee to apply for, and which fee. Only a warrant and a writ of
+ * possession have a fee in pcs-api (FEE0380 via {@link FeeType#ENFORCEMENT_WARRANT_FEE} and FEE0397 via
+ * {@link FeeType#ENFORCEMENT_WRIT_FEE}); neither restitution type has a fee code.
  *
- * <p>Both the confirmation screen's payment panel and the status a submitted application starts in come from
- * the single mapping below, so they cannot disagree about whether a type is paid for. A free repeat warrant
- * (HDPI-8424) is a payable type whose fee is waived: EnforcementOrderService decides that, and the
- * confirmation screen follows its answer.</p>
+ * <p>The status a submitted application starts in, the Payments service request raised for it and the
+ * confirmation screen's payment panel all come from the single mapping below, so they cannot disagree about
+ * whether a type is paid for. A free repeat warrant (HDPI-8424) is a payable type whose fee is waived:
+ * EnforcementOrderService decides that.</p>
  */
 public final class EnforcementApplicationFee {
 
@@ -24,26 +24,16 @@ public final class EnforcementApplicationFee {
      * data, so it is the only safe way to decide whether an application is awaiting payment.
      */
     public static boolean isPayable(SelectEnforcementType enforcementType) {
-        return feeAmountOnCaseData(enforcementType).isPresent();
+        return findFeeType(enforcementType).isPresent();
     }
 
     /**
-     * The fee amount to show the claimant, or empty when the type has no fee or no amount was looked up. The
-     * amount is put on the case data by the event's start handler and comes back from the client, so it must
-     * not be used to decide whether a fee is owed.
+     * The Fees Register fee for applying for this type, or empty when the type has no fee.
      */
-    public static Optional<String> findAmount(EnforcementOrder enforcementOrder,
-                                              SelectEnforcementType enforcementType) {
-        return feeAmountOnCaseData(enforcementType).map(amount -> amount.apply(enforcementOrder));
-    }
-
-    @SuppressWarnings("deprecation")
-    private static Optional<Function<EnforcementOrder, String>> feeAmountOnCaseData(
-        SelectEnforcementType enforcementType) {
-
+    public static Optional<FeeType> findFeeType(SelectEnforcementType enforcementType) {
         return switch (enforcementType) {
-            case WARRANT -> Optional.of(EnforcementOrder::getWarrantFeeAmount);
-            case WRIT -> Optional.of(EnforcementOrder::getWritFeeAmount);
+            case WARRANT -> Optional.of(FeeType.ENFORCEMENT_WARRANT_FEE);
+            case WRIT -> Optional.of(FeeType.ENFORCEMENT_WRIT_FEE);
             case WARRANT_OF_RESTITUTION, WRIT_OF_RESTITUTION -> Optional.empty();
         };
     }

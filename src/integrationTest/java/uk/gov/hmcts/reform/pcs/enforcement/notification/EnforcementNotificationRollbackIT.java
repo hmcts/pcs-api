@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReview
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
-import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementFeePaidSimulator;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
 import java.time.Instant;
@@ -76,7 +76,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     @Autowired
     private EnforcementOrderRepository enforcementOrderRepository;
     @Autowired
-    private EnforcementOrderService enforcementOrderService;
+    private EnforcementFeePaidSimulator enforcementFeePaidSimulator;
     @Autowired
     private EvictionScheduleService evictionScheduleService;
     @Autowired
@@ -234,7 +234,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     void feePaidEmailsAfterCommit() {
         givenEnforcement(SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_PAYMENT);
 
-        assertThat(enforcementOrderService.recordFeePaid(caseReference)).isTrue();
+        assertThat(enforcementFeePaidSimulator.recordFeePaid(caseReference)).isTrue();
 
         verify(sender).send(caseReference, EnforcementEmail.WARRANT_APPLICATION_RECEIVED, Map.of());
     }
@@ -245,7 +245,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         givenEnforcement(SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_PAYMENT);
 
         new TransactionTemplate(transactionManager).executeWithoutResult(transaction -> {
-            assertThat(enforcementOrderService.recordFeePaid(caseReference)).isTrue();
+            assertThat(enforcementFeePaidSimulator.recordFeePaid(caseReference)).isTrue();
             transaction.setRollbackOnly();
         });
 

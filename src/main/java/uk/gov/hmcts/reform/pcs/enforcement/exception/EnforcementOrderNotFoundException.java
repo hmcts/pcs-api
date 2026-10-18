@@ -5,6 +5,6 @@ import java.util.UUID;
 public class EnforcementOrderNotFoundException extends RuntimeException {
 
     public EnforcementOrderNotFoundException(UUID id) {
-        super("No enforcement order found for case reference " + id.toString());
+        super("No enforcement found with ID " + id);
     }
 }

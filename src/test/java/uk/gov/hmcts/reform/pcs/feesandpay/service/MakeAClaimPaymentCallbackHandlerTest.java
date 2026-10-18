@@ -85,6 +85,11 @@ class MakeAClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    void shouldHandleClaimFeePaymentCallbacks() {
+        assertThat(underTest.handlerType()).isEqualTo(PaymentCallbackHandlerType.CLAIM);
+    }
+
+    @Test
     void shouldThrowPaymentCallbackExceptionWhenTaskDataIsInvalidJson() throws Exception {
         // Given
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class)))

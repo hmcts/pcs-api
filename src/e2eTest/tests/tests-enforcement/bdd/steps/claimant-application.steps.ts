@@ -78,11 +78,12 @@ When('I submit an application for a {string}', async ({ page, world, $tags }, ty
 });
 
 /**
- * pcs-api cannot take an enforcement fee yet (HDPI-2877): the fee is recorded as paid through pcs-api
- * testing support, which moves the application from "Awaiting payment" to "Awaiting review" as payment would.
+ * A local stack has no Payments service to take the enforcement fee (HDPI-2877), so the fee is paid through pcs-api
+ * testing support, which sends a paid callback through pcs-api's enforcement payment handler and so moves the
+ * application from "Awaiting payment" to "Awaiting review" as paying the service request would.
  */
 async function payEnforcementFee(): Promise<void> {
-  approximatePrecondition('HDPI-2877', 'the enforcement fee is recorded as paid through testing support, not paid by service request');
+  approximatePrecondition('HDPI-2877', 'the enforcement fee is paid through testing support, not from the Service Request tab');
   await recordEnforcementFeePaid();
 }
 

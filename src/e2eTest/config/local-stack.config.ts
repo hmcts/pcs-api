@@ -187,7 +187,7 @@ export async function createCaseFromFixture(fixture: TestCaseFixture): Promise<{
 
 /**
  * Records the enforcement fee as paid, moving the case's application from "Awaiting payment" to
- * "Awaiting review". pcs-api cannot take an enforcement fee yet (HDPI-2877).
+ * "Awaiting review" through pcs-api's enforcement payment handler. A local stack has no Payments service to take it.
  */
 export async function recordFeePaid(caseReference: string): Promise<void> {
   const response = await Axios.post(
