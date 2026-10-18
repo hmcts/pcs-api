@@ -202,6 +202,9 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
 
         EnforcementOrderEntity closed = enforcementOrderRepository.findById(warrant.getId()).orElseThrow();
         closed.setStatus(EnforcementStatus.CLOSED);
+        // Flushed before the restitution is inserted: Hibernate runs inserts before updates, so without this
+        // the claim briefly has two live enforcements, which the one-live-enforcement index refuses.
+        entityManager.flush();
         final EnforcementOrderEntity restitution = savedEnforcement(
             closed.getClaim(), SelectEnforcementType.WARRANT_OF_RESTITUTION, EnforcementStatus.AWAITING_PAYMENT);
         flushAndClear();

@@ -24,8 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.CascadeType.ALL;
-
 @Entity
 @Builder
 @Getter
@@ -43,7 +41,11 @@ public class StatementOfTruthEntity {
     @JsonBackReference
     private ClaimEntity claim;
 
-    @OneToOne(mappedBy = "statementOfTruth", cascade = ALL)
+    /**
+     * The inverse of the owning side on DefendantResponseEntity, which cascades to the statement of truth.
+     * Nothing cascades the other way: the response outlives any one statement of truth.
+     */
+    @OneToOne(mappedBy = "statementOfTruth")
     @JsonBackReference
     private DefendantResponseEntity defendantResponse;
 
