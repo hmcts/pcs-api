@@ -24,6 +24,7 @@
 #   DEMO_SLOW_MO, DEMO_HOLD_MS   pacing, passed through to Playwright
 #   VIDEO_SIZE               output resolution (default 1920x1080, the demo project's viewport)
 #   TITLE_SECONDS            scenario title card length (default 2.5)
+#   MIN_CLIP_SECONDS         page videos shorter than this are left out as unused pages (default 1.5)
 #   OPENING_SECONDS          feature title card length (default 3.5)
 
 set -uo pipefail
@@ -51,6 +52,7 @@ VIDEO_HEIGHT="${VIDEO_SIZE#*x}"
 FPS=25
 TITLE_SECONDS="${TITLE_SECONDS:-2.5}"
 OPENING_SECONDS="${OPENING_SECONDS:-3.5}"
+MIN_CLIP_SECONDS="${MIN_CLIP_SECONDS:-1.5}"
 BACKGROUND_COLOUR="0x1d2733"
 
 log() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
@@ -136,7 +138,7 @@ concat() {
 # --- Playwright report ------------------------------------------------------------------------------------
 
 # Prints the feature title, then one tab-separated line per scenario in feature-file order:
-#   <status> <TAB> <scenario title> <TAB> <video path>
+#   <status> <TAB> <scenario title> <TAB> <video paths, separated by |>
 # status is passed, failed or skipped (a fixme from a pending step). Outline examples without a title of
 # their own ("Example #2") are named after their outline.
 read_report() {
@@ -152,7 +154,9 @@ const walk = (suite, parents) => {
       : result.status === 'passed' ? 'passed'
       : result.status === 'skipped' ? 'skipped'
       : 'failed';
-    const video = result?.attachments?.find(a => a.name === 'video' && a.path)?.path ?? '';
+    // One video per browser page, in the order the pages were opened: a scenario that signs in as a second
+    // user gets a second page.
+    const video = (result?.attachments ?? []).filter(a => a.name === 'video' && a.path).map(a => a.path).join('|');
     const parent = parents[parents.length - 1] ?? '';
     const title = /^Example #\d+$/.test(spec.title) && parent !== featureTitle ? `${parent} (${spec.title})` : spec.title;
     scenarios.push({ line: spec.line, column: spec.column, status, title, video });
@@ -250,18 +254,30 @@ for feature in "${FEATURES[@]}"; do
       failed) FAILED+=("$feature: $title"); continue ;;
       *) SKIPPED+=("$feature: $title"); continue ;;
     esac
-    if [[ -z "$video" || ! -f "$video" ]]; then
-      FAILED+=("$feature: $title (passed, but no video was recorded)")
+    number="$(printf '%02d' "$index")"
+    # A page the scenario never used (the default one, when its steps open their own) records about a
+    # second of blank screen, so it is left out.
+    parts=()
+    IFS='|' read -r -a videos <<<"$video"
+    for part in "${videos[@]}"; do
+      [[ -f "$part" ]] || continue
+      seconds="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$part" 2>/dev/null)"
+      awk -v s="${seconds:-0}" -v min="$MIN_CLIP_SECONDS" 'BEGIN { exit !(s >= min) }' || continue
+      clip="$work_dir/$number-scenario-${#parts[@]}.mp4"
+      normalise "$part" "$clip" && parts+=("$clip")
+    done
+    if (( ${#parts[@]} == 0 )); then
+      FAILED+=("$feature: $title (passed, but no video was recorded or encoded)")
       continue
     fi
-    number="$(printf '%02d' "$index")"
-    if title_card "$work_dir/$number-title.mp4" "$TITLE_SECONDS" "$feature_title" "$title" \
-      && normalise "$video" "$work_dir/$number-scenario.mp4"; then
+    if title_card "$work_dir/$number-title.mp4" "$TITLE_SECONDS" "$feature_title" "$title"; then
       echo "file '$work_dir/$number-title.mp4'" >>"$list_file"
-      echo "file '$work_dir/$number-scenario.mp4'" >>"$list_file"
+      for clip in "${parts[@]}"; do
+        echo "file '$clip'" >>"$list_file"
+      done
       clips=$((clips + 1))
     else
-      FAILED+=("$feature: $title (passed, but its video could not be encoded)")
+      FAILED+=("$feature: $title (passed, but its title card could not be rendered)")
     fi
   done
 
