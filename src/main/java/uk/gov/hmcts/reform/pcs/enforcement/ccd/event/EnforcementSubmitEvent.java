@@ -48,12 +48,15 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             return errorResponse(LiveEnforcementExistsException.MESSAGE);
         }
 
-        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+        boolean paymentOutstanding = enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
+        // An application that owes nothing (restitution, or a free repeat warrant) gets no payment panel.
         return SubmitResponse.<State>builder()
-            .confirmationBody(EnforcementApplicationFee.findAmount(enforcementOrder, enforcementType)
-                                  .map(feeAmount -> getPaymentConfirmationMarkdown(feeAmount, caseReference))
-                                  .orElse(null))
+            .confirmationBody(paymentOutstanding
+                                  ? EnforcementApplicationFee.findAmount(enforcementOrder, enforcementType)
+                                      .map(feeAmount -> getPaymentConfirmationMarkdown(feeAmount, caseReference))
+                                      .orElse(null)
+                                  : null)
             .state(PENDING_ENFORCEMENT_ISSUED)
             .build();
     }

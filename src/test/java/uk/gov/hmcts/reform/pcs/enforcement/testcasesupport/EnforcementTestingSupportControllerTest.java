@@ -18,11 +18,18 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.BackdateRequest;
+
+import java.time.Duration;
+import java.time.Period;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +49,8 @@ class EnforcementTestingSupportControllerTest {
     private BailiffAllocationService bailiffAllocationService;
     @Mock
     private IdamAuthenticator idamAuthenticator;
+    @Mock
+    private EnforcementBackdateService enforcementBackdateService;
     @InjectMocks
     private EnforcementTestingSupportController underTest;
 
@@ -121,6 +130,36 @@ class EnforcementTestingSupportControllerTest {
 
         assertThat(underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST).getBody())
             .containsExactly("first reason", "second reason");
+    }
+
+    @Test
+    void shouldReturnNoContentWhenTheEnforcementIsBackdated() {
+        Period twelveMonths = Period.ofMonths(12);
+        when(enforcementBackdateService.backdate(CASE_REFERENCE, "WP-00000001", twelveMonths, null))
+            .thenReturn(Optional.of(UUID.randomUUID()));
+
+        assertThat(underTest.backdate(S2S_TOKEN, CASE_REFERENCE,
+                                      new BackdateRequest(twelveMonths, null, "WP-00000001")).getStatusCode())
+            .isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenThereIsNoEnforcementToBackdate() {
+        Duration seventyThreeHours = Duration.ofHours(73);
+        when(enforcementBackdateService.backdate(CASE_REFERENCE, null, null, seventyThreeHours))
+            .thenReturn(Optional.empty());
+
+        assertThat(underTest.backdate(S2S_TOKEN, CASE_REFERENCE,
+                                      new BackdateRequest(null, seventyThreeHours, null)).getStatusCode())
+            .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldRejectABackdateWithNoAmount() {
+        assertThat(underTest.backdate(S2S_TOKEN, CASE_REFERENCE,
+                                      new BackdateRequest(null, null, null)).getStatusCode())
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(enforcementBackdateService);
     }
 
     private void givenTheAllocation(EnforcementChange<Void> outcome) {

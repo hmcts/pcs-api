@@ -424,13 +424,20 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
   await performAction('reTryOnCallBackError', propertyAccessDetails.continueButton, additionalInformation.mainHeader);
 }
 
-/** Statement of truth signed by the claimant's legal representative; lands on check your answers. */
+/**
+ * Statement of truth signed by the claimant's legal representative; lands on check your answers.
+ *
+ * The warrant and writ pages (pcs-api StatementOfTruthPage, StatementOfTruthWritPage) have the same fields:
+ * the "I certify that:" box, "Completed by", the legal representative's agreement box, then full name, firm
+ * and position. The two actions take those under different keys: `selectStatementOfTruth` reads the
+ * certification from `selectCheckbox` and the agreement from `option2`, `selectStatementOfTruthWrit` reads
+ * them from `option1` and `claimantBelieveCheckBox`.
+ */
 export async function signStatementOfTruth(type: 'warrant of possession' | 'writ of possession'): Promise<void> {
   await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
   const signedByLegalRepresentative = {
     question: statementOfTruth.completedByParagraph,
     option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-    option1: statementOfTruth.signThisStatementHiddenCheckbox,
     label: statementOfTruth.fullNameHiddenTextLabel,
     input: statementOfTruth.fullNameHiddenTextInput,
     label1: statementOfTruth.nameOfFirmHiddenTextLabel,
@@ -440,9 +447,17 @@ export async function signStatementOfTruth(type: 'warrant of possession' | 'writ
     nextPage: checkYourAnswers.mainHeader,
   };
   if (type === 'warrant of possession') {
-    await performAction('selectStatementOfTruth', { selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic, ...signedByLegalRepresentative });
+    await performAction('selectStatementOfTruth', {
+      ...signedByLegalRepresentative,
+      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
+      option2: statementOfTruth.signThisStatementHiddenCheckbox,
+    });
   } else {
-    await performAction('selectStatementOfTruthWrit', signedByLegalRepresentative);
+    await performAction('selectStatementOfTruthWrit', {
+      ...signedByLegalRepresentative,
+      option1: statementOfTruth.iCertifyCheckboxDynamic,
+      claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox,
+    });
   }
 }
 
