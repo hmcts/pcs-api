@@ -450,7 +450,7 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(savedCaptor.capture());
         assertThat(feeOwed).contains(FEE);
         verify(enforcementFeeService).lookUpFee(enforcementType);
-        verify(enforcementFeeService).requestPaymentAfterCommit(pcsCaseEntity, savedCaptor.getValue().getId(), FEE);
+        verify(enforcementFeeService).requestPayment(pcsCaseEntity, savedCaptor.getValue().getId(), FEE);
     }
 
     @Test
@@ -499,7 +499,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         verify(enforcementOrderRepository, never()).save(any());
-        verify(enforcementFeeService, never()).requestPaymentAfterCommit(any(), any(), any());
+        verify(enforcementFeeService, never()).requestPayment(any(), any(), any());
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 

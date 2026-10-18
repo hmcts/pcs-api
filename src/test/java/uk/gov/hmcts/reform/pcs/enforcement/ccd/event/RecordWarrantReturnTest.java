@@ -8,7 +8,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -202,49 +201,34 @@ class RecordWarrantReturnTest extends BaseEventTest {
         assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
     }
 
+    /**
+     * A failure to queue the email fails the submit, so the return is rolled back rather than recorded without
+     * its email.
+     */
     @Test
-    void shouldStillConfirmWhenTheEmailCannotBeScheduled() {
+    void shouldFailTheSubmitWhenTheEmailCannotBeQueued() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
             .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
         when(warrantReturnNotificationService.notifyClaimant(anyLong(), any(), any()))
-            .thenThrow(new IllegalStateException("Notify down"));
+            .thenThrow(new IllegalStateException("database down"));
 
-        SubmitResponse<State> response = callSubmitHandler(caseWith(details));
-
-        assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getConfirmationHeader()).isEqualTo("# Outcome recorded as Crowds or protests");
+        assertThatThrownBy(() -> callSubmitHandler(caseWith(details)))
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void shouldNotNotifyTheClaimantUntilTheSubmitTransactionCommits() {
+    void shouldQueueTheClaimantEmailInsideTheSubmitTransaction() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
         when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
             .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
         TransactionSynchronizationManager.initSynchronization();
 
         callSubmitHandler(caseWith(details));
-
-        verify(warrantReturnNotificationService, never()).notifyClaimant(anyLong(), any(), any());
-
-        TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
 
         verify(warrantReturnNotificationService)
             .notifyClaimant(TEST_CASE_REFERENCE, WarrantReturnName.CROWDS_OR_PROTESTS, null);
-    }
-
-    @Test
-    void shouldNotNotifyTheClaimantWhenTheSubmitTransactionRollsBack() {
-        WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);
-        when(warrantReturnService.recordReturn(TEST_CASE_REFERENCE, details))
-            .thenReturn(recorded(WarrantReturnName.CROWDS_OR_PROTESTS, "WP-00000042"));
-        TransactionSynchronizationManager.initSynchronization();
-
-        callSubmitHandler(caseWith(details));
-        TransactionSynchronizationManager.getSynchronizations()
-            .forEach(synchronization -> synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
-
-        verify(warrantReturnNotificationService, never()).notifyClaimant(anyLong(), any(), any());
+        assertThat(TransactionSynchronizationManager.getSynchronizations()).isEmpty();
     }
 
     @Test

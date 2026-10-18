@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -26,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificatio
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
-import uk.gov.hmcts.reform.pcs.enforcement.util.AfterCommit;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
@@ -44,7 +42,6 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
  * <p>TODO HDPI-9520: create a "Record warrant return" WA task on the eviction date and complete it on submit.
  * Work allocation for enforcement is not configured yet.</p>
  */
-@Slf4j
 @Component
 @AllArgsConstructor
 public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> {
@@ -111,7 +108,8 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         }
         WarrantReturnName returnName = recorded.change().returnName();
 
-        notifyClaimant(caseReference, returnName, details.getAdditionalDetails());
+        // Queued in the submit transaction, so the email is committed or rolled back with the return.
+        warrantReturnNotificationService.notifyClaimant(caseReference, returnName, details.getAdditionalDetails());
 
         return SubmitResponse.<State>builder()
             .confirmationHeader(CONFIRMATION_HEADER.formatted(returnName.getLabel()))
@@ -119,20 +117,5 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
                 caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference),
                 recorded.change().warrantNumber()))
             .build();
-    }
-
-    /**
-     * Schedules the claimant's email once the submit transaction has committed, so the claimant is never
-     * told about a return that was rolled back. The notification service runs in its own transaction, and a
-     * failure to schedule is only logged, so Notify can never undo the recorded return.
-     */
-    private void notifyClaimant(long caseReference, WarrantReturnName returnName, String additionalDetails) {
-        AfterCommit.run(() -> {
-            try {
-                warrantReturnNotificationService.notifyClaimant(caseReference, returnName, additionalDetails);
-            } catch (RuntimeException ex) {
-                log.error("Failed to schedule the warrant return email for case {}", caseReference, ex);
-            }
-        });
     }
 }

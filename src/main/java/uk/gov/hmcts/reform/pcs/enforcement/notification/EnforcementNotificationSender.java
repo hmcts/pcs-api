@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.enforcement.notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -22,12 +21,8 @@ import java.util.Optional;
 
 /**
  * Schedules an enforcement email to the claimant through the same db-scheduler Notify task as the rest of
- * pcs-api, in a transaction of its own so a failure to schedule cannot undo the case data the email
- * describes.
- *
- * <p>Callers reach this through {@link EnforcementNotificationService}, which defers the send until the case
- * event has committed. Calling it directly from inside an event's transaction would tell the claimant about
- * data that can still be rolled back.</p>
+ * pcs-api. It joins the caller's transaction, as db-scheduler does, so the email and its case notification
+ * are committed or rolled back with the case data the email describes.
  */
 @Slf4j
 @Service
@@ -49,7 +44,7 @@ public class EnforcementNotificationSender {
      * @param personalisation the personalisation on top of the claimant's base personalisation; the keys
      *                        {@link EnforcementEmail#getPersonalisation()} declares
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public boolean send(long caseReference, EnforcementEmail email, Map<String, Object> personalisation) {
         if (email == null) {
             return false;

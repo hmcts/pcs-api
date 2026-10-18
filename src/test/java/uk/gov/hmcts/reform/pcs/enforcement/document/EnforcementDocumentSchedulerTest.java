@@ -9,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -71,24 +71,22 @@ class EnforcementDocumentSchedulerTest {
     }
 
     @Test
-    void shouldWaitForTheTransactionToCommit() {
+    void shouldScheduleInsideTheCurrentTransaction() {
         TransactionSynchronizationManager.initSynchronization();
 
         underTest.scheduleApprovalDocument(ENFORCEMENT_ID, SelectEnforcementType.WARRANT);
-        verifyNoInteractions(schedulerClient);
 
-        List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
-        synchronizations.forEach(TransactionSynchronization::afterCommit);
         assertThat(scheduled(1)).hasSize(1);
+        assertThat(TransactionSynchronizationManager.getSynchronizations()).isEmpty();
     }
 
     @Test
-    void shouldNotThrowWhenSchedulingFailsAfterTheCommit() {
+    void shouldFailTheEventWhenSchedulingFails() {
         doThrow(new IllegalStateException("database down")).when(schedulerClient).scheduleIfNotExists(any());
 
-        underTest.scheduleApplicationDocuments(ENFORCEMENT_ID, SelectEnforcementType.WARRANT);
-
-        verify(schedulerClient, times(2)).scheduleIfNotExists(any());
+        assertThatThrownBy(() -> underTest.scheduleApplicationDocuments(ENFORCEMENT_ID,
+                                                                        SelectEnforcementType.WARRANT))
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
