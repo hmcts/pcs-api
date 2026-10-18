@@ -171,7 +171,7 @@ Feature: Bailiff records the warrant return
       | Request for additional information                             | unchanged                   |
       | Other Interim Return                                           | unchanged                   |
 
-  @HDPI-8424 @HDPI-7538 @pending
+  @HDPI-8424 @HDPI-7538
   Scenario Outline: Claimant is notified of the return
     When I submit a return with return name "<return name>"
     Then the claimant "<notified>" an email
@@ -186,7 +186,7 @@ Feature: Bailiff records the warrant return
       | Possession Order set aside                   | does not receive |
       | Eviction successful                          | does not receive |
 
-  @HDPI-8424 @pending
+  @HDPI-8424 @HDPI-7538
   Scenario: Free text is included in the claimant email
     When I submit a return with return name "Other interim return" and additional details "Occupant presented a court order"
     Then the claimant email says "The reason provided by the bailiff is: Occupant presented a court order"
