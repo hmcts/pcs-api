@@ -33,10 +33,17 @@ import {
  * Records the enforcement fee as paid, signs in as a hearing centre admin and accepts the application.
  * Leaves the warrant in "Awaiting bailiff allocation" with a warrant number, and the browser signed in
  * as the hearing centre admin.
+ *
+ * Pass `feeOutstanding: false` for an application that is already awaiting review: one whose fee was
+ * paid or waived, or a type with no fee.
  */
-export async function approveWarrantAsCaseworker(page: Page, world: EnforcementWorld): Promise<void> {
+export async function approveWarrantAsCaseworker(
+  page: Page,
+  world: EnforcementWorld,
+  options: { feeOutstanding?: boolean } = {}
+): Promise<void> {
   // The number is generated on approval and is what the later bailiff confirmations quote.
-  world.warrantNumber = await approveApplicationAsCaseworker(page, world, 'Warrant');
+  world.warrantNumber = await approveApplicationAsCaseworker(page, world, 'Warrant', options);
   world.warrantApproved = true;
 }
 
@@ -44,13 +51,18 @@ export async function approveWarrantAsCaseworker(page: Page, world: EnforcementW
  * Records the fee for the case's application awaiting payment as paid, signs in as a hearing centre admin and
  * accepts it. Returns the warrant or writ number the confirmation screen gives, and leaves the browser signed in
  * as the hearing centre admin.
+ *
+ * Pass `feeOutstanding: false` for an application that is already awaiting review.
  */
 export async function approveApplicationAsCaseworker(
   page: Page,
   world: EnforcementWorld,
-  kind: 'Warrant' | 'Writ'
+  kind: 'Warrant' | 'Writ',
+  { feeOutstanding = true }: { feeOutstanding?: boolean } = {}
 ): Promise<string> {
-  await recordEnforcementFeePaid();
+  if (feeOutstanding) {
+    await recordEnforcementFeePaid();
+  }
   await signInAsHearingCentreAdmin(page);
   await openCaseSummary(page);
   await startEvent(DECIDE_ENFORCEMENT);
@@ -173,10 +185,10 @@ const SETTABLE_STATUSES = [
  * Allocates the approved warrant to a bailiff through pcs-api testing support, which moves it to
  * "Awaiting scheduling" and unblocks the schedule / reschedule / notice-served / warrant-return journeys.
  *
- * The `allocateBailiff` event cannot be driven outside AAT (its StaffUser type-ahead needs staff reference
- * data), so this goes through `BailiffAllocationService` instead, for the same outcome.
+ * A shortcut for scenarios that only need the warrant allocated: feature 03 drives the `allocateBailiff`
+ * event itself. This goes through `BailiffAllocationService` instead, for the same outcome.
  */
-export async function allocateBailiff(world: EnforcementWorld, email = localUsers.bailiff): Promise<void> {
+export async function allocateBailiff(world: EnforcementWorld, email: string = localUsers.bailiff): Promise<void> {
   const userId = await localIdamUserId(email);
   await allocateBailiffViaTestingSupport(requireCaseReference(world), {
     userId,

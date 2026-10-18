@@ -44,6 +44,7 @@ class EnforcementSubmitEventTest {
         EnforcementOrder enforcementOrder = enforcementOrder(enforcementType);
         enforcementOrder.setWarrantFeeAmount(FEE_AMOUNT);
         enforcementOrder.setWritFeeAmount(FEE_AMOUNT);
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder)).thenReturn(true);
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
@@ -68,9 +69,24 @@ class EnforcementSubmitEventTest {
         assertThat(response.getConfirmationBody()).isNull();
     }
 
+    // 01 "Repeat warrant within 12 months of a suspended warrant is free" (HDPI-8424).
+    @Test
+    void submit_doesNotAskForTheFeeForAFreeRepeatWarrant() {
+        EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
+        enforcementOrder.setWarrantFeeAmount(FEE_AMOUNT);
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder)).thenReturn(false);
+
+        SubmitResponse<State> response = event.submit(payload(enforcementOrder));
+
+        assertThat(response.getErrors()).isNullOrEmpty();
+        assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
+        assertThat(response.getConfirmationBody()).isNull();
+    }
+
     @Test
     void submit_doesNotAskForAFeeWhenTheFeeLookupFoundNone() {
         EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder)).thenReturn(true);
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 

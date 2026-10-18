@@ -57,13 +57,32 @@ export async function soleEnforcement(page: Page): Promise<EnforcementRow> {
 }
 
 /**
- * Asserts the status of the case's only enforcement, opening the tab first. Polls the whole read so that
- * a status set by a just-submitted event is picked up once CCD has it.
+ * The enforcement the case is working on: its only one, or, when `earlierCount` enforcements came before it,
+ * the first the tab lists (the live one, else the most recently changed). Fails if the tab does not show
+ * exactly `earlierCount + 1` enforcements.
  */
-export async function expectEnforcementStatus(page: Page, caseReference: string, status: string): Promise<void> {
+export async function currentEnforcement(page: Page, earlierCount = 0): Promise<EnforcementRow> {
+  if (earlierCount === 0) {
+    return soleEnforcement(page);
+  }
+  const rows = await enforcementRows(page);
+  expect(rows, `${earlierCount + 1} enforcements on the "Enforcement status" tab`).toHaveLength(earlierCount + 1);
+  return rows[0];
+}
+
+/**
+ * Asserts the status of the case's current enforcement (see {@link currentEnforcement}), opening the tab
+ * first. Polls the whole read so that a status set by a just-submitted event is picked up once CCD has it.
+ */
+export async function expectEnforcementStatus(
+  page: Page,
+  caseReference: string,
+  status: string,
+  earlierCount = 0
+): Promise<void> {
   await openCaseTab(page, caseReference, ENFORCEMENT_STATUS_TAB);
   await expect
-    .poll(async () => (await soleEnforcement(page))['Status'], { timeout: VERY_LONG_TIMEOUT })
+    .poll(async () => (await currentEnforcement(page, earlierCount))['Status'], { timeout: VERY_LONG_TIMEOUT })
     .toBe(status);
 }
 

@@ -4,6 +4,7 @@ import { validationData, validationRecord, validationTuple } from './interfaces/
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from './test-logger';
+import { holdIfPageChanged } from '@utils/page-pacing';
 import { ActionCMRegistry } from './registry/registry-caseManagement/action-caseManagement.registry';
 import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
 import { axe_Exclusions } from '@config/axe_exclusions.config';
@@ -138,6 +139,7 @@ export async function performAction(action: string, fieldName?: actionData | act
       await logToBrowser(executor.page, stepText);
     });
     await validatePageIfNavigated(action);
+    await holdIfPageChanged(executor.page);
   }
 }
 
@@ -156,6 +158,7 @@ export async function performValidation(validation: string, inputFieldName?: val
   await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
+  await holdIfPageChanged(executor.page);
 }
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {

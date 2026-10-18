@@ -110,7 +110,6 @@ pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
   'a {string} has been generated',
   'the previous warrant ended with {string}',
   'the claimant applies for a warrant of restitution',
-  'the {string} tab lists {string} above {string}',
   'the case {string} tab shows the event that changed it, who submitted it and when',
 ]);
 
