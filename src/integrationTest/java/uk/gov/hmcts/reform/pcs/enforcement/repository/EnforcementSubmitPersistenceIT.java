@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
@@ -73,7 +74,7 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for.
         enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
-            enforcementStatusTransitions);
+            enforcementStatusTransitions, mock(EnforcementNotificationService.class));
     }
 
     @ParameterizedTest

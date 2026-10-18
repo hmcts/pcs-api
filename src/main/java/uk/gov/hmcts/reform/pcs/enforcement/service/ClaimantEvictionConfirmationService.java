@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class ClaimantEvictionConfirmationService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final ClaimantRiskAssessmentService claimantRiskAssessmentService;
+    private final EnforcementNotificationService enforcementNotificationService;
 
     /**
      * Saves any change to the claimant's risk assessment answers (HDPI-7552), then records whether they can
@@ -65,6 +67,12 @@ public class ClaimantEvictionConfirmationService {
         EnforcementStatus target = canAttend.toBoolean() ? CLAIMANT_CONFIRMED : CLAIMANT_UNABLE_TO_ATTEND;
         enforcementStatusTransitions.transition(enforcement, target);
         enforcementOrderRepository.save(enforcement);
+        if (target == CLAIMANT_CONFIRMED) {
+            enforcementNotificationService.notifyClaimantOfConfirmedAttendance(
+                caseReference, enforcement.getBailiffDate());
+        } else {
+            enforcementNotificationService.notifyClaimantOfDeclinedAttendance(caseReference);
+        }
         // TODO HDPI-7549: when the claimant cannot attend, create a "Reschedule eviction" task for the allocated
         // bailiff, and store the dates they are not available (the journey does not ask for them yet). It needs
         // Work Allocation.
