@@ -63,7 +63,10 @@ class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
     private static final LocalDateTime EVICTION = LocalDateTime.now().plusDays(14).withHour(10).withMinute(0);
     private static final LocalDateTime SERVED = LocalDateTime.now().minusDays(1).withHour(10).withMinute(0);
     private static final String BAILIFF_USER_ID = "bailiff-user-id";
-    /** enf_case.enforcement_number is unique, and these cases commit, so each needs its own. */
+    /**
+     * enf_case.enforcement_number is unique, and these cases commit, so each needs its own. The "T" keeps them
+     * clear of the numbers EnforcementNumberGenerator gives from enf_case_number_seq in later tests.
+     */
     private static final AtomicLong WARRANT_NUMBERS = new AtomicLong();
 
     @Autowired
@@ -95,7 +98,7 @@ class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
     void setUp() {
         caseReference = cases.issue();
         bailiff = events.registerActor("Sam", "Jones", "caseworker-pcs", "bailiff");
-        warrantNumber = "WP-%08d".formatted(WARRANT_NUMBERS.incrementAndGet());
+        warrantNumber = "WP-T%07d".formatted(WARRANT_NUMBERS.incrementAndGet());
     }
 
     @Test

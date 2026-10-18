@@ -82,6 +82,13 @@ export class EnforcementWorld {
   /** The answer the claimant changed `riskQuestion` to. */
   changedRiskAnswer?: string;
   /**
+   * The warrant and writ numbers this scenario was given, keyed by the illustrative number the feature file
+   * uses for each (e.g. "WP-0001"), in the order they were generated.
+   */
+  enforcementNumbers: Record<string, string> = {};
+  /** The real reference the scenario last searched for in global search. */
+  searchedReference?: string;
+  /**
    * Values the feature files quote illustratively, mapped to what this scenario actually produced: a warrant
    * number such as "WP-0001" to the number generated on approval, or an order date to the approval date.
    */

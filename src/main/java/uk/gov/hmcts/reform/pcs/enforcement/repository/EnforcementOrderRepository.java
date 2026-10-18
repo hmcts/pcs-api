@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.enforcement.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 
@@ -19,6 +20,14 @@ public interface EnforcementOrderRepository extends JpaRepository<EnforcementOrd
     boolean existsByClaimIdAndStatusNotIn(UUID claimId, Collection<EnforcementStatus> statuses);
 
     List<EnforcementOrderEntity> findByClaimIdAndStatus(UUID claimId, EnforcementStatus status);
+
+    /**
+     * Every warrant and writ number given on the case, oldest approval first.
+     */
+    @Query("SELECT e.enforcementNumber FROM EnforcementOrderEntity e "
+        + "WHERE e.claim.pcsCase.caseReference = :caseReference AND e.enforcementNumber IS NOT NULL "
+        + "ORDER BY e.approvedAt, e.enforcementNumber")
+    List<String> findEnforcementNumbersByCaseReference(@Param("caseReference") long caseReference);
 
     /**
      * The next value of enf_case_number_seq, from which warrant and writ numbers are built.

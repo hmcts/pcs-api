@@ -42,13 +42,15 @@ export async function approveWarrantAsCaseworker(
   world: EnforcementWorld,
   options: { feeOutstanding?: boolean } = {}
 ): Promise<void> {
-  await approveApplicationAsCaseworker(page, world, 'Warrant', options);
+  // The number is generated on approval and is what the later bailiff confirmations quote.
+  world.warrantNumber = await approveApplicationAsCaseworker(page, world, 'Warrant', options);
+  world.warrantApproved = true;
 }
 
 /**
- * Records the fee as paid and accepts the application as a hearing centre admin. A warrant is left in
- * "Awaiting bailiff allocation", a writ in "Transferred to the High Court"; either way with a number, which is
- * recorded as `world.warrantNumber`, and the browser signed in as the hearing centre admin.
+ * Records the fee for the case's application awaiting payment as paid, signs in as a hearing centre admin and
+ * accepts it. Returns the warrant or writ number the confirmation screen gives, and leaves the browser signed in
+ * as the hearing centre admin.
  *
  * Pass `feeOutstanding: false` for an application that is already awaiting review.
  */
@@ -57,7 +59,7 @@ export async function approveApplicationAsCaseworker(
   world: EnforcementWorld,
   kind: 'Warrant' | 'Writ',
   { feeOutstanding = true }: { feeOutstanding?: boolean } = {}
-): Promise<void> {
+): Promise<string> {
   if (feeOutstanding) {
     await recordEnforcementFeePaid();
   }
@@ -70,11 +72,12 @@ export async function approveApplicationAsCaseworker(
   await submitDecision(page);
   await expectConfirmation(page, `${kind} approved`);
   // The number is generated on approval and is what the later bailiff confirmations quote.
-  const numberPattern = new RegExp(`${kind} number: \\S+`);
-  const numberLine = await page.locator('#confirmation-body').getByText(numberPattern).first().innerText();
-  world.warrantNumber = numberLine.replace(new RegExp(`^.*${kind} number:\\s*`, 's'), '').trim();
+  const numberLabel = `${kind} number:`;
+  const numberLine = await page.locator('#confirmation-body').getByText(new RegExp(`${numberLabel} \\S+`)).first().innerText();
+  const enforcementNumber = numberLine.slice(numberLine.indexOf(numberLabel) + numberLabel.length).trim().split(/\s+/)[0];
+  world.warrantNumber = enforcementNumber;
   world.currentEvent = undefined;
-  world.warrantApproved = true;
+  return enforcementNumber;
 }
 
 /**
