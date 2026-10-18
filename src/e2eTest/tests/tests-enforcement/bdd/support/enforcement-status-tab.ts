@@ -154,6 +154,14 @@ const STATUS_ALIASES: Record<string, string> = {
   'Transferred to High Court': 'Transferred to the High Court',
 };
 
+/** SelectEnforcementType labels by the code the case data carries. */
+const TYPE_LABELS: Record<string, string> = {
+  WARRANT: 'Warrant of possession',
+  WRIT: 'Writ of possession',
+  WARRANT_OF_RESTITUTION: 'Warrant of restitution',
+  WRIT_OF_RESTITUTION: 'Writ of restitution',
+};
+
 export type EnforcementRow = { status?: string; number?: string; type?: string };
 
 /** Every enforcement on the case, current first, as the case data lists them. */
@@ -170,25 +178,34 @@ export async function enforcementRows(caseReference: string): Promise<Enforcemen
   return enforcements.map(item => ({
     status: STATUS_LABELS[item.value?.status ?? ''] ?? item.value?.status,
     number: item.value?.enforcementNumber,
-    type: item.value?.enforcementType,
+    type: TYPE_LABELS[item.value?.enforcementType ?? ''] ?? item.value?.enforcementType,
   }));
 }
 
 /**
- * Asserts the status of the case's only enforcement. Polls so that a status set by a just-submitted event is
- * picked up once CCD has it.
+ * The enforcement the case is working on: its only one, or, when `earlierCount` enforcements came before it,
+ * the first the case data lists (the live one, else the most recently changed). Fails if the case does not
+ * have exactly `earlierCount + 1` enforcements.
  */
-export async function expectEnforcementStatus(_page: Page, caseReference: string, status: string): Promise<void> {
+export async function currentEnforcement(caseReference: string, earlierCount = 0): Promise<EnforcementRow> {
+  const rows = await enforcementRows(caseReference);
+  expect(rows, `${earlierCount + 1} enforcement(s) on the case`).toHaveLength(earlierCount + 1);
+  return rows[0];
+}
+
+/**
+ * Asserts the status of the case's current enforcement (see {@link currentEnforcement}). Polls so that a
+ * status set by a just-submitted event is picked up once CCD has it.
+ */
+export async function expectEnforcementStatus(
+  _page: Page,
+  caseReference: string,
+  status: string,
+  earlierCount = 0
+): Promise<void> {
   const expected = STATUS_ALIASES[status] ?? status;
   await expect
-    .poll(
-      async () => {
-        const rows = await enforcementRows(caseReference);
-        expect(rows, 'exactly one enforcement on the case').toHaveLength(1);
-        return rows[0].status;
-      },
-      { timeout: VERY_LONG_TIMEOUT }
-    )
+    .poll(async () => (await currentEnforcement(caseReference, earlierCount)).status, { timeout: VERY_LONG_TIMEOUT })
     .toBe(expected);
 }
 

@@ -54,9 +54,145 @@
             }
           ]
         }
+      },
+      {
+        "ccd_service_name": "PCS",
+        "staff_profile": {
+          "id": "60d20156-049f-3f7f-881d-fce79ba89b76",
+          "first_name": "Bob",
+          "last_name": "Bailiff",
+          "region_id": 1,
+          "user_type": "ENFORCEMENT",
+          "suspended": "false",
+          "case_allocator": "N",
+          "task_supervisor": "N",
+          "staff_admin": "N",
+          "created_time": "2026-10-18T09:00:00.000000",
+          "last_updated_time": "2026-10-18T09:00:00.000000",
+          "email_id": "pcs-bailiff@localhost",
+          "region": "London",
+          "base_location": [
+            {
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000",
+              "location_id": 20262,
+              "location": "Central London",
+              "is_primary": true
+            }
+          ],
+          "user_type_id": 6,
+          "role": [
+            {
+              "role_id": "24",
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000",
+              "role": "Bailiff",
+              "is_primary": true
+            }
+          ],
+          "skills": [],
+          "work_area": [
+            {
+              "service_code": "AAA3",
+              "area_of_work": "Mortgage and Landlord Possession Claims",
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000"
+            }
+          ]
+        }
+      },
+      {
+        "ccd_service_name": "PCS",
+        "staff_profile": {
+          "id": "92f5a81f-ed87-3f15-8f48-d991892faefa",
+          "first_name": "Ada",
+          "last_name": "BailiffAdmin",
+          "region_id": 1,
+          "user_type": "ENFORCEMENT",
+          "suspended": "false",
+          "case_allocator": "N",
+          "task_supervisor": "N",
+          "staff_admin": "N",
+          "created_time": "2026-10-18T09:00:00.000000",
+          "last_updated_time": "2026-10-18T09:00:00.000000",
+          "email_id": "pcs-bailiff-admin@localhost",
+          "region": "London",
+          "base_location": [
+            {
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000",
+              "location_id": 20262,
+              "location": "Central London",
+              "is_primary": true
+            }
+          ],
+          "user_type_id": 6,
+          "role": [
+            {
+              "role_id": "23",
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000",
+              "role": "Bailiff Administrator",
+              "is_primary": true
+            }
+          ],
+          "skills": [],
+          "work_area": [
+            {
+              "service_code": "AAA3",
+              "area_of_work": "Mortgage and Landlord Possession Claims",
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000"
+            }
+          ]
+        }
+      },
+      {
+        "ccd_service_name": "PCS",
+        "staff_profile": {
+          "id": "117afe78-87b1-3abe-9252-9c0d17459e3e",
+          "first_name": "Mark",
+          "last_name": "BailiffManager",
+          "region_id": 1,
+          "user_type": "ENFORCEMENT",
+          "suspended": "false",
+          "case_allocator": "N",
+          "task_supervisor": "N",
+          "staff_admin": "N",
+          "created_time": "2026-10-18T09:00:00.000000",
+          "last_updated_time": "2026-10-18T09:00:00.000000",
+          "email_id": "pcs-bailiff-manager@localhost",
+          "region": "London",
+          "base_location": [
+            {
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000",
+              "location_id": 20262,
+              "location": "Central London",
+              "is_primary": true
+            }
+          ],
+          "user_type_id": 6,
+          "role": [
+            {
+              "role_id": "25",
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000",
+              "role": "Bailiff Manager",
+              "is_primary": true
+            }
+          ],
+          "skills": [],
+          "work_area": [
+            {
+              "service_code": "AAA3",
+              "area_of_work": "Mortgage and Landlord Possession Claims",
+              "created_time": "2026-10-18T09:00:00.000000",
+              "last_updated_time": "2026-10-18T09:00:00.000000"
+            }
+          ]
+        }
       }
     ]
   }
 }
-
-

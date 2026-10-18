@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class ClaimantEvictionConfirmationService {
     private final CurrentEnforcementService currentEnforcementService;
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
+    private final EnforcementNotificationService enforcementNotificationService;
 
     /**
      * Moves the live enforcement to "Claimant confirmed" or "Claimant unable to attend". This only happens
@@ -54,6 +56,12 @@ public class ClaimantEvictionConfirmationService {
         enforcementStatusTransitions.transition(enforcement, target);
         enforcement.setClaimantCanAttend(canAttend.toBoolean());
         enforcementOrderRepository.save(enforcement);
+        if (target == CLAIMANT_CONFIRMED) {
+            enforcementNotificationService.notifyClaimantOfConfirmedAttendance(
+                caseReference, enforcement.getBailiffDate());
+        } else {
+            enforcementNotificationService.notifyClaimantOfDeclinedAttendance(caseReference);
+        }
         // TODO HDPI-7549: when the claimant cannot attend, create a "Reschedule eviction" task for the allocated
         // bailiff, and store the dates they are not available (the journey does not ask for them yet).
         // TODO HDPI-7552: create a "Review updated risk information" task when the claimant changes their risk

@@ -165,6 +165,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
