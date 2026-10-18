@@ -27,8 +27,11 @@ import {
 import { approveApplicationAsCaseworker, restoreClaimantSession } from '../support/approve-warrant';
 import { currentSignedInRole } from '../support/session';
 import { expectSearchFindsCase, searchByOtherReference } from '../support/global-search';
+import { closeApprovedWarrant } from '../support/repeat-enforcement';
 
 const OTHER_REFERENCE = 'Other reference';
+/** The final return that closes a live warrant so that another application can be made. */
+const CLOSING_RETURN_NAME = 'Warrant withdrawn';
 const DEFENDANT_LEGAL_REPRESENTATIVE = 'defendant legal representative';
 
 /** Applies for `type` as the claimant's legal representative and approves it; returns the number it was given. */
@@ -78,7 +81,16 @@ Given('a PCS case {string} with warrants {string} and {string}', async ({ page, 
   }
 });
 
+// The Background leaves its warrant live, and "Enforce the order" refuses another application while it is, so
+// the bailiff staff close it with a final return first.
 When('a new writ {string} is generated on the case', async ({ page, context, world }, illustrative: string) => {
+  if (world.warrantApproved) {
+    approximatePrecondition(
+      'HDPI-8424',
+      'the live warrant is closed with a final return first, because only one enforcement can be live at a time'
+    );
+    await closeApprovedWarrant(page, context, world, CLOSING_RETURN_NAME);
+  }
   try {
     world.enforcementNumbers[illustrative] = await generateEnforcement(page, context, world, 'writ of possession');
   } finally {

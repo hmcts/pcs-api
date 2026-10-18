@@ -271,11 +271,13 @@ Given('I am signed in to XUI as a hearing centre admin', async ({ page }) => {
   await openCaseSummary(page);
 });
 
+// Only an event the scenario started itself: opening one from a task waits on HDPI-8627.
 Then('the {string} journey opens', async ({ page, world, $tags }, eventName: string) => {
-  if (eventName !== DECIDE_ENFORCEMENT || !inDecideEnforcement(world)) {
+  const event = xuiEvents[eventName];
+  if (!event || world.currentEvent !== eventName) {
     return markPending(genericStepPending, $tags);
   }
-  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+  await expect(page.getByRole('heading', { name: event.firstPageHeader })).toBeVisible();
 });
 
 /**

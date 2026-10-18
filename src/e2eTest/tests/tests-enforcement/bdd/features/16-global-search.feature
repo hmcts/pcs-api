@@ -22,9 +22,8 @@ Feature: Find a case by warrant or writ number
       | WP-0002   |
 
   # The Background leaves "WP-0002" live, so "Enforce the order" refuses a third application until a
-  # warrant return closes it (feature 15, HDPI-8424). The indexing itself is covered by pcs-api's
-  # EnforcementGlobalSearchReferencesIT and EnforcementNumberGlobalSearchIT.
-  @HDPI-7677 @pending
+  # warrant return closes it (feature 15, HDPI-8424): the step records a final return on it first.
+  @HDPI-7677
   Scenario: Every warrant and writ number is searchable
     When a new writ "HC-0003" is generated on the case
     Then the case's global search "Other reference" values include "WP-0001", "WP-0002" and "HC-0003"
