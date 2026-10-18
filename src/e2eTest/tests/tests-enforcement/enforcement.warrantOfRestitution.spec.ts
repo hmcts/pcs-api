@@ -75,8 +75,8 @@ test.afterEach(async () => {
   }
     PageContentValidation.finaliseTest();
 });
-test.describe('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement',
+test.describe('[Enforcement - Warrant of Restitution] @nightly', async () => {
+  test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -170,7 +170,7 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
 
     });
 
-  test('Warrant - Apply for a Warrant of Restitution - Warrant with all NO selection - no update on prepopulated data  @allNO @enforcement',
+  test('Warrant - Apply for a Warrant of Restitution - Warrant with all NO selection - no update on prepopulated data  @allNO @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

@@ -49,6 +49,7 @@ import {
 import { AWAITING_BAILIFF_ALLOCATION } from '../support/approve-warrant';
 import { expectEnforcementStatus } from '../support/enforcement-status-tab';
 import { localUserName, localUsers } from '@config/local-stack.config';
+import { expectSingleErrorMessage } from '../support/error-summary';
 import { expectEvictionResult, isEvictionResult } from './schedule-eviction.steps';
 
 
@@ -74,7 +75,7 @@ When('I select {string} without choosing a risk level', async ({ page }, button:
 });
 
 Then('I see an error asking me to choose a risk level', async ({ page }) => {
-  await expect(errorSummary(page)).toContainText(setRiskLevel.question);
+  await expectSingleErrorMessage(page, setRiskLevel.question);
   await expect(page.getByRole('heading', { name: setRiskLevel.pageLabel })).toBeVisible();
 });
 
@@ -265,7 +266,7 @@ When('I add the bailiff note {string}', async ({ page, world }, note: string) =>
 Then('I see {string}', async ({ page, world, $tags }, result: string) => {
   switch (result) {
     case 'the standard XUI error that a note is needed':
-      await expect(errorSummary(page)).toContainText(`${addBailiffNote.noteLabel} is required`);
+      await expectSingleErrorMessage(page, `${addBailiffNote.noteLabel} is required`);
       return;
     case 'the standard XUI error for too many characters':
       await expect(errorSummary(page)).toBeVisible();
@@ -413,7 +414,7 @@ When('I select {string} without choosing a bailiff', async ({ page, world }, but
 // XUI's own "is required" check on the StaffUser field fires before pcs-api's "Choose a bailiff"; both name
 // the bailiff.
 Then('I see an error asking me to choose a bailiff', async ({ page }) => {
-  await expect(errorSummary(page)).toContainText(/bailiff/i);
+  await expectSingleErrorMessage(page, /bailiff/i);
   await expect(page.getByRole('heading', { name: findBailiff.pageLabel })).toBeVisible();
 });
 

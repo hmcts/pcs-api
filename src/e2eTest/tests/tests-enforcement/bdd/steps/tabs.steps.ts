@@ -4,6 +4,7 @@ import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import {
+  canSignInAs,
   createCaseWithWarrant,
   createCaseWithWrit,
   expectCaseTab,
@@ -42,7 +43,6 @@ import {
 import {
   CITIZEN_DEFENDANT,
   DEFENDANT_LEGAL_REPRESENTATIVE,
-  canSetUpDefendants,
   defendantViews,
   expectEnforcementTab,
 } from '../support/defendant-visibility';
@@ -119,26 +119,16 @@ When('the {string} is generated', async ({ page, context, world, $tags }, type: 
   }
 });
 
-async function setUpApprovedWrit(
-  page: Parameters<typeof approveApplicationAsCaseworker>[0],
-  world: EnforcementWorld,
-  $tags: string[]
-): Promise<boolean> {
-  if (!(await createCaseWithWrit(world))) {
-    markPending({ ticket: 'HDPI-7419', summary: 'seeding a writ application outside a local stack' }, $tags);
-    return false;
-  }
+async function setUpApprovedWrit(page: Parameters<typeof approveApplicationAsCaseworker>[0], world: EnforcementWorld): Promise<void> {
+  await createCaseWithWrit(world);
   await approveApplicationAsCaseworker(page, world, 'Writ');
-  return true;
 }
 
 Given(
   'the case has a writ of possession {string} approved by a judge\'s order dated {string}',
-  async ({ page, context, world, $tags }, number: string, orderDate: string) => {
+  async ({ page, context, world }, number: string, orderDate: string) => {
     try {
-      if (!(await setUpApprovedWrit(page, world, $tags))) {
-        return;
-      }
+      await setUpApprovedWrit(page, world);
     } finally {
       await restoreClaimantSession(page, context);
     }
@@ -153,9 +143,9 @@ Given(
   }
 );
 
-Given('the case has only a writ of possession', async ({ page, context, world, $tags }) => {
+Given('the case has only a writ of possession', async ({ page, context, world }) => {
   try {
-    await setUpApprovedWrit(page, world, $tags);
+    await setUpApprovedWrit(page, world);
   } finally {
     await restoreClaimantSession(page, context);
   }
@@ -166,8 +156,8 @@ Given('the notice of eviction {string}', async ({ page, context, world, $tags },
     // True by construction: the scenario never marks the notice of eviction as served.
     return;
   }
-  if (served !== 'has been served' || !canSetUpDefendants()) {
-    return markPending({ ticket: 'HDPI-7539', summary: 'defendants seeing the enforcement once the notice is served' }, $tags);
+  if (served !== 'has been served' || !canSignInAs('bailiff')) {
+    return markPending({ ticket: 'HDPI-7539', summary: 'a bailiff user to schedule the eviction and mark the notice served' }, $tags);
   }
   await scheduleEvictionOnApprovedWarrant(page, context, world);
   await markNoticeServedAsBailiff(page, context, world);
@@ -406,9 +396,9 @@ Then('{string} is listed above {string}', async ({ page, world }, upper: string,
   expect(upperIndex, `${upper} is listed above ${lower}`).toBeLessThan(lowerIndex);
 });
 
-Given('the case has a writ of possession', async ({ page, context, world, $tags }) => {
+Given('the case has a writ of possession', async ({ page, context, world }) => {
   try {
-    await setUpApprovedWrit(page, world, $tags);
+    await setUpApprovedWrit(page, world);
   } finally {
     await restoreClaimantSession(page, context);
   }
