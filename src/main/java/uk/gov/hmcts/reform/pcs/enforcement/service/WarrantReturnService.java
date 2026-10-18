@@ -219,6 +219,14 @@ public class WarrantReturnService {
     }
 
     /**
+     * One enforcement's most recent return, if it has one.
+     */
+    @Transactional(readOnly = true)
+    public Optional<WarrantReturnEntity> findLatestReturn(EnforcementOrderEntity enforcement) {
+        return warrantReturnRepository.findFirstByEnforcementOrderIdOrderByRecordedAtDesc(enforcement.getId());
+    }
+
+    /**
      * HDPI-8424 fee waiver hook: whether a further warrant applied for today would be free. It is free when
      * the claim's most recent final return is one of {@link #FREE_REPEAT_WARRANT_RETURN_NAMES} and today is
      * within {@value #FREE_REPEAT_WARRANT_MONTHS} calendar months of that warrant being generated. A warrant

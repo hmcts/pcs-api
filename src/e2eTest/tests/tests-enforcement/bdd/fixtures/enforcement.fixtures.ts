@@ -55,6 +55,13 @@ export class EnforcementWorld {
   riskQuestion?: string;
   /** The answer the claimant changed `riskQuestion` to. */
   changedRiskAnswer?: string;
+  /**
+   * Values the feature files quote illustratively, mapped to what this scenario actually produced: a warrant
+   * number such as "WP-0001" to the number generated on approval, or an order date to the approval date.
+   */
+  aliases: Record<string, string> = {};
+  /** The warrant return the scenario recorded in "Record warrant return", if any. */
+  recordedReturn?: { type: string; outcome: string; returnName: string; date: string; time: string };
 }
 
 type EnforcementFixtures = {

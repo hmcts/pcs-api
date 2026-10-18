@@ -74,6 +74,7 @@ class ClaimantEvictionConfirmationServiceTest {
         underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
 
         assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
+        assertThat(enforcement.getClaimantCanAttend()).isTrue();
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfConfirmedAttendance(CASE_REFERENCE, EVICTION);
@@ -88,6 +89,7 @@ class ClaimantEvictionConfirmationServiceTest {
         underTest.recordAttendance(CASE_REFERENCE, YesOrNo.NO);
 
         assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_UNABLE_TO_ATTEND);
+        assertThat(enforcement.getClaimantCanAttend()).isFalse();
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);

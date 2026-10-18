@@ -16,7 +16,4 @@ pendingSteps({ ticket: 'HDPI-7547', summary: 'Claimant confirms the eviction' },
   'I confirm I will arrange for someone to gain access to, and secure, the property',
   'I answer that I cannot attend',
   'I give the dates I am not available',
-  'I have updated my risk assessment',
-  'I see my original answers alongside my updated answers',
-  'I do not see the risk level or bailiff notes',
 ]);

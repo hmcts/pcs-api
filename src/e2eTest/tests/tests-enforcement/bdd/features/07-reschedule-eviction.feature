@@ -47,11 +47,13 @@ Feature: Bailiff reschedules the eviction
     Then the screen is titled "Check your answers"
     And I can "Change" my answers
 
+  # The date must stay in the future — the event rejects a past eviction date — and the weekday must match
+  # it, because the confirmation is formatted from the date the bailiff entered.
   @HDPI-7551 @HDPI-7351
   Scenario: Submitting the new date replaces the scheduled eviction
-    Given I have entered a new eviction date of "Wednesday 1 July 2026" at "09:30"
+    Given I have entered a new eviction date of "Wednesday 30 June 2027" at "09:30"
     When I submit the "Reschedule eviction" event
-    Then I see the confirmation "Eviction date rescheduled for Wednesday 1 July 2026 at 09:30am" with the case number and warrant number
+    Then I see the confirmation "Eviction date rescheduled for Wednesday 30 June 2027 at 09:30am" with the case number and warrant number
     And the "Enforcement status" tab "Scheduled eviction" shows only the new date and time
     And the enforcement status changes to "Awaiting claimant confirmation"
     And the "Reschedule eviction" task is completed

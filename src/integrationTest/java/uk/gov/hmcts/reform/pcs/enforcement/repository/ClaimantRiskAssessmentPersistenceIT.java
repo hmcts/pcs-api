@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -18,11 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.StatementOfTruthRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.ClaimantRiskAnswer;
-import uk.gov.hmcts.reform.pcs.enforcement.domain.ClaimantRiskAssessmentDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
-import uk.gov.hmcts.reform.pcs.enforcement.view.ClaimantRiskAssessmentView;
+import uk.gov.hmcts.reform.pcs.enforcement.view.RiskAssessmentTabView;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ActiveProfiles("integration")
@@ -54,7 +55,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Claimant risk assessment updates (V046)")
 class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
 
-    private static final String ANY_RISK_QUESTION = "Does anyone living at the property pose a risk to the bailiff?";
+    private static final String UPDATE_BANNER = "The claimant has updated their risk assessment.";
 
     @Autowired
     private EnforcementOrderRepository enforcementOrderRepository;
@@ -71,7 +72,9 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
     @Autowired
     private RiskLevelService riskLevelService;
     @Autowired
-    private ClaimantRiskAssessmentView claimantRiskAssessmentView;
+    private RiskAssessmentTabView riskAssessmentTabView;
+    @MockitoBean
+    private UserRoleService userRoleService;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -104,13 +107,16 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(claimantRiskAssessmentService.getCurrentAnswers(reloaded).orElseThrow().getViolentDetails())
             .isEqualTo("Threw a chair");
 
-        ClaimantRiskAssessmentDetails shown = caseView(caseReference);
-        ClaimantRiskAnswer anyRisk = row(shown, ANY_RISK_QUESTION);
-        assertThat(anyRisk.getOriginalAnswer()).isEqualTo("No");
-        assertThat(anyRisk.getUpdatedAnswer()).isEqualTo("Yes");
-        assertThat(row(shown, "Is it difficult to access the property?").getUpdatedAnswer()).isNull();
-        assertThat(shown.getClaimantRiskAnswersUpdatedOn()).isNotNull();
-        assertThat(shown.getClaimantRiskUpdateToReview()).isEqualTo(YesOrNo.YES);
+        EnforcementOrder shown = caseView(caseReference);
+        assertThat(shown.getRiskAssessmentClaimantMarkdown())
+            .contains("Information provided by the claimant on")
+            .contains("The claimant updated this information on")
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">Does anyone at the property pose a risk to the "
+                          + "bailiff?</th><td class=\"govuk-table__cell\">No</td>"
+                          + "<td class=\"govuk-table__cell\">Yes</td>")
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">Is it difficult to access the property?</th>"
+                          + "<td class=\"govuk-table__cell\">No</td><td class=\"govuk-table__cell\"></td>");
+        assertThat(shown.getRiskAssessmentInternalMarkdown()).contains(UPDATE_BANNER);
     }
 
     @Test
@@ -127,7 +133,8 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
             "SELECT count(*) FROM enf_risk_assessment_update WHERE enf_case_id = ?", Integer.class, id)).isZero();
         assertThat(jdbcTemplate.queryForObject(
             "SELECT status FROM enf_case WHERE id = ?", String.class, id)).isEqualTo("CLAIMANT_UNABLE_TO_ATTEND");
-        assertThat(caseView(caseReference).getClaimantRiskUpdateToReview()).isEqualTo(YesOrNo.NO);
+        assertThat(caseView(caseReference).getRiskAssessmentClaimantMarkdown()).doesNotContain("Updated answer");
+        assertThat(caseView(caseReference).getRiskAssessmentInternalMarkdown()).doesNotContain(UPDATE_BANNER);
     }
 
     @Test
@@ -151,9 +158,9 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
             .isEqualTo(VerticalYesNo.YES);
         assertThat(eventData.getChooseEnforcementType().getValueCode()).isEqualTo("WARRANT");
 
-        assertThat(row(caseView(caseReference), "Is it difficult to access the property?"))
-            .extracting(ClaimantRiskAnswer::getOriginalAnswer, ClaimantRiskAnswer::getUpdatedAnswer)
-            .containsExactly("No", "Yes");
+        assertThat(caseView(caseReference).getRiskAssessmentClaimantMarkdown())
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">Is it difficult to access the property?</th>"
+                          + "<td class=\"govuk-table__cell\">No</td><td class=\"govuk-table__cell\">Yes</td>");
     }
 
     @Test
@@ -163,12 +170,12 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
         savedWarrant(caseReference);
         claimantRiskAssessmentService.recordAnswers(caseReference, warrantAnswers(YesNoNotSure.YES, VerticalYesNo.NO));
         flushAndClear();
-        assertThat(caseView(caseReference).getClaimantRiskUpdateToReview()).isEqualTo(YesOrNo.YES);
+        assertThat(caseView(caseReference).getRiskAssessmentInternalMarkdown()).contains(UPDATE_BANNER);
 
         riskLevelService.setRiskLevel(caseReference, RiskLevel.MEDIUM, null);
         flushAndClear();
 
-        assertThat(caseView(caseReference).getClaimantRiskUpdateToReview()).isEqualTo(YesOrNo.NO);
+        assertThat(caseView(caseReference).getRiskAssessmentInternalMarkdown()).doesNotContain(UPDATE_BANNER);
     }
 
     @Test
@@ -185,19 +192,16 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
             "SELECT count(*) FROM enf_risk_assessment_update WHERE enf_case_id = ?", Integer.class, id)).isZero();
     }
 
-    private ClaimantRiskAssessmentDetails caseView(long caseReference) {
+    /**
+     * The Risk assessment tab as a bailiff sees it.
+     */
+    private EnforcementOrder caseView(long caseReference) {
+        when(userRoleService.getCurrentUserCaseRoles(caseReference))
+            .thenReturn(new UserRoles("user", List.of("bailiff")));
         PCSCase pcsCase = PCSCase.builder().build();
-        claimantRiskAssessmentView.setClaimantRiskAssessment(
-            pcsCaseRepository.findByCaseReference(caseReference).orElseThrow(), pcsCase);
-        return pcsCase.getEnforcementOrder().getClaimantRiskAssessment();
-    }
-
-    private static ClaimantRiskAnswer row(ClaimantRiskAssessmentDetails details, String question) {
-        return details.getClaimantRiskAnswers().stream()
-            .map(ListValue::getValue)
-            .filter(row -> row.getQuestion().equals(question))
-            .findFirst()
-            .orElseThrow();
+        riskAssessmentTabView.setRiskAssessmentTab(
+            pcsCaseRepository.findByCaseReference(caseReference).orElseThrow(), pcsCase, caseReference);
+        return pcsCase.getEnforcementOrder();
     }
 
     private void flushAndClear() {
@@ -243,6 +247,7 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
         enforcement.setStatementOfTruth(statementOfTruthRepository.save(statementOfTruth));
         enforcement.setStatus(EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION);
         enforcement.setStatusUpdatedAt(Instant.now());
+        enforcement.setSubmittedAt(Instant.parse("2026-02-25T10:00:00Z"));
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcement);
         warrantRepository.save(WarrantEntity.builder().enforcementOrder(saved).build());
         flushAndClear();

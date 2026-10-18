@@ -1,11 +1,15 @@
 // Bailiff records the warrant return (feature 11).
 //
 // `recordWarrantReturn` is available from "Awaiting scheduling" onwards, which the testing-support
-// allocate-bailiff endpoint reaches, so the drop-down structure and the role checks are real. Submitting a
-// return is not covered here: the confirmation asserts a warrant number that pcs-api does not render, and
-// the 25 status transitions each need their own fresh case (HDPI-8424 / HDPI-7419).
+// allocate-bailiff endpoint reaches, so the drop-down structure and the role checks are real. One final
+// return is submitted and checked on the "Enforcement status" tab; the 25 status transitions each need their
+// own fresh case, so they stay pending (HDPI-8424 / HDPI-7419).
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
+import { requireCaseReference } from '../support/enforcement-journeys';
+import { expectEnforcementSection, tabDateOf, tabTime } from '../support/enforcement-status-tab';
+import { expectCheckYourAnswers, resolveEvictionDate, resolveEvictionTime } from '../support/schedule-eviction';
 import {
+  RECORD_WARRANT_RETURN,
   chooseOutcome,
   chooseReturnName,
   chooseReturnType,
@@ -13,6 +17,7 @@ import {
   optionsOf,
   returnDropDown,
   visibleReturnNameDropDown,
+  warrantReturn,
 } from '../support/warrant-return';
 
 When('I choose the {string} return', async ({ page }, type: string) => {
@@ -88,3 +93,45 @@ Then('the {string} options are {string}', async ({ page }, label: string, expect
   const field = await visibleReturnNameDropDown(page);
   expect(await optionsOf(field)).toEqual(expected.split(',').map(name => name.trim()));
 });
+
+/**
+ * Records a final return. The step names the outcome but not the return name, so the first return name the
+ * outcome offers is chosen: for "Eviction successful" that is the only one, "Eviction successful".
+ */
+Given(
+  'I recorded a {string} return with outcome {string} on {string} at {string}',
+  async ({ page, world }, type: string, outcome: string, date: string, time: string) => {
+    await chooseReturnType(page, type);
+    await chooseOutcome(page, outcome);
+    const [returnName] = await optionsOf(await visibleReturnNameDropDown(page));
+    await chooseReturnName(page, returnName);
+    const parts: Record<string, string> = {
+      ...(resolveEvictionDate(date) ?? {}),
+      ...(resolveEvictionTime(time) ?? {}),
+    };
+    for (const part of ['day', 'month', 'year', 'hour', 'minute']) {
+      await page.locator(`${warrantReturn.evictionDateTimeField}-${part}`).fill(parts[part] ?? '');
+    }
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expectCheckYourAnswers(page);
+    world.currentEvent = RECORD_WARRANT_RETURN;
+    world.recordedReturn = { type, outcome, returnName, date, time };
+  }
+);
+
+Then(
+  'the {string} tab shows under {string} the return {string}, return name {string}, outcome and the eviction date and time',
+  async ({ page, world }, _tabName: string, section: string, type: string, returnName: string) => {
+    const recorded = world.recordedReturn;
+    expect(recorded, 'a return recorded by this scenario').toBeDefined();
+    await expectEnforcementSection(page, requireCaseReference(world), section, block => {
+      expect(block?.rows).toEqual({
+        Return: type,
+        'Return name': returnName,
+        Outcome: recorded?.outcome,
+        'Eviction date': tabDateOf(recorded?.date as string),
+        'Eviction time': tabTime(recorded?.time as string),
+      });
+    });
+  }
+);
