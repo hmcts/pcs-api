@@ -6,9 +6,16 @@
 // status by driving the real events. Steps that need a status set up for them stay pending on HDPI-7419.
 import { Given, Then, expect } from '../fixtures/enforcement.fixtures';
 import { pendingSteps } from '../fixtures/pending';
-import { enforcementRows, expectEnforcementStatus, openCaseTab } from '../support/enforcement-status-tab';
+import {
+  ENFORCEMENT_STATUS_TAB,
+  enforcementRows,
+  expectEnforcementStatus,
+  openCaseTab,
+  soleEnforcement,
+} from '../support/enforcement-status-tab';
 import { setUpWarrantAtStatus } from '../support/approve-warrant';
 import { requireCaseReference } from '../support/enforcement-journeys';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
 Then('the enforcement status changes to {string}', async ({ page, world }, status: string) => {
   await expectEnforcementStatus(page, requireCaseReference(world), status);
@@ -44,7 +51,6 @@ Given('the case has a warrant with status {string}', async ({ page, context, wor
 });
 
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Setting up an enforcement in an arbitrary status' }, [
-  'a new enforcement of type {string} is added to the case with status {string}',
   'a {string} enforcement is added to the case with status {string}',
   'a warrant moves from {string} to {string}',
   'the enforcement status changes',
@@ -59,3 +65,17 @@ pendingSteps({ summary: 'Asserting event availability for a role the suite canno
   'the {string} event is {string}',
   'the {string}, {string}, {string} and {string} events are available',
 ]);
+
+/**
+ * The scenario's case starts with no enforcement, so the new one is the only one on the tab. The tab shows
+ * the type as pcs-api's SelectEnforcementType label, e.g. "Warrant of possession".
+ */
+Then('a new enforcement of type {string} is added to the case with status {string}', async ({ page, world }, type: string, status: string) => {
+  await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
+  await expect
+    .poll(async () => {
+      const enforcement = await soleEnforcement(page);
+      return { type: enforcement['Type'], status: enforcement['Status'] };
+    }, { timeout: VERY_LONG_TIMEOUT })
+    .toEqual({ type: type.charAt(0).toUpperCase() + type.slice(1), status });
+});
