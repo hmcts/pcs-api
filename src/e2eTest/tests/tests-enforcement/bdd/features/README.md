@@ -199,8 +199,15 @@ precondition when it cannot reach the status a scenario asks for.
 - **Create work allocation tasks.** Nothing creates them in any environment yet. A step that merely states
   a task exists is recorded as an approximated precondition so the scenario still runs; a step that
   interacts with one stays pending. (HDPI-8627)
-- **Control the clock.** Several scenarios say "today is 08/07/2026" to put a time in the future; nothing
-  can set the app's clock, so those stay pending.
+- **Control CCD's clock.** "Given today is 08/07/2026 and the time is 10:00" moves pcs-api's clock, through
+  `POST /testing-support/clock` (`support/test-clock.ts`), so every rule pcs-api measures against "now"
+  follows it: the eviction date must be today or in the future, the served date and the recorded eviction
+  cannot be in the future, the claimant's 72 hour confirmation deadline and the 12 calendar month free
+  repeat warrant period. CCD keeps its own clock, so the dates CCD stamps on the case stay on the real time,
+  and pcs-api queues its db-scheduler tasks from the real time, so moving the clock backwards is always safe
+  while moving it forwards leaves a task queued in the meantime waiting. The offset is process wide, so a
+  scenario that sets the clock cannot run alongside one that depends on the real date: run those on their
+  own worker (`E2E_WORKERS=1`). It is put back after each scenario that moved it.
 - **Link a defendant legal representative through Notice of Change.** pcs-api's
   `link-defendant-solicitor-to-party` answers 500 "Failed to create CCD case" locally, so `signInAs` gives the
   local defendant solicitor the `[DEFENDANTSOLICITOR]` case role instead, through

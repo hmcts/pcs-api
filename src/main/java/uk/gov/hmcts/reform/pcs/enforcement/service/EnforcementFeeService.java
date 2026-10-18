@@ -67,6 +67,9 @@ public class EnforcementFeeService {
             .relatedEntityId(enforcementId)
             .build();
 
+        // The real time, not the injected clock's: db-scheduler decides when a task is due against the real
+        // system clock, so a task scheduled from a clock the end to end tests have moved forwards would wait
+        // for the real time to catch up.
         schedulerClient.scheduleIfNotExists(
             FEES_AND_PAY_TASK_DESCRIPTOR
                 .instance(instanceId(enforcementId))

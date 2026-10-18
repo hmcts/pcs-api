@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,6 +50,15 @@ public class EnforcementOrderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    /**
+     * The enforcement is updated from the case event, the Payments callback and the document generation task,
+     * which take no common lock, so it is updated under optimistic locking: a write from a copy loaded before
+     * someone else's write fails with an ObjectOptimisticLockingFailureException instead of overwriting it.
+     */
+    @Version
+    @Column(name = "version")
+    private Integer version;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
@@ -98,8 +108,12 @@ public class EnforcementOrderEntity {
     @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
+    /**
+     * The statement of truth the claimant signed. Null when the application captured none: the restitution
+     * journeys do not ask for one, and a draft submitted before reaching the page has none.
+     */
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "sot_id", nullable = false)
+    @JoinColumn(name = "sot_id")
     @JsonBackReference
     private StatementOfTruthEntity statementOfTruth;
 
