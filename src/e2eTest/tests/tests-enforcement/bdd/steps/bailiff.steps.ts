@@ -300,10 +300,6 @@ pendingSteps({ ticket: 'HDPI-7593', summary: 'Asserting that a saved bailiff not
   'the note cannot be edited',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Defendant visibility of enforcement' }, [
-  'defendants cannot see the {string} tab',
-]);
-
 // Two notes on two different dates need the clock moved between them; nothing can backdate a note.
 pendingSteps({ ticket: 'HDPI-7593', summary: 'Bailiff notes added on different dates cannot be set up' }, [
   'the case has bailiff notes added on {string} and {string}',
@@ -427,17 +423,6 @@ pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reac
   'a new sealed {string} is stored in the {string} folder',
   'a new unsealed {string} is stored in the {string} folder and sent to the claimant',
   'the original notices are still in the {string} folder',
-]);
-
-pendingSteps({ ticket: 'HDPI-7346', summary: 'Mark \'notice of eviction\' as served cannot be reached: it needs a scheduled eviction' }, [
-  'I enter a served date of {string} and time {string}',
-  'I answer {string} to {string}',
-  'I enter the note {string}',
-  'I have answered the questions',
-  'defendants can see the {string} tab',
-  'defendants can see the {string} folder in case file view',
-  'the {string} is visible to defendants',
-  'citizen defendants see the {string} under {string} in pcs-frontend',
 ]);
 
 // The review banner lists the changed questions but does not link to them: XUI routes the tab by the URL
