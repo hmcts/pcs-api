@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -71,6 +72,8 @@ class EnforcementOrderServiceTest {
     private EnforcementTypeStrategyFactory strategyFactory;
     @Mock
     private RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
+    @Mock
+    private EnforcementNotificationService enforcementNotificationService;
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
         new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC));
@@ -216,6 +219,8 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);
         assertThat(savedEntity.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
+        // The application is not received until its fee is paid.
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -251,6 +256,7 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(savedCaptor.capture());
         assertThat(savedCaptor.getValue().getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
         assertThat(savedCaptor.getValue().getStatusUpdatedAt()).isEqualTo(NOW);
+        verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, enforcementType);
     }
 
     @ParameterizedTest
@@ -381,10 +387,12 @@ class EnforcementOrderServiceTest {
         );
     }
 
-    @Test
-    void shouldMoveTheApplicationAwaitingPaymentToAwaitingReviewWhenTheFeeIsPaid() {
+    @ParameterizedTest
+    @MethodSource("enforcementOrderTypes")
+    void shouldMoveTheApplicationAwaitingPaymentToAwaitingReviewWhenTheFeeIsPaid(SelectEnforcementType type) {
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         EnforcementOrderEntity awaitingPayment = new EnforcementOrderEntity();
+        awaitingPayment.setEnforcementOrder(buildEnforcementOrderWithSpecifiedType(type));
         awaitingPayment.setStatus(EnforcementStatus.AWAITING_PAYMENT);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(enforcementOrderRepository.findByClaimIdAndStatus(claimId, EnforcementStatus.AWAITING_PAYMENT))
@@ -396,6 +404,7 @@ class EnforcementOrderServiceTest {
         assertThat(awaitingPayment.getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
         assertThat(awaitingPayment.getStatusUpdatedAt()).isEqualTo(NOW);
         verify(enforcementOrderRepository).save(awaitingPayment);
+        verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, type);
     }
 
     @Test
@@ -407,5 +416,6 @@ class EnforcementOrderServiceTest {
 
         assertThat(enforcementOrderService.recordFeePaid(CASE_REFERENCE)).isFalse();
         verify(enforcementOrderRepository, org.mockito.Mockito.never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 }

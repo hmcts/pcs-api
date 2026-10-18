@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -32,6 +33,7 @@ public class EnforcementOrderService {
     private final EnforcementTypeStrategyFactory strategyFactory;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
+    private final EnforcementNotificationService enforcementNotificationService;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -98,6 +100,9 @@ public class EnforcementOrderService {
         if (!paymentOutstanding && EnforcementApplicationFee.isPayable(enforcementType)) {
             log.info("Enforcement {} on case {} is a free repeat warrant", savedEntity.getId(), caseReference);
         }
+        if (!paymentOutstanding) {
+            enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
+        }
         return paymentOutstanding;
     }
 
@@ -110,8 +115,8 @@ public class EnforcementOrderService {
      *
      * <p>TODO HDPI-2877: nothing moves an application on from AWAITING_PAYMENT yet, because pcs-api has no
      * enforcement payment callback on this branch. When the enforcement payment handler from hmcts/pcs-api#2941
-     * lands, its PAID path should call {@code enforcementStatusTransitions.transition(entity, AWAITING_REVIEW)}
-     * from inside this package (it must link the fee payment to the enf_case id to find the entity).
+     * lands, its PAID path should go through {@link #moveToAwaitingReview} from inside this package, so the claimant
+     * is told the application was received (it must link the fee payment to the enf_case id to find the entity).
      */
     private boolean isPaymentOutstanding(ClaimEntity claimEntity, SelectEnforcementType enforcementType) {
         return EnforcementApplicationFee.isPayable(enforcementType)
@@ -132,11 +137,20 @@ public class EnforcementOrderService {
             .stream()
             .findFirst()
             .map(enforcement -> {
-                enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
-                enforcementOrderRepository.save(enforcement);
+                moveToAwaitingReview(caseReference, enforcement);
                 return true;
             })
             .orElse(false);
+    }
+
+    /**
+     * Moves a paid application on to awaiting review and tells the claimant it has been received.
+     */
+    void moveToAwaitingReview(long caseReference, EnforcementOrderEntity enforcement) {
+        enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
+        enforcementOrderRepository.save(enforcement);
+        enforcementNotificationService.notifyClaimantOfApplicationReceived(
+            caseReference, SelectEnforcementType.from(enforcement.getEnforcementOrder()));
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
