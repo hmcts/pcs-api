@@ -14,15 +14,20 @@ Feature: Bailiff records the warrant return
     Then the "Record warrant return" event is available in the next steps drop down
 
     Examples:
-      | role                       |
-      | hearing-centre-admin       |
-      | hearing-centre-team-leader |
+      | role                 |
+      | hearing-centre-admin |
 
     Examples:
-      | role            |
-      | bailiff         |
-      | bailiff-admin   |
-      | bailiff-manager |
+      | role    |
+      | bailiff |
+
+    # One role from each family is filmed; the remaining roles see the same drop down.
+    @not-filmed
+    Examples:
+      | role                       |
+      | hearing-centre-team-leader |
+      | bailiff-admin              |
+      | bailiff-manager            |
 
   @HDPI-7347 @not-filmed
   Scenario Outline: Other users cannot record a warrant return
@@ -50,7 +55,8 @@ Feature: Bailiff records the warrant return
     Then a "Record warrant return" task is created and assigned to me
     And selecting the task opens the "Record warrant return" journey
 
-  @HDPI-7347
+  # A refusal, not a journey.
+  @HDPI-7347 @not-filmed
   Scenario: Record warrant return needs a live warrant
     Given the case has no live warrant
     When I start the "Record warrant return" event
@@ -82,6 +88,11 @@ Feature: Bailiff records the warrant return
       | outcome               | return names |
       | Eviction successful   | Eviction successful |
       | Eviction unsuccessful | Warrant withdrawn, Warrant suspended by Order, Possession Order set aside, Unable to gain access to the property, Claimant did not confirm eviction, No locksmith in attendance (Claimant failed to arrange), No animal handler in attendance (Claimant failed to arrange), No Claimant or agent in attendance for eviction, No reply to request for additional information, Eviction unsuccessful - other, Warrant expired, Warrant issued in error |
+
+    # "Eviction cancelled" offers the same list as "Eviction unsuccessful".
+    @not-filmed
+    Examples:
+      | outcome               | return names |
       | Eviction cancelled    | Warrant withdrawn, Warrant suspended by Order, Possession Order set aside, Unable to gain access to the property, Claimant did not confirm eviction, No locksmith in attendance (Claimant failed to arrange), No animal handler in attendance (Claimant failed to arrange), No Claimant or agent in attendance for eviction, No reply to request for additional information, Eviction unsuccessful - other, Warrant expired, Warrant issued in error |
 
   @HDPI-7347
@@ -146,6 +157,15 @@ Feature: Bailiff records the warrant return
     Examples:
       | return name                                                    | status                      |
       | Eviction successful                                            | Closed                      |
+      | Defendant States they are in Breathing Space (Standard or Mental Health) | Breathing space   |
+      | Obstruction by defendants                                      | Awaiting scheduling         |
+      | Reopen Warrant                                                 | Awaiting bailiff allocation |
+
+    # One return name is filmed for each status the return can move the enforcement to. The rest are the same
+    # four journeys with a different name chosen, so the full table is an assertion on the status mapping.
+    @not-filmed
+    Examples:
+      | return name                                                    | status                      |
       | Warrant Suspended by Order                                     | Closed                      |
       | Possession Order set aside                                     | Closed                      |
       | Warrant Withdrawn                                              | Closed                      |
@@ -159,14 +179,11 @@ Feature: Bailiff records the warrant return
       | No Locksmith in attendance (Claimant failed to arrange)        | Closed                      |
       | No animal handler in attendance (Claimant failed to arrange)   | Closed                      |
       | Claimant Advised Defendant in Breathing Space                  | Breathing space             |
-      | Defendant States they are in Breathing Space (Standard or Mental Health) | Breathing space   |
       | No animal handler in attendance (Parties unaware of animal)    | Awaiting scheduling         |
       | No Police Presence (Police refused to attend when asked to)    | Awaiting scheduling         |
       | Children Left unattended in Property                           | Awaiting scheduling         |
       | Crowds or protests                                             | Awaiting scheduling         |
-      | Obstruction by defendants                                      | Awaiting scheduling         |
       | Safeguarding or vulnerability concerns                         | Awaiting scheduling         |
-      | Reopen Warrant                                                 | Awaiting bailiff allocation |
       | Application Unsuccessful & Warrant returned to bailiff         | unchanged                   |
       | Request for additional information                             | unchanged                   |
       | Other Interim Return                                           | unchanged                   |
@@ -179,12 +196,17 @@ Feature: Bailiff records the warrant return
     Examples:
       | return name                                  | notified        |
       | Warrant Withdrawn                            | receives        |
+      | Eviction successful                          | does not receive |
+
+    # One return name for each side of the notification rule; the rest repeat the same two outcomes.
+    @not-filmed
+    Examples:
+      | return name                                  | notified        |
       | Request for additional information           | receives        |
       | Eviction unsuccessful - other                | receives        |
       | Defendant States they are in Breathing Space (Standard or Mental Health) | receives |
       | Warrant Suspended by Order                   | does not receive |
       | Possession Order set aside                   | does not receive |
-      | Eviction successful                          | does not receive |
 
   @HDPI-8424 @HDPI-7538
   Scenario: Free text is included in the claimant email

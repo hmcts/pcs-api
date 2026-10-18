@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * View.
  *
  * <p>{@link #getTemplateKey()} is the key under {@code enforcement.documents.templates} that carries the
- * Docmosis template id. None of the real templates exists yet (OPEN-QUESTIONS 38), so every key defaults to a
+ * Docmosis template id. None of the real templates exists yet (OPEN-QUESTIONS 42), so every key defaults to a
  * deployed stand-in template. Every template receives the same {@link EnforcementDocumentPayload}: the case
  * reference, case name and property address; the enforcement type and number; the seal and generation time; the
  * case management court's name and address; the allocated bailiff's name; the language the claimant used; the

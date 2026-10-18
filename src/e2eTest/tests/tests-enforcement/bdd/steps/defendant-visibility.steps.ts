@@ -280,7 +280,7 @@ Then('defendants cannot see any enforcement information', async ({ page, context
 });
 
 // Approving the restitution keeps it live and the enforcement hidden; its final return ends it, and the earlier
-// warrant, whose notice was served, shows again (OPEN-QUESTIONS 49).
+// warrant, whose notice was served, shows again (OPEN-QUESTIONS 53).
 Then(
   'they stay unable to see it until the bailiff records a return on the warrant of restitution',
   async ({ page, context, world }) => {

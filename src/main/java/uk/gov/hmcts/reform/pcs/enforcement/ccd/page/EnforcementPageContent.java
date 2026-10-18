@@ -40,7 +40,7 @@ public class EnforcementPageContent {
                      reclaim, or</li>
                     <li class="govuk-list govuk-!-font-size-19">
                         <a href=""" + CPR_URL + """
-                            target="_blank">
+                            rel="noreferrer noopener" target="_blank">
                             check the Civil Procedure Rules (Justice.gov website, opens in a new tab)
                         </a>
                     </li>
