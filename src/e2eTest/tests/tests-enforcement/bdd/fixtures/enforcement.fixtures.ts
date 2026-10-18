@@ -49,6 +49,13 @@ export class EnforcementWorld {
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /**
+   * The warrant and writ numbers this scenario was given, keyed by the illustrative number the feature file
+   * uses for each (e.g. "WP-0001"), in the order they were generated.
+   */
+  enforcementNumbers: Record<string, string> = {};
+  /** The real reference the scenario last searched for in global search. */
+  searchedReference?: string;
 }
 
 type EnforcementFixtures = {

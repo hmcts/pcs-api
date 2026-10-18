@@ -11,13 +11,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SearchCriteriaIndexerTest {
 
-    private final SearchCriteriaIndexer underTest = new SearchCriteriaIndexer();
+    private static final long CASE_REFERENCE = 1234567812345678L;
+
+    private final SearchCriteriaIndexer underTest = new SearchCriteriaIndexer(List.of());
 
     @Test
     void shouldIndexPartyDetailsAsSearchParty() {
@@ -38,7 +44,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(searchCriteria.getParties())
@@ -65,7 +71,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - blank parts are dropped, leaving just the known name
         assertThat(searchCriteria.getParties())
@@ -84,7 +90,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(searchCriteria.getParties())
@@ -103,7 +109,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(searchCriteria.getParties())
@@ -126,7 +132,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - the org name takes precedence
         assertThat(searchCriteria.getParties())
@@ -149,7 +155,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - the blank org name is ignored and the individual name is used
         assertThat(searchCriteria.getParties())
@@ -171,7 +177,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - address-derived fields are left null
         assertThat(searchCriteria.getParties())
@@ -202,7 +208,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - the party SearchParty carries both the name and the property postcode
         assertThat(searchCriteria.getParties())
@@ -235,7 +241,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - the party keeps its own address, not the property address
         assertThat(searchCriteria.getParties())
@@ -258,7 +264,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - the property is added as a SearchParty so its postcode is searchable
         assertThat(searchCriteria.getParties())
@@ -280,7 +286,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - both the party and the property appear as search parties
         assertThat(searchCriteria.getParties())
@@ -295,7 +301,7 @@ class SearchCriteriaIndexerTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(searchCriteria.getParties()).isEmpty();
@@ -309,7 +315,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(searchCriteria.getParties()).isEmpty();
@@ -323,7 +329,7 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(searchCriteria.getParties()).isEmpty();
@@ -335,7 +341,7 @@ class SearchCriteriaIndexerTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(searchCriteria.getParties()).isEmpty();
@@ -352,9 +358,70 @@ class SearchCriteriaIndexerTest {
             .build();
 
         // When
-        underTest.buildSearchCriteria(pcsCase);
+        underTest.buildSearchCriteria(pcsCase, CASE_REFERENCE);
 
         // Then - the property is only added to the search criteria, not the real parties list
         assertThat(pcsCase.getParties()).containsExactlyElementsOf(originalParties);
+    }
+
+    @Test
+    void shouldLeaveOtherCaseReferencesUnsetWhenNoProviderHasAny() {
+        // Given
+        SearchCriteriaIndexer indexer = new SearchCriteriaIndexer(List.of(caseReference -> List.of()));
+
+        // When
+        SearchCriteria searchCriteria = indexer.buildSearchCriteria(PCSCase.builder().build(), CASE_REFERENCE);
+
+        // Then
+        assertThat(searchCriteria.getOtherCaseReferences()).isNull();
+    }
+
+    @Test
+    void shouldIndexEveryProvidersOtherCaseReferencesInOrder() {
+        // Given
+        OtherCaseReferenceProvider warrants = caseReference -> List.of("WP-00000001", "WP-00000002");
+        OtherCaseReferenceProvider writs = caseReference -> List.of("HP-00000003");
+        SearchCriteriaIndexer indexer = new SearchCriteriaIndexer(List.of(warrants, writs));
+
+        // When
+        SearchCriteria searchCriteria = indexer.buildSearchCriteria(PCSCase.builder().build(), CASE_REFERENCE);
+
+        // Then
+        assertThat(searchCriteria.getOtherCaseReferences())
+            .extracting(ListValue::getValue)
+            .containsExactly("WP-00000001", "WP-00000002", "HP-00000003");
+    }
+
+    @Test
+    void shouldAskProvidersForTheCaseBeingIndexed() {
+        // Given
+        OtherCaseReferenceProvider provider = mock(OtherCaseReferenceProvider.class);
+        when(provider.otherCaseReferences(CASE_REFERENCE)).thenReturn(List.of("WP-00000001"));
+        SearchCriteriaIndexer indexer = new SearchCriteriaIndexer(List.of(provider));
+
+        // When
+        SearchCriteria searchCriteria = indexer.buildSearchCriteria(PCSCase.builder().build(), CASE_REFERENCE);
+
+        // Then
+        verify(provider).otherCaseReferences(CASE_REFERENCE);
+        assertThat(searchCriteria.getOtherCaseReferences())
+            .extracting(ListValue::getValue)
+            .containsExactly("WP-00000001");
+    }
+
+    @Test
+    void shouldDropBlankAndDuplicateOtherCaseReferences() {
+        // Given
+        List<String> references = new ArrayList<>(List.of("WP-00000001", " ", "WP-00000001"));
+        references.add(null);
+        SearchCriteriaIndexer indexer = new SearchCriteriaIndexer(List.of(caseReference -> references));
+
+        // When
+        SearchCriteria searchCriteria = indexer.buildSearchCriteria(PCSCase.builder().build(), CASE_REFERENCE);
+
+        // Then
+        assertThat(searchCriteria.getOtherCaseReferences())
+            .extracting(ListValue::getValue)
+            .containsExactly("WP-00000001");
     }
 }

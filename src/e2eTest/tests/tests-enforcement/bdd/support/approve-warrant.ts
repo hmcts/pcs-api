@@ -35,6 +35,21 @@ import {
  * as the hearing centre admin.
  */
 export async function approveWarrantAsCaseworker(page: Page, world: EnforcementWorld): Promise<void> {
+  // The number is generated on approval and is what the later bailiff confirmations quote.
+  world.warrantNumber = await approveApplicationAsCaseworker(page, world, 'Warrant');
+  world.warrantApproved = true;
+}
+
+/**
+ * Records the fee for the case's application awaiting payment as paid, signs in as a hearing centre admin and
+ * accepts it. Returns the warrant or writ number the confirmation screen gives, and leaves the browser signed in
+ * as the hearing centre admin.
+ */
+export async function approveApplicationAsCaseworker(
+  page: Page,
+  world: EnforcementWorld,
+  kind: 'Warrant' | 'Writ'
+): Promise<string> {
   await recordEnforcementFeePaid();
   await signInAsHearingCentreAdmin(page);
   await openCaseSummary(page);
@@ -43,12 +58,11 @@ export async function approveWarrantAsCaseworker(page: Page, world: EnforcementW
   await chooseDecision(page, decideEnforcement.acceptRadioOption);
   await goToCheckYourAnswers(page);
   await submitDecision(page);
-  await expectConfirmation(page, 'Warrant approved');
-  // The number is generated on approval and is what the later bailiff confirmations quote.
-  const numberLine = await page.locator('#confirmation-body').getByText(/Warrant number: \S+/).first().innerText();
-  world.warrantNumber = numberLine.replace(/^.*Warrant number:\s*/s, '').trim();
+  await expectConfirmation(page, `${kind} approved`);
+  const numberLabel = `${kind} number:`;
+  const numberLine = await page.locator('#confirmation-body').getByText(new RegExp(`${numberLabel} \\S+`)).first().innerText();
   world.currentEvent = undefined;
-  world.warrantApproved = true;
+  return numberLine.slice(numberLine.indexOf(numberLabel) + numberLabel.length).trim().split(/\s+/)[0];
 }
 
 /**
