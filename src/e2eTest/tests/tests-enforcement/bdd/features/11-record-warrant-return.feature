@@ -132,7 +132,7 @@ Feature: Bailiff records the warrant return
     When I select "Continue"
     Then the "Check your answers" screen shows my answers with "Change" links
 
-  @HDPI-8424 @HDPI-7351 @pending
+  @HDPI-8424 @HDPI-7351
   Scenario: Submitting records the return on the enforcement status tab
     Given I recorded a "Final" return with outcome "Eviction successful" on "08/07/2026" at "09:15"
     When I submit the event

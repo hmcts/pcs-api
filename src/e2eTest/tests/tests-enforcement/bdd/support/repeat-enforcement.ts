@@ -19,12 +19,7 @@ import {
   startEvent,
   submitApplication,
 } from './enforcement-journeys';
-import {
-  ENFORCEMENT_STATUS_TAB,
-  EnforcementRow,
-  enforcementRows,
-  openCaseTab,
-} from './enforcement-status-tab';
+import { EnforcementRow, enforcementRows } from './enforcement-status-tab';
 import {
   RECORD_WARRANT_RETURN,
   chooseOutcome,
@@ -133,10 +128,12 @@ export async function applyForFurtherWarrant(page: Page, world: EnforcementWorld
   world.askedToPayFee = await page.getByText(PAY_PANEL_TITLE).first().isVisible().catch(() => false);
 }
 
-/** Every enforcement on the case as the tab lists them, current first. */
-export async function enforcementsOnTheCase(page: Page, world: EnforcementWorld): Promise<EnforcementRow[]> {
-  await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
+/** Every enforcement on the case as the case data lists them, current first. */
+export async function enforcementsOnTheCase(world: EnforcementWorld): Promise<EnforcementRow[]> {
+  const caseReference = requireCaseReference(world);
   const expected = world.earlierWarrantNumbers.length + 1;
-  await expect.poll(async () => (await enforcementRows(page)).length, { timeout: VERY_LONG_TIMEOUT }).toBe(expected);
-  return enforcementRows(page);
+  await expect
+    .poll(async () => (await enforcementRows(caseReference)).length, { timeout: VERY_LONG_TIMEOUT })
+    .toBe(expected);
+  return enforcementRows(caseReference);
 }

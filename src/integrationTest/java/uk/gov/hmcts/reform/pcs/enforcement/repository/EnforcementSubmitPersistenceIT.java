@@ -104,6 +104,10 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(jdbcTemplate.queryForList(
             "SELECT enf_case_id FROM " + childTable, UUID.class))
             .containsExactly(enforcementId);
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT submitted_at = status_updated_at FROM enf_case WHERE id = ?", Boolean.class, enforcementId))
+            .as("the application is dated by when it was submitted")
+            .isTrue();
     }
 
     private static EnforcementOrder enforcementOrder(SelectEnforcementType enforcementType) {

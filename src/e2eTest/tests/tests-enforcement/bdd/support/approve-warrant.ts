@@ -71,10 +71,13 @@ export async function approveApplicationAsCaseworker(
   await goToCheckYourAnswers(page);
   await submitDecision(page);
   await expectConfirmation(page, `${kind} approved`);
+  // The number is generated on approval and is what the later bailiff confirmations quote.
   const numberLabel = `${kind} number:`;
   const numberLine = await page.locator('#confirmation-body').getByText(new RegExp(`${numberLabel} \\S+`)).first().innerText();
+  const enforcementNumber = numberLine.slice(numberLine.indexOf(numberLabel) + numberLabel.length).trim().split(/\s+/)[0];
+  world.warrantNumber = enforcementNumber;
   world.currentEvent = undefined;
-  return numberLine.slice(numberLine.indexOf(numberLabel) + numberLabel.length).trim().split(/\s+/)[0];
+  return enforcementNumber;
 }
 
 /**

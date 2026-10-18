@@ -202,6 +202,14 @@ public class WarrantReturnService {
                 .findFirstByEnforcementOrderIdOrderByRecordedAtDesc(enforcement.getId()));
     }
 
+    /**
+     * One enforcement's most recent return, if it has one.
+     */
+    @Transactional(readOnly = true)
+    public Optional<WarrantReturnEntity> findLatestReturn(EnforcementOrderEntity enforcement) {
+        return warrantReturnRepository.findFirstByEnforcementOrderIdOrderByRecordedAtDesc(enforcement.getId());
+    }
+
     static boolean isWarrant(EnforcementOrderEntity enforcement) {
         return enforcementType(enforcement.getEnforcementOrder()).filter(WARRANT_TYPES::contains).isPresent();
     }

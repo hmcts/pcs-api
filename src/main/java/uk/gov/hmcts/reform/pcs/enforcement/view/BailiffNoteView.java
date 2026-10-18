@@ -73,7 +73,7 @@ public class BailiffNoteView {
         return new ListValue<>(entity.getId() == null ? null : entity.getId().toString(), note);
     }
 
-    private static String authorName(BailiffNoteEntity entity) {
+    static String authorName(BailiffNoteEntity entity) {
         return Stream.of(entity.getAuthorFirstName(), entity.getAuthorLastName())
             .filter(Objects::nonNull)
             .map(String::trim)

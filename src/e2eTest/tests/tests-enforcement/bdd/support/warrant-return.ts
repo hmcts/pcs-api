@@ -20,6 +20,7 @@ export const warrantReturn = {
   successfulReturnNameField: '#warrantReturnSuccessfulReturnName',
   unsuccessfulReturnNameField: '#warrantReturnUnsuccessfulReturnName',
   interimReturnNameField: '#warrantReturnInterimReturnName',
+  evictionDateTimeField: '#warrantReturnEvictionDateTime',
   additionalDetailsLabel: 'Additional details',
   final: 'Final',
   interim: 'Interim',

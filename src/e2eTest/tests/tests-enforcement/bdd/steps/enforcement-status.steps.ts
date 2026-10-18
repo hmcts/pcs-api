@@ -1,18 +1,15 @@
 // Enforcement status model (feature 19 and status assertions elsewhere).
 //
-// The status lives on the `enforcements` collection and is visible on the "Enforcement status" tab, so the
-// assertions read it from there. What is still missing is any way to *put* an enforcement into an arbitrary
-// status: pcs-api's only enforcement testing-support endpoint is `fee-paid`, so a scenario can only reach a
-// status by driving the real events. Steps that need a status set up for them stay pending on HDPI-7419.
+// The status of every application is on the `enforcements` collection pcs-api sets on the case view, so the
+// assertions read it from the case data: the "Enforcement status" tab only appears once a warrant or writ has
+// been generated, and an application awaiting payment or review has a status too.
+//
+// What is still missing is any way to *put* an enforcement into an arbitrary status: pcs-api's only
+// enforcement testing-support endpoint is `fee-paid`, so a scenario can only reach a status by driving the
+// real events. Steps that need a status set up for them stay pending on HDPI-7419.
 import { Given, Then, expect } from '../fixtures/enforcement.fixtures';
 import { pendingSteps } from '../fixtures/pending';
-import {
-  ENFORCEMENT_STATUS_TAB,
-  enforcementRows,
-  expectEnforcementStatus,
-  openCaseTab,
-  soleEnforcement,
-} from '../support/enforcement-status-tab';
+import { currentEnforcement, enforcementRows, expectEnforcementStatus } from '../support/enforcement-status-tab';
 import { setUpWarrantAtStatus } from '../support/approve-warrant';
 import { requireCaseReference } from '../support/enforcement-journeys';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
@@ -29,10 +26,9 @@ Then('the enforcement status is still {string}', async ({ page, world }, status:
   await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
 
-Then('the case has no live warrant', async ({ page, world }) => {
-  await openCaseTab(page, requireCaseReference(world), 'Enforcement status');
-  const live = (await enforcementRows(page)).filter(
-    row => !['Closed', 'Rejected', 'Transferred to the High Court'].includes(row['Status'])
+Then('the case has no live warrant', async ({ world }) => {
+  const live = (await enforcementRows(requireCaseReference(world))).filter(
+    row => !['Closed', 'Rejected', 'Transferred to the High Court'].includes(row.status ?? '')
   );
   expect(live, 'no live enforcement on the case').toHaveLength(0);
 });
@@ -67,15 +63,15 @@ pendingSteps({ summary: 'Asserting event availability for a role the suite canno
 ]);
 
 /**
- * The scenario's case starts with no enforcement, so the new one is the only one on the tab. The tab shows
- * the type as pcs-api's SelectEnforcementType label, e.g. "Warrant of possession".
+ * The scenario's case starts with no enforcement, so the new one is the only one. Read from the case data:
+ * the "Enforcement status" tab only appears once a warrant or writ has been generated. The type is compared
+ * as pcs-api's SelectEnforcementType label, e.g. "Warrant of possession".
  */
-Then('a new enforcement of type {string} is added to the case with status {string}', async ({ page, world }, type: string, status: string) => {
-  await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
+Then('a new enforcement of type {string} is added to the case with status {string}', async ({ world }, type: string, status: string) => {
   await expect
     .poll(async () => {
-      const enforcement = await soleEnforcement(page);
-      return { type: enforcement['Type'], status: enforcement['Status'] };
+      const enforcement = await currentEnforcement(requireCaseReference(world));
+      return { type: enforcement.type, status: enforcement.status };
     }, { timeout: VERY_LONG_TIMEOUT })
     .toEqual({ type: type.charAt(0).toUpperCase() + type.slice(1), status });
 });

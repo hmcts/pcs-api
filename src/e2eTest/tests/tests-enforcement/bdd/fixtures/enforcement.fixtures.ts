@@ -66,13 +66,18 @@ export class EnforcementWorld {
   /** The real reference the scenario last searched for in global search. */
   searchedReference?: string;
   /**
+   * Values the feature files quote illustratively, mapped to what this scenario actually produced: a warrant
+   * number such as "WP-0001" to the number generated on approval, or an order date to the approval date.
+   */
+  aliases: Record<string, string> = {};
+  /** The warrant return the scenario recorded in "Record warrant return", if any. */
+  recordedReturn?: { type: string; outcome: string; returnName: string; date: string; time: string };
+  /**
    * Warrant numbers of the enforcements this scenario closed before applying again, oldest first. Once set,
    * the status steps read the current enforcement (the first the "Enforcement status" tab lists) rather
    * than expecting the case to have only one.
    */
   earlierWarrantNumbers: string[] = [];
-  /** The illustrative warrant numbers in the feature files (e.g. "WP-0001"), mapped to the numbers pcs-api gave. */
-  warrantAliases: Record<string, string> = {};
   /** Whether pcs-api's submit confirmation asked for the enforcement fee, once an application is submitted. */
   askedToPayFee?: boolean;
 }
