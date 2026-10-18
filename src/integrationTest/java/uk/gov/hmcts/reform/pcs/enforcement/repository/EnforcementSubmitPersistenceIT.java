@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
@@ -66,6 +67,9 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
     private RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
 
     @Autowired
+    private EnforcementDocumentScheduler enforcementDocumentScheduler;
+
+    @Autowired
     private EntityManager entityManager;
 
     @Autowired
@@ -78,7 +82,8 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for.
         enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
-            enforcementStatusTransitions, repeatWarrantFeeWaiver, mock(EnforcementNotificationService.class));
+            enforcementStatusTransitions, repeatWarrantFeeWaiver, mock(EnforcementNotificationService.class),
+            enforcementDocumentScheduler);
     }
 
     @ParameterizedTest

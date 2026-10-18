@@ -68,7 +68,7 @@ class EnforcementBackdateIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("moves the eviction, approval, note and return times back by the same period")
     void movesEveryTimestampBackByAPeriod() {
-        UUID id = savedWarrant("WP-00000101");
+        UUID id = savedWarrant("WP-T0000101");
 
         assertThat(enforcementBackdateService.backdate(CASE_REFERENCE, null, Period.ofMonths(13), null))
             .contains(id);
@@ -88,7 +88,7 @@ class EnforcementBackdateIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("moves the eviction back by a number of hours")
     void movesTheEvictionBackByHours() {
-        UUID id = savedWarrant("WP-00000102");
+        UUID id = savedWarrant("WP-T0000102");
 
         assertThat(enforcementBackdateService.backdate(CASE_REFERENCE, null, null, Duration.ofHours(73)))
             .contains(id);
@@ -99,10 +99,10 @@ class EnforcementBackdateIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("moves only the enforcement it is given the number of")
     void movesOnlyTheNumberedEnforcement() {
-        UUID first = savedWarrant("WP-00000103");
-        UUID second = savedWarrant("WP-00000104");
+        UUID first = savedWarrant("WP-T0000103");
+        UUID second = savedWarrant("WP-T0000104");
 
-        assertThat(enforcementBackdateService.backdate(CASE_REFERENCE, "WP-00000103", Period.ofDays(1), null))
+        assertThat(enforcementBackdateService.backdate(CASE_REFERENCE, "WP-T0000103", Period.ofDays(1), null))
             .contains(first);
 
         assertThat(enfCaseTimestamp("bailiff_date", first)).isEqualTo(Timestamp.valueOf(EVICTION.minusDays(1)));
@@ -112,7 +112,7 @@ class EnforcementBackdateIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("changes nothing when the case has no enforcement with that number")
     void changesNothingForAnUnknownNumber() {
-        UUID id = savedWarrant("WP-00000105");
+        UUID id = savedWarrant("WP-T0000105");
 
         assertThat(enforcementBackdateService.backdate(CASE_REFERENCE, "WP-99999999", Period.ofDays(1), null))
             .isEmpty();

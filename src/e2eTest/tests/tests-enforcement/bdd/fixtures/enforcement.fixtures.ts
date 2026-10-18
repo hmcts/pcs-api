@@ -103,6 +103,10 @@ export class EnforcementWorld {
   earlierWarrantNumbers: string[] = [];
   /** Whether pcs-api's submit confirmation asked for the enforcement fee, once an application is submitted. */
   askedToPayFee?: boolean;
+  /** The file name prefixes of the generated documents the scenario has found in the Enforcement folder. */
+  checkedDocuments: string[] = [];
+  /** The generated document the scenario's "the document" and "it" steps refer to. */
+  currentDocument?: string;
 }
 
 type EnforcementFixtures = {

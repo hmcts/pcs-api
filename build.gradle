@@ -674,6 +674,12 @@ tasks.withType(CftlibExec).configureEach {
     // Used by docassembly
     environment 'DM_STORE_APP_URL', 'http://localhost:4506'
 
+    // Docmosis is only reachable on the VPN, so by default docassembly renders every template as the placeholder
+    // PDF the wiremock stub returns (wiremock/mappings/docmosis). LOCAL_DOCMOSIS=aat renders with AAT Docmosis.
+    if (System.getenv("LOCAL_DOCMOSIS") != "aat") {
+      environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:8083/rs/render'
+    }
+
     // CCD validation of document URLs
     environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:4506/documents/[A-Za-z0-9-]+.*'
   }

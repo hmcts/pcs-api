@@ -420,10 +420,6 @@ pendingSteps({ ticket: 'HDPI-7344', summary: 'Schedule eviction cannot be reache
   'I see an {string} table with claimant type, claimant name and defendant names',
   'the case has two defendants whose names are not known',
   'the {string} table shows {string} once',
-  'it is stored in the {string} folder in case file view',
-  'it is visible to internal users only',
-  'a {string} document is generated without a seal',
-  'it is visible to the claimant and internal users',
   'I answered {string} to {string}',
 ]);
 

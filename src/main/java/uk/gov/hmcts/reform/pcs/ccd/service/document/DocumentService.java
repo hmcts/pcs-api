@@ -424,8 +424,15 @@ public class DocumentService {
                  // Defendant access-code letters aren't shown on the case file
                  DEFENDANT_ACCESS_CODE,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
-                 // Filed in the Enforcement folder, which is not a CaseFileCategory
+                 // Enforcement files these in its own Case File View folder, by category id
+                 ENFORCEMENT_APPLICATION,
+                 RISK_ASSESSMENT,
+                 WARRANT_OF_POSSESSION,
+                 WRIT_OF_POSSESSION,
+                 WARRANT_OF_RESTITUTION,
+                 WRIT_OF_RESTITUTION,
                  NOTICE_OF_EVICTION,
+                 NOTICE_OF_APPOINTMENT,
                  OTHER ->
                 Optional.empty();
         };

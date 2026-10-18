@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
@@ -52,6 +53,8 @@ class EvictionScheduleServiceTest {
     @Mock
     private BailiffNoteService bailiffNoteService;
     @Mock
+    private EnforcementDocumentScheduler enforcementDocumentScheduler;
+    @Mock
     private EnforcementNotificationService enforcementNotificationService;
 
     private EvictionScheduleService underTest;
@@ -60,7 +63,8 @@ class EvictionScheduleServiceTest {
     void setUp() {
         underTest = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
                                                 new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)),
-                                                bailiffNoteService, enforcementNotificationService);
+                                                bailiffNoteService, enforcementNotificationService,
+                                                enforcementDocumentScheduler);
     }
 
     @Test
@@ -78,6 +82,7 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
         verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfScheduledEviction(CASE_REFERENCE, EVICTION);
     }
 
@@ -104,6 +109,7 @@ class EvictionScheduleServiceTest {
                                                            : NoEnforcementException.MESSAGE);
         assertThat(enforcement.getBailiffDate()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementDocumentScheduler);
         verifyNoInteractions(enforcementNotificationService);
     }
 
@@ -156,6 +162,7 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.getBailiffDate()).isEqualTo(newDate);
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_CLAIMANT_CONFIRMATION);
         verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfRescheduledEviction(CASE_REFERENCE, newDate);
     }
 

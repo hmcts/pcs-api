@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
@@ -60,6 +61,7 @@ public class EvictionScheduleService {
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final BailiffNoteService bailiffNoteService;
     private final EnforcementNotificationService enforcementNotificationService;
+    private final EnforcementDocumentScheduler enforcementDocumentScheduler;
 
     public static boolean canSchedule(EnforcementOrderEntity enforcement) {
         return enforcement.getStatus() == AWAITING_SCHEDULING;
@@ -126,11 +128,8 @@ public class EvictionScheduleService {
             return EnforcementChange.refused(live.errors());
         }
         setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
-        // TODO HDPI-7354 / HDPI-8442: generate the sealed notice of eviction (form N54) into the Enforcement
-        //  folder, attached to the enforcement as DocumentType.NOTICE_OF_EVICTION so that defendants see it once
-        //  it is served (DefendantEnforcementRules). There is no Docmosis template for it in pcs-api yet.
-        // TODO HDPI-7355 / HDPI-8442: generate the unsealed notice of appointment into the Enforcement folder,
-        //  visible to the claimant, and email it to them. There is no Docmosis template for it yet.
+        enforcementDocumentScheduler.scheduleEvictionNotices(live.change().getId());
+        // TODO HDPI-7355: email the notice of appointment to the claimant.
         enforcementNotificationService.notifyClaimantOfScheduledEviction(caseReference, evictionDateTime);
         // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7346 / HDPI-8627: create the "Mark notice of eviction as served" WA task for the allocated
@@ -153,8 +152,8 @@ public class EvictionScheduleService {
             return EnforcementChange.refused(live.errors());
         }
         setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
-        // TODO HDPI-7354 / HDPI-7355: generate a new notice of eviction and notice of appointment, keeping the
-        //  originals in the Enforcement folder. There are no Docmosis templates for them yet.
+        // A new notice of eviction and notice of appointment, keeping the originals in the Enforcement folder.
+        enforcementDocumentScheduler.scheduleEvictionNotices(live.change().getId());
         enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
         // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7549: complete the "Reschedule eviction" WA task, and move the "Record warrant return" task

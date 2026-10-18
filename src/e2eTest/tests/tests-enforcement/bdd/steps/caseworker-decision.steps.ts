@@ -129,12 +129,6 @@ async function acceptTheApplication(page: Page, world: EnforcementWorld): Promis
 
 pendingSteps({ ticket: 'HDPI-9566', summary: 'Sealed warrant and writ documents' }, [
   'the document is date and time stamped in {string} format',
-  'the document is stored in the {string} folder in case file view',
-  'the document is visible to internal users only',
-  'a {string} document is generated with the High Court seal',
-  'the document is visible to the claimant and internal users',
-  'a {string} document is generated with the {string} seal',
-  'it is visible to {string}',
   'the claimant has the {string} case flag',
   'the warrant is generated in Welsh',
   'no warrant is generated',

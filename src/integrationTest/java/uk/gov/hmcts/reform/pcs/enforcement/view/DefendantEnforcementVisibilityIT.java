@@ -128,8 +128,8 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("the claimant side and internal users keep the whole enforcement before and after service")
-    void othersSeeEverything() {
+    @DisplayName("the claimant side loses only the notice of eviction, internal users keep the whole enforcement")
+    void claimantSideLosesOnlyTheNoticeOfEviction() {
         long caseReference = 1414000000000003L;
         savedWarrantWithDocuments(caseReference);
         evictionScheduleService.schedule(caseReference, EVICTION, false);
@@ -141,7 +141,10 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
         assertThat(claimantView.getEnforcementOrder().getEnforcements()).hasSize(1);
         assertThat(claimantView.getEnforcementOrder().getEnforcementStatusTabMarkdown())
             .contains("Claimant eviction confirmation");
+        // Of the two sides, only defendants see the notice of eviction (05-schedule-eviction.feature).
         assertThat(filenames(claimantView))
+            .containsExactlyInAnyOrder("claim.pdf", "evidence.pdf");
+        assertThat(filenames(bailiffView))
             .containsExactlyInAnyOrder("claim.pdf", "notice-of-eviction.pdf", "evidence.pdf");
         assertThat(bailiffView.getEnforcementOrder().getEnforcements()).hasSize(1);
         assertThat(bailiffView.getEnforcementOrder().getDefendantsCanSeeEnforcement()).isEqualTo(YesOrNo.NO);

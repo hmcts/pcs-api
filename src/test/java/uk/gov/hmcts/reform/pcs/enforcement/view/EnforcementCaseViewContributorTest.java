@@ -34,6 +34,8 @@ class EnforcementCaseViewContributorTest {
     @Mock
     private RiskAssessmentTabView riskAssessmentTabView;
     @Mock
+    private ClaimantEnforcementDocumentView claimantEnforcementDocumentView;
+    @Mock
     private DefendantEnforcementView defendantEnforcementView;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
@@ -44,14 +46,15 @@ class EnforcementCaseViewContributorTest {
     private EnforcementCaseViewContributor underTest;
 
     @Test
-    void shouldSetTheEnforcementFieldsThenRestrictThemForDefendants() {
+    void shouldSetTheEnforcementFieldsThenRestrictThemForClaimantsAndDefendants() {
         // When
         underTest.contribute(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
 
         // Then
         InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView, riskLevelView,
                                   evictionScheduleView, warrantReturnView, enforcementStatusTabView,
-                                  riskAssessmentTabView, defendantEnforcementView);
+                                  riskAssessmentTabView, claimantEnforcementDocumentView,
+                                  defendantEnforcementView);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
         inOrder.verify(enforcementOrderView).setEnforcementStatusFields(pcsCaseEntity, pcsCase);
@@ -61,6 +64,8 @@ class EnforcementCaseViewContributorTest {
         inOrder.verify(warrantReturnView).setLatestWarrantReturn(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementStatusTabView).setEnforcementStatusTab(pcsCaseEntity, pcsCase);
         inOrder.verify(riskAssessmentTabView).setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        inOrder.verify(claimantEnforcementDocumentView)
+            .restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
         inOrder.verify(defendantEnforcementView).restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
         inOrder.verifyNoMoreInteractions();
     }

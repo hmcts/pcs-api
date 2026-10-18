@@ -151,3 +151,15 @@ export function expectNoEnforcementDocuments(views: DefendantView[]): void {
     expect(enforcementDocuments(view), `enforcement documents the ${view.who} gets`).toEqual([]);
   }
 }
+
+/**
+ * Every enforcement document a defendant gets is a notice of eviction, the only one pcs-api lets them see. pcs-api
+ * names each generated document "<title> - <number>" (`EnforcementOutput.title`).
+ */
+export function expectOnlyNoticesOfEviction(views: DefendantView[]): void {
+  for (const view of views) {
+    const filenames = enforcementDocuments(view).map(document => document.value?.document_filename ?? '');
+    expect(filenames.filter(filename => !filename.startsWith('Notice of eviction - ')),
+      `enforcement documents other than the notice of eviction the ${view.who} gets`).toEqual([]);
+  }
+}

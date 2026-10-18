@@ -3,8 +3,7 @@
 // Runs on a local stack, where the scenario can give a defendant solicitor and a citizen their case roles
 // through pcs-api testing support. The citizen stands in for the feature's second defendant: the fixture
 // claim has one defendant, and pcs-frontend is not part of the local stack, so the citizen's view is the case
-// data CCD gives them, which is what pcs-frontend renders. No notice of eviction document can be generated
-// yet (HDPI-7354, no Docmosis template), so the steps about seeing it stay pending.
+// data CCD gives them, which is what pcs-frontend renders.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { scheduleEvictionOnApprovedWarrant } from '../support/approve-warrant';
@@ -18,6 +17,7 @@ import {
   defendantViews,
   expectEnforcementTab,
   expectNoEnforcementDocuments,
+  expectOnlyNoticesOfEviction,
   expectNoEnforcementFields,
   linkCitizenDefendant,
   linkDefendantLegalRepresentative,
@@ -117,10 +117,10 @@ Then('they do not see any enforcement events in the case {string} tab', async ({
   await expectCaseTab(page, tabName, false);
 });
 
-// No risk assessment document is generated yet (HDPI-7350), so this checks the rule that covers it: the only
-// enforcement document a defendant can get is a served notice of eviction, and none has been generated.
+// The only enforcement document a defendant can get is a served warrant's notice of eviction, which pcs-api
+// generates after the schedule commits, so whether or not it has arrived yet, nothing else may be there.
 Then('they do not see the risk assessment document', async ({ page, context, world }) => {
-  expectNoEnforcementDocuments(await defendantViews(page, context, world));
+  expectOnlyNoticesOfEviction(await defendantViews(page, context, world));
 });
 
 Then('they do not see bailiff notes', async ({ page, context, world }) => {
@@ -139,7 +139,7 @@ Then('the defendant legal representative sees the {string} tab', async ({ page, 
   await expectEnforcementTab(page, legalRepresentative, tabName, true);
 });
 
-pendingSteps({ ticket: 'HDPI-7354', summary: 'A generated notice of eviction: there is no Docmosis template for it yet' }, [
+pendingSteps({ ticket: 'HDPI-7354', summary: 'Polling each defendant view for the generated notice of eviction' }, [
   'the defendant legal representative sees the {string} folder with the {string}',
   'the citizen defendant sees the {string} under {string} in pcs-frontend',
 ]);

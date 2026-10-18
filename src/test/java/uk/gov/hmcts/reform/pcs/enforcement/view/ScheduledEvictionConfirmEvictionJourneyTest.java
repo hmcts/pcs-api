@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
@@ -49,6 +50,8 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
     @Mock
     private BailiffNoteService bailiffNoteService;
     @Mock
+    private EnforcementDocumentScheduler enforcementDocumentScheduler;
+    @Mock
     private ClaimantRiskAssessmentService claimantRiskAssessmentService;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
@@ -77,7 +80,8 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
         mediator = new EnforcementOrderMediator(currentEnforcementService, clock);
         evictionScheduleService = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
                                                               transitions, bailiffNoteService,
-                                                              enforcementNotificationService);
+                                                              enforcementNotificationService,
+                                                              enforcementDocumentScheduler);
         claimantEvictionConfirmationService = new ClaimantEvictionConfirmationService(
             currentEnforcementService, enforcementOrderRepository, transitions, claimantRiskAssessmentService,
             enforcementNotificationService);

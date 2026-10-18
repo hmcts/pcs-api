@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementApplicationFee;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -34,6 +35,7 @@ public class EnforcementOrderService {
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
     private final EnforcementNotificationService enforcementNotificationService;
+    private final EnforcementDocumentScheduler enforcementDocumentScheduler;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -103,6 +105,7 @@ public class EnforcementOrderService {
         }
         if (!paymentOutstanding) {
             enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
+            enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);
         }
         return paymentOutstanding;
     }
@@ -117,7 +120,8 @@ public class EnforcementOrderService {
      * <p>TODO HDPI-2877: nothing moves an application on from AWAITING_PAYMENT yet, because pcs-api has no
      * enforcement payment callback on this branch. When the enforcement payment handler from hmcts/pcs-api#2941
      * lands, its PAID path should go through {@link #moveToAwaitingReview} from inside this package, so the claimant
-     * is told the application was received (it must link the fee payment to the enf_case id to find the entity).
+     * is told the application was received and the application documents are generated (it must link the fee
+     * payment to the enf_case id to find the entity).
      */
     private boolean isPaymentOutstanding(ClaimEntity claimEntity, SelectEnforcementType enforcementType) {
         return EnforcementApplicationFee.isPayable(enforcementType)
@@ -145,13 +149,15 @@ public class EnforcementOrderService {
     }
 
     /**
-     * Moves a paid application on to awaiting review and tells the claimant it has been received.
+     * Moves a paid application on to awaiting review, tells the claimant it has been received and generates the
+     * application documents, which the features describe as produced once the claimant has submitted and paid.
      */
     void moveToAwaitingReview(long caseReference, EnforcementOrderEntity enforcement) {
         enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
         enforcementOrderRepository.save(enforcement);
-        enforcementNotificationService.notifyClaimantOfApplicationReceived(
-            caseReference, SelectEnforcementType.from(enforcement.getEnforcementOrder()));
+        SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcement.getEnforcementOrder());
+        enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
+        enforcementDocumentScheduler.scheduleApplicationDocuments(enforcement.getId(), enforcementType);
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
