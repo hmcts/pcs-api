@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.bailiffnote.AddBailiffNoteConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
@@ -74,9 +75,13 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
             throw new NoEnforcementException();
         }
         PCSCase pcsCase = eventPayload.caseData();
-        if (pcsCase.getEnforcementOrder() != null) {
-            pcsCase.getEnforcementOrder().setBailiffNoteText(null);
+        if (pcsCase.getEnforcementOrder() == null) {
+            pcsCase.setEnforcementOrder(new EnforcementOrder());
         }
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+        enforcementOrder.setBailiffNoteText(null);
+        // For the page's "claimant vs defendants" line, as on decideEnforcement.
+        enforcementOrder.setFormattedCaseName(pcsCase.getCaseNameHmctsInternal());
         return pcsCase;
     }
 
@@ -91,14 +96,16 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
         if (note.length() > MAX_NOTE_LENGTH) {
             return errorResponse(NOTE_TOO_LONG_ERROR);
         }
+        String warrantNumber;
         try {
-            bailiffNoteService.addNote(caseReference, note);
+            warrantNumber = bailiffNoteService.addNote(caseReference, note);
         } catch (NoEnforcementException ex) {
             return errorResponse(ex.getMessage());
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader(CONFIRMATION_HEADER)
-            .confirmationBody("Case number: " + caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
+            .confirmationBody(ConfirmationNumbers.caseAndWarrant(
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), warrantNumber))
             .build();
     }
 

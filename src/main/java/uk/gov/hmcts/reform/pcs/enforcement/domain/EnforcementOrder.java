@@ -188,7 +188,7 @@ public class EnforcementOrder {
     private String riskAssessmentClaimantMarkdown;
 
     /**
-     * "Claimant vs defendants", set for the decideEnforcement header.
+     * "Claimant vs defendants", set for the decideEnforcement header and the addBailiffNote page.
      */
     @CCD(searchable = false)
     private String formattedCaseName;

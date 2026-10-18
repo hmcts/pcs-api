@@ -53,11 +53,14 @@ class BailiffNoteServiceTest {
     @Test
     void shouldSaveTheNoteAgainstTheCurrentEnforcementWithTheAuthorsIdamName() {
         EnforcementOrderEntity enforcement = enforcement();
+        enforcement.setEnforcementNumber("WP-00000001");
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(enforcement));
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().givenName("Sam").familyName("Jones").name("Sam Jones").build());
 
-        underTest.addNote(CASE_REFERENCE, "Rear gate is locked");
+        String warrantNumber = underTest.addNote(CASE_REFERENCE, "Rear gate is locked");
+
+        assertThat(warrantNumber).isEqualTo("WP-00000001");
 
         ArgumentCaptor<BailiffNoteEntity> saved = ArgumentCaptor.forClass(BailiffNoteEntity.class);
         verify(bailiffNoteRepository).save(saved.capture());

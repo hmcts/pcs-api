@@ -44,7 +44,7 @@ export async function closeWarrantWithReturn(
 ): Promise<void> {
   await setUpWarrantAtStatus(page, context, world, AWAITING_SCHEDULING);
   try {
-    await recordFinalReturn(page, context, returnName);
+    await recordWarrantReturn(page, context, returnName);
   } finally {
     await restoreClaimantSession(page, context);
   }
@@ -55,15 +55,25 @@ export async function closeWarrantWithReturn(
   world.allocatedBailiff = undefined;
 }
 
-/** Records a final return as a hearing centre admin, one of the bailiff staff "Record warrant return" allows. */
-async function recordFinalReturn(page: Page, context: BrowserContext, returnName: string): Promise<void> {
+/**
+ * Records a return as a hearing centre admin, one of the bailiff staff "Record warrant return" allows. A final
+ * return unless `type` says interim.
+ */
+export async function recordWarrantReturn(
+  page: Page,
+  context: BrowserContext,
+  returnName: string,
+  type: string = warrantReturn.final
+): Promise<void> {
   await signInAs('hearing-centre-admin', page, context);
   await openCaseSummary(page);
   await startEvent(RECORD_WARRANT_RETURN);
 
-  const successful = SUCCESSFUL_RETURN_NAMES.includes(returnName.toLowerCase());
-  await chooseReturnType(page, warrantReturn.final);
-  await chooseOutcome(page, successful ? warrantReturn.evictionSuccessful : warrantReturn.evictionUnsuccessful);
+  const successful = type === warrantReturn.final && SUCCESSFUL_RETURN_NAMES.includes(returnName.toLowerCase());
+  await chooseReturnType(page, type);
+  if (type === warrantReturn.final) {
+    await chooseOutcome(page, successful ? warrantReturn.evictionSuccessful : warrantReturn.evictionUnsuccessful);
+  }
   await chooseReturnNameIgnoringCase(page, returnName);
   if (successful) {
     await enterEvictionDateTime(page, yesterday());

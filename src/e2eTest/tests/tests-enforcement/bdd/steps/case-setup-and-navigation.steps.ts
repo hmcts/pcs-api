@@ -25,6 +25,7 @@ import {
   submitDecision,
 } from '../support/decide-enforcement';
 import { isLocalStack, localUsers } from '@config/local-stack.config';
+import { LONG_TIMEOUT } from 'playwright.config';
 import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionAsBailiff, setUpWarrantAtStatus } from '../support/approve-warrant';
 import {
   CITIZEN_DEFENDANT,
@@ -241,18 +242,12 @@ Given('I am signed in to XUI as the allocated bailiff', async ({ page, context }
   await signInAs('bailiff', page, context);
 });
 
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a specific named bailiff needs staff reference data' }, [
-  'I am signed in to XUI as bailiff {string}',
-]);
-
 pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement work allocation tasks' }, [
   'I am signed in to XUI as a bailiff with open enforcement tasks',
 ]);
 
 pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
-  'the {string} screen opens',
   'the warrant number is not shown in the header',
-  'I see the {string} confirmation with the case number and warrant number',
   'today is {string} and the time is {string}',
   'the {string} screen shows my answers with {string} links',
   'I open {string}',
@@ -390,4 +385,13 @@ When('I submit the {string} event', async ({ page, context, world, $tags }, even
     return;
   }
   return markPending(genericStepPending, $tags);
+});
+
+/** The first page of an event the scenario has started, by the name the feature files give that screen. */
+Then('the {string} screen opens', async ({ page, world, $tags }, screen: string) => {
+  const event = screenEvents[screen];
+  if (!event || world.currentEvent !== event) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: screen, exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
 });
