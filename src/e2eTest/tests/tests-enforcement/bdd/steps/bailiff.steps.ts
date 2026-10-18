@@ -1,12 +1,13 @@
 // Bailiff journeys (features 03-05, 07-11, 17).
 //
-// What is drivable today: `setRiskLevel` (feature 04) and `addBailiffNote` (feature 10). Both are built,
-// and the cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json) can now reach them, so
-// their steps are implemented.
+// What is drivable today: `allocateBailiff` (feature 03), `setRiskLevel` (feature 04) and `addBailiffNote`
+// (feature 10). All three are built, and the cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json)
+// can reach them, so their steps are implemented. `allocateBailiff`'s StaffUser type-ahead reads staff
+// reference data from wiremock's stub, which lists the cftlib bailiff users.
 //
 // What is not, and why:
-//   * `allocateBailiff` (03) — its StaffUser type-ahead needs staff reference data that cftlib does not
-//     run, so the page degrades to a raw `IdamId` field and the real validation never runs. HDPI-7356.
+//   * the type-ahead's court location filter (OPEN-QUESTIONS 16) and a second named bailiff to reallocate to.
+//     HDPI-7356, HDPI-7539.
 //   * every status after "Awaiting bailiff allocation" — reaching one needs a bailiff allocated, so
 //     `scheduleEviction` (05), `rescheduleEviction` (07), `markNoticeOfEvictionServed` (08) and
 //     `recordWarrantReturn` (11) cannot be started. HDPI-7419.
@@ -22,17 +23,30 @@ import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
 import { RISK_ASSESSMENT_TAB, expectTabField, isTabVisible, openTabFields } from '../support/case-tabs';
 import {
   ADD_BAILIFF_NOTE,
+  ALLOCATE_BAILIFF,
   SET_RISK_LEVEL,
   addBailiffNote,
+  bailiffSearchBox,
+  chooseBailiff,
   chooseRiskLevel,
   continueButton,
   dashedCaseNumber,
   errorSummary,
   expectBailiffConfirmation,
+  expectAllocationCheckYourAnswers,
   expectBailiffConfirmationWithWarrantNumber,
+  findBailiff,
+  goToAllocationCheckYourAnswers,
   riskAssessmentFields,
+  searchForBailiff,
   setRiskLevel,
+  standInBailiff,
+  startAllocation,
+  submitAllocation,
 } from '../support/bailiff-events';
+import { AWAITING_BAILIFF_ALLOCATION } from '../support/approve-warrant';
+import { expectEnforcementStatus } from '../support/enforcement-status-tab';
+import { localUserName, localUsers } from '@config/local-stack.config';
 import { expectEvictionResult, isEvictionResult } from './schedule-eviction.steps';
 
 
@@ -272,21 +286,97 @@ pendingSteps({ ticket: 'HDPI-7593', summary: 'Bailiff notes added on different d
   'the note from {string} is shown first',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7356', summary: 'Allocate case to bailiff needs staff reference data for its type-ahead' }, [
-  'no {string} screen is shown',
-  'I type part of a bailiff\'s name or email address',
+// ---------------------------------------------------------------------------
+// Feature 03: allocate case to bailiff
+// ---------------------------------------------------------------------------
+
+/**
+ * The local user standing in for a bailiff the feature names. Marks the scenario pending when there is none:
+ * the local stack has one user with the `bailiff` role, so a second, named bailiff cannot be chosen.
+ */
+function requireStandIn(name: string, tags: string[]): string {
+  const email = standInBailiff(name);
+  if (!email) {
+    markPending({ ticket: 'HDPI-7539', summary: `no local bailiff user stands in for "${name}"` }, tags);
+  }
+  return email as string;
+}
+
+Then('no {string} screen is shown', async ({ page }, screen: string) => {
+  await expect(page.getByRole('heading', { name: screen, exact: true })).toHaveCount(0);
+});
+
+// XUI's StaffUser type-ahead matches on first and last name only, so the search is by name.
+When('I type part of a bailiff\'s name or email address', async ({ page, world }) => {
+  expect(world.currentEvent).toBe(ALLOCATE_BAILIFF);
+  await searchForBailiff(page, localUsers.bailiff);
+});
+
+pendingSteps({ ticket: 'HDPI-7356', summary: 'The bailiff type-ahead is not filtered by court location (OPEN-QUESTIONS 16)' }, [
   'I see matching bailiff users for the case\'s court location',
+]);
+
+// The type-ahead lists every PCS admin in staff reference data. A user without the bailiff role is refused
+// when the page is continued ("Choose a user who has the bailiff role"), not hidden (OPEN-QUESTIONS 53).
+pendingSteps({ ticket: 'HDPI-7356', summary: 'The type-ahead lists all admin staff, not only bailiffs (OPEN-QUESTIONS 53)' }, [
   'users without a bailiff role are not listed',
-  'I select {string} without choosing a bailiff',
-  'I see an error asking me to choose a bailiff',
-  'I have chosen bailiff {string} {string}',
-  'the {string} screen shows {string} and {string}',
-  'I return to {string} with {string} still selected',
-  'no bailiff is allocated',
-  'I am on the {string} screen with {string} chosen',
-  'I submit the allocation',
-  'I allocate the warrant to {string}',
-  '{string} is the allocated bailiff',
+]);
+
+When('I select {string} without choosing a bailiff', async ({ page, world }, button: string) => {
+  expect(button).toBe('Continue');
+  expect(world.currentEvent).toBe(ALLOCATE_BAILIFF);
+  await continueButton(page).click();
+});
+
+// XUI's own "is required" check on the StaffUser field fires before pcs-api's "Choose a bailiff"; both name
+// the bailiff.
+Then('I see an error asking me to choose a bailiff', async ({ page }) => {
+  await expect(errorSummary(page)).toContainText(/bailiff/i);
+  await expect(page.getByRole('heading', { name: findBailiff.pageLabel })).toBeVisible();
+});
+
+Given('I have chosen bailiff {string} {string}', async ({ page, world, $tags }, name: string, _email: string) => {
+  const email = requireStandIn(name, $tags);
+  await startAllocation(page, world);
+  await chooseBailiff(page, email);
+  world.chosenBailiff = email;
+});
+
+// The email shown is the one pcs-api looked up in IDAM for the chosen bailiff, not the feature's illustrative one.
+Then('the {string} screen shows {string} and {string}', async ({ page, $tags }, screen: string, name: string, _email: string) => {
+  expect(screen).toBe(findBailiff.checkYourAnswers);
+  await expectAllocationCheckYourAnswers(page, requireStandIn(name, $tags));
+});
+
+Then('I return to {string} with {string} still selected', async ({ page, $tags }, screen: string, name: string) => {
+  await expect(page.getByRole('heading', { name: screen })).toBeVisible();
+  await expect(bailiffSearchBox(page)).toHaveValue(localUserName(requireStandIn(name, $tags)));
+});
+
+Then('no bailiff is allocated', async ({ page, world }) => {
+  await expectEnforcementStatus(page, requireCaseReference(world), AWAITING_BAILIFF_ALLOCATION);
+});
+
+Given('I am on the {string} screen with {string} chosen', async ({ page, world, $tags }, screen: string, name: string) => {
+  expect(screen).toBe(findBailiff.checkYourAnswers);
+  await goToAllocationCheckYourAnswers(page, world, requireStandIn(name, $tags));
+});
+
+When('I submit the allocation', async ({ page, world }) => {
+  await submitAllocation(page, world);
+});
+
+When('I allocate the warrant to {string}', async ({ page, world, $tags }, name: string) => {
+  await goToAllocationCheckYourAnswers(page, world, requireStandIn(name, $tags));
+  await submitAllocation(page, world);
+});
+
+Given('{string} is the allocated bailiff', async ({ world, $tags }, name: string) => {
+  const { allocateBailiff } = await import('../support/approve-warrant');
+  await allocateBailiff(world, requireStandIn(name, $tags));
+});
+
+pendingSteps({ ticket: 'HDPI-8011', summary: 'A bailiff with around 500 allocated-bailiff case roles cannot be set up' }, [
   '{string} already has 499 active {string} case roles',
   'the allocation succeeds',
 ]);

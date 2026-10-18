@@ -159,10 +159,10 @@ const SETTABLE_STATUSES = [
  * Allocates the approved warrant to a bailiff through pcs-api testing support, which moves it to
  * "Awaiting scheduling" and unblocks the schedule / reschedule / notice-served / warrant-return journeys.
  *
- * The `allocateBailiff` event cannot be driven outside AAT (its StaffUser type-ahead needs staff reference
- * data), so this goes through `BailiffAllocationService` instead, for the same outcome.
+ * A shortcut for scenarios that only need the warrant allocated: feature 03 drives the `allocateBailiff`
+ * event itself. This goes through `BailiffAllocationService` instead, for the same outcome.
  */
-export async function allocateBailiff(world: EnforcementWorld, email = localUsers.bailiff): Promise<void> {
+export async function allocateBailiff(world: EnforcementWorld, email: string = localUsers.bailiff): Promise<void> {
   const userId = await localIdamUserId(email);
   await allocateBailiffViaTestingSupport(requireCaseReference(world), {
     userId,
