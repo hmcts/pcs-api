@@ -285,8 +285,9 @@ Then('I see the green print button between the tabs and the {string} section', a
   // The button and the section headings in page order.
   const order = await tab.locator('a.govuk-button, h2').evaluateAll(elements =>
     elements.map(element => (element.textContent ?? '').trim()));
-  expect(order.indexOf('Print'), 'the print button on the tab').toBeGreaterThanOrEqual(0);
-  expect(order.indexOf('Print'), `the print button above the "${section}" section`).toBeLessThan(order.indexOf(section));
+  const printIndex = order.findIndex(text => text.startsWith('Print'));
+  expect(printIndex, 'the print button on the tab').toBeGreaterThanOrEqual(0);
+  expect(printIndex, `the print button above the "${section}" section`).toBeLessThan(order.indexOf(section));
 });
 
 Then('I see the claimant\'s answers to:', async ({ page }, table: DataTable) => {

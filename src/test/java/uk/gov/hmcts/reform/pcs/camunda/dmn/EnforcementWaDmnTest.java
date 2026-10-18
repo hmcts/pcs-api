@@ -175,29 +175,72 @@ class EnforcementWaDmnTest {
         private final DmnDecisionTable cancellation = WaDmn.CANCELLATION.table();
 
         @Test
-        void shouldCancelOpenBailiffTasksWhenAReturnClosesTheEnforcement() {
-            Map<String, String> closingReturn = Map.of(
-                "event", "recordWarrantReturn",
-                "enforcementStatus", "CLOSED");
-
-            assertThat(cancellation.collect(closingReturn, "action")).containsOnly("Cancel");
-            // The task the closing return itself finishes is completed by the completion table, not cancelled.
-            assertThat(cancellation.collect(closingReturn, "processCategories"))
-                .doesNotContain(RECORD_WARRANT_RETURN.getId())
+        void shouldCancelEveryOpenBailiffTaskWhenAReturnClosesTheEnforcement() {
+            assertThat(cancelledBy("CLOSED"))
                 .containsExactlyInAnyOrder(
                     ALLOCATE_CASE_TO_BAILIFF.getId(),
                     REVIEW_RISKS_AND_SET_LEVEL.getId(),
                     MARK_NOTICE_OF_EVICTION_SERVED.getId(),
                     RESCHEDULE_EVICTION.getId(),
-                    REVIEW_UPDATED_RISK_INFORMATION.getId());
+                    REVIEW_UPDATED_RISK_INFORMATION.getId(),
+                    RECORD_WARRANT_RETURN.getId());
         }
 
+        /**
+         * A return that sends the warrant back for scheduling, or pauses it for breathing space, voids the
+         * eviction date without ending the allocation, so the allocated bailiff keeps their risk tasks.
+         */
         @ParameterizedTest
-        @CsvSource({"BREATHING_SPACE", "AWAITING_SCHEDULING", "AWAITING_BAILIFF_ALLOCATION"})
-        void shouldCancelNothingForAReturnThatLeavesTheEnforcementOpen(String enforcementStatus) {
-            assertThat(cancellation.collect(
-                Map.of("event", "recordWarrantReturn", "enforcementStatus", enforcementStatus), "action"))
-                .isEmpty();
+        @CsvSource({"AWAITING_SCHEDULING", "BREATHING_SPACE"})
+        void shouldCancelOnlyTheEvictionDateTasksForAReturnThatKeepsTheBailiff(String enforcementStatus) {
+            assertThat(cancelledBy(enforcementStatus))
+                .containsExactlyInAnyOrder(
+                    MARK_NOTICE_OF_EVICTION_SERVED.getId(),
+                    RESCHEDULE_EVICTION.getId(),
+                    RECORD_WARRANT_RETURN.getId());
+        }
+
+        /**
+         * A reopened warrant has no bailiff, so the allocated bailiff's tasks go as well. The allocation task
+         * itself is not cancelled: the reopen is what raises it.
+         */
+        @Test
+        void shouldCancelTheAllocatedBailiffsTasksWhenAReturnReopensTheWarrant() {
+            assertThat(cancelledBy("AWAITING_BAILIFF_ALLOCATION"))
+                .doesNotContain(ALLOCATE_CASE_TO_BAILIFF.getId())
+                .containsExactlyInAnyOrder(
+                    REVIEW_RISKS_AND_SET_LEVEL.getId(),
+                    MARK_NOTICE_OF_EVICTION_SERVED.getId(),
+                    RESCHEDULE_EVICTION.getId(),
+                    REVIEW_UPDATED_RISK_INFORMATION.getId(),
+                    RECORD_WARRANT_RETURN.getId());
+        }
+
+        /**
+         * A new eviction date needs a new return task due on it, so the one due on the old date is cancelled
+         * rather than left behind.
+         */
+        @Test
+        void shouldCancelTheReturnTaskWhenTheEvictionIsRescheduled() {
+            Map<String, String> reschedule = Map.of("event", "rescheduleEviction");
+
+            assertThat(cancellation.collect(reschedule, "action")).containsOnly("Cancel");
+            assertThat(cancellation.collect(reschedule, "processCategories"))
+                .containsExactly(RECORD_WARRANT_RETURN.getId());
+        }
+
+        @Test
+        void shouldCancelNothingForAReturnThatLeavesTheStatusUnchanged() {
+            assertThat(cancellation.collect(Map.of("event", "recordWarrantReturn"), "action")).isEmpty();
+        }
+
+        private List<String> cancelledBy(String enforcementStatus) {
+            Map<String, String> inputs = Map.of(
+                "event", "recordWarrantReturn",
+                "enforcementStatus", enforcementStatus);
+
+            assertThat(cancellation.collect(inputs, "action")).containsOnly("Cancel");
+            return cancellation.collect(inputs, "processCategories");
         }
     }
 
