@@ -349,9 +349,8 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/enforcement/domain/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/enforcement/ccd/page/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/enforcement/entity/**/*.java," +
+      // The enforcement equivalents of the three above are deliberately not excluded: their domain, entity and
+      // page classes carry the status model, the fee rules and the page validators, which the gate should cover.
       "**/entities/**," +
       "**/model/**," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +

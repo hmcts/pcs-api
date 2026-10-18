@@ -70,8 +70,9 @@ class EnforcementSubmitEventTest {
         verify(enforcementOrderService).saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
+        assertThat(response.getConfirmationHeader())
+            .isEqualTo("# Pay £148 for HM Courts and Tribunals Service to review your application");
         assertThat(response.getConfirmationBody())
-            .contains("Pay £148 for HM Courts and Tribunals Service")
             .contains("This costs £148")
             .contains("/cases/case-details/%d#Service%%20Request".formatted(CASE_REFERENCE));
     }
@@ -88,6 +89,7 @@ class EnforcementSubmitEventTest {
         verify(enforcementOrderService).saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
+        assertThat(response.getConfirmationHeader()).isNull();
         assertThat(response.getConfirmationBody()).isNull();
     }
 

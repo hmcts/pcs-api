@@ -56,7 +56,7 @@ final class RiskAssessmentTabMarkdown {
     static final String NOTE_NOT_ADDED = "Not added yet (click on the 'select action' button above)";
     static final String RISK_LEVEL_NOT_SET = "Not set yet (click on the 'select action' button above)";
     static final String NOT_ANSWERED = "Not answered";
-    static final String PRINT = "Print";
+    static final String PRINT = "Print (opens in a new tab)";
 
     static final String PROVIDED_BY_CLAIMANT_ON =
         "Information provided by the claimant on %s when they were applying for enforcement";
@@ -166,7 +166,7 @@ final class RiskAssessmentTabMarkdown {
 
     /**
      * The claimant's answers, introduced in the third person for internal users and the second person for the
-     * claimant side (OPEN-QUESTIONS 34).
+     * claimant side (OPEN-QUESTIONS 38).
      */
     static String claimantSection(ClaimantAnswers answers, Instant submittedAt, boolean forClaimant) {
         return claimantSection(answers, submittedAt, null, null, forClaimant);
