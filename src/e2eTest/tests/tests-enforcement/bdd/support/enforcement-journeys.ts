@@ -25,6 +25,7 @@ import {
   localUsers,
   signInToIdamSimulator,
   testCaseFixtures,
+  type TestCaseFixture,
   waitForServiceRequest,
 } from '@config/local-stack.config';
 import {
@@ -149,23 +150,39 @@ export async function seedWarrantApplication(world: EnforcementWorld): Promise<v
  */
 export async function createCaseWithWarrant(world: EnforcementWorld): Promise<void> {
   if (isLocalStack()) {
-    const created = await createCaseFromFixture(testCaseFixtures.enforcementWarrant);
-    process.env.CASE_NUMBER = created.id;
-    caseInfo.id = created.id;
-    caseInfo.fid = created.id.replace(/(.{4})(?=.)/g, '$1-');
-    caseInfo.state = created.state;
-    world.caseReference = created.id;
-    world.submitPayload = basicClaimFixtureClaim as unknown as SubmitCasePayload;
-    await performAction('getDefendantDetails', {
-      defendant1NameKnown: basicClaimFixtureClaim.defendant1.nameKnown,
-      additionalDefendants: basicClaimFixtureClaim.addAnotherDefendant,
-      payLoad: basicClaimFixtureClaim,
-    });
-    world.enforcementSeeded = true;
+    await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWarrant);
     return;
   }
   await createIssuedCase(world);
   await seedWarrantApplication(world);
+}
+
+/**
+ * A case issued with a writ of possession application already submitted, awaiting payment. Only a local stack
+ * can seed one: AAT has no route to a writ application other than the claimant journey.
+ */
+export async function createCaseWithWrit(world: EnforcementWorld): Promise<boolean> {
+  if (!isLocalStack()) {
+    return false;
+  }
+  await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWrit);
+  return true;
+}
+
+async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture: TestCaseFixture): Promise<void> {
+  const created = await createCaseFromFixture(fixture);
+  process.env.CASE_NUMBER = created.id;
+  caseInfo.id = created.id;
+  caseInfo.fid = created.id.replace(/(.{4})(?=.)/g, '$1-');
+  caseInfo.state = created.state;
+  world.caseReference = created.id;
+  world.submitPayload = basicClaimFixtureClaim as unknown as SubmitCasePayload;
+  await performAction('getDefendantDetails', {
+    defendant1NameKnown: basicClaimFixtureClaim.defendant1.nameKnown,
+    additionalDefendants: basicClaimFixtureClaim.addAnotherDefendant,
+    payLoad: basicClaimFixtureClaim,
+  });
+  world.enforcementSeeded = true;
 }
 
 export async function openCaseSummary(page: Page): Promise<void> {
@@ -475,6 +492,17 @@ export { CLAIMANT_LEGAL_REPRESENTATIVE } from './session';
 function claimantLegalRepresentativeEmail(): string {
   return isLocalStack() ? localUsers.claimantSolicitor : (user.localAuthorityOrg1Usr1.email as string);
 }
+
+/** Feature-file names for users whose sign-in role is spelled differently. */
+const FEATURE_USER_ROLES: Record<string, string> = {
+  'hearing centre admin': 'hearing-centre-admin',
+  'hearing centre team leader': 'hearing-centre-team-leader',
+  'bailiff admin': 'bailiff-admin',
+  'bailiff manager': 'bailiff-manager',
+};
+
+/** The sign-in role for a user as the feature files name them, e.g. "hearing centre admin". */
+export const signInRoleFor = (user: string): string => FEATURE_USER_ROLES[user] ?? user;
 
 export function canSignInAs(role: string): boolean {
   return role === CLAIMANT_LEGAL_REPRESENTATIVE || Boolean(signInUsers[role]?.());

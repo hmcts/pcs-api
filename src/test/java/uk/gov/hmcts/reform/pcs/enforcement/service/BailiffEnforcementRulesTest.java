@@ -45,6 +45,25 @@ class BailiffEnforcementRulesTest {
         assertThat(BailiffEnforcementRules.isApprovedLiveWarrant(warrant(null))).isFalse();
     }
 
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, names = {"CLOSED", "AWAITING_BAILIFF_ALLOCATION"})
+    void shouldTreatAnApprovedWarrantAsGeneratedLiveOrNot(EnforcementStatus status) {
+        assertThat(BailiffEnforcementRules.isGeneratedWarrant(warrant(status))).isTrue();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, names = {"AWAITING_PAYMENT", "AWAITING_REVIEW", "REJECTED"})
+    void shouldNotTreatAWarrantAsGeneratedBeforeApproval(EnforcementStatus status) {
+        assertThat(BailiffEnforcementRules.isGeneratedWarrant(warrant(status))).isFalse();
+    }
+
+    @Test
+    void shouldNotTreatAWarrantWithNoStatusOrAWritAsAGeneratedWarrant() {
+        assertThat(BailiffEnforcementRules.isGeneratedWarrant(warrant(null))).isFalse();
+        assertThat(BailiffEnforcementRules.isGeneratedWarrant(
+            EnforcementOrderEntity.builder().status(EnforcementStatus.CLOSED).build())).isFalse();
+    }
+
     @Test
     void shouldTreatAWarrantOfRestitutionAsAWarrant() {
         EnforcementOrderEntity enforcement = EnforcementOrderEntity.builder()

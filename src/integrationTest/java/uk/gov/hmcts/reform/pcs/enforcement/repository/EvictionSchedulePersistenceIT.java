@@ -116,6 +116,8 @@ class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
             "SELECT status FROM enf_case WHERE id = ?", String.class, id)).isEqualTo("CLAIMANT_CONFIRMED");
         assertThat(jdbcTemplate.queryForObject(
             "SELECT bailiff_date FROM enf_case WHERE id = ?", LocalDateTime.class, id)).isEqualTo(EVICTION);
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT claimant_can_attend FROM enf_case WHERE id = ?", Boolean.class, id)).isTrue();
     }
 
     @Test
@@ -142,6 +144,7 @@ class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
         long caseReference = 4444555566667777L;
         EnforcementOrderEntity enforcement = savedEnforcement(caseReference, EnforcementStatus.CLAIMANT_CONFIRMED);
         enforcement.setBailiffDate(EVICTION);
+        enforcement.setClaimantCanAttend(true);
         enforcement.setDispenseWithService(false);
         entityManager.flush();
         LocalDateTime newDate = EVICTION.plusDays(6);
@@ -154,6 +157,7 @@ class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
         assertThat(reloaded.getBailiffDate()).isEqualTo(newDate);
         assertThat(reloaded.getDispenseWithService()).isTrue();
         assertThat(reloaded.isDefendantsCanSeeEnforcement()).isFalse();
+        assertThat(reloaded.getClaimantCanAttend()).isNull();
         assertThat(reloaded.getStatus()).isEqualTo(EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION);
     }
 

@@ -212,6 +212,7 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
         assertThat(savedEntity.getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);
         assertThat(savedEntity.getStatusUpdatedAt()).isEqualTo(NOW);
+        assertThat(savedEntity.getSubmittedAt()).isEqualTo(NOW);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 

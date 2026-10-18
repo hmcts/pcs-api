@@ -24,6 +24,19 @@ class EnforcementStatusTest {
         assertThat(status.isLive()).isTrue();
     }
 
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, names = {"AWAITING_PAYMENT", "AWAITING_REVIEW", "REJECTED"})
+    void shouldNotBeGeneratedBeforeApproval(EnforcementStatus status) {
+        assertThat(status.isGenerated()).isFalse();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, names = {"AWAITING_PAYMENT", "AWAITING_REVIEW", "REJECTED"},
+        mode = EnumSource.Mode.EXCLUDE)
+    void shouldBeGeneratedOnceApproved(EnforcementStatus status) {
+        assertThat(status.isGenerated()).isTrue();
+    }
+
     @Test
     void shouldListTheStatusesThatAreNotLive() {
         assertThat(EnforcementStatus.notLive()).containsExactlyInAnyOrder(CLOSED, REJECTED, TRANSFERRED_TO_HIGH_COURT);

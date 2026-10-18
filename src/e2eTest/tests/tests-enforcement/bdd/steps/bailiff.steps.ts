@@ -19,7 +19,8 @@ import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
 import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
-import { RISK_ASSESSMENT_TAB, expectTabField, isTabVisible, openTabFields } from '../support/case-tabs';
+import { RISK_ASSESSMENT_TAB, expectTabField, openTabFields } from '../support/case-tabs';
+import { openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import {
   ADD_BAILIFF_NOTE,
   SET_RISK_LEVEL,
@@ -174,14 +175,20 @@ When('I select {string} and provide any required reason', async ({ page, world }
 });
 
 /**
- * The "Risk assessment" tab is `forRoles(INTERNAL_TAB_ROLES)`, which is the judges, hearing-centre,
- * ctsc, wlu and bailiff profiles. Neither the claimant nor the defendant is in it, so "internal users
- * only" is checked by signing in as the claimant's legal representative and finding no tab.
+ * The risk level, its reason and the bailiff notes are internal. The claimant side sees the "Risk assessment"
+ * tab too, with only the claimant's own risk answers (13-risk-assessment-tab.feature), so "internal users
+ * only" is checked by finding the internal sections as the signed-in bailiff, then signing in as the
+ * claimant's legal representative and finding the tab without them.
  */
 async function expectRiskAssessmentTabInternalOnly(page: Page, context: BrowserContext, caseReference: string): Promise<void> {
-  await expect(await isTabVisible(page, caseReference, RISK_ASSESSMENT_TAB)).toBe(true);
+  await openCaseTab(page, caseReference, RISK_ASSESSMENT_TAB);
+  expect(Object.keys(await tabSections(page))).toEqual(expect.arrayContaining(['Bailiff note', 'Risk assessment level']));
   await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
-  await expect(await isTabVisible(page, caseReference, RISK_ASSESSMENT_TAB)).toBe(false);
+  await openCaseTab(page, caseReference, RISK_ASSESSMENT_TAB);
+  const claimantSections = Object.keys(await tabSections(page));
+  expect(claimantSections).toContain('Claimant risk level');
+  expect(claimantSections).not.toContain('Bailiff note');
+  expect(claimantSections).not.toContain('Risk assessment level');
 }
 
 Then('the risk level is visible to internal users only', async ({ page, context, world }) => {
@@ -255,15 +262,33 @@ pendingSteps({ ticket: 'HDPI-7593', summary: 'The bailiff note confirmation does
   '{string} takes me to the {string} tab',
 ]);
 
+/**
+ * The newest note under the section, with its author and a time in the layout of the quoted example: "1 Feb
+ * 2026 16:20pm" is a day, a short month, a year, a 24-hour time and a lower case am / pm marker.
+ */
+Then(
+  'the note {string} is shown under {string} with {string} and the date and time in {string} format',
+  async ({ page, world }, note: string, section: string, author: string, example: string) => {
+    expect(example).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+    await openCaseTab(page, requireCaseReference(world), RISK_ASSESSMENT_TAB);
+    const [newest] = (await tabSections(page))[section]?.lists ?? [];
+    expect(newest?.[riskAssessmentFields.note]).toBe(note);
+    expect(newest?.[riskAssessmentFields.noteAddedBy]).toBe(author);
+    expect(newest?.[riskAssessmentFields.noteDateTime]).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+  }
+);
+
 Then('the note is visible to internal users only', async ({ page, context, world }) => {
   await expectRiskAssessmentTabInternalOnly(page, context, requireCaseReference(world));
 });
 
-// `bailiffNotes` is a read-only collection on a tab, so there is nothing to edit; asserting the absence of
-// an edit affordance needs the note to be rendered first, which waits on the same ticket as the rest.
-pendingSteps({ ticket: 'HDPI-7593', summary: 'Rendering a saved bailiff note on the risk assessment tab' }, [
-  'the note {string} is shown under {string} with {string} and the date and time in {string} format',
+// The note is markup on the tab, so there is nothing to edit; the scenario around it needs a named bailiff.
+pendingSteps({ ticket: 'HDPI-7593', summary: 'Asserting that a saved bailiff note cannot be edited' }, [
   'the note cannot be edited',
+]);
+
+pendingSteps({ ticket: 'HDPI-7539', summary: 'Defendant visibility of enforcement' }, [
+  'defendants cannot see the {string} tab',
 ]);
 
 // Two notes on two different dates need the clock moved between them; nothing can backdate a note.
@@ -315,8 +340,6 @@ pendingSteps({ ticket: 'HDPI-7344', summary: 'Schedule eviction cannot be reache
 pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reached: it needs a scheduled eviction' }, [
   'I see the dates {string} and {string} listed as dates the claimant is not available',
   'the dates are not editable',
-  'I have entered a new eviction date of {string} at {string}',
-  'the {string} tab {string} shows only the new date and time',
   'a new sealed {string} is stored in the {string} folder',
   'a new unsealed {string} is stored in the {string} folder and sent to the claimant',
   'the original notices are still in the {string} folder',
@@ -326,19 +349,11 @@ pendingSteps({ ticket: 'HDPI-7346', summary: 'Mark \'notice of eviction\' as ser
   'I enter a served date of {string} and time {string}',
   'I answer {string} to {string}',
   'I enter the note {string}',
-  'the note is shown under {string} on the {string} tab with my name, date and time',
   'I have answered the questions',
-  'I served the notice on {string} at {string} {string}',
-  'I see the confirmation with the case number and warrant number',
-  'the {string} tab shows {string} at {string} and {string} under {string}',
   'defendants can see the {string} tab',
   'defendants can see the {string} folder in case file view',
   'the {string} is visible to defendants',
   'citizen defendants see the {string} under {string} in pcs-frontend',
-  'the court has given permission to dispense with service',
-  'it shows that the eviction is without notice',
-  'the notice served date and time show as {string}',
-  'defendants cannot see the {string} tab',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7552', summary: 'Review updated risk information' }, [
@@ -368,8 +383,6 @@ pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return cannot be re
   'I have chosen a return',
   'no return is saved',
   'I have completed the {string} screen',
-  'I recorded a {string} return with outcome {string} on {string} at {string}',
-  'the {string} tab shows under {string} the return {string}, return name {string}, outcome and the eviction date and time',
   'I submit a return with return name {string}',
   'I submit a return with return name {string} and additional details {string}',
   'the notice of eviction was served on the defendants',

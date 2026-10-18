@@ -49,6 +49,13 @@ export class EnforcementWorld {
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /**
+   * Values the feature files quote illustratively, mapped to what this scenario actually produced: a warrant
+   * number such as "WP-0001" to the number generated on approval, or an order date to the approval date.
+   */
+  aliases: Record<string, string> = {};
+  /** The warrant return the scenario recorded in "Record warrant return", if any. */
+  recordedReturn?: { type: string; outcome: string; returnName: string; date: string; time: string };
 }
 
 type EnforcementFixtures = {
