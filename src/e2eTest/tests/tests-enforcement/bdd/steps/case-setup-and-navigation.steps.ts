@@ -28,10 +28,15 @@ import { RESCHEDULE_EVICTION, SCHEDULE_EVICTION, scheduleEviction } from '../sup
 import { MARK_NOTICE_SERVED, noticeServed } from '../support/notice-served';
 import {
   ADD_BAILIFF_NOTE,
+  ALLOCATE_BAILIFF,
   SET_RISK_LEVEL,
   addBailiffNote,
+  changeAllocatedBailiff,
   chooseRiskLevel,
+  findBailiff,
+  goToAllocationCheckYourAnswers,
   setRiskLevel,
+  standInBailiff,
 } from '../support/bailiff-events';
 
 /** Tickets that deliver the enforcement events the steps cannot drive yet. */
@@ -247,12 +252,18 @@ const screenEvents: Record<string, string> = {
   [DECIDE_ENFORCEMENT]: DECIDE_ENFORCEMENT,
   [setRiskLevel.pageLabel]: SET_RISK_LEVEL,
   [addBailiffNote.pageLabel]: ADD_BAILIFF_NOTE,
+  [findBailiff.pageLabel]: ALLOCATE_BAILIFF,
   [scheduleEviction.pageLabel]: SCHEDULE_EVICTION,
   [noticeServed.pageLabel]: MARK_NOTICE_SERVED,
   [RESCHEDULE_EVICTION]: RESCHEDULE_EVICTION,
 };
 
 Given('I am on the {string} screen', async ({ page, world, $tags }, screen: string) => {
+  // "Allocate case to bailiff" is the only built bailiff event with a check your answers screen. Reaching it
+  // means choosing a bailiff, so it is the feature's main bailiff.
+  if (screen === findBailiff.checkYourAnswers && world.journey === ALLOCATE_BAILIFF) {
+    return goToAllocationCheckYourAnswers(page, world, standInBailiff('Sam Jones') as string);
+  }
   const event = screenEvents[screen];
   if (!event) {
     return markPending(genericStepPending, $tags);
@@ -296,6 +307,9 @@ When('I select {string}', async ({ page, world, $tags }, option: string) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
+  if (world.currentEvent === ALLOCATE_BAILIFF && option === findBailiff.changeLink) {
+    return changeAllocatedBailiff(page);
+  }
   if (world.currentEvent === SET_RISK_LEVEL && (option === setRiskLevel.high || option === setRiskLevel.medium)) {
     return chooseRiskLevel(page, option);
   }
@@ -312,7 +326,11 @@ Then('I return to the case summary', async ({ page, world, $tags }) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
-  const eventPageHeading = world.currentEvent === SET_RISK_LEVEL ? setRiskLevel.pageLabel : decideEnforcement.mainHeader;
+  const eventPageHeadings: Record<string, string> = {
+    [SET_RISK_LEVEL]: setRiskLevel.pageLabel,
+    [ALLOCATE_BAILIFF]: findBailiff.pageLabel,
+  };
+  const eventPageHeading = eventPageHeadings[world.currentEvent] ?? decideEnforcement.mainHeader;
   await expect(page).toHaveURL(new RegExp(`/cases/case-details/.*${world.caseReference}(#.*)?$`));
   await expect(page.getByRole('heading', { name: eventPageHeading })).toBeHidden();
   world.currentEvent = undefined;

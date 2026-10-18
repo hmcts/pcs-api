@@ -8,7 +8,10 @@ import { approximatePrecondition, pendingSteps } from '../fixtures/pending';
 // pending, because there is nothing to click.
 const noTasksYet = (description: string) => approximatePrecondition('HDPI-8627', description);
 
-Given('an {string} task exists on the case', async ({}, task: string) => noTasksYet(`the "${task}" task is not created`));
+Given('an {string} task exists on the case', async ({ world }, task: string) => {
+  world.journey = task;
+  noTasksYet(`the "${task}" task is not created`);
+});
 
 Given('a {string} task is assigned to me', async ({}, task: string) => noTasksYet(`the "${task}" task is not created or assigned`));
 

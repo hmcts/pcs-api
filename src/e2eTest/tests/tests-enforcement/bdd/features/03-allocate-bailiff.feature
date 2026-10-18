@@ -1,6 +1,9 @@
-# Built in pcs-api as the allocateBailiff event. @pending until bailiff, bailiff-admin and bailiff-manager test
-# users (HDPI-7539) and the WA tasks (HDPI-8627) exist: every scenario signs in as one and most open a task.
-@HDPI-7342 @enforcement @bailiff @work-allocation @pending
+# Built in pcs-api as the allocateBailiff event, and drivable on a local cftlib stack: the bailiff manager signs in
+# as a seeded cftlib user, and the StaffUser type-ahead lists the cftlib bailiff users from wiremock's staff
+# reference data stub. "Sam Jones" is played by the local bailiff user. The background's WA task is approximated
+# (HDPI-8627). Still @pending: opening the task (HDPI-8627), the allocated-bailiff case role and the "Roles and
+# access" tab (HDPI-8189), and a bailiff with ~500 case roles (HDPI-8011).
+@HDPI-7342 @enforcement @bailiff @work-allocation
 Feature: Allocate an enforcement to a bailiff
   As a bailiff, bailiff administrator or bailiff manager
   I want to allocate a warrant to a bailiff
@@ -11,7 +14,7 @@ Feature: Allocate an enforcement to a bailiff
     And an "Allocate case to bailiff" task exists on the case
     And I am signed in to XUI as a bailiff manager
 
-  @HDPI-7356
+  @HDPI-7356 @pending
   Scenario: Opening the task goes straight to finding the bailiff
     When I select the "Allocate case to bailiff" task
     Then the "Find the bailiff's name" screen opens
@@ -52,7 +55,7 @@ Feature: Allocate an enforcement to a bailiff
     Then I return to the case summary
     And no bailiff is allocated
 
-  @HDPI-8189 @HDPI-7539
+  @HDPI-8189 @HDPI-7539 @pending
   Scenario: Allocating the bailiff grants the allocated bailiff case role
     Given I am on the "Check your answers" screen with "Sam Jones" chosen
     When I submit the allocation
@@ -62,12 +65,12 @@ Feature: Allocate an enforcement to a bailiff
     And the enforcement status changes to "Awaiting scheduling"
     And the "Allocate case to bailiff" task is completed
 
-  @HDPI-7343 @HDPI-8627
+  @HDPI-7343 @HDPI-8627 @pending
   Scenario: Allocating the bailiff creates the risk review task for that bailiff
     When I allocate the warrant to "Sam Jones"
     Then a "Review risks and set level" task is created and assigned to "Sam Jones"
 
-  @HDPI-8189
+  @HDPI-8189 @pending
   Scenario: Reallocating shows only the active bailiff
     Given "Sam Jones" is the allocated bailiff
     When I allocate the warrant to "Alex Smith"
@@ -75,7 +78,7 @@ Feature: Allocate an enforcement to a bailiff
     And "Sam Jones" no longer has the "allocated-bailiff" case role
     And open bailiff tasks on the case are reassigned to "Alex Smith"
 
-  @HDPI-8011
+  @HDPI-8011 @pending
   Scenario: Bailiff with a high case load can still be allocated
     Given "Sam Jones" already has 499 active "allocated-bailiff" case roles
     When I allocate the warrant to "Sam Jones"
