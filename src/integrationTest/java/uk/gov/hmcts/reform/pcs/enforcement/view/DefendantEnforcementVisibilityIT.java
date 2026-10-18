@@ -119,6 +119,11 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
         assertThat(enforcementOrder.getBailiffNotes()).isNull();
         assertThat(enforcementOrder.getShowRiskAssessmentTab()).isNull();
         assertThat(enforcementOrder.getEnforcementStatus()).isNull();
+        assertThat(enforcementOrder.getEnforcementStatusTabMarkdown())
+            .contains(">Eviction notice</h3>", ">Scheduled eviction</h3>", ">Eviction outcome</h3>")
+            .doesNotContain("Claimant eviction confirmation");
+        assertThat(enforcementOrder.getRiskAssessmentClaimantMarkdown()).isNull();
+        assertThat(enforcementOrder.getRiskAssessmentInternalMarkdown()).isNull();
         assertThat(filenames(defendantView)).containsExactlyInAnyOrder("claim.pdf", "notice-of-eviction.pdf");
     }
 
@@ -134,6 +139,8 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
         PCSCase bailiffView = caseViewAs(caseReference, UserRole.BAILIFF);
 
         assertThat(claimantView.getEnforcementOrder().getEnforcements()).hasSize(1);
+        assertThat(claimantView.getEnforcementOrder().getEnforcementStatusTabMarkdown())
+            .contains("Claimant eviction confirmation");
         assertThat(filenames(claimantView))
             .containsExactlyInAnyOrder("claim.pdf", "notice-of-eviction.pdf", "evidence.pdf");
         assertThat(bailiffView.getEnforcementOrder().getEnforcements()).hasSize(1);

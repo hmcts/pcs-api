@@ -60,10 +60,19 @@ export class EnforcementWorld {
   citizenDefendant?: string;
   /** What each defendant last saw of the case, captured by a "defendant views the case" step. */
   defendantViews?: DefendantView[];
+  /** Who the last "a <user> opens the case" step opened it as. A citizen defendant has no XUI session. */
+  openedAs?: string;
   /** Whether the claimant said they could attend, once they have answered. */
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /**
+   * Values the feature files quote illustratively, mapped to what this scenario actually produced: a warrant
+   * number such as "WP-0001" to the number generated on approval, or an order date to the approval date.
+   */
+  aliases: Record<string, string> = {};
+  /** The warrant return the scenario recorded in "Record warrant return", if any. */
+  recordedReturn?: { type: string; outcome: string; returnName: string; date: string; time: string };
 }
 
 type EnforcementFixtures = {

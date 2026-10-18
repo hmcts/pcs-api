@@ -51,6 +51,8 @@ class DefendantEnforcementViewTest {
     private UserRoleService userRoleService;
     @Mock
     private CurrentEnforcementService currentEnforcementService;
+    @Mock
+    private EnforcementStatusTabView enforcementStatusTabView;
 
     private final PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
 
@@ -123,6 +125,34 @@ class DefendantEnforcementViewTest {
         EnforcementOrder expected = new EnforcementOrder();
         expected.setEnforcements(full.getEnforcements());
         assertThat(pcsCase.getEnforcementOrder()).isEqualTo(expected);
+    }
+
+    @Test
+    void shouldGiveDefendantsTheStatusTabRenderedFromTheVisibleWarrantsAndNoRiskAssessment() {
+        // Given
+        EnforcementOrderEntity served = warrant(CLOSED, true);
+        EnforcementOrderEntity notServed = warrant(AWAITING_CLAIMANT_CONFIRMATION, false);
+        PCSCase pcsCase = caseView(List.of(notServed, served));
+        EnforcementOrder full = pcsCase.getEnforcementOrder();
+        full.setEnforcementStatusTabMarkdown("every warrant, with the claimant's answers");
+        full.setShowRiskAssessmentTab(YesOrNo.YES);
+        full.setRiskAssessmentPrintMarkdown("print");
+        full.setRiskAssessmentInternalMarkdown("internal");
+        full.setRiskAssessmentClaimantMarkdown("claimant answers");
+        givenTheCaseHas(notServed, served);
+        givenCurrentUserHasRoles(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
+        when(enforcementStatusTabView.defendantTabMarkdown(List.of(served))).thenReturn("the served warrant");
+
+        // When
+        underTest.restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        // Then
+        EnforcementOrder defendantView = pcsCase.getEnforcementOrder();
+        assertThat(defendantView.getEnforcementStatusTabMarkdown()).isEqualTo("the served warrant");
+        assertThat(defendantView.getShowRiskAssessmentTab()).isNull();
+        assertThat(defendantView.getRiskAssessmentPrintMarkdown()).isNull();
+        assertThat(defendantView.getRiskAssessmentInternalMarkdown()).isNull();
+        assertThat(defendantView.getRiskAssessmentClaimantMarkdown()).isNull();
     }
 
     @Test

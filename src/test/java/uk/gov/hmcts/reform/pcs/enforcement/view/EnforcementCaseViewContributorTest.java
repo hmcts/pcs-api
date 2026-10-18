@@ -30,6 +30,10 @@ class EnforcementCaseViewContributorTest {
     @Mock
     private WarrantReturnView warrantReturnView;
     @Mock
+    private EnforcementStatusTabView enforcementStatusTabView;
+    @Mock
+    private RiskAssessmentTabView riskAssessmentTabView;
+    @Mock
     private DefendantEnforcementView defendantEnforcementView;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
@@ -46,7 +50,8 @@ class EnforcementCaseViewContributorTest {
 
         // Then
         InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView, riskLevelView,
-                                  evictionScheduleView, warrantReturnView, defendantEnforcementView);
+                                  evictionScheduleView, warrantReturnView, enforcementStatusTabView,
+                                  riskAssessmentTabView, defendantEnforcementView);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
         inOrder.verify(enforcementOrderView).setEnforcementStatusFields(pcsCaseEntity, pcsCase);
@@ -54,6 +59,8 @@ class EnforcementCaseViewContributorTest {
         inOrder.verify(riskLevelView).setRiskAssessmentFields(pcsCaseEntity, pcsCase);
         inOrder.verify(evictionScheduleView).setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         inOrder.verify(warrantReturnView).setLatestWarrantReturn(pcsCaseEntity, pcsCase);
+        inOrder.verify(enforcementStatusTabView).setEnforcementStatusTab(pcsCaseEntity, pcsCase);
+        inOrder.verify(riskAssessmentTabView).setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
         inOrder.verify(defendantEnforcementView).restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
         inOrder.verifyNoMoreInteractions();
     }

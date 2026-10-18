@@ -52,6 +52,7 @@ public class ClaimantEvictionConfirmationService {
         }
         EnforcementStatus target = canAttend.toBoolean() ? CLAIMANT_CONFIRMED : CLAIMANT_UNABLE_TO_ATTEND;
         enforcementStatusTransitions.transition(enforcement, target);
+        enforcement.setClaimantCanAttend(canAttend.toBoolean());
         enforcementOrderRepository.save(enforcement);
         // TODO HDPI-7549: when the claimant cannot attend, create a "Reschedule eviction" task for the allocated
         // bailiff, and store the dates they are not available (the journey does not ask for them yet).

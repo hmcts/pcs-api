@@ -8,7 +8,8 @@
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { scheduleEvictionOnApprovedWarrant } from '../support/approve-warrant';
-import { expectCaseTab } from '../support/enforcement-journeys';
+import { expectCaseTab, requireCaseReference, signInAs } from '../support/enforcement-journeys';
+import { ENFORCEMENT_STATUS_TAB, enforcementSections, openCaseTab } from '../support/enforcement-status-tab';
 import { markNoticeServedAsBailiff } from '../support/notice-served';
 import {
   DEFENDANT_LEGAL_REPRESENTATIVE,
@@ -142,3 +143,30 @@ pendingSteps({ ticket: 'HDPI-7354', summary: 'A generated notice of eviction: th
   'the defendant legal representative sees the {string} folder with the {string}',
   'the citizen defendant sees the {string} under {string} in pcs-frontend',
 ]);
+
+// Feature 12: what a defendant sees on the "Enforcement status" tab once the notice is served.
+When('a defendant opens the {string} tab', async ({ page, context, world, $tags }, tabName: string) => {
+  if (!canSetUpDefendants()) {
+    return markPending(noDefendantUsers, $tags);
+  }
+  expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
+  world.openedAs = DEFENDANT_LEGAL_REPRESENTATIVE;
+  await signInAs(DEFENDANT_LEGAL_REPRESENTATIVE, page, context);
+  await openCaseTab(page, requireCaseReference(world), tabName);
+});
+
+Then(
+  'they see the warrant number, {string}, {string} and {string}',
+  async ({ page, world }, first: string, second: string, third: string) => {
+    const sections = await enforcementSections(page);
+    expect(sections, 'the one warrant the defendant can see').toHaveLength(1);
+    expect(sections[0].heading).toBe(world.warrantNumber);
+    expect(Object.keys(sections[0].sections)).toEqual(expect.arrayContaining([first, second, third]));
+  }
+);
+
+Then('they do not see {string}', async ({ page }, section: string) => {
+  for (const warrant of await enforcementSections(page)) {
+    expect(Object.keys(warrant.sections), `the sections of ${warrant.heading}`).not.toContain(section);
+  }
+});

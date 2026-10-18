@@ -34,6 +34,11 @@ public enum EnforcementStatus implements HasLabel {
 
     private static final Set<EnforcementStatus> NOT_LIVE = EnumSet.of(CLOSED, REJECTED, TRANSFERRED_TO_HIGH_COURT);
 
+    /**
+     * Before a caseworker approves the application, or when they reject it, no warrant or writ is generated.
+     */
+    private static final Set<EnforcementStatus> NOT_GENERATED = EnumSet.of(AWAITING_PAYMENT, AWAITING_REVIEW, REJECTED);
+
     private final String label;
 
     /**
@@ -41,6 +46,13 @@ public enum EnforcementStatus implements HasLabel {
      */
     public boolean isLive() {
         return !NOT_LIVE.contains(this);
+    }
+
+    /**
+     * Whether the warrant or writ has been generated, which happens when a caseworker approves the application.
+     */
+    public boolean isGenerated() {
+        return !NOT_GENERATED.contains(this);
     }
 
     public static Set<EnforcementStatus> notLive() {

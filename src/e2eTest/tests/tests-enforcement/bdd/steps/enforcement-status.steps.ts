@@ -1,12 +1,15 @@
 // Enforcement status model (feature 19 and status assertions elsewhere).
 //
-// The status lives on the `enforcements` collection and is visible on the "Enforcement status" tab, so the
-// assertions read it from there. What is still missing is any way to *put* an enforcement into an arbitrary
-// status: pcs-api's only enforcement testing-support endpoint is `fee-paid`, so a scenario can only reach a
-// status by driving the real events. Steps that need a status set up for them stay pending on HDPI-7419.
+// The status of every application is on the `enforcements` collection pcs-api sets on the case view, so the
+// assertions read it from the case data: the "Enforcement status" tab only appears once a warrant or writ has
+// been generated, and an application awaiting payment or review has a status too.
+//
+// What is still missing is any way to *put* an enforcement into an arbitrary status: pcs-api's only
+// enforcement testing-support endpoint is `fee-paid`, so a scenario can only reach a status by driving the
+// real events. Steps that need a status set up for them stay pending on HDPI-7419.
 import { Given, Then, expect } from '../fixtures/enforcement.fixtures';
 import { pendingSteps } from '../fixtures/pending';
-import { enforcementRows, expectEnforcementStatus, openCaseTab } from '../support/enforcement-status-tab';
+import { enforcementRows, expectEnforcementStatus } from '../support/enforcement-status-tab';
 import { setUpWarrantAtStatus } from '../support/approve-warrant';
 import { requireCaseReference } from '../support/enforcement-journeys';
 
@@ -22,10 +25,9 @@ Then('the enforcement status is still {string}', async ({ page, world }, status:
   await expectEnforcementStatus(page, requireCaseReference(world), status);
 });
 
-Then('the case has no live warrant', async ({ page, world }) => {
-  await openCaseTab(page, requireCaseReference(world), 'Enforcement status');
-  const live = (await enforcementRows(page)).filter(
-    row => !['Closed', 'Rejected', 'Transferred to the High Court'].includes(row['Status'])
+Then('the case has no live warrant', async ({ world }) => {
+  const live = (await enforcementRows(requireCaseReference(world))).filter(
+    row => !['Closed', 'Rejected', 'Transferred to the High Court'].includes(row.status ?? '')
   );
   expect(live, 'no live enforcement on the case').toHaveLength(0);
 });

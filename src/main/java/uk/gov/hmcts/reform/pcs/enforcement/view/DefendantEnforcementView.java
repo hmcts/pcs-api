@@ -31,8 +31,10 @@ import java.util.stream.Stream;
  * on each warrant's notice of eviction, and a defendant's legal representative holds the same
  * {@code caseworker-pcs-solicitor} access profile as the claimant's. So this runs last of the enforcement
  * views, for defendants only, and replaces the enforcement fields with a copy holding just the visible
- * warrants on {@code enforcements}. Every other enforcement field, including any added later, is left unset
- * for defendants. The "Enforcement status" tab's show condition then hides the tab when no warrant is visible.
+ * warrants: their items on {@code enforcements}, and the "Enforcement status" tab rendered from them without
+ * the claimant's sections. Every other enforcement field, including both "Risk assessment" tabs and any field
+ * added later, is left unset for defendants. The "Enforcement status" tab's show condition then hides the tab
+ * until a warrant is visible.
  *
  * <p>The enforcement documents are taken out of {@code allDocuments}, the only case field that carries them,
  * except a visible warrant's notice of eviction. CCD categories cannot be restricted by role, so the
@@ -52,6 +54,7 @@ public class DefendantEnforcementView {
 
     private final UserRoleService userRoleService;
     private final CurrentEnforcementService currentEnforcementService;
+    private final EnforcementStatusTabView enforcementStatusTabView;
 
     /**
      * Restricts the enforcement fields and documents when the current user is a defendant on the case.
@@ -90,26 +93,34 @@ public class DefendantEnforcementView {
     }
 
     /**
-     * The visible warrants' items on {@code enforcements}, and nothing else; null when no warrant is visible.
+     * The visible warrants' items on {@code enforcements} and the "Enforcement status" tab rendered from them
+     * for a defendant, and nothing else; null when no warrant is visible.
      */
-    private static EnforcementOrder defendantView(EnforcementOrder enforcementOrder,
-                                                  List<EnforcementOrderEntity> enforcements) {
-        if (enforcementOrder == null || enforcementOrder.getEnforcements() == null) {
+    private EnforcementOrder defendantView(EnforcementOrder enforcementOrder,
+                                           List<EnforcementOrderEntity> enforcements) {
+        List<EnforcementOrderEntity> visibleEnforcements = DefendantEnforcementRules.visibleToDefendants(enforcements);
+        if (visibleEnforcements.isEmpty()) {
             return null;
         }
-        Set<String> visibleIds = DefendantEnforcementRules.visibleToDefendants(enforcements).stream()
+        Set<String> visibleIds = visibleEnforcements.stream()
             .map(EnforcementOrderEntity::getId)
             .filter(Objects::nonNull)
             .map(UUID::toString)
             .collect(Collectors.toUnmodifiableSet());
-        List<ListValue<EnforcementSummary>> visible = enforcementOrder.getEnforcements().stream()
+        List<ListValue<EnforcementSummary>> summaries =
+            enforcementOrder == null || enforcementOrder.getEnforcements() == null
+                ? List.of()
+                : enforcementOrder.getEnforcements();
+        List<ListValue<EnforcementSummary>> visible = summaries.stream()
             .filter(item -> item != null && visibleIds.contains(item.getId()))
             .toList();
-        if (visible.isEmpty()) {
+        String statusTab = enforcementStatusTabView.defendantTabMarkdown(visibleEnforcements);
+        if (visible.isEmpty() && statusTab == null) {
             return null;
         }
         EnforcementOrder defendantView = new EnforcementOrder();
-        defendantView.setEnforcements(visible);
+        defendantView.setEnforcements(visible.isEmpty() ? null : visible);
+        defendantView.setEnforcementStatusTabMarkdown(statusTab);
         return defendantView;
     }
 

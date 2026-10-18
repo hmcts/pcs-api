@@ -17,6 +17,8 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final RiskLevelView riskLevelView;
     private final EvictionScheduleView evictionScheduleView;
     private final WarrantReturnView warrantReturnView;
+    private final EnforcementStatusTabView enforcementStatusTabView;
+    private final RiskAssessmentTabView riskAssessmentTabView;
     private final DefendantEnforcementView defendantEnforcementView;
 
     @Override
@@ -28,6 +30,8 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
         riskLevelView.setRiskAssessmentFields(pcsCaseEntity, pcsCase);
         evictionScheduleView.setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         warrantReturnView.setLatestWarrantReturn(pcsCaseEntity, pcsCase);
+        enforcementStatusTabView.setEnforcementStatusTab(pcsCaseEntity, pcsCase);
+        riskAssessmentTabView.setRiskAssessmentTab(pcsCaseEntity, pcsCase, caseReference);
         // Last, so that it restricts everything the views above set.
         defendantEnforcementView.restrictForDefendants(pcsCaseEntity, pcsCase, caseReference);
     }

@@ -27,8 +27,16 @@ export const ENFORCEMENT_CATEGORY_ID = 'enforcement';
  * means CCD gives them none of these fields.
  */
 const TAB_FIELDS: Record<string, string[]> = {
-  'Enforcement status': ['enforcements', 'enforcementStatus'],
-  'Risk assessment': ['showRiskAssessmentTab', 'bailiffNotes', 'currentRiskLevel', 'currentRiskLevelReason'],
+  'Enforcement status': ['enforcementStatusTabMarkdown', 'enforcements', 'enforcementStatus'],
+  'Risk assessment': [
+    'showRiskAssessmentTab',
+    'riskAssessmentPrintMarkdown',
+    'riskAssessmentInternalMarkdown',
+    'riskAssessmentClaimantMarkdown',
+    'bailiffNotes',
+    'currentRiskLevel',
+    'currentRiskLevelReason',
+  ],
 };
 
 /**
@@ -107,7 +115,8 @@ export async function expectEnforcementTab(page: Page, views: DefendantView[], t
       await expectCaseTab(page, tabName, shown);
     }
     if (shown) {
-      expect(view.caseData.enforcements, `the warrants ${view.who} can see`).toBeTruthy();
+      expect(view.caseData.enforcementStatusTabMarkdown, `the tab the ${view.who} gets`).toBeTruthy();
+      expect(String(view.caseData.enforcementStatusTabMarkdown)).not.toContain('Claimant eviction confirmation');
     } else {
       for (const field of fields) {
         expect(view.caseData[field], `${field} in the case data the ${view.who} gets`).toBeUndefined();

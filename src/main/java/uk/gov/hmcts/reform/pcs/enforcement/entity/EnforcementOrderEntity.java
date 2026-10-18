@@ -147,6 +147,19 @@ public class EnforcementOrderEntity {
     @Column(name = "defendants_can_see_enforcement")
     private boolean defendantsCanSeeEnforcement;
 
+    /**
+     * When the claimant submitted the application. Null for applications submitted before it was recorded.
+     */
+    @Column(name = "submitted_at")
+    private Instant submittedAt;
+
+    /**
+     * The claimant's answer to whether they can attend the eviction on the current eviction date. Null until
+     * they answer, and cleared when the eviction is rescheduled.
+     */
+    @Column(name = "claimant_can_attend")
+    private Boolean claimantCanAttend;
+
     public void addDocuments(List<DocumentEntity> documents) {
         this.documents.addAll(documents);
     }

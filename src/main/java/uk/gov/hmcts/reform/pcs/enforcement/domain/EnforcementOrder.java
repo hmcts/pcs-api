@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffNoteReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.DefendantVisibleEnforcementAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementStatusReadAccess;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.RiskLevelReadAccess;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.RawWarrantRestDetails;
@@ -138,9 +139,10 @@ public class EnforcementOrder {
 
     /**
      * Whether to show the "Risk assessment" tab, set for the case view. The tab belongs to the bailiffs' work
-     * on a warrant, so it is shown for a warrant or warrant of restitution that a caseworker has approved and
-     * that is still live, and not for a writ or a warrant still going through payment and review
-     * (13-risk-assessment-tab.feature). The tab's CCD show condition cannot apply that rule itself.
+     * on a warrant, so it is shown once a caseworker has approved a warrant or warrant of restitution, and stays
+     * once the warrant closes so its notes and risk level can still be read. It is not shown for a writ, or for
+     * a warrant still going through payment and review (13-risk-assessment-tab.feature). The tab's CCD show
+     * condition cannot apply that rule itself.
      */
     @CCD(label = "Show the risk assessment tab", searchable = false,
         access = {EnforcementStatusReadAccess.class})
@@ -154,6 +156,35 @@ public class EnforcementOrder {
      */
     @CCD(label = "Warrants and writs", searchable = false, access = {DefendantVisibleEnforcementAccess.class})
     private List<ListValue<EnforcementSummary>> enforcements;
+
+    /**
+     * The "Enforcement status" tab: a section for each generated warrant and writ, newest first. Set for the case
+     * view, and only when the claim has a generated warrant or writ, which is what shows the tab. Defendants get
+     * it rendered from the warrants they may see only
+     * ({@link uk.gov.hmcts.reform.pcs.enforcement.view.DefendantEnforcementView}).
+     */
+    @CCD(searchable = false, access = {DefendantVisibleEnforcementAccess.class})
+    private String enforcementStatusTabMarkdown;
+
+    /**
+     * The print button at the top of the "Risk assessment" tab, set for the case view.
+     */
+    @CCD(searchable = false, access = {EnforcementStatusReadAccess.class})
+    private String riskAssessmentPrintMarkdown;
+
+    /**
+     * The bailiff notes and risk level sections of the "Risk assessment" tab, set for the case view. Internal
+     * only, like the notes and level themselves.
+     */
+    @CCD(searchable = false, access = {RiskLevelReadAccess.class})
+    private String riskAssessmentInternalMarkdown;
+
+    /**
+     * The claimant's risk answers on the "Risk assessment" tab, set for the case view. The claimant side sees
+     * them too, worded for them.
+     */
+    @CCD(searchable = false, access = {EnforcementStatusReadAccess.class})
+    private String riskAssessmentClaimantMarkdown;
 
     /**
      * "Claimant vs defendants", set for the decideEnforcement header.
