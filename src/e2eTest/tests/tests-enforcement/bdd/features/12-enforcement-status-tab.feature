@@ -22,7 +22,7 @@ Feature: Enforcement status tab
     Then I see "WP-0001" as a heading
     And I see the sections "Eviction notice", "Scheduled eviction", "Claimant eviction confirmation" and "Eviction outcome"
 
-  # "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 25), so the other
+  # "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 29), so the other
   # three answers do not exist yet.
   @HDPI-7351 @pending
   Scenario: Claimant eviction confirmation section

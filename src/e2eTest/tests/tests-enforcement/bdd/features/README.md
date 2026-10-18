@@ -186,7 +186,7 @@ precondition when it cannot reach the status a scenario asks for.
   so features 05, 07, 08 and 11 *are* reachable. (HDPI-7356)
 - **Read generated documents.** pcs-api generates every enforcement document (application, risk
   assessment, warrant or writ, notice of eviction, notice of appointment) and files it in the Enforcement
-  folder, but from stand-in Docmosis templates until the real ones exist (OPEN-QUESTIONS 38), and locally
+  folder, but from stand-in Docmosis templates until the real ones exist (OPEN-QUESTIONS 42), and locally
   `bootWithCCD` renders every template as the wiremock stub's placeholder PDF. The document steps
   (`steps/documents.steps.ts`) therefore check that a document of the right name is in the folder and who can
   see it, through the data store as each user; its content, date stamp and seal are not checked, and the

@@ -198,8 +198,9 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
 
         var accepted = submit(enforcementType);
 
+        assertThat(accepted.confirmationHeader())
+            .isEqualTo("# Pay " + feeAmount + " for HM Courts and Tribunals Service to review your application");
         assertThat(accepted.confirmationBody())
-            .contains("Pay " + feeAmount + " for HM Courts and Tribunals Service")
             .contains("/cases/case-details/%d#Service%%20Request".formatted(caseReference));
         EnforcementOrderEntity enforcement = storedEnforcement();
         assertThat(enforcement.getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);

@@ -75,7 +75,7 @@ Given('a PCS case {string}', async ({ world }, _reference: string) => {
 });
 
 Given('a PCS case {string} with a possession order made', async ({ world }, _reference: string) => {
-  approximatePrecondition('HDPI-7342', 'no possession order is made; "Enforce the order" is available once the case is issued (README open question 1)');
+  approximatePrecondition('HDPI-7342', 'no possession order is made; "Enforce the order" is available once the case is issued (OPEN-QUESTIONS 1)');
   await createIssuedCase(world);
 });
 

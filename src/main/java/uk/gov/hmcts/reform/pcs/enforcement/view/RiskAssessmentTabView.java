@@ -26,7 +26,7 @@ import java.util.Optional;
  *
  * <p>The tab is for the claim's most recent warrant or warrant of restitution that a caseworker has approved:
  * the current enforcement when it is one, as for the bailiff events. It stays once the warrant closes, so that
- * its notes and risk level can still be read (OPEN-QUESTIONS 36). It is never shown for a writ, or before a
+ * its notes and risk level can still be read (OPEN-QUESTIONS 40). It is never shown for a writ, or before a
  * warrant has been approved.
  *
  * <p>Defendants never see it (HDPI-7539). A defendant's legal representative holds the same

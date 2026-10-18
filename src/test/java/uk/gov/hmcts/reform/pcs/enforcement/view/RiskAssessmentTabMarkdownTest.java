@@ -47,7 +47,7 @@ class RiskAssessmentTabMarkdownTest {
     void shouldOpenTheCaseOnTheTabInANewBrowserTab() {
         assertThat(RiskAssessmentTabMarkdown.printButton("PCS", "PCS-123", 1234567890123456L)).isEqualTo(
             "<a class=\"govuk-button\" href=\"/cases/case-details/PCS/PCS-123/1234567890123456#Risk%20assessment\" "
-                + "target=\"_blank\" rel=\"noopener noreferrer\">Print</a>");
+                + "target=\"_blank\" rel=\"noopener noreferrer\">Print (opens in a new tab)</a>");
     }
 
     @Test
