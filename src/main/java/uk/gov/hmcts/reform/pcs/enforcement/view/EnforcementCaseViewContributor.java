@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseViewContributor;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -27,11 +28,18 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final DefendantEnforcementView defendantEnforcementView;
 
     /**
-     * With the {@code enforcement-enabled} flag off no enforcement field is set. Enforcement documents already
+     * Every view below reads the claim's enforcements, so they are loaded once for all of them.
+     *
+     * <p>With the {@code enforcement-enabled} flag off no enforcement field is set. Enforcement documents already
      * in the case file are still restricted as usual, so turning the flag off never shows them to anyone new.
      */
     @Override
     public void contribute(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
+        CurrentEnforcementService.withEnforcementsLoadedOnce(() -> setFields(pcsCaseEntity, pcsCase, caseReference,
+                                                                             state));
+    }
+
+    private void setFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
         if (!featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)) {
             if (pcsCase != null) {
                 pcsCase.setEnforcementOrder(null);

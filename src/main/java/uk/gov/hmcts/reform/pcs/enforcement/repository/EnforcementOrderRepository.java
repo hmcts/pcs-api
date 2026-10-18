@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface EnforcementOrderRepository extends JpaRepository<EnforcementOrderEntity, UUID> {
@@ -28,6 +29,12 @@ public interface EnforcementOrderRepository extends JpaRepository<EnforcementOrd
         + "WHERE e.claim.pcsCase.caseReference = :caseReference AND e.enforcementNumber IS NOT NULL "
         + "ORDER BY e.approvedAt, e.enforcementNumber")
     List<String> findEnforcementNumbersByCaseReference(@Param("caseReference") long caseReference);
+
+    /**
+     * The reference of the case the enforcement is on.
+     */
+    @Query("SELECT e.claim.pcsCase.caseReference FROM EnforcementOrderEntity e WHERE e.id = :id")
+    Optional<Long> findCaseReferenceById(@Param("id") UUID id);
 
     /**
      * The next value of enf_case_number_seq, from which warrant and writ numbers are built.

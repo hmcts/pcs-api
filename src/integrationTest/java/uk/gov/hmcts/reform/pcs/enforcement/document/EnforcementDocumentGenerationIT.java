@@ -1,9 +1,13 @@
 package uk.gov.hmcts.reform.pcs.enforcement.document;
 
+import com.github.kagkarlsson.scheduler.task.Execution;
+import com.github.kagkarlsson.scheduler.task.ExecutionContext;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -46,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -68,6 +73,10 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
     private EvictionScheduleService evictionScheduleService;
     @Autowired
     private EnforcementDocumentGenerator enforcementDocumentGenerator;
+    @Autowired
+    private EnforcementDocumentGenerationComponent enforcementDocumentGenerationComponent;
+    @Value("${enforcement.documents.request.max-retries}")
+    private int maxRetries;
     @Autowired
     private EnforcementOrderRepository enforcementOrderRepository;
     @Autowired
@@ -197,6 +206,36 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
 
         assertThat(jdbcTemplate.queryForObject(
             "SELECT count(*) FROM document WHERE enf_case_id = ?", Integer.class, id)).isZero();
+    }
+
+    @Test
+    @DisplayName("the last failed attempt records a terminal failure against the case")
+    void lastFailedAttemptRecordsTheFailure() {
+        long caseReference = 4107410741074107L;
+        final UUID id = savedEnforcement(caseReference, SelectEnforcementType.WARRANT,
+                                   EnforcementStatus.AWAITING_BAILIFF_ALLOCATION);
+        when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString()))
+            .thenThrow(new DocAssemblyException("Document generation failed"));
+        Execution execution = mock(Execution.class);
+        execution.consecutiveFailures = maxRetries;
+        ExecutionContext executionContext = mock(ExecutionContext.class);
+        when(executionContext.getExecution()).thenReturn(execution);
+        TaskInstance<EnforcementDocumentTaskData> taskInstance = new TaskInstance<>(
+            TASK_NAME, id + "-WARRANT_OF_POSSESSION",
+            new EnforcementDocumentTaskData(id, EnforcementOutput.WARRANT_OF_POSSESSION));
+
+        assertThatThrownBy(() -> enforcementDocumentGenerationComponent.enforcementDocumentGenerationTask()
+            .execute(taskInstance, executionContext)).isInstanceOf(DocAssemblyException.class);
+
+        List<Map<String, Object>> failures = jdbcTemplate.queryForList(
+            "SELECT l.activity_type, l.status, l.details::jsonb ->> 'documentType' AS document_type, "
+                + "l.details::jsonb ->> 'terminal' AS terminal FROM claim_activity_log l "
+                + "JOIN pcs_case c ON c.id = l.case_id WHERE c.case_reference = ?", caseReference);
+        assertThat(failures).singleElement().satisfies(failure -> assertThat(failure)
+            .containsEntry("activity_type", "DOCUMENTS_CREATED")
+            .containsEntry("status", "FAILURE")
+            .containsEntry("document_type", "WARRANT_OF_POSSESSION")
+            .containsEntry("terminal", "true"));
     }
 
     private List<String> scheduledInstances(UUID enforcementId) {
