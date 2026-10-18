@@ -113,7 +113,7 @@ withPipeline(type, product, component) {
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
       env.E2E_SUITE = "noticeOfChange"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement").size() > 0) {
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement_bdd").size() > 0) {
       env.E2E_SUITE = "enforcement:bdd"
     }
   }
