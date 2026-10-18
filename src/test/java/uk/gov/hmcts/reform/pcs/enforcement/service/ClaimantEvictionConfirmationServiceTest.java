@@ -55,6 +55,8 @@ class ClaimantEvictionConfirmationServiceTest {
     private ClaimantRiskAssessmentService claimantRiskAssessmentService;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private ClaimantEvictionConfirmationService underTest;
 
@@ -63,7 +65,7 @@ class ClaimantEvictionConfirmationServiceTest {
         underTest = new ClaimantEvictionConfirmationService(
             new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository), enforcementOrderRepository,
             new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)), claimantRiskAssessmentService,
-            enforcementNotificationService);
+            enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -79,6 +81,7 @@ class ClaimantEvictionConfirmationServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfConfirmedAttendance(CASE_REFERENCE, EVICTION);
         verify(enforcementNotificationService, never()).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -94,6 +97,7 @@ class ClaimantEvictionConfirmationServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementNotificationService).notifyClaimantOfDeclinedAttendance(CASE_REFERENCE);
         verify(enforcementNotificationService, never()).notifyClaimantOfConfirmedAttendance(anyLong(), any());
+        verify(enforcementWaTaskService).claimantCannotAttend(CASE_REFERENCE, enforcement.getId(), EVICTION);
     }
 
     @Test
@@ -140,7 +144,7 @@ class ClaimantEvictionConfirmationServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(status);
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(EARLIER);
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -152,7 +156,7 @@ class ClaimantEvictionConfirmationServiceTest {
 
         assertThat(enforcement.getStatus()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -163,7 +167,7 @@ class ClaimantEvictionConfirmationServiceTest {
             .containsExactly(ClaimantEvictionConfirmationService.NO_LIVE_EVICTION_ERROR);
 
         verify(enforcementOrderRepository, never()).save(any());
-        verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -182,7 +186,8 @@ class ClaimantEvictionConfirmationServiceTest {
     void shouldNotChangeAnythingWhenThereIsNoAnswer() {
         assertThat(underTest.recordAttendance(CASE_REFERENCE, null).refused()).isFalse();
 
-        verifyNoInteractions(pcsCaseService, enforcementOrderRepository, enforcementNotificationService);
+        verifyNoInteractions(pcsCaseService, enforcementOrderRepository, enforcementNotificationService,
+                             enforcementWaTaskService);
     }
 
     private List<EnforcementOrderEntity> givenEnforcements(EnforcementOrderEntity... enforcements) {

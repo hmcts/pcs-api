@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -40,6 +41,7 @@ public class EnforcementOrderService {
     private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
     private final EnforcementFeeService enforcementFeeService;
+    private final EnforcementWaTaskService enforcementWaTaskService;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -126,10 +128,21 @@ public class EnforcementOrderService {
         if (paymentOutstanding) {
             enforcementFeeService.requestPayment(pcsCaseEntity, savedEntity.getId(), feeOwed.orElseThrow());
         } else {
-            enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
-            enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);
+            applicationAwaitingReview(caseReference, savedEntity.getId(), enforcementType);
         }
         return feeOwed;
+    }
+
+    /**
+     * What an application reaching awaiting review does, whichever path took it there: the claimant is told it
+     * has been received, the application documents are generated, and a caseworker gets a task to review it.
+     * Both callers run in a transaction, so all three go with the application or not at all.
+     */
+    private void applicationAwaitingReview(long caseReference, UUID enforcementId,
+                                           SelectEnforcementType enforcementType) {
+        enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
+        enforcementDocumentScheduler.scheduleApplicationDocuments(enforcementId, enforcementType);
+        enforcementWaTaskService.applicationAwaitingReview(caseReference, enforcementId);
     }
 
     /**
@@ -153,8 +166,7 @@ public class EnforcementOrderService {
         enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
         enforcementOrderRepository.save(enforcement);
         SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcement.getEnforcementOrder());
-        enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
-        enforcementDocumentScheduler.scheduleApplicationDocuments(enforcement.getId(), enforcementType);
+        applicationAwaitingReview(caseReference, enforcement.getId(), enforcementType);
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {

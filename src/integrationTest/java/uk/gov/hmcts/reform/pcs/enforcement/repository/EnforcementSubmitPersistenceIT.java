@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementFeeService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RepeatWarrantFeeWaiver;
 import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
 
@@ -88,7 +89,8 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             enforcementOrderRepository, new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
             pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
             enforcementStatusTransitions, repeatWarrantFeeWaiver, mock(EnforcementNotificationService.class),
-            enforcementDocumentScheduler, mock(EnforcementFeeService.class, RETURNS_MOCKS));
+            enforcementDocumentScheduler, mock(EnforcementFeeService.class, RETURNS_MOCKS),
+            mock(EnforcementWaTaskService.class));
     }
 
     @ParameterizedTest

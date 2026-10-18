@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailabl
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService.Eviction;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -56,6 +57,8 @@ class EvictionScheduleServiceTest {
     private EnforcementDocumentScheduler enforcementDocumentScheduler;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private EvictionScheduleService underTest;
 
@@ -64,7 +67,7 @@ class EvictionScheduleServiceTest {
         underTest = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
                                                 new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)),
                                                 bailiffNoteService, enforcementNotificationService,
-                                                enforcementDocumentScheduler);
+                                                enforcementDocumentScheduler, enforcementWaTaskService);
     }
 
     @Test
@@ -84,6 +87,8 @@ class EvictionScheduleServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfScheduledEviction(CASE_REFERENCE, EVICTION);
+        verify(enforcementWaTaskService).evictionScheduled(CASE_REFERENCE, enforcement.getId(),
+                                                           new Eviction(EVICTION, false));
     }
 
     @Test
@@ -94,6 +99,8 @@ class EvictionScheduleServiceTest {
 
         assertThat(enforcement.getDispenseWithService()).isTrue();
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
+        verify(enforcementWaTaskService).evictionScheduled(CASE_REFERENCE, enforcement.getId(),
+                                                           new Eviction(EVICTION, true));
     }
 
     @ParameterizedTest
@@ -111,6 +118,7 @@ class EvictionScheduleServiceTest {
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementDocumentScheduler);
         verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -164,6 +172,25 @@ class EvictionScheduleServiceTest {
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfRescheduledEviction(CASE_REFERENCE, newDate);
+        verify(enforcementWaTaskService).evictionRescheduled(CASE_REFERENCE, enforcement.getId(),
+                                                             new Eviction(EVICTION, false),
+                                                             new Eviction(newDate, false));
+    }
+
+    @Test
+    void shouldReplaceTheWarrantReturnTaskWithOneDueOnTheNewEvictionDate() {
+        EnforcementOrderEntity enforcement = current(CLAIMANT_UNABLE_TO_ATTEND);
+        enforcement.setBailiffDate(EVICTION);
+        enforcement.setDispenseWithService(true);
+        LocalDateTime newDate = EVICTION.plusDays(7);
+
+        underTest.reschedule(CASE_REFERENCE, newDate, false);
+
+        // The previous appointment dispensed with service and the new one does not, so the notice task is
+        // created for the first time here rather than left alone.
+        verify(enforcementWaTaskService).evictionRescheduled(CASE_REFERENCE, enforcement.getId(),
+                                                             new Eviction(EVICTION, true),
+                                                             new Eviction(newDate, false));
     }
 
     @ParameterizedTest
@@ -186,6 +213,7 @@ class EvictionScheduleServiceTest {
 
         assertThat(rescheduled.refused()).isTrue();
         verifyNoInteractions(enforcementNotificationService);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test
@@ -235,6 +263,8 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_CLAIMANT_CONFIRMATION);
         verify(enforcementOrderRepository).save(enforcement);
         verify(bailiffNoteService, never()).addNote(anyLong(), anyString());
+        // XUI closes the task through the completion DMN, so marking the notice served creates nothing.
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test

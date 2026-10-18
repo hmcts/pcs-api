@@ -86,6 +86,8 @@ class EnforcementOrderServiceTest {
     private EnforcementNotificationService enforcementNotificationService;
     @Mock
     private EnforcementFeeService enforcementFeeService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
         new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC));
@@ -239,8 +241,8 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getSubmittedAt()).isEqualTo(NOW);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
         verifyNoInteractions(enforcementDocumentScheduler);
-        // The application is not received until its fee is paid.
-        verifyNoInteractions(enforcementNotificationService);
+        // The application is not received, and no caseworker reviews it, until its fee is paid.
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
     @Test
@@ -279,6 +281,8 @@ class EnforcementOrderServiceTest {
         verify(enforcementDocumentScheduler)
             .scheduleApplicationDocuments(savedCaptor.getValue().getId(), enforcementType);
         verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, enforcementType);
+        verify(enforcementWaTaskService)
+            .applicationAwaitingReview(CASE_REFERENCE, savedCaptor.getValue().getId());
     }
 
     @ParameterizedTest
@@ -303,8 +307,11 @@ class EnforcementOrderServiceTest {
         if (waived) {
             verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, WARRANT);
             verify(enforcementDocumentScheduler).scheduleApplicationDocuments(savedCaptor.getValue().getId(), WARRANT);
+            verify(enforcementWaTaskService)
+                .applicationAwaitingReview(CASE_REFERENCE, savedCaptor.getValue().getId());
         } else {
-            verifyNoInteractions(enforcementNotificationService, enforcementDocumentScheduler);
+            verifyNoInteractions(enforcementNotificationService, enforcementDocumentScheduler,
+                                 enforcementWaTaskService);
         }
     }
 
@@ -518,5 +525,8 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(awaitingPayment);
         verify(enforcementDocumentScheduler).scheduleApplicationDocuments(awaitingPayment.getId(), type);
         verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, type);
+        // The Payments callback path, which has no CCD event and so cannot be covered by the initiation DMN.
+        verify(enforcementWaTaskService).applicationAwaitingReview(CASE_REFERENCE, awaitingPayment.getId());
     }
+
 }

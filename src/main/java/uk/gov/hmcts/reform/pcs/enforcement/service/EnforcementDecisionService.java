@@ -38,6 +38,7 @@ public class EnforcementDecisionService {
     private final EnforcementNumberGenerator enforcementNumberGenerator;
     private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
+    private final EnforcementWaTaskService enforcementWaTaskService;
 
     public boolean hasEnforcementAwaitingReview(long caseReference) {
         return findAwaitingReview(caseReference).isPresent();
@@ -67,6 +68,10 @@ public class EnforcementDecisionService {
             enforcementDocumentScheduler.scheduleApprovalDocument(enforcement.getId(), enforcementType);
             enforcementOrderRepository.save(enforcement);
             enforcementNotificationService.notifyClaimantOfApproval(caseReference, enforcementType, enforcementNumber);
+            if (enforcement.getStatus() == AWAITING_BAILIFF_ALLOCATION) {
+                // An approved writ goes to a High Court Enforcement Officer, so it gets no bailiff and no task.
+                enforcementWaTaskService.warrantAwaitingBailiff(caseReference, enforcement.getId());
+            }
             log.info("Enforcement {} on case {} approved as {}", enforcement.getId(), caseReference,
                      enforcementNumber);
             return new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.ACCEPT, enforcementNumber);

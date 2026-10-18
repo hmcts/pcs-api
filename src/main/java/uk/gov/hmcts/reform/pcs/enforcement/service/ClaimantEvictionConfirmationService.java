@@ -37,6 +37,7 @@ public class ClaimantEvictionConfirmationService {
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final ClaimantRiskAssessmentService claimantRiskAssessmentService;
     private final EnforcementNotificationService enforcementNotificationService;
+    private final EnforcementWaTaskService enforcementWaTaskService;
 
     /**
      * Saves any change to the claimant's risk assessment answers (HDPI-7552), then records whether they can
@@ -84,10 +85,11 @@ public class ClaimantEvictionConfirmationService {
                 caseReference, enforcement.getBailiffDate());
         } else {
             enforcementNotificationService.notifyClaimantOfDeclinedAttendance(caseReference);
+            enforcementWaTaskService.claimantCannotAttend(caseReference, enforcement.getId(),
+                                                          enforcement.getBailiffDate());
         }
-        // TODO HDPI-7549: when the claimant cannot attend, create a "Reschedule eviction" task for the allocated
-        // bailiff, and store the dates they are not available (the journey does not ask for them yet). It needs
-        // Work Allocation.
+        // TODO HDPI-7549: store the dates the claimant is not available, which the journey does not ask for yet,
+        // so the bailiff rescheduling the eviction can avoid them.
         return EnforcementChange.made();
     }
 

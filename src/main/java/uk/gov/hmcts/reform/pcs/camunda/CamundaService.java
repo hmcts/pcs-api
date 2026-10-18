@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.TaskInstanceId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -87,7 +89,37 @@ public class CamundaService {
             .idempotencyKey(UUID.randomUUID())
             .build();
 
-        scheduleCamundaRequest(taskData, scheduledTo);
+        scheduleCamundaRequest(taskData, scheduledTo, UUID.randomUUID().toString());
+    }
+
+    /**
+     * Creates the task the reference identifies, now. Scheduling the same reference again is a no-op, so a
+     * retried submit creates one task rather than two.
+     */
+    public void createTask(long caseId, TaskType taskType, TaskReference reference) {
+        createTask(caseId, taskType, reference, taskType.getDefaultDescription(), Instant.now(utcClock));
+    }
+
+    /**
+     * Creates the task the reference identifies when {@code scheduledTo} arrives. The warrant return task is
+     * created this way, due on the eviction date.
+     */
+    public void createTask(long caseId, TaskType taskType, TaskReference reference, Instant scheduledTo) {
+        createTask(caseId, taskType, reference, taskType.getDefaultDescription(), scheduledTo);
+    }
+
+    public void createTask(long caseId, TaskType taskType, TaskReference reference, String taskDescription,
+                           Instant scheduledTo) {
+        String instanceId = instanceId(Action.CREATE, taskType, reference);
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CREATE)
+            .caseReference(caseId)
+            .taskType(taskType)
+            .taskDescription(taskDescription)
+            .idempotencyKey(idempotencyKey(instanceId))
+            .build();
+
+        scheduleCamundaRequest(taskData, scheduledTo, instanceId);
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
@@ -96,7 +128,34 @@ public class CamundaService {
             .caseReference(caseId)
             .taskType(taskType)
             .build();
-        scheduleCamundaRequest(taskData, Instant.now(utcClock));
+        scheduleCamundaRequest(taskData, Instant.now(utcClock), UUID.randomUUID().toString());
+    }
+
+    /**
+     * Cancels the case's tasks of the type. The reference keys the cancellation request itself, so a retried
+     * submit sends one cancellation rather than two.
+     */
+    public void cancelTask(long caseId, TaskType taskType, TaskReference reference) {
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(caseId)
+            .taskType(taskType)
+            .build();
+        scheduleCamundaRequest(taskData, Instant.now(utcClock), instanceId(Action.CANCEL, taskType, reference));
+    }
+
+    /**
+     * Drops the request to create the task that {@link #createTask(long, TaskType, TaskReference, Instant)}
+     * scheduled for a later date, if it has not been sent to Camunda yet. No task exists for
+     * {@code cancelTasks} to terminate until then, so cancelling a task that is due in the future means
+     * dropping its pending request as well.
+     */
+    public void cancelPendingTaskCreation(TaskType taskType, TaskReference reference) {
+        TaskInstanceId pending = CAMUNDA_REQUEST_TASK_DESCRIPTOR
+            .instanceId(instanceId(Action.CREATE, taskType, reference));
+        if (schedulerClient.getScheduledExecution(pending).isPresent()) {
+            schedulerClient.cancel(pending);
+        }
     }
 
     void handleRequest(CamundaRequestTaskData taskData) {
@@ -114,7 +173,7 @@ public class CamundaService {
         }
     }
 
-    private void scheduleCamundaRequest(CamundaRequestTaskData taskData, Instant scheduledTo) {
+    private void scheduleCamundaRequest(CamundaRequestTaskData taskData, Instant scheduledTo, String instanceId) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped scheduling Camunda request for {}", taskData.getCaseReference());
             return;
@@ -122,9 +181,21 @@ public class CamundaService {
 
         schedulerClient.scheduleIfNotExists(
             CAMUNDA_REQUEST_TASK_DESCRIPTOR
-                .instance(UUID.randomUUID().toString())
+                .instance(instanceId)
                 .data(taskData)
                 .scheduledTo(scheduledTo));
+    }
+
+    private static String instanceId(Action action, TaskType taskType, TaskReference reference) {
+        return String.join("-", action.name(), taskType.getId(), reference.value());
+    }
+
+    /**
+     * The key the task-initiation BPMN's idempotency gateway checks, derived from the request's instance id so
+     * that a redelivered message carries the key the first one did.
+     */
+    private static UUID idempotencyKey(String instanceId) {
+        return UUID.nameUUIDFromBytes(instanceId.getBytes(StandardCharsets.UTF_8));
     }
 
     private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey) {

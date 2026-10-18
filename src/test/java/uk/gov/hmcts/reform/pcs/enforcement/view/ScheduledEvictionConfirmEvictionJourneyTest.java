@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationS
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
 import java.time.Clock;
@@ -55,6 +56,8 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
     private ClaimantRiskAssessmentService claimantRiskAssessmentService;
     @Mock
     private EnforcementNotificationService enforcementNotificationService;
+    @Mock
+    private EnforcementWaTaskService enforcementWaTaskService;
 
     private PcsCaseEntity pcsCaseEntity;
     private EnforcementOrderEntity enforcement;
@@ -81,10 +84,11 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
         evictionScheduleService = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
                                                               transitions, bailiffNoteService,
                                                               enforcementNotificationService,
-                                                              enforcementDocumentScheduler);
+                                                              enforcementDocumentScheduler,
+                                                              enforcementWaTaskService);
         claimantEvictionConfirmationService = new ClaimantEvictionConfirmationService(
             currentEnforcementService, enforcementOrderRepository, transitions, claimantRiskAssessmentService,
-            enforcementNotificationService);
+            enforcementNotificationService, enforcementWaTaskService);
     }
 
     @ParameterizedTest
