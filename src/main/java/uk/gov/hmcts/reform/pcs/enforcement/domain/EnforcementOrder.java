@@ -124,7 +124,8 @@ public class EnforcementOrder {
 
     /**
      * The claimant's answer in "Confirm the eviction details". It is only used on submit, to move the
-     * enforcement status, and is not stored.
+     * enforcement status, and is not stored. The journey's risk answers use the warrant application's fields and
+     * are stored as a risk assessment update when they change.
      */
     @CCD(label = "Can you attend the eviction on this date?", searchable = false, access = {ClaimantAccess.class})
     private YesOrNo claimantCanAttendEviction;

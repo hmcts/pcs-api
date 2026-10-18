@@ -59,6 +59,30 @@ final class TabMarkup {
             .collect(Collectors.joining("\n", "<dl class=\"govuk-summary-list\">\n", "\n</dl>"));
     }
 
+    /**
+     * A GOV.UK table with a header row. The first cell of each row is its row header.
+     */
+    static String table(List<String> headers, List<List<String>> rows) {
+        String head = headers.stream()
+            .map(header -> "<th scope=\"col\" class=\"govuk-table__header\">" + escape(header) + "</th>")
+            .collect(Collectors.joining("", "<thead class=\"govuk-table__head\"><tr class=\"govuk-table__row\">",
+                                        "</tr></thead>"));
+        String body = rows.stream()
+            .map(TabMarkup::tableRow)
+            .collect(Collectors.joining("\n", "<tbody class=\"govuk-table__body\">\n", "\n</tbody>"));
+        return lines(List.of("<table class=\"govuk-table\">", head, body, "</table>"));
+    }
+
+    private static String tableRow(List<String> cells) {
+        StringBuilder row = new StringBuilder("<tr class=\"govuk-table__row\">");
+        for (int index = 0; index < cells.size(); index++) {
+            row.append(index == 0
+                ? "<th scope=\"row\" class=\"govuk-table__header\">" + escape(cells.get(index)) + "</th>"
+                : "<td class=\"govuk-table__cell\">" + escape(cells.get(index)) + "</td>");
+        }
+        return row.append("</tr>").toString();
+    }
+
     static String sectionBreak() {
         return "<hr class=\"govuk-section-break govuk-section-break--l govuk-section-break--visible\">";
     }

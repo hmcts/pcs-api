@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationS
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffNoteService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
@@ -48,6 +49,8 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
     @Mock
     private BailiffNoteService bailiffNoteService;
     @Mock
+    private ClaimantRiskAssessmentService claimantRiskAssessmentService;
+    @Mock
     private EnforcementNotificationService enforcementNotificationService;
 
     private PcsCaseEntity pcsCaseEntity;
@@ -76,7 +79,8 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
                                                               transitions, bailiffNoteService,
                                                               enforcementNotificationService);
         claimantEvictionConfirmationService = new ClaimantEvictionConfirmationService(
-            currentEnforcementService, enforcementOrderRepository, transitions, enforcementNotificationService);
+            currentEnforcementService, enforcementOrderRepository, transitions, claimantRiskAssessmentService,
+            enforcementNotificationService);
     }
 
     @ParameterizedTest

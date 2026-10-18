@@ -122,30 +122,35 @@ export async function scheduleEvictionAsBailiff(
  * The claimant answers "Can you attend the eviction on this date?" through `confirmEviction`, moving the
  * warrant from "Awaiting claimant confirmation" to "Claimant confirmed" or "Claimant unable to attend".
  *
- * Two pages — an information page, then the question — followed by CCD's check-your-answers.
+ * An information page, the question, then the warrant's risk pages pre-filled with the claimant's answers,
+ * followed by CCD's check-your-answers. `changeRiskAnswer` names one risk question whose answer the claimant
+ * changes to "Yes" on the way through (HDPI-7552); otherwise every risk answer is left as it is.
  */
 export async function confirmEvictionAsClaimant(
   page: Page,
   context: BrowserContext,
   world: EnforcementWorld,
-  canAttend: boolean
+  canAttend: boolean,
+  changeRiskAnswer?: string
 ): Promise<void> {
   const { CLAIMANT_LEGAL_REPRESENTATIVE } = await import('./session');
   const { signInAs } = await import('./enforcement-journeys');
+  const claimantRiskAssessment = await import('./claimant-risk-assessment');
 
   await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
   await openCaseSummary(page);
-  await startEvent('Confirm the eviction date');
+  await startEvent(claimantRiskAssessment.CONFIRM_EVICTION);
 
-  const continueButton = page.getByRole('button', { name: 'Continue', exact: true });
-  await continueButton.click();
-  const answer = page.locator(`#claimantCanAttendEviction_${canAttend ? 'Yes' : 'No'}`);
-  await expect(answer).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
-  await answer.check();
-  await continueButton.click();
-  await page.getByRole('button', { name: 'Save and continue', exact: true }).click();
-  await expect(page.getByText(/has been updated with event: Confirm the eviction details/))
-    .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  await claimantRiskAssessment.answerAttendance(page, canAttend);
+  if (changeRiskAnswer) {
+    await claimantRiskAssessment.changeRiskAnswer(page, changeRiskAnswer, 'Yes');
+    world.changedRiskQuestions = [
+      ...(world.changedRiskQuestions ?? []),
+      claimantRiskAssessment.tabQuestion(changeRiskAnswer),
+    ];
+  }
+  await claimantRiskAssessment.continueToCheckYourAnswers(page);
+  await claimantRiskAssessment.submitConfirmEviction(page);
 
   world.claimantConfirmedEviction = canAttend;
 }

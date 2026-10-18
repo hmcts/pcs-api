@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.confirmeviction.ConfirmEvictionConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantEvictionConfirmationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.ClaimantRiskAssessmentService;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -28,6 +30,8 @@ class ConfirmEvictionTest extends BaseEventTest {
     private ConfirmEvictionConfigurer confirmEvictionConfigurer;
     @Mock
     private ClaimantEvictionConfirmationService claimantEvictionConfirmationService;
+    @Mock
+    private ClaimantRiskAssessmentService claimantRiskAssessmentService;
 
     @Test
     void shouldConfigureDecentralisedWhenNonProdSupportEnabled() {
@@ -57,18 +61,17 @@ class ConfirmEvictionTest extends BaseEventTest {
     }
 
     @Test
-    void shouldRecordTheClaimantsAttendanceAnswerOnSubmit() {
+    void shouldRecordTheClaimantsAnswersOnSubmit() {
         // Given
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder().claimantCanAttendEviction(YesOrNo.NO).build())
-            .build();
+        EnforcementOrder submitted = EnforcementOrder.builder().claimantCanAttendEviction(YesOrNo.NO).build();
+        PCSCase caseData = PCSCase.builder().enforcementOrder(submitted).build();
         setEventUnderTest(underTest);
 
         // When
         callSubmitHandler(caseData);
 
         // Then
-        verify(claimantEvictionConfirmationService).recordAttendance(TEST_CASE_REFERENCE, YesOrNo.NO);
+        verify(claimantEvictionConfirmationService).recordConfirmation(TEST_CASE_REFERENCE, YesOrNo.NO, submitted);
     }
 
     @Test
@@ -81,7 +84,21 @@ class ConfirmEvictionTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // Then
-        verify(claimantEvictionConfirmationService).recordAttendance(TEST_CASE_REFERENCE, null);
+        verify(claimantEvictionConfirmationService).recordConfirmation(TEST_CASE_REFERENCE, null, null);
+    }
+
+    @Test
+    void shouldPrefillTheRiskAnswersOnStart() {
+        // Given
+        PCSCase caseData = PCSCase.builder().build();
+        setEventUnderTest(underTest);
+
+        // When
+        PCSCase started = callStartHandler(caseData);
+
+        // Then
+        assertThat(started.getEnforcementOrder()).isNotNull();
+        verify(claimantRiskAssessmentService).prefillAnswers(TEST_CASE_REFERENCE, started.getEnforcementOrder());
     }
 
 }
