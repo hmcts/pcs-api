@@ -51,11 +51,13 @@ class RiskLevelServiceTest {
     @Test
     void shouldSaveAHighRiskLevelWithItsReason() {
         EnforcementOrderEntity enforcement = givenCurrentEnforcement(EnforcementStatus.AWAITING_SCHEDULING);
+        enforcement.setEnforcementNumber("WP-00000001");
 
-        EnforcementChange<Void> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.HIGH,
-                                                             "Known history of violence");
+        EnforcementChange<String> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.HIGH,
+                                                               "Known history of violence");
 
         assertThat(set.refused()).isFalse();
+        assertThat(set.change()).isEqualTo("WP-00000001");
         assertThat(enforcement.getRiskLevel()).isEqualTo(RiskLevel.HIGH);
         assertThat(enforcement.getRiskLevelReason()).isEqualTo("Known history of violence");
         assertThat(enforcement.getRiskLevelSetAt()).isEqualTo(NOW);
@@ -102,7 +104,7 @@ class RiskLevelServiceTest {
     void shouldRefuseAWarrantAwaitingReview() {
         givenCurrentEnforcement(EnforcementStatus.AWAITING_REVIEW);
 
-        EnforcementChange<Void> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.MEDIUM, null);
+        EnforcementChange<String> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.MEDIUM, null);
 
         assertThat(set.errors()).containsExactly(RiskLevelService.NOT_AVAILABLE_MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
@@ -112,7 +114,7 @@ class RiskLevelServiceTest {
     void shouldRefuseRatherThanThrowWhenTheClaimHasNoEnforcementOnSubmit() {
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
 
-        EnforcementChange<Void> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.MEDIUM, null);
+        EnforcementChange<String> set = underTest.setRiskLevel(CASE_REFERENCE, RiskLevel.MEDIUM, null);
 
         assertThat(set.errors()).containsExactly(NoEnforcementException.MESSAGE);
     }

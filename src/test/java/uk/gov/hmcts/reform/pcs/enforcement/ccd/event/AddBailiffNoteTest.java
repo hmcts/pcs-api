@@ -119,11 +119,13 @@ class AddBailiffNoteTest extends BaseEventTest {
         when(bailiffNoteService.hasEnforcement(TEST_CASE_REFERENCE)).thenReturn(true);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().bailiffNoteText("left over").build())
+            .caseNameHmctsInternal("Treetops Housing vs John Smith")
             .build();
 
         PCSCase result = callStartHandler(caseData);
 
         assertThat(result.getEnforcementOrder().getBailiffNoteText()).isNull();
+        assertThat(result.getEnforcementOrder().getFormattedCaseName()).isEqualTo("Treetops Housing vs John Smith");
     }
 
     @Test
@@ -131,19 +133,24 @@ class AddBailiffNoteTest extends BaseEventTest {
         when(bailiffNoteService.hasEnforcement(TEST_CASE_REFERENCE)).thenReturn(true);
         PCSCase caseData = PCSCase.builder().build();
 
-        assertThat(callStartHandler(caseData)).isSameAs(caseData);
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result).isSameAs(caseData);
+        assertThat(result.getEnforcementOrder().getBailiffNoteText()).isNull();
     }
 
     @Test
     void shouldSaveTheNoteAndConfirm() {
         String note = "Dog on site * (large)";
+        when(bailiffNoteService.addNote(TEST_CASE_REFERENCE, note)).thenReturn("WP-00000001");
 
         SubmitResponse<State> response = callSubmitHandler(caseWithNote(note));
 
         verify(bailiffNoteService).addNote(TEST_CASE_REFERENCE, note);
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getConfirmationHeader()).isEqualTo("# Bailiff note added");
-        assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
+        assertThat(response.getConfirmationBody())
+            .isEqualTo("Case number: 0000-0000-0000-1234\n\nWarrant number: WP-00000001");
     }
 
     @Test

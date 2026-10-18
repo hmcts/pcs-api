@@ -181,6 +181,9 @@ const STATUS_ALIASES: Record<string, string> = {
   'Claimant unable to attend on this date': CLAIMANT_UNABLE_TO_ATTEND,
 };
 
+export const BREATHING_SPACE = 'Breathing space';
+export const CLOSED = 'Closed';
+
 const SETTABLE_STATUSES = [
   AWAITING_PAYMENT,
   AWAITING_REVIEW,
@@ -189,7 +192,72 @@ const SETTABLE_STATUSES = [
   AWAITING_CLAIMANT_CONFIRMATION,
   CLAIMANT_CONFIRMED,
   CLAIMANT_UNABLE_TO_ATTEND,
+  BREATHING_SPACE,
+  CLOSED,
 ];
+
+/** Whether `setUpWarrantAtStatus` reaches `status` itself, rather than approximating it. */
+export const canSetUpStatus = (status: string): boolean => SETTABLE_STATUSES.includes(STATUS_ALIASES[status] ?? status);
+
+/**
+ * The warrant returns that move a warrant to "Closed" and to "Breathing space". A warrant can take a return
+ * from "Awaiting scheduling" onwards.
+ */
+const RETURNS_REACHING: Record<string, string> = {
+  [CLOSED]: 'Eviction successful',
+  [BREATHING_SPACE]: 'Claimant advised Defendant in Breathing Space',
+};
+
+/** Statuses a warrant can take a return in, and so be moved on to "Closed" or "Breathing space". */
+const RETURN_RECORDABLE_STATUSES = [
+  AWAITING_SCHEDULING,
+  AWAITING_CLAIMANT_CONFIRMATION,
+  CLAIMANT_CONFIRMED,
+  CLAIMANT_UNABLE_TO_ATTEND,
+  BREATHING_SPACE,
+];
+
+async function recordReturnReaching(page: Page, context: BrowserContext, status: string): Promise<void> {
+  const { recordReturnAsHearingCentreAdmin } = await import('./repeat-enforcement');
+  await recordReturnAsHearingCentreAdmin(page, context, RETURNS_REACHING[status]);
+}
+
+/**
+ * Moves the scenario's warrant on to `status` where a real event can, and otherwise sets up a new case with a
+ * warrant in that status. Keeps the user who was signed in. For a "Given the enforcement status is ..." that
+ * follows the Background's set-up.
+ */
+export async function bringWarrantToStatus(
+  page: Page,
+  context: BrowserContext,
+  world: EnforcementWorld,
+  status: string
+): Promise<void> {
+  const { signInAs } = await import('./enforcement-journeys');
+  const { currentSignedInRole } = await import('./session');
+  const { currentEnforcement, expectEnforcementStatus } = await import('./enforcement-status-tab');
+  const target = STATUS_ALIASES[status] ?? status;
+  const signedIn = currentSignedInRole();
+  const current = world.caseReference
+    ? (await currentEnforcement(world.caseReference, world.earlierWarrantNumbers.length)).status
+    : undefined;
+  if (current === target) {
+    return;
+  }
+  if (current && RETURNS_REACHING[target] && RETURN_RECORDABLE_STATUSES.includes(current)) {
+    try {
+      await recordReturnReaching(page, context, target);
+    } finally {
+      await restoreClaimantSession(page, context);
+    }
+  } else {
+    world.allocatedBailiff = undefined;
+    world.evictionScheduled = false;
+    await setUpWarrantAtStatus(page, context, world, target);
+  }
+  await expectEnforcementStatus(page, requireCaseReference(world), target, world.earlierWarrantNumbers.length);
+  await signInAs(signedIn, page, context);
+}
 
 /**
  * Allocates the approved warrant to a bailiff through pcs-api testing support, which moves it to
@@ -211,20 +279,12 @@ export async function allocateBailiff(world: EnforcementWorld, email: string = l
 /**
  * Sets up a case with a warrant in `status`, or as close to it as the built events allow.
  *
- * "Awaiting scheduling" and everything after it need a bailiff to be allocated, and `allocateBailiff`'s
- * StaffUser type-ahead needs staff reference data that cftlib does not run, so those statuses cannot be
- * reached on a local stack. For them the warrant is left in "Awaiting bailiff allocation" and the gap is
- * recorded as an approximated precondition, which keeps the scenario running for the assertions that do
- * not depend on the exact status.
- */
-/**
- * Sets up a case with a warrant in `status`, or as close to it as the built events allow.
- *
  * Statuses past "Awaiting review" are reached by submitting the real events, which means signing in as a
- * hearing centre admin and then a bailiff. The session is always handed back to the claimant's legal
+ * hearing centre admin and then a bailiff. "Closed" and "Breathing space" are reached from "Awaiting
+ * scheduling" by recording a warrant return. The session is always handed back to the claimant's legal
  * representative on the way out, because that is the user every scenario starts as.
  *
- * "Breathing space", "Closed", "Rejected" and "Transferred to the High Court" have no route yet; for those
+ * "Awaiting property visit", "Rejected" and "Transferred to the High Court" have no route yet; for those
  * the warrant is left as far along as it got and the gap is recorded as an approximated precondition, which
  * keeps the scenario running for the assertions that do not depend on the exact status.
  */
@@ -273,6 +333,10 @@ async function driveWarrantToStatus(
       + 'staff type-ahead needs reference data cftlib does not run'
   );
   if (target === AWAITING_SCHEDULING) {
+    return;
+  }
+  if (target === CLOSED || target === BREATHING_SPACE) {
+    await recordReturnReaching(page, context, target);
     return;
   }
 

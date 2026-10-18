@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 class AddBailiffNotePageTest extends BasePageTest {
 
@@ -29,6 +30,22 @@ class AddBailiffNotePageTest extends BasePageTest {
         assertThat(noteField.getContext()).isEqualTo(DisplayContext.Mandatory);
         assertThat(noteField.getPage()).isEqualTo("addBailiffNote");
         assertThat(event.getFields().getPageLabels()).containsEntry("addBailiffNote", "Add bailiff note");
+    }
+
+    @Test
+    void shouldShowTheCaseNameAboveTheNote() {
+        Field<?, ?, ?, ?> caseName = allFields()
+            .filter(field -> "formattedCaseName".equals(field.getId()))
+            .findFirst()
+            .orElseThrow();
+        Field<?, ?, ?, ?> parties = allFields()
+            .filter(field -> "addBailiffNote-parties".equals(field.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        assertThat(caseName.getContext()).isEqualTo(DisplayContext.ReadOnly);
+        assertThat(caseName.getShowCondition()).isEqualTo(NEVER_SHOW);
+        assertThat(parties.getLabel()).contains("${formattedCaseName}");
     }
 
     @Test

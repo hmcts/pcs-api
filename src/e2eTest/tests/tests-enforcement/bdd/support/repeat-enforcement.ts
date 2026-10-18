@@ -60,7 +60,7 @@ export async function closeApprovedWarrant(
     if (!world.allocatedBailiff) {
       await allocateBailiff(world);
     }
-    await recordFinalReturn(page, context, returnName);
+    await recordReturnAsHearingCentreAdmin(page, context, returnName);
   } finally {
     await restoreClaimantSession(page, context);
   }
@@ -71,8 +71,15 @@ export async function closeApprovedWarrant(
   world.allocatedBailiff = undefined;
 }
 
-/** Records a final return as a hearing centre admin, one of the bailiff staff "Record warrant return" allows. */
-async function recordFinalReturn(page: Page, context: BrowserContext, returnName: string): Promise<void> {
+/**
+ * Records a return named `returnName` as a hearing centre admin, one of the bailiff staff "Record warrant return"
+ * allows. The name decides whether it is a final or an interim return.
+ */
+export async function recordReturnAsHearingCentreAdmin(
+  page: Page,
+  context: BrowserContext,
+  returnName: string
+): Promise<void> {
   await signInAs('hearing-centre-admin', page, context);
   await openCaseSummary(page);
   await startEvent(RECORD_WARRANT_RETURN);

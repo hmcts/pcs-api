@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.risklevel.SetRiskLevelConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
@@ -89,13 +90,14 @@ public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
                 return errorResponse(REASON_TOO_LONG_ERROR);
             }
         }
-        EnforcementChange<Void> set = riskLevelService.setRiskLevel(caseReference, riskLevel, reason);
+        EnforcementChange<String> set = riskLevelService.setRiskLevel(caseReference, riskLevel, reason);
         if (set.refused()) {
             return errorResponse(set.errors());
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader("# Risk level set to " + riskLevel.getLabel())
-            .confirmationBody("Case number: " + caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
+            .confirmationBody(ConfirmationNumbers.caseAndWarrant(
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), set.change()))
             .build();
     }
 

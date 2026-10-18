@@ -51,11 +51,12 @@ public class RiskLevelService {
     /**
      * Saves the risk level. A medium level has no reason, so any earlier reason is removed.
      *
-     * @return made, or the errors to show when the claim has no approved, live warrant
+     * @return made, with the warrant's number (null for a warrant that has none), or the errors to show when
+     *     the claim has no approved, live warrant
      * @throws IllegalArgumentException if the level is missing, or is high without a reason
      */
     @Transactional
-    public EnforcementChange<Void> setRiskLevel(long caseReference, RiskLevel riskLevel, String reason) {
+    public EnforcementChange<String> setRiskLevel(long caseReference, RiskLevel riskLevel, String reason) {
         Objects.requireNonNull(riskLevel, "riskLevel");
         boolean high = riskLevel == RiskLevel.HIGH;
         if (high && (reason == null || reason.isBlank())) {
@@ -71,7 +72,7 @@ public class RiskLevelService {
         enforcement.setRiskLevelSetAt(Instant.now(utcClock));
         enforcementOrderRepository.save(enforcement);
         // TODO(HDPI-8627): complete the "Review risks and set level" task.
-        return EnforcementChange.made();
+        return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
     /**

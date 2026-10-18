@@ -36,7 +36,10 @@ Feature: Add a bailiff note
       | defendant legal representative |
       | judge                        |
 
-  @HDPI-7593 @open-question @pending
+  # Each status is reached through the real events from the Background's "Awaiting scheduling": "Closed" and
+  # "Breathing space" by recording a warrant return, "Awaiting bailiff allocation" on a new case. Nothing moves a
+  # warrant to "Awaiting property visit" yet, so that example stops as pending (HDPI-7419).
+  @HDPI-7593 @open-question
   Scenario: Bailiff note can be added in any live enforcement status and after closure
     Given I am signed in to XUI as a bailiff
     And the enforcement status is "<status>"
@@ -51,9 +54,8 @@ Feature: Add a bailiff note
       | Breathing space              |
       | Closed                       |
 
-  # AddBailiffNotePage renders only the case number and property address. Unlike FindBailiffPage, which
-  # includes ${bailiffAllocationCaseName}, it has no parties line, so "claimant name vs defendant name" is
-  # not shown. Everything else in this scenario passes.
+  # Needs a pcs-api built with AddBailiffNotePage's "claimant vs defendants" line (${formattedCaseName}, set by
+  # the start callback). Against one without it, everything but that line passes; remove @pending once it runs.
   @HDPI-7593 @pending
   Scenario: Add bailiff note screen
     Given I am signed in to XUI as a bailiff
@@ -79,6 +81,9 @@ Feature: Add a bailiff note
       | note                 | result                                   |
       | Dog on site * (large) | the confirmation screen                  |
 
+  # XUI's "Close and return to case summary" opens the case on its first tab, not "Risk assessment", and a
+  # confirmation cannot change that (HDPI-7593). The warrant number on the confirmation needs a pcs-api built
+  # with it (AddBailiffNote now uses ConfirmationNumbers.caseAndWarrant).
   @HDPI-7593 @HDPI-7350 @pending
   Scenario: Saved note is shown on the risk assessment tab
     Given I am signed in to XUI as bailiff "Sam Jones"
@@ -89,7 +94,9 @@ Feature: Add a bailiff note
     And the note cannot be edited
     And the note is visible to internal users only
 
-  @HDPI-7593 @pending
+  # The notes are added two days apart, the first moved back with the testing-support backdate endpoint, rather
+  # than on the dates given.
+  @HDPI-7593
   Scenario: Multiple notes are shown newest first
     Given the case has bailiff notes added on "1 Feb 2026" and "3 Feb 2026"
     When I open the "Risk assessment" tab

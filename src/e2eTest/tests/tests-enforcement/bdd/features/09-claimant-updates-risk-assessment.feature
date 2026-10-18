@@ -12,7 +12,8 @@ Feature: Bailiff reviews an updated claimant risk assessment
     And a "Review updated risk information" task is assigned to me
     And I am signed in to XUI as the allocated bailiff
 
-  @HDPI-7552 @HDPI-7350 @pending
+  # The banner lists the changed questions but does not link to them (OPEN-QUESTIONS 115).
+  @HDPI-7552 @HDPI-7350
   Scenario: Risk assessment tab highlights the changes
     When I open the "Risk assessment" tab
     Then I see an important banner with links to each question whose answer changed

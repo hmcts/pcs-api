@@ -31,10 +31,11 @@ public class BailiffNoteService {
     /**
      * Saves the note against the claim's current enforcement, with the signed-in user's IDAM name.
      *
+     * @return the enforcement's warrant or writ number, or null if it has none
      * @throws NoEnforcementException if the claim has no enforcement
      */
     @Transactional
-    public void addNote(long caseReference, String note) {
+    public String addNote(long caseReference, String note) {
         EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
             .orElseThrow(NoEnforcementException::new);
         UserInfo author = securityContextService.getCurrentUserDetails();
@@ -46,6 +47,7 @@ public class BailiffNoteService {
                                        .authorFirstName(author.getGivenName())
                                        .authorLastName(author.getFamilyName())
                                        .build());
+        return enforcement.getEnforcementNumber();
     }
 
     /**

@@ -16,11 +16,13 @@
 //   * WA tasks — nothing creates them. HDPI-8627.
 import { BrowserContext, Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
-import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
+import { nextStepOptions, openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
 import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
 import { RISK_ASSESSMENT_TAB, expectTabField, openTabFields } from '../support/case-tabs';
-import { openCaseTab, tabSections } from '../support/enforcement-status-tab';
+import { activeTab, openCaseTab, tabSections } from '../support/enforcement-status-tab';
+import { backdateEnforcement } from '../support/backdate-enforcement';
 import {
   ADD_BAILIFF_NOTE,
   ALLOCATE_BAILIFF,
@@ -155,11 +157,10 @@ Given('the claimant said they are not available on {string} and {string}', async
 });
 
 /**
- * The confirmation screens that name both numbers: schedule and reschedule eviction, mark notice served and
- * record warrant return (#3016). `SetRiskLevel` and `AddBailiffNote` still show only the case number, so a
- * scenario asserting a warrant number on those two fails here rather than being quietly weakened.
+ * The confirmation screens that name both numbers: schedule and reschedule eviction, mark notice served,
+ * record warrant return (#3016), set risk level and add a bailiff note. The feature files word it both ways.
  */
-Then('I see the confirmation {string} with the case number and warrant number', async ({ page, world }, header: string) => {
+async function expectConfirmationWithBothNumbers(page: Page, world: EnforcementWorld, header: string): Promise<void> {
   expect(world.warrantNumber, 'a warrant number generated when the application was approved').toBeDefined();
   await expectBailiffConfirmationWithWarrantNumber(
     page,
@@ -167,6 +168,14 @@ Then('I see the confirmation {string} with the case number and warrant number', 
     requireCaseReference(world),
     world.warrantNumber as string
   );
+}
+
+Then('I see the confirmation {string} with the case number and warrant number', async ({ page, world }, header: string) => {
+  await expectConfirmationWithBothNumbers(page, world, header);
+});
+
+Then('I see the {string} confirmation with the case number and warrant number', async ({ page, world }, header: string) => {
+  await expectConfirmationWithBothNumbers(page, world, header);
 });
 
 Then('I see the case number and the property address', async ({ page, world }) => {
@@ -215,6 +224,16 @@ Then('the reason is visible to internal users only', async ({ page, context, wor
 // ---------------------------------------------------------------------------
 // Feature 10: add a bailiff note
 // ---------------------------------------------------------------------------
+
+/** "1 Feb 2026 16:20pm": a day, a short month, a year, a 24-hour time and a lower case am / pm marker. */
+const NOTE_DATE_TIME = /^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/;
+
+// The local bailiff user stands in for the bailiff the feature names, whose name the steps then expect.
+Given('I am signed in to XUI as bailiff {string}', async ({ page, context, world, $tags }, name: string) => {
+  const email = requireStandIn(name, $tags);
+  await signInAs('bailiff', page, context);
+  world.aliases[name] = localUserName(email);
+});
 
 Then('I see the {string} text box', async ({ page }, label: string) => {
   await expect(page.getByLabel(label)).toBeVisible();
@@ -277,17 +296,18 @@ pendingSteps({ ticket: 'HDPI-7593', summary: 'The bailiff note confirmation does
 
 /**
  * The newest note under the section, with its author and a time in the layout of the quoted example: "1 Feb
- * 2026 16:20pm" is a day, a short month, a year, a 24-hour time and a lower case am / pm marker.
+ * 2026 16:20pm" is a day, a short month, a year, a 24-hour time and a lower case am / pm marker. A feature's
+ * named bailiff is checked as the local user standing in for them.
  */
 Then(
   'the note {string} is shown under {string} with {string} and the date and time in {string} format',
   async ({ page, world }, note: string, section: string, author: string, example: string) => {
-    expect(example).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+    expect(example).toMatch(NOTE_DATE_TIME);
     await openCaseTab(page, requireCaseReference(world), RISK_ASSESSMENT_TAB);
     const [newest] = (await tabSections(page))[section]?.lists ?? [];
     expect(newest?.[riskAssessmentFields.note]).toBe(note);
-    expect(newest?.[riskAssessmentFields.noteAddedBy]).toBe(author);
-    expect(newest?.[riskAssessmentFields.noteDateTime]).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+    expect(newest?.[riskAssessmentFields.noteAddedBy]).toBe(world.aliases[author] ?? author);
+    expect(newest?.[riskAssessmentFields.noteDateTime]).toMatch(NOTE_DATE_TIME);
   }
 );
 
@@ -295,16 +315,58 @@ Then('the note is visible to internal users only', async ({ page, context, world
   await expectRiskAssessmentTabInternalOnly(page, context, requireCaseReference(world));
 });
 
-// The note is markup on the tab, so there is nothing to edit; the scenario around it needs a named bailiff.
-pendingSteps({ ticket: 'HDPI-7593', summary: 'Asserting that a saved bailiff note cannot be edited' }, [
-  'the note cannot be edited',
-]);
+/**
+ * The note is markup on the "Risk assessment" tab, with nothing to type into, and no event edits or removes a
+ * bailiff note: "Add a bailiff note" is the only one the next step drop down offers.
+ */
+Then('the note cannot be edited', async ({ page, world }) => {
+  await openCaseTab(page, requireCaseReference(world), RISK_ASSESSMENT_TAB);
+  await expect(activeTab(page).locator('input, textarea, select, [contenteditable="true"]')).toHaveCount(0);
+  await openCaseSummary(page);
+  await expect.poll(async () => (await nextStepOptions(page)).length).toBeGreaterThan(0);
+  expect((await nextStepOptions(page)).filter(option => /bailiff note/i.test(option))).toEqual([ADD_BAILIFF_NOTE]);
+});
 
-// Two notes on two different dates need the clock moved between them; nothing can backdate a note.
-pendingSteps({ ticket: 'HDPI-7593', summary: 'Bailiff notes added on different dates cannot be set up' }, [
-  'the case has bailiff notes added on {string} and {string}',
-  'the note from {string} is shown first',
-]);
+/**
+ * Adds a note as the bailiff, moves the enforcement's timestamps back by the days between the two dates, and
+ * adds the second. The notes are dated relative to today rather than on the feature's dates. Leaves the bailiff
+ * signed in.
+ */
+Given('the case has bailiff notes added on {string} and {string}', async ({ page, context, world }, first: string, second: string) => {
+  const daysBetween = Math.round((Date.parse(second) - Date.parse(first)) / 86_400_000);
+  expect(daysBetween, `"${second}" to be after "${first}"`).toBeGreaterThan(0);
+  await signInAs('bailiff', page, context);
+  await addNoteAsSignedInUser(page, world, `Note from ${first}`);
+  await backdateEnforcement(requireCaseReference(world), { period: `P${daysBetween}D` });
+  await addNoteAsSignedInUser(page, world, `Note from ${second}`);
+  approximatePrecondition(
+    'HDPI-7593',
+    `the notes were added ${daysBetween} days apart, ending today, rather than on ${first} and ${second}`
+  );
+});
+
+Then('the note from {string} is shown first', async ({ page }, date: string) => {
+  const notes = (await tabSections(page))['Bailiff note']?.lists ?? [];
+  expect(notes.map(note => note[riskAssessmentFields.note])).toEqual([
+    `Note from ${date}`,
+    expect.stringMatching(/^Note from /),
+  ]);
+  // The newest is today's: the earlier note was moved back.
+  expect(notes[0][riskAssessmentFields.noteDateTime]).toMatch(new RegExp(`^${noteDate(new Date())} `));
+});
+
+/** A note's date as the tab shows it, e.g. "1 Feb 2026". */
+function noteDate(date: Date): string {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+async function addNoteAsSignedInUser(page: Page, world: EnforcementWorld, note: string): Promise<void> {
+  await openCaseSummary(page);
+  await startEvent(ADD_BAILIFF_NOTE);
+  await page.getByLabel(addBailiffNote.noteLabel).fill(note);
+  await continueButton(page).click();
+  await expectBailiffConfirmation(page, 'Bailiff note added', requireCaseReference(world));
+}
 
 // ---------------------------------------------------------------------------
 // Feature 03: allocate case to bailiff
@@ -426,9 +488,8 @@ pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reac
 ]);
 
 // The review banner lists the changed questions but does not link to them: XUI routes the tab by the URL
-// fragment, so an in-page link would change tab (HDPI-7350).
+// fragment, so an in-page link would change tab (HDPI-7350, OPEN-QUESTIONS 115).
 pendingSteps({ ticket: 'HDPI-7350', summary: 'Links from the review banner to the changed questions' }, [
-  'I see an important banner with links to each question whose answer changed',
   'I select the banner link for {string}',
   'I am taken to that question in the {string} section',
 ]);

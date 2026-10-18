@@ -3,8 +3,7 @@
  *
  * `setRiskLevel` and `addBailiffNote` are single-page events that go straight from Continue to a
  * confirmation screen — neither uses `showSummary()`, so there is no check-your-answers step. Their
- * confirmations carry the dashed case number and nothing else: the warrant number the feature files describe
- * is not rendered by `SetRiskLevel` or `AddBailiffNote`, and no ticket covers adding it.
+ * confirmations name the dashed case number and the warrant number.
  *
  * `allocateBailiff` is one page, "Find the bailiff's name", then check your answers. Its one field is XUI's
  * StaffUser type-ahead (`FindBailiffPage`, display context `#ARGUMENT(CATEGORY-ADMIN)`), which lists the
