@@ -117,8 +117,10 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setSubmittedAt(enforcementOrderEntity.getStatusUpdatedAt());
         // The writ, writ of restitution and warrant of restitution strategies each save a child row whose
         // enf_case_id is not nullable, and EnforcementOrderEntity has no association to cascade through, so the
-        // enforcement has to be persistent before a strategy runs.
-        EnforcementOrderEntity savedEntity = enforcementOrderRepository.save(enforcementOrderEntity);
+        // enforcement has to be persistent before a strategy runs. The insert is flushed here so that the
+        // one-live-enforcement index refuses a second application where the submit can turn it into a refusal,
+        // rather than at commit.
+        EnforcementOrderEntity savedEntity = enforcementOrderRepository.saveAndFlush(enforcementOrderEntity);
         strategyFactory.getStrategy(enforcementType).process(savedEntity, enforcementOrder);
         if (!paymentOutstanding && EnforcementApplicationFee.isPayable(enforcementType)) {
             log.info("Enforcement {} on case {} is a free repeat warrant", savedEntity.getId(), caseReference);

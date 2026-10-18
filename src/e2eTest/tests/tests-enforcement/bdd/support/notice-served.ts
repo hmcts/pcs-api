@@ -32,6 +32,7 @@ export const noticeServed = {
     howNeeded: "Enter how you served the 'notice of eviction'",
     addNoteNeeded: 'Select if you want to add a bailiff note',
     noteNeeded: 'Enter a note',
+    servedInTheFuture: "The date and time you served the 'notice of eviction' cannot be in the future",
   },
   servedHowMaxLength: 500,
   /** CCD's own max-length message, e.g. `"xxx..." (501 characters) exceeds the maximum length of 500`. */

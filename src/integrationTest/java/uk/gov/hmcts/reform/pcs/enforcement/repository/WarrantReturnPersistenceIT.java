@@ -109,7 +109,7 @@ class WarrantReturnPersistenceIT extends AbstractPostgresContainerIT {
     @DisplayName("keeps every return of an enforcement as history, newest first")
     void keepsTheReturnHistory() {
         EnforcementOrderEntity warrant = savedWarrant(3333444455556666L);
-        EnforcementOrderEntity other = savedWarrant(3333444455556666L);
+        EnforcementOrderEntity other = savedWarrant(3333444455556666L, EnforcementStatus.CLOSED);
         UUID first = save(interim(warrant, WarrantReturnName.CROWDS_OR_PROTESTS, FIRST));
         UUID third = save(interim(warrant, WarrantReturnName.REOPEN_WARRANT, THIRD));
         UUID second = save(WarrantReturnEntity.builder()
@@ -228,6 +228,10 @@ class WarrantReturnPersistenceIT extends AbstractPostgresContainerIT {
     }
 
     private EnforcementOrderEntity savedWarrant(long caseReference) {
+        return savedWarrant(caseReference, EnforcementStatus.CLAIMANT_CONFIRMED);
+    }
+
+    private EnforcementOrderEntity savedWarrant(long caseReference, EnforcementStatus status) {
         ClaimEntity claim = pcsCaseRepository.findByCaseReference(caseReference)
             .map(pcsCase -> pcsCase.getClaims().getFirst())
             .orElseGet(() -> savedClaim(caseReference));
@@ -240,7 +244,7 @@ class WarrantReturnPersistenceIT extends AbstractPostgresContainerIT {
         enforcement.setClaim(claim);
         enforcement.setEnforcementOrder(EnforcementOrder.builder().build());
         enforcement.setStatementOfTruth(statementOfTruthRepository.save(statementOfTruth));
-        enforcement.setStatus(EnforcementStatus.CLAIMANT_CONFIRMED);
+        enforcement.setStatus(status);
         enforcement.setStatusUpdatedAt(Instant.now());
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcement);
         entityManager.flush();

@@ -29,7 +29,13 @@ import {
   expectEvictionError,
   scheduleEviction,
 } from '../support/schedule-eviction';
-import { MARK_NOTICE_SERVED, markNoticeServedInXui, submitNoticeServed } from '../support/notice-served';
+import {
+  MARK_NOTICE_SERVED,
+  markNoticeServedAsBailiff,
+  markNoticeServedInXui,
+  noticeServed,
+  submitNoticeServed,
+} from '../support/notice-served';
 import { caseChangedForDefendants } from '../support/defendant-visibility';
 import { ADD_BAILIFF_NOTE, SET_RISK_LEVEL } from '../support/bailiff-events';
 
@@ -96,12 +102,16 @@ Then('no eviction date is saved', async ({ page, world }) => {
     .toBe('Not yet scheduled');
 });
 
-/** The validation outcomes feature 05 names, mapped to the text XUI actually shows. */
+/**
+ * The validation outcomes features 05 and 08 name, mapped to the text XUI actually shows. The served date
+ * belongs to feature 08, but both go through the shared `I see {string}` step.
+ */
 export const EVICTION_RESULTS: Record<string, string> = {
   'an error that date and time are needed': evictionDateErrors.needed,
   'an error that the date is not valid': evictionDateErrors.invalid,
   'an error that the date must be today or in the future': evictionDateErrors.inThePast,
   'an error that the time is not valid': evictionDateErrors.invalid,
+  'an error that the time cannot be in the future': noticeServed.errors.servedInTheFuture,
 };
 
 export const isEvictionResult = (result: string): boolean => result in EVICTION_RESULTS
