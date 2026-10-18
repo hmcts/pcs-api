@@ -177,12 +177,13 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
     void setUp() {
         when(securityContextService.getCurrentUserId()).thenReturn(BAILIFF_USER_ID);
         // Deleting the draft needs the caller's IDAM user and organisation, and the fee lookup and service
-        // request need the Fees Register and Payments; neither has anything to do with the status.
+        // request need the Fees Register and Payments; none of them has anything to do with the status, and
+        // nor do the work allocation tasks the application produces.
         enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, currentEnforcementService, pcsCaseService, mock(DraftCaseDataService.class),
             strategyFactory, enforcementStatusTransitions, repeatWarrantFeeWaiver,
             mock(EnforcementNotificationService.class), enforcementDocumentScheduler,
-            mock(EnforcementFeeService.class, RETURNS_MOCKS));
+            mock(EnforcementFeeService.class, RETURNS_MOCKS), mock(EnforcementWaTaskService.class));
     }
 
     @Test
