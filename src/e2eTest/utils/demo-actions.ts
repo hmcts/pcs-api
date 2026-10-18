@@ -193,21 +193,33 @@ function drawPointer({ from, to, ms, ripple, label }: { from: Point; to: Point; 
     host.setAttribute('aria-hidden', 'true');
     host.style.cssText = 'all: initial; position: fixed; inset: 0; z-index: 2147483647; pointer-events: none;';
     const root = host.attachShadow({ mode: 'closed' });
-    root.innerHTML = `
-      <style>
-        .pointer { position: fixed; left: 0; top: 0; width: 34px; height: 34px; will-change: transform;
-                   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5)); }
-        .ripple { position: fixed; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%;
-                  border: 5px solid #ffdd00; box-sizing: border-box; opacity: 0; }
-        .ripple.go { animation: ripple 500ms ease-out; }
-        @keyframes ripple { from { transform: var(--at) scale(0.3); opacity: 1; } to { transform: var(--at) scale(1.4); opacity: 0; } }
-        .label { position: fixed; left: 0; top: 0; font: 700 24px/32px Arial, Helvetica, sans-serif; color: #0b0c0c;
-                 background: #ffdd00; padding: 4px 12px; border: 3px solid #0b0c0c; white-space: nowrap; display: none; }
-      </style>
-      <div class="ripple"></div>
-      <svg class="pointer" viewBox="0 0 24 24"><path d="M3 2 L3 20 L8 15.5 L11.5 22.5 L14.5 21 L11 14 L18 14 Z"
-           fill="#ffffff" stroke="#0b0c0c" stroke-width="1.6" stroke-linejoin="round"/></svg>
-      <div class="label"></div>`;
+    // Styled through the CSSOM rather than a <style> element: XUI's Content Security Policy blocks inline
+    // style sheets, which left the pointer at the SVG default size.
+    const ripple = document.createElement('div');
+    ripple.className = 'ripple';
+    ripple.style.cssText = 'position: fixed; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%; '
+      + 'border: 5px solid #ffdd00; box-sizing: border-box; opacity: 0;';
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNs, 'svg');
+    svg.setAttribute('class', 'pointer');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '34');
+    svg.setAttribute('height', '34');
+    svg.style.cssText = 'position: fixed; left: 0; top: 0; width: 34px; height: 34px; will-change: transform; '
+      + 'filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));';
+    const path = document.createElementNS(svgNs, 'path');
+    path.setAttribute('d', 'M3 2 L3 20 L8 15.5 L11.5 22.5 L14.5 21 L11 14 L18 14 Z');
+    path.setAttribute('fill', '#ffffff');
+    path.setAttribute('stroke', '#0b0c0c');
+    path.setAttribute('stroke-width', '1.6');
+    path.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(path);
+    const labelBox = document.createElement('div');
+    labelBox.className = 'label';
+    labelBox.style.cssText = 'position: fixed; left: 0; top: 0; font: 700 24px/32px Arial, Helvetica, sans-serif; '
+      + 'color: #0b0c0c; background: #ffdd00; padding: 4px 12px; border: 3px solid #0b0c0c; white-space: nowrap; '
+      + 'display: none;';
+    root.append(ripple, svg, labelBox);
     parts = { host, root };
     w[key] = parts;
   }
@@ -229,10 +241,13 @@ function drawPointer({ from, to, ms, ripple, label }: { from: Point; to: Point; 
   }
   pointerElement.style.transform = at(to);
   if (ripple) {
-    rippleElement.style.setProperty('--at', at(to));
-    rippleElement.classList.remove('go');
-    rippleElement.getBoundingClientRect();
-    rippleElement.classList.add('go');
+    rippleElement.animate(
+      [
+        { transform: `${at(to)} scale(0.3)`, opacity: 1 },
+        { transform: `${at(to)} scale(1.4)`, opacity: 0 },
+      ],
+      { duration: 500, easing: 'ease-out' }
+    );
   }
   labelElement.textContent = label;
   labelElement.style.display = label ? 'block' : 'none';
