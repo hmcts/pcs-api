@@ -47,7 +47,8 @@ export async function holdPage(page: Page): Promise<void> {
 async function wait(page: Page, ms: number): Promise<void> {
   lastHeldUrl = page.url();
   if (ms > 0) {
-    await page.waitForTimeout(ms);
+    // A pause is only for the recording: a page closed or torn down meanwhile must not fail the test.
+    await page.waitForTimeout(ms).catch(() => undefined);
   }
   lastHoldEndedAt = Date.now();
 }
