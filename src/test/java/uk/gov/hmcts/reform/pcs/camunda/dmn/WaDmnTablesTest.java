@@ -40,6 +40,12 @@ class WaDmnTablesTest {
     private static final List<String> REQUIRED_CONFIGURATION_ATTRIBUTES = List.of(
         "workType", "roleCategory", "majorPriority", "minorPriority", "dueDateIntervalDays");
 
+    /**
+     * The role categories XUI can show and reassign by. wa-task-management-api also has ENFORCEMENT, but neither
+     * XUI nor AM do, so a task in it can't be reassigned through XUI (OPEN-QUESTIONS 62).
+     */
+    private static final Set<String> XUI_ROLE_CATEGORIES = Set.of("JUDICIAL", "LEGAL_OPERATIONS", "ADMIN", "CTSC");
+
     @ParameterizedTest
     @EnumSource(WaDmn.class)
     void shouldBeWellFormedWithTheExpectedDecisionIdAndHitPolicy(WaDmn dmn) {
@@ -120,6 +126,37 @@ class WaDmnTablesTest {
         });
     }
 
+    /**
+     * wa-task-management-api collects the configuration rows into a map keyed by name without a merge function
+     * (CaseConfigurationProviderService.extractDmnResults), so two rows with the same name for one task type throw
+     * "Duplicate key" and leave the task unconfigured. RULE ORDER does not make the last one win.
+     */
+    @Test
+    void shouldGiveEachTaskTypeOneConfigurationRowPerAttribute() {
+        DmnDecisionTable configuration = WaDmn.CONFIGURATION.table();
+
+        assertThat(taskTypeCatalogue().keySet()).allSatisfy(taskType ->
+            assertThat(configuration.collect(Map.of("taskType", taskType), "name"))
+                .describedAs("configuration attribute names of %s", taskType)
+                .doesNotHaveDuplicates());
+    }
+
+    @Test
+    void shouldUseOnlyRoleCategoriesXuiKnows() {
+        DmnDecisionTable configuration = WaDmn.CONFIGURATION.table();
+
+        assertThat(taskTypeCatalogue().keySet()).allSatisfy(taskType ->
+            assertThat(configurationAttributes(configuration, taskType).get("roleCategory"))
+                .describedAs("role category of %s", taskType)
+                .isIn(XUI_ROLE_CATEGORIES));
+        DmnDecisionTable permissions = WaDmn.PERMISSIONS.table();
+        int roleCategory = permissions.outputNames().indexOf("roleCategory");
+        assertThat(permissions.rules())
+            .allSatisfy(rule -> assertThat(rule.outputEntries().get(roleCategory).replace("\"", ""))
+                .describedAs("role category of %s", rule.id())
+                .isIn(XUI_ROLE_CATEGORIES));
+    }
+
     @Test
     void shouldUseOnlyRecognisedPermissionTokens() {
         assertThat(WaDmn.PERMISSIONS.table().rules())
@@ -152,8 +189,9 @@ class WaDmnTablesTest {
     }
 
     /**
-     * The configuration attributes of a task type, with the RULE ORDER hit policy applied: every matching rule
-     * contributes, and the last value for an attribute name wins.
+     * The configuration attributes of a task type: every matching rule contributes. A name that two matching rules
+     * set is a configuration error ({@link #shouldGiveEachTaskTypeOneConfigurationRowPerAttribute}), so which of
+     * them this returns does not matter.
      */
     static Map<String, String> configurationAttributes(DmnDecisionTable configuration, String taskType) {
         Map<String, String> attributes = new LinkedHashMap<>();

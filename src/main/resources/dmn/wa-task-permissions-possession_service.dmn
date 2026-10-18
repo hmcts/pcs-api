@@ -158,7 +158,7 @@
           <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfBailiffAdminAllocationRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfBailiffAdminAllocationAuthorisations">
           <text></text>
@@ -187,7 +187,7 @@
           <text>"Read,Own,Claim,Unclaim,Manage,Complete,Cancel,Assign,Unassign"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfBailiffManagerAllocationRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfBailiffManagerAllocationAuthorisations">
           <text></text>
@@ -200,7 +200,7 @@
         </outputEntry>
       </rule>
       <rule id="DecisionRule_enfAllocatedBailiffTasks">
-        <description>allocated-bailiff is the case role AllocateBailiff grants, so these tasks auto-assign to the bailiff the enforcement is allocated to and follow a reallocation</description>
+        <description>allocated-bailiff is the case role HDPI-8189 will grant in AM. Until it exists nobody holds it, and the tasks are assigned through the bailiff row below</description>
         <inputEntry id="UnaryTests_enfAllocatedBailiffTasksTaskType">
           <text>"ReviewRisksAndSetLevel", "MarkNoticeOfEvictionServed", "RescheduleEviction", "ReviewUpdatedRiskInformation", "RecordWarrantReturn"</text>
         </inputEntry>
@@ -217,7 +217,7 @@
           <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksAuthorisations">
           <text></text>
@@ -226,6 +226,36 @@
           <text>1</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfAllocatedBailiffTasksAutoAssignable">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_enfBailiffOrganisationRole">
+        <description>The configuration table names the allocated bailiff as assignee, and wa-task-management-api keeps a configured assignee only if one of their roles is auto-assignable here. Auto-assignment itself only searches case roles, so this row never assigns a task to a bailiff nobody named</description>
+        <inputEntry id="UnaryTests_enfBailiffOrganisationRoleTaskType">
+          <text>"ReviewRisksAndSetLevel", "MarkNoticeOfEvictionServed", "RescheduleEviction", "ReviewUpdatedRiskInformation", "RecordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfBailiffOrganisationRoleCase">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffOrganisationRoleCategory">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffOrganisationRoleName">
+          <text>"bailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffOrganisationRoleValue">
+          <text>"Read,Own,Claim,Unclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffOrganisationRoleRoleCategory">
+          <text>"ADMIN"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffOrganisationRoleAuthorisations">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffOrganisationRolePriority">
+          <text>2</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffOrganisationRoleAutoAssignable">
           <text>true</text>
         </outputEntry>
       </rule>
@@ -247,7 +277,7 @@
           <text>"Read,Own,Manage,Complete,Cancel,Assign,Unassign"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfBailiffManagerOversightRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfBailiffManagerOversightAuthorisations">
           <text></text>

@@ -1385,7 +1385,7 @@ else
           <text>"routine_work"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfAllocateAfterApprovalRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_enfAllocateAfterReopen">
@@ -1436,7 +1436,7 @@ else
           <text>"routine_work"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfAllocateAfterReopenRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_enfReviewRisksAndSetLevel">
@@ -1486,7 +1486,7 @@ else
           <text>"decision_making_work"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfReviewRisksAndSetLevelRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_enfMarkNoticeOfEvictionServed">
@@ -1537,7 +1537,7 @@ else
           <text>"routine_work"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfMarkNoticeOfEvictionServedRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_enfRescheduleEviction">
@@ -1588,7 +1588,7 @@ else
           <text>"routine_work"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_enfRescheduleEvictionRoleCategory">
-          <text>"ENFORCEMENT"</text>
+          <text>"ADMIN"</text>
         </outputEntry>
       </rule>
     </decisionTable>

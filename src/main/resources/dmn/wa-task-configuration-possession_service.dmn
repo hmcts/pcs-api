@@ -589,25 +589,27 @@ Short name</description>
           <text>true</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_enfRoleCategory">
-        <description>Bailiff tasks are worked by enforcement staff, so they override the ADMIN default set above</description>
-        <inputEntry id="UnaryTests_enfRoleCategoryCaseData">
+      <rule id="DecisionRule_enfAssignAllocatedBailiff">
+        <description>pcs-api sends the allocated bailiff's IDAM id as the allocatedBailiffId process variable, because there is no allocated-bailiff case role in AM to auto-assign from. Not reconfigured: a reallocation replaces the tasks</description>
+        <inputEntry id="UnaryTests_enfAssignAllocatedBailiffCaseData">
           <text></text>
         </inputEntry>
-        <inputEntry id="UnaryTests_enfRoleCategoryAttributes">
+        <inputEntry id="UnaryTests_enfAssignAllocatedBailiffAttributes">
           <text></text>
         </inputEntry>
-        <inputEntry id="UnaryTests_enfRoleCategoryTaskType">
-          <text>"AllocateCaseToBailiff","ReviewRisksAndSetLevel","MarkNoticeOfEvictionServed","RescheduleEviction","ReviewUpdatedRiskInformation","RecordWarrantReturn"</text>
+        <inputEntry id="UnaryTests_enfAssignAllocatedBailiffTaskType">
+          <text>"ReviewRisksAndSetLevel","MarkNoticeOfEvictionServed","RescheduleEviction","ReviewUpdatedRiskInformation","RecordWarrantReturn"</text>
         </inputEntry>
-        <outputEntry id="LiteralExpression_enfRoleCategoryName">
-          <text>"roleCategory"</text>
+        <outputEntry id="LiteralExpression_enfAssignAllocatedBailiffName">
+          <text>"assignee"</text>
         </outputEntry>
-        <outputEntry id="LiteralExpression_enfRoleCategoryValue">
-          <text>"ENFORCEMENT"</text>
+        <outputEntry id="LiteralExpression_enfAssignAllocatedBailiffValue">
+          <text>if(taskAttributes != null and taskAttributes.allocatedBailiffId != null)
+            then taskAttributes.allocatedBailiffId
+            else null</text>
         </outputEntry>
-        <outputEntry id="LiteralExpression_enfRoleCategoryReconfigure">
-          <text>true</text>
+        <outputEntry id="LiteralExpression_enfAssignAllocatedBailiffReconfigure">
+          <text>false</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_enfMajorPriorityReview">

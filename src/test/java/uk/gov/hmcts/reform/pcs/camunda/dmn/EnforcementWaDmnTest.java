@@ -58,7 +58,7 @@ class EnforcementWaDmnTest {
                 "enforcementStatus", "AWAITING_BAILIFF_ALLOCATION")))
                 .containsEntry("taskId", ALLOCATE_CASE_TO_BAILIFF.getId())
                 .containsEntry("name", ALLOCATE_CASE_TO_BAILIFF.getName())
-                .containsEntry("roleCategory", "ENFORCEMENT");
+                .containsEntry("roleCategory", "ADMIN");
         }
 
         @Test
@@ -220,9 +220,9 @@ class EnforcementWaDmnTest {
         @EnumSource(value = TaskType.class, names = {
             "ALLOCATE_CASE_TO_BAILIFF", "REVIEW_RISKS_AND_SET_LEVEL", "MARK_NOTICE_OF_EVICTION_SERVED",
             "RESCHEDULE_EVICTION", "REVIEW_UPDATED_RISK_INFORMATION", "RECORD_WARRANT_RETURN"})
-        void shouldPutBailiffTasksInTheEnforcementRoleCategory(TaskType taskType) {
+        void shouldPutBailiffTasksInTheAdminRoleCategoryBailiffsHold(TaskType taskType) {
             assertThat(attributesOf(taskType))
-                .containsEntry("roleCategory", "ENFORCEMENT")
+                .containsEntry("roleCategory", "ADMIN")
                 .containsEntry("majorPriority", "5000")
                 .containsEntry("dueDateIntervalDays", "5");
         }
@@ -238,6 +238,27 @@ class EnforcementWaDmnTest {
         })
         void shouldSetTheWorkTypeThatPutsTheTaskOnTheRightMyWorkList(TaskType taskType, String workType) {
             assertThat(attributesOf(taskType)).containsEntry("workType", workType);
+        }
+
+        @Test
+        void shouldAssignEachAllocatedBailiffTaskToTheBailiffPcsApiNames() {
+            assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType ->
+                assertThat(configuration.evaluate(Map.of("taskType", taskType.getId())))
+                    .filteredOn(row -> "assignee".equals(row.get("name")))
+                    .singleElement()
+                    .satisfies(row -> {
+                        assertThat(row.get("value")).contains("taskAttributes.allocatedBailiffId");
+                        // A reallocation replaces the tasks rather than reconfiguring them, and on reconfiguration
+                        // the process variable is no longer there to read.
+                        assertThat(row.get("canReconfigure")).isEqualTo("false");
+                    }));
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = TaskType.class, names = {"REVIEW_CLAIMANT_WARRANT_APPLICATION", "ALLOCATE_CASE_TO_BAILIFF"})
+        void shouldNotNameAnAssigneeForTasksAnyoneInTheRoleCanClaim(TaskType taskType) {
+            assertThat(configuration.evaluate(Map.of("taskType", taskType.getId())))
+                .noneSatisfy(row -> assertThat(row.get("name")).isEqualTo("assignee"));
         }
 
         private Map<String, String> attributesOf(TaskType taskType) {
@@ -265,23 +286,45 @@ class EnforcementWaDmnTest {
         }
 
         @Test
-        void shouldGiveTheRemainingTasksToTheAllocatedBailiffAndTheirManager() {
+        void shouldGiveTheRemainingTasksToBailiffsAndTheirManager() {
             assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType ->
                 assertThat(permissions.collect(inputsFor(taskType), "name"))
-                    .containsExactly("allocated-bailiff", "bailiff-manager"));
+                    .containsExactly("allocated-bailiff", "bailiff", "bailiff-manager"));
         }
 
+        /**
+         * wa-task-management-api keeps the assignee the configuration table names only if one of that user's roles
+         * is auto-assignable on the task. The allocated-bailiff case role does not exist in AM yet (HDPI-8189), so
+         * the bailiff organisational role is the one that lets the named bailiff keep the task.
+         */
         @Test
-        void shouldAutoAssignTheAllocatedBailiffAndNobodyElse() {
+        void shouldLetTheNamedBailiffKeepTheTaskThroughEitherBailiffRole() {
             assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType ->
                 assertThat(permissions.evaluate(inputsFor(taskType)))
                     .filteredOn(row -> "true".equals(row.get("autoAssignable")))
-                    .singleElement()
-                    .satisfies(row -> {
-                        assertThat(row.get("name")).isEqualTo("allocated-bailiff");
-                        assertThat(row.get("assignmentPriority")).isEqualTo("1");
+                    .extracting(row -> row.get("name") + ":" + row.get("assignmentPriority"))
+                    .containsExactly("allocated-bailiff:1", "bailiff:2"));
+        }
+
+        @Test
+        void shouldGiveEveryAutoAssignableRoleOwnAndNoAuthorisationsToMatch() {
+            assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType ->
+                assertThat(permissions.evaluate(inputsFor(taskType)))
+                    .filteredOn(row -> "true".equals(row.get("autoAssignable")))
+                    .allSatisfy(row -> {
                         assertThat(row.get("value").split(",")).contains("Own", "Claim");
+                        assertThat(row.get("authorisations")).isEmpty();
                     }));
+        }
+
+        @Test
+        void shouldNotLetAnyBailiffManageAnotherBailiffsTasks() {
+            assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType ->
+                assertThat(permissions.evaluate(inputsFor(taskType)))
+                    .filteredOn(row -> "bailiff".equals(row.get("name")))
+                    .singleElement()
+                    .satisfies(row -> assertThat(row.get("value").split(","))
+                        .doesNotContain("Manage", "Assign", "Unassign", "Cancel", "Complete")));
         }
 
         @Test
