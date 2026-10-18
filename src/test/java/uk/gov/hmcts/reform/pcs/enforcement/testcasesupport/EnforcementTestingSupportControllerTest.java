@@ -7,11 +7,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.AllocateBailiffRequest;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.SeedDocumentRequest;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.SeededDocument;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -19,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +46,8 @@ class EnforcementTestingSupportControllerTest {
     private BailiffAllocationService bailiffAllocationService;
     @Mock
     private IdamAuthenticator idamAuthenticator;
+    @Mock
+    private EnforcementTestDocumentSeeder enforcementTestDocumentSeeder;
     @InjectMocks
     private EnforcementTestingSupportController underTest;
 
@@ -59,6 +65,28 @@ class EnforcementTestingSupportControllerTest {
 
         assertThat(underTest.recordFeePaid(S2S_TOKEN, CASE_REFERENCE).getStatusCode())
             .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldReturnTheFileNameWhenAPlaceholderDocumentIsFiled() {
+        when(enforcementTestDocumentSeeder.seed(CASE_REFERENCE, BatchPrintDocumentKind.WARRANT, "Warrant"))
+            .thenReturn(Optional.of("Warrant.pdf"));
+
+        ResponseEntity<SeededDocument> response = underTest.seedDocument(
+            S2S_TOKEN, CASE_REFERENCE, new SeedDocumentRequest(BatchPrintDocumentKind.WARRANT, "Warrant"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isEqualTo(new SeededDocument("Warrant.pdf"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenThereIsNoEnforcementToFileAPlaceholderAgainst() {
+        when(enforcementTestDocumentSeeder.seed(CASE_REFERENCE, BatchPrintDocumentKind.WARRANT, "Warrant"))
+            .thenReturn(Optional.empty());
+
+        assertThat(underTest.seedDocument(
+            S2S_TOKEN, CASE_REFERENCE, new SeedDocumentRequest(BatchPrintDocumentKind.WARRANT, "Warrant"))
+                       .getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test

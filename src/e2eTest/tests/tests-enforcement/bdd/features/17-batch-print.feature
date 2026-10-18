@@ -1,4 +1,9 @@
-@HDPI-7342 @enforcement @bailiff @open-question @pending
+# pcs-api offers batch print as an API (BatchPrintController), not as a CCD event, because CCD has no screen
+# that acts on several cases. The steps call it as the bailiff. Choosing the cases from "My work" is the open
+# question: XUI's task list cannot act on several tasks at once, and nothing creates the bailiff's tasks yet
+# (HDPI-8627), so that scenario stays pending. The rest need dm-store locally (LOCAL_DOC_SERVICES=true),
+# because the warrant, risk assessment and notice of eviction are placeholders filed through CDAM.
+@HDPI-7342 @enforcement @bailiff
 Feature: Batch print enforcement documents across cases
   As a bailiff
   I want to print the documents I need across several cases in one action
@@ -9,7 +14,7 @@ Feature: Batch print enforcement documents across cases
     And I am the allocated bailiff on cases "1111-1111-1111-1111", "2222-2222-2222-2222" and "3333-3333-3333-3333"
     And each case has an eviction scheduled this week
 
-  @HDPI-8012
+  @HDPI-8012 @open-question @pending
   Scenario: Choose cases to print from my work
     When I open "My work"
     And I select the tasks for the three cases

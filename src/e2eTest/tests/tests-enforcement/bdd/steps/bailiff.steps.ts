@@ -1,4 +1,4 @@
-// Bailiff journeys (features 03-05, 07-11, 17).
+// Bailiff journeys (features 03-05, 07-11). Batch print (17) is in batch-print.steps.ts.
 //
 // What is drivable today: `setRiskLevel` (feature 04) and `addBailiffNote` (feature 10). Both are built,
 // and the cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json) can now reach them, so
@@ -13,7 +13,6 @@
 //   * the `allocated-bailiff` case role — `BailiffAllocationService.allocate()` writes only to
 //     `enf_bailiff_allocation`; the AM case role is a TODO. HDPI-8189.
 //   * WA tasks — nothing creates them. HDPI-8627.
-//   * batch print (17) — HDPI-8012.
 import { BrowserContext, Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
@@ -375,16 +374,4 @@ pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return cannot be re
   'the notice of eviction was served on the defendants',
   'I submit a return that closes the enforcement',
   'the bailiff recorded the return {string}',
-]);
-
-pendingSteps({ ticket: 'HDPI-8012', summary: 'Batch print' }, [
-  'I am the allocated bailiff on cases {string}, {string} and {string}',
-  'each case has an eviction scheduled this week',
-  'I choose {string}',
-  'I am given one file containing, for each case in turn, the warrant, the risk assessment and the notice of eviction',
-  'case {string} has an original and a rescheduled notice of eviction',
-  'I batch print that case',
-  'only the latest notice of eviction is included',
-  'I select a case where I am not the allocated bailiff',
-  'that case is left out and I am told why',
 ]);

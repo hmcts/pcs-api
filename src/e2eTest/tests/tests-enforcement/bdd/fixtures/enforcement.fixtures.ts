@@ -7,6 +7,7 @@ import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-act
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { submitCaseApiData } from '@data/api-data';
 import { resetSignedInRole } from '../support/session';
+import type { BatchPrintFile, BatchPrintPlan } from '../support/batch-print';
 
 export type EnforcementType =
   | 'warrant of possession'
@@ -49,6 +50,19 @@ export class EnforcementWorld {
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /** Batch print (feature 17): the cases set up as allocated to the bailiff, in the order the feature lists them. */
+  batchPrintCases: string[] = [];
+  /** The real case standing in for each reference the batch print feature quotes. */
+  batchPrintCaseFor: Record<string, string> = {};
+  /** The cases chosen for the next batch print, in print order. */
+  batchPrintSelection: string[] = [];
+  /** A chosen case allocated to another bailiff. */
+  notAllocatedCase?: string;
+  /** The file name of the latest notice of eviction filed on the case. */
+  latestNoticeOfEviction?: string;
+  /** What pcs-api said the last batch print would contain, and the file it then produced. */
+  batchPrintPlan?: BatchPrintPlan;
+  batchPrintFile?: BatchPrintFile;
 }
 
 type EnforcementFixtures = {
