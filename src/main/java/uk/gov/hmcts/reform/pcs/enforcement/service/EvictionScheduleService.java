@@ -135,15 +135,22 @@ public class EvictionScheduleService {
         if (live.refused()) {
             return EnforcementChange.refused(live.errors());
         }
-        setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
-        enforcementDocumentScheduler.scheduleEvictionNotices(live.change().getId());
-        // TODO HDPI-7355: email the notice of appointment to the claimant.
-        enforcementNotificationService.notifyClaimantOfScheduledEviction(caseReference, evictionDateTime);
+        EnforcementOrderEntity enforcement = live.change();
+        setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+            caseReference, "the eviction notices and the claimant's email", () -> {
+                enforcementDocumentScheduler.scheduleEvictionNotices(enforcement.getId());
+                // TODO HDPI-7355: email the notice of appointment to the claimant.
+                enforcementNotificationService.notifyClaimantOfScheduledEviction(caseReference, evictionDateTime);
+            });
+        if (scheduled.refused()) {
+            return EnforcementChange.refused(scheduled.errors());
+        }
         // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7346 / HDPI-8627: create the "Mark notice of eviction as served" WA task for the allocated
         //  bailiff when service is not dispensed with.
         // TODO HDPI-7347: create the "Record warrant return" WA task due on the eviction date.
-        return EnforcementChange.made(live.change().getEnforcementNumber());
+        return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
     /**
@@ -159,14 +166,22 @@ public class EvictionScheduleService {
         if (live.refused()) {
             return EnforcementChange.refused(live.errors());
         }
-        setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
-        // A new notice of eviction and notice of appointment, keeping the originals in the Enforcement folder.
-        enforcementDocumentScheduler.scheduleEvictionNotices(live.change().getId());
-        enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
+        EnforcementOrderEntity enforcement = live.change();
+        setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+            caseReference, "the new eviction notices and the claimant's email", () -> {
+                // A new notice of eviction and notice of appointment, keeping the originals in the Enforcement
+                // folder.
+                enforcementDocumentScheduler.scheduleEvictionNotices(enforcement.getId());
+                enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
+            });
+        if (scheduled.refused()) {
+            return EnforcementChange.refused(scheduled.errors());
+        }
         // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7549: complete the "Reschedule eviction" WA task, and move the "Record warrant return" task
         //  (HDPI-7347) to the new eviction date.
-        return EnforcementChange.made(live.change().getEnforcementNumber());
+        return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
     /**

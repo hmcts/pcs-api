@@ -52,7 +52,8 @@ public class EnforcementFeeService {
      * <p>The fees-and-pay task is written in the event's transaction, which db-scheduler joins, so no service
      * request is raised for an application that is rolled back and a committed application always has one
      * queued. Nothing here talks to Payments, so a Payments outage cannot fail the event: the task retries on its
-     * own. A failure to write the task fails the event.</p>
+     * own. A failure to write the task is thrown, so a submit handler has to call this through
+     * {@link EnforcementSideEffects} to answer it as an error rather than a 500.</p>
      */
     public void requestPayment(PcsCaseEntity pcsCase, UUID enforcementId, FeeDetails feeDetails) {
         long caseReference = pcsCase.getCaseReference();

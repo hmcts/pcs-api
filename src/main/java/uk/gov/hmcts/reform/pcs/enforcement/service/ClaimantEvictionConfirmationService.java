@@ -79,16 +79,17 @@ public class ClaimantEvictionConfirmationService {
         enforcementStatusTransitions.transition(enforcement, target);
         enforcement.setClaimantCanAttend(canAttend.toBoolean());
         enforcementOrderRepository.save(enforcement);
-        if (target == CLAIMANT_CONFIRMED) {
-            enforcementNotificationService.notifyClaimantOfConfirmedAttendance(
-                caseReference, enforcement.getBailiffDate());
-        } else {
-            enforcementNotificationService.notifyClaimantOfDeclinedAttendance(caseReference);
-        }
         // TODO HDPI-7549: when the claimant cannot attend, create a "Reschedule eviction" task for the allocated
         // bailiff, and store the dates they are not available (the journey does not ask for them yet). It needs
         // Work Allocation.
-        return EnforcementChange.made();
+        return EnforcementSideEffects.schedule(caseReference, "the claimant's attendance email", () -> {
+            if (target == CLAIMANT_CONFIRMED) {
+                enforcementNotificationService.notifyClaimantOfConfirmedAttendance(
+                    caseReference, enforcement.getBailiffDate());
+            } else {
+                enforcementNotificationService.notifyClaimantOfDeclinedAttendance(caseReference);
+            }
+        });
     }
 
     private Optional<EnforcementOrderEntity> findLiveEnforcement(long caseReference) {

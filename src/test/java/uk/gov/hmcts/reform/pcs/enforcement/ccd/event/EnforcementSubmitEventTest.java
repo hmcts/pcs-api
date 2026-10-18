@@ -18,12 +18,13 @@ import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +44,11 @@ class EnforcementSubmitEventTest {
         .version(5)
         .build();
 
+    /**
+     * An application that owes nothing: a change that was made with no fee to report.
+     */
+    private static final FeeDetails NO_FEE = null;
+
     @Mock
     private EnforcementOrderService enforcementOrderService;
     @Spy
@@ -59,7 +65,7 @@ class EnforcementSubmitEventTest {
         enforcementOrder.setWarrantFeeAmount("£1");
         enforcementOrder.setWritFeeAmount("£1");
         when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
-            .thenReturn(Optional.of(FEE));
+            .thenReturn(EnforcementChange.made(FEE));
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
@@ -77,7 +83,7 @@ class EnforcementSubmitEventTest {
     void submit_savesARestitutionApplicationWithoutAPaymentPanel(SelectEnforcementType enforcementType) {
         EnforcementOrder enforcementOrder = enforcementOrder(enforcementType);
         when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
-            .thenReturn(Optional.empty());
+            .thenReturn(EnforcementChange.made(NO_FEE));
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
@@ -93,7 +99,7 @@ class EnforcementSubmitEventTest {
         EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
         enforcementOrder.setWarrantFeeAmount("£148");
         when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
-            .thenReturn(Optional.empty());
+            .thenReturn(EnforcementChange.made(NO_FEE));
 
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
@@ -111,6 +117,23 @@ class EnforcementSubmitEventTest {
         SubmitResponse<State> response = event.submit(payload(enforcementOrder));
 
         assertThat(response.getErrors()).containsExactly(EnforcementSubmitEvent.FEE_UNAVAILABLE_ERROR);
+        assertThat(response.getState()).isNull();
+        assertThat(response.getConfirmationBody()).isNull();
+    }
+
+    /**
+     * The claimant is told to submit again rather than given an unexplained 500 on an application the service
+     * could not queue the documents or the payment request for.
+     */
+    @Test
+    void submit_refusesAnApplicationWhoseSideEffectsCannotBeScheduled() {
+        EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
+        when(enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
+            .thenReturn(EnforcementChange.refused(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR));
+
+        SubmitResponse<State> response = event.submit(payload(enforcementOrder));
+
+        assertThat(response.getErrors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
         assertThat(response.getState()).isNull();
         assertThat(response.getConfirmationBody()).isNull();
     }

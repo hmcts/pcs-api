@@ -12,11 +12,13 @@ import java.util.Map;
 /**
  * The enforcement emails to the claimant from the HDPI-7538 notification table, as one call per email.
  *
- * <p>Every method here is safe to call from an event's submit handler. Each one queues the email as a
- * db-scheduler task in the event's transaction, so a rollback drops the email with the case data it describes
- * and a commit keeps both. Nothing here talks to Notify, so a Notify outage cannot fail the event: the task
- * retries on its own. An email with no Notify template written for it yet, or to a claimant with no email
- * address, is logged and skipped; a failure to write the task fails the event.</p>
+ * <p>Every method here queues the email as a db-scheduler task in the caller's transaction, so a rollback
+ * drops the email with the case data it describes and a commit keeps both. Nothing here talks to Notify, so a
+ * Notify outage cannot fail the event: the task retries on its own. An email with no Notify template written
+ * for it yet, or to a claimant with no email address, is logged and skipped.</p>
+ *
+ * <p>A failure to write the task is thrown, so a submit handler has to call these through
+ * {@code EnforcementSideEffects} to answer it as an error rather than a 500.</p>
  *
  * <p>Nothing is sent in any environment until the templates exist. GOV.UK Notify has no API for creating a
  * template, so each one has to be written by hand in the Notify UI and its id configured under

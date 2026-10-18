@@ -57,7 +57,7 @@ class GenAppsViewTest {
     void setUp() {
         lenient().when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
         lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
-        lenient().when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+        lenient().when(userRoleService.getCurrentUserCaseRolesWithoutGroupAccess(TEST_CASE_REFERENCE))
             .thenReturn(new UserRoles(CURRENT_USER_IDAM_ID, List.of()));
         lenient().when(genAppVisibilityService.isGenAppVisibleToUser(
             isA(GenAppEntity.class),

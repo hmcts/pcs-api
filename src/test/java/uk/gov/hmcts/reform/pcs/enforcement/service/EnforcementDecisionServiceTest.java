@@ -11,13 +11,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
@@ -30,6 +31,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -108,9 +112,10 @@ class EnforcementDecisionServiceTest {
         EnforcementOrderEntity enforcement = givenAwaitingReview(type);
         when(enforcementNumberGenerator.next(type)).thenReturn(number);
 
-        Optional<EnforcementDecisionOutcome> outcome = underTest.accept(CASE_REFERENCE);
+        EnforcementChange<EnforcementDecisionOutcome> decided = underTest.accept(CASE_REFERENCE);
 
-        assertThat(outcome).contains(new EnforcementDecisionOutcome(type, EnforcementDecision.ACCEPT, number));
+        assertThat(decided.change())
+            .isEqualTo(new EnforcementDecisionOutcome(type, EnforcementDecision.ACCEPT, number));
         assertThat(enforcement.getStatus()).isEqualTo(approvedStatus);
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
         assertThat(enforcement.getApprovedAt()).isEqualTo(NOW);
@@ -146,7 +151,8 @@ class EnforcementDecisionServiceTest {
     void shouldApproveNothingWhenNoApplicationIsAwaitingReview() {
         givenNoEnforcement();
 
-        assertThat(underTest.accept(CASE_REFERENCE)).isEmpty();
+        assertThat(underTest.accept(CASE_REFERENCE).errors())
+            .containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
         verifyNoInteractions(enforcementNumberGenerator);
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementNotificationService);
@@ -156,10 +162,10 @@ class EnforcementDecisionServiceTest {
     void shouldRejectTheApplicationWithTheReasonAndNoNumber() {
         EnforcementOrderEntity enforcement = givenAwaitingReview(SelectEnforcementType.WARRANT);
 
-        Optional<EnforcementDecisionOutcome> outcome =
+        EnforcementChange<EnforcementDecisionOutcome> decided =
             underTest.reject(CASE_REFERENCE, "  The order has been set aside  ");
 
-        assertThat(outcome).contains(
+        assertThat(decided.change()).isEqualTo(
             new EnforcementDecisionOutcome(SelectEnforcementType.WARRANT, EnforcementDecision.REJECT, null));
         assertThat(enforcement.getStatus()).isEqualTo(EnforcementStatus.REJECTED);
         assertThat(enforcement.getStatus().isLive()).isFalse();
@@ -177,9 +183,8 @@ class EnforcementDecisionServiceTest {
     @NullSource
     @ValueSource(strings = {"", "   "})
     void shouldRefuseToRejectWithoutAReason(String reason) {
-        assertThatThrownBy(() -> underTest.reject(CASE_REFERENCE, reason))
-            .isInstanceOf(EnforcementEventNotAvailableException.class)
-            .hasMessage(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
+        assertThat(underTest.reject(CASE_REFERENCE, reason).errors())
+            .containsExactly(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementNotificationService);
     }
@@ -188,9 +193,35 @@ class EnforcementDecisionServiceTest {
     void shouldRejectNothingWhenNoApplicationIsAwaitingReview() {
         givenNoEnforcement();
 
-        assertThat(underTest.reject(CASE_REFERENCE, "reason")).isEmpty();
+        assertThat(underTest.reject(CASE_REFERENCE, "reason").errors())
+            .containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementNotificationService);
+    }
+
+    /**
+     * The caseworker is asked to try again rather than given an unexplained 500, and the approval is rolled
+     * back with the warrant it could not generate: the number it was given is not kept either.
+     */
+    @Test
+    void shouldRefuseTheApprovalWhenTheWarrantCannotBeQueued() {
+        givenAwaitingReview(SelectEnforcementType.WARRANT);
+        when(enforcementNumberGenerator.next(SelectEnforcementType.WARRANT)).thenReturn("WP-00000001");
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementDocumentScheduler).scheduleApprovalDocument(any(), any());
+
+        assertThat(underTest.accept(CASE_REFERENCE).errors())
+            .containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+    }
+
+    @Test
+    void shouldRefuseTheRejectionWhenTheClaimantsEmailCannotBeQueued() {
+        givenAwaitingReview(SelectEnforcementType.WARRANT);
+        doThrow(new DataIntegrityViolationException("case_notification"))
+            .when(enforcementNotificationService).notifyClaimantOfRejection(anyLong(), any(), anyString());
+
+        assertThat(underTest.reject(CASE_REFERENCE, "The order has been set aside").errors())
+            .containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
     }
 
     private EnforcementOrderEntity givenAwaitingReview(SelectEnforcementType type) {

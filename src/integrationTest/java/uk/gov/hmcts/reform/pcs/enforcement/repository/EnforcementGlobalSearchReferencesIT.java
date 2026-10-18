@@ -66,13 +66,13 @@ class EnforcementGlobalSearchReferencesIT extends AbstractPostgresContainerIT {
         ClaimEntity claim = savedClaim(caseReference);
 
         UUID firstWarrant = save(claim, SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_REVIEW);
-        final String firstWarrantNumber = enforcementDecisionService.accept(caseReference).orElseThrow()
+        final String firstWarrantNumber = enforcementDecisionService.accept(caseReference).change()
             .enforcementNumber();
         flushAndClear();
         jdbcTemplate.update("UPDATE enf_case SET status = 'CLOSED' WHERE id = ?", firstWarrant);
 
         save(claim, SelectEnforcementType.WRIT, EnforcementStatus.AWAITING_REVIEW);
-        final String writNumber = enforcementDecisionService.accept(caseReference).orElseThrow().enforcementNumber();
+        final String writNumber = enforcementDecisionService.accept(caseReference).change().enforcementNumber();
         flushAndClear();
 
         save(claim, SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_REVIEW);
@@ -94,7 +94,7 @@ class EnforcementGlobalSearchReferencesIT extends AbstractPostgresContainerIT {
     void indexesOnlyTheCasesOwnNumbers() {
         long otherCaseReference = 1919191919191919L;
         save(savedClaim(otherCaseReference), SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_REVIEW);
-        enforcementDecisionService.accept(otherCaseReference).orElseThrow();
+        enforcementDecisionService.accept(otherCaseReference).change();
         flushAndClear();
 
         long caseReference = 2020202020202020L;

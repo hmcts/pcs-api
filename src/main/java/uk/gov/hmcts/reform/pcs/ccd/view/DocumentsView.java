@@ -41,7 +41,7 @@ public class DocumentsView {
         }
 
         UserRoles userRoles =
-            userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+            userRoleService.getCurrentUserCaseRolesWithoutGroupAccess(pcsCaseEntity.getCaseReference());
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
