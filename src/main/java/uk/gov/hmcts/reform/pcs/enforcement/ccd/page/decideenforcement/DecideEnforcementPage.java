@@ -40,11 +40,14 @@ public class DecideEnforcementPage implements CcdPageConfiguration {
         pageBuilder
             .page(PAGE_ID)
             .pageLabel("Decide enforcement")
-            // Shown on check your answers too, so the caseworker sees the case they are deciding on.
-            .label(PAGE_ID + "-caseDetails", CASE_DETAILS, null, true)
             .complex(PCSCase::getEnforcementOrder)
+            // Placed before the label because XUI fills a label's ${...} only from the case view and from the
+            // fields placed before it on the form. Only the start callback sets these, so a label placed ahead
+            // of them renders blank.
             .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getFormattedCaseName, NEVER_SHOW, true)
+            // Shown on check your answers too, so the caseworker sees the case they are deciding on.
+            .label(PAGE_ID + "-caseDetails", CASE_DETAILS, null, true)
             .mandatory(EnforcementOrder::getEnforcementDecision)
             .mandatory(EnforcementOrder::getEnforcementRejectionReason, REJECTED)
             .done();

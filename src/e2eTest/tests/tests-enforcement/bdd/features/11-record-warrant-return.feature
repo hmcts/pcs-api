@@ -56,8 +56,8 @@ Feature: Bailiff records the warrant return
     When I start the "Record warrant return" event
     Then I see the error "There is no warrant on this case"
 
-  # RecordWarrantReturnPage renders only the case number and property address: no parties line and
-  # ${warrantReturnEvictionDetailsMarkup} produces no "Eviction details" table.
+  # RecordWarrantReturnPage shows the case number, the property address and the "Eviction details" table, but
+  # there is no parties line, and the table steps are not written yet.
   @HDPI-7347 @pending
   Scenario: Record warrant return screen
     When I start the "Record warrant return" event

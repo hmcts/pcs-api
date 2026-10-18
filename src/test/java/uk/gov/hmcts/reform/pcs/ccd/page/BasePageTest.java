@@ -5,6 +5,8 @@ import uk.gov.hmcts.ccd.sdk.ConfigBuilderImpl;
 import uk.gov.hmcts.ccd.sdk.ResolvedCCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
+import uk.gov.hmcts.ccd.sdk.api.Field;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -14,7 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,6 +30,7 @@ public abstract class BasePageTest {
     protected static final long TEST_CASE_REFERENCE = 1234L;
 
     private static final String TEST_EVENT_ID = "test-event";
+    private static final Pattern PLACEHOLDER = Pattern.compile("\\$\\{([A-Za-z0-9_]+)}");
     protected Event<PCSCase, UserRole, State> event;
 
     protected void setPageUnderTest(CcdPageConfiguration pageUnderTest) {
@@ -50,6 +58,41 @@ public abstract class BasePageTest {
         assertThat(event).isNotNull();
 
         return event;
+    }
+
+    /**
+     * Checks that every field a label on the page names in a {@code ${...}} placeholder is placed before the label.
+     * XUI fills the placeholders when it first renders the label, from the case view and the fields already on the
+     * form, so a field placed after the label is blank there unless the case view happens to have it too.
+     */
+    protected void assertFieldsArePlacedBeforeTheLabelsThatShowThem() {
+        List<Field<?, ?, ?, ?>> fields = allFields(getEvent().getFields()).toList();
+        Map<String, Field<?, ?, ?, ?>> fieldsById = fields.stream()
+            .collect(Collectors.toMap(Field::getId, field -> field, (first, second) -> first));
+
+        fields.stream()
+            .filter(field -> field.getLabel() != null)
+            .forEach(label -> {
+                Matcher placeholders = PLACEHOLDER.matcher(label.getLabel());
+                while (placeholders.find()) {
+                    Field<?, ?, ?, ?> placed = fieldsById.get(placeholders.group(1));
+                    if (placed != null && label.getPage().equals(placed.getPage())) {
+                        assertThat(placed.getPageFieldDisplayOrder())
+                            .withFailMessage("%s is placed after the label %s that shows it",
+                                             placed.getId(), label.getId())
+                            .isLessThan(label.getPageFieldDisplayOrder());
+                    }
+                }
+            });
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static Stream<Field<?, ?, ?, ?>> allFields(FieldCollection fieldCollection) {
+        Stream<Field<?, ?, ?, ?>> fields = fieldCollection.getFields().stream()
+            .map(builder -> (Field<?, ?, ?, ?>) ((Field.FieldBuilder) builder).build());
+        Stream<Field<?, ?, ?, ?>> complexFields = fieldCollection.getComplexFields().stream()
+            .flatMap(builder -> allFields(((FieldCollection.FieldCollectionBuilder) builder).build()));
+        return Stream.concat(fields, complexFields);
     }
 
     private ConfigBuilderImpl<PCSCase, State, UserRole> createConfigBuilder() {

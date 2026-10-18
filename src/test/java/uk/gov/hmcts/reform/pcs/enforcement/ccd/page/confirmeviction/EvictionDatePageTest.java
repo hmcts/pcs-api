@@ -42,4 +42,9 @@ class EvictionDatePageTest extends BasePageTest {
             .map(FieldBuilder::build)
             .map(field -> (Field<?, ?, ?, ?>) field);
     }
+
+    @Test
+    void shouldPlaceTheEvictionDateBeforeTheLabelThatShowsIt() {
+        assertFieldsArePlacedBeforeTheLabelsThatShowThem();
+    }
 }
