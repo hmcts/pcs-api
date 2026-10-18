@@ -251,7 +251,7 @@ Then('defendants cannot see the {string} tab', async ({ page, context, world }, 
   expectNoEnforcementFields(views);
 });
 
-// XUI draws the Enforcement folder for everyone (OPEN-QUESTIONS 46); what pcs-api controls is that the
+// XUI draws the Enforcement folder for everyone (OPEN-QUESTIONS 50); what pcs-api controls is that the
 // defendant gets a document in it.
 Then('defendants can see the {string} folder in case file view', async ({ world }, folder: string) => {
   expect(folder).toBe('Enforcement');

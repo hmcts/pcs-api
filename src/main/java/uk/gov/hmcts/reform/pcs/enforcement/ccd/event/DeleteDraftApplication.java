@@ -28,12 +28,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRole> {
 
-    private static final String CONFIRMATION_MARKUP = """
-                ---
-                <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-                <span class="govuk-panel__title govuk-!-font-size-36">Draft application deleted</span>
-                </div>
-                """;
+    private static final String CONFIRMATION_HEADER = "# Draft application deleted";
 
     private final DraftCaseDataService draftCaseDataService;
 
@@ -70,7 +65,7 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
         log.info("Deleted draft enforcement for case {}", caseReference);
 
         return SubmitResponse.<State>builder()
-                .confirmationBody(CONFIRMATION_MARKUP)
+                .confirmationHeader(CONFIRMATION_HEADER)
                 .build();
     }
 }

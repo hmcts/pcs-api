@@ -71,6 +71,6 @@ export async function docmosisRender(caseReference: string, title: string): Prom
 export function noteCheckedOnRenderData(what: string): void {
   test.info().annotations.push({
     type: 'checked on the Docmosis render data',
-    description: `OPEN-QUESTIONS 38: ${what} is checked in the data pcs-api sends Docmosis; the stub returns a placeholder PDF`,
+    description: `OPEN-QUESTIONS 42: ${what} is checked in the data pcs-api sends Docmosis; the stub returns a placeholder PDF`,
   });
 }

@@ -61,6 +61,13 @@ public abstract class BasePageTest {
     }
 
     /**
+     * Every field the page placed, including the ones nested inside complex types.
+     */
+    protected List<Field<?, ?, ?, ?>> placedFields() {
+        return allFields(getEvent().getFields()).toList();
+    }
+
+    /**
      * Checks that every field a label on the page names in a {@code ${...}} placeholder is placed before the label.
      * XUI fills the placeholders when it first renders the label, from the case view and the fields already on the
      * form, so a field placed after the label is blank there unless the case view happens to have it too.

@@ -489,7 +489,7 @@ export async function signStatementOfTruth(type: 'warrant of possession' | 'writ
   }
 }
 
-/** The panel heading pcs-api's submit confirmation shows when the application still owes its fee. */
+/** The heading pcs-api's submit confirmation shows when the application still owes its fee. */
 export const PAY_PANEL_TITLE = /Pay .+ for HM Courts and Tribunals Service/;
 
 /**
