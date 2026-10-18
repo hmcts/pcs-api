@@ -42,8 +42,9 @@ Feature: Defendant visibility of enforcement
     And they do not see the risk assessment document
     And they do not see bailiff notes
 
-  # No warrant or writ document is generated yet: there are no Docmosis templates for them.
-  @HDPI-9566 @pending
+  # The warrant of possession has its notice of eviction served first, so that defendants can see its
+  # enforcement but still not the warrant. A writ and a live warrant of restitution are never visible to them.
+  @HDPI-9566
   Scenario Outline: Defendants do not see the warrant itself
     Given a "<type>" has been generated
     When a defendant views case file view
@@ -55,8 +56,7 @@ Feature: Defendant visibility of enforcement
       | warrant of restitution |
       | writ of possession     |
 
-  # The warrant of restitution journey cannot be submitted yet, nor a warrant return recorded end to end.
-  @HDPI-7539 @pending
+  @HDPI-7539
   Scenario: Warrant of restitution hides enforcement from defendants again
     Given the previous warrant ended with "Eviction successful"
     And the defendants could see the enforcement for that warrant

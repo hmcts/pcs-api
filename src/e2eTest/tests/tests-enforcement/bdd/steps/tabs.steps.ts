@@ -35,6 +35,11 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { fixturePropertyAddress, isLocalStack } from '@config/local-stack.config';
 import { markNoticeServedAsBailiff } from '../support/notice-served';
 import {
+  applyForWarrantOfRestitution,
+  closeWarrantWithReturn,
+  generateWarrantOfRestitution,
+} from '../support/repeat-enforcement';
+import {
   CITIZEN_DEFENDANT,
   DEFENDANT_LEGAL_REPRESENTATIVE,
   canSetUpDefendants,
@@ -82,19 +87,32 @@ Given('a warrant has been generated', async ({ page, context, world }) => {
   await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
 });
 
-Given('the claimant applied for a {string}', async ({ world, $tags }, type: string) => {
-  if (type !== 'warrant of possession') {
+const WARRANT_TYPES = ['warrant of possession', 'warrant of restitution'];
+
+// pcs-api only offers a warrant of restitution once the case has had a warrant, so the restitution is applied
+// for after an earlier warrant closed with a successful eviction. That warrant was generated too, so the
+// "Risk assessment" tab is already on the case before the restitution is (RiskAssessmentTabView keeps it once
+// the warrant closes), and the tab then moves on to the restitution.
+Given('the claimant applied for a {string}', async ({ page, context, world, $tags }, type: string) => {
+  if (!WARRANT_TYPES.includes(type)) {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} application` }, $tags);
   }
-  await createCaseWithWarrant(world);
+  if (type === 'warrant of possession') {
+    await createCaseWithWarrant(world);
+    return;
+  }
+  approximatePrecondition('HDPI-7350', 'an earlier warrant, closed with a successful eviction, already shows the "Risk assessment" tab');
+  await closeWarrantWithReturn(page, context, world, 'Eviction successful');
+  await applyForWarrantOfRestitution(page, world);
 });
 
 When('the {string} is generated', async ({ page, context, world, $tags }, type: string) => {
-  if (type !== 'warrant of possession') {
+  if (!WARRANT_TYPES.includes(type)) {
     return markPending({ ticket: 'HDPI-7419', summary: `approving a ${type}` }, $tags);
   }
   try {
-    await approveApplicationAsCaseworker(page, world, 'Warrant');
+    // Restitution has no fee, so the application is already awaiting review.
+    await approveApplicationAsCaseworker(page, world, 'Warrant', { feeOutstanding: type === 'warrant of possession' });
   } catch (error) {
     await restoreClaimantSession(page, context);
     throw error;
@@ -239,9 +257,13 @@ Then('the {string} tab is shown', async ({ page }, tabName: string) => {
   await expectCaseTab(page, tabName, true);
 });
 
-Then('there is no {string} tab', async ({ page, $tags }, tabName: string) => {
+Then('there is no {string} tab', async ({ page, context, world, $tags }, tabName: string) => {
   if (!ENFORCEMENT_TABS.includes(tabName)) {
     return markPending(tabNotBuilt(tabName), $tags);
+  }
+  if (isDefendant(world.openedAs)) {
+    await expectEnforcementTab(page, await defendantViews(page, context, world), tabName, false);
+    return;
   }
   await expectCaseTab(page, tabName, false);
 });
@@ -355,18 +377,54 @@ Then('the case header does not show {string}', async ({ page, world }, number: s
   await expect(page.locator('ccd-case-header')).not.toContainText(actual(world, number));
 });
 
+<<<<<<< /tmp/m.ours
+=======
+// The generation dates are illustrative: both are generated today, the closed warrant first.
+Given(
+  'the case has a closed warrant {string} generated on {string}',
+  async ({ page, context, world }, number: string, _generatedOn: string) => {
+    await closeWarrantWithReturn(page, context, world, 'Eviction successful');
+    world.aliases[number] = world.earlierWarrantNumbers.at(-1) as string;
+  }
+);
+
+Given(
+  'a live warrant of restitution {string} generated on {string}',
+  async ({ page, context, world }, number: string, _generatedOn: string) => {
+    world.aliases[number] = await generateWarrantOfRestitution(page, context, world);
+  }
+);
+
+Then('{string} is listed above {string}', async ({ page, world }, upper: string, lower: string) => {
+  const expected = world.earlierWarrantNumbers.length + (world.warrantNumber ? 1 : 0);
+  await expect
+    .poll(async () => (await enforcementSections(page)).length, { timeout: VERY_LONG_TIMEOUT })
+    .toBe(expected);
+  const headings = (await enforcementSections(page)).map(section => section.heading);
+  const upperIndex = headings.indexOf(actual(world, upper));
+  const lowerIndex = headings.indexOf(actual(world, lower));
+  expect(upperIndex, `${upper} is listed`).toBeGreaterThanOrEqual(0);
+  expect(lowerIndex, `${lower} is listed`).toBeGreaterThanOrEqual(0);
+  expect(upperIndex, `${upper} is listed above ${lower}`).toBeLessThan(lowerIndex);
+});
+
+Given('the case has a writ of possession', async ({ page, context, world, $tags }) => {
+  try {
+    await setUpApprovedWrit(page, world, $tags);
+  } finally {
+    await restoreClaimantSession(page, context);
+  }
+});
+
+// The documents are rendered from stand-in templates until the real ones exist, so there is nothing to read.
+pendingSteps({ ticket: 'HDPI-7555', summary: 'The enforcement application template (OPEN-QUESTIONS 19)' }, [
+  'the {string} document contains {string}',
+]);
+
+>>>>>>> /tmp/m.theirs
 pendingSteps({ ticket: 'HDPI-7547', summary: 'Confirm the eviction only asks whether the claimant can attend' }, [
   'the claimant has completed {string}',
   '{string} shows:',
-]);
-
-pendingSteps({ ticket: 'HDPI-7419', summary: 'Setting up a closed warrant and a later warrant of restitution' }, [
-  'the case has a closed warrant {string} generated on {string}',
-  'a live warrant of restitution {string} generated on {string}',
-  '{string} is listed above {string}',
-  'a {string} has been generated',
-  'the previous warrant ended with {string}',
-  'the claimant applies for a warrant of restitution',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7350', summary: 'XUI sanitises case markdown, so the tab cannot open the print dialogue' }, [
@@ -379,13 +437,5 @@ pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
 ]);
 
 pendingSteps({ ticket: 'HDPI-7539', summary: 'Defendant visibility of enforcement' }, [
-  'the case has a writ of possession',
   'I see the {string} table with claimant type, claimant name and defendant names',
-  'a defendant opens the case',
-  'a defendant views case file view',
-  'they do not see the {string} document',
-  'the defendants could see the enforcement for that warrant',
-  'defendants can no longer see any enforcement information',
-  'they stay unable to see it until the bailiff records a return on the warrant of restitution',
-  'defendants cannot see any enforcement information',
 ]);

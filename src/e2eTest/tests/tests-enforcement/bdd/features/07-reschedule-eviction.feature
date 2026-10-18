@@ -71,11 +71,12 @@ Feature: Bailiff reschedules the eviction
     Then the claimant receives the "Bailiff reschedules the eviction date" email
     And the claimant sees a "Confirm the eviction date" notification on their dashboard
 
-  # This scenario's Given contradicts the feature's Background, which puts the warrant in "Claimant unable
-  # to attend on this date". rescheduleEviction is available in both statuses, so the intent holds; the
-  # precondition needs correcting before it can run.
-  @HDPI-7549 @HDPI-7932 @pending
+  # The requirements' Given ("the enforcement status is "Claimant confirmed"") contradicts the Background,
+  # which puts the warrant in "Claimant unable to attend on this date", so this scenario sets up its own case
+  # with a warrant the claimant confirmed, and signs the bailiff in again.
+  @HDPI-7549 @HDPI-7932
   Scenario: Bailiff can reschedule without a task
-    Given the enforcement status is "Claimant confirmed"
+    Given the case has a warrant of possession with status "Claimant confirmed"
+    And I am signed in to XUI as the allocated bailiff
     When I start the "Reschedule eviction" event from the next steps drop down
     Then the "Reschedule eviction" journey opens

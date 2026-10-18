@@ -17,8 +17,7 @@ Feature: Risk assessment tab
       | type                   |
       | warrant of possession  |
 
-    # Pending: the suite cannot seed a warrant of restitution application (HDPI-7419).
-    @pending
+    # A warrant of restitution needs an earlier warrant on the case, which already shows the tab.
     Examples:
       | type                   |
       | warrant of restitution |

@@ -6,8 +6,21 @@
 // data CCD gives them, which is what pcs-frontend renders.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
-import { scheduleEvictionOnApprovedWarrant } from '../support/approve-warrant';
-import { expectCaseTab, requireCaseReference, signInAs } from '../support/enforcement-journeys';
+import { BrowserContext, Page } from '@playwright/test';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import {
+  approveApplicationAsCaseworker,
+  approveWarrantAsCaseworker,
+  restoreClaimantSession,
+  scheduleEvictionOnApprovedWarrant,
+} from '../support/approve-warrant';
+import { documentTitle, expectEnforcementDocument } from '../support/case-documents';
+import { createCaseWithWrit, expectCaseTab, requireCaseReference, signInAs } from '../support/enforcement-journeys';
+import {
+  applyForWarrantOfRestitution,
+  closeApprovedWarrant,
+  generateWarrantOfRestitution,
+} from '../support/repeat-enforcement';
 import { ENFORCEMENT_STATUS_TAB, enforcementSections, openCaseTab } from '../support/enforcement-status-tab';
 import { markNoticeServedAsBailiff } from '../support/notice-served';
 import {
@@ -15,6 +28,7 @@ import {
   caseChangedForDefendants,
   canSetUpDefendants,
   defendantViews,
+  enforcementDocuments,
   expectEnforcementTab,
   expectNoEnforcementDocuments,
   expectOnlyNoticesOfEviction,
@@ -170,3 +184,122 @@ Then('they do not see {string}', async ({ page }, section: string) => {
     expect(Object.keys(warrant.sections), `the sections of ${warrant.heading}`).not.toContain(section);
   }
 });
+
+/** Links both defendants to the scenario's current case, which a later set-up step may have replaced. */
+async function linkBothDefendants(world: EnforcementWorld, $tags: string[]): Promise<boolean> {
+  if (!canSetUpDefendants()) {
+    markPending(noDefendantUsers, $tags);
+    return false;
+  }
+  await linkDefendantLegalRepresentative(world);
+  await linkCitizenDefendant(world);
+  return true;
+}
+
+When('a defendant opens the case', async ({ page, context, world, $tags }) => {
+  if (!(await linkBothDefendants(world, $tags))) {
+    return;
+  }
+  world.openedAs = DEFENDANT_LEGAL_REPRESENTATIVE;
+  await viewAsEachDefendant(page, context, world);
+});
+
+When('a defendant views case file view', async ({ page, context, world, $tags }) => {
+  if (!(await linkBothDefendants(world, $tags))) {
+    return;
+  }
+  await viewAsEachDefendant(page, context, world);
+});
+
+/**
+ * Feature 14: the sealed warrant or writ is generated on approval. A warrant of possession has its notice of
+ * eviction served as well, so that the defendants can see the warrant's enforcement and the check that the
+ * warrant itself is still withheld means something; a writ and a live warrant of restitution are never
+ * visible to defendants. Waits until an internal user can see the document.
+ */
+Given('a {string} has been generated', async ({ page, context, world, $tags }, type: string) => {
+  if (type === 'warrant of possession') {
+    expect(world.warrantApproved, 'the Background\'s approved warrant').toBe(true);
+    await scheduleEvictionOnApprovedWarrant(page, context, world);
+    await markNoticeServedAsBailiff(page, context, world);
+  } else if (type === 'writ of possession') {
+    if (!(await createCaseWithWrit(world))) {
+      return markPending({ ticket: 'HDPI-7419', summary: 'seeding a writ application outside a local stack' }, $tags);
+    }
+    try {
+      await approveApplicationAsCaseworker(page, world, 'Writ');
+    } finally {
+      await restoreClaimantSession(page, context);
+    }
+  } else if (type === 'warrant of restitution') {
+    await generateWarrantOfRestitution(page, context, world);
+  } else {
+    return markPending({ ticket: 'HDPI-7419', summary: `generating a ${type}` }, $tags);
+  }
+  world.currentDocument = documentTitle(type, world);
+  await expectEnforcementDocument(requireCaseReference(world), world.currentDocument);
+  caseChangedForDefendants(world);
+});
+
+Then('they do not see the {string} document', async ({ page, context, world }, type: string) => {
+  const title = documentTitle(type, world);
+  for (const view of await defendantViews(page, context, world)) {
+    const filenames = enforcementDocuments(view).map(document => document.value?.document_filename ?? '');
+    expect(filenames.filter(filename => filename.startsWith(title)), `"${title}…" documents the ${view.who} gets`)
+      .toEqual([]);
+  }
+});
+
+/**
+ * The warrant's notice of eviction is served before it closes, because a closed warrant only stays visible to
+ * defendants if they could see it while it was live.
+ */
+Given('the previous warrant ended with {string}', async ({ page, context, world }, returnName: string) => {
+  await scheduleEvictionOnApprovedWarrant(page, context, world);
+  await markNoticeServedAsBailiff(page, context, world);
+  await closeApprovedWarrant(page, context, world, returnName);
+  caseChangedForDefendants(world);
+});
+
+Given('the defendants could see the enforcement for that warrant', async ({ page, context, world }) => {
+  await expectEnforcementTab(page, await viewAsEachDefendant(page, context, world), ENFORCEMENT_STATUS_TAB, true);
+});
+
+When('the claimant applies for a warrant of restitution', async ({ page, context, world }) => {
+  await restoreClaimantSession(page, context);
+  await applyForWarrantOfRestitution(page, world);
+  caseChangedForDefendants(world);
+});
+
+async function expectNoEnforcementInformation(page: Page, context: BrowserContext, world: EnforcementWorld): Promise<void> {
+  const views = await viewAsEachDefendant(page, context, world);
+  await expectEnforcementTab(page, views, ENFORCEMENT_STATUS_TAB, false);
+  await expectEnforcementTab(page, views, 'Risk assessment', false);
+  expectNoEnforcementFields(views);
+  expectNoEnforcementDocuments(views);
+}
+
+Then('defendants can no longer see any enforcement information', async ({ page, context, world }) => {
+  await expectNoEnforcementInformation(page, context, world);
+});
+
+Then('defendants cannot see any enforcement information', async ({ page, context, world }) => {
+  await expectNoEnforcementInformation(page, context, world);
+});
+
+// Approving the restitution keeps it live and the enforcement hidden; its final return ends it, and the earlier
+// warrant, whose notice was served, shows again (OPEN-QUESTIONS 105).
+Then(
+  'they stay unable to see it until the bailiff records a return on the warrant of restitution',
+  async ({ page, context, world }) => {
+    try {
+      await approveWarrantAsCaseworker(page, world, { feeOutstanding: false });
+    } finally {
+      await restoreClaimantSession(page, context);
+    }
+    await expectNoEnforcementInformation(page, context, world);
+
+    await closeApprovedWarrant(page, context, world, 'Warrant withdrawn');
+    await expectEnforcementTab(page, await viewAsEachDefendant(page, context, world), ENFORCEMENT_STATUS_TAB, true);
+  }
+);

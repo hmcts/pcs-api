@@ -17,6 +17,7 @@ import { caseSummary } from '@data/page-data';
 import { user, users } from '@data/user-data';
 import { staff } from '@data/user-data/staff.user.data';
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, currentSignedInRole, recordSignedInRole } from './session';
 import {
   assignDefendantCaseRole,
@@ -266,6 +267,9 @@ export async function startEventAllowingRefusal(page: Page, eventName: string): 
 
 export async function chooseApplicationType(type: EnforcementType, world: EnforcementWorld, page: Page): Promise<void> {
   world.applicationType = type;
+  // The check your answers validation compares the page with every answer recorded in the test, so a second
+  // application in the same scenario would be checked against the first one's answers too.
+  CYAStore.getInstance().clearAll();
   switch (type) {
     case 'warrant of possession':
       await performAction('selectApplicationType', {
