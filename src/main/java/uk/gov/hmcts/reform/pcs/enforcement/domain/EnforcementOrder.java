@@ -123,7 +123,8 @@ public class EnforcementOrder {
 
     /**
      * The claimant's answer in "Confirm the eviction details". It is only used on submit, to move the
-     * enforcement status, and is not stored.
+     * enforcement status, and is not stored. The journey's risk answers use the warrant application's fields and
+     * are stored as a risk assessment update when they change.
      */
     @CCD(label = "Can you attend the eviction on this date?", searchable = false, access = {ClaimantAccess.class})
     private YesOrNo claimantCanAttendEviction;
@@ -189,6 +190,13 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private RiskLevelDetails riskLevelDetails;
+
+    /**
+     * The claimant's original and updated risk assessment answers, set for the case view (HDPI-7552).
+     */
+    @JsonUnwrapped
+    @CCD
+    private ClaimantRiskAssessmentDetails claimantRiskAssessment;
 
     /**
      * The fields of the schedule, reschedule and notice of eviction events (HDPI-7344, HDPI-7549, HDPI-7346).

@@ -49,6 +49,12 @@ export class EnforcementWorld {
   claimantConfirmedEviction?: boolean;
   /** The error a start callback gave when the scenario last tried to open an event, if any. */
   startEventError?: string;
+  /** The risk questions whose answers the claimant changed in "Confirm the eviction details", as the tab words them. */
+  changedRiskQuestions?: string[];
+  /** The risk question a scenario is asserting about, as the tab words it. */
+  riskQuestion?: string;
+  /** The answer the claimant changed `riskQuestion` to. */
+  changedRiskAnswer?: string;
 }
 
 type EnforcementFixtures = {

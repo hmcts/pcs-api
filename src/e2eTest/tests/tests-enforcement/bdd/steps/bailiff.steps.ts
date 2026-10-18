@@ -341,23 +341,20 @@ pendingSteps({ ticket: 'HDPI-7346', summary: 'Mark \'notice of eviction\' as ser
   'defendants cannot see the {string} tab',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7552', summary: 'Review updated risk information' }, [
-  'the risk level is {string}',
-  'the claimant submitted the original risk assessment on {string}',
-  'the claimant updated the risk assessment on {string} in {string}',
+// The banner, print button and side-by-side table belong to the Risk assessment tab's design (HDPI-7350): the
+// tab lists the claimant's answers as CCD fields today, with a banner that has no links.
+pendingSteps({ ticket: 'HDPI-7350', summary: 'Risk assessment tab design for updated risk information' }, [
   'I see an important banner with links to each question whose answer changed',
   'I see the print button, the bailiff notes and the current risk level {string}',
   'I see the original and updated answers side by side in a table',
   'I select the banner link for {string}',
   'I am taken to that question in the {string} section',
-  'the claimant did not change {string}',
-  'the {string} for that question is blank',
-  'the original answers are dated {string}',
-  'the updated answers are dated {string}',
+]);
+
+pendingSteps({ ticket: 'HDPI-8627', summary: 'Set risk level from the "Review updated risk information" task' }, [
   'the {string} journey opens with {string} pre-selected',
   'I can change it',
   'I submit the risk level {string} with a reason',
-  'the important banner is removed from the {string} tab',
 ]);
 
 pendingSteps({ ticket: 'HDPI-7347', summary: 'Record warrant return cannot be reached: it needs a bailiff allocation' }, [

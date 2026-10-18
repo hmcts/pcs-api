@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
@@ -16,7 +17,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIM
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIMANT_UNABLE_TO_ATTEND;
 
 /**
- * Records the claimant's answer to "Confirm the eviction details" against the claim's live enforcement.
+ * Records the claimant's answers to "Confirm the eviction details" against the claim's live enforcement.
  */
 @Service
 @Slf4j
@@ -26,6 +27,17 @@ public class ClaimantEvictionConfirmationService {
     private final CurrentEnforcementService currentEnforcementService;
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
+    private final ClaimantRiskAssessmentService claimantRiskAssessmentService;
+
+    /**
+     * Saves any change to the claimant's risk assessment answers (HDPI-7552), then records whether they can
+     * attend, in one transaction.
+     */
+    @Transactional
+    public void recordConfirmation(long caseReference, YesOrNo canAttend, EnforcementOrder submitted) {
+        claimantRiskAssessmentService.recordAnswers(caseReference, submitted);
+        recordAttendance(caseReference, canAttend);
+    }
 
     /**
      * Moves the live enforcement to "Claimant confirmed" or "Claimant unable to attend". This only happens
@@ -54,9 +66,8 @@ public class ClaimantEvictionConfirmationService {
         enforcementStatusTransitions.transition(enforcement, target);
         enforcementOrderRepository.save(enforcement);
         // TODO HDPI-7549: when the claimant cannot attend, create a "Reschedule eviction" task for the allocated
-        // bailiff, and store the dates they are not available (the journey does not ask for them yet).
-        // TODO HDPI-7552: create a "Review updated risk information" task when the claimant changes their risk
-        // answers (the journey does not ask for them yet). Both tasks need Work Allocation.
+        // bailiff, and store the dates they are not available (the journey does not ask for them yet). It needs
+        // Work Allocation.
     }
 
     private Optional<EnforcementOrderEntity> findLiveEnforcement(long caseReference) {

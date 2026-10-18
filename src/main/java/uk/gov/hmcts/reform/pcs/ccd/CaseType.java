@@ -33,6 +33,23 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
+
+    /**
+     * Shown on the Risk assessment tab while the claimant has changed their risk answers since the bailiff last set
+     * the risk level (HDPI-7552). Placeholder content: there is no design for the banner yet.
+     */
+    static final String CLAIMANT_RISK_UPDATE_BANNER = """
+        <div class="govuk-notification-banner" role="region" aria-labelledby="claimant-risk-update-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="claimant-risk-update-title">Important</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">The claimant has updated their risk assessment.
+            Review the updated answers and set the risk level.</p>
+          </div>
+        </div>
+        """;
+
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -279,8 +296,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     /**
      * Enforcement risk assessment (HDPI-7350), shown for an approved, live warrant and not for a writ or a
-     * warrant still awaiting payment or review (13-risk-assessment-tab.feature). Only the bailiff notes
-     * (HDPI-7593) are built so far. The fields belong to enforcement, so they are named rather than referenced;
+     * warrant still awaiting payment or review (13-risk-assessment-tab.feature). It has the bailiff notes
+     * (HDPI-7593), the risk level (HDPI-7343) and the claimant's original and updated risk answers (HDPI-7552).
+     * The fields belong to enforcement, so they are named rather than referenced;
      * enforcement sets showRiskAssessmentTab, because a show condition cannot apply the rule itself.
      */
     private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -290,7 +308,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("showRiskAssessmentTab", NEVER_SHOW)
             .field("bailiffNotes")
             .field("currentRiskLevel")
-            .field("currentRiskLevelReason");
+            .field("currentRiskLevelReason")
+            .field("claimantRiskUpdateToReview", NEVER_SHOW)
+            .label("claimantRiskUpdateBanner", "claimantRiskUpdateToReview=\"Yes\"", CLAIMANT_RISK_UPDATE_BANNER)
+            .field("claimantRiskAnswersGivenOn")
+            .field("claimantRiskAnswersUpdatedOn")
+            .field("claimantRiskAnswers");
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

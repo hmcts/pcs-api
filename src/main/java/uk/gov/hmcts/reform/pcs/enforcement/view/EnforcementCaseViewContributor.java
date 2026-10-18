@@ -15,6 +15,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final EnforcementOrderView enforcementOrderView;
     private final BailiffNoteView bailiffNoteView;
     private final RiskLevelView riskLevelView;
+    private final ClaimantRiskAssessmentView claimantRiskAssessmentView;
     private final EvictionScheduleView evictionScheduleView;
     private final WarrantReturnView warrantReturnView;
     private final EnforcementDocumentVisibility enforcementDocumentVisibility;
@@ -26,6 +27,7 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
         enforcementOrderView.setEnforcementStatusFields(pcsCaseEntity, pcsCase);
         bailiffNoteView.setBailiffNotes(pcsCaseEntity, pcsCase);
         riskLevelView.setRiskAssessmentFields(pcsCaseEntity, pcsCase);
+        claimantRiskAssessmentView.setClaimantRiskAssessment(pcsCaseEntity, pcsCase);
         evictionScheduleView.setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         warrantReturnView.setLatestWarrantReturn(pcsCaseEntity, pcsCase);
         enforcementDocumentVisibility.hideFromDefendants(pcsCase, caseReference);
