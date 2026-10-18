@@ -31,7 +31,7 @@ Feature: Find a case by warrant or writ number
 
   # No defendant legal representative can sign in on a local stack: linking one to the case fails in CCD's
   # case-users API there (HDPI-7539). The bailiff runs only on a local stack, so this cannot run anywhere yet.
-  @HDPI-7677 @HDPI-7539 @pending
+  @HDPI-7677 @HDPI-7539 @pending @not-filmed
   Scenario: Defendants cannot find a case by warrant number
     Given I am signed in as a defendant legal representative
     When I search in global search with "Other reference" "WP-0001"

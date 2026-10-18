@@ -21,13 +21,13 @@ Feature: Bailiff sets the eviction risk level
     And I see the question "What is the risk level?" with options "High" and "Medium"
     And the "Previous" button is disabled
 
-  @HDPI-7343
+  @HDPI-7343 @not-filmed
   Scenario: Risk level is mandatory
     Given I am on the "Set risk level" screen
     When I select "Continue" without choosing a risk level
     Then I see an error asking me to choose a risk level
 
-  @HDPI-7343
+  @HDPI-7343 @not-filmed
   Scenario: High risk needs a reason
     Given I am on the "Set risk level" screen
     When I select "High"
@@ -59,7 +59,7 @@ Feature: Bailiff sets the eviction risk level
     Then I see the reason "Known history of violence"
     And the reason is visible to internal users only
 
-  @HDPI-7343
+  @HDPI-7343 @not-filmed
   Scenario: Cancelling returns to the case summary
     Given I am on the "Set risk level" screen
     When I select "Cancel"

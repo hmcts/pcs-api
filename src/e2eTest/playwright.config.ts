@@ -116,6 +116,8 @@ export default defineConfig({
     {
       name: 'enforcement-bdd-demo',
       testDir: enforcementBddTestDir,
+      // Unhappy and edge cases are tagged @not-filmed and kept out of the demo; enforcement-bdd still runs them.
+      grepInvert: /@not-filmed/,
       retries: 0,
       // Human-speed actions (a visible pointer, typed text) make a long journey take several times longer.
       timeout: 1800 * 1000,

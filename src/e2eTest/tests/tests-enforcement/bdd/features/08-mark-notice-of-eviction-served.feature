@@ -22,7 +22,7 @@ Feature: Bailiff marks the notice of eviction as served
   # Submitting empty reports "When did you serve the 'notice of eviction'? is required" and "Do you want to
   # add a bailiff note? is required". "How did you serve the 'notice of eviction'?" is not mandatory at
   # field level, so no error is raised for it.
-  @HDPI-7346 @pending
+  @HDPI-7346 @pending @not-filmed
   Scenario: When and how the notice was served are mandatory
     Given I am on the "Mark 'notice of eviction' as served" screen
     When I select "Continue" without answering
@@ -35,13 +35,17 @@ Feature: Bailiff marks the notice of eviction as served
     And I select "Continue"
     Then I see "<result>"
 
+    @not-filmed
+    Examples:
+      | date       | time  | result                                    |
+      | 08/07/2026 | 16:00 | an error that the time cannot be in the future |
+
     Examples:
       | date       | time  | result                                    |
       | 07/07/2026 | 16:00 | the 'Check your answers' screen           |
       | 08/07/2026 | 09:00 | the 'Check your answers' screen           |
-      | 08/07/2026 | 16:00 | an error that the time cannot be in the future |
 
-  @HDPI-7346
+  @HDPI-7346 @not-filmed
   Scenario: How the notice was served is limited to 500 characters
     When I enter 501 characters for "How did you serve the 'notice of eviction'?"
     And I select "Continue"

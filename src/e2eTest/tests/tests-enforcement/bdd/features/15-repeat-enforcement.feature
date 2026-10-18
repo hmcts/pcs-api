@@ -37,7 +37,7 @@ Feature: Further enforcement on the same possession case
     Then a "warrant of restitution" enforcement is added to the case with status "Awaiting payment"
     And defendants cannot see any enforcement information
 
-  @HDPI-7419
+  @HDPI-7419 @not-filmed
   Scenario: Only one enforcement can be live at a time
     Given the case has a warrant with status "Awaiting scheduling"
     When I start the "Enforce the order" event

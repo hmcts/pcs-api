@@ -24,7 +24,7 @@ Feature: Bailiff records the warrant return
       | bailiff-admin   |
       | bailiff-manager |
 
-  @HDPI-7347
+  @HDPI-7347 @not-filmed
   Scenario Outline: Other users cannot record a warrant return
     Given I am signed in to XUI as a "<user>"
     When I open the case
@@ -92,7 +92,7 @@ Feature: Bailiff records the warrant return
     When I choose the "Interim" return
     Then I see a mandatory "Return name" drop down with "Application unsuccessful & warrant returned to bailiff", "Request for additional information", "No animal handler in attendance (Parties unaware of animal)", "No Police presence (Police refused to attend when asked to)", "Children left unattended in property", "Crowds or protests", "Obstruction by Defendants", "Safeguarding or vulnerability concerns", "Defendant states they are in Breathing Space (Standard or Mental Health)", "Claimant advised Defendant in Breathing Space", "Other interim return" and "Reopen warrant"
 
-  @HDPI-7347 @pending
+  @HDPI-7347 @pending @not-filmed
   Scenario: Successful eviction needs the eviction date and time
     Given today is "08/07/2026" and the time is "10:00"
     And I chose the outcome "Eviction successful"
@@ -100,7 +100,7 @@ Feature: Bailiff records the warrant return
     And I select "Continue"
     Then I see an error that the time cannot be in the future
 
-  @HDPI-7347 @pending
+  @HDPI-7347 @pending @not-filmed
   Scenario Outline: Additional details are mandatory for some return names
     When I choose the return name "<return name>"
     Then the "Additional details" text box is "<required>"
@@ -119,7 +119,7 @@ Feature: Bailiff records the warrant return
       | Obstruction by Defendants                   | optional  |
       | Claimant advised Defendant in Breathing Space | optional |
 
-  @HDPI-7347 @pending
+  @HDPI-7347 @pending @not-filmed
   Scenario: Cancelling discards the return
     Given I have chosen a return
     When I select "Cancel"
