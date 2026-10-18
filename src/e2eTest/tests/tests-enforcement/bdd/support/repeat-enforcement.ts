@@ -28,9 +28,6 @@ import {
   warrantReturn,
 } from './warrant-return';
 
-/** The panel heading pcs-api's submit confirmation shows when the application still owes its fee. */
-export const PAY_PANEL_TITLE = /Pay .+ for HM Courts and Tribunals Service/;
-
 /** Final return names that record a successful eviction; every other closing name is "Eviction unsuccessful". */
 const SUCCESSFUL_RETURN_NAMES = ['eviction successful'];
 
@@ -116,7 +113,7 @@ async function enterEvictionDateTime(page: Page, when: Date): Promise<void> {
 
 /**
  * The claimant applies for a further warrant of possession through "Enforce the order". Records on the
- * world whether pcs-api's confirmation asked for the fee, before anything navigates away from it.
+ * world whether pcs-api's confirmation asked for the fee.
  */
 export async function applyForFurtherWarrant(page: Page, world: EnforcementWorld): Promise<void> {
   await openCaseSummary(page);
@@ -124,8 +121,7 @@ export async function applyForFurtherWarrant(page: Page, world: EnforcementWorld
   await chooseApplicationType('warrant of possession', world, page);
   await answerApplicationQuestions('warrant of possession', world);
   await signStatementOfTruth('warrant of possession');
-  await submitApplication();
-  world.askedToPayFee = await page.getByText(PAY_PANEL_TITLE).first().isVisible().catch(() => false);
+  world.askedToPayFee = await submitApplication(page);
 }
 
 /** Every enforcement on the case as the case data lists them, current first. */

@@ -44,7 +44,7 @@ async function generateEnforcement(
   await chooseApplicationType(type, world, page);
   await answerApplicationQuestions(type, world);
   await signStatementOfTruth(type);
-  await submitApplication();
+  await submitApplication(page);
   return approveApplicationAsCaseworker(page, world, type === 'writ of possession' ? 'Writ' : 'Warrant');
 }
 
