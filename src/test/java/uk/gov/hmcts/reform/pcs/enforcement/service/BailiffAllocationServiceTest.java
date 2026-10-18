@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffAllocationEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -29,6 +30,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -120,6 +123,25 @@ class BailiffAllocationServiceTest {
         verify(bailiffAllocationRepository, never()).save(any());
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_SCHEDULING);
         verifyNoInteractions(enforcementWaTaskService);
+    }
+
+    /**
+     * The caseworker is asked to try again rather than given an unexplained 500, and the allocation is rolled
+     * back with the task request.
+     */
+    @Test
+    void shouldRefuseTheAllocationWhenTheRiskTaskCannotBeRequested() {
+        EnforcementOrderEntity enforcement = givenCurrentEnforcement(AWAITING_BAILIFF_ALLOCATION);
+        givenActiveAllocations(enforcement);
+        givenSaveAssignsAnId();
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).bailiffAllocated(anyLong(), any());
+
+        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+
+        assertThat(allocated.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        assertThat(enforcement.getStatus()).isEqualTo(AWAITING_BAILIFF_ALLOCATION);
+        verify(enforcementOrderRepository, never()).save(any());
     }
 
     @Test

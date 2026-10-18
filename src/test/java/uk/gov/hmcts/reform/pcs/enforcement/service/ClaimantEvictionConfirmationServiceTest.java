@@ -133,6 +133,8 @@ class ClaimantEvictionConfirmationServiceTest {
         EnforcementOrderEntity enforcement = givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION))
             .getFirst();
         EnforcementOrder submitted = EnforcementOrder.builder().claimantCanAttendEviction(YesOrNo.YES).build();
+        when(claimantRiskAssessmentService.recordAnswers(CASE_REFERENCE, submitted))
+            .thenReturn(EnforcementChange.made(true));
 
         assertThat(underTest.recordConfirmation(CASE_REFERENCE, YesOrNo.YES, submitted).refused()).isFalse();
 
@@ -140,6 +142,23 @@ class ClaimantEvictionConfirmationServiceTest {
         inOrder.verify(claimantRiskAssessmentService).recordAnswers(CASE_REFERENCE, submitted);
         inOrder.verify(enforcementOrderRepository).save(enforcement);
         assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
+    }
+
+    /**
+     * A refusal from the risk answers stops the attendance answer being recorded on top of answers that are
+     * about to be rolled back.
+     */
+    @Test
+    void shouldRefuseTheConfirmationWhenTheRiskAnswersAreRefused() {
+        EnforcementOrder submitted = EnforcementOrder.builder().claimantCanAttendEviction(YesOrNo.YES).build();
+        when(claimantRiskAssessmentService.recordAnswers(CASE_REFERENCE, submitted))
+            .thenReturn(EnforcementChange.refused(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR));
+
+        EnforcementChange<Void> recorded = underTest.recordConfirmation(CASE_REFERENCE, YesOrNo.YES, submitted);
+
+        assertThat(recorded.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        verifyNoInteractions(pcsCaseService, enforcementOrderRepository, enforcementNotificationService,
+                             enforcementWaTaskService);
     }
 
     @Test

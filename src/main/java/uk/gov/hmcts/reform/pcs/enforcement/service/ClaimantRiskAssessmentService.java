@@ -74,27 +74,28 @@ public class ClaimantRiskAssessmentService {
      * Saves the answers submitted on the warrant risk pages against the claim's approved, live warrant, if any of
      * them differ from its current answers.
      *
-     * @return whether a change was saved
+     * @return whether a change was saved, or the errors to show when the bailiff's task for it cannot be
+     *         requested
      */
     @Transactional
-    public boolean recordAnswers(long caseReference, EnforcementOrder submitted) {
+    public EnforcementChange<Boolean> recordAnswers(long caseReference, EnforcementOrder submitted) {
         if (submitted == null) {
-            return false;
+            return EnforcementChange.made(false);
         }
         ClaimantRiskAnswers answers = claimantRiskAnswersMapper.fromWarrantFields(submitted);
         if (answers.equals(new ClaimantRiskAnswers())) {
             log.info("Case {}: no risk assessment answers submitted", caseReference);
-            return false;
+            return EnforcementChange.made(false);
         }
         Optional<EnforcementOrderEntity> warrant = findWarrant(caseReference);
         if (warrant.isEmpty()) {
             log.info("Case {}: no approved, live warrant, risk assessment answers not saved", caseReference);
-            return false;
+            return EnforcementChange.made(false);
         }
         EnforcementOrderEntity enforcement = warrant.get();
         Optional<ClaimantRiskAnswers> current = getCurrentAnswers(enforcement);
         if (current.isEmpty() || current.get().normalised().equals(answers)) {
-            return false;
+            return EnforcementChange.made(false);
         }
         RiskAssessmentUpdateEntity update = riskAssessmentUpdateRepository.save(RiskAssessmentUpdateEntity.builder()
             .enforcementOrder(enforcement)
@@ -103,8 +104,13 @@ public class ClaimantRiskAssessmentService {
             .build());
         // One task per change: the update row is written in this transaction and keys the request, and the
         // method has already returned for answers that did not change.
-        enforcementWaTaskService.riskAnswersChanged(caseReference, update.getId());
-        return true;
+        EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+            caseReference, "the bailiff's updated risk information task",
+            () -> enforcementWaTaskService.riskAnswersChanged(caseReference, update.getId()));
+        if (scheduled.refused()) {
+            return EnforcementChange.refused(scheduled.errors());
+        }
+        return EnforcementChange.made(true);
     }
 
     private Optional<EnforcementOrderEntity> findWarrant(long caseReference) {

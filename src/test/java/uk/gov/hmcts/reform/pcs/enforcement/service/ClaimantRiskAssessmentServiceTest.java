@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -31,6 +32,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -71,10 +74,10 @@ class ClaimantRiskAssessmentServiceTest {
         givenCurrentEnforcement(warrant);
         UUID updateId = givenSaveAssignsAnId();
 
-        boolean recorded = underTest.recordAnswers(CASE_REFERENCE,
-                                                   submittedAnswers(YesNoNotSure.NO, VerticalYesNo.YES));
+        EnforcementChange<Boolean> recorded = underTest.recordAnswers(
+            CASE_REFERENCE, submittedAnswers(YesNoNotSure.NO, VerticalYesNo.YES));
 
-        assertThat(recorded).isTrue();
+        assertThat(recorded.change()).isTrue();
         ArgumentCaptor<RiskAssessmentUpdateEntity> saved = ArgumentCaptor.forClass(RiskAssessmentUpdateEntity.class);
         verify(riskAssessmentUpdateRepository).save(saved.capture());
         assertThat(saved.getValue().getEnforcementOrder()).isSameAs(warrant);
@@ -88,9 +91,10 @@ class ClaimantRiskAssessmentServiceTest {
     void shouldSaveNothingWhenNoAnswerHasChanged() {
         givenCurrentEnforcement(warrant);
 
-        boolean recorded = underTest.recordAnswers(CASE_REFERENCE, submittedAnswers(YesNoNotSure.NO, VerticalYesNo.NO));
+        EnforcementChange<Boolean> recorded =
+            underTest.recordAnswers(CASE_REFERENCE, submittedAnswers(YesNoNotSure.NO, VerticalYesNo.NO));
 
-        assertThat(recorded).isFalse();
+        assertThat(recorded.change()).isFalse();
         verify(riskAssessmentUpdateRepository, never()).save(any());
         verifyNoInteractions(enforcementWaTaskService);
     }
@@ -106,10 +110,10 @@ class ClaimantRiskAssessmentServiceTest {
         when(riskAssessmentUpdateRepository.findFirstByEnforcementOrderIdOrderByUpdatedAtDesc(warrant.getId()))
             .thenReturn(Optional.of(RiskAssessmentUpdateEntity.builder().answers(latest).build()));
 
-        boolean recorded = underTest.recordAnswers(CASE_REFERENCE,
-                                                   submittedAnswers(YesNoNotSure.NO, VerticalYesNo.YES));
+        EnforcementChange<Boolean> recorded = underTest.recordAnswers(
+            CASE_REFERENCE, submittedAnswers(YesNoNotSure.NO, VerticalYesNo.YES));
 
-        assertThat(recorded).isFalse();
+        assertThat(recorded.change()).isFalse();
         verify(riskAssessmentUpdateRepository, never()).save(any());
         verifyNoInteractions(enforcementWaTaskService);
     }
@@ -119,19 +123,37 @@ class ClaimantRiskAssessmentServiceTest {
         warrant.setStatus(EnforcementStatus.AWAITING_REVIEW);
         givenCurrentEnforcement(warrant);
 
-        boolean recorded = underTest.recordAnswers(CASE_REFERENCE,
-                                                   submittedAnswers(YesNoNotSure.YES, VerticalYesNo.NO));
+        EnforcementChange<Boolean> recorded = underTest.recordAnswers(
+            CASE_REFERENCE, submittedAnswers(YesNoNotSure.YES, VerticalYesNo.NO));
 
-        assertThat(recorded).isFalse();
+        assertThat(recorded.change()).isFalse();
         verifyNoInteractions(riskAssessmentUpdateRepository, enforcementWaTaskService);
     }
 
     @Test
     void shouldSaveNothingWhenNoRiskAnswersWereSubmitted() {
-        boolean recorded = underTest.recordAnswers(CASE_REFERENCE, EnforcementOrder.builder().build());
+        EnforcementChange<Boolean> recorded =
+            underTest.recordAnswers(CASE_REFERENCE, EnforcementOrder.builder().build());
 
-        assertThat(recorded).isFalse();
+        assertThat(recorded.change()).isFalse();
         verifyNoInteractions(currentEnforcementService, riskAssessmentUpdateRepository, enforcementWaTaskService);
+    }
+
+    /**
+     * The claimant is asked to try again rather than given an unexplained 500, and the answers they changed
+     * are rolled back with the task request.
+     */
+    @Test
+    void shouldRefuseTheAnswersWhenTheBailiffsTaskCannotBeRequested() {
+        givenCurrentEnforcement(warrant);
+        givenSaveAssignsAnId();
+        doThrow(new DataIntegrityViolationException("scheduled_tasks"))
+            .when(enforcementWaTaskService).riskAnswersChanged(anyLong(), any());
+
+        EnforcementChange<Boolean> recorded = underTest.recordAnswers(
+            CASE_REFERENCE, submittedAnswers(YesNoNotSure.NO, VerticalYesNo.YES));
+
+        assertThat(recorded.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
     }
 
     @Test
