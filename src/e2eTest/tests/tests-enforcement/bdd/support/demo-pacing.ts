@@ -1,8 +1,10 @@
 /**
  * Pacing for the demo videos (`scripts/enforcement-demo-videos.sh`). In the `enforcement-bdd-demo` project
  * every new page and every When / Then step is held on screen for `DEMO_HOLD_MS` (default 1500ms), on top of
- * the project's `slowMo`, so that a viewer can read each screen. Every other project, including CI's
- * `enforcement-bdd`, runs at full speed.
+ * the project's `slowMo`, so that a viewer can read each screen; each step is captioned on screen
+ * (demo-captions.ts); and every click, selection and piece of typing is shown at human speed with a visible
+ * pointer (utils/demo-actions.ts). Every other project, including CI's `enforcement-bdd`, runs at full speed.
+ * `DEMO_HOLD_MS=0` turns all of it off.
  */
 import { TestInfo } from '@playwright/test';
 

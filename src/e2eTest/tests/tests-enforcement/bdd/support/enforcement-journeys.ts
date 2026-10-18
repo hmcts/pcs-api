@@ -2,7 +2,7 @@
  * Thin wrappers that compose the existing enforcement actions (utils/registry/registry-enforcement) into the
  * journeys the feature files describe. The action arguments follow tests-enforcement/*.spec.ts.
  */
-import { BrowserContext, Page } from '@playwright/test';
+import { BrowserContext, Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld, SubmitCasePayload } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
@@ -55,6 +55,8 @@ import {
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
 import { decideEnforcement } from './decide-enforcement';
+import { showDemoCaptionStatus } from './demo-captions';
+import { demoEmphasise, demoPause } from '@utils/page-pacing';
 
 
 /** XUI events the steps can drive today, keyed by the name the feature files use. */
@@ -208,16 +210,30 @@ export async function expectCaseTab(page: Page, tabName: string, shown: boolean)
   }
 }
 
-/** Option labels in the case summary "Next step" drop down (same locator as the select action). */
-export async function nextStepOptions(page: Page): Promise<string[]> {
+/** The case summary "Next step" drop down (same locator as the select action). */
+function nextStepSelect(page: Page): Locator {
   const field = caseSummary.nextStepEventList;
-  const select = page.locator(`:has-text("${field}") + select, :has-text("${field}") ~ select`).first();
-  return (await select.locator('option').allTextContents()).map(option => option.trim());
+  return page.locator(`:has-text("${field}") + select, :has-text("${field}") ~ select`).first();
+}
+
+/** Option labels in the case summary "Next step" drop down. */
+export async function nextStepOptions(page: Page): Promise<string[]> {
+  return (await nextStepSelect(page).locator('option').allTextContents()).map(option => option.trim());
+}
+
+/** How long the demo videos show the chosen event before Go is clicked. */
+const DEMO_NEXT_STEP_PAUSE_MS = 1000;
+
+/** Chooses an event in the "Next step" drop down. The demo videos show the drop down being chosen from. */
+async function selectNextStep(label: string): Promise<void> {
+  await demoEmphasise(nextStepSelect);
+  await performAction('select', caseSummary.nextStepEventList, label);
+  await demoPause(DEMO_NEXT_STEP_PAUSE_MS);
 }
 
 export async function startEvent(eventName: string): Promise<void> {
   const event = xuiEvents[eventName];
-  await performAction('select', caseSummary.nextStepEventList, event.label);
+  await selectNextStep(event.label);
   await performAction('clickButton', caseSummary.go);
   await performValidation('mainHeader', event.firstPageHeader);
 }
@@ -231,7 +247,7 @@ export async function startEvent(eventName: string): Promise<void> {
  */
 export async function startEventAllowingRefusal(page: Page, eventName: string): Promise<string | undefined> {
   const event = xuiEvents[eventName];
-  await performAction('select', caseSummary.nextStepEventList, event.label);
+  await selectNextStep(event.label);
   await performAction('clickButton', caseSummary.go);
 
   const errors = page.locator('.govuk-error-summary, .error-summary, #errors');
@@ -557,6 +573,7 @@ export async function signInAs(user: string, page: Page, context: BrowserContext
 
 /** Drops whatever session the browser has and signs in from the XUI landing page. */
 async function signInFresh(email: string, page: Page, context: BrowserContext): Promise<void> {
+  await showDemoCaptionStatus(page, `Signing in as ${email}`);
   await clearBrowserSession(page, context);
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
   await dismissCookieBanner(page, 'additional');
@@ -566,6 +583,7 @@ async function signInFresh(email: string, page: Page, context: BrowserContext): 
     await performAction('login', { email, password: process.env.IDAM_PCS_USER_PASSWORD });
   }
   await dismissCookieBanner(page, 'analytics');
+  await showDemoCaptionStatus(page, undefined);
 }
 
 /**
