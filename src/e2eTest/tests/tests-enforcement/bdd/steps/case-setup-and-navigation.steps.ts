@@ -229,11 +229,11 @@ Given('I am signed in to XUI as a bailiff', async ({ page, context }) => {
 });
 
 Given('I am signed in to XUI as a bailiff manager', async ({ page, context }) => {
-  await signInAs('bailiff manager', page, context);
+  await signInAs('bailiff-manager', page, context);
 });
 
 Given('I am signed in to XUI as a bailiff admin', async ({ page, context }) => {
-  await signInAs('bailiff admin', page, context);
+  await signInAs('bailiff-admin', page, context);
 });
 
 Given('I am signed in to XUI as the allocated bailiff', async ({ page, context }) => {

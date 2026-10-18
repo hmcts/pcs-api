@@ -5,7 +5,7 @@ export const checkYourAnswersEnforcement = {
   checkTheInformationTextLabel: `Check the information below carefully.`,
   positionOrOfficeHeldHiddenTextLabel: `Position or office held`,
   previousButton: `Previous`,
-  saveAndContinueButton: `Save and continue`,
+  submitApplicationButton: `Submit application`,
   cancelLink: `Cancel`,
   changeLink: `Change`
 }

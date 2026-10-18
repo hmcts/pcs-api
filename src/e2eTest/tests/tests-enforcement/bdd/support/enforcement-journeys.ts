@@ -463,7 +463,7 @@ export async function signStatementOfTruth(type: 'warrant of possession' | 'writ
 }
 
 export async function submitApplication(): Promise<void> {
-  await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+  await performAction('clickButton', checkYourAnswers.submitApplicationButton);
   await performValidation('bannerAlert', 'Case #.* has been updated with event: Enforce the order');
 }
 
@@ -521,15 +521,16 @@ const FEATURE_USER_ROLES: Record<string, string> = {
 export const signInRoleFor = (user: string): string => FEATURE_USER_ROLES[user] ?? user;
 
 export function canSignInAs(role: string): boolean {
-  return role === CLAIMANT_LEGAL_REPRESENTATIVE || Boolean(signInUsers[role]?.());
+  return role === CLAIMANT_LEGAL_REPRESENTATIVE || Boolean(signInUsers[signInRoleFor(role)]?.());
 }
 
 /**
- * Signs in to XUI as `role` in place of the storage-state user, as the case tabs specs do. A defendant
- * legal representative is first linked to the scenario's case so that they can open it: by Notice of Change
- * on AAT, by a [DEFENDANTSOLICITOR] case role on a local stack.
+ * Signs in to XUI as `user`, a sign-in role or the feature files' name for one, in place of the storage-state
+ * user, as the case tabs specs do. A defendant legal representative is first linked to the scenario's case so
+ * that they can open it: by Notice of Change on AAT, by a [DEFENDANTSOLICITOR] case role on a local stack.
  */
-export async function signInAs(role: string, page: Page, context: BrowserContext): Promise<void> {
+export async function signInAs(user: string, page: Page, context: BrowserContext): Promise<void> {
+  const role = signInRoleFor(user);
   if (role === CLAIMANT_LEGAL_REPRESENTATIVE) {
     // Already the storage-state user, unless an earlier step swapped the session for another role.
     if (currentSignedInRole() === CLAIMANT_LEGAL_REPRESENTATIVE) {
@@ -567,14 +568,35 @@ async function signInFresh(email: string, page: Page, context: BrowserContext): 
   await dismissCookieBanner(page, 'analytics');
 }
 
+/**
+ * Storage goes before the cookies: once the cookies are gone XUI's next request finds no session and redirects
+ * to sign-in, and an evaluate racing that redirect fails with "Execution context was destroyed". The page may
+ * also still be navigating after the previous step (a post-sign-in redirect, a submitted event), so a
+ * navigation that destroys the context is waited out and the clear retried. XUI keeps its session in cookies, so
+ * a page still navigating after the retries is left as it is: the sign-in that follows replaces its state.
+ */
 async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
-  await context.clearCookies();
-  await page.evaluate(() => {
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch {
-      // The page may not have an origin yet (about:blank).
+      await page.evaluate(() => {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch {
+          // The page may not have an origin yet (about:blank).
+        }
+      });
+      break;
+    } catch (error) {
+      if (!isNavigationRace(error)) {
+        throw error;
+      }
+      await page.waitForLoadState('load', { timeout: 10_000 }).catch(() => undefined);
     }
-  });
+  }
+  await context.clearCookies();
+}
+
+function isNavigationRace(error: unknown): boolean {
+  return error instanceof Error && /Execution context was destroyed|navigat/i.test(error.message);
 }
