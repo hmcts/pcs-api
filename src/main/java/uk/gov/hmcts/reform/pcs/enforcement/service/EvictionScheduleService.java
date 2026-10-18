@@ -45,7 +45,7 @@ public class EvictionScheduleService {
 
     /**
      * The statuses an eviction can be rescheduled from: the claimant cannot attend, or has confirmed. Claimant
-     * confirmed comes from the event availability rules (HDPI-7549, open question 13).
+     * confirmed comes from the event availability rules (HDPI-7549, OPEN-QUESTIONS 7).
      */
     static final Set<EnforcementStatus> RESCHEDULABLE = Collections.unmodifiableSet(
         EnumSet.of(CLAIMANT_UNABLE_TO_ATTEND, CLAIMANT_CONFIRMED));

@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
@@ -33,6 +34,7 @@ public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
 
     private final EnforcementDecisionService enforcementDecisionService;
     private final AddressFormatter addressFormatter;
+    private final CaseReferenceFormatter caseReferenceFormatter;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -64,8 +66,10 @@ public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
         // moves the case to, offers no events of its own, so a case left there after an approval can neither
         // confirm the eviction nor use any core event; the enforcement's own status tracks its progress.
         return SubmitResponse.<State>builder()
-            .confirmationBody(DecideEnforcementConfirmation.render(
-                outcome.get(), caseReference, propertyAddress, pcsCase.getCaseNameHmctsInternal()))
+            .confirmationHeader(DecideEnforcementConfirmation.header(outcome.get()))
+            .confirmationBody(DecideEnforcementConfirmation.body(
+                outcome.get(), caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), propertyAddress,
+                pcsCase.getCaseNameHmctsInternal()))
             .state(State.CASE_ISSUED)
             .build();
     }

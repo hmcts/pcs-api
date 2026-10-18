@@ -30,7 +30,7 @@ Feature: Further enforcement on the same possession case
       | Eviction successful        | 6 months  | charged     |
 
   # pcs-api starts a warrant of restitution in "Awaiting review", because restitution has no fee, so the
-  # "Awaiting payment" check cannot pass until OPEN-QUESTIONS 77 is settled. Feature 14 drives the same application.
+  # "Awaiting payment" check cannot pass until OPEN-QUESTIONS 12 is settled. Feature 14 drives the same application.
   @HDPI-7539 @HDPI-7555 @pending
   Scenario: Warrant of restitution after the defendants re-enter
     Given the case has a warrant closed with return name "Eviction successful"
@@ -47,7 +47,7 @@ Feature: Further enforcement on the same possession case
 
   # A breathing space return can be recorded, but "Set risk level" and "Allocate case to bailiff" stay available
   # in "Breathing space", and "Record warrant return" has to, because it is how the breathing space ends
-  # (OPEN-QUESTIONS 11).
+  # (OPEN-QUESTIONS 4).
   @HDPI-8424 @pending
   Scenario: Breathing space pauses the warrant
     Given the bailiff recorded the return "Defendant states they are in Breathing Space (Standard or Mental Health)"
@@ -62,7 +62,7 @@ Feature: Further enforcement on the same possession case
     When I start the "Enforce the order" event
     Then I can apply for a warrant of possession
 
-  # There is no "Paused" status (OPEN-QUESTIONS 7).
+  # There is no "Paused" status (OPEN-QUESTIONS 3).
   @open-question @pending
   Scenario: Possession case reopened while a warrant is live
     Given the case has a warrant with status "Awaiting scheduling"

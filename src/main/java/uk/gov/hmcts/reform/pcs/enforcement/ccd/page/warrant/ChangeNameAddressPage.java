@@ -53,7 +53,9 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
                 <p class="govuk-body govuk-!-font-weight-bold">If you want to proceed with changing the name or
                     address for the eviction</p>
                 <p class="govuk-body">
-                    <a id="changeNameAddress-link" class="govuk-link">
+                    <a id="changeNameAddress-link" class="govuk-link"
+                        href="https://www.gov.uk/government/publications/form-n244-application-notice"
+                        target="_blank" rel="noreferrer noopener">
                         Ask the judge if you can change the name or address for the eviction
                         (GOV.UK, opens in a new tab)</a>.
                 </p>

@@ -101,7 +101,7 @@ class ScheduledEvictionConfirmEvictionJourneyTest {
         mediator.handleEnforcementRequirements(pcsCaseEntity, after);
         assertThat(after.getEnforcementOrder().getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
         assertThat(after.getEnforcementOrder().getConfirmEvictionSummaryMarkup())
-            .contains("The bailiff has given you an eviction date of Thursday, 25 June 2026 at 10:00am")
+            .contains("The bailiff has given you an eviction date of Thursday 25 June 2026 at 10:00am")
             .contains("You must confirm the eviction details before 22 June 2026");
 
         claimantEvictionConfirmationService.recordAttendance(CASE_REFERENCE, canAttend);

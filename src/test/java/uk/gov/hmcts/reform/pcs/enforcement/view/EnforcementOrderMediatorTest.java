@@ -151,7 +151,7 @@ class EnforcementOrderMediatorTest {
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.UK);
         String expectedDate = bailiffDate.atZone(ZoneId.of("UTC")).format(outputFormatter);
         assertTrue(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup().contains(expectedDate));
     }
@@ -367,19 +367,19 @@ class EnforcementOrderMediatorTest {
         return Stream.of(
             Arguments.of("morning time",
                          LocalDateTime.of(2025, 6, 9,  9, 30),
-                         "Monday, 9 June 2025 at 9:30am"),
+                         "Monday 9 June 2025 at 09:30am"),
             Arguments.of("afternoon time",
                          LocalDateTime.of(2025, 6, 9, 14,  0),
-                         "Monday, 9 June 2025 at 2:00pm"),
+                         "Monday 9 June 2025 at 02:00pm"),
             Arguments.of("midnight",
                          LocalDateTime.of(2025, 6, 9,  0,  0),
-                         "Monday, 9 June 2025 at 12:00am"),
+                         "Monday 9 June 2025 at 12:00am"),
             Arguments.of("noon",
                          LocalDateTime.of(2025, 6, 9, 12,  0),
-                         "Monday, 9 June 2025 at 12:00pm"),
+                         "Monday 9 June 2025 at 12:00pm"),
             Arguments.of("single digit day",
                          LocalDateTime.of(2025, 1, 3,  8, 15),
-                         "Friday, 3 January 2025 at 8:15am")
+                         "Friday 3 January 2025 at 08:15am")
         );
     }
 

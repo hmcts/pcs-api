@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * is checked here against the user's AM organisational roles. The name and email come from IDAM.
  *
  * <p>TODO(HDPI-7356): limit the bailiffs to the case's court location once that rule is agreed
- * (OPEN-QUESTIONS 16), by checking the role assignment's primaryLocation or region.
+ * (OPEN-QUESTIONS 20), by checking the role assignment's primaryLocation or region.
  */
 @Slf4j
 @Service

@@ -31,7 +31,7 @@ public class FindBailiffPage implements CcdPageConfiguration, CcdPage {
 
     /**
      * The StaffUser type-ahead filter. Bailiffs are assumed to be in the ADMIN role category
-     * (OPEN-QUESTIONS 24). XUI ignores REGION- filters, so there is no location filter yet.
+     * (OPEN-QUESTIONS 58). XUI ignores REGION- filters, so there is no location filter yet.
      */
     static final String STAFF_USER_SEARCH = "#ARGUMENT(CATEGORY-ADMIN)";
 

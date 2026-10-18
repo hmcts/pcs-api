@@ -125,7 +125,7 @@ class EnforcementNotificationServiceTest {
 
     /**
      * HDPI-7538 has no approval wording for either kind of restitution, so nothing is sent rather than an
-     * email the service has not agreed (OPEN-QUESTIONS 17).
+     * email the service has not agreed (OPEN-QUESTIONS 51).
      */
     @ParameterizedTest
     @EnumSource(value = SelectEnforcementType.class,
@@ -137,7 +137,7 @@ class EnforcementNotificationServiceTest {
     }
 
     /**
-     * HDPI-7538 only has rejection wording for a warrant of possession (OPEN-QUESTIONS 17).
+     * HDPI-7538 only has rejection wording for a warrant of possession (OPEN-QUESTIONS 51).
      */
     @ParameterizedTest
     @EnumSource(value = SelectEnforcementType.class,
