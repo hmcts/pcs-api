@@ -63,12 +63,19 @@ public class EvictionScheduleService {
     private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
 
+    /*
+     * The rules below are what the start and submit callbacks check on the claim's live enforcement, and what
+     * EvictionScheduleView offers the events on. Each only holds for a live status, so on the claim's current
+     * enforcement (null when it has none) it holds exactly when the callbacks would not refuse.
+     */
+
     public static boolean canSchedule(EnforcementOrderEntity enforcement) {
-        return enforcement.getStatus() == AWAITING_SCHEDULING;
+        return enforcement != null && enforcement.getStatus() == AWAITING_SCHEDULING;
     }
 
     public static boolean canReschedule(EnforcementOrderEntity enforcement) {
-        return enforcement.getStatus() != null && RESCHEDULABLE.contains(enforcement.getStatus());
+        return enforcement != null && enforcement.getStatus() != null
+            && RESCHEDULABLE.contains(enforcement.getStatus());
     }
 
     /**
@@ -76,7 +83,8 @@ public class EvictionScheduleService {
      * service, and the notice has not been served yet.
      */
     public static boolean canMarkNoticeServed(EnforcementOrderEntity enforcement) {
-        return enforcement.getStatus() != null
+        return enforcement != null
+            && enforcement.getStatus() != null
             && SCHEDULED.contains(enforcement.getStatus())
             && enforcement.getBailiffDate() != null
             && Boolean.FALSE.equals(enforcement.getDispenseWithService())

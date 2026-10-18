@@ -29,6 +29,7 @@ import java.util.Optional;
 public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
+    private final CurrentEnforcementService currentEnforcementService;
     private final PcsCaseService pcsCaseService;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
@@ -62,13 +63,23 @@ public class EnforcementOrderService {
     }
 
     /**
+     * Whether the claimant can apply for a new enforcement: the claim's current enforcement, if it has one, is
+     * not live (closed, rejected or transferred to the High Court). A claim can have at most one live
+     * enforcement, and the current one is the live one if there is one. "Enforce the order" and "Resume draft
+     * application" are offered on this, and their start and submit refuse on it.
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    public static boolean canApplyForEnforcement(EnforcementOrderEntity currentEnforcement) {
+        return currentEnforcement == null || !currentEnforcement.getStatus().isLive();
+    }
+
+    /**
      * Whether the case's claim has a live enforcement, i.e. one that is not closed, rejected or transferred
      * to the High Court. A claim can have at most one.
      */
     public boolean hasLiveEnforcement(long caseReference) {
-        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseService.loadCase(caseReference));
-        return enforcementOrderRepository.existsByClaimIdAndStatusNotIn(
-            claimEntity.getId(), EnforcementStatus.notLive());
+        return !canApplyForEnforcement(currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null));
     }
 
     /**

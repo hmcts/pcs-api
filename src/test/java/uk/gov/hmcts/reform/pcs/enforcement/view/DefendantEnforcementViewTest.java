@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffNote;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementEventAvailability;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementSummary;
@@ -114,6 +115,7 @@ class DefendantEnforcementViewTest {
         full.setShowRiskAssessmentTab(YesOrNo.YES);
         full.setDefendantsCanSeeEnforcement(YesOrNo.YES);
         full.setShowConfirmEvictionJourney(YesOrNo.YES);
+        full.setEventAvailability(EnforcementEventAvailabilityView.availability(served));
         full.setBailiffNotes(List.of(ListValue.<BailiffNote>builder().id("1").value(new BailiffNote()).build()));
         givenTheCaseHas(served);
         givenCurrentUserHasRoles(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
@@ -214,6 +216,44 @@ class DefendantEnforcementViewTest {
         // Then
         assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.NO);
         verifyNoInteractions(userRoleService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"DEFENDANT", "DEFENDANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR"})
+    void shouldOfferDefendantsNoEnforcementEventWhenTheClaimHasNoEnforcement(UserRole defendantRole) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(new EnforcementOrder()).build();
+        pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(YesOrNo.NO);
+        pcsCase.getEnforcementOrder().setEventAvailability(eventFlagsWithNoEnforcement());
+        when(currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity)).thenReturn(List.of());
+        givenCurrentUserHasRoles("caseworker-pcs-solicitor", defendantRole.getRole());
+
+        // When
+        underTest.restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEventAvailability()).isNull();
+        assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.NO);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"CLAIMANT_SOLICITOR", "CLAIMANT", "BAILIFF", "HEARING_CENTRE_ADMIN"})
+    void shouldLeaveEveryoneElseTheEventFlagsWhenTheClaimHasNoEnforcement(UserRole role) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(new EnforcementOrder()).build();
+        pcsCase.getEnforcementOrder().setEventAvailability(eventFlagsWithNoEnforcement());
+        when(currentEnforcementService.findEnforcementsCurrentFirst(pcsCaseEntity)).thenReturn(List.of());
+        givenCurrentUserHasRoles("caseworker-pcs-solicitor", role.getRole());
+
+        // When
+        underTest.restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrder().getEventAvailability()).isEqualTo(eventFlagsWithNoEnforcement());
+    }
+
+    private static EnforcementEventAvailability eventFlagsWithNoEnforcement() {
+        return EnforcementEventAvailabilityView.availability(null);
     }
 
     @Test

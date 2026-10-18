@@ -24,8 +24,18 @@ public class BailiffNoteService {
     private final SecurityContextService securityContextService;
     private final Clock utcClock;
 
+    /**
+     * Whether bailiff staff can add a note: the claim has an enforcement, live or not. "Add a bailiff note" is
+     * offered on this, and its start and submit refuse on it.
+     *
+     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     */
+    public static boolean canAddBailiffNote(EnforcementOrderEntity currentEnforcement) {
+        return currentEnforcement != null;
+    }
+
     public boolean hasEnforcement(long caseReference) {
-        return currentEnforcementService.findCurrentEnforcement(caseReference).isPresent();
+        return canAddBailiffNote(currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null));
     }
 
     /**

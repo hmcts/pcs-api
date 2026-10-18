@@ -34,7 +34,8 @@ import java.util.stream.Stream;
  * warrants: their items on {@code enforcements}, and the "Enforcement status" tab rendered from them without
  * the claimant's sections. Every other enforcement field, including both "Risk assessment" tabs and any field
  * added later, is left unset for defendants. The "Enforcement status" tab's show condition then hides the tab
- * until a warrant is visible.
+ * until a warrant is visible. The event flags ({@code eventAvailability}) are left unset too, so defendants are
+ * offered no enforcement event.
  *
  * <p>The enforcement documents are taken out of {@code allDocuments}, the only case field that carries them,
  * except a visible warrant's notice of eviction. CCD categories cannot be restricted by role, so the
@@ -71,8 +72,14 @@ public class DefendantEnforcementView {
         }
         List<EnforcementOrderEntity> enforcements = currentEnforcementService.findEnforcementsCurrentFirst(
             pcsCaseEntity);
-        // With no enforcement on the claim the fields hold nothing but the viewer's own draft, if any.
+        // With no enforcement on the claim the fields hold the viewer's own draft, if any, and the event flags.
+        // "Enforce the order" is offered to the claimant side then, so its flag is taken away from defendants.
         if (enforcements.isEmpty() && !hasEnforcementDocuments) {
+            EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+            if (enforcementOrder.getEventAvailability() != null
+                && isDefendant(userRoleService.getCurrentUserCaseRoles(caseReference).roles())) {
+                enforcementOrder.setEventAvailability(null);
+            }
             return;
         }
         if (!isDefendant(userRoleService.getCurrentUserCaseRoles(caseReference).roles())) {

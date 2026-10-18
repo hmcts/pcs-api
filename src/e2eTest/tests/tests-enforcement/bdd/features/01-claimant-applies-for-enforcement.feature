@@ -14,13 +14,12 @@ Feature: Claimant applies for enforcement of a possession order
     When I open the case
     Then the "Enforce the order" event is available in the next steps drop down
 
-  # The event is still offered in the next-step drop down while an enforcement is live; it is the
-  # EnforceTheOrder start callback that refuses it.
+  # The EnforceTheOrder start callback still refuses a live enforcement, as a backstop.
   @not-filmed
-  Scenario: Enforce the order is refused while an enforcement is live
+  Scenario: Enforce the order is not offered while an enforcement is live
     Given the case has a warrant of possession with status "Awaiting scheduling"
-    When I start the "Enforce the order" event
-    Then I see the error "There is already a live warrant or writ on this case"
+    When I open the case
+    Then the "Enforce the order" event is not offered in the next steps drop down
 
   # Runs locally against cftlib: the case comes from the "Make A Claim Basic Case" fixture (one defendant, no
   # arrears, no suspended order), which the journey helpers adapt to. The warrant of restitution journey still

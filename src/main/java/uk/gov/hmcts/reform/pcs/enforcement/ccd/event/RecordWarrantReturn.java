@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 import uk.gov.hmcts.reform.pcs.enforcement.util.AfterCommit;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.recordWarrantReturn;
@@ -48,6 +49,12 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> {
 
+    /**
+     * Hidden only for a warrant waiting for a bailiff (EnforcementEventAvailabilityView). With no warrant it is
+     * offered, and the start callback shows "There is no warrant on this case" (HDPI-7347).
+     */
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canRecordWarrantReturn=\"Yes\"");
+
     static final String EVENT_NAME = "Record warrant return";
     static final String CONFIRMATION_HEADER = "# Outcome recorded as %s";
 
@@ -67,7 +74,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
                 .name(EVENT_NAME)
                 .grant(Permission.CRUD, BAILIFF_STAFF_ROLES)
                 .grant(Permission.CRUD, UserRole.ALLOCATED_BAILIFF)
-                .showCondition(featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         recordWarrantReturnConfigurer.configurePages(new PageBuilder(eventBuilder));

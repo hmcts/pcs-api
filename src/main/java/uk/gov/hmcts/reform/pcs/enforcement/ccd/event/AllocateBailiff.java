@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.allocateBailiff;
@@ -36,12 +37,18 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
  * Bailiff staff allocate the claim's current warrant to a bailiff (HDPI-7356, HDPI-8183, HDPI-8189). It is
  * offered for a warrant awaiting bailiff allocation, and to reallocate a warrant while it is live.
  *
- * <p>The event is gated on the feature flag only: the enforcement status is checked when it starts, because
- * the status is held on the enforcement record rather than on the case.
+ * <p>The enforcement status is held on the enforcement record rather than on the case, so the case view sets a
+ * flag from it that the show condition reads, and the start callback checks the status again.
  */
 @Component
 @AllArgsConstructor
 public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
+
+    /**
+     * Offered while the current enforcement is an approved, live warrant (EnforcementEventAvailabilityView). The
+     * start callback still refuses otherwise.
+     */
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canAllocateBailiff=\"Yes\"");
 
     private final AllocateBailiffConfigurer allocateBailiffConfigurer;
     private final BailiffAllocationService bailiffAllocationService;
@@ -57,7 +64,7 @@ public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
                 .forStates(AddBailiffNote.STATES)
                 .name("Allocate case to bailiff")
                 .grant(Permission.CRUD, BAILIFF_ALLOCATION_ROLES)
-                .showCondition(featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(UserRole.HEARING_CENTRE_ADMIN, UserRole.HEARING_CENTRE_TEAM_LEADER)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();

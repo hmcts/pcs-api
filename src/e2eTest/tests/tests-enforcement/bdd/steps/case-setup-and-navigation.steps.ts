@@ -1,6 +1,7 @@
 // Case set-up, signing in and moving around the case in XUI. Shared by every feature.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import type { Page } from '@playwright/test';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import {
   canSignInAs,
@@ -174,7 +175,11 @@ Then('the {string} event is available in the next steps drop down', async ({ pag
   await expect.poll(() => nextStepOptions(page)).toContain(event.label);
 });
 
-Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+/**
+ * An enforcement event that cannot be used is hidden by its show condition rather than offered and then refused
+ * by its start callback, so "not available" means missing from the next step drop down.
+ */
+async function expectNotOffered(page: Page, $tags: string[], eventName: string): Promise<void> {
   const event = xuiEvents[eventName];
   if (!event) {
     return markPending(eventNotBuilt(eventName), $tags);
@@ -182,6 +187,14 @@ Then('the {string} event is not available', async ({ page, $tags }, eventName: s
   // Wait for the drop down to load with the user's other events before checking this one is missing.
   await expect.poll(async () => (await nextStepOptions(page)).length).toBeGreaterThan(0);
   expect(await nextStepOptions(page)).not.toContain(event.label);
+}
+
+Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
+});
+
+Then('the {string} event is not offered in the next steps drop down', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
 });
 
 When('I start the {string} event', async ({ page, world, $tags }, eventName: string) => {

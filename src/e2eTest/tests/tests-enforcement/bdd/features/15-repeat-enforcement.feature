@@ -42,8 +42,8 @@ Feature: Further enforcement on the same possession case
   @HDPI-7419 @not-filmed
   Scenario: Only one enforcement can be live at a time
     Given the case has a warrant with status "Awaiting scheduling"
-    When I start the "Enforce the order" event
-    Then I see the error "There is already a live warrant or writ on this case"
+    When I open the case
+    Then the "Enforce the order" event is not offered in the next steps drop down
 
   # A breathing space return can be recorded, but "Set risk level" and "Allocate case to bailiff" stay available
   # in "Breathing space", and "Record warrant return" has to, because it is how the breathing space ends

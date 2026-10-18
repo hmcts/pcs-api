@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RepeatWarrantFeeWaiver;
@@ -182,7 +183,8 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
             new RepeatWarrantFeeWaiver(enforcementOrderRepository, warrantReturnRepository, ukClock);
         // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for.
         EnforcementOrderService enforcementOrderService = new EnforcementOrderService(
-            enforcementOrderRepository, pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
+            enforcementOrderRepository, new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
+            pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
             enforcementStatusTransitions, waiver, mock(EnforcementNotificationService.class),
             mock(EnforcementDocumentScheduler.class));
         List<UUID> before = enforcementIds(claimId);

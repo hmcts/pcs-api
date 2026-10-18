@@ -39,6 +39,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -69,6 +70,8 @@ class EnforcementOrderServiceTest {
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private CurrentEnforcementService currentEnforcementService;
     @Mock
     private EnforcementTypeStrategyFactory strategyFactory;
     @Mock
@@ -379,18 +382,36 @@ class EnforcementOrderServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldReportWhetherTheClaimHasALiveEnforcement(boolean live) {
+    @EnumSource(EnforcementStatus.class)
+    void shouldReportWhetherTheClaimHasALiveEnforcement(EnforcementStatus status) {
         // Given
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(buildPcsCaseEntity(pcsCaseId, claimId));
-        when(enforcementOrderRepository.existsByClaimIdAndStatusNotIn(claimId, EnforcementStatus.notLive()))
-            .thenReturn(live);
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE))
+            .thenReturn(Optional.of(EnforcementOrderEntity.builder().status(status).build()));
 
         // When
         boolean result = enforcementOrderService.hasLiveEnforcement(CASE_REFERENCE);
 
         // Then
-        assertThat(result).isEqualTo(live);
+        assertThat(result).isEqualTo(status.isLive());
+    }
+
+    @Test
+    void shouldReportNoLiveEnforcementWhenTheClaimHasNone() {
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        assertThat(enforcementOrderService.hasLiveEnforcement(CASE_REFERENCE)).isFalse();
+    }
+
+    @ParameterizedTest
+    @EnumSource(EnforcementStatus.class)
+    void shouldOnlyLetTheClaimantApplyWhenTheCurrentEnforcementIsNotLive(EnforcementStatus status) {
+        assertThat(EnforcementOrderService.canApplyForEnforcement(
+            EnforcementOrderEntity.builder().status(status).build())).isEqualTo(!status.isLive());
+    }
+
+    @Test
+    void shouldLetTheClaimantApplyWhenTheClaimHasNoEnforcement() {
+        assertThat(EnforcementOrderService.canApplyForEnforcement(null)).isTrue();
     }
 
     private static Stream<Arguments> enforcementOrderTypes() {
