@@ -28,7 +28,7 @@ import {
 } from '../support/decide-enforcement';
 import { isLocalStack, localUsers } from '@config/local-stack.config';
 import { LONG_TIMEOUT } from 'playwright.config';
-import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionAsBailiff, setUpWarrantAtStatus } from '../support/approve-warrant';
+import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionInXui, setUpWarrantAtStatus } from '../support/approve-warrant';
 import {
   CITIZEN_DEFENDANT,
   DEFENDANT_LEGAL_REPRESENTATIVE,
@@ -77,12 +77,12 @@ Given('a PCS case {string} with a possession order made', async ({ world }, _ref
   await createIssuedCase(world);
 });
 
-Given('a PCS case {string} with a warrant of possession with status {string}', async ({ page, context, world }, _reference: string, status: string) => {
-  await setUpWarrantAtStatus(page, context, world, status);
+Given('a PCS case {string} with a warrant of possession with status {string}', async ({ world }, _reference: string, status: string) => {
+  await setUpWarrantAtStatus(world, status);
 });
 
-Given('a PCS case {string} with a warrant of possession', async ({ page, context, world }, _reference: string) => {
-  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
+Given('a PCS case {string} with a warrant of possession', async ({ world }, _reference: string) => {
+  await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
 });
 
 // The claimant legal representative is the storage-state user from config/global-setup.config.ts, who also
@@ -433,7 +433,7 @@ Then('I return to the case summary', async ({ page, world, $tags }) => {
   world.currentEvent = undefined;
 });
 
-When('I submit the {string} event', async ({ page, context, world, $tags }, eventName: string) => {
+When('I submit the {string} event', async ({ page, world, $tags }, eventName: string) => {
   if (eventName === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
     return submitDecision(page);
   }
@@ -442,7 +442,7 @@ When('I submit the {string} event', async ({ page, context, world, $tags }, even
   // notifications): for Schedule eviction the whole journey is run for them, for Reschedule eviction they
   // stay pending.
   if (eventName === SCHEDULE_EVICTION && world.currentEvent !== eventName && !world.evictionScheduled) {
-    return scheduleEvictionAsBailiff(page, context, world);
+    return scheduleEvictionInXui(page, world);
   }
   if (eventName === SCHEDULE_EVICTION || eventName === RESCHEDULE_EVICTION) {
     if (world.currentEvent !== eventName) {

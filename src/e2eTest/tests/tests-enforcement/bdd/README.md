@@ -67,7 +67,7 @@ On a local stack pcs-api sends GOV.UK Notify emails to wiremock's `gov-notify/se
 
 ## Demo videos
 
-`scripts/enforcement-demo-videos.sh <output dir>` runs features 01 to 18 one at a time in the `enforcement-bdd-demo` project against a local stack and stitches each feature's passing scenarios into `<output dir>/<feature>.mp4`, with a title card before each scenario. That project records every scenario and runs at human speed: `slowMo` on every browser action (`DEMO_SLOW_MO`, default 350ms) and a hold on each new page and after each When and Then step (`DEMO_HOLD_MS`, default 1500ms, see `support/demo-pacing.ts`). Other projects are unaffected.
+`scripts/enforcement-demo-videos.sh <output dir>` runs features 01 to 18 one at a time in the `enforcement-bdd-demo` project against a local stack and stitches each feature's passing scenarios into `<output dir>/<feature>.mp4`, with a title card before each scenario. That project records every scenario and runs at human speed: `slowMo` on every browser action (`DEMO_SLOW_MO`, default 275ms) and a hold on each new page and after each When and Then step (`DEMO_HOLD_MS`, default 1200ms, see `support/demo-pacing.ts`). Other projects are unaffected.
 
 ## Time-based rules
 

@@ -10,6 +10,7 @@
  */
 import { Page, expect } from '@playwright/test';
 import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
+import { ccdDateTime, submitEventAs } from './event-api';
 
 export const RECORD_WARRANT_RETURN = 'Record warrant return';
 
@@ -245,4 +246,71 @@ export async function expectEvictionDetailsTable(page: Page): Promise<void> {
     const row = table.getByRole('row').filter({ has: page.getByRole('rowheader', { name: header, exact: true }) });
     await expect(row.getByRole('cell')).toHaveText(/\S/);
   }
+}
+
+/** pcs-api's return name codes by label: the InterimWarrantReturnName, SuccessfulWarrantReturnName and UnsuccessfulWarrantReturnName fixed lists. */
+const RETURN_NAME_CODES: Record<string, string> = {
+  'Application unsuccessful & warrant returned to bailiff': 'APPLICATION_UNSUCCESSFUL_WARRANT_RETURNED',
+  'Children left unattended in property': 'CHILDREN_LEFT_UNATTENDED',
+  'Claimant advised Defendant in Breathing Space': 'CLAIMANT_ADVISED_BREATHING_SPACE',
+  'Crowds or protests': 'CROWDS_OR_PROTESTS',
+  'Defendant states they are in Breathing Space (Standard or Mental Health)': 'DEFENDANT_STATES_BREATHING_SPACE',
+  'No animal handler in attendance (Parties unaware of animal)': 'NO_ANIMAL_HANDLER_PARTIES_UNAWARE',
+  'No Police presence (Police refused to attend when asked to)': 'NO_POLICE_PRESENCE',
+  'Obstruction by Defendants': 'OBSTRUCTION_BY_DEFENDANTS',
+  'Other interim return': 'OTHER_INTERIM_RETURN',
+  'Reopen warrant': 'REOPEN_WARRANT',
+  'Request for additional information': 'REQUEST_FOR_ADDITIONAL_INFORMATION',
+  'Safeguarding or vulnerability concerns': 'SAFEGUARDING_OR_VULNERABILITY_CONCERNS',
+  'Eviction successful': 'EVICTION_SUCCESSFUL',
+  'Claimant did not confirm eviction': 'CLAIMANT_DID_NOT_CONFIRM_EVICTION',
+  'Eviction unsuccessful - other': 'EVICTION_UNSUCCESSFUL_OTHER',
+  'No animal handler in attendance (Claimant failed to arrange)': 'NO_ANIMAL_HANDLER_CLAIMANT_FAILED_TO_ARRANGE',
+  'No Claimant or agent in attendance for eviction': 'NO_CLAIMANT_OR_AGENT_IN_ATTENDANCE',
+  'No locksmith in attendance (Claimant failed to arrange)': 'NO_LOCKSMITH_CLAIMANT_FAILED_TO_ARRANGE',
+  'No reply to request for additional information': 'NO_REPLY_TO_REQUEST_FOR_INFORMATION',
+  'Possession Order set aside': 'POSSESSION_ORDER_SET_ASIDE',
+  'Unable to gain access to the property': 'UNABLE_TO_GAIN_ACCESS',
+  'Warrant expired': 'WARRANT_EXPIRED',
+  'Warrant issued in error': 'WARRANT_ISSUED_IN_ERROR',
+  'Warrant suspended by Order': 'WARRANT_SUSPENDED_BY_ORDER',
+  'Warrant withdrawn': 'WARRANT_WITHDRAWN',
+};
+
+/**
+ * Records a return named `returnName` as `email` through CCD's data store API, with the answers
+ * `answerWarrantReturn` gives in XUI: the return and outcome that offer the name, yesterday at 10:00 for a
+ * successful eviction, and the suite's additional details. Returns pcs-api's label for the name.
+ */
+export async function recordWarrantReturnAs(
+  email: string,
+  returnName: string,
+  additionalDetails = SUITE_ADDITIONAL_DETAILS
+): Promise<string> {
+  const label = Object.keys(RETURN_NAME_CODES).find(name => name.toLowerCase() === returnName.toLowerCase());
+  if (!label) {
+    throw new Error(`No return name "${returnName}". Known: ${Object.keys(RETURN_NAME_CODES).join(', ')}`);
+  }
+  const { type, outcome } = returnFor(label);
+  const code = RETURN_NAME_CODES[label];
+  const answers: Record<string, unknown> = { warrantReturnAdditionalDetails: additionalDetails };
+  if (type === warrantReturn.interim) {
+    Object.assign(answers, { warrantReturnType: 'INTERIM', warrantReturnInterimReturnName: code });
+  } else if (outcome === warrantReturn.evictionSuccessful) {
+    Object.assign(answers, {
+      warrantReturnType: 'FINAL',
+      warrantReturnOutcome: 'EVICTION_SUCCESSFUL',
+      warrantReturnSuccessfulReturnName: code,
+      warrantReturnEvictionDateTime: ccdDateTime(-1, '10:00'),
+    });
+  } else {
+    Object.assign(answers, {
+      warrantReturnType: 'FINAL',
+      warrantReturnOutcome: 'EVICTION_UNSUCCESSFUL',
+      warrantReturnUnsuccessfulReturnName: code,
+    });
+  }
+  const confirmation = await submitEventAs(email, 'recordWarrantReturn', answers);
+  expect(confirmation.header, 'the "Record warrant return" confirmation').toContain(`Outcome recorded as ${label}`);
+  return label;
 }

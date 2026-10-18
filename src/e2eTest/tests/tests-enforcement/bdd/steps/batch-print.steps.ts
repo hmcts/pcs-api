@@ -89,7 +89,7 @@ Given(
   async ({ page, context, world, $tags }, first: string, second: string, third: string) => {
     await requireDocumentStore($tags);
     for (const featureReference of [first, second, third]) {
-      await setUpWarrantAtStatus(page, context, world, AWAITING_SCHEDULING);
+      await setUpWarrantAtStatus(world, AWAITING_SCHEDULING);
       const caseReference = requireCaseReference(world);
       world.batchPrintCases.push(caseReference);
       world.batchPrintCaseFor[featureReference] = caseReference;
@@ -99,10 +99,10 @@ Given(
   }
 );
 
-Given('each case has an eviction scheduled this week', async ({ page, context, world }) => {
+Given('each case has an eviction scheduled this week', async ({ world }) => {
   for (const caseReference of world.batchPrintCases) {
     switchToCase(world, caseReference);
-    await scheduleEvictionAsBailiff(page, context, world, 1);
+    await scheduleEvictionAsBailiff(world, 1);
   }
   // pcs-api generates each document on a db-scheduler task after its event commits, so wait for all of them
   // before printing. Locally each is the wiremock Docmosis stub's placeholder PDF (OPEN-QUESTIONS 19).
@@ -133,7 +133,7 @@ Given(
 Given(
   'I select a case where I am not the allocated bailiff',
   async ({ page, context, world }) => {
-    await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
+    await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
     const caseReference = requireCaseReference(world);
     await allocateTo(caseReference, localUsers.bailiffAdmin);
     world.notAllocatedCase = caseReference;

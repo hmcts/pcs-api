@@ -8,11 +8,11 @@ import { BrowserContext, Page } from '@playwright/test';
 import { Given, Then, When, expect, test } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
-import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
+import { requireCaseReference, signInAs } from '../support/enforcement-journeys';
 import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
 import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 import { activeTab, openCaseTab, tabSections, todayTabDate } from '../support/enforcement-status-tab';
-import { SET_RISK_LEVEL, chooseRiskLevel, continueButton, expectBailiffConfirmation } from '../support/bailiff-events';
+import { setRiskLevelAsBailiff } from '../support/bailiff-events';
 import { allocateBailiff, confirmEvictionAsClaimant, scheduleEvictionAsBailiff } from '../support/approve-warrant';
 import {
   CLAIMANT_RISK_SECTION,
@@ -87,8 +87,8 @@ Then('the updated answer is stored alongside my original answer with today\'s da
   await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
 });
 
-Given('I have updated my risk assessment', async ({ page, context, world }) => {
-  await confirmEvictionAsClaimant(page, context, world, true, riskQuestions.vulnerablePeople);
+Given('I have updated my risk assessment', async ({ world }) => {
+  await confirmEvictionAsClaimant(world, true, riskQuestions.vulnerablePeople);
   world.riskQuestion = tabQuestion(riskQuestions.vulnerablePeople);
   world.changedRiskAnswer = 'Yes';
 });
@@ -112,13 +112,8 @@ Then('I do not see the risk level or bailiff notes', async ({ page }) => {
 // ---------------------------------------------------------------------------
 
 // Set before the claimant's update, as in the feature, so the update is waiting for review.
-Given('the risk level is {string}', async ({ page, context, world }, level: string) => {
-  await signInAs('bailiff', page, context);
-  await openCaseSummary(page);
-  await startEvent(SET_RISK_LEVEL);
-  await chooseRiskLevel(page, level);
-  await continueButton(page).click();
-  await expectBailiffConfirmation(page, `Risk level set to ${level}`, requireCaseReference(world));
+Given('the risk level is {string}', async ({ world }, level: string) => {
+  await setRiskLevelAsBailiff(level);
   world.riskLevel = level;
 });
 
@@ -130,7 +125,7 @@ Given('the claimant submitted the original risk assessment on {string}', async (
  * Allocates and schedules the warrant, so the claimant is asked to confirm, then confirms with "Is anyone
  * living at the property vulnerable?" changed to "Yes".
  */
-Given('the claimant updated the risk assessment on {string} in {string}', async ({ page, context, world }, date: string, journey: string) => {
+Given('the claimant updated the risk assessment on {string} in {string}', async ({ world }, date: string, journey: string) => {
   expect(journey).toBe(CONFIRM_EVICTION);
   approximatePrecondition('HDPI-7552', `the claimant updated the risk assessment today rather than on ${date}`);
   if (!world.allocatedBailiff) {
@@ -140,8 +135,8 @@ Given('the claimant updated the risk assessment on {string} in {string}', async 
       'the bailiff was allocated through pcs-api testing support rather than the allocateBailiff event'
     );
   }
-  await scheduleEvictionAsBailiff(page, context, world);
-  await confirmEvictionAsClaimant(page, context, world, true, riskQuestions.vulnerablePeople);
+  await scheduleEvictionAsBailiff(world);
+  await confirmEvictionAsClaimant(world, true, riskQuestions.vulnerablePeople);
 });
 
 Given('the claimant did not change {string}', async ({ world }, question: string) => {

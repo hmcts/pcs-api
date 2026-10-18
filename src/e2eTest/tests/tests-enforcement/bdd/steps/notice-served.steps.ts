@@ -7,10 +7,11 @@
 // defendants see once the notice is served uses feature 14's checks (support/defendant-visibility.ts).
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
-import { openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
+import { requireCaseReference } from '../support/enforcement-journeys';
 import {
   AWAITING_CLAIMANT_CONFIRMATION,
   confirmEvictionAsClaimant,
+  rescheduleEvictionAsBailiff,
   scheduleEvictionOnApprovedWarrant,
   setUpWarrantAtStatus,
 } from '../support/approve-warrant';
@@ -32,29 +33,24 @@ import {
   viewAsEachDefendant,
 } from '../support/defendant-visibility';
 import {
-  RESCHEDULE_EVICTION,
-  dispenseWithServiceRadio,
-  enterEvictionDateTime,
   expectCheckYourAnswers,
   resolveEvictionDate,
   resolveEvictionTime,
-  scheduleEviction,
 } from '../support/schedule-eviction';
 import { expectBailiffConfirmationWithWarrantNumber } from '../support/bailiff-events';
 import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 import { expectEnforcementSection, openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import { localUserName, localUsers } from '@config/local-stack.config';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
-Given('a PCS case {string} with a scheduled eviction', async ({ page, context, world }, _reference: string) => {
-  await setUpWarrantAtStatus(page, context, world, AWAITING_CLAIMANT_CONFIRMATION);
+Given('a PCS case {string} with a scheduled eviction', async ({ world }, _reference: string) => {
+  await setUpWarrantAtStatus(world, AWAITING_CLAIMANT_CONFIRMATION);
 });
 
 // Feature 08's Background has already scheduled the eviction, answering "No" to dispensing with service, so
 // this only checks it. Feature 14 starts from an approved warrant, so this schedules it.
-Given('the court has not given permission to dispense with service', async ({ page, context, world }) => {
+Given('the court has not given permission to dispense with service', async ({ world }) => {
   if (!world.evictionScheduled) {
-    await scheduleEvictionOnApprovedWarrant(page, context, world);
+    await scheduleEvictionOnApprovedWarrant(world);
   }
   expect(world.evictionScheduled, 'an eviction scheduled without dispensing with service').toBe(true);
   expect(world.serviceDispensedWith ?? false).toBe(false);
@@ -97,18 +93,18 @@ Then('I see an error that the answer must be 500 characters or fewer', async ({ 
 // Two uses. In feature 08 it follows the bailiff's own submit, so it checks the confirmation. In features 12
 // and 14 it is a Given on a case whose eviction has not been scheduled yet, so it schedules the eviction and
 // serves the notice, with a bailiff note so that the defendant checks have one to look for.
-Then('the notice of eviction has been served', async ({ page, context, world }) => {
+Then('the notice of eviction has been served', async ({ page, world }) => {
   if (world.evictionScheduled) {
     await expect(page.getByRole('heading', { name: noticeServed.confirmationHeader })).toBeVisible();
     expect(requireCaseReference(world)).toBeDefined();
     return;
   }
   if (world.caseReference) {
-    await scheduleEvictionOnApprovedWarrant(page, context, world);
+    await scheduleEvictionOnApprovedWarrant(world);
   } else {
-    await setUpWarrantAtStatus(page, context, world, AWAITING_CLAIMANT_CONFIRMATION);
+    await setUpWarrantAtStatus(world, AWAITING_CLAIMANT_CONFIRMATION);
   }
-  await markNoticeServedAsBailiff(page, context, world, 'Dog on the premises');
+  await markNoticeServedAsBailiff(world, 'Dog on the premises');
   world.defendantViews = undefined;
 });
 
@@ -151,26 +147,14 @@ Then(
  * can change that answer. A reschedule is offered once the claimant has said whether they can attend, so the
  * claimant confirms first.
  */
-Given('the court has given permission to dispense with service', async ({ page, context, world }) => {
+Given('the court has given permission to dispense with service', async ({ world }) => {
   approximatePrecondition(
     'HDPI-7549',
     'the eviction was scheduled without dispensing with service; the claimant confirmed, then the bailiff '
       + 'rescheduled it with permission to dispense with service'
   );
-  await confirmEvictionAsClaimant(page, context, world, true);
-  await signInAs('bailiff', page, context);
-  await openCaseSummary(page);
-  await startEvent(RESCHEDULE_EVICTION);
-  const when = new Date();
-  when.setDate(when.getDate() + 21);
-  const date = `${String(when.getDate()).padStart(2, '0')}/${String(when.getMonth() + 1).padStart(2, '0')}/${when.getFullYear()}`;
-  await enterEvictionDateTime(page, date, '10:00');
-  await dispenseWithServiceRadio(page, 'Yes').check();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await expectCheckYourAnswers(page);
-  await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
-  await expect(page.getByRole('heading', { name: /Eviction date rescheduled for/ })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
-  world.evictionDate = `${date} 10:00`;
+  await confirmEvictionAsClaimant(world, true);
+  await rescheduleEvictionAsBailiff(world, 21, 'Yes');
 });
 
 Then('it shows that the eviction is without notice', async ({ page, world }) => {

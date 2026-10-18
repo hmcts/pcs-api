@@ -70,6 +70,52 @@ const followUps = {
   accessDifficulty: 'The entrance is a locked communal gate',
 };
 
+/**
+ * The risk answers "Confirm the eviction details" asks again and pre-fills (its fields in
+ * `CaseEventToFields/confirmEviction.json`), which an API submit sends back.
+ */
+export const RISK_ANSWER_FIELDS = [
+  'warrantAnyRiskToBailiff',
+  'warrantEnforcementRiskCategories',
+  'warrantEnforcementViolentDetails',
+  'warrantEnforcementFirearmsDetails',
+  'warrantEnforcementCriminalDetails',
+  'warrantEnforcementVerbalOrWrittenThreatsDetails',
+  'warrantEnforcementProtestGroupMemberDetails',
+  'warrantEnforcementPoliceOrSocialServicesDetails',
+  'warrantEnforcementDogsOrOtherAnimalsDetails',
+  'vulnerablePeoplePresent',
+  'vulnerableAdultsChildren',
+  'warrantIsDifficultToAccessProperty',
+  'warrantClarificationOnAccessDifficultyText',
+  'warrantAdditionalInformationSelect',
+  'warrantAdditionalInformationDetails',
+];
+
+/** The field values `changeRiskAnswer` leaves behind when it changes `question` to "Yes", for an API submit. */
+export function riskAnswerChange(question: string): Record<string, unknown> {
+  switch (riskQuestion(question)) {
+    case riskQuestions.anyRiskToBailiff:
+      return {
+        warrantAnyRiskToBailiff: 'YES',
+        warrantEnforcementRiskCategories: ['VIOLENT_OR_AGGRESSIVE'],
+        warrantEnforcementViolentDetails: followUps.violentDetails,
+      };
+    case riskQuestions.vulnerablePeople:
+      return {
+        vulnerablePeoplePresent: 'YES',
+        vulnerableAdultsChildren: { vulnerableCategory: 'VULNERABLE_ADULTS', vulnerableReasonText: followUps.vulnerableReason },
+      };
+    case riskQuestions.difficultToAccess:
+      return {
+        warrantIsDifficultToAccessProperty: 'YES',
+        warrantClarificationOnAccessDifficultyText: followUps.accessDifficulty,
+      };
+    default:
+      throw new Error(`Changing "${question}" is not supported`);
+  }
+}
+
 const pageHeadings = {
   livingInTheProperty: 'Everyone living at the property',
   vulnerablePeople: 'Vulnerable adults and children at the property',

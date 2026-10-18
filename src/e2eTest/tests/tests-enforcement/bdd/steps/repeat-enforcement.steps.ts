@@ -5,7 +5,7 @@
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
-import { approveWarrantAsCaseworker, restoreClaimantSession } from '../support/approve-warrant';
+import { approveWarrantAsCaseworker, expectClaimantNext } from '../support/approve-warrant';
 import { recordEnforcementFeePaid } from '../support/decide-enforcement';
 import {
   ENFORCEMENT_STATUS_TAB,
@@ -42,26 +42,26 @@ async function currentStatus(world: EnforcementWorld): Promise<string | undefine
   return (await currentEnforcement(requireCaseReference(world), world.earlierWarrantNumbers.length)).status;
 }
 
-Given('the case has a closed warrant with return name {string}', async ({ page, context, world }, returnName: string) => {
-  await closeWarrantWithReturn(page, context, world, returnName);
+Given('the case has a closed warrant with return name {string}', async ({ world }, returnName: string) => {
+  await closeWarrantWithReturn(world, returnName);
 });
 
-Given('the case has a warrant closed with return name {string}', async ({ page, context, world }, returnName: string) => {
-  await closeWarrantWithReturn(page, context, world, returnName);
+Given('the case has a warrant closed with return name {string}', async ({ world }, returnName: string) => {
+  await closeWarrantWithReturn(world, returnName);
 });
 
 Given(
   'the case has a warrant {string} closed with return name {string}',
-  async ({ page, context, world }, alias: string, returnName: string) => {
-    await closeWarrantWithReturn(page, context, world, returnName);
+  async ({ world }, alias: string, returnName: string) => {
+    await closeWarrantWithReturn(world, returnName);
     world.aliases[alias] = world.earlierWarrantNumbers.at(-1) as string;
   }
 );
 
 Given(
   'the case has a closed warrant with return name {string} generated {string} ago',
-  async ({ page, context, world }, returnName: string, age: string) => {
-    await closeWarrantWithReturn(page, context, world, returnName);
+  async ({ world }, returnName: string, age: string) => {
+    await closeWarrantWithReturn(world, returnName);
     await backdateWarrantGeneration(world, monthsIn(age));
   }
 );
@@ -84,11 +84,11 @@ When('I apply and pay for a new {string}', async ({ page, world, $tags }, type: 
   }
 });
 
-When('the caseworker approves it', async ({ page, context, world }) => {
+When('the caseworker approves it', async ({ world }) => {
   try {
-    await approveWarrantAsCaseworker(page, world, { feeOutstanding: false });
+    await approveWarrantAsCaseworker(world, { feeOutstanding: false });
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
 });
 

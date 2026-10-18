@@ -15,6 +15,7 @@ import { Page, expect } from '@playwright/test';
 import Axios from 'axios';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { ensureSignedIn } from './session';
 
 export const ENFORCEMENT_STATUS_TAB = 'Enforcement status';
 
@@ -38,6 +39,7 @@ export type EnforcementSection = {
 };
 
 export async function openCaseTab(page: Page, caseReference: string, tabName: string): Promise<void> {
+  await ensureSignedIn(page);
   const url = `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${caseReference}#${encodeURIComponent(tabName)}`;
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('tab', { name: tabName, exact: true })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
@@ -198,7 +200,7 @@ export async function currentEnforcement(caseReference: string, earlierCount = 0
  * status set by a just-submitted event is picked up once CCD has it.
  */
 export async function expectEnforcementStatus(
-  _page: Page,
+  _page: Page | undefined,
   caseReference: string,
   status: string,
   earlierCount = 0

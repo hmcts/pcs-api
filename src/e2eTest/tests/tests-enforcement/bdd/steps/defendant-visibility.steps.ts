@@ -11,7 +11,7 @@ import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import {
   approveApplicationAsCaseworker,
   approveWarrantAsCaseworker,
-  restoreClaimantSession,
+  expectClaimantNext,
   scheduleEvictionOnApprovedWarrant,
 } from '../support/approve-warrant';
 import { documentTitle, expectEnforcementDocument } from '../support/case-documents';
@@ -22,7 +22,7 @@ import {
   generateWarrantOfRestitution,
 } from '../support/repeat-enforcement';
 import { ENFORCEMENT_STATUS_TAB, enforcementSections, openCaseTab } from '../support/enforcement-status-tab';
-import { markNoticeServedAsBailiff } from '../support/notice-served';
+import { markNoticeServedAsBailiff, markNoticeServedInXui } from '../support/notice-served';
 import {
   DEFENDANT_LEGAL_REPRESENTATIVE,
   caseChangedForDefendants,
@@ -64,8 +64,8 @@ Given('a second defendant is a citizen using pcs-frontend', async ({ world, $tag
   await linkCitizenDefendant(world);
 });
 
-Given('the eviction has been scheduled', async ({ page, context, world }) => {
-  await scheduleEvictionOnApprovedWarrant(page, context, world);
+Given('the eviction has been scheduled', async ({ world }) => {
+  await scheduleEvictionOnApprovedWarrant(world);
 });
 
 Given('the notice of eviction has not been served', async ({ world }) => {
@@ -74,16 +74,16 @@ Given('the notice of eviction has not been served', async ({ world }) => {
   expect(world.noticeServed, 'the notice of eviction marked as served').toBe(false);
 });
 
-Given('the bailiff answered {string} to {string}', async ({ page, context, world, $tags }, answer: string, question: string) => {
+Given('the bailiff answered {string} to {string}', async ({ world, $tags }, answer: string, question: string) => {
   if (question !== DISPENSE_WITH_SERVICE_QUESTION || (answer !== 'Yes' && answer !== 'No')) {
     return markPending({ ticket: 'HDPI-7344', summary: `answering "${answer}" to "${question}"` }, $tags);
   }
-  await scheduleEvictionOnApprovedWarrant(page, context, world, answer);
+  await scheduleEvictionOnApprovedWarrant(world, answer);
 });
 
-When('the bailiff marks the notice of eviction as served', async ({ page, context, world }) => {
+When('the bailiff marks the notice of eviction as served', async ({ page, world }) => {
   expect(world.evictionScheduled && world.serviceDispensedWith === false, 'a notice of eviction to serve').toBe(true);
-  await markNoticeServedAsBailiff(page, context, world);
+  await markNoticeServedInXui(page, world);
   caseChangedForDefendants(world);
 });
 
@@ -217,22 +217,22 @@ When('a defendant views case file view', async ({ page, context, world, $tags })
  * warrant itself is still withheld means something; a writ and a live warrant of restitution are never
  * visible to defendants. Waits until an internal user can see the document.
  */
-Given('a {string} has been generated', async ({ page, context, world, $tags }, type: string) => {
+Given('a {string} has been generated', async ({ world, $tags }, type: string) => {
   if (type === 'warrant of possession') {
     expect(world.warrantApproved, 'the Background\'s approved warrant').toBe(true);
-    await scheduleEvictionOnApprovedWarrant(page, context, world);
-    await markNoticeServedAsBailiff(page, context, world);
+    await scheduleEvictionOnApprovedWarrant(world);
+    await markNoticeServedAsBailiff(world);
   } else if (type === 'writ of possession') {
     if (!(await createCaseWithWrit(world))) {
       return markPending({ ticket: 'HDPI-7419', summary: 'seeding a writ application outside a local stack' }, $tags);
     }
     try {
-      await approveApplicationAsCaseworker(page, world, 'Writ');
+      await approveApplicationAsCaseworker(world, 'Writ');
     } finally {
-      await restoreClaimantSession(page, context);
+      expectClaimantNext();
     }
   } else if (type === 'warrant of restitution') {
-    await generateWarrantOfRestitution(page, context, world);
+    await generateWarrantOfRestitution(world);
   } else {
     return markPending({ ticket: 'HDPI-7419', summary: `generating a ${type}` }, $tags);
   }
@@ -254,10 +254,10 @@ Then('they do not see the {string} document', async ({ page, context, world }, t
  * The warrant's notice of eviction is served before it closes, because a closed warrant only stays visible to
  * defendants if they could see it while it was live.
  */
-Given('the previous warrant ended with {string}', async ({ page, context, world }, returnName: string) => {
-  await scheduleEvictionOnApprovedWarrant(page, context, world);
-  await markNoticeServedAsBailiff(page, context, world);
-  await closeApprovedWarrant(page, context, world, returnName);
+Given('the previous warrant ended with {string}', async ({ world }, returnName: string) => {
+  await scheduleEvictionOnApprovedWarrant(world);
+  await markNoticeServedAsBailiff(world);
+  await closeApprovedWarrant(world, returnName);
   caseChangedForDefendants(world);
 });
 
@@ -265,8 +265,8 @@ Given('the defendants could see the enforcement for that warrant', async ({ page
   await expectEnforcementTab(page, await viewAsEachDefendant(page, context, world), ENFORCEMENT_STATUS_TAB, true);
 });
 
-When('the claimant applies for a warrant of restitution', async ({ page, context, world }) => {
-  await restoreClaimantSession(page, context);
+When('the claimant applies for a warrant of restitution', async ({ page, world }) => {
+  expectClaimantNext();
   await applyForWarrantOfRestitution(page, world);
   caseChangedForDefendants(world);
 });
@@ -293,13 +293,13 @@ Then(
   'they stay unable to see it until the bailiff records a return on the warrant of restitution',
   async ({ page, context, world }) => {
     try {
-      await approveWarrantAsCaseworker(page, world, { feeOutstanding: false });
+      await approveWarrantAsCaseworker(world, { feeOutstanding: false });
     } finally {
-      await restoreClaimantSession(page, context);
+      expectClaimantNext();
     }
     await expectNoEnforcementInformation(page, context, world);
 
-    await closeApprovedWarrant(page, context, world, 'Warrant withdrawn');
+    await closeApprovedWarrant(world, 'Warrant withdrawn');
     await expectEnforcementTab(page, await viewAsEachDefendant(page, context, world), ENFORCEMENT_STATUS_TAB, true);
   }
 );
