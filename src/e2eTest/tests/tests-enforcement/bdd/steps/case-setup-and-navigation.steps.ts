@@ -1,6 +1,7 @@
 // Case set-up, signing in and moving around the case in XUI. Shared by every feature.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import type { Page } from '@playwright/test';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import {
   canSignInAs,
@@ -27,12 +28,13 @@ import {
   submitDecision,
 } from '../support/decide-enforcement';
 import { isLocalStack, localUsers } from '@config/local-stack.config';
+import { user as testUsers } from '@data/user-data';
 import { LONG_TIMEOUT } from 'playwright.config';
 import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionInXui, setUpWarrantAtStatus } from '../support/approve-warrant';
 import {
   CITIZEN_DEFENDANT,
   DEFENDANT_LEGAL_REPRESENTATIVE,
-  canSetUpDefendants,
+  canLinkCitizenDefendant,
   linkCitizenDefendant,
   viewAsEachDefendant,
 } from '../support/defendant-visibility';
@@ -122,20 +124,20 @@ When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-// Users the suite has no sign-in for in this environment, such as a defendant on a local stack, wait on
+// Users the suite has no sign-in for in this environment, such as a bailiff outside a local stack, wait on
 // HDPI-7539.
 When('a {string} opens the case', async ({ page, context, world, $tags }, user: string) => {
   world.openedAs = user;
   world.defendantViews = undefined;
-  if (user === DEFENDANT_LEGAL_REPRESENTATIVE && isLocalStack()) {
+  if (user === DEFENDANT_LEGAL_REPRESENTATIVE) {
     // The tab checks read the case data CCD gives this user as well as their XUI tabs.
-    world.defendantLegalRepresentative = localUsers.defendantSolicitor;
+    world.defendantLegalRepresentative = isLocalStack() ? localUsers.defendantSolicitor : testUsers.defendantSolicitor.email;
     world.citizenDefendant = undefined;
   }
   if (user === CITIZEN_DEFENDANT) {
     // Not an XUI user: their view is the case data CCD gives them, which is what pcs-frontend renders.
-    if (!canSetUpDefendants()) {
-      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case' }, $tags);
+    if (!canLinkCitizenDefendant()) {
+      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case: only a local stack has a citizen user' }, $tags);
     }
     await linkCitizenDefendant(world);
     world.defendantLegalRepresentative = undefined;
@@ -174,7 +176,11 @@ Then('the {string} event is available in the next steps drop down', async ({ pag
   await expect.poll(() => nextStepOptions(page)).toContain(event.label);
 });
 
-Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+/**
+ * An enforcement event that cannot be used is hidden by its show condition rather than offered and then refused
+ * by its start callback, so "not available" means missing from the next step drop down.
+ */
+async function expectNotOffered(page: Page, $tags: string[], eventName: string): Promise<void> {
   const event = xuiEvents[eventName];
   if (!event) {
     return markPending(eventNotBuilt(eventName), $tags);
@@ -182,6 +188,14 @@ Then('the {string} event is not available', async ({ page, $tags }, eventName: s
   // Wait for the drop down to load with the user's other events before checking this one is missing.
   await expect.poll(async () => (await nextStepOptions(page)).length).toBeGreaterThan(0);
   expect(await nextStepOptions(page)).not.toContain(event.label);
+}
+
+Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
+});
+
+Then('the {string} event is not offered in the next steps drop down', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
 });
 
 When('I start the {string} event', async ({ page, world, $tags }, eventName: string) => {

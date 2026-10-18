@@ -26,7 +26,7 @@ import { markNoticeServedAsBailiff, markNoticeServedInXui } from '../support/not
 import {
   DEFENDANT_LEGAL_REPRESENTATIVE,
   caseChangedForDefendants,
-  canSetUpDefendants,
+  canLinkCitizenDefendant,
   defendantViews,
   enforcementDocuments,
   expectEnforcementTab,
@@ -40,21 +40,18 @@ import {
 
 const DISPENSE_WITH_SERVICE_QUESTION = 'Has the court given permission to dispense with service?';
 
-const noDefendantUsers = {
+const noCitizenUser = {
   ticket: 'HDPI-7539',
-  summary: 'a defendant linked to the case: only a local stack has users that testing support can link',
+  summary: 'a citizen defendant linked to the case: only a local stack has a citizen user that testing support can link',
 };
 
-Given('the defendant is represented in XUI by a legal representative', async ({ world, $tags }) => {
-  if (!canSetUpDefendants()) {
-    return markPending(noDefendantUsers, $tags);
-  }
+Given('the defendant is represented in XUI by a legal representative', async ({ world }) => {
   await linkDefendantLegalRepresentative(world);
 });
 
 Given('a second defendant is a citizen using pcs-frontend', async ({ world, $tags }) => {
-  if (!canSetUpDefendants()) {
-    return markPending(noDefendantUsers, $tags);
+  if (!canLinkCitizenDefendant()) {
+    return markPending(noCitizenUser, $tags);
   }
   approximatePrecondition(
     'HDPI-7539',
@@ -159,10 +156,7 @@ pendingSteps({ ticket: 'HDPI-7354', summary: 'Polling each defendant view for th
 ]);
 
 // Feature 12: what a defendant sees on the "Enforcement status" tab once the notice is served.
-When('a defendant opens the {string} tab', async ({ page, context, world, $tags }, tabName: string) => {
-  if (!canSetUpDefendants()) {
-    return markPending(noDefendantUsers, $tags);
-  }
+When('a defendant opens the {string} tab', async ({ page, context, world }, tabName: string) => {
   expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
   world.openedAs = DEFENDANT_LEGAL_REPRESENTATIVE;
   await signInAs(DEFENDANT_LEGAL_REPRESENTATIVE, page, context);
@@ -187,8 +181,8 @@ Then('they do not see {string}', async ({ page }, section: string) => {
 
 /** Links both defendants to the scenario's current case, which a later set-up step may have replaced. */
 async function linkBothDefendants(world: EnforcementWorld, $tags: string[]): Promise<boolean> {
-  if (!canSetUpDefendants()) {
-    markPending(noDefendantUsers, $tags);
+  if (!canLinkCitizenDefendant()) {
+    markPending(noCitizenUser, $tags);
     return false;
   }
   await linkDefendantLegalRepresentative(world);
@@ -223,9 +217,7 @@ Given('a {string} has been generated', async ({ world, $tags }, type: string) =>
     await scheduleEvictionOnApprovedWarrant(world);
     await markNoticeServedAsBailiff(world);
   } else if (type === 'writ of possession') {
-    if (!(await createCaseWithWrit(world))) {
-      return markPending({ ticket: 'HDPI-7419', summary: 'seeding a writ application outside a local stack' }, $tags);
-    }
+    await createCaseWithWrit(world);
     try {
       await approveApplicationAsCaseworker(world, 'Writ');
     } finally {
@@ -288,7 +280,7 @@ Then('defendants cannot see any enforcement information', async ({ page, context
 });
 
 // Approving the restitution keeps it live and the enforcement hidden; its final return ends it, and the earlier
-// warrant, whose notice was served, shows again (OPEN-QUESTIONS 105).
+// warrant, whose notice was served, shows again (OPEN-QUESTIONS 49).
 Then(
   'they stay unable to see it until the bailiff records a return on the warrant of restitution',
   async ({ page, context, world }) => {

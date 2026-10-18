@@ -3,13 +3,9 @@ package uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
+import uk.gov.hmcts.reform.pcs.enforcement.util.EvictionDateFormat;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Formats a date and time for the eviction confirmation screens, as in "Thursday 25 June 2026 at 10:00am".
@@ -17,13 +13,8 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EvictionConfirmationFormat {
 
-    static final DateTimeFormatter DATE_AT_TIME = new DateTimeFormatterBuilder()
-        .appendPattern("EEEE d MMMM yyyy 'at' hh:mm")
-        .appendText(ChronoField.AMPM_OF_DAY, Map.of(0L, "am", 1L, "pm"))
-        .toFormatter(Locale.UK);
-
     public static String format(LocalDateTime dateTime) {
-        return dateTime.format(DATE_AT_TIME);
+        return EvictionDateFormat.format(dateTime);
     }
 
     /**

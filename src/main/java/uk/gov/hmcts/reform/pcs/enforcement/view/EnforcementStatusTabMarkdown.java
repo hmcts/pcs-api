@@ -165,7 +165,7 @@ final class EnforcementStatusTabMarkdown {
     }
 
     /**
-     * "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 44), so that is
+     * "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 25), so that is
      * the only answer shown.
      */
     private static String claimantConfirmation(EnforcementOrderEntity enforcement) {

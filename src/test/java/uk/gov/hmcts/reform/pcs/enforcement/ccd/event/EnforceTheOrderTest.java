@@ -400,6 +400,12 @@ class EnforceTheOrderTest extends BaseEventTest {
     }
 
     @Test
+    void shouldOnlyBeOfferedWithoutADraftWhileTheClaimHasNoLiveEnforcement() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND "
+                                           + "hasUnsubmittedEnforcementData=\"No\" AND canApplyForEnforcement=\"Yes\"");
+    }
+
+    @Test
     void shouldRefuseToStartWhenTheCaseHasALiveEnforcement() {
         // Given
         when(enforcementOrderService.hasLiveEnforcement(TEST_CASE_REFERENCE)).thenReturn(true);

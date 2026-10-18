@@ -24,11 +24,11 @@ export const enforceWarrantApiData = {
     },
     warrantFeeAmount: "£152",
     writFeeAmount: "£82",
+    warrantDefendantInBreathingSpace: "NO",
+    warrantDefendantMissedPayments: "YES",
     warrantCorrectNameAndAddress: "YES",
     warrantDefendantsDOBKnown: "YES",
     warrantDefendantsDOBDetails: "tewt",
-    warrantShowPeopleWhoWillBeEvictedPage: "Yes",
-    warrantEvictEveryone: "YES",
     warrantAnyRiskToBailiff: "YES",
     warrantEnforcementRiskCategories: [
       "VIOLENT_OR_AGGRESSIVE",
@@ -49,14 +49,7 @@ export const enforceWarrantApiData = {
     warrantClarificationOnAccessDifficultyText: "User input informing the difficulties accessing the property",
     warrantAdditionalInformationSelect: "YES",
     warrantAdditionalInformationDetails: "Tell us anything else that could help with the eviction",
-    warrantAmountOwed: "1200",
-    warrantAreLegalCostsToBeClaimed: "YES",
-    warrantAmountOfLegalCosts: "1300",
-    warrantHaveLandRegistryFeesBeenPaid: "YES",
-    warrantAmountOfLandRegistryFees: "1400",
-    warrantRepaymentChoice: "ALL",
     warrantEnforcementLanguageUsed: "ENGLISH",
-    warrantIsSuspendedOrder: "YES",
     warrantCertification: [
       "CERTIFY"
     ],
@@ -92,11 +85,11 @@ export const enforceWarrantApiData = {
     },
     warrantFeeAmount: "£152",
     writFeeAmount: "£82",
+    warrantDefendantInBreathingSpace: "NO",
+    warrantDefendantMissedPayments: "YES",
     warrantCorrectNameAndAddress: "YES",
     warrantDefendantsDOBKnown: "NO",
     warrantDefendantsDOBDetails: "tewt",
-    warrantShowPeopleWhoWillBeEvictedPage: "NO",
-    warrantEvictEveryone: "NO",
     warrantAnyRiskToBailiff: "NO",
     warrantEnforcementRiskCategories: [
       "PROTEST_GROUP_MEMBER"
@@ -107,14 +100,7 @@ export const enforceWarrantApiData = {
     warrantClarificationOnAccessDifficultyText: "Explain why it’s difficult to access the property",
     warrantAdditionalInformationSelect: "NO",
     warrantAdditionalInformationDetails: "Tell us anything else that could help with the eviction",
-    warrantAmountOwed: "1200",
-    warrantAreLegalCostsToBeClaimed: "YES",
-    warrantAmountOfLegalCosts: "1300",
-    warrantHaveLandRegistryFeesBeenPaid: "YES",
-    warrantAmountOfLandRegistryFees: "1400",
-    warrantRepaymentChoice: "ALL",
     warrantEnforcementLanguageUsed: "ENGLISH",
-    warrantIsSuspendedOrder: "YES",
     warrantCertification: [
       "CERTIFY"
     ],

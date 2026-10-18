@@ -12,7 +12,7 @@ import {
   allocateBailiffViaTestingSupport,
   isLocalStack,
   localDocumentStoreIsUp,
-  localIdamUserId,
+  idamUserId,
   localUserName,
   localUsers,
 } from '@config/local-stack.config';
@@ -74,7 +74,7 @@ async function requireDocumentStore(tags: string[]): Promise<void> {
 /** Allocates the case's warrant to another bailiff user, as `allocateBailiff` does for the default one. */
 async function allocateTo(caseReference: string, email: string): Promise<void> {
   await allocateBailiffViaTestingSupport(caseReference, {
-    userId: await localIdamUserId(email),
+    userId: await idamUserId(email),
     name: localUserName(email),
     email,
   });
@@ -105,7 +105,7 @@ Given('each case has an eviction scheduled this week', async ({ world }) => {
     await scheduleEvictionAsBailiff(world, 1);
   }
   // pcs-api generates each document on a db-scheduler task after its event commits, so wait for all of them
-  // before printing. Locally each is the wiremock Docmosis stub's placeholder PDF (OPEN-QUESTIONS 19).
+  // before printing. Locally each is the wiremock Docmosis stub's placeholder PDF (OPEN-QUESTIONS 38).
   for (const caseReference of world.batchPrintCases) {
     for (const title of GENERATED_DOCUMENTS) {
       await expectEnforcementDocument(caseReference, title);

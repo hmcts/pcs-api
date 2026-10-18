@@ -6,7 +6,7 @@
 // reference data from wiremock's stub, which lists the cftlib bailiff users.
 //
 // What is not, and why:
-//   * the type-ahead's court location filter (OPEN-QUESTIONS 16) and a second named bailiff to reallocate to.
+//   * the type-ahead's court location filter (OPEN-QUESTIONS 20) and a second named bailiff to reallocate to.
 //     HDPI-7356, HDPI-7539.
 //   * every status after "Awaiting bailiff allocation" — reaching one needs a bailiff allocated, so
 //     `scheduleEviction` (05), `rescheduleEviction` (07), `markNoticeOfEvictionServed` (08) and
@@ -50,6 +50,7 @@ import {
 import { AWAITING_BAILIFF_ALLOCATION } from '../support/approve-warrant';
 import { expectEnforcementStatus } from '../support/enforcement-status-tab';
 import { localUserName, localUsers } from '@config/local-stack.config';
+import { expectSingleErrorMessage } from '../support/error-summary';
 import { expectEvictionResult, isEvictionResult } from './schedule-eviction.steps';
 
 
@@ -75,7 +76,7 @@ When('I select {string} without choosing a risk level', async ({ page }, button:
 });
 
 Then('I see an error asking me to choose a risk level', async ({ page }) => {
-  await expect(errorSummary(page)).toContainText(setRiskLevel.question);
+  await expectSingleErrorMessage(page, setRiskLevel.question);
   await expect(page.getByRole('heading', { name: setRiskLevel.pageLabel })).toBeVisible();
 });
 
@@ -266,7 +267,7 @@ When('I add the bailiff note {string}', async ({ page, world }, note: string) =>
 Then('I see {string}', async ({ page, world, $tags }, result: string) => {
   switch (result) {
     case 'the standard XUI error that a note is needed':
-      await expect(errorSummary(page)).toContainText(`${addBailiffNote.noteLabel} is required`);
+      await expectSingleErrorMessage(page, `${addBailiffNote.noteLabel} is required`);
       return;
     case 'the standard XUI error for too many characters':
       await expect(errorSummary(page)).toBeVisible();
@@ -386,13 +387,13 @@ When('I type part of a bailiff\'s name or email address', async ({ page, world }
   await searchForBailiff(page, localUsers.bailiff);
 });
 
-pendingSteps({ ticket: 'HDPI-7356', summary: 'The bailiff type-ahead is not filtered by court location (OPEN-QUESTIONS 16)' }, [
+pendingSteps({ ticket: 'HDPI-7356', summary: 'The bailiff type-ahead is not filtered by court location (OPEN-QUESTIONS 20)' }, [
   'I see matching bailiff users for the case\'s court location',
 ]);
 
 // The type-ahead lists every PCS admin in staff reference data. A user without the bailiff role is refused
-// when the page is continued ("Choose a user who has the bailiff role"), not hidden (OPEN-QUESTIONS 53).
-pendingSteps({ ticket: 'HDPI-7356', summary: 'The type-ahead lists all admin staff, not only bailiffs (OPEN-QUESTIONS 53)' }, [
+// when the page is continued ("Choose a user who has the bailiff role"), not hidden (OPEN-QUESTIONS 58).
+pendingSteps({ ticket: 'HDPI-7356', summary: 'The type-ahead lists all admin staff, not only bailiffs (OPEN-QUESTIONS 58)' }, [
   'users without a bailiff role are not listed',
 ]);
 
@@ -405,7 +406,7 @@ When('I select {string} without choosing a bailiff', async ({ page, world }, but
 // XUI's own "is required" check on the StaffUser field fires before pcs-api's "Choose a bailiff"; both name
 // the bailiff.
 Then('I see an error asking me to choose a bailiff', async ({ page }) => {
-  await expect(errorSummary(page)).toContainText(/bailiff/i);
+  await expectSingleErrorMessage(page, /bailiff/i);
   await expect(page.getByRole('heading', { name: findBailiff.pageLabel })).toBeVisible();
 });
 
@@ -480,7 +481,7 @@ pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reac
 ]);
 
 // The review banner lists the changed questions but does not link to them: XUI routes the tab by the URL
-// fragment, so an in-page link would change tab (HDPI-7350, OPEN-QUESTIONS 115).
+// fragment, so an in-page link would change tab (HDPI-7350, OPEN-QUESTIONS 30).
 pendingSteps({ ticket: 'HDPI-7350', summary: 'Links from the review banner to the changed questions' }, [
   'I select the banner link for {string}',
   'I am taken to that question in the {string} section',

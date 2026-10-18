@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffAllocationEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.BailiffAllocationRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
@@ -84,15 +83,14 @@ public class BatchPrintPlanner {
      */
     @Transactional(readOnly = true)
     public List<AllocatedWarrant> allocatedWarrants(String bailiffUserId, LocalDate from, LocalDate to) {
-        return bailiffAllocationRepository.findActiveByBailiffUserId(IdamUserIds.normalise(bailiffUserId)).stream()
-            .map(BailiffAllocationEntity::getEnforcementOrder)
-            .filter(BailiffEnforcementRules::isApprovedLiveWarrant)
-            .filter(enforcement -> evictionInRange(enforcement.getBailiffDate(), from, to))
-            .map(enforcement -> new AllocatedWarrant(
-                String.valueOf(enforcement.getClaim().getPcsCase().getCaseReference()),
-                enforcement.getEnforcementNumber(),
-                enforcement.getStatus(),
-                enforcement.getBailiffDate()))
+        return bailiffAllocationRepository.findAllocatedWarrants(IdamUserIds.normalise(bailiffUserId),
+                                                                 BailiffEnforcementRules.APPROVED_LIVE_STATUSES)
+            .stream()
+            .filter(warrant -> evictionInRange(warrant.bailiffDate(), from, to))
+            .map(warrant -> new AllocatedWarrant(String.valueOf(warrant.caseReference()),
+                                                 warrant.enforcementNumber(),
+                                                 warrant.status(),
+                                                 warrant.bailiffDate()))
             .sorted(Comparator.comparing(AllocatedWarrant::evictionDate,
                                          Comparator.nullsLast(Comparator.naturalOrder()))
                         .thenComparing(AllocatedWarrant::caseReference))

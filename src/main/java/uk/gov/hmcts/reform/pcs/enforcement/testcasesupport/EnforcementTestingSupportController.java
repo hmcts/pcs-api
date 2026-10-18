@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
-import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
@@ -41,9 +40,10 @@ import java.util.function.Supplier;
  * Test-only shortcuts for enforcement, for the points where the end to end tests cannot drive the real
  * journey or cannot wait for it.
  *
- * <p>pcs-api cannot take an enforcement fee yet (HDPI-2877), so an application never reaches "Awaiting
- * review" on its own. And {@code allocateBailiff} cannot be driven without staff reference data, so without
- * a shortcut no warrant can get past "Awaiting bailiff allocation" and the schedule, reschedule,
+ * <p>A local stack has no Payments service, so an application's fee is never paid and it never reaches
+ * "Awaiting review" on its own; {@code fee-paid} pays it through the real payment callback handler (see
+ * {@link EnforcementFeePaidSimulator}). And {@code allocateBailiff} cannot be driven without staff reference
+ * data, so without a shortcut no warrant can get past "Awaiting bailiff allocation" and the schedule, reschedule,
  * notice-of-eviction and warrant-return journeys are all untestable. The 72 hour and 12 month rules are
  * measured from when things happened, so {@code backdate} moves those times into the past. Viewing a case as
  * a defendant needs a defendant case role, which locally only this can give. Batch print takes the latest of
@@ -61,7 +61,7 @@ public class EnforcementTestingSupportController {
     private static final List<UserRole> DEFENDANT_CASE_ROLES =
         List.of(UserRole.DEFENDANT, UserRole.DEFENDANT_SOLICITOR);
 
-    private final EnforcementOrderService enforcementOrderService;
+    private final EnforcementFeePaidSimulator enforcementFeePaidSimulator;
     private final BailiffAllocationService bailiffAllocationService;
     private final IdamAuthenticator idamAuthenticator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -75,7 +75,7 @@ public class EnforcementTestingSupportController {
         @PathVariable long caseReference) {
 
         log.info("Testing support: recording the enforcement fee as paid on case {}", caseReference);
-        return enforcementOrderService.recordFeePaid(caseReference)
+        return enforcementFeePaidSimulator.recordFeePaid(caseReference)
             ? ResponseEntity.noContent().build()
             : ResponseEntity.notFound().build();
     }

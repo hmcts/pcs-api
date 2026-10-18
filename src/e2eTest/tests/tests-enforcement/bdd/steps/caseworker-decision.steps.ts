@@ -14,6 +14,7 @@ import {
   startEvent,
 } from '../support/enforcement-journeys';
 import { enforcementNumber } from '../support/enforcement-status-tab';
+import { expectSingleErrorMessage } from '../support/error-summary';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
@@ -37,7 +38,7 @@ Given('a PCS case {string} with an enforcement of type {string} with status {str
   await createCaseWithWarrant(world);
   world.applicationType = type;
   if (status === 'Awaiting review') {
-    approximatePrecondition('HDPI-2877', 'pcs-api cannot take the enforcement fee yet; the fee is recorded as paid through testing support');
+    approximatePrecondition('HDPI-2877', 'a local stack has no Payments service; the enforcement fee is paid through testing support');
     await recordEnforcementFeePaid();
   }
 });
@@ -48,17 +49,18 @@ Given('a {string} task exists on the case', async ({}, task: string) => {
 });
 
 /**
- * The Background seeds a warrant of possession. A writ of possession can only be seeded on a local stack, from
- * the Create-Enforcement-Writ fixture, so the scenario carries on with a new case that has a writ awaiting
- * review instead.
+ * The Background seeds a warrant of possession. A writ of possession can only be seeded from the
+ * Create-Enforcement-Writ fixture, so the scenario carries on with a new case that has a writ awaiting review
+ * instead.
  */
 Given('the enforcement is of type {string}', async ({ world, $tags }, type: string) => {
   if (type === world.applicationType) {
     return;
   }
-  if (type !== 'writ of possession' || !(await createCaseWithWrit(world))) {
+  if (type !== 'writ of possession') {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} through the API` }, $tags);
   }
+  await createCaseWithWrit(world);
   world.applicationType = type;
   approximatePrecondition('HDPI-7419', 'the writ of possession is on a new case seeded from the writ fixture, not the Background case');
   await recordEnforcementFeePaid();
@@ -71,7 +73,7 @@ When('I select {string} without choosing an option', async ({ page, world }, but
 });
 
 Then('I see an error asking me to choose accept or reject', async ({ page }) => {
-  await expect(page.locator('.govuk-error-summary, .error-summary').first()).toContainText(decideEnforcement.decisionQuestion);
+  await expectSingleErrorMessage(page, decideEnforcement.decisionQuestion);
   await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
 });
 
@@ -114,7 +116,6 @@ When('I enter a reason for rejecting', async ({ page }) => {
 Then('I see the {string} confirmation screen with the case number, property address and party names', async ({ page, world }, title: string) => {
   await expectConfirmation(page, title);
   const panel = confirmationPanel(page);
-  // DecideEnforcementConfirmation renders the raw long; XUI formats any 16-digit reference with dashes.
   await expect(panel.getByText(`Case number: ${withDashes(String(world.caseReference))}`)).toBeVisible();
   await expect(panel.getByText(/^Property address: .+/)).toBeVisible();
   await expect(panel.getByText(/ vs /).first()).toBeVisible();

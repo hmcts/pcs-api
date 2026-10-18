@@ -41,6 +41,7 @@ import { expectBailiffConfirmationWithWarrantNumber } from '../support/bailiff-e
 import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 import { expectEnforcementSection, openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import { localUserName, localUsers } from '@config/local-stack.config';
+import { expectSingleErrorMessage } from '../support/error-summary';
 
 Given('a PCS case {string} with a scheduled eviction', async ({ world }, _reference: string) => {
   await setUpWarrantAtStatus(world, AWAITING_CLAIMANT_CONFIRMATION);
@@ -62,10 +63,8 @@ When('I select {string} without answering', async ({ page }, button: string) => 
 });
 
 Then('I see errors for {string} and {string}', async ({ page }, first: string, second: string) => {
-  const summary = page.locator('.govuk-error-summary, .error-summary').first();
-  await expect(summary).toBeVisible();
-  await expect(summary).toContainText(first);
-  await expect(summary).toContainText(second);
+  await expectSingleErrorMessage(page, first);
+  await expectSingleErrorMessage(page, second);
 });
 
 Then('I am not asked about permission to dispense with service', async ({ page }) => {
@@ -87,7 +86,7 @@ When('I enter 501 characters for {string}', async ({ page, $tags }, field: strin
 });
 
 Then('I see an error that the answer must be 500 characters or fewer', async ({ page }) => {
-  await expect(page.getByText(noticeServed.tooLongError).first()).toBeVisible();
+  await expectSingleErrorMessage(page, noticeServed.tooLongError);
 });
 
 // Two uses. In feature 08 it follows the bailiff's own submit, so it checks the confirmation. In features 12

@@ -15,9 +15,13 @@ import java.util.stream.Collectors;
  * View.
  *
  * <p>{@link #getTemplateKey()} is the key under {@code enforcement.documents.templates} that carries the
- * Docmosis template id. None of the real templates exists yet (OPEN-QUESTIONS 19), so every key defaults to a
- * deployed stand-in template; switching to the real one is a configuration change only, because the data
- * passed to the template ({@link EnforcementDocumentPayload}) is already the real one.</p>
+ * Docmosis template id. None of the real templates exists yet (OPEN-QUESTIONS 38), so every key defaults to a
+ * deployed stand-in template. Every template receives the same {@link EnforcementDocumentPayload}: the case
+ * reference, case name and property address; the enforcement type and number; the seal and generation time; the
+ * case management court's name and address; the allocated bailiff's name; the language the claimant used; the
+ * eviction date and whether service was dispensed with; and all the claimant's answers as submitted. A real
+ * template that needs anything else, such as Welsh wording (HDPI-9566), needs a payload change as well as its
+ * template id.</p>
  */
 @AllArgsConstructor
 @Getter

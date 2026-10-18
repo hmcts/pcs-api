@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffNoteService;
 import java.util.EnumSet;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addBailiffNote;
@@ -37,6 +38,12 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
 
+    /**
+     * Offered once the claim has an enforcement (EnforcementEventAvailabilityView). The start callback still
+     * refuses otherwise.
+     */
+    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canAddBailiffNote=\"Yes\"");
+
     static final int MAX_NOTE_LENGTH = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
     static final String CONFIRMATION_HEADER = "# Bailiff note added";
     static final String NOTE_REQUIRED_ERROR = "Enter a note";
@@ -46,7 +53,7 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
      * Enforcement is held apart from the case state, so the event is available in every state a case can be
      * in once it has been issued. Before that there can be no enforcement.
      */
-    static final State[] STATES = EnumSet.complementOf(EnumSet.of(
+    public static final State[] STATES = EnumSet.complementOf(EnumSet.of(
         State.AWAITING_SUBMISSION_TO_HMCTS,
         State.AWAITING_RESUBMISSION_TO_HMCTS,
         State.PENDING_CASE_ISSUED
@@ -64,7 +71,7 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
                 .forStates(STATES)
                 .name("Add a bailiff note")
                 .grant(Permission.CRUD, BAILIFF_STAFF_ROLES)
-                .showCondition(featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(SHOW_CONDITION)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .endButtonLabel("Continue");
         addBailiffNoteConfigurer.configurePages(new PageBuilder(eventBuilder));

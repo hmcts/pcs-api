@@ -30,8 +30,9 @@ export const decideEnforcement = {
 };
 
 /**
- * pcs-api cannot take an enforcement fee yet (HDPI-2877), so this records the fee for the case's application as
- * paid through pcs-api testing support. The application moves from "Awaiting payment" to "Awaiting review".
+ * A local stack has no Payments service to take an enforcement fee (HDPI-2877), so this pays the fee for the case's
+ * application through pcs-api testing support, which sends a paid callback through the enforcement payment
+ * handler. The application moves from "Awaiting payment" to "Awaiting review".
  */
 export async function recordEnforcementFeePaid(): Promise<void> {
   const api = Axios.create({
@@ -121,14 +122,17 @@ export function decisionRow(page: Page) {
 }
 
 /**
- * The confirmation panel XUI renders from `DecideEnforcementConfirmation`. Scoped to `#confirmation-body`
+ * The confirmation body XUI renders from `DecideEnforcementConfirmation`. Scoped to `#confirmation-body`
  * because the case number and property address also appear in the case header above it.
  */
 export function confirmationPanel(page: Page) {
   return page.locator('#confirmation-body');
 }
 
-/** The confirmation markup from DecideEnforcementConfirmation, e.g. "Warrant approved" or "Writ rejected". */
-export async function expectConfirmation(page: Page, title: string): Promise<void> {
-  await expect(confirmationPanel(page).getByText(title, { exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
+/**
+ * The confirmation heading from DecideEnforcementConfirmation, e.g. "Warrant of possession approved" or
+ * "Writ of restitution rejected". XUI renders the confirmation header as the page heading.
+ */
+export async function expectConfirmation(page: Page, title: string | RegExp): Promise<void> {
+  await expect(page.getByRole('heading', { name: title, exact: typeof title === 'string' })).toBeVisible({ timeout: LONG_TIMEOUT });
 }

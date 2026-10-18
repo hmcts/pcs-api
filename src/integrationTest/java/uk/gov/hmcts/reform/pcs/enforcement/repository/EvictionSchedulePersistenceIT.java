@@ -97,7 +97,7 @@ class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
             pcsCaseRepository.findByCaseReference(caseReference).orElseThrow(), pcsCase);
         assertThat(pcsCase.getEnforcementOrder().getShowConfirmEvictionJourney()).isEqualTo(YesOrNo.YES);
         assertThat(pcsCase.getEnforcementOrder().getConfirmEvictionSummaryMarkup())
-            .contains("Thursday, 25 June 2099 at 10:00am");
+            .contains("Thursday 25 June 2099 at 10:00am");
     }
 
     @Test

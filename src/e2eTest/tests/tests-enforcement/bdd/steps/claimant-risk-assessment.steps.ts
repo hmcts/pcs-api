@@ -185,7 +185,7 @@ Then('I see the original and updated answers side by side in a table', async ({ 
 /**
  * The "Important" banner above the internal sections lists every question the claimant changed. The items
  * are not links: XUI picks the tab from the URL fragment, so an in-page link would change tab. OPEN-QUESTIONS
- * 115 proposes a plain list, which is what is checked; the links are recorded as not checked.
+ * 30 proposes a plain list, which is what is checked; the links are recorded as not checked.
  */
 Then('I see an important banner with links to each question whose answer changed', async ({ page, world }) => {
   expect(world.changedRiskQuestions?.length, 'risk questions the claimant changed').toBeGreaterThan(0);
@@ -196,6 +196,6 @@ Then('I see an important banner with links to each question whose answer changed
   expect(listed).toEqual(expect.arrayContaining(world.changedRiskQuestions as string[]));
   test.info().annotations.push({
     type: 'open question',
-    description: 'OPEN-QUESTIONS 115: the banner lists the changed questions without linking to them',
+    description: 'OPEN-QUESTIONS 30: the banner lists the changed questions without linking to them',
   });
 });

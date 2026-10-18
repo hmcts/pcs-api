@@ -13,9 +13,12 @@
  *    fail. Local runs therefore create cases from the `createTestCase` fixtures, which reference no
  *    documents, instead of the document-bearing `createPossessionClaim` / `submitPossessionClaim` payloads.
  *
- * Nothing here runs unless `ENVIRONMENT=local`, so AAT and the nightly environments are unaffected.
+ * The local-only parts run only when `ENVIRONMENT=local`. The test-case fixtures, the testing-support calls and
+ * the per-user IDAM token and case data helpers also serve the enforcement suite on preview and AAT, where they use
+ * the permanent test users.
  */
 import Axios from 'axios';
+import { IdamUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 
@@ -155,7 +158,8 @@ function dataStoreApi(bearerToken = process.env.BEARER_TOKEN) {
 /**
  * Creates a case through the `createTestCase` event ("Test Support Case Creation") from one of the
  * test-case-generation fixtures. `TestCaseGeneration` only configures the event when `ENVIRONMENT=preview`
- * or `ENABLE_TESTING_SUPPORT=true`, so the local stack must be booted with testing support on.
+ * or `ENABLE_TESTING_SUPPORT=true` at definition generation: Jenkins sets it for preview and AAT, and the local
+ * stack must be booted with it. Runs as the suite's default user (BEARER_TOKEN) in every environment.
  *
  * The enforcement fixtures create the claim and submit the enforcement application in one submit, leaving
  * the case in `CASE_ISSUED` with an enforcement in `Awaiting payment`.
@@ -171,8 +175,8 @@ export async function createCaseFromFixture(fixture: TestCaseFixture): Promise<{
 
   if (!selected) {
     throw new Error(
-      `The local stack does not offer the "${fixture}" test-case fixture. Available: ${listItems.map(i => i.label).join(', ') || '(none)'}. ` +
-        'Boot cftlib with ENABLE_TESTING_SUPPORT=true.'
+      `This environment does not offer the "${fixture}" test-case fixture. Available: ${listItems.map(i => i.label).join(', ') || '(none)'}. ` +
+        'The CCD definition must be generated with ENABLE_TESTING_SUPPORT=true (boot cftlib with it locally).'
     );
   }
 
@@ -187,7 +191,7 @@ export async function createCaseFromFixture(fixture: TestCaseFixture): Promise<{
 
 /**
  * Records the enforcement fee as paid, moving the case's application from "Awaiting payment" to
- * "Awaiting review". pcs-api cannot take an enforcement fee yet (HDPI-2877).
+ * "Awaiting review" through pcs-api's enforcement payment handler. A local stack has no Payments service to take it.
  */
 export async function recordFeePaid(caseReference: string): Promise<void> {
   const response = await Axios.post(
@@ -250,9 +254,9 @@ export async function waitForServiceRequest(caseReference: string, timeoutMs = 9
   );
 }
 
-/** The IDAM id of a local user, read from the simulator's userinfo endpoint rather than derived. */
-export async function localIdamUserId(email: string): Promise<string> {
-  const token = await localIdamToken(email);
+/** The IDAM id of a user, read from this environment's IDAM userinfo endpoint rather than derived. */
+export async function idamUserId(email: string): Promise<string> {
+  const token = await idamToken(email);
   const response = await Axios.get(`${process.env.IDAM_WEB_URL}/o/userinfo`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -309,6 +313,24 @@ export async function localIdamToken(email: string): Promise<string> {
   return response.data.access_token;
 }
 
+/**
+ * An IDAM token for a user other than the suite's default one: a cftlib user from the IDAM simulator on a local
+ * stack, otherwise one of the permanent test users, who all share IDAM_PCS_USER_PASSWORD.
+ */
+export async function idamToken(email: string): Promise<string> {
+  if (isLocalStack()) {
+    return localIdamToken(email);
+  }
+  return new IdamUtils().generateIdamToken({
+    username: email,
+    password: process.env.IDAM_PCS_USER_PASSWORD as string,
+    grantType: 'password',
+    clientId: 'pcs-api',
+    clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+    scope: 'profile openid roles',
+  });
+}
+
 /** The defendant case roles `POST /testing-support/enforcement/{caseReference}/defendant-case-role` gives. */
 export type DefendantCaseRole = '[DEFENDANT]' | '[DEFENDANTSOLICITOR]';
 
@@ -323,7 +345,7 @@ export async function assignDefendantCaseRole(
   email: string,
   caseRole: DefendantCaseRole
 ): Promise<void> {
-  const userId = await localIdamUserId(email);
+  const userId = await idamUserId(email);
   const response = await Axios.post(
     `${process.env.CASE_API_URL}/testing-support/enforcement/${caseReference}/defendant-case-role`,
     { userId, caseRole },
@@ -343,11 +365,11 @@ export async function assignDefendantCaseRole(
 }
 
 /**
- * The case data CCD returns to a local user, as pcs-frontend and XUI read it. Used to check what a defendant
+ * The case data CCD returns to a user, as pcs-frontend and XUI read it. Used to check what a defendant
  * can see where there is no UI to look at: pcs-frontend is not part of the local stack, and a Case File View
  * folder is shown even when it is empty.
  */
 export async function caseDataAs(caseReference: string, email: string): Promise<Record<string, unknown>> {
-  const response = await dataStoreApi(await localIdamToken(email)).get(`/cases/${caseReference}`);
+  const response = await dataStoreApi(await idamToken(email)).get(`/cases/${caseReference}`);
   return (response.data?.data ?? {}) as Record<string, unknown>;
 }

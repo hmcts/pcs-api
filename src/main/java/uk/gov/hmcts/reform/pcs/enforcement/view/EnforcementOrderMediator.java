@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.util.EvictionDateFormat;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
@@ -90,10 +91,11 @@ public class EnforcementOrderMediator {
         return pcsCase.getEnforcementOrder();
     }
 
+    /**
+     * The eviction date as the eviction confirmation screens and emails show it.
+     */
     public String formatDate(LocalDateTime localDateTime) {
-        DateTimeFormatter outputFormatter = DateTimeFormatter
-            .ofPattern("EEEE, d MMMM yyyy 'at' h:mma", Locale.UK);
-        return localDateTime.format(outputFormatter);
+        return EvictionDateFormat.format(localDateTime);
     }
 
     /**

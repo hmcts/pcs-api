@@ -166,7 +166,7 @@ final class RiskAssessmentTabMarkdown {
 
     /**
      * The claimant's answers, introduced in the third person for internal users and the second person for the
-     * claimant side (OPEN-QUESTIONS 15).
+     * claimant side (OPEN-QUESTIONS 34).
      */
     static String claimantSection(ClaimantAnswers answers, Instant submittedAt, boolean forClaimant) {
         return claimantSection(answers, submittedAt, null, null, forClaimant);

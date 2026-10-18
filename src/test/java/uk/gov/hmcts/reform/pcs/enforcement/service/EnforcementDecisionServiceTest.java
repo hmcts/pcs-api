@@ -1,19 +1,16 @@
 package uk.gov.hmcts.reform.pcs.enforcement.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
@@ -27,14 +24,12 @@ import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -47,12 +42,11 @@ class EnforcementDecisionServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final Instant NOW = Instant.parse("2026-10-17T09:30:00Z");
-    private static final UUID CLAIM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
 
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
-    private PcsCaseService pcsCaseService;
+    private CurrentEnforcementService currentEnforcementService;
     @Mock
     private EnforcementNumberGenerator enforcementNumberGenerator;
     @Mock
@@ -65,15 +59,6 @@ class EnforcementDecisionServiceTest {
     @InjectMocks
     private EnforcementDecisionService underTest;
 
-    @BeforeEach
-    void setUp() {
-        ClaimEntity claim = new ClaimEntity();
-        claim.setId(CLAIM_ID);
-        PcsCaseEntity pcsCase = new PcsCaseEntity();
-        pcsCase.setClaims(List.of(claim));
-        lenient().when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
-    }
-
     @Test
     void shouldFindAnApplicationAwaitingReview() {
         givenAwaitingReview(SelectEnforcementType.WARRANT);
@@ -82,18 +67,34 @@ class EnforcementDecisionServiceTest {
     }
 
     @Test
-    void shouldFindNoApplicationAwaitingReviewWhenNoneIs() {
-        when(enforcementOrderRepository.findByClaimIdAndStatus(CLAIM_ID, AWAITING_REVIEW)).thenReturn(List.of());
+    void shouldFindNoApplicationAwaitingReviewWhenTheClaimHasNoEnforcement() {
+        givenNoEnforcement();
 
         assertThat(underTest.hasEnforcementAwaitingReview(CASE_REFERENCE)).isFalse();
     }
 
-    @Test
-    void shouldFindNoApplicationAwaitingReviewWhenTheCaseHasNoClaim() {
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(new PcsCaseEntity());
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "AWAITING_REVIEW")
+    void shouldFindNoApplicationAwaitingReviewWhenTheCurrentEnforcementIsPastReview(EnforcementStatus status) {
+        EnforcementOrderEntity enforcement = new EnforcementOrderEntity();
+        enforcement.setStatus(status);
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(enforcement));
 
         assertThat(underTest.hasEnforcementAwaitingReview(CASE_REFERENCE)).isFalse();
-        verifyNoInteractions(enforcementOrderRepository);
+    }
+
+    @ParameterizedTest
+    @EnumSource(EnforcementStatus.class)
+    void shouldOnlyLetACaseworkerDecideAnApplicationAwaitingReview(EnforcementStatus status) {
+        EnforcementOrderEntity enforcement = new EnforcementOrderEntity();
+        enforcement.setStatus(status);
+
+        assertThat(EnforcementDecisionService.canDecideEnforcement(enforcement)).isEqualTo(status == AWAITING_REVIEW);
+    }
+
+    @Test
+    void shouldNotLetACaseworkerDecideWhenTheClaimHasNoEnforcement() {
+        assertThat(EnforcementDecisionService.canDecideEnforcement(null)).isFalse();
     }
 
     @ParameterizedTest
@@ -143,7 +144,7 @@ class EnforcementDecisionServiceTest {
 
     @Test
     void shouldApproveNothingWhenNoApplicationIsAwaitingReview() {
-        when(enforcementOrderRepository.findByClaimIdAndStatus(CLAIM_ID, AWAITING_REVIEW)).thenReturn(List.of());
+        givenNoEnforcement();
 
         assertThat(underTest.accept(CASE_REFERENCE)).isEmpty();
         verifyNoInteractions(enforcementNumberGenerator);
@@ -185,7 +186,7 @@ class EnforcementDecisionServiceTest {
 
     @Test
     void shouldRejectNothingWhenNoApplicationIsAwaitingReview() {
-        when(enforcementOrderRepository.findByClaimIdAndStatus(CLAIM_ID, AWAITING_REVIEW)).thenReturn(List.of());
+        givenNoEnforcement();
 
         assertThat(underTest.reject(CASE_REFERENCE, "reason")).isEmpty();
         verify(enforcementOrderRepository, never()).save(any());
@@ -201,8 +202,11 @@ class EnforcementDecisionServiceTest {
         enforcement.setId(UUID.randomUUID());
         enforcement.setEnforcementOrder(enforcementOrder);
         enforcement.setStatus(AWAITING_REVIEW);
-        when(enforcementOrderRepository.findByClaimIdAndStatus(CLAIM_ID, AWAITING_REVIEW))
-            .thenReturn(List.of(enforcement));
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(enforcement));
         return enforcement;
+    }
+
+    private void givenNoEnforcement() {
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
     }
 }

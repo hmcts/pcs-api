@@ -11,8 +11,9 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
 /**
- * Sets the fields that gate "Reschedule eviction" and "Mark notice of eviction as served" on the claim's
- * current enforcement, and whether defendants may see it. Leaves them unset when the claim has no enforcement.
+ * Sets the fields that gate "Schedule eviction", "Reschedule eviction" and "Mark notice of eviction as served" on
+ * the claim's current enforcement, and whether defendants may see it. Leaves them unset when the claim has no
+ * enforcement, which hides the events.
  */
 @Component
 @RequiredArgsConstructor
@@ -33,11 +34,10 @@ public class EvictionScheduleView {
             pcsCase.setEnforcementOrder(new EnforcementOrder());
         }
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
-        boolean live = enforcement.getStatus() != null && enforcement.getStatus().isLive();
         enforcementOrder.setEvictionSchedule(EvictionSchedule.builder()
-            .canRescheduleEviction(YesOrNo.from(live && EvictionScheduleService.canReschedule(enforcement)))
-            .canMarkNoticeOfEvictionServed(
-                YesOrNo.from(live && EvictionScheduleService.canMarkNoticeServed(enforcement)))
+            .canScheduleEviction(YesOrNo.from(EvictionScheduleService.canSchedule(enforcement)))
+            .canRescheduleEviction(YesOrNo.from(EvictionScheduleService.canReschedule(enforcement)))
+            .canMarkNoticeOfEvictionServed(YesOrNo.from(EvictionScheduleService.canMarkNoticeServed(enforcement)))
             .build());
         enforcementOrder.setDefendantsCanSeeEnforcement(YesOrNo.from(enforcement.isDefendantsCanSeeEnforcement()));
     }

@@ -16,7 +16,7 @@ import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
 import {
   allocateBailiffViaTestingSupport,
-  localIdamUserId,
+  idamUserId,
   localUserName,
   localUsers,
 } from '@config/local-stack.config';
@@ -69,7 +69,9 @@ export async function approveApplicationAsCaseworker(
   const confirmation = await submitEventAs(requireEmailFor(HEARING_CENTRE_ADMIN), 'decideEnforcement', {
     enforcementDecision: 'ACCEPT',
   });
-  expect(confirmation.body, 'the "Decide enforcement" confirmation').toContain(`${kind} approved`);
+  // The kind reads "Warrant approved" in the panel body and "Warrant of possession approved" in its header.
+  expect(`${confirmation.header ?? ''} ${confirmation.body ?? ''}`, 'the "Decide enforcement" confirmation')
+    .toMatch(new RegExp(`${kind}\\b[^<]*approved`));
   const enforcementNumber = confirmationValue(confirmation, `${kind} number:`);
   world.warrantNumber = enforcementNumber;
   world.currentEvent = undefined;
@@ -286,7 +288,7 @@ export async function bringWarrantToStatus(world: EnforcementWorld, status: stri
  * event itself. This goes through `BailiffAllocationService` instead, for the same outcome.
  */
 export async function allocateBailiff(world: EnforcementWorld, email: string = localUsers.bailiff): Promise<void> {
-  const userId = await localIdamUserId(email);
+  const userId = await idamUserId(email);
   await allocateBailiffViaTestingSupport(requireCaseReference(world), {
     userId,
     name: localUserName(email),

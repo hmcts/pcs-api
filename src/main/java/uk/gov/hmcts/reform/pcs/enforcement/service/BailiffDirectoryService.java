@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * is checked here against the user's AM organisational roles. The name and email come from IDAM.
  *
  * <p>TODO(HDPI-7356): limit the bailiffs to the case's court location once that rule is agreed
- * (OPEN-QUESTIONS 16), by checking the role assignment's primaryLocation or region.
+ * (OPEN-QUESTIONS 20), by checking the role assignment's primaryLocation or region.
  */
 @Slf4j
 @Service
@@ -68,6 +68,16 @@ public class BailiffDirectoryService {
             log.info("Bailiff {} has a role assignment but no IDAM account", userId);
             return Optional.empty();
         }
+    }
+
+    /**
+     * Whether the user with this IDAM id has the bailiff organisational role, looked up in AM now.
+     */
+    public boolean isBailiff(String userId) {
+        if (userId == null || userId.isBlank()) {
+            return false;
+        }
+        return hasBailiffRole(userId, systemUpdateUserTokenProvider.getAuthToken());
     }
 
     private boolean hasBailiffRole(String userId, String systemUserToken) {

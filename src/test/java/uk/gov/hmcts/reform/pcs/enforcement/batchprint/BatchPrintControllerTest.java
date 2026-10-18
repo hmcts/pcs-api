@@ -5,22 +5,32 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintController.BatchPrintRequest;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
+import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffDirectoryService;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,22 +47,29 @@ class BatchPrintControllerTest {
     private BatchPrintService batchPrintService;
     @Mock
     private BatchPrintPlanner batchPrintPlanner;
+    @Mock
+    private BailiffDirectoryService bailiffDirectoryService;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     private BatchPrintController underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new BatchPrintController(idamAuthenticator, batchPrintService, batchPrintPlanner);
+        underTest = new BatchPrintController(idamAuthenticator, batchPrintService, batchPrintPlanner,
+                                             bailiffDirectoryService, featureToggleService);
         UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getUid()).thenReturn(BAILIFF);
+        lenient().when(userInfo.getUid()).thenReturn(BAILIFF);
         User user = mock(User.class);
-        when(user.getUserDetails()).thenReturn(userInfo);
-        when(idamAuthenticator.validateAuthToken(AUTHORIZATION)).thenReturn(user);
+        lenient().when(user.getUserDetails()).thenReturn(userInfo);
+        lenient().when(idamAuthenticator.validateAuthToken(AUTHORIZATION)).thenReturn(user);
+        lenient().when(bailiffDirectoryService.isBailiff(BAILIFF)).thenReturn(true);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(true);
     }
 
     @Test
     void shouldReturnThePdfNamingThePrintedAndLeftOutCases() {
-        byte[] pdf = {'%', 'P', 'D', 'F'};
+        Resource pdf = new ByteArrayResource(new byte[] {'%', 'P', 'D', 'F'});
         BatchPrintPlan plan = new BatchPrintPlan(
             List.of(new PrintableCase("1111111111111111", "WP-1", List.of(), List.of())),
             List.of(ExcludedCase.of("2222222222222222", BatchPrintExclusion.NOT_ALLOCATED),
@@ -107,5 +124,42 @@ class BatchPrintControllerTest {
         ResponseEntity<List<AllocatedWarrant>> response = underTest.allocatedWarrants(AUTHORIZATION, S2S, from, to);
 
         assertThat(response.getBody()).isSameAs(warrants);
+    }
+
+    @Test
+    void shouldRefuseAUserWhoIsNotABailiffNowWhateverTheirAllocations() {
+        when(bailiffDirectoryService.isBailiff(BAILIFF)).thenReturn(false);
+        BatchPrintRequest request = new BatchPrintRequest(CHOSEN);
+
+        assertThatThrownBy(() -> underTest.print(AUTHORIZATION, S2S, request))
+            .isInstanceOf(CaseAccessException.class);
+        assertThatThrownBy(() -> underTest.check(AUTHORIZATION, S2S, request))
+            .isInstanceOf(CaseAccessException.class);
+        assertThatThrownBy(() -> underTest.allocatedWarrants(AUTHORIZATION, S2S, null, null))
+            .isInstanceOf(CaseAccessException.class);
+        verifyNoInteractions(batchPrintService, batchPrintPlanner);
+    }
+
+    @Test
+    void shouldRefuseAnInvalidTokenBeforeAskingAm() {
+        when(idamAuthenticator.validateAuthToken("Bearer expired"))
+            .thenThrow(new InvalidAuthTokenException("expired"));
+        BatchPrintRequest request = new BatchPrintRequest(CHOSEN);
+
+        assertThatThrownBy(() -> underTest.print("Bearer expired", S2S, request))
+            .isInstanceOf(InvalidAuthTokenException.class);
+        verifyNoInteractions(bailiffDirectoryService, batchPrintService);
+    }
+
+    @Test
+    void shouldAnswerNotFoundWhenEnforcementIsNotEnabled() {
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(false);
+        BatchPrintRequest request = new BatchPrintRequest(CHOSEN);
+
+        assertThat(underTest.print(AUTHORIZATION, S2S, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(underTest.check(AUTHORIZATION, S2S, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(underTest.allocatedWarrants(AUTHORIZATION, S2S, null, null).getStatusCode())
+            .isEqualTo(HttpStatus.NOT_FOUND);
+        verifyNoInteractions(idamAuthenticator, bailiffDirectoryService, batchPrintService, batchPrintPlanner);
     }
 }

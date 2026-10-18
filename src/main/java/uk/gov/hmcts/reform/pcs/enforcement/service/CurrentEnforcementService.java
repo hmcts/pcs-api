@@ -10,8 +10,11 @@ import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository
 
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * The one place that decides which of a claim's enforcements is the current one: the live enforcement if
@@ -33,8 +36,32 @@ public class CurrentEnforcementService {
                            Comparator.nullsFirst(Comparator.<Instant>naturalOrder()))
             .reversed();
 
+    /**
+     * Each claim's enforcements, current first, while {@link #withEnforcementsLoadedOnce} is running on this
+     * thread.
+     */
+    private static final ThreadLocal<Map<UUID, List<EnforcementOrderEntity>>> LOADED = new ThreadLocal<>();
+
     private final PcsCaseService pcsCaseService;
     private final EnforcementOrderRepository enforcementOrderRepository;
+
+    /**
+     * Runs {@code action} with each claim's enforcements loaded at most once, however many times it asks for
+     * them. Only for work that reads enforcements and never changes them, such as building the case view: a
+     * change made inside would not be seen by later reads.
+     */
+    public static void withEnforcementsLoadedOnce(Runnable action) {
+        if (LOADED.get() != null) {
+            action.run();
+            return;
+        }
+        LOADED.set(new HashMap<>());
+        try {
+            action.run();
+        } finally {
+            LOADED.remove();
+        }
+    }
 
     public Optional<EnforcementOrderEntity> findCurrentEnforcement(long caseReference) {
         return findCurrentEnforcement(pcsCaseService.loadCase(caseReference));
@@ -57,7 +84,13 @@ public class CurrentEnforcementService {
         if (claims == null || claims.isEmpty()) {
             return List.of();
         }
-        return enforcementOrderRepository.findByClaimId(claims.getFirst().getId()).stream()
+        UUID claimId = claims.getFirst().getId();
+        Map<UUID, List<EnforcementOrderEntity>> loaded = LOADED.get();
+        return loaded == null ? loadCurrentFirst(claimId) : loaded.computeIfAbsent(claimId, this::loadCurrentFirst);
+    }
+
+    private List<EnforcementOrderEntity> loadCurrentFirst(UUID claimId) {
+        return enforcementOrderRepository.findByClaimId(claimId).stream()
             .filter(enforcement -> enforcement.getStatus() != null)
             .sorted(CURRENT_FIRST)
             .toList();

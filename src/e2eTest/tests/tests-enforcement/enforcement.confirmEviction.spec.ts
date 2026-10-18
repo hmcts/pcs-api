@@ -46,8 +46,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Confirm Eviction]', async () => {
-  test('Confirm Eviction - Eviction data provide by Bailiff @enforcement',
+test.describe('[Enforcement - Confirm Eviction] @nightly', async () => {
+  test('Confirm Eviction - Eviction data provide by Bailiff @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.confirmEvictionEvent);
       await performAction('clickButton', caseSummary.go);

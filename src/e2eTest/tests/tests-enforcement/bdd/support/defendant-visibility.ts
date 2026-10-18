@@ -7,14 +7,16 @@
  * representative, and the case data CCD returns to each defendant, which is what pcs-frontend renders for a
  * citizen and what XUI's Case File View lists.
  *
- * Both defendants are given their case role through pcs-api testing support, which only a local stack has
- * users for, so outside a local stack these steps stay pending.
+ * Both defendants are given their case role through pcs-api testing support, which preview and AAT have too.
+ * The legal representative is the permanent defendant solicitor everywhere; only a local stack has a citizen
+ * user (the IDAM simulator's), so outside it the steps that need the citizen stay pending (HDPI-7539).
  */
 import { BrowserContext, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
 import type { DefendantView, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { assignDefendantCaseRole, caseDataAs, isLocalStack, localUsers } from '@config/local-stack.config';
+import { user } from '@data/user-data';
 import { expectCaseTab, openCaseSummary, requireCaseReference, signInAs } from './enforcement-journeys';
 
 export const DEFENDANT_LEGAL_REPRESENTATIVE = 'defendant legal representative';
@@ -54,14 +56,16 @@ const OTHER_ENFORCEMENT_FIELDS = [
   'hasUnsubmittedEnforcementData',
 ];
 
-export function canSetUpDefendants(): boolean {
+/** Whether there is a citizen user to link as a defendant: only the local stack's IDAM simulator has one. */
+export function canLinkCitizenDefendant(): boolean {
   return isLocalStack();
 }
 
-/** Gives the local defendant solicitor the [DEFENDANTSOLICITOR] case role on the scenario's case. */
+/** Gives the defendant solicitor the [DEFENDANTSOLICITOR] case role on the scenario's case. */
 export async function linkDefendantLegalRepresentative(world: EnforcementWorld): Promise<void> {
-  await assignDefendantCaseRole(requireCaseReference(world), localUsers.defendantSolicitor, '[DEFENDANTSOLICITOR]');
-  world.defendantLegalRepresentative = localUsers.defendantSolicitor;
+  const email = isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email;
+  await assignDefendantCaseRole(requireCaseReference(world), email, '[DEFENDANTSOLICITOR]');
+  world.defendantLegalRepresentative = email;
 }
 
 /** Gives the local citizen the [DEFENDANT] case role on the scenario's case, as their access code would. */
@@ -175,10 +179,14 @@ export async function ensureDefendantsLinked(world: EnforcementWorld): Promise<v
   }
   approximatePrecondition(
     'HDPI-7539',
-    'the defendant legal representative and a citizen defendant are given their case roles through testing support'
+    canLinkCitizenDefendant()
+      ? 'the defendant legal representative and a citizen defendant are given their case roles through testing support'
+      : 'the defendant legal representative is given their case role through testing support; there is no citizen user outside a local stack'
   );
   await linkDefendantLegalRepresentative(world);
-  await linkCitizenDefendant(world);
+  if (canLinkCitizenDefendant()) {
+    await linkCitizenDefendant(world);
+  }
   caseChangedForDefendants(world);
 }
 

@@ -34,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementFeeService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RepeatWarrantFeeWaiver;
@@ -49,6 +51,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_PAYMENT;
@@ -180,16 +183,18 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
         Clock ukClock = Clock.fixed(appliedOn.atTime(12, 0).atZone(UK_ZONE_ID).toInstant(), UK_ZONE_ID);
         RepeatWarrantFeeWaiver waiver =
             new RepeatWarrantFeeWaiver(enforcementOrderRepository, warrantReturnRepository, ukClock);
-        // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for.
+        // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for, and
+        // the fee lookup and service request need the Fees Register and Payments.
         EnforcementOrderService enforcementOrderService = new EnforcementOrderService(
-            enforcementOrderRepository, pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
+            enforcementOrderRepository, new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
+            pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
             enforcementStatusTransitions, waiver, mock(EnforcementNotificationService.class),
-            mock(EnforcementDocumentScheduler.class));
+            mock(EnforcementDocumentScheduler.class), mock(EnforcementFeeService.class, RETURNS_MOCKS));
         List<UUID> before = enforcementIds(claimId);
         long caseReference = caseReferences.get(claimId);
 
         boolean paymentOutstanding =
-            enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder(enforcementType));
+            enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder(enforcementType)).isPresent();
         entityManager.flush();
         entityManager.clear();
 

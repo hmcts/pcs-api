@@ -38,8 +38,8 @@ class DecideEnforcementTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeAvailableOnlyWhenEnforcementIsEnabled() {
-        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\"");
+    void shouldOnlyBeOfferedWhileAnApplicationIsAwaitingReview() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canDecideEnforcement=\"Yes\"");
     }
 
     @Test

@@ -122,17 +122,13 @@ async function createIssuedCaseLocally(): Promise<SubmitCasePayload> {
   return basicClaimFixtureClaim as unknown as SubmitCasePayload;
 }
 
-/** Submits a warrant of possession application through the API, as the warrant of restitution spec does. */
+/**
+ * Gives the scenario a warrant of possession application, as the warrant of restitution spec does: on preview
+ * and AAT by submitting `enforceTheOrder` through the API on the scenario's case. A local run creates a new case
+ * from the Create-Enforcement-Warrant fixture instead, which is the route the local suite has been run with.
+ */
 export async function seedWarrantApplication(world: EnforcementWorld): Promise<void> {
   if (isLocalStack()) {
-    // `enforceCasePayloadNoJourney` carries nine fields that no longer exist anywhere in pcs-api
-    // (warrantAmountOwed, warrantRepaymentChoice, warrantIsSuspendedOrder, warrantEvictEveryone,
-    // warrantShowPeopleWhoWillBeEvictedPage, warrantAreLegalCostsToBeClaimed, warrantAmountOfLegalCosts,
-    // warrantHaveLandRegistryFeesBeenPaid, warrantAmountOfLandRegistryFees) — they went with the money and
-    // evict-selection pages — so CCD rejects the event with "No field found". This is not local-only: the
-    // same payload is sent on AAT. Until it is pruned, the Create-Enforcement-Warrant fixture, which goes
-    // through pcs-api's own JSON parsing rather than CCD field validation, is the only route to a seeded
-    // warrant.
     await createCaseWithWarrant(world);
     return;
   }
@@ -155,15 +151,13 @@ export async function createCaseWithWarrant(world: EnforcementWorld): Promise<vo
 }
 
 /**
- * A case issued with a writ of possession application already submitted, awaiting payment. Only a local stack
- * can seed one: AAT has no route to a writ application other than the claimant journey.
+ * A case issued with a writ of possession application already submitted, awaiting payment, created from the
+ * Create-Enforcement-Writ fixture through the `createTestCase` event. The event exists wherever testing support
+ * is on (a local stack booted with ENABLE_TESTING_SUPPORT=true, preview and AAT); there is no API payload for a
+ * writ application.
  */
-export async function createCaseWithWrit(world: EnforcementWorld): Promise<boolean> {
-  if (!isLocalStack()) {
-    return false;
-  }
+export async function createCaseWithWrit(world: EnforcementWorld): Promise<void> {
   await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWrit);
-  return true;
 }
 
 async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture: TestCaseFixture): Promise<void> {

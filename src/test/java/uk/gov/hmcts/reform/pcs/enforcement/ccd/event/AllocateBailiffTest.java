@@ -71,8 +71,8 @@ class AllocateBailiffTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeGatedOnTheEnforcementFeatureFlag() {
-        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\"");
+    void shouldOnlyBeOfferedForAnApprovedLiveWarrant() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canAllocateBailiff=\"Yes\"");
     }
 
     @Test

@@ -16,6 +16,7 @@ import { LONG_TIMEOUT } from 'playwright.config';
 import { localUserName, localUsers } from '@config/local-stack.config';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { openCaseSummary, requireCaseReference, startEvent } from './enforcement-journeys';
+import { errorSummaries } from './error-summary';
 import { answerRow } from './schedule-eviction';
 import { submitEventAs } from './event-api';
 import { expectSignedInAs, requireEmailFor } from './session';
@@ -146,9 +147,9 @@ export async function chooseRiskLevel(page: Page, level: string, reason?: string
   }
 }
 
-/** The error summary CCD renders for a failed page. */
+/** The first error summary XUI renders for a failed page. Check messages with `expectSingleErrorMessage`. */
 export function errorSummary(page: Page) {
-  return page.locator('.govuk-error-summary, .error-summary').first();
+  return errorSummaries(page).first();
 }
 
 /** Starts "Allocate case to bailiff" from the case summary, which opens on "Find the bailiff's name". */

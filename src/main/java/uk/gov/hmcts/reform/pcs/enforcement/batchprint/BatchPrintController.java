@@ -23,7 +23,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffDirectoryService;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,7 +39,8 @@ import java.util.stream.Collectors;
  *
  * <p>CCD has no screen that acts on more than one case, and XUI's "My work" cannot act on several tasks at
  * once, so batch print is offered as an API for a selection screen to call rather than as a CCD event. The
- * caller is the bailiff: every case is checked against their own allocation.
+ * caller must have the bailiff organisational role in AM, checked on every request, and every case is checked
+ * against their own allocation. With the {@code enforcement-enabled} flag off every endpoint answers 404.
  *
  * <p>A selection screen lists the bailiff's warrants with {@code GET /cases}, shows what would be printed and
  * why any case is left out with {@code POST /check}, and downloads the file with {@code POST}. The file
@@ -60,6 +65,8 @@ public class BatchPrintController {
     private final IdamAuthenticator idamAuthenticator;
     private final BatchPrintService batchPrintService;
     private final BatchPrintPlanner batchPrintPlanner;
+    private final BailiffDirectoryService bailiffDirectoryService;
+    private final FeatureToggleService featureToggleService;
 
     @GetMapping(value = "/cases", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -72,7 +79,9 @@ public class BatchPrintController {
     )
     @ApiResponse(responseCode = "200", description = "The bailiff's warrants")
     @ApiResponse(responseCode = "401", description = "Invalid access token", content = @Content())
-    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization", content = @Content())
+    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization, or the user is not a bailiff",
+        content = @Content())
+    @ApiResponse(responseCode = "404", description = "Enforcement is not enabled", content = @Content())
     public ResponseEntity<List<AllocatedWarrant>> allocatedWarrants(
         @Parameter(description = "Bearer token for user authentication", required = true)
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
@@ -83,6 +92,9 @@ public class BatchPrintController {
         @Parameter(description = "Latest eviction date, inclusive")
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 
+        if (!enforcementEnabled()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(batchPrintPlanner.allocatedWarrants(bailiffUserId(authorization), from, to));
     }
 
@@ -99,12 +111,17 @@ public class BatchPrintController {
     @ApiResponse(responseCode = "200", description = "The printed and left-out cases")
     @ApiResponse(responseCode = "400", description = "No cases, or more than 50", content = @Content())
     @ApiResponse(responseCode = "401", description = "Invalid access token", content = @Content())
-    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization", content = @Content())
+    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization, or the user is not a bailiff",
+        content = @Content())
+    @ApiResponse(responseCode = "404", description = "Enforcement is not enabled", content = @Content())
     public ResponseEntity<BatchPrintPlan> check(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @RequestHeader("ServiceAuthorization") String serviceAuthorization,
         @Valid @RequestBody BatchPrintRequest request) {
 
+        if (!enforcementEnabled()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(batchPrintPlanner.plan(bailiffUserId(authorization), request.caseReferences()));
     }
 
@@ -123,13 +140,18 @@ public class BatchPrintController {
     @ApiResponse(responseCode = "200", description = "The PDF")
     @ApiResponse(responseCode = "400", description = "No cases, or more than 50", content = @Content())
     @ApiResponse(responseCode = "401", description = "Invalid access token", content = @Content())
-    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization", content = @Content())
+    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization, or the user is not a bailiff",
+        content = @Content())
+    @ApiResponse(responseCode = "404", description = "Enforcement is not enabled", content = @Content())
     @ApiResponse(responseCode = "422", description = "None of the cases can be printed; the body says why")
     public ResponseEntity<?> print(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @RequestHeader("ServiceAuthorization") String serviceAuthorization,
         @Valid @RequestBody BatchPrintRequest request) {
 
+        if (!enforcementEnabled()) {
+            return ResponseEntity.notFound().build();
+        }
         BatchPrint batchPrint = batchPrintService.print(bailiffUserId(authorization), request.caseReferences());
         if (batchPrint.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -145,8 +167,19 @@ public class BatchPrintController {
             .body(batchPrint.pdf());
     }
 
+    private boolean enforcementEnabled() {
+        return featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT);
+    }
+
+    /**
+     * The signed-in user's IDAM id, once AM confirms they are a bailiff now: an allocation outlives the role.
+     */
     private String bailiffUserId(String authorization) {
-        return idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid();
+        String userId = idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid();
+        if (!bailiffDirectoryService.isBailiff(userId)) {
+            throw new CaseAccessException("Batch print is for bailiffs only");
+        }
+        return userId;
     }
 
     private static String includedHeader(BatchPrintPlan plan) {

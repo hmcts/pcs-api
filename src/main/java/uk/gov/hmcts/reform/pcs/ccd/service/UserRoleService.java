@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -10,7 +11,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentAttributes;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationUserRoles;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -32,7 +35,7 @@ public class UserRoleService {
     private final CaseAssignmentApi caseAssignmentApi;
     private final RoleAssignmentApi roleAssignmentApi;
     private final Cache<CacheKey, Set<String>> caseRoleCache;
-    private final Cache<String, Set<String>> organisationalRoleCache;
+    private final Cache<String, List<OrganisationalRole>> organisationalRoleCache;
 
     public UserRoleService(SecurityContextService securityContextService,
                            AuthTokenGenerator authTokenGenerator,
@@ -50,9 +53,26 @@ public class UserRoleService {
             .build();
     }
 
+    /**
+     * IDAM roles, case roles on this case and AM organisational roles, without any group-access role: with
+     * no case access groups given, nothing says which cases a firm-wide role applies to. Use
+     * {@link #getCurrentUserCaseRoles(long, Collection)} when the caller needs to know which side of the case
+     * the user is on.
+     */
     public UserRoles getCurrentUserCaseRoles(long caseReference) {
+        return getCurrentUserCaseRoles(caseReference, Set.of());
+    }
+
+    /**
+     * IDAM roles, case roles on this case and AM organisational roles. A group-access role
+     * ({@link OrganisationUserRoles#ORGANISATION_ROLES}, or any assignment carrying a {@code caseAccessGroupId})
+     * is held by every user in the organisation for every case the organisation is on, on either side, so it
+     * counts only when its {@code caseAccessGroupId} is one of this case's {@code caseAccessGroupIds}.
+     */
+    public UserRoles getCurrentUserCaseRoles(long caseReference, Collection<String> caseAccessGroupIds) {
         UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
         String currentUserId = currentUserDetails.getUid();
+        Collection<String> caseGroups = caseAccessGroupIds == null ? Set.of() : caseAccessGroupIds;
 
         Set<String> roles = new LinkedHashSet<>(safeRoles(currentUserDetails.getRoles()));
         if (!securityContextService.isSystemUser()) {
@@ -60,7 +80,10 @@ public class UserRoleService {
                 new CacheKey(caseReference, currentUserId),
                 key -> getCaseRoles(key.caseReference(), key.userId())
             ));
-            roles.addAll(getOrganisationalRoles(currentUserId));
+            getOrganisationalRoles(currentUserId).stream()
+                .filter(role -> role.appliesToCase(caseGroups))
+                .map(OrganisationalRole::roleName)
+                .forEach(roles::add);
         }
 
         return new UserRoles(securityContextService.toUserId(currentUserId), List.copyOf(roles));
@@ -69,7 +92,8 @@ public class UserRoleService {
     /**
      * IDAM roles plus the current user's AM organisational role assignments, with no case in scope.
      * Callers that need to know what kind of user this is - rather than what they can do on one case
-     * - can use this without paying for the per-case lookup.
+     * - can use this without paying for the per-case lookup. Group-access roles are included whatever case
+     * they apply to.
      */
     public UserRoles getCurrentUserOrganisationalRoles() {
         UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
@@ -77,13 +101,15 @@ public class UserRoleService {
 
         Set<String> roles = new LinkedHashSet<>(safeRoles(currentUserDetails.getRoles()));
         if (!securityContextService.isSystemUser()) {
-            roles.addAll(getOrganisationalRoles(currentUserId));
+            getOrganisationalRoles(currentUserId).stream()
+                .map(OrganisationalRole::roleName)
+                .forEach(roles::add);
         }
 
         return new UserRoles(securityContextService.toUserId(currentUserId), List.copyOf(roles));
     }
 
-    private Set<String> getOrganisationalRoles(String userId) {
+    private List<OrganisationalRole> getOrganisationalRoles(String userId) {
         return organisationalRoleCache.get(userId, this::getRoleAssignments);
     }
 
@@ -104,7 +130,7 @@ public class UserRoleService {
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private Set<String> getRoleAssignments(String userId) {
+    private List<OrganisationalRole> getRoleAssignments(String userId) {
         RoleAssignmentResponse roleAssignmentResponse = roleAssignmentApi.getRoles(
             authTokenGenerator.generate(),
             securityContextService.getCurrentUserAuthToken(),
@@ -112,13 +138,14 @@ public class UserRoleService {
         );
 
         if (roleAssignmentResponse == null || CollectionUtils.isEmpty(roleAssignmentResponse.getRoleAssignment())) {
-            return Set.of();
+            return List.of();
         }
 
         return roleAssignmentResponse.getRoleAssignment().stream()
             .filter(UserRoleService::isNotSpecificGrantType)
-            .map(RoleAssignment::getRoleName)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+            .map(OrganisationalRole::of)
+            .distinct()
+            .toList();
     }
 
     private static Collection<String> safeRoles(Collection<String> roles) {
@@ -130,5 +157,25 @@ public class UserRoleService {
     }
 
     private record CacheKey(long caseReference, String userId) {
+    }
+
+    /**
+     * An AM organisational role name and, for a group-access role, the case access group it applies to.
+     */
+    private record OrganisationalRole(String roleName, String caseAccessGroupId) {
+
+        static OrganisationalRole of(RoleAssignment roleAssignment) {
+            RoleAssignmentAttributes attributes = roleAssignment.getAttributes();
+            String caseAccessGroupId = attributes == null ? null : attributes.getCaseAccessGroupId();
+            return new OrganisationalRole(roleAssignment.getRoleName(),
+                                          StringUtils.isBlank(caseAccessGroupId) ? null : caseAccessGroupId);
+        }
+
+        boolean appliesToCase(Collection<String> caseAccessGroupIds) {
+            if (caseAccessGroupId == null) {
+                return !OrganisationUserRoles.ORGANISATION_ROLES.contains(roleName);
+            }
+            return caseAccessGroupIds.contains(caseAccessGroupId);
+        }
     }
 }

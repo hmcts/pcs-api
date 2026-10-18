@@ -6,6 +6,7 @@
  * renders six inputs — `evictionDateTime-day` through `-second`.
  */
 import { Page, expect } from '@playwright/test';
+import { expectSingleErrorMessage } from './error-summary';
 import { LONG_TIMEOUT } from 'playwright.config';
 
 export const SCHEDULE_EVICTION = 'Schedule eviction';
@@ -96,14 +97,12 @@ export const dispenseWithServiceRadio = (page: Page, answer: string) =>
  * "Errors" list CCD renders separately for a rejected mid-event.
  */
 export async function expectEvictionError(page: Page, message: string): Promise<void> {
-  await expect(page.getByText(message, { exact: false }).first()).toBeVisible({ timeout: LONG_TIMEOUT });
+  await expectSingleErrorMessage(page, message);
 }
 
 /** The page rejected the date and told the user, naming the eviction date and time field. */
 export async function expectEvictionDateNeeded(page: Page): Promise<void> {
-  const summary = page.locator('.govuk-error-summary, .error-summary').first();
-  await expect(summary).toBeVisible({ timeout: LONG_TIMEOUT });
-  await expect(summary).toContainText(scheduleEviction.dateQuestion);
+  await expectSingleErrorMessage(page, scheduleEviction.dateQuestion);
   await expect(page.getByRole('heading', { name: scheduleEviction.pageLabel })).toBeVisible();
 }
 

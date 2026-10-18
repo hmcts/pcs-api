@@ -71,7 +71,7 @@ class ClaimantEvictionConfirmationServiceTest {
         EnforcementOrderEntity enforcement = givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION))
             .getFirst();
 
-        underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
+        assertThat(underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES).refused()).isFalse();
 
         assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
         assertThat(enforcement.getClaimantCanAttend()).isTrue();
@@ -102,7 +102,7 @@ class ClaimantEvictionConfirmationServiceTest {
             .getFirst();
         EnforcementOrder submitted = EnforcementOrder.builder().claimantCanAttendEviction(YesOrNo.YES).build();
 
-        underTest.recordConfirmation(CASE_REFERENCE, YesOrNo.YES, submitted);
+        assertThat(underTest.recordConfirmation(CASE_REFERENCE, YesOrNo.YES, submitted).refused()).isFalse();
 
         InOrder inOrder = inOrder(claimantRiskAssessmentService, enforcementOrderRepository);
         inOrder.verify(claimantRiskAssessmentService).recordAnswers(CASE_REFERENCE, submitted);
@@ -130,8 +130,12 @@ class ClaimantEvictionConfirmationServiceTest {
     void shouldNotChangeTheStatusWhenTheEnforcementIsNotAwaitingConfirmation(EnforcementStatus status) {
         EnforcementOrderEntity enforcement = givenEnforcements(enforcementWithStatus(status)).getFirst();
 
-        underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
-        underTest.recordAttendance(CASE_REFERENCE, YesOrNo.NO);
+        String expectedError = status.isLive()
+            ? ClaimantEvictionConfirmationService.EVICTION_CHANGED_ERROR
+            : ClaimantEvictionConfirmationService.NO_LIVE_EVICTION_ERROR;
+
+        assertThat(underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES).errors()).containsExactly(expectedError);
+        assertThat(underTest.recordAttendance(CASE_REFERENCE, YesOrNo.NO).errors()).containsExactly(expectedError);
 
         assertThat(enforcement.getStatus()).isEqualTo(status);
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(EARLIER);
@@ -143,7 +147,8 @@ class ClaimantEvictionConfirmationServiceTest {
     void shouldNotChangeAnythingWhenTheEnforcementHasNoStatus() {
         EnforcementOrderEntity enforcement = givenEnforcements(enforcementWithStatus(null)).getFirst();
 
-        underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
+        assertThat(underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES).errors())
+            .containsExactly(ClaimantEvictionConfirmationService.NO_LIVE_EVICTION_ERROR);
 
         assertThat(enforcement.getStatus()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
@@ -154,7 +159,8 @@ class ClaimantEvictionConfirmationServiceTest {
     void shouldNotChangeAnythingWhenTheClaimHasNoEnforcement() {
         givenEnforcements();
 
-        underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
+        assertThat(underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES).errors())
+            .containsExactly(ClaimantEvictionConfirmationService.NO_LIVE_EVICTION_ERROR);
 
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementNotificationService);
@@ -166,14 +172,15 @@ class ClaimantEvictionConfirmationServiceTest {
         pcsCase.setClaims(List.of());
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
 
-        underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES);
+        assertThat(underTest.recordAttendance(CASE_REFERENCE, YesOrNo.YES).errors())
+            .containsExactly(ClaimantEvictionConfirmationService.NO_LIVE_EVICTION_ERROR);
 
         verifyNoInteractions(enforcementOrderRepository);
     }
 
     @Test
     void shouldNotChangeAnythingWhenThereIsNoAnswer() {
-        underTest.recordAttendance(CASE_REFERENCE, null);
+        assertThat(underTest.recordAttendance(CASE_REFERENCE, null).refused()).isFalse();
 
         verifyNoInteractions(pcsCaseService, enforcementOrderRepository, enforcementNotificationService);
     }

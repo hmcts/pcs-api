@@ -85,7 +85,6 @@
   ],
   "writFeeAmount": "£999999.99",
   "SearchCriteria": {},
-  "writAmountOwed": "124300",
   "propertyAddress": {
     "County": "",
     "Country": "United Kingdom",
@@ -110,7 +109,6 @@
   "addAnotherDefendant": "YES",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",
-  "writRepaymentChoice": "ALL",
   "applicationWithClaim": "NO",
   "claimGroundSummaries": [
     {
@@ -159,17 +157,17 @@
   "writEnforcementLanguageUsed": "ENGLISH",
   "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
   "warrantOfRestitutionInfoText": "",
-  "writAreLegalCostsToBeClaimed": "NO",
-  "writRepaymentSummaryMarkdown": "<table class=\"govuk-table\">\n  <caption class=\"govuk-table__caption govuk-table__caption--m govuk-!-font-size-19\">Total amount that can be repaid</caption>\n  <thead class=\"govuk-table__head\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"col\" class=\"govuk-table__header\">Repayment for</th>\n     <th scope=\"col\" class=\"govuk-table__header\">Amount</th>\n    </tr>\n  </thead>\n  <tbody class=\"govuk-table__body\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Arrears and other costs\n     </th>\n     <td class=\"govuk-table__cell\">£1,243</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Legal costs</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Land Registry fees</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Writ of possession fee</th>\n     <td class=\"govuk-table__cell\">£999999.99</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Total</th>\n     <td class=\"govuk-table__cell\">£1,001,242.99</td>\n    </tr>\n  </tbody>\n</table>",
   "hasDefendantCircumstancesInfo": "NO",
   "writShowChangeNameAddressPage": "NO",
   "additionalReasonsForPossession": {
     "hasReasons": "NO"
   },
-  "writHaveLandRegistryFeesBeenPaid": "NO",
   "writHasClaimTransferredToHighCourt": "YES",
-  "writShowPeopleWhoWillBeEvictedPage": "YES",
   "writHasHiredHighCourtEnforcementOfficer": "NO",
-  "writStatementOfTruthRepaymentSummaryMarkdown": "<table class=\"govuk-table\">\n  <caption class=\"govuk-table__caption govuk-table__caption--m govuk-!-font-size-19\">The payments due</caption>\n  <thead class=\"govuk-table__head\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"col\" class=\"govuk-table__header\">Repayment for</th>\n     <th scope=\"col\" class=\"govuk-table__header\">Amount</th>\n    </tr>\n  </thead>\n  <tbody class=\"govuk-table__body\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Arrears and other costs\n     </th>\n     <td class=\"govuk-table__cell\">£1,243</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Legal costs</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Land Registry fees</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Writ of possession fee</th>\n     <td class=\"govuk-table__cell\">£999999.99</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Total</th>\n     <td class=\"govuk-table__cell\">£1,001,242.99</td>\n    </tr>\n  </tbody>\n</table>",
-  "writWasGeneralApplicationToTransferToHighCourtSuccessful": "YES"
+  "writWasGeneralApplicationToTransferToHighCourtSuccessful": "YES",
+  "writDefendantInBreathingSpace": "NO",
+  "writDefendantMissedPayments": "YES",
+  "writCertification": [
+    "CERTIFY"
+  ]
 }

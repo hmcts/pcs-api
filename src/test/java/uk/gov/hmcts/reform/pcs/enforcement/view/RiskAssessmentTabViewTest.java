@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.EnforcementViewerService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.ClaimantRiskAnswers;
@@ -36,6 +38,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -58,13 +62,16 @@ class RiskAssessmentTabViewTest {
     private UserRoleService userRoleService;
     @Mock
     private ClaimantRiskAssessmentService claimantRiskAssessmentService;
+    @Mock
+    private SecurityContextService securityContextService;
 
     private RiskAssessmentTabView underTest;
     private final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
     @BeforeEach
     void setUp() {
-        underTest = new RiskAssessmentTabView(currentEnforcementService, bailiffNoteService, userRoleService,
+        underTest = new RiskAssessmentTabView(currentEnforcementService, bailiffNoteService,
+                                             new EnforcementViewerService(userRoleService, securityContextService),
                                              claimantRiskAssessmentService);
         lenient().when(bailiffNoteService.getNotes(any())).thenReturn(List.of());
         signedInWith("bailiff");
@@ -172,7 +179,7 @@ class RiskAssessmentTabViewTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"[CLAIMANTSOLICITOR]", "claimant", "claimant-solicitor"})
+    @ValueSource(strings = {"[CLAIMANTSOLICITOR]", "[CREATOR]", "claimant", "claimant-solicitor"})
     void shouldWordTheClaimantsAnswersForTheClaimantSide(String role) {
         signedInWith("caseworker-pcs-solicitor", role);
         givenEnforcements(warrant(AWAITING_SCHEDULING));
@@ -207,6 +214,28 @@ class RiskAssessmentTabViewTest {
         underTest.setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
 
         assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    /**
+     * The claimant's risk answers are granted on caseworker-pcs-solicitor, which both sides' legal
+     * representatives hold, so a user with no case role on either side gets nothing.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"caseworker-pcs-solicitor", "caseworker-pcs", "citizen"})
+    void shouldHideTheTabFromAUserWhoseSideOfTheCaseCannotBeEstablished(String role) {
+        signedInWith(role);
+        givenEnforcements(warrant(AWAITING_SCHEDULING));
+        EnforcementOrder stale = new EnforcementOrder();
+        stale.setRiskAssessmentClaimantMarkdown("old answers");
+        stale.setRiskAssessmentPrintMarkdown("print");
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(stale).build();
+
+        underTest.setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+
+        assertThat(stale.getShowRiskAssessmentTab()).isEqualTo(YesOrNo.NO);
+        assertThat(stale.getRiskAssessmentClaimantMarkdown()).isNull();
+        assertThat(stale.getRiskAssessmentPrintMarkdown()).isNull();
+        assertThat(stale.getRiskAssessmentInternalMarkdown()).isNull();
     }
 
     @Test
@@ -318,7 +347,7 @@ class RiskAssessmentTabViewTest {
     }
 
     private void signedInWith(String... roles) {
-        lenient().when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
+        lenient().when(userRoleService.getCurrentUserCaseRoles(eq(CASE_REFERENCE), anyCollection()))
             .thenReturn(new UserRoles("user-id", List.of(roles)));
     }
 

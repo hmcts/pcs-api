@@ -17,13 +17,12 @@ Feature: Bailiff schedules the eviction
     When I open the case
     Then the "Schedule eviction" event is available in the next steps drop down
 
-  # No route to a case that is awaiting scheduling and has no live warrant at the same time: the only way
-  # to close an enforcement is recordWarrantReturn, which itself needs a live warrant.
-  @HDPI-7344 @HDPI-7419 @pending @not-filmed
-  Scenario: Schedule eviction is not available without a live warrant
+  # "The case has no live warrant" starts a fresh issued case with no enforcement.
+  @HDPI-7344 @HDPI-7419 @not-filmed
+  Scenario: Schedule eviction is not offered without a live warrant
     Given the case has no live warrant
-    When I start the "Schedule eviction" event
-    Then I see the error "There is no warrant on this case"
+    When I open the case
+    Then the "Schedule eviction" event is not offered in the next steps drop down
 
   @HDPI-7344
   Scenario: Schedule eviction screen shows the eviction details

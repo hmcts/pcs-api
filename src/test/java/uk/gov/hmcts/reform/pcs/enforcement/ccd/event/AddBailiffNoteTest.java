@@ -53,8 +53,8 @@ class AddBailiffNoteTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeGatedOnTheEnforcementFeatureFlag() {
-        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\"");
+    void shouldOnlyBeOfferedWhenTheClaimHasAnEnforcement() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canAddBailiffNote=\"Yes\"");
     }
 
     @Test

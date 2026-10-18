@@ -51,7 +51,7 @@ Given('a PCS case {string} with warrants {string} and {string}', async ({ world 
     'HDPI-7677',
     `"${first}" is a writ of possession, not a warrant: an approved warrant stays live and blocks a second `
       + 'application until a warrant return closes it, while an approved writ is transferred to the High Court '
-      + 'and is not live (OPEN-QUESTIONS 10)'
+      + 'and is not live (OPEN-QUESTIONS 21)'
   );
   await createIssuedCase(world);
   try {

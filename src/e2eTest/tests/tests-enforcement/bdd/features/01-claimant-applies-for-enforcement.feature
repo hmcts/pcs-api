@@ -14,18 +14,17 @@ Feature: Claimant applies for enforcement of a possession order
     When I open the case
     Then the "Enforce the order" event is available in the next steps drop down
 
-  # The event is still offered in the next-step drop down while an enforcement is live; it is the
-  # EnforceTheOrder start callback that refuses it.
+  # The EnforceTheOrder start callback still refuses a live enforcement, as a backstop.
   @not-filmed
-  Scenario: Enforce the order is refused while an enforcement is live
+  Scenario: Enforce the order is not offered while an enforcement is live
     Given the case has a warrant of possession with status "Awaiting scheduling"
-    When I start the "Enforce the order" event
-    Then I see the error "There is already a live warrant or writ on this case"
+    When I open the case
+    Then the "Enforce the order" event is not offered in the next steps drop down
 
   # Runs locally against cftlib: the case comes from the "Make A Claim Basic Case" fixture (one defendant, no
   # arrears, no suspended order), which the journey helpers adapt to. The warrant of restitution journey still
   # ends on placeholder pages with no statement of truth, and "Enforce the order" does not offer a writ of
-  # restitution (OPEN-QUESTIONS #58).
+  # restitution (OPEN-QUESTIONS #11).
   Scenario Outline: Claimant applies for a <type>
     When I start the "Enforce the order" event
     And I choose to apply for a "<type>"
@@ -46,7 +45,8 @@ Feature: Claimant applies for enforcement of a possession order
       | warrant of restitution |
       | writ of restitution    |
 
-  # pcs-api cannot take the fee yet (HDPI-2877): the step records it as paid through testing support.
+  # A local stack has no Payments service: the step pays the fee through testing support, which sends a paid
+  # callback through pcs-api's enforcement payment handler.
   Scenario Outline: Claimant pays the enforcement fee for a <type>
     Given I have submitted an application for a "<type>"
     When I pay the "<fee>" fee using a service request
@@ -82,7 +82,7 @@ Feature: Claimant applies for enforcement of a possession order
   # Locally Docmosis is a wiremock stub that returns one placeholder PDF for every document, so the answers are
   # checked in the data pcs-api sends Docmosis to fill the template with (support/docmosis-renders.ts). The
   # warrant of restitution journey cannot be submitted yet: it ends on placeholder pages, with no language or
-  # statement of truth page (OPEN-QUESTIONS #30).
+  # statement of truth page (OPEN-QUESTIONS #12).
   @HDPI-7555
   Scenario Outline: Enforcement application output contains the answers for the enforcement type
     When I submit and pay for a "<type>" application
@@ -108,8 +108,8 @@ Feature: Claimant applies for enforcement of a possession order
       | warrant of possession  | Request for a warrant received             |
       | writ of possession     | Request for a writ received                |
 
-    # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #30) and a writ of
-    # restitution is never offered (OPEN-QUESTIONS #58).
+    # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #12) and a writ of
+    # restitution is never offered (OPEN-QUESTIONS #11).
     @pending
     Examples:
       | type                   | template                                   |

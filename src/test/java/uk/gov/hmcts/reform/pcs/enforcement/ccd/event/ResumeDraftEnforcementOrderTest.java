@@ -112,9 +112,9 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredWithFeatureFlagAndUnsubmittedEnforcementDataShowCondition() {
+    void shouldOnlyBeOfferedForADraftWhileTheClaimHasNoLiveEnforcement() {
         assertConfiguredShowConditions(ShowConditions.and(ShowConditions.featureFlagsEnabled(ENFORCEMENT),
-            "hasUnsubmittedEnforcementData=\"Yes\""));
+            "hasUnsubmittedEnforcementData=\"Yes\"", "canApplyForEnforcement=\"Yes\""));
     }
 
     @ParameterizedTest

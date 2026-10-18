@@ -81,8 +81,8 @@ export async function applyForFurtherWarrant(page: Page, world: EnforcementWorld
 /**
  * The claimant applies for a warrant of restitution through "Enforce the order", which pcs-api only offers once
  * the case has had a warrant. The journey ends on the "Anything else that could help with the eviction"
- * placeholder, with no statement of truth (OPEN-QUESTIONS 30), so it goes from there to check your answers.
- * Restitution has no fee, so the application starts in "Awaiting review" (OPEN-QUESTIONS 60).
+ * placeholder, with no statement of truth (OPEN-QUESTIONS 12), so it goes from there to check your answers.
+ * Restitution has no fee, so the application starts in "Awaiting review" (OPEN-QUESTIONS 12).
  */
 export async function applyForWarrantOfRestitution(page: Page, world: EnforcementWorld): Promise<void> {
   await openCaseSummary(page);
