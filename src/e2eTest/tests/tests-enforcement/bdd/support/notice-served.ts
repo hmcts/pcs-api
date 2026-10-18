@@ -109,3 +109,50 @@ export async function markNoticeServedAsBailiff(
     await restoreClaimantSession(page, context);
   }
 }
+
+/** What the suite answers to "How did you serve the 'notice of eviction'?" when the scenario does not say. */
+export const DEFAULT_SERVED_HOW = 'By hand to the occupant';
+
+/** Fills the served date-time's inputs from a "dd/MM/yyyy" date and an "HH:mm" time. */
+export async function enterServedAt(page: Page, date: string, time: string): Promise<void> {
+  const { resolveEvictionDate, resolveEvictionTime } = await import('./schedule-eviction');
+  const parts: Record<string, string> = { ...(resolveEvictionDate(date) ?? {}), ...(resolveEvictionTime(time) ?? {}) };
+  for (const part of ['day', 'month', 'year', 'hour', 'minute']) {
+    await page.locator(`${noticeServed.fields.servedAt}-${part}`).fill(parts[part] ?? '');
+  }
+}
+
+/**
+ * Answers whichever of the page's mandatory questions the scenario left blank, so that a scenario about one
+ * answer can get past the page: served yesterday at 09:00, by hand, and no bailiff note.
+ */
+export async function answerRemainingNoticeServedQuestions(page: Page): Promise<void> {
+  if (!(await page.locator(`${noticeServed.fields.servedAt}-year`).inputValue())) {
+    await enterServedYesterday(page);
+  }
+  const servedHow = page.locator(noticeServed.fields.servedHow);
+  if (!(await servedHow.inputValue())) {
+    await servedHow.fill(DEFAULT_SERVED_HOW);
+  }
+  const addNote = (answer: string) => page.locator(`${noticeServed.fields.addNote}_${answer}`);
+  if (!(await addNote('Yes').isChecked()) && !(await addNote('No').isChecked())) {
+    await addNote('No').check();
+  }
+}
+
+/**
+ * Submits the event from wherever the scenario left it: the question page, whose blank answers are filled
+ * first, or CCD's check-your-answers. Waits for the confirmation.
+ */
+export async function submitNoticeServed(page: Page, world: EnforcementWorld): Promise<void> {
+  if (await page.locator(noticeServed.fields.servedHow).isVisible().catch(() => false)) {
+    await answerRemainingNoticeServedQuestions(page);
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Check your answers' })).toBeVisible({ timeout: LONG_TIMEOUT });
+  }
+  await page.getByRole('button', { name: 'Save and continue', exact: true }).click();
+  await expect(page.getByRole('heading', { name: noticeServed.confirmationHeader }))
+    .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  world.noticeServed = true;
+  world.currentEvent = undefined;
+}

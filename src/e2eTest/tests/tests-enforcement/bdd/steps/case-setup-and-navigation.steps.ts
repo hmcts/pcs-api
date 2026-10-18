@@ -253,8 +253,6 @@ pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not
   'the {string} screen opens',
   'the warrant number is not shown in the header',
   'I see the {string} confirmation with the case number and warrant number',
-  'today is {string} and the time is {string}',
-  'the {string} screen shows my answers with {string} links',
   'I open {string}',
   '{string}',
 ]);
@@ -271,11 +269,35 @@ Given('I am signed in to XUI as a hearing centre admin', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-Then('the {string} journey opens', async ({ page, world, $tags }, eventName: string) => {
-  if (eventName !== DECIDE_ENFORCEMENT || !inDecideEnforcement(world)) {
+// The feature files name a journey by its event or by its first page's heading.
+Then('the {string} journey opens', async ({ page, world, $tags }, journey: string) => {
+  if (journey === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
+    await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+    return;
+  }
+  const started = world.currentEvent ? xuiEvents[world.currentEvent] : undefined;
+  if (!started || (journey !== world.currentEvent && journey !== started.firstPageHeader)) {
     return markPending(genericStepPending, $tags);
   }
-  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+  await expect(page.getByRole('heading', { name: started.firstPageHeader })).toBeVisible();
+});
+
+/**
+ * Nothing can set the app's clock. The scenarios use it to put a date and time in the future; those rows stay
+ * pending at their error assertion, and the rest quote dates that are already in the past.
+ */
+Given('today is {string} and the time is {string}', async ({ $tags }, date: string, time: string) => {
+  const ticket = $tags.find(tag => /^@HDPI-\d+$/.test(tag) && tag !== '@HDPI-7342')?.slice(1) ?? 'HDPI-7342';
+  approximatePrecondition(ticket, `the clock is not set to ${date} ${time}; the app uses the real time`);
+});
+
+Then('the {string} screen shows my answers with {string} links', async ({ page, world, $tags }, screen: string, link: string) => {
+  if (!world.currentEvent || screen !== scheduleEviction.checkYourAnswers) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: screen })).toBeVisible();
+  const rows = page.locator('tr, .govuk-summary-list__row').filter({ has: page.getByRole('link', { name: new RegExp(`^${link}`) }) });
+  await expect(rows.first()).toBeVisible();
 });
 
 /**
@@ -307,10 +329,25 @@ Given('I am on the {string} screen', async ({ page, world, $tags }, screen: stri
   world.currentEvent = event;
 });
 
+/** Events whose first page has the case number and property address but no "claimant name vs defendant name" line. */
+const eventsWithoutPartiesLine: Record<string, string> = {
+  [SCHEDULE_EVICTION]: 'HDPI-7344',
+  [RESCHEDULE_EVICTION]: 'HDPI-7549',
+  [MARK_NOTICE_SERVED]: 'HDPI-7346',
+};
+
 // Every built event's first page carries the same read-only case-details summary list.
 Then('I see the case number, the possession property address and {string}', async ({ page, world, $tags }, partyNames: string) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
+  }
+  const partiesTicket = eventsWithoutPartiesLine[world.currentEvent];
+  if (partiesTicket && / vs /.test(partyNames)) {
+    await expectCaseDetailsHeader(page, world, '');
+    return markPending({
+      ticket: partiesTicket,
+      summary: `"${world.currentEvent}" shows the case number and property address but no "${partyNames}" line`,
+    }, $tags);
   }
   await expectCaseDetailsHeader(page, world, partyNames);
 });

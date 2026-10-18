@@ -12,6 +12,7 @@
  */
 import { BrowserContext, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
+import { approximatePrecondition } from '../fixtures/pending';
 import type { DefendantView, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { assignDefendantCaseRole, caseDataAs, isLocalStack, localUsers } from '@config/local-stack.config';
 import { expectCaseTab, openCaseSummary, requireCaseReference, signInAs } from './enforcement-journeys';
@@ -161,5 +162,49 @@ export function expectOnlyNoticesOfEviction(views: DefendantView[]): void {
     const filenames = enforcementDocuments(view).map(document => document.value?.document_filename ?? '');
     expect(filenames.filter(filename => !filename.startsWith('Notice of eviction - ')),
       `enforcement documents other than the notice of eviction the ${view.who} gets`).toEqual([]);
+  }
+}
+
+/**
+ * Links both defendants if the scenario has not: a defendant legal representative and a citizen, given their
+ * case roles through testing support. Feature 08 talks about "defendants" without setting any up.
+ */
+export async function ensureDefendantsLinked(world: EnforcementWorld): Promise<void> {
+  if (world.defendantLegalRepresentative || world.citizenDefendant) {
+    return;
+  }
+  approximatePrecondition(
+    'HDPI-7539',
+    'the defendant legal representative and a citizen defendant are given their case roles through testing support'
+  );
+  await linkDefendantLegalRepresentative(world);
+  await linkCitizenDefendant(world);
+  caseChangedForDefendants(world);
+}
+
+/** The linked defendants, by who they are and their email. */
+function linkedDefendants(world: EnforcementWorld): { who: string; email: string }[] {
+  return [
+    ...(world.defendantLegalRepresentative ? [{ who: DEFENDANT_LEGAL_REPRESENTATIVE, email: world.defendantLegalRepresentative }] : []),
+    ...(world.citizenDefendant ? [{ who: CITIZEN_DEFENDANT, email: world.citizenDefendant }] : []),
+  ];
+}
+
+/**
+ * Waits until the case data CCD gives the defendant carries a notice of eviction in the Enforcement folder.
+ * pcs-api generates the notice after the schedule commits, so it can arrive after the notice is served.
+ */
+export async function expectNoticeOfEvictionVisibleTo(world: EnforcementWorld, who?: string): Promise<void> {
+  const caseReference = requireCaseReference(world);
+  const defendants = linkedDefendants(world).filter(defendant => !who || defendant.who === who);
+  expect(defendants, `a linked ${who ?? 'defendant'}`).not.toHaveLength(0);
+  for (const defendant of defendants) {
+    await expect
+      .poll(async () => {
+        const view: DefendantView = { who: defendant.who, inXui: false, caseData: await caseDataAs(caseReference, defendant.email) };
+        return enforcementDocuments(view).map(document => document.value?.document_filename ?? '')
+          .some(filename => filename.startsWith('Notice of eviction - '));
+      }, { message: `a notice of eviction the ${defendant.who} gets`, timeout: 120_000, intervals: [2_000, 5_000] })
+      .toBe(true);
   }
 }

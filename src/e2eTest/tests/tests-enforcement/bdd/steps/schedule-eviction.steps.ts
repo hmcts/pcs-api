@@ -27,6 +27,8 @@ import {
   expectEvictionError,
   scheduleEviction,
 } from '../support/schedule-eviction';
+import { MARK_NOTICE_SERVED, markNoticeServedAsBailiff, submitNoticeServed } from '../support/notice-served';
+import { caseChangedForDefendants } from '../support/defendant-visibility';
 
 // The warrant was allocated to the bailiff the scenario signs in as, through testing support.
 Given('I am the allocated bailiff', async ({ world }) => {
@@ -176,9 +178,18 @@ Then('the {string} tab shows the scheduled eviction date and time under {string}
 /**
  * Saves and continues from CCD's check-your-answers, which is how these events are submitted. Pending when
  * the scenario never started an event, which is the case for the ones that are really about the documents
- * or notifications a submit is meant to produce.
+ * or notifications a submit is meant to produce. "Mark notice of eviction as served" is the exception: a
+ * scenario whose journey it is but that never started it has the bailiff run it end to end.
  */
-When('I submit the event', async ({ page, world, $tags }) => {
+When('I submit the event', async ({ page, context, world, $tags }) => {
+  if (world.currentEvent === MARK_NOTICE_SERVED) {
+    return submitNoticeServed(page, world);
+  }
+  if (!world.currentEvent && world.journey === MARK_NOTICE_SERVED && !world.noticeServed) {
+    await markNoticeServedAsBailiff(page, context, world);
+    caseChangedForDefendants(world);
+    return;
+  }
   if (!world.currentEvent) {
     return markPending({ summary: 'submitting an event the scenario never started' }, $tags);
   }

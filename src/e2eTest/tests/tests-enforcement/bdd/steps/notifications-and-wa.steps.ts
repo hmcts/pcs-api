@@ -1,6 +1,7 @@
 // Notifications (GOV.UK Notify emails, dashboard notifications) and work allocation tasks (feature 18 and others).
-import { Given } from '../fixtures/enforcement.fixtures';
-import { approximatePrecondition, pendingSteps } from '../fixtures/pending';
+import { Given, When } from '../fixtures/enforcement.fixtures';
+import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
+import { openCaseSummary, startEvent, xuiEvents } from '../support/enforcement-journeys';
 
 // Nothing creates enforcement work allocation tasks yet (HDPI-8627). A step that only states a task exists
 // is recorded as an approximated precondition so the scenario carries on: the enforcement journeys are all
@@ -13,7 +14,24 @@ Given('an {string} task exists on the case', async ({ world }, task: string) => 
   noTasksYet(`the "${task}" task is not created`);
 });
 
-Given('a {string} task is assigned to me', async ({}, task: string) => noTasksYet(`the "${task}" task is not created or assigned`));
+Given('a {string} task is assigned to me', async ({ world }, task: string) => {
+  world.journey = task;
+  noTasksYet(`the "${task}" task is not created or assigned`);
+});
+
+/**
+ * Where the scenario is about the journey rather than the task, the journey is started from the next-steps
+ * drop down instead. A task with no event of the same name stays pending.
+ */
+When('I select the {string} task from the {string} tab', async ({ page, world, $tags }, task: string, _tab: string) => {
+  if (!xuiEvents[task]) {
+    return markPending({ ticket: 'HDPI-8627', summary: `selecting the "${task}" task` }, $tags);
+  }
+  noTasksYet(`the "${task}" task is not created; the journey is started from the next-steps drop down`);
+  await openCaseSummary(page);
+  await startEvent(task);
+  world.currentEvent = task;
+});
 
 Given('a {string} task exists', async ({}, task: string) => noTasksYet(`the "${task}" task is not created`));
 
@@ -49,7 +67,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'Enforcement work allocation tasks'
   'a {string} task {string}',
   'a {string} task is created for the allocated bailiff',
   'no {string} task is created',
-  'I select the {string} task from the {string} tab',
   'I have started the {string} journey from the task',
   'the scheduled task job runs',
   'a {string} task is created and assigned to me',
