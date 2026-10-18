@@ -1,4 +1,6 @@
-@HDPI-7342 @enforcement @bailiff @pending
+# Reachable on a local stack: allocate a bailiff through pcs-api testing support, schedule an eviction,
+# then have the claimant answer "Can you attend the eviction on this date?" through confirmEviction.
+@HDPI-7342 @enforcement @bailiff
 Feature: Bailiff reschedules the eviction
   As a bailiff
   I want to record a new eviction date
@@ -17,7 +19,9 @@ Feature: Bailiff reschedules the eviction
     And I see the case number, the possession property address and "claimant name vs defendant name"
     And I see the "Eviction details" table with claimant type, claimant name and defendant names
 
-  @HDPI-7549
+  # confirmEviction does not capture the claimant's unavailable dates, so the reschedule page has none to
+  # show.
+  @HDPI-7549 @pending
   Scenario: Claimant's unavailable dates are shown
     When I start the "Reschedule eviction" event
     Then I see the dates "26/06/2026" and "29/06/2026" listed as dates the claimant is not available
@@ -65,7 +69,10 @@ Feature: Bailiff reschedules the eviction
     Then the claimant receives the "Bailiff reschedules the eviction date" email
     And the claimant sees a "Confirm the eviction date" notification on their dashboard
 
-  @HDPI-7549 @HDPI-7932
+  # This scenario's Given contradicts the feature's Background, which puts the warrant in "Claimant unable
+  # to attend on this date". rescheduleEviction is available in both statuses, so the intent holds; the
+  # precondition needs correcting before it can run.
+  @HDPI-7549 @HDPI-7932 @pending
   Scenario: Bailiff can reschedule without a task
     Given the enforcement status is "Claimant confirmed"
     When I start the "Reschedule eviction" event from the next steps drop down

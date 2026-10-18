@@ -1,4 +1,7 @@
-@HDPI-7342 @enforcement @bailiff @pending
+# Reachable on a local stack: the warrant is put into "Awaiting scheduling" through the pcs-api
+# testing-support allocate-bailiff endpoint, because the allocateBailiff event's staff type-ahead needs
+# reference data cftlib does not run (HDPI-7356).
+@HDPI-7342 @enforcement @bailiff
 Feature: Bailiff schedules the eviction
   As a bailiff
   I want to record the date and time of the eviction
@@ -14,13 +17,17 @@ Feature: Bailiff schedules the eviction
     When I open the case
     Then the "Schedule eviction" event is available in the next steps drop down
 
-  @HDPI-7344 @HDPI-7419
+  # No route to a case that is awaiting scheduling and has no live warrant at the same time: the only way
+  # to close an enforcement is recordWarrantReturn, which itself needs a live warrant.
+  @HDPI-7344 @HDPI-7419 @pending
   Scenario: Schedule eviction is not available without a live warrant
     Given the case has no live warrant
     When I start the "Schedule eviction" event
     Then I see the error "There is no warrant on this case"
 
-  @HDPI-7344
+  # EvictionDatePage renders only the case number and property address. ${evictionDetailsMarkup} produces
+  # no "Eviction details" table and there is no parties line, so neither is shown.
+  @HDPI-7344 @pending
   Scenario: Schedule eviction screen shows the eviction details
     When I start the "Schedule eviction" event
     Then I see the case number, the possession property address and "claimant name vs defendant name"
@@ -69,11 +76,13 @@ Feature: Bailiff schedules the eviction
     Then I see the case summary
     And no eviction date is saved
 
+  # The date must stay in the future — the event rejects a past eviction date — and the weekday must match
+  # it, because the confirmation is formatted from the date the bailiff entered.
   @HDPI-7547 @HDPI-7351
   Scenario: Submitting the schedule
-    Given I have entered an eviction date of "Thursday 25 June 2026" at "10:00"
+    Given I have entered an eviction date of "Friday 25 June 2027" at "10:00"
     When I submit the "Schedule eviction" event
-    Then I see the confirmation "Eviction date scheduled for Thursday 25 June 2026 at 10:00am" with the case number and warrant number
+    Then I see the confirmation "Eviction date scheduled for Friday 25 June 2027 at 10:00am" with the case number and warrant number
     And I see "Print the 'notice of eviction' (form N54)" under "You need to"
     And I see a link "Go to case file view (same service, opens in a new tab)"
     And the "Enforcement status" tab shows the scheduled eviction date and time under "Scheduled eviction"

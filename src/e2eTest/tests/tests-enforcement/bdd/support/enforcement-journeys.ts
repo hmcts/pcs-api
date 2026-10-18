@@ -17,6 +17,16 @@ import { caseSummary } from '@data/page-data';
 import { user, users } from '@data/user-data';
 import { staff } from '@data/user-data/staff.user.data';
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { CLAIMANT_LEGAL_REPRESENTATIVE, currentSignedInRole, recordSignedInRole } from './session';
+import {
+  basicClaimFixtureClaim,
+  createCaseFromFixture,
+  isLocalStack,
+  localUsers,
+  signInToIdamSimulator,
+  testCaseFixtures,
+  waitForServiceRequest,
+} from '@config/local-stack.config';
 import {
   checkYourAnswers,
   evidenceUpload,
@@ -29,20 +39,16 @@ import {
   confirmDefendantsDOB,
   confirmEvictionDetails,
   confirmHCEOfficer,
+  defendantInBreathingSpace,
   enforcementApplication,
-  landRegistryFees,
   languageUsed,
-  legalCosts,
   livingInTheProperty,
-  moneyOwed,
+  missedPayments,
   nameAndAddressForEviction,
-  peopleWhoWillBeEvicted,
   peopleYouWantToEvict,
   propertyAccessDetails,
-  repayments,
   shareEvidenceWithJudge,
   statementOfTruth,
-  suspendedOrder,
   vulnerableAdultsChildren,
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
@@ -78,25 +84,88 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */
 export async function createIssuedCase(world: EnforcementWorld): Promise<void> {
-  const submitPayload = submitCaseApiData.submitCasePayload();
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitPayload });
-  if (caseInfo.state !== 'CASE_ISSUED') {
-    await performCommonAction('updatePaymentAPI');
-  }
+  const submitPayload = isLocalStack() ? await createIssuedCaseLocally() : await createIssuedCaseFromClaimPayload();
   await performAction('getDefendantDetails', {
     defendant1NameKnown: submitPayload.defendant1.nameKnown,
     additionalDefendants: submitPayload.addAnotherDefendant,
     payLoad: submitPayload,
   });
   world.caseReference = caseInfo.id;
-  world.submitPayload = submitPayload;
+  world.submitPayload = submitPayload as SubmitCasePayload;
+}
+
+async function createIssuedCaseFromClaimPayload(): Promise<SubmitCasePayload> {
+  const submitPayload = submitCaseApiData.submitCasePayload();
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitPayload });
+  if (caseInfo.state !== 'CASE_ISSUED') {
+    await performCommonAction('updatePaymentAPI');
+  }
+  return submitPayload;
+}
+
+/**
+ * The claim payloads reference uploaded documents, and cftlib has no dm-store for CDAM to store them in,
+ * so a local run builds the case from the `Create Case Make A Claim Basic Case` fixture and pays its issue
+ * fee. The fixture's claim is simpler than `submitCasePayload()` — one defendant whose name is known.
+ */
+async function createIssuedCaseLocally(): Promise<SubmitCasePayload> {
+  const created = await createCaseFromFixture(testCaseFixtures.basicClaim);
+  process.env.CASE_NUMBER = created.id;
+  caseInfo.id = created.id;
+  caseInfo.fid = created.id.replace(/(.{4})(?=.)/g, '$1-');
+  caseInfo.state = created.state;
+  if (created.state !== 'CASE_ISSUED') {
+    // The service request is created on a db-scheduler task, so it appears after the case does.
+    await waitForServiceRequest(created.id);
+    await performCommonAction('updatePaymentAPI');
+    caseInfo.state = 'CASE_ISSUED';
+  }
+  return basicClaimFixtureClaim as unknown as SubmitCasePayload;
 }
 
 /** Submits a warrant of possession application through the API, as the warrant of restitution spec does. */
 export async function seedWarrantApplication(world: EnforcementWorld): Promise<void> {
+  if (isLocalStack()) {
+    // `enforceCasePayloadNoJourney` carries nine fields that no longer exist anywhere in pcs-api
+    // (warrantAmountOwed, warrantRepaymentChoice, warrantIsSuspendedOrder, warrantEvictEveryone,
+    // warrantShowPeopleWhoWillBeEvictedPage, warrantAreLegalCostsToBeClaimed, warrantAmountOfLegalCosts,
+    // warrantHaveLandRegistryFeesBeenPaid, warrantAmountOfLandRegistryFees) — they went with the money and
+    // evict-selection pages — so CCD rejects the event with "No field found". This is not local-only: the
+    // same payload is sent on AAT. Until it is pruned, the Create-Enforcement-Warrant fixture, which goes
+    // through pcs-api's own JSON parsing rather than CCD field validation, is the only route to a seeded
+    // warrant.
+    await createCaseWithWarrant(world);
+    return;
+  }
   await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayloadNoJourney });
   world.enforcementSeeded = true;
+}
+
+/**
+ * A case issued with a warrant of possession application already submitted, i.e. an enforcement in
+ * "Awaiting payment". On a local stack this is one `createTestCase` submit; on AAT it is a claim followed
+ * by an `enforceTheOrder` API call.
+ */
+export async function createCaseWithWarrant(world: EnforcementWorld): Promise<void> {
+  if (isLocalStack()) {
+    const created = await createCaseFromFixture(testCaseFixtures.enforcementWarrant);
+    process.env.CASE_NUMBER = created.id;
+    caseInfo.id = created.id;
+    caseInfo.fid = created.id.replace(/(.{4})(?=.)/g, '$1-');
+    caseInfo.state = created.state;
+    world.caseReference = created.id;
+    world.submitPayload = basicClaimFixtureClaim as unknown as SubmitCasePayload;
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: basicClaimFixtureClaim.defendant1.nameKnown,
+      additionalDefendants: basicClaimFixtureClaim.addAnotherDefendant,
+      payLoad: basicClaimFixtureClaim,
+    });
+    world.enforcementSeeded = true;
+    return;
+  }
+  await createIssuedCase(world);
+  await seedWarrantApplication(world);
 }
 
 export async function openCaseSummary(page: Page): Promise<void> {
@@ -135,6 +204,32 @@ export async function startEvent(eventName: string): Promise<void> {
   await performValidation('mainHeader', event.firstPageHeader);
 }
 
+/**
+ * Selects an event and clicks Go without requiring its first page to open.
+ *
+ * The enforcement events are gated by start callbacks, not by hiding the event, so an event that is not
+ * available is still offered in the drop down and refused once Go is clicked. Returns the callback error
+ * if there was one.
+ */
+export async function startEventAllowingRefusal(page: Page, eventName: string): Promise<string | undefined> {
+  const event = xuiEvents[eventName];
+  await performAction('select', caseSummary.nextStepEventList, event.label);
+  await performAction('clickButton', caseSummary.go);
+
+  const errors = page.locator('.govuk-error-summary, .error-summary, #errors');
+  const heading = page.getByRole('heading', { name: event.firstPageHeader });
+  await expect
+    .poll(async () => (await errors.count()) > 0 || (await heading.count()) > 0, { timeout: VERY_LONG_TIMEOUT })
+    .toBe(true);
+
+  if (!(await errors.count())) {
+    return undefined;
+  }
+  // CCD puts a generic message in the error summary and the callback's own message in a separate list, so
+  // the whole page text is returned and the caller matches against it.
+  return (await page.locator('body').innerText()).replace(/\s+/g, ' ').trim();
+}
+
 export async function chooseApplicationType(type: EnforcementType, world: EnforcementWorld, page: Page): Promise<void> {
   world.applicationType = type;
   switch (type) {
@@ -142,8 +237,9 @@ export async function chooseApplicationType(type: EnforcementType, world: Enforc
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
         option: enforcementApplication.warrantOfPossessionRadioOption,
-        nextPage: nameAndAddressForEviction.mainHeader,
+        nextPage: defendantInBreathingSpace.mainHeader,
       });
+      await answerBreathingSpaceAndMissedPayments(nameAndAddressForEviction.mainHeader);
       return;
     case 'writ of possession':
       await performAction('selectApplicationType', {
@@ -198,16 +294,6 @@ async function answerWarrantQuestions(world: EnforcementWorld): Promise<void> {
   await performAction('confirmDefendantsDOB', {
     question: confirmDefendantsDOB.defendantsDOBQuestion,
     option: confirmDefendantsDOB.noRadioOption,
-    nextPage: peopleWhoWillBeEvicted.mainHeader,
-  });
-  await performAction('selectPeopleWhoWillBeEvicted', {
-    question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
-    option: peopleWhoWillBeEvicted.noRadioOption,
-    nextPage: peopleYouWantToEvict.mainHeader,
-  });
-  await performAction('selectPeopleYouWantToEvict', {
-    question: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
-    option: defendantDetails,
     nextPage: livingInTheProperty.mainHeader,
   });
   await performAction('selectEveryoneLivingAtTheProperty', {
@@ -232,17 +318,11 @@ async function answerWarrantQuestions(world: EnforcementWorld): Promise<void> {
   await performAction('provideDetailsBasedOnRadioOptionSelection', {
     question: additionalInformation.anythingElseQuestion,
     option: additionalInformation.noRadioOption,
-    nextPage: moneyOwed.mainHeader,
+    nextPage: languageUsed.mainHeader,
   });
-  await answerMoneyQuestions();
   await performAction('selectLanguageUsed', {
     question: languageUsed.whichLanguageUsedQuestion,
     option: languageUsed.englishRadioOption,
-    nextPage: suspendedOrder.mainHeader,
-  });
-  await performAction('confirmSuspendedOrder', {
-    question: suspendedOrder.suspendedOrderQuestion,
-    option: suspendedOrder.noRadioOption,
     nextPage: statementOfTruth.mainHeader,
   });
 }
@@ -253,16 +333,16 @@ async function answerWritQuestions(world: EnforcementWorld): Promise<void> {
     question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
     option: nameAndAddressForEviction.yesRadioOption,
     defendant1NameKnown: requireSubmitPayload(world).defendant1.nameKnown,
-    nextPage: confirmHCEOfficer.mainHeader,
+    nextPage: defendantInBreathingSpace.mainHeader,
   });
+  await answerBreathingSpaceAndMissedPayments(confirmHCEOfficer.mainHeader);
   await performAction('selectHaveHiredHCEO', {
     question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
     option: confirmHCEOfficer.noRadioOption,
     nextPage: theNICEWillChoose.mainHeader,
   });
   await performAction('clickButton', theNICEWillChoose.continueButton);
-  await performValidation('mainHeader', moneyOwed.mainHeader);
-  await answerMoneyQuestions();
+  await performValidation('mainHeader', languageUsed.mainHeader);
   await performAction('selectLanguageUsed', {
     question: languageUsed.whichLanguageUsedQuestion,
     option: languageUsed.englishRadioOption,
@@ -270,35 +350,18 @@ async function answerWritQuestions(world: EnforcementWorld): Promise<void> {
   });
 }
 
-/** Money owed, legal costs, Land Registry fees and repayments: the same pages for warrants and writs. */
-async function answerMoneyQuestions(): Promise<void> {
-  await performAction('provideMoneyOwed', {
-    label: moneyOwed.totalAmountOwedTextLabel,
-    input: moneyOwed.totalAmountOwedTextInput,
-    nextPage: legalCosts.mainHeader,
+/**
+ * "Is the defendant currently in a breathing space?" then "Missed payments": two pages both the warrant and
+ * the writ journeys pass through. Answering yes to missed payments is what matters — answering no is the
+ * only thing that gates the "you need permission from a judge" information page
+ * (CannotApplyForWarrantInfoPage). The breathing-space answer has no show condition.
+ */
+async function answerBreathingSpaceAndMissedPayments(nextPage: string): Promise<void> {
+  await performAction('isDefendantInBreathingSpace', {
+    option: defendantInBreathingSpace.noRadioOption,
+    nextPage: missedPayments.mainHeader,
   });
-  await performAction('provideLegalCosts', {
-    question: legalCosts.reclaimLegalCostsQuestion,
-    option: legalCosts.noRadioOption,
-    label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
-    input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
-    nextPage: landRegistryFees.mainHeader,
-  });
-  await performAction('provideLandRegistryFees', {
-    question: landRegistryFees.landRegistryFeeQuestion,
-    option: landRegistryFees.noRadioOption,
-    label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
-    input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-    nextPage: repayments.mainHeader,
-  });
-  await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
-  await performAction('provideAmountToRePay', {
-    question: repayments.rePaymentQuestion,
-    option: repayments.noneRadioOptions,
-    label: repayments.enterTheAmountTextLabelHidden,
-    input: repayments.enterTheAmountTextInputHidden,
-    nextPage: languageUsed.mainHeader,
-  });
+  await performAction('missedPayments', { option: missedPayments.yesRadioOption, nextPage });
 }
 
 /**
@@ -371,6 +434,14 @@ export async function submitApplication(): Promise<void> {
   await performValidation('bannerAlert', 'Case #.* has been updated with event: Enforce the order');
 }
 
+/** The case this scenario created. Fails with a clear message if no "Given a PCS case ..." step ran. */
+export function requireCaseReference(world: EnforcementWorld): string {
+  if (!world.caseReference) {
+    throw new Error('No case has been created in this scenario: start with "Given a PCS case ..."');
+  }
+  return world.caseReference;
+}
+
 function requireSubmitPayload(world: EnforcementWorld): SubmitCasePayload {
   if (!world.submitPayload) {
     throw new Error('No case has been created in this scenario: start with "Given a PCS case ..."');
@@ -379,21 +450,34 @@ function requireSubmitPayload(world: EnforcementWorld): SubmitCasePayload {
 }
 
 /**
- * Permanent XUI users the steps can sign in as, keyed by the role names in the feature files. The claimant's
- * legal representative is the storage-state user (config/global-setup.config.ts), so needs no sign-in.
- * There are no bailiff, bailiff-admin or bailiff-manager users yet (HDPI-7539).
+ * XUI users the steps can sign in as, keyed by the role names in the feature files. The claimant's legal
+ * representative is the storage-state user (config/global-setup.config.ts), so needs no sign-in.
+ *
+ * On a local cftlib stack the bailiff staff are the users `CftlibConfig` seeds, with their bailiff
+ * organisation roles in `cftlib-am-role-assignments.json`. On AAT there are still no bailiff users
+ * (HDPI-7539), so the bailiff entries resolve to undefined there and the scenarios stay pending.
  */
 const signInUsers: Record<string, () => string | undefined> = {
-  'hearing-centre-admin': () => user.hearingCenterAdmin.email,
-  'hearing-centre-team-leader': () => staff.pcs_hearing_centre_team_leader_email,
-  judge: () => users.find(candidate => candidate.user === 'County Court Judge')?.email,
-  'defendant legal representative': () => user.defendantSolicitor.email,
+  'hearing-centre-admin': () => (isLocalStack() ? localUsers.hearingCentreAdmin : user.hearingCenterAdmin.email),
+  'hearing-centre-team-leader': () =>
+    isLocalStack() ? localUsers.hearingCentreTeamLeader : staff.pcs_hearing_centre_team_leader_email,
+  judge: () => (isLocalStack() ? localUsers.judge : users.find(candidate => candidate.user === 'County Court Judge')?.email),
+  // Not signable in on a local stack: linking a defendant solicitor to a party goes through pcs-api
+  // testing support into CCD's case-users API, which answers 500 "Failed to create CCD case" there.
+  'defendant legal representative': () => (isLocalStack() ? undefined : user.defendantSolicitor.email),
+  bailiff: () => (isLocalStack() ? localUsers.bailiff : undefined),
+  'bailiff-admin': () => (isLocalStack() ? localUsers.bailiffAdmin : undefined),
+  'bailiff-manager': () => (isLocalStack() ? localUsers.bailiffManager : undefined),
 };
 
-export const CLAIMANT_LEGAL_REPRESENTATIVE = 'claimant legal representative';
+export { CLAIMANT_LEGAL_REPRESENTATIVE } from './session';
+
+function claimantLegalRepresentativeEmail(): string {
+  return isLocalStack() ? localUsers.claimantSolicitor : (user.localAuthorityOrg1Usr1.email as string);
+}
 
 export function canSignInAs(role: string): boolean {
-  return role === CLAIMANT_LEGAL_REPRESENTATIVE || role in signInUsers;
+  return role === CLAIMANT_LEGAL_REPRESENTATIVE || Boolean(signInUsers[role]?.());
 }
 
 /**
@@ -402,6 +486,12 @@ export function canSignInAs(role: string): boolean {
  */
 export async function signInAs(role: string, page: Page, context: BrowserContext): Promise<void> {
   if (role === CLAIMANT_LEGAL_REPRESENTATIVE) {
+    // Already the storage-state user, unless an earlier step swapped the session for another role.
+    if (currentSignedInRole() === CLAIMANT_LEGAL_REPRESENTATIVE) {
+      return;
+    }
+    await signInFresh(claimantLegalRepresentativeEmail(), page, context);
+    recordSignedInRole(CLAIMANT_LEGAL_REPRESENTATIVE);
     return;
   }
   const email = signInUsers[role]?.();
@@ -411,10 +501,20 @@ export async function signInAs(role: string, page: Page, context: BrowserContext
   if (role === 'defendant legal representative') {
     await performCommonAction('getCaseAPIDynamic', { req: 'Link Solicitor', email, password: process.env.IDAM_PCS_USER_PASSWORD });
   }
+  await signInFresh(email, page, context);
+  recordSignedInRole(role);
+}
+
+/** Drops whatever session the browser has and signs in from the XUI landing page. */
+async function signInFresh(email: string, page: Page, context: BrowserContext): Promise<void> {
   await clearBrowserSession(page, context);
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', { email, password: process.env.IDAM_PCS_USER_PASSWORD });
+  if (isLocalStack()) {
+    await signInToIdamSimulator(page, email);
+  } else {
+    await performAction('login', { email, password: process.env.IDAM_PCS_USER_PASSWORD });
+  }
   await dismissCookieBanner(page, 'analytics');
 }
 

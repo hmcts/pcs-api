@@ -63,6 +63,125 @@ Mock-up journeys for delivering the Bailiff Management epic ([HDPI-7342](https:/
 | `18-work-allocation-tasks.feature` | All enforcement WA tasks: creation, assignment, completion |
 | `19-enforcement-status-model.feature` | Status transitions and event availability |
 
+## Running the suite against a local cftlib stack
+
+```bash
+# Terminal 1 — the stack. LOCAL_DOC_SERVICES brings up dm-store so document upload works;
+# the LaunchDarkly vars turn the `enforcement-enabled` flag on offline.
+LOCAL_DOC_SERVICES=true \
+LAUNCHDARKLY_OFFLINE=true LAUNCHDARKLY_FILES=/tmp/enf-flags.json \
+ENABLE_TESTING_SUPPORT=true \
+./gradlew bootWithCCD
+
+# Terminal 2 — the suite
+cd src/e2eTest
+ENVIRONMENT=local npx bddgen
+ENVIRONMENT=local npx playwright test --project enforcement-bdd
+```
+
+`ENVIRONMENT=local` is the only variable you need: [`config/local-stack.config.ts`](../../../config/local-stack.config.ts)
+defaults every service URL to its cftlib port. Override any of them by exporting it yourself.
+
+Testing-support shortcuts used by the suite (both need `testing-support.enabled=true`, which
+`ENABLE_TESTING_SUPPORT=true` sets):
+
+- `POST /testing-support/enforcement/{caseReference}/fee-paid` — "Awaiting payment" → "Awaiting review".
+  S2S header only.
+- `POST /testing-support/enforcement/{caseReference}/allocate-bailiff` with `{"userId","name","email"}` —
+  allocates the warrant and moves "Awaiting bailiff allocation" → "Awaiting scheduling". Needs a **user**
+  bearer token as well as S2S, because the service records who made the allocation.
+
+| Variable | Local default | Notes |
+|---|---|---|
+| `MANAGE_CASE_BASE_URL` | `http://localhost:3000` | XUI |
+| `DATA_STORE_URL_BASE` | `http://localhost:4452` | CCD data store |
+| `CASE_API_URL` | `http://localhost:3206` | pcs-api, incl. `/testing-support/**` |
+| `IDAM_WEB_URL` | `http://localhost:5062` | IDAM simulator |
+| `IDAM_TESTING_SUPPORT_URL` | `http://localhost:5062` | only validated, never called |
+| `S2S_URL` | `http://localhost:8489/testing-support/lease` | full URL, not a base |
+| `ROLE_ASSIGNMENT_URL` | `http://localhost:4096` | AM role assignment |
+| `CDAM_URL` | `http://localhost:4455` | started by cftlib |
+| `DM_STORE` | `http://localhost:4506` | only with `LOCAL_DOC_SERVICES=true` |
+| `IDAM_PCS_USER_PASSWORD` | `local` | the simulator accepts any password |
+
+Four things differ from an AAT run, all handled by the `ENVIRONMENT=local` branch:
+
+1. **Sign-in.** The IDAM simulator serves one form (`#username`, `#password`, "Sign in"), not AAT's
+   two-step email-then-password journey.
+2. **Users.** The permanent AAT users do not exist. `localUsers` maps each role in the feature files to
+   the cftlib user that stands in for it, seeded by
+   [`CftlibConfig`](../../../../cftlib/java/uk/gov/hmcts/reform/pcs/CftlibConfig.java).
+3. **Case creation.** The `submitPossessionClaim` payloads reference uploaded documents, so local runs
+   build cases from the `createTestCase` fixtures instead — `Create Case Make A Claim Basic Case` for a
+   plain issued case, `Create Enforcement Warrant Basic Case` for one with a warrant application. This
+   needs the stack booted with `ENABLE_TESTING_SUPPORT=true`.
+4. **Documents.** cftlib starts CDAM but only starts dm-store behind it with `LOCAL_DOC_SERVICES=true`.
+   Global setup probes `GET $DM_STORE/health` and skips the upload with a warning when it is down.
+
+### Bailiff users
+
+| Email | RAS organisation role |
+|---|---|
+| `pcs-bailiff@localhost` | `bailiff` |
+| `pcs-bailiff-admin@localhost` | `bailiff-admin` |
+| `pcs-bailiff-manager@localhost` | `bailiff-manager`, `task-supervisor` |
+| `caseworker@pcs.com` | `hearing-centre-admin`, `ctsc-team-leader` |
+| `pcs-hearing-centre-team-leader-01@localhost` | `hearing-centre-team-leader`, `hearing-centre-admin` |
+
+The bailiff roles are **RAS organisation roles**, not IDAM roles, and they are granted in
+[`cftlib-am-role-assignments.json`](../../../../cftlib/resources/cftlib-am-role-assignments.json). That
+file is the only way to grant them locally: `lib.configureRoleAssignments()` writes straight to the
+`am.role_assignment` table, whereas the RAS API rejects all three
+("Create not approved by any rule, hence rejected") because no drools rule approves a PCS bailiff role.
+`bin/setup-role-assignments` does not help — it is hardcoded to the AAT key vault and the AAT
+org-role-mapping service. Actor IDs in that file are `UUID.nameUUIDFromBytes(email)`, i.e. a v3 MD5 UUID
+of the email.
+
+### Recording a demo
+
+`--project enforcement-bdd-demo` records one video per scenario (`video: 'on'`, `trace: 'on'`,
+`retries: 0`). It is a separate project so that CI's `enforcement-bdd` keeps `retain-on-failure`.
+
+```bash
+ENVIRONMENT=local npx playwright test --project enforcement-bdd-demo --grep-invert '@pending'
+```
+
+Videos land in `test-results/<spec>-<scenario>-enforcement-bdd-demo/video.webm`.
+
+### Reaching an enforcement status
+
+Only `fee-paid` and `allocate-bailiff` are testing-support shortcuts; every other status is reached by
+submitting the real event. `setUpWarrantAtStatus` in
+[`support/approve-warrant.ts`](../support/approve-warrant.ts) drives the chain and records an approximated
+precondition when it cannot reach the status a scenario asks for.
+
+| Status | How it is reached |
+|---|---|
+| `Awaiting payment` | the `Create Enforcement Warrant Basic Case` fixture |
+| `Awaiting review` | `POST /testing-support/enforcement/{ref}/fee-paid` |
+| `Awaiting bailiff allocation` | `decideEnforcement` → Accept, as a hearing centre admin |
+| `Awaiting scheduling` | `POST /testing-support/enforcement/{ref}/allocate-bailiff` |
+| `Awaiting claimant confirmation` | `scheduleEviction`, as the bailiff, answering "No" to dispensing with service |
+| `Claimant confirmed` / `Claimant unable to attend` | `confirmEviction`, as the claimant |
+| `Breathing space`, `Closed`, `Rejected`, `Transferred to the High Court` | no route yet (HDPI-7419) |
+
+### What a local stack cannot do
+
+- **Allocate a bailiff through the event.** `FindBailiffPage`'s StaffUser type-ahead needs staff reference
+  data; cftlib runs no rd-staff, so XUI degrades the field to a raw `IdamId` input and CCD's "IdamId is
+  required" fires before the page's own "Choose a bailiff" mid-event. Feature 03 stays pending for that
+  reason. The `allocate-bailiff` testing-support endpoint goes through `BailiffAllocationService` instead,
+  so features 05, 07, 08 and 11 *are* reachable. (HDPI-7356)
+- **Generate documents.** There are no Docmosis templates, so anything asserting a generated warrant,
+  notice of eviction or notice of appointment stays pending. Document *storage* works once dm-store is up.
+- **Create work allocation tasks.** Nothing creates them in any environment yet. A step that merely states
+  a task exists is recorded as an approximated precondition so the scenario still runs; a step that
+  interacts with one stays pending. (HDPI-8627)
+- **Control the clock.** Several scenarios say "today is 08/07/2026" to put a time in the future; nothing
+  can set the app's clock, so those stay pending.
+- **Sign in as a defendant legal representative.** Linking one to a party goes through pcs-api testing
+  support into CCD's case-users API, which answers 500 "Failed to create CCD case" locally.
+
 ## Open questions
 
 Scenarios tagged `@open-question` depend on one of these.

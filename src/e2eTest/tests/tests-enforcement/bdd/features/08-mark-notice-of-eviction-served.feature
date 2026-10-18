@@ -1,4 +1,6 @@
-@HDPI-7342 @enforcement @bailiff @pending
+# Reachable on a local stack: allocate a bailiff through pcs-api testing support, then schedule an eviction
+# answering "No" to dispensing with service.
+@HDPI-7342 @enforcement @bailiff
 Feature: Bailiff marks the notice of eviction as served
   As a bailiff
   I want to record when and how I served the notice of eviction
@@ -17,7 +19,10 @@ Feature: Bailiff marks the notice of eviction as served
     And I see the case number, the possession property address and "claimant name vs defendant name"
     And I am not asked about permission to dispense with service
 
-  @HDPI-7346
+  # Submitting empty reports "When did you serve the 'notice of eviction'? is required" and "Do you want to
+  # add a bailiff note? is required". "How did you serve the 'notice of eviction'?" is not mandatory at
+  # field level, so no error is raised for it.
+  @HDPI-7346 @pending
   Scenario: When and how the notice was served are mandatory
     Given I am on the "Mark 'notice of eviction' as served" screen
     When I select "Continue" without answering

@@ -102,6 +102,24 @@ export default defineConfig({
         headless: !!process.env.CI,
       },
     },
+    // Demo recording: one video per scenario, headed-size viewport, no retries hiding a re-run.
+    // A separate project so CI's `enforcement-bdd` keeps `video: 'retain-on-failure'`; nothing selects
+    // this one unless you ask for it by name.
+    {
+      name: 'enforcement-bdd-demo',
+      testDir: enforcementBddTestDir,
+      retries: 0,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        screenshot: 'on',
+        video: { mode: 'on', size: DEFAULT_VIEWPORT },
+        trace: 'on',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: !!process.env.CI,
+      },
+    },
     ...(process.env.CI
       ? [
           {

@@ -3,7 +3,8 @@ import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
-import { createIssuedCase, openCaseSummary, seedWarrantApplication, startEvent } from '../support/enforcement-journeys';
+import { createCaseWithWarrant, openCaseSummary, requireCaseReference, startEvent } from '../support/enforcement-journeys';
+import { enforcementNumber } from '../support/enforcement-status-tab';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
@@ -12,7 +13,9 @@ import {
   decisionRow,
   expectConfirmation,
   goToCheckYourAnswers,
+  confirmationPanel,
   recordEnforcementFeePaid,
+  withDashes,
 } from '../support/decide-enforcement';
 
 const SEEDED_STATUSES = ['Awaiting payment', 'Awaiting review'];
@@ -22,8 +25,7 @@ Given('a PCS case {string} with an enforcement of type {string} with status {str
   if (type !== 'warrant of possession' || !SEEDED_STATUSES.includes(status)) {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} with status "${status}"` }, $tags);
   }
-  await createIssuedCase(world);
-  await seedWarrantApplication(world);
+  await createCaseWithWarrant(world);
   world.applicationType = type;
   if (status === 'Awaiting review') {
     approximatePrecondition('HDPI-2877', 'pcs-api cannot take the enforcement fee yet; the fee is recorded as paid through testing support');
@@ -91,9 +93,11 @@ When('I enter a reason for rejecting', async ({ page }) => {
 
 Then('I see the {string} confirmation screen with the case number, property address and party names', async ({ page, world }, title: string) => {
   await expectConfirmation(page, title);
-  await expect(page.getByText(`Case number: ${world.caseReference}`)).toBeVisible();
-  await expect(page.getByText(/^Property address: .+/)).toBeVisible();
-  await expect(page.getByText(/ vs /).first()).toBeVisible();
+  const panel = confirmationPanel(page);
+  // DecideEnforcementConfirmation renders the raw long; XUI formats any 16-digit reference with dashes.
+  await expect(panel.getByText(`Case number: ${withDashes(String(world.caseReference))}`)).toBeVisible();
+  await expect(panel.getByText(/^Property address: .+/)).toBeVisible();
+  await expect(panel.getByText(/ vs /).first()).toBeVisible();
 });
 
 Then('I see the {string} confirmation screen', async ({ page }, title: string) => {
@@ -101,8 +105,10 @@ Then('I see the {string} confirmation screen', async ({ page }, title: string) =
 });
 
 // The number format is a placeholder until HDPI-7352 agrees it (pcs-api EnforcementNumberGenerator).
-Then('a warrant number is assigned to the enforcement', async ({ page }) => {
-  await expect(page.getByText(/^Warrant number: W[PR]-\d{8,}$/)).toBeVisible();
+Then('a warrant number is assigned to the enforcement', async ({ page, world }) => {
+  await expect(confirmationPanel(page).getByText(/^Warrant number: W[PR]-\d{8,}$/)).toBeVisible();
+  // The same number is the one the "Enforcement status" tab records against the enforcement.
+  await expect.poll(() => enforcementNumber(page, requireCaseReference(world))).toMatch(/^W[PR]-\d{8,}$/);
 });
 
 async function acceptTheApplication(page: Page, world: EnforcementWorld): Promise<void> {

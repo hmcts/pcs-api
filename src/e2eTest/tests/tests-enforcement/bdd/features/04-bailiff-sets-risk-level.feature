@@ -1,6 +1,8 @@
-# Built in pcs-api as the setRiskLevel event. @pending until bailiff test users (HDPI-7539) and the WA tasks
-# (HDPI-8627) exist: the background signs in as the allocated bailiff and assigns them a task.
-@HDPI-7342 @enforcement @bailiff @pending
+# Built in pcs-api as the setRiskLevel event, and drivable on a local cftlib stack by the seeded bailiff
+# users. The background's bailiff allocation and WA task are approximated: no bailiff can be allocated
+# (HDPI-7356 / HDPI-8189) and nothing creates tasks (HDPI-8627), but the bailiff reaches the warrant through
+# their `bailiff` organisation role, which is what these scenarios need.
+@HDPI-7342 @enforcement @bailiff
 Feature: Bailiff sets the eviction risk level
   As a bailiff
   I want to record the risk level based on the claimant's risk assessment
@@ -11,7 +13,7 @@ Feature: Bailiff sets the eviction risk level
     And a "Review risks and set level" task is assigned to me
     And I am signed in to XUI as a bailiff
 
-  @HDPI-7343
+  @HDPI-7343 @HDPI-8627 @pending
   Scenario: Opening the task starts the set risk level journey
     When I select the "Review risks and set level" task
     Then the "Set risk level" screen opens with heading "Set risk level"
@@ -33,7 +35,9 @@ Feature: Bailiff sets the eviction risk level
     And the hint "You can enter up to 6,800 characters."
     And the text box accepts letters, numbers and special characters up to 6,800 characters
 
-  @HDPI-7343 @HDPI-7350
+  # The confirmation asserts a warrant number; SetRiskLevel's confirmation body carries only the case
+  # number, and the task completion needs WA (HDPI-8627).
+  @HDPI-7343 @HDPI-7350 @pending
   Scenario Outline: Setting the risk level
     Given I am on the "Set risk level" screen
     When I select "<level>" and provide any required reason

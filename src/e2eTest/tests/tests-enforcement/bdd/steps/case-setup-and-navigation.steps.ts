@@ -4,12 +4,13 @@ import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import {
   canSignInAs,
+  createCaseWithWarrant,
   createIssuedCase,
   nextStepOptions,
   openCaseSummary,
-  seedWarrantApplication,
   signInAs,
   startEvent,
+  startEventAllowingRefusal,
   xuiEvents,
 } from '../support/enforcement-journeys';
 import {
@@ -22,6 +23,16 @@ import {
   signInAsHearingCentreAdmin,
   submitDecision,
 } from '../support/decide-enforcement';
+import { AWAITING_BAILIFF_ALLOCATION, setUpWarrantAtStatus } from '../support/approve-warrant';
+import { RESCHEDULE_EVICTION, SCHEDULE_EVICTION, scheduleEviction } from '../support/schedule-eviction';
+import { MARK_NOTICE_SERVED, noticeServed } from '../support/notice-served';
+import {
+  ADD_BAILIFF_NOTE,
+  SET_RISK_LEVEL,
+  addBailiffNote,
+  chooseRiskLevel,
+  setRiskLevel,
+} from '../support/bailiff-events';
 
 /** Tickets that deliver the enforcement events the steps cannot drive yet. */
 const eventTickets: Record<string, string> = {
@@ -49,10 +60,12 @@ Given('a PCS case {string} with a possession order made', async ({ world }, _ref
   await createIssuedCase(world);
 });
 
-Given('a PCS case {string} with a warrant of possession with status {string}', async ({ world }, _reference: string, status: string) => {
-  await createIssuedCase(world);
-  await seedWarrantApplication(world);
-  approximatePrecondition('HDPI-7419', `enforcement status "${status}" is not modelled yet; the case has a submitted warrant application`);
+Given('a PCS case {string} with a warrant of possession with status {string}', async ({ page, context, world }, _reference: string, status: string) => {
+  await setUpWarrantAtStatus(page, context, world, status);
+});
+
+Given('a PCS case {string} with a warrant of possession', async ({ page, context, world }, _reference: string) => {
+  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
 });
 
 // The claimant legal representative is the storage-state user from config/global-setup.config.ts, who also
@@ -77,7 +90,13 @@ Given('there is no live enforcement on the case', async ({ world }) => {
 // Internal users and the defendant's legal representative sign in in place of the storage-state user.
 Given('I am signed in to XUI as a {string}', async ({ page, context, $tags }, role: string) => {
   if (!canSignInAs(role)) {
-    return markPending({ ticket: 'HDPI-7539', summary: `signing in as a ${role}: there is no ${role} test user yet` }, $tags);
+    return markPending(
+      {
+        ticket: 'HDPI-7539',
+        summary: `signing in as a ${role}: no ${role} the suite can use in this environment`,
+      },
+      $tags
+    );
   }
   await signInAs(role, page, context);
 });
@@ -113,11 +132,36 @@ Then('the {string} event is not available', async ({ page, $tags }, eventName: s
   expect(await nextStepOptions(page)).not.toContain(event.label);
 });
 
-When('I start the {string} event', async ({ $tags }, eventName: string) => {
+When('I start the {string} event', async ({ page, world, $tags }, eventName: string) => {
   if (!xuiEvents[eventName]) {
     return markPending(eventNotBuilt(eventName), $tags);
   }
+  // A scenario that signed in as another role is on the XUI landing page, not the case.
+  await openCaseSummary(page);
+  // A start callback can refuse the event; the scenario then asserts the error it gave.
+  world.startEventError = await startEventAllowingRefusal(page, eventName);
+  if (!world.startEventError) {
+    world.currentEvent = eventName;
+  }
+});
+
+/**
+ * The message a start callback refused the event with. CCD puts a generic "Unable to proceed because there
+ * are one or more callback Errors or Warnings" in the error summary and the real message in a separate
+ * "Errors" list, so the specific text is matched on the page.
+ */
+Then('I see the error {string}', async ({ world }, message: string) => {
+  expect(world.startEventError, 'the event to have been refused by its start callback').toBeDefined();
+  expect(world.startEventError).toContain(message);
+});
+
+When('I start the {string} event from the next steps drop down', async ({ page, world, $tags }, eventName: string) => {
+  if (!xuiEvents[eventName]) {
+    return markPending(eventNotBuilt(eventName), $tags);
+  }
+  await openCaseSummary(page);
   await startEvent(eventName);
+  world.currentEvent = eventName;
 });
 
 Then('the case reference is unchanged', async ({ page, world }) => {
@@ -126,28 +170,44 @@ Then('the case reference is unchanged', async ({ page, world }) => {
 });
 
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the live enforcement' }, [
-  'I see the error {string}',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a role other than the claimant legal representative' }, [
-  'I am signed in to XUI as a bailiff manager',
-  'I am signed in to XUI as a bailiff',
-  'I am signed in to XUI as the allocated bailiff',
+// The cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json) make these sign-ins real.
+// "the allocated bailiff" is approximated: no bailiff can be allocated (HDPI-7356 / HDPI-8189), but a
+// bailiff reaches the warrant through their `bailiff` organisation role.
+Given('I am signed in to XUI as a bailiff', async ({ page, context }) => {
+  await signInAs('bailiff', page, context);
+});
+
+Given('I am signed in to XUI as a bailiff manager', async ({ page, context }) => {
+  await signInAs('bailiff manager', page, context);
+});
+
+Given('I am signed in to XUI as a bailiff admin', async ({ page, context }) => {
+  await signInAs('bailiff admin', page, context);
+});
+
+Given('I am signed in to XUI as the allocated bailiff', async ({ page, context }) => {
+  approximatePrecondition('HDPI-8189', 'signed in as a bailiff; no allocated-bailiff case role is granted yet');
+  await signInAs('bailiff', page, context);
+});
+
+pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a specific named bailiff needs staff reference data' }, [
   'I am signed in to XUI as bailiff {string}',
-  'I am signed in as a defendant legal representative',
+]);
+
+pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement work allocation tasks' }, [
   'I am signed in to XUI as a bailiff with open enforcement tasks',
+]);
+
+pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a defendant legal representative linked to the case' }, [
+  'I am signed in as a defendant legal representative',
 ]);
 
 pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
   'the {string} screen opens',
   'the warrant number is not shown in the header',
   'I see the {string} confirmation with the case number and warrant number',
-  'I submit the event',
-  'I start the {string} event from the next steps drop down',
-  'I see {string}',
-  'the question {string} is mandatory',
-  'the answer defaults to {string}',
-  'I see the confirmation {string} with the case number and warrant number',
   'today is {string} and the time is {string}',
   'the {string} screen shows my answers with {string} links',
   'I open {string}',
@@ -179,64 +239,100 @@ Then('the {string} journey opens', async ({ page, world, $tags }, eventName: str
   await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
 });
 
+/**
+ * The screens the suite can open, keyed by the name the feature files use. Each is the first (and, for the
+ * bailiff events, only) page of a built event, so "I am on the X screen" just starts that event.
+ */
+const screenEvents: Record<string, string> = {
+  [DECIDE_ENFORCEMENT]: DECIDE_ENFORCEMENT,
+  [setRiskLevel.pageLabel]: SET_RISK_LEVEL,
+  [addBailiffNote.pageLabel]: ADD_BAILIFF_NOTE,
+  [scheduleEviction.pageLabel]: SCHEDULE_EVICTION,
+  [noticeServed.pageLabel]: MARK_NOTICE_SERVED,
+  [RESCHEDULE_EVICTION]: RESCHEDULE_EVICTION,
+};
+
 Given('I am on the {string} screen', async ({ page, world, $tags }, screen: string) => {
-  if (screen !== DECIDE_ENFORCEMENT) {
+  const event = screenEvents[screen];
+  if (!event) {
     return markPending(genericStepPending, $tags);
   }
   await openCaseSummary(page);
-  await startEvent(DECIDE_ENFORCEMENT);
-  world.currentEvent = DECIDE_ENFORCEMENT;
+  await startEvent(event);
+  world.currentEvent = event;
 });
 
+// Every built event's first page carries the same read-only case-details summary list.
 Then('I see the case number, the possession property address and {string}', async ({ page, world, $tags }, partyNames: string) => {
-  if (!inDecideEnforcement(world)) {
+  if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
   await expectCaseDetailsHeader(page, world, partyNames);
 });
 
 Then('none of these are editable', async ({ page, world, $tags }) => {
-  if (!inDecideEnforcement(world)) {
+  if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
   await expectCaseDetailsNotEditable(page);
 });
 
 Then('the {string} button is disabled', async ({ page, world, $tags }, button: string) => {
-  if (!inDecideEnforcement(world)) {
+  if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
   await expect(page.getByRole('button', { name: button, exact: true })).toBeDisabled();
 });
 
 When('I select {string}', async ({ page, world, $tags }, option: string) => {
-  if (!inDecideEnforcement(world)) {
+  // Continue and Cancel are on every enforcement event page, so they do not need to know which event
+  // the scenario is in.
+  if (option === decideEnforcement.cancelLink) {
+    return page.getByText(decideEnforcement.cancelLink, { exact: true }).click();
+  }
+  if (option === decideEnforcement.continueButton) {
+    return clickContinue(page);
+  }
+  if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
-  switch (option) {
-    case decideEnforcement.acceptRadioOption:
-    case decideEnforcement.rejectRadioOption:
-      return chooseDecision(page, option);
-    case decideEnforcement.continueButton:
-      return clickContinue(page);
-    case decideEnforcement.cancelLink:
-      return page.getByText(decideEnforcement.cancelLink, { exact: true }).click();
-    default:
-      return markPending(genericStepPending, $tags);
+  if (world.currentEvent === SET_RISK_LEVEL && (option === setRiskLevel.high || option === setRiskLevel.medium)) {
+    return chooseRiskLevel(page, option);
   }
+  if (
+    world.currentEvent === DECIDE_ENFORCEMENT
+    && (option === decideEnforcement.acceptRadioOption || option === decideEnforcement.rejectRadioOption)
+  ) {
+    return chooseDecision(page, option);
+  }
+  return markPending(genericStepPending, $tags);
 });
 
 Then('I return to the case summary', async ({ page, world, $tags }) => {
-  if (!inDecideEnforcement(world)) {
+  if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
+  const eventPageHeading = world.currentEvent === SET_RISK_LEVEL ? setRiskLevel.pageLabel : decideEnforcement.mainHeader;
   await expect(page).toHaveURL(new RegExp(`/cases/case-details/.*${world.caseReference}(#.*)?$`));
-  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeHidden();
+  await expect(page.getByRole('heading', { name: eventPageHeading })).toBeHidden();
+  world.currentEvent = undefined;
 });
 
 When('I submit the {string} event', async ({ page, world, $tags }, eventName: string) => {
-  if (eventName !== DECIDE_ENFORCEMENT || !inDecideEnforcement(world)) {
-    return markPending(genericStepPending, $tags);
+  if (eventName === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
+    return submitDecision(page);
   }
-  await submitDecision(page);
+  // The eviction events use CCD's own check-your-answers, so submitting is "Save and continue". Only
+  // possible when the scenario actually started the event and answered its page; several scenarios submit
+  // without any set-up because they are really about what the submit produces (documents, notifications),
+  // which does not exist yet.
+  if (eventName === SCHEDULE_EVICTION || eventName === RESCHEDULE_EVICTION) {
+    if (world.currentEvent !== eventName) {
+      return markPending(genericStepPending, $tags);
+    }
+    await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
+    world.currentEvent = undefined;
+    return;
+  }
+  return markPending(genericStepPending, $tags);
 });
