@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.Clock;
@@ -53,6 +54,8 @@ class EvictionScheduleServiceTest {
     private BailiffNoteService bailiffNoteService;
     @Mock
     private EnforcementDocumentScheduler enforcementDocumentScheduler;
+    @Mock
+    private EnforcementNotificationService enforcementNotificationService;
 
     private EvictionScheduleService underTest;
 
@@ -60,7 +63,8 @@ class EvictionScheduleServiceTest {
     void setUp() {
         underTest = new EvictionScheduleService(currentEnforcementService, enforcementOrderRepository,
                                                 new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC)),
-                                                bailiffNoteService, enforcementDocumentScheduler);
+                                                bailiffNoteService, enforcementNotificationService,
+                                                enforcementDocumentScheduler);
     }
 
     @Test
@@ -79,6 +83,7 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
+        verify(enforcementNotificationService).notifyClaimantOfScheduledEviction(CASE_REFERENCE, EVICTION);
     }
 
     @Test
@@ -105,6 +110,7 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.getBailiffDate()).isNull();
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementDocumentScheduler);
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -157,6 +163,7 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_CLAIMANT_CONFIRMATION);
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
+        verify(enforcementNotificationService).notifyClaimantOfRescheduledEviction(CASE_REFERENCE, newDate);
     }
 
     @ParameterizedTest
@@ -169,6 +176,18 @@ class EvictionScheduleServiceTest {
             .isInstanceOfAny(EnforcementEventNotAvailableException.class, NoEnforcementException.class);
     }
 
+    @ParameterizedTest
+    @EnumSource(value = EnforcementStatus.class, names = {"CLAIMANT_UNABLE_TO_ATTEND", "CLAIMANT_CONFIRMED"},
+        mode = EnumSource.Mode.EXCLUDE)
+    void shouldNotEmailTheClaimantWhenTheRescheduleIsRefused(EnforcementStatus status) {
+        current(status);
+
+        EnforcementChange<String> rescheduled = underTest.reschedule(CASE_REFERENCE, EVICTION, false);
+
+        assertThat(rescheduled.refused()).isTrue();
+        verifyNoInteractions(enforcementNotificationService);
+    }
+
     @Test
     void shouldClearThePreviousNoticeServiceWhenRescheduling() {
         EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
@@ -176,11 +195,13 @@ class EvictionScheduleServiceTest {
         enforcement.setDispenseWithService(false);
         enforcement.setNoticeServedAt(SERVED);
         enforcement.setNoticeServedHow("by hand to the occupant");
+        enforcement.setClaimantCanAttend(true);
         enforcement.setDefendantsCanSeeEnforcement(true);
 
         underTest.reschedule(CASE_REFERENCE, EVICTION.plusDays(7), false);
 
         assertThat(enforcement.getNoticeServedAt()).isNull();
+        assertThat(enforcement.getClaimantCanAttend()).isNull();
         assertThat(enforcement.getNoticeServedHow()).isNull();
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
         assertThat(EvictionScheduleService.canMarkNoticeServed(enforcement)).isTrue();

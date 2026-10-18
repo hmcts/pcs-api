@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.Clock;
@@ -56,6 +57,8 @@ class EnforcementDecisionServiceTest {
     private EnforcementNumberGenerator enforcementNumberGenerator;
     @Mock
     private EnforcementDocumentScheduler enforcementDocumentScheduler;
+    @Mock
+    private EnforcementNotificationService enforcementNotificationService;
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
         new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC));
@@ -115,6 +118,7 @@ class EnforcementDecisionServiceTest {
         verify(enforcementStatusTransitions).transition(enforcement, approvedStatus);
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleApprovalDocument(enforcement.getId(), type);
+        verify(enforcementNotificationService).notifyClaimantOfApproval(CASE_REFERENCE, type, number);
     }
 
     @Test
@@ -134,6 +138,7 @@ class EnforcementDecisionServiceTest {
 
         assertThatThrownBy(() -> underTest.accept(CASE_REFERENCE)).isInstanceOf(IllegalStateException.class);
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -143,6 +148,7 @@ class EnforcementDecisionServiceTest {
         assertThat(underTest.accept(CASE_REFERENCE)).isEmpty();
         verifyNoInteractions(enforcementNumberGenerator);
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -162,6 +168,8 @@ class EnforcementDecisionServiceTest {
         assertThat(enforcement.getApprovedAt()).isNull();
         verifyNoInteractions(enforcementNumberGenerator, enforcementDocumentScheduler);
         verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementNotificationService).notifyClaimantOfRejection(
+            CASE_REFERENCE, SelectEnforcementType.WARRANT, "The order has been set aside");
     }
 
     @ParameterizedTest
@@ -172,6 +180,7 @@ class EnforcementDecisionServiceTest {
             .isInstanceOf(EnforcementEventNotAvailableException.class)
             .hasMessage(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     @Test
@@ -180,6 +189,7 @@ class EnforcementDecisionServiceTest {
 
         assertThat(underTest.reject(CASE_REFERENCE, "reason")).isEmpty();
         verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService);
     }
 
     private EnforcementOrderEntity givenAwaitingReview(SelectEnforcementType type) {

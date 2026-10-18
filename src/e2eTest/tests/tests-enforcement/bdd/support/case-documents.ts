@@ -3,8 +3,8 @@
  *
  * pcs-api generates each document on a db-scheduler task after the event commits, so a document appears some
  * seconds after the event; every check here polls. The case is read as a given user because pcs-api filters
- * `allDocuments` by who is asking: defendants see no enforcement documents and the claimant side does not see
- * the warrants or the notice of eviction.
+ * `allDocuments` by who is asking: defendants see only a served warrant's notice of eviction, and the claimant
+ * side does not see the warrants or the notice of eviction.
  *
  * Documents are recognised by file name. pcs-api names each one "<title> - <warrant number or case number>",
  * from `EnforcementOutput.title`, because until the real Docmosis templates exist every document is rendered

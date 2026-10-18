@@ -41,4 +41,11 @@ public final class BailiffEnforcementRules {
     public static boolean isApprovedLiveWarrant(EnforcementOrderEntity enforcement) {
         return isWarrant(enforcement) && APPROVED_LIVE_STATUSES.contains(enforcement.getStatus());
     }
+
+    /**
+     * Whether the enforcement is a warrant that has been approved, live or not.
+     */
+    public static boolean isGeneratedWarrant(EnforcementOrderEntity enforcement) {
+        return isWarrant(enforcement) && enforcement.getStatus() != null && enforcement.getStatus().isGenerated();
+    }
 }

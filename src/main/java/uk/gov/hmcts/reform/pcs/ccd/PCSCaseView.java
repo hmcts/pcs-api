@@ -135,7 +135,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         );
 
         if (!CaseType.isSuffixedCaseType()) {
-            pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
+            pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase, caseReference));
         }
 
         return pcsCase;

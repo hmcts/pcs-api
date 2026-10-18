@@ -80,13 +80,16 @@ export const localUsers = {
   bailiffAdmin: 'pcs-bailiff-admin@localhost',
   bailiffManager: 'pcs-bailiff-manager@localhost',
   judge: 'judge@pcs.com',
+  // Has only the IDAM citizen role; a scenario gives it the [DEFENDANT] case role on its case.
+  citizenDefendant: 'citizen@pcs.com',
 } as const;
 
 export type LocalUserKey = keyof typeof localUsers;
 
 /**
- * Display names for the local users, as the IDAM simulator holds them. `BailiffAllocationService` stores
- * the bailiff's name alongside the allocation, so the allocation shortcut needs a real one.
+ * Display names for the local users, as the IDAM simulator holds them (`CftlibConfig.nameStaffUsers`) and
+ * wiremock's staff reference data stub lists them. `BailiffAllocationService` stores the bailiff's name
+ * alongside the allocation, so the allocation shortcut needs a real one.
  */
 export const localUserNames: Record<string, string> = {
   [localUsers.bailiff]: 'Bob Bailiff',
@@ -257,9 +260,10 @@ export async function localIdamUserId(email: string): Promise<string> {
  * Allocates the case's current warrant to a bailiff through pcs-api testing support, moving it from
  * "Awaiting bailiff allocation" to "Awaiting scheduling".
  *
- * The real `allocateBailiff` event cannot be driven outside AAT: its StaffUser type-ahead needs staff
- * reference data that neither cftlib nor a preview environment runs. This is the same shortcut as
- * `fee-paid` — it goes through `BailiffAllocationService`, so the outcome matches the event.
+ * A shortcut for scenarios that only need the warrant allocated, like `fee-paid`: it goes through
+ * `BailiffAllocationService`, so the outcome matches the `allocateBailiff` event. Locally that event can be
+ * driven too, because wiremock stubs the staff reference data its StaffUser type-ahead reads; a preview
+ * environment has no such stub.
  *
  * Needs a user bearer token as well as the S2S one, because the service records who made the allocation.
  */
@@ -300,4 +304,47 @@ export async function localIdamToken(email: string): Promise<string> {
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
   });
   return response.data.access_token;
+}
+
+/** The defendant case roles `POST /testing-support/enforcement/{caseReference}/defendant-case-role` gives. */
+export type DefendantCaseRole = '[DEFENDANT]' | '[DEFENDANTSOLICITOR]';
+
+/**
+ * Gives a local user a defendant case role on the case through pcs-api testing support, which calls CCD's
+ * case-users API as pcs-api does for a citizen's access code. It stands in for Notice of Change, whose
+ * testing-support route (`link-defendant-solicitor-to-party`) answers 500 on a local stack, and for the access
+ * code a citizen defendant enters in pcs-frontend.
+ */
+export async function assignDefendantCaseRole(
+  caseReference: string,
+  email: string,
+  caseRole: DefendantCaseRole
+): Promise<void> {
+  const userId = await localIdamUserId(email);
+  const response = await Axios.post(
+    `${process.env.CASE_API_URL}/testing-support/enforcement/${caseReference}/defendant-case-role`,
+    { userId, caseRole },
+    {
+      headers: {
+        ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      validateStatus: () => true,
+    }
+  );
+  if (response.status !== 204) {
+    throw new Error(
+      `Giving ${email} the ${caseRole} case role on ${caseReference} returned ${response.status}: ${JSON.stringify(response.data)}`
+    );
+  }
+}
+
+/**
+ * The case data CCD returns to a local user, as pcs-frontend and XUI read it. Used to check what a defendant
+ * can see where there is no UI to look at: pcs-frontend is not part of the local stack, and a Case File View
+ * folder is shown even when it is empty.
+ */
+export async function caseDataAs(caseReference: string, email: string): Promise<Record<string, unknown>> {
+  const response = await dataStoreApi(await localIdamToken(email)).get(`/cases/${caseReference}`);
+  return (response.data?.data ?? {}) as Record<string, unknown>;
 }

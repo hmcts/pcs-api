@@ -9,6 +9,7 @@ import {
   nextStepOptions,
   openCaseSummary,
   signInAs,
+  signInRoleFor,
   startEvent,
   startEventAllowingRefusal,
   xuiEvents,
@@ -23,15 +24,28 @@ import {
   signInAsHearingCentreAdmin,
   submitDecision,
 } from '../support/decide-enforcement';
+import { isLocalStack, localUsers } from '@config/local-stack.config';
 import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionAsBailiff, setUpWarrantAtStatus } from '../support/approve-warrant';
+import {
+  CITIZEN_DEFENDANT,
+  DEFENDANT_LEGAL_REPRESENTATIVE,
+  canSetUpDefendants,
+  linkCitizenDefendant,
+  viewAsEachDefendant,
+} from '../support/defendant-visibility';
 import { RESCHEDULE_EVICTION, SCHEDULE_EVICTION, scheduleEviction } from '../support/schedule-eviction';
 import { MARK_NOTICE_SERVED, noticeServed } from '../support/notice-served';
 import {
   ADD_BAILIFF_NOTE,
+  ALLOCATE_BAILIFF,
   SET_RISK_LEVEL,
   addBailiffNote,
+  changeAllocatedBailiff,
   chooseRiskLevel,
+  findBailiff,
+  goToAllocationCheckYourAnswers,
   setRiskLevel,
+  standInBailiff,
 } from '../support/bailiff-events';
 
 /** Tickets that deliver the enforcement events the steps cannot drive yet. */
@@ -105,12 +119,47 @@ When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-// Only the claimant legal representative can sign in today: it is the storage-state user from
-// config/global-setup.config.ts. Other users wait on HDPI-7539.
-When('a {string} opens the case', async ({ page, $tags }, user: string) => {
-  if (user !== 'claimant legal representative') {
+// Users the suite has no sign-in for in this environment, such as a defendant on a local stack, wait on
+// HDPI-7539.
+When('a {string} opens the case', async ({ page, context, world, $tags }, user: string) => {
+  world.openedAs = user;
+  world.defendantViews = undefined;
+  if (user === DEFENDANT_LEGAL_REPRESENTATIVE && isLocalStack()) {
+    // The tab checks read the case data CCD gives this user as well as their XUI tabs.
+    world.defendantLegalRepresentative = localUsers.defendantSolicitor;
+    world.citizenDefendant = undefined;
+  }
+  if (user === CITIZEN_DEFENDANT) {
+    // Not an XUI user: their view is the case data CCD gives them, which is what pcs-frontend renders.
+    if (!canSetUpDefendants()) {
+      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case' }, $tags);
+    }
+    await linkCitizenDefendant(world);
+    world.defendantLegalRepresentative = undefined;
+    await viewAsEachDefendant(page, context, world);
+    return;
+  }
+  const role = signInRoleFor(user);
+  if (!canSignInAs(role)) {
     return markPending({ ticket: 'HDPI-7539', summary: `opening the case as a ${user}` }, $tags);
   }
+  await signInAs(role, page, context);
+  await openCaseSummary(page);
+});
+
+// "An internal user" is a hearing centre admin, the caseworker every enforcement case is decided by.
+When('an internal user opens the case', async ({ page, context }) => {
+  await signInAs('hearing-centre-admin', page, context);
+  await openCaseSummary(page);
+});
+
+When('a bailiff opens the case', async ({ page, context }) => {
+  await signInAs('bailiff', page, context);
+  await openCaseSummary(page);
+});
+
+When('a hearing centre admin opens the case', async ({ page, context }) => {
+  await signInAs('hearing-centre-admin', page, context);
   await openCaseSummary(page);
 });
 
@@ -200,10 +249,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement wo
   'I am signed in to XUI as a bailiff with open enforcement tasks',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in as a defendant legal representative linked to the case' }, [
-  'I am signed in as a defendant legal representative',
-]);
-
 pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not exist yet' }, [
   'the {string} screen opens',
   'the warrant number is not shown in the header',
@@ -212,12 +257,6 @@ pendingSteps({ summary: 'Generic XUI step for an enforcement event that does not
   'the {string} screen shows my answers with {string} links',
   'I open {string}',
   '{string}',
-]);
-
-pendingSteps({ ticket: 'HDPI-7539', summary: 'Opening the case as a role other than the claimant legal representative' }, [
-  'an internal user opens the case',
-  'a bailiff opens the case',
-  'a hearing centre admin opens the case',
 ]);
 
 // Generic XUI steps. Only "Decide enforcement" drives them today; any other event stays pending.
@@ -247,12 +286,18 @@ const screenEvents: Record<string, string> = {
   [DECIDE_ENFORCEMENT]: DECIDE_ENFORCEMENT,
   [setRiskLevel.pageLabel]: SET_RISK_LEVEL,
   [addBailiffNote.pageLabel]: ADD_BAILIFF_NOTE,
+  [findBailiff.pageLabel]: ALLOCATE_BAILIFF,
   [scheduleEviction.pageLabel]: SCHEDULE_EVICTION,
   [noticeServed.pageLabel]: MARK_NOTICE_SERVED,
   [RESCHEDULE_EVICTION]: RESCHEDULE_EVICTION,
 };
 
 Given('I am on the {string} screen', async ({ page, world, $tags }, screen: string) => {
+  // "Allocate case to bailiff" is the only built bailiff event with a check your answers screen. Reaching it
+  // means choosing a bailiff, so it is the feature's main bailiff.
+  if (screen === findBailiff.checkYourAnswers && world.journey === ALLOCATE_BAILIFF) {
+    return goToAllocationCheckYourAnswers(page, world, standInBailiff('Sam Jones') as string);
+  }
   const event = screenEvents[screen];
   if (!event) {
     return markPending(genericStepPending, $tags);
@@ -296,6 +341,9 @@ When('I select {string}', async ({ page, world, $tags }, option: string) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
+  if (world.currentEvent === ALLOCATE_BAILIFF && option === findBailiff.changeLink) {
+    return changeAllocatedBailiff(page);
+  }
   if (world.currentEvent === SET_RISK_LEVEL && (option === setRiskLevel.high || option === setRiskLevel.medium)) {
     return chooseRiskLevel(page, option);
   }
@@ -312,7 +360,11 @@ Then('I return to the case summary', async ({ page, world, $tags }) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
   }
-  const eventPageHeading = world.currentEvent === SET_RISK_LEVEL ? setRiskLevel.pageLabel : decideEnforcement.mainHeader;
+  const eventPageHeadings: Record<string, string> = {
+    [SET_RISK_LEVEL]: setRiskLevel.pageLabel,
+    [ALLOCATE_BAILIFF]: findBailiff.pageLabel,
+  };
+  const eventPageHeading = eventPageHeadings[world.currentEvent] ?? decideEnforcement.mainHeader;
   await expect(page).toHaveURL(new RegExp(`/cases/case-details/.*${world.caseReference}(#.*)?$`));
   await expect(page.getByRole('heading', { name: eventPageHeading })).toBeHidden();
   world.currentEvent = undefined;

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 
 import java.time.LocalDateTime;
@@ -59,6 +60,7 @@ public class EvictionScheduleService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
     private final BailiffNoteService bailiffNoteService;
+    private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
 
     public static boolean canSchedule(EnforcementOrderEntity enforcement) {
@@ -128,8 +130,8 @@ public class EvictionScheduleService {
         setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
         enforcementDocumentScheduler.scheduleEvictionNotices(live.change().getId());
         // TODO HDPI-7355: email the notice of appointment to the claimant.
-        // TODO HDPI-7538: send the claimant the "Bailiff schedules the eviction date" email and the "Confirm the
-        //  eviction date" dashboard notification. The Notify templates do not exist yet.
+        enforcementNotificationService.notifyClaimantOfScheduledEviction(caseReference, evictionDateTime);
+        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7346 / HDPI-8627: create the "Mark notice of eviction as served" WA task for the allocated
         //  bailiff when service is not dispensed with.
         // TODO HDPI-7347: create the "Record warrant return" WA task due on the eviction date.
@@ -152,8 +154,8 @@ public class EvictionScheduleService {
         setEvictionDate(live.change(), evictionDateTime, dispenseWithService);
         // A new notice of eviction and notice of appointment, keeping the originals in the Enforcement folder.
         enforcementDocumentScheduler.scheduleEvictionNotices(live.change().getId());
-        // TODO HDPI-7538: send the claimant the "Bailiff reschedules the eviction date" email and the "Confirm
-        //  the eviction date" dashboard notification. The Notify templates do not exist yet.
+        enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
+        // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // TODO HDPI-7549: complete the "Reschedule eviction" WA task, and move the "Record warrant return" task
         //  (HDPI-7347) to the new eviction date.
         return EnforcementChange.made(live.change().getEnforcementNumber());
@@ -182,8 +184,6 @@ public class EvictionScheduleService {
             bailiffNoteService.addNote(caseReference, bailiffNote);
         }
         // TODO HDPI-7346: complete the "Mark notice of eviction as served" WA task.
-        // TODO HDPI-7539 / HDPI-8442 / HDPI-7354: let defendants see the enforcement status tab, the Enforcement
-        //  folder and the notice of eviction, driven from defendantsCanSeeEnforcement.
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
@@ -191,7 +191,8 @@ public class EvictionScheduleService {
      * A new eviction date comes with a fresh notice of eviction (HDPI-7354), so the service record of the
      * previous notice no longer applies: clearing it makes "Mark eviction notice served" available again, and
      * takes defendant visibility away until the new notice is served. Defendant visibility is derived from the
-     * notice fields, so it is recomputed after they are cleared.
+     * notice fields, so it is recomputed after they are cleared. The claimant's answer was about the previous date, so
+     * it is cleared too.
      */
     private void setEvictionDate(EnforcementOrderEntity enforcement, LocalDateTime evictionDateTime,
                                  boolean dispenseWithService) {
@@ -199,6 +200,7 @@ public class EvictionScheduleService {
         enforcement.setDispenseWithService(dispenseWithService);
         enforcement.setNoticeServedAt(null);
         enforcement.setNoticeServedHow(null);
+        enforcement.setClaimantCanAttend(null);
         enforcement.setDefendantsCanSeeEnforcement(defendantsCanSeeEnforcement(enforcement));
         enforcementStatusTransitions.transition(enforcement, AWAITING_CLAIMANT_CONFIRMATION);
         enforcementOrderRepository.save(enforcement);

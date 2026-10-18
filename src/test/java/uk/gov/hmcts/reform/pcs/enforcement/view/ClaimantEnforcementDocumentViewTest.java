@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EnforcementDocumentVisibilityTest {
+class ClaimantEnforcementDocumentViewTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
     private static final String ENFORCEMENT = FeatureCaseFileCategory.ENFORCEMENT.getId();
@@ -41,7 +41,7 @@ class EnforcementDocumentVisibilityTest {
     private UserRoleService userRoleService;
 
     @InjectMocks
-    private EnforcementDocumentVisibility underTest;
+    private ClaimantEnforcementDocumentView underTest;
 
     private final PcsCaseEntity pcsCaseEntity = caseWithDocuments(
         entity(CLAIM_FORM_ID, CaseFileCategory.STATEMENTS_OF_CASE.getId(), DocumentType.CLAIM),
@@ -59,16 +59,16 @@ class EnforcementDocumentVisibilityTest {
 
     @ParameterizedTest
     @EnumSource(value = UserRole.class, names = {"DEFENDANT", "DEFENDANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR"})
-    void shouldHideEnforcementDocumentsFromDefendants(UserRole defendantRole) {
+    void shouldLeaveDefendantsToTheDefendantView(UserRole defendantRole) {
         // Given
         PCSCase pcsCase = caseWith(claimForm, evidence, warrant, noticeOfAppointment);
         givenCurrentUserHasRoles("citizen", defendantRole.getRole());
 
         // When
-        underTest.restrict(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        underTest.restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
 
         // Then
-        assertThat(pcsCase.getAllDocuments()).containsExactly(claimForm);
+        assertThat(pcsCase.getAllDocuments()).containsExactly(claimForm, evidence, warrant, noticeOfAppointment);
     }
 
     @ParameterizedTest
@@ -79,7 +79,7 @@ class EnforcementDocumentVisibilityTest {
         givenCurrentUserHasRoles(claimantRole.getRole());
 
         // When
-        underTest.restrict(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        underTest.restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).containsExactly(claimForm, evidence, noticeOfAppointment);
@@ -95,7 +95,7 @@ class EnforcementDocumentVisibilityTest {
         givenCurrentUserHasRoles(role.getRole());
 
         // When
-        underTest.restrict(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        underTest.restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).containsExactly(claimForm, evidence, warrant, noticeOfAppointment);
@@ -107,10 +107,24 @@ class EnforcementDocumentVisibilityTest {
         PCSCase pcsCase = caseWith(claimForm);
 
         // When
-        underTest.restrict(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        underTest.restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).containsExactly(claimForm);
+        verifyNoInteractions(userRoleService);
+    }
+
+    @Test
+    void shouldNotLookUpRolesWhenNoEnforcementDocumentIsInternalOnly() {
+        // Given
+        PCSCase pcsCase = caseWith(claimForm, evidence);
+
+        // When
+        underTest.restrictForClaimants(caseWithDocuments(
+            entity(EVIDENCE_ID, ENFORCEMENT, DocumentType.PHOTOGRAPHIC_EVIDENCE)), pcsCase, CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).containsExactly(claimForm, evidence);
         verifyNoInteractions(userRoleService);
     }
 
@@ -120,7 +134,7 @@ class EnforcementDocumentVisibilityTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.restrict(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        underTest.restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isNull();

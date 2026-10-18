@@ -1,11 +1,10 @@
 // Generated enforcement documents in the Enforcement folder of case file view (features 01, 02 and 05).
-import { Then, When, expect } from '../fixtures/enforcement.fixtures';
-import type { EnforcementType, EnforcementWorld } from '../fixtures/enforcement.fixtures';
-import { approximatePrecondition, markPending } from '../fixtures/pending';
+import { Then, expect } from '../fixtures/enforcement.fixtures';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import { markPending } from '../fixtures/pending';
 import type { PendingScope } from '../fixtures/pending';
 import { isLocalStack } from '@config/local-stack.config';
-import { createCaseWithWarrant, createCaseWithWrit, requireCaseReference } from '../support/enforcement-journeys';
-import { recordEnforcementFeePaid } from '../support/decide-enforcement';
+import { requireCaseReference } from '../support/enforcement-journeys';
 import {
   ENFORCEMENT_FOLDER,
   countEnforcementDocuments,
@@ -50,26 +49,6 @@ async function expectVisibleToClaimantAndInternalUsers(world: EnforcementWorld, 
 async function expectVisibleToInternalUsersOnly(world: EnforcementWorld, title: string): Promise<void> {
   await expectHiddenFrom(requireCaseReference(world), title, 'claimant');
 }
-
-When('I submit and pay for a {string} application', async ({ world, $tags }, type: string) => {
-  if (!isLocalStack()) {
-    return markPending(localStackOnly, $tags);
-  }
-  if (type === 'warrant of possession') {
-    await createCaseWithWarrant(world);
-  } else if (type === 'writ of possession') {
-    await createCaseWithWrit(world);
-  } else {
-    return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} application` }, $tags);
-  }
-  world.applicationType = type as EnforcementType;
-  approximatePrecondition(
-    'HDPI-2877',
-    'the application is submitted on a new case through its Create-Enforcement test-case fixture, and the fee is '
-      + 'recorded as paid through pcs-api testing support'
-  );
-  await recordEnforcementFeePaid();
-});
 
 Then('an {string} folder is created in case file view', async ({ world, $tags }, folder: string) => {
   if (!isLocalStack()) {

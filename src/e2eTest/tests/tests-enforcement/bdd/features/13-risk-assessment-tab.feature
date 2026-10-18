@@ -1,4 +1,4 @@
-@HDPI-7342 @enforcement @tabs @pending
+@HDPI-7342 @enforcement @tabs
 Feature: Risk assessment tab
   As a claimant, bailiff, bailiff administrator, bailiff team leader, hearing centre team leader or hearing centre administrator
   I want the risk assessment information in one place
@@ -16,6 +16,11 @@ Feature: Risk assessment tab
     Examples:
       | type                   |
       | warrant of possession  |
+
+    # Pending: the suite cannot seed a warrant of restitution application (HDPI-7419).
+    @pending
+    Examples:
+      | type                   |
       | warrant of restitution |
 
   @HDPI-7350
@@ -30,6 +35,7 @@ Feature: Risk assessment tab
     When an internal user opens the case
     Then there is no "Risk assessment" tab
 
+  # The application is dated the day the scenario submits it, not 10 October 2026.
   @HDPI-7350
   Scenario: Bailiff view before any action
     Given a warrant has been generated
@@ -57,7 +63,9 @@ Feature: Risk assessment tab
       | Is it difficult to access the property?                 |
       | Do you want to tell us anything else that could help with the eviction? |
 
-  @HDPI-7350
+  # XUI sanitises case markdown, so the print button cannot open the print dialogue: it opens the tab in a
+  # new browser tab, to print from there.
+  @HDPI-7350 @pending
   Scenario: Print button opens the print dialogue
     Given I am on the "Risk assessment" tab
     When I select the print button
@@ -76,6 +84,10 @@ Feature: Risk assessment tab
       | bailiff-manager                | shown  | shown             |
       | hearing centre team leader     | shown  | shown             |
       | claimant legal representative  | shown  | hidden            |
+
+    # Local stack only: the defendants are given their case roles through pcs-api testing support.
+    Examples:
+      | user                           | tab    | internal sections |
       | defendant legal representative | hidden | hidden            |
       | citizen defendant              | hidden | hidden            |
 

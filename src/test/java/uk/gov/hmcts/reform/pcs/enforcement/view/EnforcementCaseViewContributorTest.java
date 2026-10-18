@@ -30,7 +30,13 @@ class EnforcementCaseViewContributorTest {
     @Mock
     private WarrantReturnView warrantReturnView;
     @Mock
-    private EnforcementDocumentVisibility enforcementDocumentVisibility;
+    private EnforcementStatusTabView enforcementStatusTabView;
+    @Mock
+    private RiskAssessmentTabView riskAssessmentTabView;
+    @Mock
+    private ClaimantEnforcementDocumentView claimantEnforcementDocumentView;
+    @Mock
+    private DefendantEnforcementView defendantEnforcementView;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -40,13 +46,15 @@ class EnforcementCaseViewContributorTest {
     private EnforcementCaseViewContributor underTest;
 
     @Test
-    void shouldHandleEnforcementRequirementsThenSetCaseFieldsAndStatusThenHideDocumentsFromDefendants() {
+    void shouldSetTheEnforcementFieldsThenRestrictThemForClaimantsAndDefendants() {
         // When
         underTest.contribute(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
 
         // Then
         InOrder inOrder = inOrder(enforcementOrderMediator, enforcementOrderView, bailiffNoteView, riskLevelView,
-                                  evictionScheduleView, warrantReturnView, enforcementDocumentVisibility);
+                                  evictionScheduleView, warrantReturnView, enforcementStatusTabView,
+                                  riskAssessmentTabView, claimantEnforcementDocumentView,
+                                  defendantEnforcementView);
         inOrder.verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
         inOrder.verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
         inOrder.verify(enforcementOrderView).setEnforcementStatusFields(pcsCaseEntity, pcsCase);
@@ -54,7 +62,11 @@ class EnforcementCaseViewContributorTest {
         inOrder.verify(riskLevelView).setRiskAssessmentFields(pcsCaseEntity, pcsCase);
         inOrder.verify(evictionScheduleView).setEvictionScheduleFields(pcsCaseEntity, pcsCase);
         inOrder.verify(warrantReturnView).setLatestWarrantReturn(pcsCaseEntity, pcsCase);
-        inOrder.verify(enforcementDocumentVisibility).restrict(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        inOrder.verify(enforcementStatusTabView).setEnforcementStatusTab(pcsCaseEntity, pcsCase);
+        inOrder.verify(riskAssessmentTabView).setRiskAssessmentTab(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        inOrder.verify(claimantEnforcementDocumentView)
+            .restrictForClaimants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
+        inOrder.verify(defendantEnforcementView).restrictForDefendants(pcsCaseEntity, pcsCase, CASE_REFERENCE);
         inOrder.verifyNoMoreInteractions();
     }
 

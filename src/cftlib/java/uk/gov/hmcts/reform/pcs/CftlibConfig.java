@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.IOUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -14,11 +15,16 @@ import uk.gov.hmcts.rse.ccd.lib.api.CFTLibConfigurer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toCollection;
 
@@ -28,6 +34,19 @@ import static java.util.stream.Collectors.toCollection;
  */
 @Component
 public class CftlibConfig implements CFTLibConfigurer {
+
+    private static final String BAILIFF = "pcs-bailiff@localhost";
+    private static final String BAILIFF_ADMIN = "pcs-bailiff-admin@localhost";
+    private static final String BAILIFF_MANAGER = "pcs-bailiff-manager@localhost";
+
+    /**
+     * Forename and surname of the staff users that staff reference data lists, keyed by email.
+     */
+    private static final Map<String, String[]> STAFF_NAMES = Map.of(
+        BAILIFF, new String[] {"Bob", "Bailiff"},
+        BAILIFF_ADMIN, new String[] {"Ada", "BailiffAdmin"},
+        BAILIFF_MANAGER, new String[] {"Mark", "BailiffManager"}
+    );
 
     private final CCDDefinitionGenerator configWriter;
 
@@ -61,16 +80,19 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("master.caa@gmail.com", List.of("caseworker-caa"));
         // Bailiff staff for the enforcement journeys. The bailiff roles are RAS organisation roles
         // (UserRole.BAILIFF, BAILIFF_ADMIN, BAILIFF_MANAGER), granted in cftlib-am-role-assignments.json;
-        // the IDAM roles here only get them into XUI.
-        users.put("pcs-bailiff@localhost", List.of("caseworker", "caseworker-pcs"));
-        users.put("pcs-bailiff-admin@localhost", List.of("caseworker", "caseworker-pcs"));
-        users.put("pcs-bailiff-manager@localhost", List.of("caseworker", "caseworker-pcs"));
+        // the IDAM roles here only get them into XUI. The bailiff's hmcts-admin assignment there is scoped to
+        // PCS so that XUI's StaffUser type-ahead can list them: XUI reads staff role categories only from a
+        // fixed list of role names (which has hmcts-admin but not bailiff) in the staff-supported jurisdictions.
+        users.put(BAILIFF, List.of("caseworker", "caseworker-pcs"));
+        users.put(BAILIFF_ADMIN, List.of("caseworker", "caseworker-pcs"));
+        users.put(BAILIFF_MANAGER, List.of("caseworker", "caseworker-pcs"));
 
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {
             lib.createIdamUser(entry.getKey(), entry.getValue().toArray(new String[0]));
             lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.CASE_ISSUED.name());
         }
+        nameStaffUsers(users);
 
         createAccessProfiles(lib);
         createRoleAssignments(lib);
@@ -80,6 +102,40 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         // Import CCD definitions
         lib.importJsonDefinition(new File("build/definitions/" + CaseType.getCaseType()));
+    }
+
+    /**
+     * Gives the bailiff staff the names wiremock's staff reference data stub
+     * (wiremock/mappings/rd-professional/get-users-by-service-name.json) lists them under. XUI's StaffUser
+     * type-ahead shows the staff reference data name, while "Allocate case to bailiff" reads the name from
+     * IDAM, so the two have to agree. CFTLib's createIdamUser names everyone "A User"; the simulator
+     * replaces an account that is added again.
+     */
+    private void nameStaffUsers(Map<String, List<String>> users) throws IOException, InterruptedException {
+        if (!"localAuth".equals(System.getenv("RSE_LIB_AUTH-MODE"))) {
+            return;
+        }
+        var client = HttpClient.newHttpClient();
+        var mapper = new ObjectMapper();
+        for (var staff : STAFF_NAMES.entrySet()) {
+            var account = Map.of(
+                "email", staff.getKey(),
+                "forename", staff.getValue()[0],
+                "surname", staff.getValue()[1],
+                "password", "password",
+                "roles", users.get(staff.getKey()).stream().map(role -> Map.of("code", role)).toList()
+            );
+            var request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:5062/testing-support/accounts"))
+                .header("content-type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(account)))
+                .build();
+            var response = client.send(request, HttpResponse.BodyHandlers.discarding());
+            if (response.statusCode() / 100 != 2) {
+                throw new IllegalStateException("Naming IDAM user " + staff.getKey() + " failed: HTTP "
+                                                    + response.statusCode());
+            }
+        }
     }
 
     private void createAccessProfiles(CFTLib lib) {

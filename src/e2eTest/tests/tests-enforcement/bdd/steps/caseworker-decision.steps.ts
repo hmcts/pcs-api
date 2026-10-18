@@ -3,7 +3,15 @@ import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
-import { createCaseWithWarrant, openCaseSummary, requireCaseReference, startEvent } from '../support/enforcement-journeys';
+import {
+  CLAIMANT_LEGAL_REPRESENTATIVE,
+  createCaseWithWarrant,
+  expectCaseTab,
+  openCaseSummary,
+  requireCaseReference,
+  signInAs,
+  startEvent,
+} from '../support/enforcement-journeys';
 import { enforcementNumber } from '../support/enforcement-status-tab';
 import {
   DECIDE_ENFORCEMENT,
@@ -134,10 +142,19 @@ pendingSteps({ summary: 'Checking the case history after the decision' }, [
   'the case {string} tab shows the {string} event',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7350', summary: 'Risk assessment tab' }, [
-  'the {string} tab is shown on the case to internal users and the claimant',
-  'the {string} tab is not shown',
-]);
+// The caseworker who submitted the decision is internal; the claimant side then signs in to check its own view.
+Then('the {string} tab is shown on the case to internal users and the claimant', async ({ page, context }, tabName: string) => {
+  await openCaseSummary(page);
+  await expectCaseTab(page, tabName, true);
+  await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
+  await openCaseSummary(page);
+  await expectCaseTab(page, tabName, true);
+});
+
+Then('the {string} tab is not shown', async ({ page }, tabName: string) => {
+  await openCaseSummary(page);
+  await expectCaseTab(page, tabName, false);
+});
 
 pendingSteps({ ticket: 'HDPI-7539', summary: 'Signing in again as the claimant legal representative to reapply' }, [
   'the claimant can apply again using {string}',

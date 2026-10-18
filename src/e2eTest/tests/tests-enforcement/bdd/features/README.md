@@ -82,7 +82,7 @@ ENVIRONMENT=local npx playwright test --project enforcement-bdd
 `ENVIRONMENT=local` is the only variable you need: [`config/local-stack.config.ts`](../../../config/local-stack.config.ts)
 defaults every service URL to its cftlib port. Override any of them by exporting it yourself.
 
-Testing-support shortcuts used by the suite (both need `testing-support.enabled=true`, which
+Testing-support shortcuts used by the suite (all need `testing-support.enabled=true`, which
 `ENABLE_TESTING_SUPPORT=true` sets):
 
 - `POST /testing-support/enforcement/{caseReference}/fee-paid` — "Awaiting payment" → "Awaiting review".
@@ -90,6 +90,8 @@ Testing-support shortcuts used by the suite (both need `testing-support.enabled=
 - `POST /testing-support/enforcement/{caseReference}/allocate-bailiff` with `{"userId","name","email"}` —
   allocates the warrant and moves "Awaiting bailiff allocation" → "Awaiting scheduling". Needs a **user**
   bearer token as well as S2S, because the service records who made the allocation.
+- `POST /testing-support/enforcement/{caseReference}/defendant-case-role` with `{"userId","caseRole"}` — gives
+  the user `[DEFENDANT]` or `[DEFENDANTSOLICITOR]` on the case through CCD's case-users API. S2S header only.
 
 | Variable | Local default | Notes |
 |---|---|---|
@@ -184,8 +186,12 @@ precondition when it cannot reach the status a scenario asks for.
   interacts with one stays pending. (HDPI-8627)
 - **Control the clock.** Several scenarios say "today is 08/07/2026" to put a time in the future; nothing
   can set the app's clock, so those stay pending.
-- **Sign in as a defendant legal representative.** Linking one to a party goes through pcs-api testing
-  support into CCD's case-users API, which answers 500 "Failed to create CCD case" locally.
+- **Link a defendant legal representative through Notice of Change.** pcs-api's
+  `link-defendant-solicitor-to-party` answers 500 "Failed to create CCD case" locally, so `signInAs` gives the
+  local defendant solicitor the `[DEFENDANTSOLICITOR]` case role instead, through
+  `POST /testing-support/enforcement/{caseReference}/defendant-case-role` (which also gives a citizen
+  `[DEFENDANT]`). pcs-frontend is not part of the stack, so a citizen defendant's view is checked on the case
+  data CCD returns to them.
 
 ## Open questions
 

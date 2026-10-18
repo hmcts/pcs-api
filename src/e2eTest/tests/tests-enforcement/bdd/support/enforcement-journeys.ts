@@ -19,15 +19,16 @@ import { staff } from '@data/user-data/staff.user.data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, currentSignedInRole, recordSignedInRole } from './session';
 import {
+  assignDefendantCaseRole,
   basicClaimFixtureClaim,
   createCaseFromFixture,
   isLocalStack,
   localUsers,
   signInToIdamSimulator,
   testCaseFixtures,
+  type TestCaseFixture,
   waitForServiceRequest,
 } from '@config/local-stack.config';
-import type { TestCaseFixture } from '@config/local-stack.config';
 import {
   checkYourAnswers,
   evidenceUpload,
@@ -150,7 +151,7 @@ export async function seedWarrantApplication(world: EnforcementWorld): Promise<v
  */
 export async function createCaseWithWarrant(world: EnforcementWorld): Promise<void> {
   if (isLocalStack()) {
-    await createCaseWithApplicationLocally(world, testCaseFixtures.enforcementWarrant);
+    await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWarrant);
     return;
   }
   await createIssuedCase(world);
@@ -158,14 +159,18 @@ export async function createCaseWithWarrant(world: EnforcementWorld): Promise<vo
 }
 
 /**
- * A case issued with a writ of possession application already submitted. Only the local stack can seed one:
- * there is no writ `enforceTheOrder` API payload for AAT.
+ * A case issued with a writ of possession application already submitted, awaiting payment. Only a local stack
+ * can seed one: AAT has no route to a writ application other than the claimant journey.
  */
-export async function createCaseWithWrit(world: EnforcementWorld): Promise<void> {
-  await createCaseWithApplicationLocally(world, testCaseFixtures.enforcementWrit);
+export async function createCaseWithWrit(world: EnforcementWorld): Promise<boolean> {
+  if (!isLocalStack()) {
+    return false;
+  }
+  await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWrit);
+  return true;
 }
 
-async function createCaseWithApplicationLocally(world: EnforcementWorld, fixture: TestCaseFixture): Promise<void> {
+async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture: TestCaseFixture): Promise<void> {
   const created = await createCaseFromFixture(fixture);
   process.env.CASE_NUMBER = created.id;
   caseInfo.id = created.id;
@@ -420,13 +425,20 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
   await performAction('reTryOnCallBackError', propertyAccessDetails.continueButton, additionalInformation.mainHeader);
 }
 
-/** Statement of truth signed by the claimant's legal representative; lands on check your answers. */
+/**
+ * Statement of truth signed by the claimant's legal representative; lands on check your answers.
+ *
+ * The warrant and writ pages (pcs-api StatementOfTruthPage, StatementOfTruthWritPage) have the same fields:
+ * the "I certify that:" box, "Completed by", the legal representative's agreement box, then full name, firm
+ * and position. The two actions take those under different keys: `selectStatementOfTruth` reads the
+ * certification from `selectCheckbox` and the agreement from `option2`, `selectStatementOfTruthWrit` reads
+ * them from `option1` and `claimantBelieveCheckBox`.
+ */
 export async function signStatementOfTruth(type: 'warrant of possession' | 'writ of possession'): Promise<void> {
   await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
   const signedByLegalRepresentative = {
     question: statementOfTruth.completedByParagraph,
     option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-    option1: statementOfTruth.signThisStatementHiddenCheckbox,
     label: statementOfTruth.fullNameHiddenTextLabel,
     input: statementOfTruth.fullNameHiddenTextInput,
     label1: statementOfTruth.nameOfFirmHiddenTextLabel,
@@ -436,9 +448,17 @@ export async function signStatementOfTruth(type: 'warrant of possession' | 'writ
     nextPage: checkYourAnswers.mainHeader,
   };
   if (type === 'warrant of possession') {
-    await performAction('selectStatementOfTruth', { selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic, ...signedByLegalRepresentative });
+    await performAction('selectStatementOfTruth', {
+      ...signedByLegalRepresentative,
+      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
+      option2: statementOfTruth.signThisStatementHiddenCheckbox,
+    });
   } else {
-    await performAction('selectStatementOfTruthWrit', signedByLegalRepresentative);
+    await performAction('selectStatementOfTruthWrit', {
+      ...signedByLegalRepresentative,
+      option1: statementOfTruth.iCertifyCheckboxDynamic,
+      claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox,
+    });
   }
 }
 
@@ -475,9 +495,9 @@ const signInUsers: Record<string, () => string | undefined> = {
   'hearing-centre-team-leader': () =>
     isLocalStack() ? localUsers.hearingCentreTeamLeader : staff.pcs_hearing_centre_team_leader_email,
   judge: () => (isLocalStack() ? localUsers.judge : users.find(candidate => candidate.user === 'County Court Judge')?.email),
-  // Not signable in on a local stack: linking a defendant solicitor to a party goes through pcs-api
-  // testing support into CCD's case-users API, which answers 500 "Failed to create CCD case" there.
-  'defendant legal representative': () => (isLocalStack() ? undefined : user.defendantSolicitor.email),
+  // On a local stack signInAs gives this user the [DEFENDANTSOLICITOR] case role through pcs-api testing
+  // support, because link-defendant-solicitor-to-party answers 500 "Failed to create CCD case" there.
+  'defendant legal representative': () => (isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email),
   bailiff: () => (isLocalStack() ? localUsers.bailiff : undefined),
   'bailiff-admin': () => (isLocalStack() ? localUsers.bailiffAdmin : undefined),
   'bailiff-manager': () => (isLocalStack() ? localUsers.bailiffManager : undefined),
@@ -489,13 +509,25 @@ function claimantLegalRepresentativeEmail(): string {
   return isLocalStack() ? localUsers.claimantSolicitor : (user.localAuthorityOrg1Usr1.email as string);
 }
 
+/** Feature-file names for users whose sign-in role is spelled differently. */
+const FEATURE_USER_ROLES: Record<string, string> = {
+  'hearing centre admin': 'hearing-centre-admin',
+  'hearing centre team leader': 'hearing-centre-team-leader',
+  'bailiff admin': 'bailiff-admin',
+  'bailiff manager': 'bailiff-manager',
+};
+
+/** The sign-in role for a user as the feature files name them, e.g. "hearing centre admin". */
+export const signInRoleFor = (user: string): string => FEATURE_USER_ROLES[user] ?? user;
+
 export function canSignInAs(role: string): boolean {
   return role === CLAIMANT_LEGAL_REPRESENTATIVE || Boolean(signInUsers[role]?.());
 }
 
 /**
  * Signs in to XUI as `role` in place of the storage-state user, as the case tabs specs do. A defendant
- * legal representative is first linked to the scenario's case so that they can open it.
+ * legal representative is first linked to the scenario's case so that they can open it: by Notice of Change
+ * on AAT, by a [DEFENDANTSOLICITOR] case role on a local stack.
  */
 export async function signInAs(role: string, page: Page, context: BrowserContext): Promise<void> {
   if (role === CLAIMANT_LEGAL_REPRESENTATIVE) {
@@ -512,7 +544,11 @@ export async function signInAs(role: string, page: Page, context: BrowserContext
     throw new Error(`No XUI user to sign in as "${role}"`);
   }
   if (role === 'defendant legal representative') {
-    await performCommonAction('getCaseAPIDynamic', { req: 'Link Solicitor', email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    if (isLocalStack()) {
+      await assignDefendantCaseRole(String(process.env.CASE_NUMBER), email, '[DEFENDANTSOLICITOR]');
+    } else {
+      await performCommonAction('getCaseAPIDynamic', { req: 'Link Solicitor', email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    }
   }
   await signInFresh(email, page, context);
   recordSignedInRole(role);

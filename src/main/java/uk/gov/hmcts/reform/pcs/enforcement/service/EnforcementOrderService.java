@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -32,6 +33,8 @@ public class EnforcementOrderService {
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
     private final EnforcementStatusTransitions enforcementStatusTransitions;
+    private final RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
+    private final EnforcementNotificationService enforcementNotificationService;
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
@@ -68,48 +71,61 @@ public class EnforcementOrderService {
             claimEntity.getId(), EnforcementStatus.notLive());
     }
 
+    /**
+     * Saves the submitted application and deletes the draft.
+     *
+     * @return whether the application owes a fee, i.e. whether it was saved awaiting payment
+     */
     @Transactional
-    public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
-        createEnforcementOrder(caseReference, enforcementOrder);
+    public boolean saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
+        boolean paymentOutstanding = createEnforcementOrder(caseReference, enforcementOrder);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
+        return paymentOutstanding;
     }
 
-    private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
+    private boolean createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
         SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcementOrder);
+        // Decided before the new application is saved, so it only sees the claim's earlier enforcements.
+        boolean paymentOutstanding = isPaymentOutstanding(claimEntity, enforcementType);
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, claimEntity);
         enforcementStatusTransitions.transition(enforcementOrderEntity,
-            EnforcementStatusTransitions.initialStatus(isPaymentOutstanding(enforcementType)));
+            EnforcementStatusTransitions.initialStatus(paymentOutstanding));
+        enforcementOrderEntity.setSubmittedAt(enforcementOrderEntity.getStatusUpdatedAt());
         // The writ, writ of restitution and warrant of restitution strategies each save a child row whose
         // enf_case_id is not nullable, and EnforcementOrderEntity has no association to cascade through, so the
         // enforcement has to be persistent before a strategy runs.
         EnforcementOrderEntity savedEntity = enforcementOrderRepository.save(enforcementOrderEntity);
         strategyFactory.getStrategy(enforcementType).process(savedEntity, enforcementOrder);
-        if (savedEntity.getStatus() == EnforcementStatus.AWAITING_REVIEW) {
+        if (!paymentOutstanding && EnforcementApplicationFee.isPayable(enforcementType)) {
+            log.info("Enforcement {} on case {} is a free repeat warrant", savedEntity.getId(), caseReference);
+        }
+        if (!paymentOutstanding) {
+            enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
             enforcementDocumentScheduler.scheduleApplicationDocuments(savedEntity.getId(), enforcementType);
         }
+        return paymentOutstanding;
     }
 
     /**
-     * An application for a type with a fee owes it when it is submitted: no fee exemption exists yet (a free
-     * repeat warrant, HDPI-8424, is still to be agreed) and the fee is not taken during submit. An application
-     * for a type with no fee, which is either restitution type, owes nothing and goes straight to review. The
-     * fee amounts on the submitted case data come from the client, so they are not used to decide this.
-     *
-     * <p>TODO HDPI-8424: WarrantReturnService#isNextWarrantFree answers whether a further warrant is free from
-     * the return history. It is not used here until the fee exemption is agreed (OPEN-QUESTIONS 6).</p>
+     * An application for a type with a fee owes it when it is submitted, because the fee is not taken during
+     * submit, unless it is a free repeat warrant ({@link RepeatWarrantFeeWaiver}, HDPI-8424). An application for
+     * a type with no fee, which is either restitution type, owes nothing. Either way an application that owes
+     * nothing goes straight to review. The fee amounts on the submitted case data come from the client, so they
+     * are not used to decide this.
      *
      * <p>TODO HDPI-2877: nothing moves an application on from AWAITING_PAYMENT yet, because pcs-api has no
      * enforcement payment callback on this branch. When the enforcement payment handler from hmcts/pcs-api#2941
-     * lands, its PAID path should call {@link #moveToReview(EnforcementOrderEntity)} from inside this package (it
-     * must link the fee payment to the enf_case id to find the entity), so that the application documents are
-     * generated.
+     * lands, its PAID path should go through {@link #moveToAwaitingReview} from inside this package, so the claimant
+     * is told the application was received and the application documents are generated (it must link the fee
+     * payment to the enf_case id to find the entity).
      */
-    private static boolean isPaymentOutstanding(SelectEnforcementType enforcementType) {
-        return EnforcementApplicationFee.isPayable(enforcementType);
+    private boolean isPaymentOutstanding(ClaimEntity claimEntity, SelectEnforcementType enforcementType) {
+        return EnforcementApplicationFee.isPayable(enforcementType)
+            && !repeatWarrantFeeWaiver.isFeeWaived(claimEntity.getId(), enforcementType);
     }
 
     /**
@@ -126,21 +142,22 @@ public class EnforcementOrderService {
             .stream()
             .findFirst()
             .map(enforcement -> {
-                moveToReview(enforcement);
+                moveToAwaitingReview(caseReference, enforcement);
                 return true;
             })
             .orElse(false);
     }
 
     /**
-     * Moves a paid application on to awaiting review and generates the application documents, which the
-     * features describe as produced once the claimant has submitted and paid.
+     * Moves a paid application on to awaiting review, tells the claimant it has been received and generates the
+     * application documents, which the features describe as produced once the claimant has submitted and paid.
      */
-    void moveToReview(EnforcementOrderEntity enforcement) {
+    void moveToAwaitingReview(long caseReference, EnforcementOrderEntity enforcement) {
         enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
         enforcementOrderRepository.save(enforcement);
-        enforcementDocumentScheduler.scheduleApplicationDocuments(
-            enforcement.getId(), SelectEnforcementType.from(enforcement.getEnforcementOrder()));
+        SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcement.getEnforcementOrder());
+        enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
+        enforcementDocumentScheduler.scheduleApplicationDocuments(enforcement.getId(), enforcementType);
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
@@ -155,6 +172,11 @@ public class EnforcementOrderService {
         // Warrant returns are held on enf_warrant_return.
         enforcementOrder.setWarrantReturn(null);
         enforcementOrder.setLatestWarrantReturn(null);
+        // The tab markdown is rendered for the case view from the enforcement records.
+        enforcementOrder.setEnforcementStatusTabMarkdown(null);
+        enforcementOrder.setRiskAssessmentPrintMarkdown(null);
+        enforcementOrder.setRiskAssessmentInternalMarkdown(null);
+        enforcementOrder.setRiskAssessmentClaimantMarkdown(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);

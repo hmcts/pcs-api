@@ -10,6 +10,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -75,6 +76,13 @@ class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private BailiffDirectoryService bailiffDirectoryService;
+    /**
+     * CCD's case-users API, which the case view asks for the viewer's case roles once the claim has an
+     * enforcement (DefendantEnforcementView). The SDK test support does not answer it; unstubbed, the mock
+     * gives the viewer no case roles.
+     */
+    @MockitoBean
+    private CaseAssignmentApi caseAssignmentApi;
 
     private long caseReference;
     private Actor bailiff;
