@@ -14,7 +14,7 @@ public class StartSuspend implements CcdPageConfiguration {
     private static final String INFO_MARKDOWN = """
         <p class="govuk-body">
         You can ask a judge to suspend a warrant or a writ of possession. This means delaying the eviction or allowing
-        the defendant to stay in their home if they're able to make payments again.
+        the defendant to stay in their home if they’re able to make payments again.
         </p>
 
         <p class="govuk-body">
@@ -27,9 +27,11 @@ public class StartSuspend implements CcdPageConfiguration {
         <p class="govuk-body">
         If the court approves the request the defendant may be able to stay in their home, either temporarily or
         indefinitely, if they meet certain conditions. For example the judge could ask them to set up a payment plan so
-        that they can repay the rent or mortgage payments they owe. If they do not meet the conditions,they can be
-        evicted.
+        that they can repay the rent or mortgage payments they owe.
         </p>
+
+        <p class="govuk-body"> If they do not meet the conditions, they can be
+        evicted.</p>
 
         <p class="govuk-body govuk-!-font-weight-bold">If the court refuses the request to suspend the eviction</p>
 
@@ -85,7 +87,7 @@ public class StartSuspend implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("startSuspend")
-            .pageLabel("Ask the court to (stop or suspend) the eviction on behalf of a defendant")
+            .pageLabel("Ask the court to suspend the eviction on behalf of the defendant")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.SUSPEND))
             .label("startSuspend-lineSeparator", "---")
             .label("startSuspend-info", INFO_MARKDOWN);

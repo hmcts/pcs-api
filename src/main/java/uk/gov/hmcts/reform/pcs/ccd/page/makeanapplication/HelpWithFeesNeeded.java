@@ -38,7 +38,7 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
         """;
 
     private static final String INFO_MARKDOWN_SUSPEND = """
-        <p class="govuk-body govuk-!-margin-bottom-1">It costs ${xui_genapp_SuspendFee} to apply.</p>
+        <p class="govuk-body">It costs ${xui_genapp_SuspendFee} to apply.</p>
 
         <p class="govuk-body govuk-!-margin-bottom-1">The defendant may be able to get help paying the fee
         if they (one or more of the following):</p>

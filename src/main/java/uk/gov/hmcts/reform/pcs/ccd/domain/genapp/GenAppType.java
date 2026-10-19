@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @AllArgsConstructor
 public enum GenAppType implements HasLabel {
 
-    SUSPEND("Ask the court to (stop or suspend) the eviction - You can ask the court to 'suspend the eviction'. "
-                + "This means stopping or delaying the eviction"),
+    SUSPEND("Ask the court to (stop or delay) the eviction - You can ask the court to ‘suspend the eviction’. "
+                + "This means stopping or delaying the defendant’s eviction"),
 
     ADJOURN("Adjourn (delay) the hearing - You can apply to change the defendant’s court hearing "
                 + "until a later time or date"),
