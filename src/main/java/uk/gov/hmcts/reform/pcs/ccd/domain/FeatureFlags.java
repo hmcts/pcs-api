@@ -14,5 +14,6 @@ public class FeatureFlags {
     private VerticalYesNo walesMakeAClaimEnabled;
     private VerticalYesNo cuiRespondToClaimLrEnabled;
     private VerticalYesNo makeOrderEnabled;
+    private VerticalYesNo enforcementEnabled;
 
 }

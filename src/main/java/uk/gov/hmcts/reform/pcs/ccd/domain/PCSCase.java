@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -882,6 +883,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private UpdatePartyDetails updatePartyDetails;
+
+    @JsonUnwrapped
+    private RemovePartyDetails removePartyDetails;
 
 
     @CCD(
