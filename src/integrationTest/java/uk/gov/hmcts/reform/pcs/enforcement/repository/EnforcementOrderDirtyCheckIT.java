@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
@@ -64,6 +65,9 @@ class EnforcementOrderDirtyCheckIT extends AbstractPostgresContainerIT {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private Statistics statistics;
 
     @BeforeEach
@@ -111,6 +115,33 @@ class EnforcementOrderDirtyCheckIT extends AbstractPostgresContainerIT {
         assertNoUpdateOnLoad(id);
     }
 
+    /**
+     * Reading an order materialises every {@code @JsonUnwrapped} nested object the application left null, so an
+     * order as the journey builds it is never equal to its own round trip and would be dirty the moment it was
+     * inserted. {@code EnforcementOrderService} stores the round trip for that reason; this is the assumption
+     * that makes it work, namely that Hibernate's snapshot agrees with the service's ObjectMapper.
+     */
+    @Test
+    @DisplayName("does not update a freshly inserted enforcement order stored in its round-trip form")
+    void doesNotUpdateFreshlyInsertedEnforcementOrder() {
+        EnforcementOrder submitted = EnforcementOrder.builder()
+            .chooseEnforcementType(DynamicStringList.builder()
+                                       .value(DynamicStringListElement.builder()
+                                                  .code(SelectEnforcementType.WARRANT.name())
+                                                  .build())
+                                       .build())
+            .warrantDetails(WarrantDetails.builder().build())
+            .writDetails(WritDetails.builder().build())
+            .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder().build())
+            .build();
+
+        insert(1000000000000015L, objectMapper.convertValue(submitted, EnforcementOrder.class));
+
+        statistics.clear();
+        entityManager.flush();
+        assertThat(statistics.getEntityUpdateCount()).isZero();
+    }
+
     @Test
     @DisplayName("persists a change made in place to a nested field of the enforcement order")
     void persistsInPlaceChangeToNestedField() {
@@ -151,6 +182,12 @@ class EnforcementOrderDirtyCheckIT extends AbstractPostgresContainerIT {
     }
 
     private UUID save(long caseReference, EnforcementOrder enforcementOrder) {
+        UUID id = insert(caseReference, enforcementOrder);
+        entityManager.clear();
+        return id;
+    }
+
+    private UUID insert(long caseReference, EnforcementOrder enforcementOrder) {
         StatementOfTruthEntity statementOfTruth = new StatementOfTruthEntity();
         statementOfTruth.setAccepted(YesOrNo.YES);
         statementOfTruth.setFullName("Test Name");
@@ -169,7 +206,6 @@ class EnforcementOrderDirtyCheckIT extends AbstractPostgresContainerIT {
         entity.setRiskLevelSetAt(now);
         UUID id = enforcementOrderRepository.save(entity).getId();
         entityManager.flush();
-        entityManager.clear();
         return id;
     }
 

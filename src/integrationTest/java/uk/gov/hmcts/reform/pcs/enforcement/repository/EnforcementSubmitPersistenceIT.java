@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.pcs.enforcement.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +81,9 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private EnforcementOrderService enforcementOrderService;
 
     @BeforeEach
@@ -90,7 +95,7 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
             enforcementStatusTransitions, repeatWarrantFeeWaiver, mock(EnforcementNotificationService.class),
             enforcementDocumentScheduler, mock(EnforcementFeeService.class, RETURNS_MOCKS),
-            mock(EnforcementWaTaskService.class));
+            mock(EnforcementWaTaskService.class), objectMapper);
     }
 
     @ParameterizedTest
@@ -120,6 +125,27 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             "SELECT submitted_at = status_updated_at FROM enf_case WHERE id = ?", Boolean.class, enforcementId))
             .as("the application is dated by when it was submitted")
             .isTrue();
+    }
+
+    /**
+     * The application is stored as it will read back, so the row is not dirty the moment it is inserted: a
+     * second write of the same JSON costs a statement and moves the version under the document generation and
+     * Payments callback that read the enforcement next.
+     */
+    @Test
+    @DisplayName("stores the application without a second write of the same enforcement order")
+    void shouldStoreTheApplicationWithoutASecondWrite() {
+        long caseReference = 1000000000000005L;
+        ClaimEntity claim = savedClaim(caseReference);
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder(SelectEnforcementType.WARRANT));
+        entityManager.flush();
+
+        UUID enforcementId = enforcementOrderRepository.findByClaimId(claim.getId()).getFirst().getId();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT version FROM enf_case WHERE id = ?", Integer.class, enforcementId))
+            .as("the insert is the only write of the enforcement")
+            .isZero();
     }
 
     private static EnforcementOrder enforcementOrder(SelectEnforcementType enforcementType) {
