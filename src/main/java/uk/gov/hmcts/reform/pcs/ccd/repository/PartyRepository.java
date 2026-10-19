@@ -18,11 +18,22 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
     @Query("SELECT p FROM PartyEntity p WHERE p.id = :id AND p.pcsCase.caseReference = :caseReference")
     Optional<PartyEntity> queryPartyById(@Param("id") UUID id, @Param("caseReference") long caseReference);
 
-    @Query("SELECT p FROM PartyEntity p WHERE p.idamId = :idamId AND p.pcsCase.caseReference = :caseReference")
-    Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") UUID idamId, @Param("caseReference") long caseReference);
+    @Query("""
+        SELECT p FROM PartyEntity p
+        WHERE p.idamId = :idamId
+        AND p.pcsCase.caseReference = :caseReference
+        AND p.removed = false
+        """)
+    Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") String idamId,
+                                             @Param("caseReference") long caseReference);
 
-    @Query("SELECT cp.claim FROM ClaimPartyEntity cp WHERE cp.party.idamId = :idamId AND cp.role = :role")
-    List<ClaimEntity> findClaimsByIdamIdAndRole(@Param("idamId") UUID idamId, @Param("role") PartyRole role);
+    @Query("""
+        SELECT cp.claim FROM ClaimPartyEntity cp
+        WHERE cp.party.idamId = :idamId
+        AND cp.role = :role
+        AND cp.party.removed = false
+        """)
+    List<ClaimEntity> findClaimsByIdamIdAndRole(@Param("idamId") String idamId, @Param("role") PartyRole role);
 
     Optional<PartyEntity> findByIdAndPcsCaseCaseReference(UUID id, long caseReference);
 
