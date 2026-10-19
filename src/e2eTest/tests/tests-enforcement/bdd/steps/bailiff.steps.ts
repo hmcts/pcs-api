@@ -180,6 +180,12 @@ Then('I see the {string} confirmation with the case number and warrant number', 
   await expectConfirmationWithBothNumbers(page, world, header);
 });
 
+// The allocation confirmation shows the case number only: whether a warrant number belongs on screens at all is
+// OPEN-QUESTIONS 43.
+Then('I see the {string} confirmation with the case number', async ({ page, world }, header: string) => {
+  await expectBailiffConfirmation(page, header, requireCaseReference(world));
+});
+
 Then('I see the case number and the property address', async ({ page, world }) => {
   const details = page.locator('dl.govuk-summary-list').filter({ hasText: 'Property address' }).first();
   await expect(details).toContainText(dashedCaseNumber(requireCaseReference(world)));
