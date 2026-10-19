@@ -31,8 +31,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -90,10 +90,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         GenAppEntity genAppEntity = genAppService
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
 
-        if (!paymentRequired) {
-            genAppWaTaskService.createTranslationTasksForGenApp(genAppEntity);
-        }
-
         if (isXuiJourney(createGenAppRequest)) {
             return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
         } else {
@@ -113,6 +109,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
             PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
             bulkPrintQueueService.queueGenAppPack(pcsCaseEntity, genAppEntity);
+            genAppWaTaskService.createTranslationTasksForGenApp(genAppEntity);
         } else {
             schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
         }
@@ -130,6 +127,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             notificationService.sendGenAppReceivedEmail(genAppEntity);
             genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+            genAppWaTaskService.createTranslationTasksForGenApp(genAppEntity);
 
             PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
             bulkPrintQueueService.queueGenAppPack(pcsCaseEntity, genAppEntity);
@@ -198,7 +196,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return partyService.getPartyEntityById(applicantPartyId, caseReference);
         }
 
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String currentUserId = securityContextService.getCurrentUserId();
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
 
         if (caseData.getCurrentRepresentedPartyId() != null) {

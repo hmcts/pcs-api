@@ -71,7 +71,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerTyp
 class SubmitEventHandlerTest {
 
     private static final long TEST_CASE_REFERENCE = 1234L;
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
     private static final String CURRENT_USER_FULL_NAME = "current user full name";
 
     @Mock
@@ -249,11 +249,9 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
                 verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
-                verify(genAppWaTaskService, never()).createTranslationTasksForGenApp(genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
                 verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
-                verify(genAppWaTaskService).createTranslationTasksForGenApp(genAppEntity);
             }
         }
 
@@ -321,7 +319,7 @@ class SubmitEventHandlerTest {
         }
 
         private void stubLegalRepForParty(UUID representedPartyUuid) {
-            UUID currentUserId = UUID.randomUUID();
+            String currentUserId = UUID.randomUUID().toString();
             String orgId = "org";
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
@@ -363,7 +361,7 @@ class SubmitEventHandlerTest {
                 .clientReference("some reference")
                 .build();
 
-            UUID currentUserId = UUID.randomUUID();
+            String currentUserId = UUID.randomUUID().toString();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
@@ -383,7 +381,6 @@ class SubmitEventHandlerTest {
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
-            verify(genAppWaTaskService).createTranslationTasksForGenApp(genAppEntity);
         }
 
         @Test
@@ -449,7 +446,7 @@ class SubmitEventHandlerTest {
             GenAppEntity genAppEntity = stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
             when(genAppEntity.getId()).thenReturn(expectedGenAppEntityId);
 
-            UUID currentUserId = UUID.randomUUID();
+            String currentUserId = UUID.randomUUID().toString();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 

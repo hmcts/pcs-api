@@ -60,7 +60,7 @@ class StartDashboardViewHandlerTest {
 
     @Test
     void shouldComputeDashboardDataAndAttachToCaseData() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
         AddressUK propertyAddress = AddressUK.builder().addressLine1("10 Test Road").build();
         PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
@@ -102,7 +102,7 @@ class StartDashboardViewHandlerTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("caseAccessExceptionScenarios")
     void shouldPropagateCaseAccessException(String scenario, String exceptionMessage) {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
 
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);

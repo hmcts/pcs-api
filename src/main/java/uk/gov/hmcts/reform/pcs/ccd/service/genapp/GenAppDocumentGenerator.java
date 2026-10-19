@@ -114,8 +114,7 @@ public class GenAppDocumentGenerator {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         UUID applicantPartyId = applicantParty.getId();
-        String outputFilename = documentNameService
-            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, applicantPartyId);
+        String outputFilename = documentNameService.expectedGenAppFilename(genAppEntity, mainClaim);
 
         GenAppFormPayload genAppFormPayload = createGenAppFormPayload(caseReference,
                                                                       pcsCaseEntity,
@@ -213,6 +212,7 @@ public class GenAppDocumentGenerator {
 
     private Map<PartyRole, List<Party>> getPartyMap(ClaimEntity claim) {
         return claim.getClaimParties().stream()
+            .filter(claimParty -> !claimParty.getParty().isRemoved())
             .collect(Collectors.groupingBy(
                 ClaimPartyEntity::getRole,
                 Collectors.mapping(this::toParty, Collectors.toList())

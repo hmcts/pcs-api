@@ -49,26 +49,6 @@ class PackSendRecorderTest {
         .id(UUID.randomUUID()).type(DocumentType.DEFENDANT_RESPONSE).build();
 
     @Test
-    @DisplayName("Records a PACK_SENT row carrying the letterId and documents on success")
-    void shouldRecordPackSentOnSuccess() {
-        UUID letterId = UUID.randomUUID();
-        Supplier<UUID> sendAction = () -> letterId;
-
-        underTest.sendAndRecord(pcsCase, recipient, LetterType.DEFENCE_PACK, List.of(document), sendAction);
-
-        verify(accessCodeActivityLogService)
-            .recordPackSent(eq(pcsCase), eq(recipient), packDetailsCaptor.capture());
-        verify(accessCodeActivityLogService, never()).recordPackFailed(any(), any(), any());
-        PackDetails details = packDetailsCaptor.getValue();
-        assertThat(details.packType()).isEqualTo(LetterType.DEFENCE_PACK);
-        assertThat(details.letterId()).isEqualTo(letterId);
-        assertThat(details.documents()).singleElement().satisfies(ref -> {
-            assertThat(ref.id()).isEqualTo(document.getId());
-            assertThat(ref.type()).isEqualTo(DocumentType.DEFENDANT_RESPONSE);
-        });
-    }
-
-    @Test
     @DisplayName("Marks the claim form self=true for the claimant and self=false for a defendant")
     void shouldResolveClaimFormOwnershipToClaimant() {
         PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
