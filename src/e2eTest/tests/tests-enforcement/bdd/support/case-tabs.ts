@@ -9,6 +9,7 @@
 import { Page, expect } from '@playwright/test';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { activeTab, openCaseTab } from './enforcement-status-tab';
+import { ensureSignedIn } from './session';
 
 export const RISK_ASSESSMENT_TAB = 'Risk assessment';
 
@@ -58,6 +59,7 @@ export async function expectTabField(
 
 /** Whether the signed-in user can see a tab at all. Waits for the tab strip before concluding "no". */
 export async function isTabVisible(page: Page, caseReference: string, tabName: string): Promise<boolean> {
+  await ensureSignedIn(page);
   await page.goto(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS/${caseReference}#Summary`, {
     waitUntil: 'domcontentloaded',
   });

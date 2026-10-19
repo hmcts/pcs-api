@@ -23,7 +23,7 @@
 # Environment:
 #   MANAGE_CASE_BASE_URL     XUI to health-check (default http://localhost:3000)
 #   XUI_CONTAINER            docker container restarted when XUI is down (default cftlib-xui-manage-cases-1)
-#   DEMO_SLOW_MO, DEMO_HOLD_MS   pacing, passed through to Playwright
+#   DEMO_SLOW_MO, DEMO_HOLD_MS   pacing, passed through to Playwright (defaults 275ms and 1200ms)
 #   VIDEO_SIZE               output resolution (default 1920x1080, the demo project's viewport)
 #   TITLE_SECONDS            scenario title card length (default 2.5)
 #   MIN_CLIP_SECONDS         page videos shorter than this are left out as unused pages (default 1.5)

@@ -29,7 +29,13 @@ import {
   expectEvictionError,
   scheduleEviction,
 } from '../support/schedule-eviction';
-import { MARK_NOTICE_SERVED, markNoticeServedAsBailiff, noticeServed, submitNoticeServed } from '../support/notice-served';
+import {
+  MARK_NOTICE_SERVED,
+  markNoticeServedAsBailiff,
+  markNoticeServedInXui,
+  noticeServed,
+  submitNoticeServed,
+} from '../support/notice-served';
 import { caseChangedForDefendants } from '../support/defendant-visibility';
 import { ADD_BAILIFF_NOTE, SET_RISK_LEVEL } from '../support/bailiff-events';
 
@@ -192,12 +198,12 @@ Then('the {string} tab shows the scheduled eviction date and time under {string}
  * documents or notifications a submit is meant to produce. "Mark notice of eviction as served" is the
  * exception: a scenario whose journey it is but that never started it has the bailiff run it end to end.
  */
-When('I submit the event', async ({ page, context, world, $tags }) => {
+When('I submit the event', async ({ page, world, $tags }) => {
   if (world.currentEvent === MARK_NOTICE_SERVED) {
     return submitNoticeServed(page, world);
   }
   if (!world.currentEvent && world.journey === MARK_NOTICE_SERVED && !world.noticeServed) {
-    await markNoticeServedAsBailiff(page, context, world);
+    await markNoticeServedInXui(page, world);
     caseChangedForDefendants(world);
     return;
   }

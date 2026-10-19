@@ -24,12 +24,12 @@ Then('the enforcement status changes to {string}', async ({ page, world }, statu
  * As a Given (or an And after one), puts the scenario's warrant in the status, which the Background may have
  * set up differently. Elsewhere, asserts it. A status no event can reach yet is pending (HDPI-7419).
  */
-Step('the enforcement status is {string}', async ({ page, context, world, $bddContext, $tags }, status: string) => {
+Step('the enforcement status is {string}', async ({ page, world, $bddContext, $tags }, status: string) => {
   if ($bddContext.bddTestData.steps[$bddContext.stepIndex]?.keywordType === 'Context') {
     if (!canSetUpStatus(status)) {
       return markPending({ ticket: 'HDPI-7419', summary: `a warrant in "${status}" cannot be set up` }, $tags);
     }
-    return bringWarrantToStatus(page, context, world, status);
+    return bringWarrantToStatus(world, status);
   }
   await expectEnforcementStatus(page, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
 });
@@ -59,12 +59,12 @@ Given('the case has no live warrant', async ({ world }) => {
  * builds a fresh case with a warrant: the enforcement fixture is the only local route to one and the case
  * the scenario started with carries no enforcement.
  */
-Given('the case has a warrant of possession with status {string}', async ({ page, context, world }, status: string) => {
-  await setUpWarrantAtStatus(page, context, world, status);
+Given('the case has a warrant of possession with status {string}', async ({ world }, status: string) => {
+  await setUpWarrantAtStatus(world, status);
 });
 
-Given('the case has a warrant with status {string}', async ({ page, context, world }, status: string) => {
-  await setUpWarrantAtStatus(page, context, world, status);
+Given('the case has a warrant with status {string}', async ({ world }, status: string) => {
+  await setUpWarrantAtStatus(world, status);
 });
 
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Setting up an enforcement in an arbitrary status' }, [

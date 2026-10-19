@@ -12,6 +12,7 @@
 import { Page, expect } from '@playwright/test';
 import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { globalSearch, noResultFound, searchResults } from '@data/page-data-figma';
+import { ensureSignedIn } from './session';
 
 /** What a global search came back with. `unavailable` means XUI did not show the user the search page. */
 export type GlobalSearchOutcome =
@@ -26,6 +27,7 @@ const digitsOnly = (value: string): string => value.replace(/\D/g, '');
  * Fails on XUI's "Something went wrong" page, so a broken search is never read as "no results".
  */
 export async function searchByOtherReference(page: Page, reference: string): Promise<GlobalSearchOutcome> {
+  await ensureSignedIn(page);
   await page.goto(`${process.env.MANAGE_CASE_BASE_URL}/search`);
   const searchHeading = page.getByRole('heading', { name: globalSearch.mainHeader });
   const shown = await searchHeading

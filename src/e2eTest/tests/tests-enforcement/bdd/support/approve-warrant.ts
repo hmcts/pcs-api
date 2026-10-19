@@ -1,13 +1,16 @@
 /**
- * Driving a seeded warrant application up to an approved, live warrant.
+ * Driving a seeded warrant application up to an approved, live warrant, and on through the bailiff events.
  *
- * pcs-api's only enforcement testing-support endpoint is `fee-paid`, so every status past "Awaiting review"
- * has to be reached by submitting the real events (HDPI-7419). The bailiff events all require a warrant in
- * one of `BailiffEnforcementRules.APPROVED_LIVE_STATUSES`, so any bailiff scenario starts here.
+ * pcs-api's enforcement testing support only records the fee and allocates a bailiff, so every other status is
+ * reached by submitting the real events (HDPI-7419). Set-up submits them through CCD's data store API as the
+ * user who would submit them in XUI (event-api.ts), so the browser is left alone. Each helper then expects that
+ * user next, as the XUI journey it replaces left them signed in; the browser only signs them in if a later step
+ * acts in XUI without naming its user (session.ts). The XUI journeys themselves, for scenarios whose When is the
+ * journey, are in the other support files.
  *
  * Kept out of both `decide-enforcement.ts` and `enforcement-journeys.ts` because it needs each of them.
  */
-import { BrowserContext, Page, expect } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
@@ -18,44 +21,44 @@ import {
   localUsers,
 } from '@config/local-stack.config';
 import { createCaseWithWarrant, openCaseSummary, requireCaseReference, startEvent } from './enforcement-journeys';
+import { recordEnforcementFeePaid } from './decide-enforcement';
+import { ccdDateTime, confirmationValue, slashedDate, submitEventAs } from './event-api';
 import {
-  DECIDE_ENFORCEMENT,
-  chooseDecision,
-  decideEnforcement,
-  expectConfirmation,
-  goToCheckYourAnswers,
-  recordEnforcementFeePaid,
-  signInAsHearingCentreAdmin,
-  submitDecision,
-} from './decide-enforcement';
+  CLAIMANT_LEGAL_REPRESENTATIVE,
+  expectSignedInAs,
+  expectedSignedInRole,
+  requireEmailFor,
+  signInAs,
+} from './session';
+import { RISK_ANSWER_FIELDS, riskAnswerChange, tabQuestion } from './claimant-risk-assessment';
+import { recordWarrantReturnAs } from './warrant-return';
+
+const HEARING_CENTRE_ADMIN = 'hearing-centre-admin';
+const BAILIFF = 'bailiff';
 
 /**
- * Records the enforcement fee as paid, signs in as a hearing centre admin and accepts the application.
- * Leaves the warrant in "Awaiting bailiff allocation" with a warrant number, and the browser signed in
- * as the hearing centre admin.
+ * Records the enforcement fee as paid and has a hearing centre admin accept the application. Leaves the warrant
+ * in "Awaiting bailiff allocation" with a warrant number.
  *
  * Pass `feeOutstanding: false` for an application that is already awaiting review: one whose fee was
  * paid or waived, or a type with no fee.
  */
 export async function approveWarrantAsCaseworker(
-  page: Page,
   world: EnforcementWorld,
   options: { feeOutstanding?: boolean } = {}
 ): Promise<void> {
   // The number is generated on approval and is what the later bailiff confirmations quote.
-  world.warrantNumber = await approveApplicationAsCaseworker(page, world, 'Warrant', options);
+  world.warrantNumber = await approveApplicationAsCaseworker(world, 'Warrant', options);
   world.warrantApproved = true;
 }
 
 /**
- * Records the fee for the case's application awaiting payment as paid, signs in as a hearing centre admin and
- * accepts it. Returns the warrant or writ number the confirmation screen gives, and leaves the browser signed in
- * as the hearing centre admin.
+ * Records the fee for the case's application awaiting payment as paid, and has a hearing centre admin accept it
+ * through "Decide enforcement". Returns the warrant or writ number pcs-api's confirmation gives.
  *
  * Pass `feeOutstanding: false` for an application that is already awaiting review.
  */
 export async function approveApplicationAsCaseworker(
-  page: Page,
   world: EnforcementWorld,
   kind: 'Warrant' | 'Writ',
   { feeOutstanding = true }: { feeOutstanding?: boolean } = {}
@@ -63,38 +66,50 @@ export async function approveApplicationAsCaseworker(
   if (feeOutstanding) {
     await recordEnforcementFeePaid();
   }
-  await signInAsHearingCentreAdmin(page);
-  await openCaseSummary(page);
-  await startEvent(DECIDE_ENFORCEMENT);
-  world.currentEvent = DECIDE_ENFORCEMENT;
-  await chooseDecision(page, decideEnforcement.acceptRadioOption);
-  await goToCheckYourAnswers(page);
-  await submitDecision(page);
-  await expectConfirmation(page, new RegExp(`^${kind} of (possession|restitution) approved$`));
-  // The number is generated on approval and is what the later bailiff confirmations quote.
-  const numberLabel = `${kind} number:`;
-  const numberLine = await page.locator('#confirmation-body').getByText(new RegExp(`${numberLabel} \\S+`)).first().innerText();
-  const enforcementNumber = numberLine.slice(numberLine.indexOf(numberLabel) + numberLabel.length).trim().split(/\s+/)[0];
+  const confirmation = await submitEventAs(requireEmailFor(HEARING_CENTRE_ADMIN), 'decideEnforcement', {
+    enforcementDecision: 'ACCEPT',
+  });
+  // The kind reads "Warrant approved" in the panel body and "Warrant of possession approved" in its header.
+  expect(`${confirmation.header ?? ''} ${confirmation.body ?? ''}`, 'the "Decide enforcement" confirmation')
+    .toMatch(new RegExp(`${kind}\\b[^<]*approved`));
+  const enforcementNumber = confirmationValue(confirmation, `${kind} number:`);
   world.warrantNumber = enforcementNumber;
   world.currentEvent = undefined;
+  expectSignedInAs(HEARING_CENTRE_ADMIN);
   return enforcementNumber;
 }
 
 /**
- * Schedules the eviction as the allocated bailiff, which moves the warrant from "Awaiting scheduling" to
- * "Awaiting claimant confirmation" and sets the bailiff date that `markNoticeOfEvictionServed` needs.
+ * Has the bailiff schedule the eviction `daysAhead` days from today at 10:00, which moves the warrant from
+ * "Awaiting scheduling" to "Awaiting claimant confirmation" and sets the bailiff date that marking the notice
+ * served needs.
  *
  * Answers "No" to dispensing with service unless told otherwise, because a warrant whose service is
  * dispensed with has no notice of eviction to mark as served.
  */
 export async function scheduleEvictionAsBailiff(
-  page: Page,
-  context: BrowserContext,
   world: EnforcementWorld,
   daysAhead = 14,
   dispenseWithService: 'Yes' | 'No' = 'No'
 ): Promise<void> {
-  const { signInAs } = await import('./enforcement-journeys');
+  await submitEventAs(requireEmailFor(BAILIFF), 'scheduleEviction', {
+    evictionDateTime: ccdDateTime(daysAhead, '10:00'),
+    evictionDispenseWithService: dispenseWithService,
+  });
+  recordEvictionScheduled(world, slashedDate(daysAhead), dispenseWithService);
+  expectSignedInAs(BAILIFF);
+}
+
+/**
+ * The bailiff's "Schedule eviction" journey in XUI, for a scenario whose When is the submit itself: the date
+ * `daysAhead` days from today at 10:00, then check your answers and "Save and continue".
+ */
+export async function scheduleEvictionInXui(
+  page: Page,
+  world: EnforcementWorld,
+  daysAhead = 14,
+  dispenseWithService: 'Yes' | 'No' = 'No'
+): Promise<void> {
   const {
     SCHEDULE_EVICTION,
     dispenseWithServiceRadio,
@@ -103,13 +118,11 @@ export async function scheduleEvictionAsBailiff(
     scheduleEviction,
   } = await import('./schedule-eviction');
 
-  await signInAs('bailiff', page, context);
+  await signInAs(BAILIFF, page);
   await openCaseSummary(page);
   await startEvent(SCHEDULE_EVICTION);
 
-  const when = new Date();
-  when.setDate(when.getDate() + daysAhead);
-  const date = `${String(when.getDate()).padStart(2, '0')}/${String(when.getMonth() + 1).padStart(2, '0')}/${when.getFullYear()}`;
+  const date = slashedDate(daysAhead);
   await enterEvictionDateTime(page, date, '10:00');
   await dispenseWithServiceRadio(page, dispenseWithService).check();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
@@ -117,54 +130,71 @@ export async function scheduleEvictionAsBailiff(
   await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
   await expect(page.getByRole('heading', { name: /Eviction date scheduled for/ }))
     .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  recordEvictionScheduled(world, date, dispenseWithService);
+}
 
+function recordEvictionScheduled(world: EnforcementWorld, date: string, dispenseWithService: 'Yes' | 'No'): void {
   world.evictionDate = `${date} 10:00`;
   world.evictionScheduled = true;
   world.serviceDispensedWith = dispenseWithService === 'Yes';
 }
 
 /**
- * The claimant answers "Can you attend the eviction on this date?" through `confirmEviction`, moving the
- * warrant from "Awaiting claimant confirmation" to "Claimant confirmed" or "Claimant unable to attend".
+ * Has the bailiff reschedule the eviction `daysAhead` days from today at 10:00 through "Reschedule eviction",
+ * which is offered once the claimant has said whether they can attend.
+ */
+export async function rescheduleEvictionAsBailiff(
+  world: EnforcementWorld,
+  daysAhead: number,
+  dispenseWithService: 'Yes' | 'No'
+): Promise<void> {
+  await submitEventAs(requireEmailFor(BAILIFF), 'rescheduleEviction', {
+    evictionDateTime: ccdDateTime(daysAhead, '10:00'),
+    evictionDispenseWithService: dispenseWithService,
+  });
+  recordEvictionScheduled(world, slashedDate(daysAhead), dispenseWithService);
+  expectSignedInAs(BAILIFF);
+}
+
+/**
+ * The claimant answers "Can you attend the eviction on this date?" through "Confirm the eviction details", moving
+ * the warrant from "Awaiting claimant confirmation" to "Claimant confirmed" or "Claimant unable to attend".
  *
- * An information page, the question, then the warrant's risk pages pre-filled with the claimant's answers,
- * followed by CCD's check-your-answers. `changeRiskAnswer` names one risk question whose answer the claimant
- * changes to "Yes" on the way through (HDPI-7552); otherwise every risk answer is left as it is.
+ * The event pre-fills the warrant's risk answers. They go back as they are, except `changeRiskAnswer`: one risk
+ * question whose answer the claimant changes to "Yes", with its follow-up answers (HDPI-7552), as the XUI journey
+ * in claimant-risk-assessment.ts does.
  */
 export async function confirmEvictionAsClaimant(
-  page: Page,
-  context: BrowserContext,
   world: EnforcementWorld,
   canAttend: boolean,
   changeRiskAnswer?: string
 ): Promise<void> {
-  const { CLAIMANT_LEGAL_REPRESENTATIVE } = await import('./session');
-  const { signInAs } = await import('./enforcement-journeys');
-  const claimantRiskAssessment = await import('./claimant-risk-assessment');
-
-  await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
-  await openCaseSummary(page);
-  await startEvent(claimantRiskAssessment.CONFIRM_EVICTION);
-
-  await claimantRiskAssessment.answerAttendance(page, canAttend);
+  await submitEventAs(requireEmailFor(CLAIMANT_LEGAL_REPRESENTATIVE), 'confirmEviction', startData => {
+    const prefilled: Record<string, unknown> = {};
+    for (const field of RISK_ANSWER_FIELDS) {
+      if (startData[field] !== undefined && startData[field] !== null) {
+        prefilled[field] = startData[field];
+      }
+    }
+    return {
+      ...prefilled,
+      ...(changeRiskAnswer ? riskAnswerChange(changeRiskAnswer) : {}),
+      claimantCanAttendEviction: canAttend ? 'Yes' : 'No',
+    };
+  });
   if (changeRiskAnswer) {
-    await claimantRiskAssessment.changeRiskAnswer(page, changeRiskAnswer, 'Yes');
-    world.changedRiskQuestions = [
-      ...(world.changedRiskQuestions ?? []),
-      claimantRiskAssessment.tabQuestion(changeRiskAnswer),
-    ];
+    world.changedRiskQuestions = [...(world.changedRiskQuestions ?? []), tabQuestion(changeRiskAnswer)];
   }
-  await claimantRiskAssessment.continueToCheckYourAnswers(page);
-  await claimantRiskAssessment.submitConfirmEviction(page);
-
   world.claimantConfirmedEviction = canAttend;
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
 }
 
-/** Signs back in as the claimant's legal representative, the session every scenario starts from. */
-export async function restoreClaimantSession(page: Page, context: BrowserContext): Promise<void> {
-  const { CLAIMANT_LEGAL_REPRESENTATIVE } = await import('./session');
-  const { signInAs } = await import('./enforcement-journeys');
-  await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
+/**
+ * Expects the claimant's legal representative next, the user every scenario starts as. Signs nobody in: the next
+ * step that acts in XUI without naming its user does, if the browser is someone else by then.
+ */
+export function expectClaimantNext(): void {
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
 }
 
 /** The statuses a scenario can actually set up, in the order the events reach them. */
@@ -217,27 +247,22 @@ const RETURN_RECORDABLE_STATUSES = [
   BREATHING_SPACE,
 ];
 
-async function recordReturnReaching(page: Page, context: BrowserContext, status: string): Promise<void> {
-  const { recordReturnAsHearingCentreAdmin } = await import('./repeat-enforcement');
-  await recordReturnAsHearingCentreAdmin(page, context, RETURNS_REACHING[status]);
+/** A hearing centre admin, one of the bailiff staff "Record warrant return" allows, records the return. */
+export async function recordReturnAsHearingCentreAdmin(returnName: string): Promise<string> {
+  const label = await recordWarrantReturnAs(requireEmailFor(HEARING_CENTRE_ADMIN), returnName);
+  expectSignedInAs(HEARING_CENTRE_ADMIN);
+  return label;
 }
 
 /**
  * Moves the scenario's warrant on to `status` where a real event can, and otherwise sets up a new case with a
- * warrant in that status. Keeps the user who was signed in. For a "Given the enforcement status is ..." that
- * follows the Background's set-up.
+ * warrant in that status. Leaves the user the scenario expected next as they were. For a "Given the enforcement
+ * status is ..." that follows the Background's set-up.
  */
-export async function bringWarrantToStatus(
-  page: Page,
-  context: BrowserContext,
-  world: EnforcementWorld,
-  status: string
-): Promise<void> {
-  const { signInAs } = await import('./enforcement-journeys');
-  const { currentSignedInRole } = await import('./session');
+export async function bringWarrantToStatus(world: EnforcementWorld, status: string): Promise<void> {
   const { currentEnforcement, expectEnforcementStatus } = await import('./enforcement-status-tab');
   const target = STATUS_ALIASES[status] ?? status;
-  const signedIn = currentSignedInRole();
+  const expected = expectedSignedInRole();
   const current = world.caseReference
     ? (await currentEnforcement(world.caseReference, world.earlierWarrantNumbers.length)).status
     : undefined;
@@ -245,18 +270,14 @@ export async function bringWarrantToStatus(
     return;
   }
   if (current && RETURNS_REACHING[target] && RETURN_RECORDABLE_STATUSES.includes(current)) {
-    try {
-      await recordReturnReaching(page, context, target);
-    } finally {
-      await restoreClaimantSession(page, context);
-    }
+    await recordReturnAsHearingCentreAdmin(RETURNS_REACHING[target]);
   } else {
     world.allocatedBailiff = undefined;
     world.evictionScheduled = false;
-    await setUpWarrantAtStatus(page, context, world, target);
+    await setUpWarrantAtStatus(world, target);
   }
-  await expectEnforcementStatus(page, requireCaseReference(world), target, world.earlierWarrantNumbers.length);
-  await signInAs(signedIn, page, context);
+  await expectEnforcementStatus(undefined, requireCaseReference(world), target, world.earlierWarrantNumbers.length);
+  expectSignedInAs(expected);
 }
 
 /**
@@ -279,34 +300,23 @@ export async function allocateBailiff(world: EnforcementWorld, email: string = l
 /**
  * Sets up a case with a warrant in `status`, or as close to it as the built events allow.
  *
- * Statuses past "Awaiting review" are reached by submitting the real events, which means signing in as a
- * hearing centre admin and then a bailiff. "Closed" and "Breathing space" are reached from "Awaiting
- * scheduling" by recording a warrant return. The session is always handed back to the claimant's legal
- * representative on the way out, because that is the user every scenario starts as.
+ * Statuses past "Awaiting review" are reached by submitting the real events as a hearing centre admin and then
+ * a bailiff. "Closed" and "Breathing space" are reached from "Awaiting scheduling" by recording a warrant return.
+ * The claimant's legal representative is expected next, because that is the user every scenario starts as.
  *
  * "Awaiting property visit", "Rejected" and "Transferred to the High Court" have no route yet; for those
  * the warrant is left as far along as it got and the gap is recorded as an approximated precondition, which
  * keeps the scenario running for the assertions that do not depend on the exact status.
  */
-export async function setUpWarrantAtStatus(
-  page: Page,
-  context: BrowserContext,
-  world: EnforcementWorld,
-  status: string
-): Promise<void> {
+export async function setUpWarrantAtStatus(world: EnforcementWorld, status: string): Promise<void> {
   try {
-    await driveWarrantToStatus(page, context, world, status);
+    await driveWarrantToStatus(world, status);
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
 }
 
-async function driveWarrantToStatus(
-  page: Page,
-  context: BrowserContext,
-  world: EnforcementWorld,
-  status: string
-): Promise<void> {
+async function driveWarrantToStatus(world: EnforcementWorld, status: string): Promise<void> {
   const target = STATUS_ALIASES[status] ?? status;
   await createCaseWithWarrant(world);
 
@@ -318,7 +328,7 @@ async function driveWarrantToStatus(
     return;
   }
 
-  await approveWarrantAsCaseworker(page, world);
+  await approveWarrantAsCaseworker(world);
   if (target === AWAITING_BAILIFF_ALLOCATION) {
     return;
   }
@@ -336,17 +346,17 @@ async function driveWarrantToStatus(
     return;
   }
   if (target === CLOSED || target === BREATHING_SPACE) {
-    await recordReturnReaching(page, context, target);
+    await recordReturnAsHearingCentreAdmin(RETURNS_REACHING[target]);
     return;
   }
 
-  await scheduleEvictionAsBailiff(page, context, world);
+  await scheduleEvictionAsBailiff(world);
   if (target === AWAITING_CLAIMANT_CONFIRMATION) {
     return;
   }
 
   if (target === CLAIMANT_CONFIRMED || target === CLAIMANT_UNABLE_TO_ATTEND) {
-    await confirmEvictionAsClaimant(page, context, world, target === CLAIMANT_CONFIRMED);
+    await confirmEvictionAsClaimant(world, target === CLAIMANT_CONFIRMED);
     return;
   }
 
@@ -359,11 +369,9 @@ async function driveWarrantToStatus(
 
 /**
  * Schedules the eviction on a case whose warrant has already been approved, allocating the bailiff first if
- * no one has been, and hands the session back to the claimant's legal representative.
+ * no one has been, and expects the claimant's legal representative next.
  */
 export async function scheduleEvictionOnApprovedWarrant(
-  page: Page,
-  context: BrowserContext,
   world: EnforcementWorld,
   dispenseWithService: 'Yes' | 'No' = 'No'
 ): Promise<void> {
@@ -373,9 +381,9 @@ export async function scheduleEvictionOnApprovedWarrant(
       await allocateBailiff(world);
       approximatePrecondition('HDPI-7356', 'the bailiff was allocated through pcs-api testing support');
     }
-    await scheduleEvictionAsBailiff(page, context, world, 14, dispenseWithService);
+    await scheduleEvictionAsBailiff(world, 14, dispenseWithService);
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
   world.defendantViews = undefined;
 }

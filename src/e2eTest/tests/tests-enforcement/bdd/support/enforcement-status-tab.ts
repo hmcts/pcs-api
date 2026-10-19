@@ -15,6 +15,7 @@ import { Page, expect } from '@playwright/test';
 import Axios from 'axios';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { ensureSignedIn } from './session';
 
 export const ENFORCEMENT_STATUS_TAB = 'Enforcement status';
 
@@ -38,6 +39,7 @@ export type EnforcementSection = {
 };
 
 export async function openCaseTab(page: Page, caseReference: string, tabName: string): Promise<void> {
+  await ensureSignedIn(page);
   const url = `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${caseReference}#${encodeURIComponent(tabName)}`;
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('tab', { name: tabName, exact: true })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
@@ -47,6 +49,25 @@ export async function openCaseTab(page: Page, caseReference: string, tabName: st
 
 /** The tab that is currently selected. */
 export const activeTab = (page: Page) => page.locator('.mat-tab-body-active').first();
+
+/**
+ * Re-fetches the open case and selects the tab that was open again.
+ *
+ * Set-up goes through the APIs, so a tab can be opened in the same moment pcs-api records what the scenario
+ * then asserts, and polling markup that is already rendered would never see it arrive. Polls that wait for
+ * something set up that way reload between tries.
+ */
+export async function reopenCurrentTab(page: Page): Promise<void> {
+  const selected = page.locator('[role="tab"][aria-selected="true"]').first();
+  const tabName = (await selected.count()) ? (await selected.innerText()).trim() : undefined;
+  await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => undefined);
+  if (!tabName) {
+    return;
+  }
+  const tab = page.getByRole('tab', { name: tabName, exact: true });
+  await expect(tab).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  await tab.click();
+}
 
 /**
  * Every heading on the selected tab, in order, with what follows it up to the next heading. Waits for the
@@ -198,7 +219,7 @@ export async function currentEnforcement(caseReference: string, earlierCount = 0
  * status set by a just-submitted event is picked up once CCD has it.
  */
 export async function expectEnforcementStatus(
-  _page: Page,
+  _page: Page | undefined,
   caseReference: string,
   status: string,
   earlierCount = 0
