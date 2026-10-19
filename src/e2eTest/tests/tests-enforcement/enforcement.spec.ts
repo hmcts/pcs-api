@@ -428,7 +428,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -549,7 +549,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
+  test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @regression', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
@@ -574,7 +574,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -709,7 +709,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @enforcement',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
