@@ -371,6 +371,9 @@ am-org-role-mapping-service:
       # Subchart default is the AAT definition store, which has master's access types, not this PR's
       CCD_DEF_STORE_APP_URL: http://${SERVICE_NAME}-ccd-definition-store
       PROFESSIONAL_REF_APP_URL: http://rd-professional-api-aat.service.core-compute-aat.internal
+      # TODO HDPI-9160: REMOVE BEFORE MERGE - every PRM cron defaults to disabled, so without this ORM never
+      # loads this PR's access types from the preview definition store and refresh grants no roles
+      CRON_PRM_P1_FIND_CASE_DEFINITION_CHANGES: "0 */5 * * * *"
 
 aac-manage-case-assignment:
   enabled: true
