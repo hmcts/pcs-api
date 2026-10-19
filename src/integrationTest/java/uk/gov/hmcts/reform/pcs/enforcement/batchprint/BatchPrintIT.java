@@ -145,17 +145,20 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
         when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(true);
         givenAmRoles("BOB-ID", "bailiff");
 
-        EnforcementOrderEntity first = warrant(FIRST, "WP-00000001", LocalDateTime.of(2026, 10, 15, 10, 0), BAILIFF);
+        // enf_case.enforcement_number is unique across the database these tests share, so these are
+        // namespaced on the ticket like the case references above rather than taken from the low end of the
+        // sequence EnforcementNumberGenerator issues.
+        EnforcementOrderEntity first = warrant(FIRST, "WP-80120001", LocalDateTime.of(2026, 10, 15, 10, 0), BAILIFF);
         document(first, DocumentType.WARRANT_OF_POSSESSION, "Warrant 1", 1);
         document(first, DocumentType.RISK_ASSESSMENT, "Risk assessment 1", 2);
         document(first, DocumentType.NOTICE_OF_EVICTION, "Original notice 1", 3);
         document(first, DocumentType.NOTICE_OF_EVICTION, "Rescheduled notice 1", 4);
 
-        EnforcementOrderEntity second = warrant(SECOND, "WP-00000002", LocalDateTime.of(2026, 10, 13, 9, 0), BAILIFF);
+        EnforcementOrderEntity second = warrant(SECOND, "WP-80120002", LocalDateTime.of(2026, 10, 13, 9, 0), BAILIFF);
         document(second, DocumentType.WARRANT_OF_POSSESSION, "Warrant 2", 1);
         document(second, DocumentType.NOTICE_OF_EVICTION, "Notice 2", 2);
 
-        EnforcementOrderEntity notMine = warrant(NOT_MINE, "WP-00000003", LocalDateTime.of(2026, 10, 14, 9, 0),
+        EnforcementOrderEntity notMine = warrant(NOT_MINE, "WP-80120003", LocalDateTime.of(2026, 10, 14, 9, 0),
                                                  "alex-id");
         document(notMine, DocumentType.WARRANT_OF_POSSESSION, "Warrant 3", 1);
 
@@ -201,7 +204,7 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.included", hasSize(1)))
             .andExpect(jsonPath("$.included[0].caseReference").value(String.valueOf(SECOND)))
-            .andExpect(jsonPath("$.included[0].warrantNumber").value("WP-00000002"))
+            .andExpect(jsonPath("$.included[0].warrantNumber").value("WP-80120002"))
             .andExpect(jsonPath("$.included[0].documents[*].kind", contains("WARRANT", "NOTICE_OF_EVICTION")))
             .andExpect(jsonPath("$.included[0].documents[0].documentId").doesNotExist())
             .andExpect(jsonPath("$.included[0].missingDocuments", contains("RISK_ASSESSMENT")))
@@ -240,7 +243,7 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, "s2s"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[*].caseReference", contains(String.valueOf(SECOND), String.valueOf(FIRST))))
-            .andExpect(jsonPath("$[0].warrantNumber").value("WP-00000002"))
+            .andExpect(jsonPath("$[0].warrantNumber").value("WP-80120002"))
             .andExpect(jsonPath("$[0].status").value("CLAIMANT_CONFIRMED"));
     }
 

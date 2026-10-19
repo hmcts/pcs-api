@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
-import com.github.kagkarlsson.scheduler.task.TaskInstanceId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,6 +36,7 @@ public class CamundaService {
     private final WorkAllocationWorkflowApi workAllocationWorkflowApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
+    private final PendingCamundaRequests pendingCamundaRequests;
     private final FeatureToggleService featureToggleService;
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseRepository pcsCaseRepository;
@@ -53,6 +53,7 @@ public class CamundaService {
     public CamundaService(WorkAllocationWorkflowApi workAllocationWorkflowApi,
                           AuthTokenGenerator authTokenGenerator,
                           SchedulerClient schedulerClient,
+                          PendingCamundaRequests pendingCamundaRequests,
                           FeatureToggleService featureToggleService,
                           LocationReferenceService locationReferenceService,
                           PcsCaseRepository pcsCaseRepository,
@@ -61,6 +62,7 @@ public class CamundaService {
         this.workAllocationWorkflowApi = workAllocationWorkflowApi;
         this.authTokenGenerator = authTokenGenerator;
         this.schedulerClient = schedulerClient;
+        this.pendingCamundaRequests = pendingCamundaRequests;
         this.featureToggleService = featureToggleService;
         this.locationReferenceService = locationReferenceService;
         this.pcsCaseRepository = pcsCaseRepository;
@@ -149,12 +151,21 @@ public class CamundaService {
      * scheduled for a later date, if it has not been sent to Camunda yet. No task exists for
      * {@code cancelTasks} to terminate until then, so cancelling a task that is due in the future means
      * dropping its pending request as well.
+     *
+     * <p>A request that has already been sent, or that a scheduler on another node is sending now, cannot be
+     * dropped: the task will exist. The {@code cancelTasks} request the caller sends alongside this one is
+     * what terminates it, so there is nothing left to do here and nothing to fail the change over.</p>
      */
     public void cancelPendingTaskCreation(TaskType taskType, TaskReference reference) {
-        TaskInstanceId pending = CAMUNDA_REQUEST_TASK_DESCRIPTOR
-            .instanceId(instanceId(Action.CREATE, taskType, reference));
-        if (schedulerClient.getScheduledExecution(pending).isPresent()) {
-            schedulerClient.cancel(pending);
+        if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
+            log.info("Skipped withdrawing Camunda request for {}", taskType);
+            return;
+        }
+
+        String instanceId = instanceId(Action.CREATE, taskType, reference);
+        if (!pendingCamundaRequests.withdraw(CAMUNDA_REQUEST_TASK_DESCRIPTOR.instanceId(instanceId))) {
+            log.info("Camunda request {} has been sent, so its task is cancelled rather than withdrawn",
+                     instanceId);
         }
     }
 

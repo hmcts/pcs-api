@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.github.kagkarlsson.scheduler.ScheduledExecution;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import com.github.kagkarlsson.scheduler.task.TaskInstanceId;
@@ -41,6 +40,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -66,6 +66,9 @@ public class CamundaServiceTest {
 
     @Mock
     private SchedulerClient schedulerClient;
+
+    @Mock
+    private PendingCamundaRequests pendingCamundaRequests;
 
     @Mock(strictness = LENIENT)
     private Clock utcClock;
@@ -608,27 +611,40 @@ public class CamundaServiceTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void shouldDropACreateRequestThatHasNotReachedCamundaYet() {
+        stubWaFeatureFlag(true);
         TaskInstanceId pending = CAMUNDA_REQUEST_TASK_DESCRIPTOR
             .instanceId("CREATE-RecordWarrantReturn-enforcement-1");
-        ScheduledExecution<Object> waiting = mock(ScheduledExecution.class);
-        when(schedulerClient.getScheduledExecution(pending)).thenReturn(Optional.of(waiting));
+        when(pendingCamundaRequests.withdraw(pending)).thenReturn(true);
 
         camundaService.cancelPendingTaskCreation(TaskType.RECORD_WARRANT_RETURN,
                                                  TaskReference.of("enforcement-1"));
 
-        verify(schedulerClient).cancel(pending);
+        verify(pendingCamundaRequests).withdraw(pending);
     }
 
     @Test
-    void shouldDropNothingWhenTheCreateRequestHasAlreadyGone() {
-        when(schedulerClient.getScheduledExecution(any())).thenReturn(Optional.empty());
+    void shouldWithdrawNothingWhenWorkAllocationIsOff() {
+        stubWaFeatureFlag(false);
 
         camundaService.cancelPendingTaskCreation(TaskType.RECORD_WARRANT_RETURN,
                                                  TaskReference.of("enforcement-1"));
 
-        verify(schedulerClient, never()).cancel(any());
+        verify(pendingCamundaRequests, never()).withdraw(any());
+    }
+
+    /**
+     * A request db-scheduler no longer holds, or that a scheduler on another node has picked and is sending,
+     * cannot be withdrawn. The task it creates is cancelled through Camunda by the cancellation request the
+     * caller sends alongside this one, so the change this is part of still succeeds.
+     */
+    @Test
+    void shouldDropNothingWhenTheCreateRequestHasAlreadyGone() {
+        stubWaFeatureFlag(true);
+        when(pendingCamundaRequests.withdraw(any())).thenReturn(false);
+
+        assertThatNoException().isThrownBy(() -> camundaService.cancelPendingTaskCreation(
+            TaskType.RECORD_WARRANT_RETURN, TaskReference.of("enforcement-1")));
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType, String taskDescription) {
