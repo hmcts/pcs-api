@@ -50,6 +50,19 @@ public class TranslationWAService {
         camundaService.createTask(caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
     }
 
+    public void createTranslateClaimFormTask(long caseReference) {
+        String description = taskDescriptionService.createTranslateClaimFormDescription(caseReference);
+
+        camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIM_FORM, description);
+    }
+
+    public void createTranslateGenAppFormTask(PcsCaseEntity pcsCaseEntity, GenAppEntity genAppEntity) {
+        long caseReference = pcsCaseEntity.getCaseReference();
+        String description = taskDescriptionService.createTranslateGenAppFormDescription(pcsCaseEntity, genAppEntity);
+
+        camundaService.createTask(caseReference, TaskType.TRANSLATE_GENAPP_FORM, description);
+    }
+
     public void createTranslateClaimantSubmittedDocumentTask(PcsCaseEntity pcsCaseEntity, PartyEntity party,
                                                      List<DocumentEntity> documents) {
         if (documents.isEmpty()) {

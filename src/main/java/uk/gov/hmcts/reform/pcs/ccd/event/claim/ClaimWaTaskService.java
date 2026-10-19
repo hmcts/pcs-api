@@ -48,11 +48,16 @@ public class ClaimWaTaskService {
                     camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
                 }
             }
-            case WELSH, ENGLISH_AND_WELSH -> createTranslationTaskForClaim(pcsCaseEntity, claimEntity);
+            case WELSH, ENGLISH_AND_WELSH -> createTranslationTasksForClaim(pcsCaseEntity, claimEntity, caseReference);
         }
     }
 
-    private void createTranslationTaskForClaim(PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+    private void createTranslationTasksForClaim(PcsCaseEntity pcsCaseEntity,
+                                                ClaimEntity claimEntity,
+                                                long caseReference) {
+
+        translationWAService.createTranslateClaimFormTask(caseReference);
+
         PartyEntity claimant = pcsCaseEntity.getParties().stream()
             .filter(PartyEntity::isClaimCreator)
             .findFirst()
