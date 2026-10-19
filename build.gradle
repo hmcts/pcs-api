@@ -211,6 +211,8 @@ tasks.register('integration', Test) {
   classpath = sourceSets.integrationTest.runtimeClasspath
   maxHeapSize = '1g'
   failFast = true
+  // Spring caches each distinct test context; the default 512m runs out once they all load.
+  maxHeapSize = '1g'
 }
 
 tasks.register('smoke', Test) {

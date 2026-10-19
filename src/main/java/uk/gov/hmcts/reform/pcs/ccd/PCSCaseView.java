@@ -100,6 +100,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
 
+    // The SDK calls this overload, whose default calls getCase(request) on this instance, bypassing its
+    // transaction. Without one, the bundle status query takes a second pooled connection.
     @Override
     @Transactional(readOnly = true)
     public PCSCase getCase(CaseViewRequest<State> request, PCSCase blobCase) {

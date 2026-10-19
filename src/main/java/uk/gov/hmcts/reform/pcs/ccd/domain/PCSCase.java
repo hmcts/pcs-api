@@ -23,8 +23,6 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseDetailsTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -38,9 +36,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
@@ -668,6 +668,9 @@ public class PCSCase {
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
+    @CCD(access = SystemDocumentAccess.class)
+    private List<ListValue<Document>> systemDocuments;
+
     @CCD(
         label = "Case file view",
         access = {DocumentAccess.class}
@@ -770,7 +773,7 @@ public class PCSCase {
     private SummaryTab summaryTab;
 
     @JsonUnwrapped(prefix = "detailsTab_")
-    @CCD(access = {CaseDetailsTabAccess.class})
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
 
     @JsonUnwrapped(prefix = "bundleTab_")

@@ -56,9 +56,7 @@ public class GenAppVisibilityService {
                                                 String organisationId,
                                                 Collection<String> currentUserRoles) {
 
-        // The system user reads case documents for internal purposes (bundling), so it sees what
-        // internal users see.
-        if (isInternalUser(currentUserRoles) || isSystemUser(currentUserRoles)) {
+        if (isInternalUser(currentUserRoles)) {
             return true;
         }
 
@@ -121,16 +119,11 @@ public class GenAppVisibilityService {
             .toList();
     }
 
-    /** Whether the user holds an internal (caseworker or judicial) role; never true for parties. */
-    public boolean isInternalUser(Collection<String> currentUserRoles) {
+    private boolean isInternalUser(Collection<String> currentUserRoles) {
         if (currentUserRoles == null || currentUserRoles.isEmpty()) {
             return false;
         }
 
         return currentUserRoles.stream().anyMatch(INTERNAL_ROLES::contains);
-    }
-
-    private static boolean isSystemUser(Collection<String> currentUserRoles) {
-        return currentUserRoles != null && currentUserRoles.contains(UserRole.SYSTEM_USER.getRole());
     }
 }

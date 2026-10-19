@@ -19,9 +19,4 @@ class PartyVisibleTabAccessTest {
             assertThat(grants.get(role)).contains(Permission.R);
         }
     }
-
-    @Test
-    void shouldNotGrantTheSystemUser() {
-        assertThat(underTest.getGrants().get(UserRole.SYSTEM_USER)).isEmpty();
-    }
 }

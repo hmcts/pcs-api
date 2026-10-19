@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.listener.DocumentEntityListener;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleInvalidation;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -50,7 +51,7 @@ import static jakarta.persistence.FetchType.LAZY;
 // Removing a document sets removed = true, and Hibernate leaves such rows out of every load: by id,
 // by query and through the collections that hold them. The row stays for removal_reason and removed_at.
 @SoftDelete(columnName = "removed")
-@EntityListeners(DocumentEntityListener.class)
+@EntityListeners({DocumentEntityListener.class, CaseBundleInvalidation.class})
 public class DocumentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

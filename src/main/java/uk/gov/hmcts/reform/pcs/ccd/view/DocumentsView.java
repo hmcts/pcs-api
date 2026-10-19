@@ -32,6 +32,11 @@ public class DocumentsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
+        // CDAM only serves a document attached to a case to a user who can see it in the case. Background tasks such
+        // as bulk print and bundling download documents as PCS's IDAM system account, so it sees every document.
+        if (securityContextService.isIdamSystemUser()) {
+            pcsCase.setSystemDocuments(pcsCaseEntity.getDocuments().stream().map(this::toListValue).toList());
+        }
     }
 
     private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
@@ -46,21 +51,26 @@ public class DocumentsView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
                                                                    organisationId))
-            .map(entity -> ListValue.<Document>builder()
-                .id(entity.getId().toString())
-                .value(Document.builder()
-                           .filename(entity.getFileName())
-                           .url(entity.getUrl())
-                           .binaryUrl(entity.getBinaryUrl())
-                           .categoryId(entity.getCategoryId())
-                           .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
-                           .build())
-                .build())
+            .map(this::toListValue)
             .collect(Collectors.toList());
     }
 
+    private ListValue<Document> toListValue(DocumentEntity entity) {
+        return ListValue.<Document>builder()
+            .id(entity.getId().toString())
+            .value(Document.builder()
+                       .filename(entity.getFileName())
+                       .url(entity.getUrl())
+                       .binaryUrl(entity.getBinaryUrl())
+                       .categoryId(entity.getCategoryId())
+                       .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
+                       .build())
+            .build();
+    }
+
     private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
-        if (isExcludedFromCaseFile(documentEntity)) {
+        // Access code letters are only for bulk print, which finds them in systemDocuments.
+        if (documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;
         }
 
@@ -87,13 +97,6 @@ public class DocumentsView {
         }
 
         return true;
-    }
-
-    private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
-        // Access code letters are only for bulk print, which downloads them through CDAM as PCS's IDAM system
-        // account. CDAM only serves a document attached to a case to a user who can see it in the case.
-        return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE
-            && !securityContextService.isIdamSystemUser();
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {

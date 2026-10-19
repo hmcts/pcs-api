@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
-import uk.gov.hmcts.ccd.sdk.bundling.api.BundlePresentation;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleRequest;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
 import uk.gov.hmcts.ccd.sdk.bundling.api.DocumentReference;
@@ -57,7 +56,6 @@ public class CaseBundleRequestFactory {
             .title(BUNDLE_TITLE)
             .fileName(pcsCase.getCaseReference() + "-case-bundle.pdf")
             .root(root.build())
-            .presentation(BundlePresentation.courtDefault())
             // A document that cannot be included gets a page saying so, rather than no bundle.
             .missingDocuments(MissingDocumentPolicy.PLACEHOLDER)
             .build();
@@ -86,27 +84,26 @@ public class CaseBundleRequestFactory {
         BundleDocument.Builder builder = BundleDocument.builder()
             .id(document.getId().toString())
             .title(title(document))
-            .reference(new DocumentReference(CaseBundleScope.CDAM_PROVIDER, document.getDocumentId().toString()));
-        LocalDate date = date(document);
-        if (date != null) {
-            builder.date(date);
-        }
+            .reference(new DocumentReference(CaseBundleScope.CDAM_PROVIDER, document.getDocumentId().toString()))
+            .date(date(document));
         // Audio and video are never fetched: the bundle gets a page linking to the recording.
-        String contentType = document.getContentType();
-        if (contentType != null && (contentType.startsWith("audio/") || contentType.startsWith("video/"))) {
+        if (isRecording(document)) {
             builder.media(MediaPlaceholder.builder()
-                .mediaType(contentType)
+                .mediaType(document.getContentType())
                 .accessUrl(document.getBinaryUrl())
                 .build());
         }
         return builder.build();
     }
 
+    private static boolean isRecording(DocumentEntity document) {
+        String contentType = document.getContentType();
+        return contentType != null && (contentType.startsWith("audio/") || contentType.startsWith("video/"));
+    }
+
     // A recording is represented by a page linking to it, which needs a link.
     private static boolean isUnlinkableMedia(DocumentEntity document) {
-        String contentType = document.getContentType();
-        return contentType != null && (contentType.startsWith("audio/") || contentType.startsWith("video/"))
-            && StringUtils.isBlank(document.getBinaryUrl());
+        return isRecording(document) && StringUtils.isBlank(document.getBinaryUrl());
     }
 
     private static String title(DocumentEntity document) {

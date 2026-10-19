@@ -153,21 +153,43 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shouldShowAccessCodeLettersToTheSystemUser() {
+    void shouldGiveTheSystemUserEveryDocumentInSystemDocuments() {
         DocumentEntity accessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("access-code-letter.pdf")
             .url("pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter));
+        DocumentEntity unissuedCounterClaimDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("counter-claim.pdf")
+            .url("counter-claim-url")
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED).build())
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter, unissuedCounterClaimDocument));
         when(securityContextService.isIdamSystemUser()).thenReturn(true);
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
-        assertThat(pcsCase.getAllDocuments()).singleElement()
-            .satisfies(document -> assertThat(document.getValue().getFilename())
-                .isEqualTo("access-code-letter.pdf"));
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+        assertThat(pcsCase.getSystemDocuments())
+            .extracting(document -> document.getValue().getFilename())
+            .containsExactly("access-code-letter.pdf", "counter-claim.pdf");
+    }
+
+    @Test
+    void shouldNotGiveOtherUsersSystemDocuments() {
+        DocumentEntity document = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("claim.pdf")
+            .url("claim-url")
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(document));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).hasSize(1);
+        assertThat(pcsCase.getSystemDocuments()).isNull();
     }
 
     @Test

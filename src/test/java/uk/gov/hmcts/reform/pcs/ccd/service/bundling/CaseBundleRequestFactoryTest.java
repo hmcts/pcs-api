@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
-import java.time.LocalDateTime;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -66,17 +65,15 @@ class CaseBundleRequestFactoryTest {
     }
 
     @Test
-    void shouldLeaveOutRemovedAccessCodeAndNonCdamDocuments() {
+    void shouldLeaveOutAccessCodeAndNonCdamDocuments() {
         final DocumentEntity kept = document("kept.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
-        DocumentEntity removed = document("removed.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
-        removed.setRemovedAt(LocalDateTime.now());
         DocumentEntity accessCode = document("code.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         accessCode.setType(DocumentType.DEFENDANT_ACCESS_CODE);
 
         DocumentEntity nonCdam = document("external.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         nonCdam.setDocumentId(null);
 
-        BundleRequest request = underTest.build(JOB_ID, caseWith(kept, removed, accessCode, nonCdam));
+        BundleRequest request = underTest.build(JOB_ID, caseWith(kept, accessCode, nonCdam));
 
         assertThat(request.allDocuments()).extracting(BundleDocument::title).containsExactly("kept.pdf");
     }
@@ -113,34 +110,6 @@ class CaseBundleRequestFactoryTest {
         assertThat(titles(request, "Evidence")).containsExactly("Witness statement", "Document");
     }
 
-    private static PcsCaseEntity caseWith(DocumentEntity... documents) {
-        PcsCaseEntity pcsCase = new PcsCaseEntity();
-        pcsCase.setCaseReference(1234567812345678L);
-        pcsCase.addDocuments(List.of(documents));
-        return pcsCase;
-    }
-
-    private static DocumentEntity document(String fileName, CaseFileCategory category, LocalDate issueDate) {
-        UUID cdamId = UUID.randomUUID();
-        return DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .documentId(cdamId)
-            .fileName(fileName)
-            .categoryId(category.getId())
-            .binaryUrl("http://cdam/cases/documents/" + cdamId + "/binary")
-            .issueDate(issueDate)
-            .submittedDate(Instant.parse("2026-01-01T00:00:00Z"))
-            .build();
-    }
-
-    private static BundleSection section(BundleRequest request, String title) {
-        return request.root().sections().stream().filter(s -> s.title().equals(title)).findFirst().orElseThrow();
-    }
-
-    private static List<String> titles(BundleRequest request, String folder) {
-        return section(request, folder).documents().stream().map(BundleDocument::title).toList();
-    }
-
     @Test
     void shouldLeaveOutDocumentsOfUnissuedApplicationsAndCounterclaims() {
         DocumentEntity issuedApp = document("issued-app.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 1, 1));
@@ -173,6 +142,34 @@ class CaseBundleRequestFactoryTest {
         BundleRequest request = underTest.build(JOB_ID, caseWith(recording));
 
         assertThat(request.allDocuments()).isEmpty();
+    }
+
+    private static PcsCaseEntity caseWith(DocumentEntity... documents) {
+        PcsCaseEntity pcsCase = new PcsCaseEntity();
+        pcsCase.setCaseReference(1234567812345678L);
+        pcsCase.addDocuments(List.of(documents));
+        return pcsCase;
+    }
+
+    private static DocumentEntity document(String fileName, CaseFileCategory category, LocalDate issueDate) {
+        UUID cdamId = UUID.randomUUID();
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .documentId(cdamId)
+            .fileName(fileName)
+            .categoryId(category.getId())
+            .binaryUrl("http://cdam/cases/documents/" + cdamId + "/binary")
+            .issueDate(issueDate)
+            .submittedDate(Instant.parse("2026-01-01T00:00:00Z"))
+            .build();
+    }
+
+    private static BundleSection section(BundleRequest request, String title) {
+        return request.root().sections().stream().filter(s -> s.title().equals(title)).findFirst().orElseThrow();
+    }
+
+    private static List<String> titles(BundleRequest request, String folder) {
+        return section(request, folder).documents().stream().map(BundleDocument::title).toList();
     }
 
     private static GenAppEntity genApp(GenAppState state, VerticalYesNo withoutNotice) {

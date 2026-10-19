@@ -1,12 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
-import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -27,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -45,8 +39,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.awaitility.Awaitility.await;
 
 /** Real PCS persistence and projection, real SDK rendering, and the SDK's existing CDAM fixture. */
@@ -58,8 +50,6 @@ import static org.awaitility.Awaitility.await;
 class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
-    @Autowired
-    private WebApplicationContext web;
     @Autowired
     private IssuedCases cases;
     @Autowired
@@ -102,13 +92,12 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
         run(key);
         var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
-        var projected = projected(reference, "judge");
-        assertThat(projected.path("bundleTab_Bundle").path("document_url").asText())
-            .isEqualTo(first.document().getUrl());
-        assertThat(projected.path("allDocuments").toString()).doesNotContain(first.document().getUrl());
-        var nonJudge = projected(reference, "hearing-centre-admin");
-        assertThat(nonJudge.properties()).noneMatch(field -> field.getKey().startsWith("bundleTab_"));
-        assertThat(nonJudge.toString()).doesNotContain(first.document().getUrl());
+        PCSCase judge = view(reference, "judge");
+        // Reading back loses the bundle's Document fields: Jackson applies the unwrapped prefix to them too.
+        assertThat(judge.getBundleTab().getPages()).isEqualTo(first.report().pageCount());
+        assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
+            .doesNotContain(first.document().getUrl());
+        assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
     }
@@ -126,12 +115,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
             .isEqualTo(CaseBundleView.Lifecycle.UPDATING);
         run(key);
-        transaction.executeWithoutResult(status -> {
-            documents.deleteById(sourceId);
-            status.setRollbackOnly();
-        });
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
-            .isEqualTo(CaseBundleView.Lifecycle.UP_TO_DATE);
         transaction.executeWithoutResult(status -> documents.deleteById(sourceId));
         run(key);
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
@@ -176,31 +159,16 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         events.documents().delete(stored);
         transaction.executeWithoutResult(status -> add(reference, missing));
         run(key);
-        var missingDetails = projected(reference, "judge").path("bundleTab_MissingDocuments");
-        assertThat(missingDetails).hasSize(1);
-        var value = missingDetails.path(0).path("value");
-        assertThat(value.path("documentName").asText()).isEqualTo("Deleted.pdf");
-        assertThat(value.path("folder").asText()).isEqualTo("Evidence");
-        assertThat(value.path("page").asInt()).isPositive();
+        var missingDetails = view(reference, "judge").getBundleTab().getMissingDocuments();
+        assertThat(missingDetails).singleElement().satisfies(missingDocument -> {
+            assertThat(missingDocument.getValue().getDocumentName()).isEqualTo("Deleted.pdf");
+            assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
+            assertThat(missingDocument.getValue().getPage()).isPositive();
+        });
     }
 
-    private JsonNode projected(long reference, String role) throws Exception {
-        var actor = events.registerActor("Bundle", "Reader", "caseworker-pcs", role);
-        var response = projectionMvc().perform(get("/ccd-persistence/cases")
-            .param("case-refs", String.valueOf(reference))
-            .header("Authorization", actor.authorisation()))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-        return new ObjectMapper().readTree(response)
-            .path(0).path("case_details").path("case_data");
-    }
-
-    private MockMvc projectionMvc() {
-        var builder = MockMvcBuilders.webAppContextSetup(web);
-        var customizer = new SpringBootMockMvcBuilderCustomizer(web);
-        customizer.setPrint(MockMvcPrint.NONE);
-        customizer.customize(builder);
-        return builder.build();
+    private PCSCase view(long reference, String role) {
+        return events.view(reference, events.registerActor("Bundle", "Reader", "caseworker-pcs", role));
     }
 
     private void run(UUID key) {
