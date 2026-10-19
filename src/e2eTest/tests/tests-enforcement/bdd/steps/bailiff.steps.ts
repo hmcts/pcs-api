@@ -278,7 +278,7 @@ Then('I see {string}', async ({ page, world, $tags }, result: string) => {
       return;
     default:
       if (isEvictionResult(result)) {
-        return expectEvictionResult(page, result);
+        return expectEvictionResult(page, world, result);
       }
       return markPending({ summary: `asserting "${result}"` }, $tags);
   }

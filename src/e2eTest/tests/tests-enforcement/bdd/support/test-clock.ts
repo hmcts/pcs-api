@@ -13,7 +13,12 @@
  *
  * The offset is process wide, not per case or per user, so a scenario that moves the clock cannot run
  * alongside one that depends on the real date. `resetClockIfMoved` puts it back after every scenario that
- * moved it (fixtures/enforcement.fixtures.ts), but the scenarios below still have to run on their own worker.
+ * moved it (fixtures/enforcement.fixtures.ts), and the scenarios that move it are tagged `@clock` so that the
+ * suite runs them on their own, on a single worker (scripts/run-enforcement-bdd.ts).
+ *
+ * The endpoint only exists where pcs-api is run with `ENABLE_TESTING_SUPPORT_CLOCK`: the local cftlib stack
+ * (build.gradle) and a per-PR preview (charts/pcs-api/values.preview.template.yaml). AAT is shared, so it
+ * keeps the real clock and the `@clock` scenarios are not run there.
  */
 import Axios from 'axios';
 import { expect } from '@playwright/test';
@@ -67,15 +72,18 @@ export async function setClockToUkDateTime(date: string, time: string): Promise<
   return setClock({ dateTime });
 }
 
-/** Puts pcs-api's clock back on the real time, if this worker moved it. */
+/**
+ * Puts pcs-api's clock back on the real time, if this worker moved it. The clock is only recorded as back on
+ * the real time once the reset has been accepted, so a failed reset is tried again after the next scenario.
+ */
 export async function resetClockIfMoved(): Promise<void> {
   if (!clockMoved) {
     return;
   }
-  clockMoved = false;
   const response = await Axios.delete(clockUrl(), {
     headers: serviceAuthHeaders(),
     validateStatus: () => true,
   });
   expect(response.status, 'putting the pcs-api clock back on the real time').toBe(200);
+  clockMoved = false;
 }
