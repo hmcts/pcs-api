@@ -15,6 +15,7 @@ import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-e
 import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@data/api-data';
 import { caseSummary } from '@data/page-data';
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
+import { backgroundSetUp } from './demo-continuity';
 import { ensureSignedIn, signInAs as signInAsUser } from './session';
 import {
   basicClaimFixtureClaim,
@@ -82,14 +83,16 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
 
 /** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */
 export async function createIssuedCase(world: EnforcementWorld): Promise<void> {
-  const submitPayload = isLocalStack() ? await createIssuedCaseLocally() : await createIssuedCaseFromClaimPayload();
-  await performAction('getDefendantDetails', {
-    defendant1NameKnown: submitPayload.defendant1.nameKnown,
-    additionalDefendants: submitPayload.addAnotherDefendant,
-    payLoad: submitPayload,
+  await backgroundSetUp(async () => {
+    const submitPayload = isLocalStack() ? await createIssuedCaseLocally() : await createIssuedCaseFromClaimPayload();
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: submitPayload.defendant1.nameKnown,
+      additionalDefendants: submitPayload.addAnotherDefendant,
+      payLoad: submitPayload,
+    });
+    world.caseReference = caseInfo.id;
+    world.submitPayload = submitPayload as SubmitCasePayload;
   });
-  world.caseReference = caseInfo.id;
-  world.submitPayload = submitPayload as SubmitCasePayload;
 }
 
 async function createIssuedCaseFromClaimPayload(): Promise<SubmitCasePayload> {
@@ -142,12 +145,14 @@ export async function seedWarrantApplication(world: EnforcementWorld): Promise<v
  * by an `enforceTheOrder` API call.
  */
 export async function createCaseWithWarrant(world: EnforcementWorld): Promise<void> {
-  if (isLocalStack()) {
-    await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWarrant);
-    return;
-  }
-  await createIssuedCase(world);
-  await seedWarrantApplication(world);
+  await backgroundSetUp(async () => {
+    if (isLocalStack()) {
+      await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWarrant);
+      return;
+    }
+    await createIssuedCase(world);
+    await seedWarrantApplication(world);
+  });
 }
 
 /**
@@ -157,7 +162,7 @@ export async function createCaseWithWarrant(world: EnforcementWorld): Promise<vo
  * writ application.
  */
 export async function createCaseWithWrit(world: EnforcementWorld): Promise<void> {
-  await createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWrit);
+  await backgroundSetUp(async () => createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWrit));
 }
 
 async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture: TestCaseFixture): Promise<void> {

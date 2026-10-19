@@ -21,6 +21,7 @@ import {
   localUsers,
 } from '@config/local-stack.config';
 import { createCaseWithWarrant, openCaseSummary, requireCaseReference, startEvent } from './enforcement-journeys';
+import { backgroundSetUp } from './demo-continuity';
 import { recordEnforcementFeePaid } from './decide-enforcement';
 import { ccdDateTime, confirmationValue, slashedDate, submitEventAs } from './event-api';
 import {
@@ -304,7 +305,7 @@ export async function allocateBailiff(world: EnforcementWorld, email: string = l
  */
 export async function setUpWarrantAtStatus(world: EnforcementWorld, status: string): Promise<void> {
   try {
-    await driveWarrantToStatus(world, status);
+    await backgroundSetUp(async () => driveWarrantToStatus(world, status));
   } finally {
     expectClaimantNext();
   }
@@ -370,11 +371,13 @@ export async function scheduleEvictionOnApprovedWarrant(
 ): Promise<void> {
   expect(world.warrantApproved, 'an approved warrant to schedule the eviction on').toBe(true);
   try {
-    if (!world.allocatedBailiff) {
-      await allocateBailiff(world);
-      approximatePrecondition('HDPI-7356', 'the bailiff was allocated through pcs-api testing support');
-    }
-    await scheduleEvictionAsBailiff(world, 14, dispenseWithService);
+    await backgroundSetUp(async () => {
+      if (!world.allocatedBailiff) {
+        await allocateBailiff(world);
+        approximatePrecondition('HDPI-7356', 'the bailiff was allocated through pcs-api testing support');
+      }
+      await scheduleEvictionAsBailiff(world, 14, dispenseWithService);
+    });
   } finally {
     expectClaimantNext();
   }

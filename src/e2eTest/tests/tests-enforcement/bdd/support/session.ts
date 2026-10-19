@@ -20,6 +20,7 @@ import { performAction as performCommonAction } from '@utils/controller';
 import { performAction } from '@utils/controller-enforcement';
 import { withoutPagePacing } from '@utils/page-pacing';
 import { showDemoCaptionStatus } from './demo-captions';
+import { noteSignedInRole, restoreSession } from './demo-continuity';
 import { userId } from './event-api';
 
 export const CLAIMANT_LEGAL_REPRESENTATIVE = 'claimant legal representative';
@@ -93,6 +94,7 @@ export function expectSignedInAs(name: string): void {
 export function resetSession(): void {
   signedInRole = CLAIMANT_LEGAL_REPRESENTATIVE;
   expectedRole = CLAIMANT_LEGAL_REPRESENTATIVE;
+  noteSignedInRole(CLAIMANT_LEGAL_REPRESENTATIVE);
   defendantLinkedCases.clear();
 }
 
@@ -106,6 +108,10 @@ export async function signInAs(name: string, page: Page): Promise<void> {
  * Signs the browser in as the expected user if it is someone else; does nothing if it already is. A defendant
  * legal representative is first linked to the scenario's case so that they can open it: by Notice of Change on
  * AAT, by a [DEFENDANTSOLICITOR] case role on a local stack.
+ *
+ * In the demo project the session an earlier scenario of the same feature left signed in as this user is
+ * carried into this one instead, so the video does not show the same sign-in once per scenario
+ * (demo-continuity.ts). Everywhere else, and whenever XUI no longer knows that session, the sign-in runs.
  */
 export async function ensureSignedIn(page: Page): Promise<void> {
   const role = expectedRole;
@@ -116,8 +122,11 @@ export async function ensureSignedIn(page: Page): Promise<void> {
   if (signedInRole === role) {
     return;
   }
-  await signInFresh(email, page);
+  if (!(await restoreSession(role, page.context()))) {
+    await signInFresh(email, page);
+  }
   signedInRole = role;
+  noteSignedInRole(role);
 }
 
 async function linkDefendantLegalRepresentative(email: string): Promise<void> {
