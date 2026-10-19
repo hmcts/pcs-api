@@ -33,6 +33,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "enf_warrant")
+@SuppressWarnings({"java:S1133", "java:S6355"})
 public class WarrantEntity {
 
     @Id
@@ -44,16 +45,32 @@ public class WarrantEntity {
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
 
-    // UI Control Flags
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
-    // Language & Status
+    /**
+     * Indicates whether the order is suspended.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isSuspendedOrder;
