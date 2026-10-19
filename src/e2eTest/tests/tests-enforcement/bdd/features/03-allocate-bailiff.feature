@@ -1,6 +1,6 @@
 # Built in pcs-api as the allocateBailiff event, and drivable on a local cftlib stack: the bailiff manager signs in
 # as a seeded cftlib user, and the StaffUser type-ahead lists the cftlib bailiff users from wiremock's staff
-# reference data stub. "Sam Jones" is played by the local bailiff user. The background's WA task is approximated
+# reference data stub. The local bailiff user is seeded as "Sam Jones". The background's WA task is approximated
 # (HDPI-8627). Still @pending: opening the task (HDPI-8627), the allocated-bailiff case role and the "Roles and
 # access" tab (HDPI-8189), and a bailiff with ~500 case roles (HDPI-8011).
 @HDPI-7342 @enforcement @bailiff @work-allocation

@@ -126,9 +126,15 @@ Four things differ from an AAT run, all handled by the `ENVIRONMENT=local` branc
 
 ### Bailiff users
 
+The bailiff is seeded as **Sam Jones** at `sam.jones@justice.gov.uk`, the name and address the feature files
+give the bailiff, so that the screen says what the Gherkin does. The name comes from
+[`CftlibConfig`](../../../../cftlib/java/uk/gov/hmcts/reform/pcs/CftlibConfig.java) (IDAM) and
+[wiremock's staff reference data stub](../../../../../wiremock/mappings/rd-professional/get-users-by-service-name.json)
+(the StaffUser type-ahead), which have to agree.
+
 | Email | RAS organisation role |
 |---|---|
-| `pcs-bailiff@localhost` | `bailiff` |
+| `sam.jones@justice.gov.uk` | `bailiff` |
 | `pcs-bailiff-admin@localhost` | `bailiff-admin` |
 | `pcs-bailiff-manager@localhost` | `bailiff-manager`, `task-supervisor` |
 | `caseworker@pcs.com` | `hearing-centre-admin`, `ctsc-team-leader` |

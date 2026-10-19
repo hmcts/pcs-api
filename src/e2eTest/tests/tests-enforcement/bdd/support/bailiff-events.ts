@@ -54,7 +54,8 @@ export const findBailiff = {
 
 /**
  * The local user standing in for a bailiff the feature files name. Only one cftlib user has the `bailiff`
- * role, so only the feature's main bailiff has a stand-in. The feature's email addresses are illustrative.
+ * role, so only the feature's main bailiff has a stand-in: that user is seeded as Sam Jones, the name and
+ * email address the features use, so the screen matches them.
  */
 const featureBailiffs: Record<string, string> = {
   'Sam Jones': localUsers.bailiff,

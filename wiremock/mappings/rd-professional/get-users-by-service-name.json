@@ -58,9 +58,9 @@
       {
         "ccd_service_name": "PCS",
         "staff_profile": {
-          "id": "60d20156-049f-3f7f-881d-fce79ba89b76",
-          "first_name": "Bob",
-          "last_name": "Bailiff",
+          "id": "39d73e7f-842b-3c7f-874d-2a3d3c627310",
+          "first_name": "Sam",
+          "last_name": "Jones",
           "region_id": 1,
           "user_type": "ENFORCEMENT",
           "suspended": "false",
@@ -69,7 +69,7 @@
           "staff_admin": "N",
           "created_time": "2026-10-18T09:00:00.000000",
           "last_updated_time": "2026-10-18T09:00:00.000000",
-          "email_id": "pcs-bailiff@localhost",
+          "email_id": "sam.jones@justice.gov.uk",
           "region": "London",
           "base_location": [
             {
