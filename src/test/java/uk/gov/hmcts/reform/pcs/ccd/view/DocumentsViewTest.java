@@ -150,6 +150,7 @@ class DocumentsViewTest {
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+        assertThat(pcsCase.getSystemDocuments()).isNull();
     }
 
     @Test
@@ -175,21 +176,6 @@ class DocumentsViewTest {
         assertThat(pcsCase.getSystemDocuments())
             .extracting(document -> document.getValue().getFilename())
             .containsExactly("access-code-letter.pdf", "counter-claim.pdf");
-    }
-
-    @Test
-    void shouldNotGiveOtherUsersSystemDocuments() {
-        DocumentEntity document = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .fileName("claim.pdf")
-            .url("claim-url")
-            .build();
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(document));
-
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        assertThat(pcsCase.getAllDocuments()).hasSize(1);
-        assertThat(pcsCase.getSystemDocuments()).isNull();
     }
 
     @Test

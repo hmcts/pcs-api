@@ -129,14 +129,18 @@ class CaseBundleDefinitionTest {
     }
 
     @Test
-    void shouldLeaveOutRecordingsWithNoLink() {
-        DocumentEntity recording = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
-        recording.setContentType("audio/mpeg");
-        recording.setBinaryUrl(" ");
+    void shouldFetchARecordingItCannotLinkTo() {
+        DocumentEntity unlinked = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
+        unlinked.setContentType("audio/mpeg");
+        unlinked.setBinaryUrl(" ");
+        DocumentEntity unsupported = document("inspection.mov", CaseFileCategory.HEARING_DOCUMENTS, null);
+        unsupported.setContentType("video/quicktime");
 
-        BundleRequest request = CaseBundleDefinition.build(caseWith(recording));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(unlinked, unsupported));
 
-        assertThat(request.allDocuments()).isEmpty();
+        // Fetched, so an unsupported recording becomes a missing-document page rather than failing the bundle.
+        assertThat(section(request, "Hearing documents").documents())
+            .hasSize(2).allSatisfy(document -> assertThat(document.media()).isEmpty());
     }
 
     private static PcsCaseEntity caseWith(DocumentEntity... documents) {
