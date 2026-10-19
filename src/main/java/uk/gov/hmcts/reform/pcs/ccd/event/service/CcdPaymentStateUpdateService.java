@@ -15,13 +15,11 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CcdPaymentStateUpdateTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTask;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTask.CCD_PAYMENT_DATE_TASK_DESCRIPTOR;
 
 @AllArgsConstructor
