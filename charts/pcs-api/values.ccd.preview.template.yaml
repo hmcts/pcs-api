@@ -343,7 +343,8 @@ aac-manage-case-assignment:
 pcs-frontend:
   enabled: true
   nodejs:
-    image: 'hmctsprod.azurecr.io/pcs/frontend:latest'
+    image: ${PCS_FRONTEND_IMAGE}
+    imagePullPolicy: Always
     ingressHost: pcs-frontend-${SERVICE_FQDN}
     keyVaults:
       pcs:
@@ -365,6 +366,9 @@ pcs-frontend:
       PAYMENT_RETURN_URL: https://pcs-frontend-${SERVICE_FQDN}/payment/return
       CUI_RA_CALLBACK_URL: https://pcs-frontend-${SERVICE_FQDN}/case/:caseReference/respond-to-claim/reasonable-adjustments/callback/:id
       CUI_RA_LOGOUT_URL: https://pcs-frontend-${SERVICE_FQDN}/logout
+      # Must match pcs-api's LAUNCHDARKLY_ENV, or an environment-targeted flag resolves
+      # differently in the UI than in the API within the same preview.
+      LAUNCHDARKLY_ENV: ${SERVICE_NAME}
   redis:
     image:
       registry: hmctsprod.azurecr.io

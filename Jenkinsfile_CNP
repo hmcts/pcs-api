@@ -244,7 +244,13 @@ withPipeline(type, product, component) {
     if (env.CCD_ENABLED == "true") {
       dir('pcs-frontend-e2e') {
         deleteDir()
-        sh 'git clone --depth=1 --branch=master https://github.com/hmcts/pcs-frontend.git .'
+        sh """
+          git init -q .
+          git remote add origin https://github.com/hmcts/pcs-frontend.git
+          git fetch -q --depth=1 origin ${env.PCS_FRONTEND_E2E_REF}
+          git checkout -q FETCH_HEAD
+          git log --oneline -1
+        """
 
         withEnv([
           "NODE_CONFIG_ENV=test",
@@ -311,9 +317,27 @@ def setPreviewEnvVars(githubApi) {
 
   def frontendLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pcs-frontend-pr:")
   if (frontendLabels && frontendLabels.size() > 0) {
-    def labelName = frontendLabels[0]
-    def PCS_FRONTEND_CHANGE_ID = labelName.replace("pcs-frontend-pr:", "")
-    env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+    env.PCS_FRONTEND_CHANGE_ID = frontendLabels[0].replace("pcs-frontend-pr:", "")
+  }
+
+  // The image the pcs-frontend subchart deploys into this preview, and the ref its E2E suite
+  // is taken from. A pcs-frontend-pr:<id> label pins both to that frontend PR so an API change
+  // can be tested against an unmerged frontend change; otherwise both track frontend master.
+  if (env.PCS_FRONTEND_CHANGE_ID) {
+    env.PCS_FRONTEND_IMAGE = "hmctsprod.azurecr.io/pcs/frontend:pr-${env.PCS_FRONTEND_CHANGE_ID}"
+    env.PCS_FRONTEND_E2E_REF = "refs/pull/${env.PCS_FRONTEND_CHANGE_ID}/head"
+  } else {
+    env.PCS_FRONTEND_IMAGE = "hmctsprod.azurecr.io/pcs/frontend:latest"
+    env.PCS_FRONTEND_E2E_REF = "refs/heads/master"
+  }
+
+  // With pr-values:ccd the frontend is deployed into this preview, so pcs-api and XUI must hand
+  // out links to that instance rather than to AAT, or any journey that follows an API-generated
+  // link leaves the preview for a frontend talking to AAT CCD where the case does not exist.
+  if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  } else if (env.PCS_FRONTEND_CHANGE_ID) {
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${env.PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
   } else {
     env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
   }
