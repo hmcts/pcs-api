@@ -185,6 +185,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldSkipCcdDeletionForDraftDiscardedCases() {
         // Given
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1, State.DRAFT_DISCARDED)));
 
