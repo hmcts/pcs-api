@@ -118,8 +118,11 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         List<EnforcementOrderEntity> enforcements = enforcementOrderRepository.findByClaimId(claim.getId());
         assertThat(enforcements).hasSize(1);
         UUID enforcementId = enforcements.getFirst().getId();
+        // Scoped to this claim: the enforcements other test classes commit leave their own rows behind.
         assertThat(jdbcTemplate.queryForList(
-            "SELECT enf_case_id FROM " + childTable, UUID.class))
+            "SELECT enf_case_id FROM " + childTable
+                + " WHERE enf_case_id IN (SELECT id FROM enf_case WHERE claim_id = ?)",
+            UUID.class, claim.getId()))
             .containsExactly(enforcementId);
         assertThat(jdbcTemplate.queryForObject(
             "SELECT submitted_at = status_updated_at FROM enf_case WHERE id = ?", Boolean.class, enforcementId))
