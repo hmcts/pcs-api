@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
@@ -74,6 +75,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final TaskCompletionService taskCompletionService;
     private final CaseNoteService caseNoteService;
     private final OrderDocumentService orderDocumentService;
+    private final MessageService messageService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -147,6 +149,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             order.getPcsCase().findGenApp(order.getGenAppId()).orElseThrow()
                 .setOutcome(ApplicationOutcome.of(issue.order().formData().get(ApplicationOutcome.DECISION_FIELD)));
         }
+        messageService.closeOrderMessage(order, caseworker.getName());
         if (!issue.reviewDates().isEmpty()) {
             caseReviewDateService.addCaseReviewDates(order.getPcsCase().getCaseReference(),
                 issue.reviewDates().stream().map(ConfirmOrderReview::toReviewDate).toList());

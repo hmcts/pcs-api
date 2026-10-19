@@ -259,6 +259,26 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    /**
+     * A message for a role's pool to review: who sent it, its subject, and links to the case's Messages tab and, for a
+     * message about an application, to deciding that application with an order.
+     */
+    public String createReviewMessageDescription(String senderName,
+                                                 String subject,
+                                                 boolean urgent,
+                                                 String messagesUrl,
+                                                 String application,
+                                                 String decideUrl) {
+        Map<String, Object> context = new HashMap<>();
+        context.put("senderName", senderName);
+        context.put("subject", subject);
+        context.put("urgent", urgent);
+        context.put("messagesUrl", messagesUrl);
+        context.put("application", application);
+        context.put("decideUrl", decideUrl);
+        return renderTemplate("review-message", context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();

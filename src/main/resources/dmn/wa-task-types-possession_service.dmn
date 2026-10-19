@@ -218,6 +218,28 @@
           <text>"Decide application"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_msgd77dzjq">
+        <inputEntry id="UnaryTests_msgd0m5ab9">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msg61kwgta">
+          <text>"ReviewMessageJudge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgp3qx01w">
+          <text>"Review message"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_msglv89kb2">
+        <inputEntry id="UnaryTests_msgdn1ab13">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msgv9lruqh">
+          <text>"ReviewMessageStaff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgc607srg">
+          <text>"Review message"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1rb7ro7">
         <inputEntry id="UnaryTests_1pdvjve">
           <text></text>

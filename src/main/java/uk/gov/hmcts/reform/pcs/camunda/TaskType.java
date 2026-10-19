@@ -153,6 +153,22 @@ public enum TaskType {
             Court staff referred a general application to you. Read it, then make an order deciding it.
             The task will close when you send the order to court staff for review.
             """
+    ),
+    REVIEW_MESSAGE_JUDGE(
+        "ReviewMessageJudge",
+        "Review message",
+        """
+            Court staff sent you a message. Read it on the case's Messages tab, then reply to it or close it.
+            The task will close when you reply to or close the message.
+            """
+    ),
+    REVIEW_MESSAGE_STAFF(
+        "ReviewMessageStaff",
+        "Review message",
+        """
+            You have a message on the case. Read it on the case's Messages tab, then reply to it or close it.
+            The task will close when you reply to or close the message.
+            """
     );
 
     private final String id;

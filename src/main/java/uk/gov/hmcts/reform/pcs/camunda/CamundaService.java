@@ -87,6 +87,18 @@ public class CamundaService {
         createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee);
     }
 
+    /** Creates a task for a role's pool that is urgent or not, which the configuration DMN prioritises. */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, boolean urgent) {
+        scheduleCamundaRequest(CamundaRequestTaskData.builder()
+            .action(Action.CREATE)
+            .caseReference(caseId)
+            .taskType(taskType)
+            .taskDescription(taskDescription)
+            .idempotencyKey(UUID.randomUUID())
+            .urgent(urgent)
+            .build(), Instant.now(utcClock));
+    }
+
     private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
                             String assignee) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
@@ -117,7 +129,8 @@ public class CamundaService {
                 taskData.getTaskType(),
                 taskData.getTaskDescription(),
                 taskData.getIdempotencyKey(),
-                taskData.getAssignee()
+                taskData.getAssignee(),
+                taskData.getUrgent()
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
@@ -140,7 +153,7 @@ public class CamundaService {
     }
 
     private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
-                                     String assignee) {
+                                     String assignee, Boolean urgent) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -177,6 +190,9 @@ public class CamundaService {
         // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
         if (assignee != null) {
             processVariables.put("assigneeId", dmnStringValue(assignee));
+        }
+        if (urgent != null) {
+            processVariables.put("urgent", dmnStringValue(urgent ? "Yes" : "No"));
         }
 
         // Default values - WA task due date is configured in configuration dmn

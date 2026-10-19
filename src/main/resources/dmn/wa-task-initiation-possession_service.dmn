@@ -1256,6 +1256,94 @@ else
           <text>"JUDICIAL"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_msghmfwpb3">
+        <inputEntry id="UnaryTests_msg9n92lx9">
+          <text>"referGenAppToJudge"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msg70wncr2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msg5dz2sej">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgmrzqwdv">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msg8ttelny">
+          <text>A message is sent to a judge</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgh5tr9qy">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgcbx5zf6">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msgrbq599p">
+          <text>"ReviewMessageJudge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgyrw9wf2">
+          <text>"Review message"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgoiwd76p">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msglzzj44l">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msg6uw9bib">
+          <text>"ReviewMessageJudge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgukicvfb">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgchyz5ha">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_msg43fyfyn">
+        <inputEntry id="UnaryTests_msg7yn3slb">
+          <text>"referGenAppToJudge"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgtbd2qg3">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msg25jym3y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgp8k5idm">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgefn3d9m">
+          <text>A message is sent to court staff</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgory785b">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgty9wpqm">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msg3l50sep">
+          <text>"ReviewMessageStaff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msghwgb3on">
+          <text>"Review message"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgup6at1l">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msg7t74gxy">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgol2fa62">
+          <text>"ReviewMessageStaff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msg4f8u6w4">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgid4j1ig">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
     </decisionTable>
   </decision>
   <dmndi:DMNDI>

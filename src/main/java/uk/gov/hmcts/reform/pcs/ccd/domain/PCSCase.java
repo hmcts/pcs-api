@@ -50,6 +50,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageAction;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
@@ -727,6 +730,70 @@ public class PCSCase {
         typeOverride = TextArea
     )
     private String referGenAppNote;
+
+    @CCD(label = "Do you want to send or reply to a message?",
+        searchable = false,
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "MessageAction"
+    )
+    private MessageAction messageAction;
+
+    @CCD(label = "What does the message relate to?",
+        hint = "Select all that apply",
+        searchable = false,
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "MessageCategory"
+    )
+    private Set<MessageCategory> messageCategories;
+
+    @CCD(label = "Which application?", searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList messageGenAppList;
+
+    @CCD(label = "Who is the message for?",
+        searchable = false,
+        typeOverride = FixedList,
+        typeParameterOverride = "MessageRecipient"
+    )
+    private MessageRecipient messageRecipient;
+
+    @CCD(label = "Subject", hint = "You can enter up to 60 characters", searchable = false)
+    private String messageSubject;
+
+    @CCD(label = "Is the message urgent?", searchable = false)
+    private VerticalYesNo messageUrgent;
+
+    @CCD(label = "Message", hint = "You can enter up to 750 characters", searchable = false,
+        typeOverride = TextArea)
+    private String messageBody;
+
+    @CCD(label = "Which message are you replying to?", searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList messageReplyList;
+
+    @CCD(searchable = false)
+    private String messageSummaryMarkdown;
+
+    @CCD(label = "Do you need to reply?", searchable = false)
+    private VerticalYesNo messageNeedReply;
+
+    @CCD(label = "Who is the reply for?",
+        searchable = false,
+        typeOverride = FixedList,
+        typeParameterOverride = "MessageRecipient"
+    )
+    private MessageRecipient messageReplyRecipient;
+
+    @CCD(label = "Is the reply urgent?", searchable = false)
+    private VerticalYesNo messageReplyUrgent;
+
+    @CCD(label = "Reply", hint = "You can enter up to 750 characters", searchable = false, typeOverride = TextArea)
+    private String messageReply;
+
+    @CCD(label = "Note for closing the message (optional)", hint = "You can enter up to 250 characters",
+        searchable = false, typeOverride = TextArea)
+    private String messageClosureNote;
+
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String messagesMarkdown;
 
     @CCD(
         label = "Search Criteria",

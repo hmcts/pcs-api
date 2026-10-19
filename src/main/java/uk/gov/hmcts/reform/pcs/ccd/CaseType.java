@@ -203,6 +203,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSupportTab(builder);
 
+        builder.tab("Messages", "Messages")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .label("messagesMarkdownLabel", null, "${messagesMarkdown}")
+            .field("messagesMarkdown", NEVER_SHOW);
+      
         builder.tab("paymentHistory", "Payment History")
             .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
