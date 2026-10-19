@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.util.List;
@@ -45,6 +46,8 @@ class StartEventHandlerTest {
     private LegalRepresentativeService legalRepresentativeService;
     @Mock
     private FeeApplier feeApplier;
+    @Mock
+    private FeatureToggleService featureToggleService;
     @Captor
     private ArgumentCaptor<BiConsumer<PCSCase, String>> feeSetterCaptor;
 
@@ -52,7 +55,8 @@ class StartEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier);
+        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier,
+                                          featureToggleService);
     }
 
     @Test

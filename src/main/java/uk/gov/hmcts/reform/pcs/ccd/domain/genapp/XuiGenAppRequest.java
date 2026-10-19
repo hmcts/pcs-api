@@ -18,9 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLega
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementDefendantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
@@ -148,6 +150,9 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(searchable = false)
     private VerticalYesNo showNoticeScreens;
+
+    @CCD(label = "Which type of application has the applicant made?", typeOverride = DynamicRadioList)
+    private DynamicStringList applicationTypeOptionList;
 
     private String applicantPartyId;
 

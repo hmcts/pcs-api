@@ -50,12 +50,12 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .readonly(PCSCase::getCurrentRepresentedPartyId, NEVER_SHOW, true)
             .readonly(PCSCase::getCurrentRepresentedPartyName, NEVER_SHOW, true)
             .complex(PCSCase::getXuiGenAppRequest)
+            .mandatory(XuiGenAppRequest::getApplicationTypeOptionList)
             .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getSuspendFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getShowHwfScreens, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getShowNoticeScreens, NEVER_SHOW, true)
-            .mandatory(XuiGenAppRequest::getApplicationType)
             .done();
     }
 
@@ -63,6 +63,10 @@ public class ChooseAnApplication implements CcdPageConfiguration {
                                                                  CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
+
+        String selectedApplicationType = xuiGenAppRequest.getApplicationTypeOptionList().getValue().getCode();
+        xuiGenAppRequest.setApplicationType(GenAppType.valueOf(selectedApplicationType));
+
         GenAppType genAppType = xuiGenAppRequest.getApplicationType();
 
         if (genAppType != GenAppType.SUSPEND) {

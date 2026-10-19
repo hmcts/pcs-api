@@ -25,14 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.*;
 
 @ExtendWith(MockitoExtension.class)
 class FeatureFlagViewTest {
@@ -41,6 +34,7 @@ class FeatureFlagViewTest {
         CASEWORKER_EVENTS, FeatureFlags::getCaseWorkerEventsEnabled,
         RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled,
         RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled,
+        RELEASE_1B, FeatureFlags::getRelease1BEnabled,
         RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled,
         WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
         CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,
