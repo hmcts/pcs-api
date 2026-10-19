@@ -140,8 +140,37 @@
           <text>false</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_enfBailiffAllocation">
+        <description>HDPI-7356: a bailiff, a bailiff administrator or a bailiff manager allocates a warrant. This is the bailiff organisational role, not the allocated-bailiff case role the allocation grants</description>
+        <inputEntry id="UnaryTests_enfBailiffAllocationTaskType">
+          <text>"AllocateCaseToBailiff"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfBailiffAllocationCase">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAllocationCategory">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAllocationName">
+          <text>"bailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAllocationValue">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAllocationRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAllocationAuthorisations">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAllocationPriority">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffAllocationAutoAssignable">
+          <text>false</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_enfBailiffAdminAllocation">
-        <description>Allocating a warrant to a bailiff is done by bailiff admin, not by the allocated bailiff</description>
         <inputEntry id="UnaryTests_enfBailiffAdminAllocationTaskType">
           <text>"AllocateCaseToBailiff"</text>
         </inputEntry>

@@ -23,15 +23,17 @@ import javax.xml.parsers.ParserConfigurationException;
  * One decision table out of {@code src/main/resources/dmn}, parsed so that tests can assert on its shape and on
  * the rows a given set of inputs collects.
  *
- * <p>{@link #evaluate} is not a FEEL engine. It matches a cell when the cell is empty, is {@code -}, or is a list
- * of string literals one of which equals the input value; any other cell (a number, a FEEL expression, or the
- * free text several of the pre-existing PCS rows carry in place of a condition) never matches and is counted by
- * {@link #cellsThatAreNotLiterals}. Adding the real Camunda DMN engine would not help here, because those free
- * text cells are not parseable as FEEL unary tests.</p>
+ * <p>{@link #evaluate} is not a FEEL engine. It matches a cell when the cell is empty, is {@code -}, is a list
+ * of string literals one of which equals the input value, or is {@code not(...)} around such a list and the input
+ * value is not in it; any other cell (a number, a FEEL expression, or the free text several of the pre-existing
+ * PCS rows carry in place of a condition) never matches and is counted by {@link #cellsThatAreNotLiterals}.
+ * Adding the real Camunda DMN engine would not help here, because those free text cells are not parseable as
+ * FEEL unary tests.</p>
  */
 final class DmnDecisionTable {
 
     private static final Pattern STRING_LITERAL = Pattern.compile("\"([^\"]*)\"");
+    private static final Pattern NEGATION = Pattern.compile("not\\((.*)\\)", Pattern.DOTALL);
     private static final String ANY = "-";
 
     private final String fileName;
@@ -140,7 +142,7 @@ final class DmnDecisionTable {
         Map<String, String> notLiterals = new LinkedHashMap<>();
         for (Rule rule : rules) {
             for (String entry : rule.inputEntries()) {
-                if (!entry.isEmpty() && !ANY.equals(entry) && literals(entry) == null) {
+                if (!entry.isEmpty() && !ANY.equals(entry) && condition(entry) == null) {
                     notLiterals.put(rule.id(), entry);
                 }
             }
@@ -154,12 +156,34 @@ final class DmnDecisionTable {
             if (entry.isEmpty() || ANY.equals(entry)) {
                 continue;
             }
-            List<String> literals = literals(entry);
-            if (literals == null || !literals.contains(inputs.get(inputNames.get(i)))) {
+            Condition condition = condition(entry);
+            if (condition == null || !condition.matches(inputs.get(inputNames.get(i)))) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * A list of string literals, which the input value must be one of, or must not be one of when the cell wraps
+     * the list in {@code not(...)}.
+     */
+    private record Condition(boolean negated, List<String> literals) {
+
+        boolean matches(String value) {
+            return literals.contains(value) != negated;
+        }
+    }
+
+    /**
+     * The condition a cell holds, or null when the cell is anything other than a comma-separated list of string
+     * literals, optionally wrapped in {@code not(...)}.
+     */
+    private static Condition condition(String entry) {
+        Matcher negation = NEGATION.matcher(entry);
+        boolean negated = negation.matches();
+        List<String> literals = literals(negated ? negation.group(1) : entry);
+        return literals == null ? null : new Condition(negated, literals);
     }
 
     /**

@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentAttributes;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -279,6 +280,19 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("refuses with 403 a user whose bailiff role is in another jurisdiction")
+    void refusesABailiffInAnotherJurisdiction() throws Exception {
+        givenAmRoles("BOB-ID", "bailiff", "CIVIL");
+
+        mockMvc.perform(batchPrint("", FIRST))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(get("/enforcement/batch-print/cases")
+                            .header(AUTHORIZATION, BAILIFF_TOKEN)
+                            .header(SERVICE_AUTHORIZATION, "s2s"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("answers 404 on every endpoint while the enforcement-enabled flag is off")
     void answersNotFoundWhileEnforcementIsOff() throws Exception {
         when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(false);
@@ -304,12 +318,19 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
     }
 
     private void givenAmRoles(String userId, String roleName) {
+        givenAmRoles(userId, roleName, "PCS");
+    }
+
+    private void givenAmRoles(String userId, String roleName, String jurisdiction) {
         when(roleAssignmentApi.getRoles(anyString(), anyString(), eq(userId)))
             .thenReturn(RoleAssignmentResponse.builder()
                             .roleAssignment(List.of(RoleAssignment.builder()
                                                         .actorId(userId)
                                                         .roleType("ORGANISATION")
                                                         .roleName(roleName)
+                                                        .attributes(RoleAssignmentAttributes.builder()
+                                                                        .jurisdiction(jurisdiction)
+                                                                        .build())
                                                         .build()))
                             .build());
     }
