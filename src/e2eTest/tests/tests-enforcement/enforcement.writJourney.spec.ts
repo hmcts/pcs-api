@@ -68,9 +68,9 @@ test.afterEach(async () => {
   }
   PageContentValidation.finaliseTest();
 });
-// Skipping this test case as the feature is not part of Release 1 to save execution time.
+
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement',
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement @writ',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -168,11 +168,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         label2: statementOfTruth.nameOfFirmHiddenTextLabel,
         input2: statementOfTruth.nameOfFirmHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader
+        nextPage: checkYourAnswersEnforcement.mainHeader
       });
     });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement @writ', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -205,7 +205,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);
     await performValidation('mainHeader', moneyOwed.mainHeader);
-   // await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
+    await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,
       input: moneyOwed.totalAmountOwedTextInput,
@@ -254,7 +254,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
   });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] @enforcement ', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] @enforcement @writ', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -333,11 +333,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
       label2: statementOfTruth.nameOfFirmHiddenTextLabel,
       input2: statementOfTruth.nameOfFirmHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader
+      nextPage: checkYourAnswersEnforcement.mainHeader
     });
   });
 
-  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement', async () => {
+  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement @writ', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -358,7 +358,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
-  test('Writ - Apply for a Writ of Possession [General application journey]', {
+  test('Writ - Apply for a Writ of Possession [General application journey] @writ', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
