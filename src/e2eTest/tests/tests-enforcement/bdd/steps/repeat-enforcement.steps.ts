@@ -5,13 +5,14 @@
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
-import { approveWarrantAsCaseworker, restoreClaimantSession } from '../support/approve-warrant';
+import { approveWarrantAsCaseworker, expectClaimantNext } from '../support/approve-warrant';
 import { recordEnforcementFeePaid } from '../support/decide-enforcement';
 import {
   ENFORCEMENT_STATUS_TAB,
   currentEnforcement,
   enforcementSections,
   openCaseTab,
+  reopenCurrentTab,
 } from '../support/enforcement-status-tab';
 import {
   applyForFurtherWarrant,
@@ -42,26 +43,26 @@ async function currentStatus(world: EnforcementWorld): Promise<string | undefine
   return (await currentEnforcement(requireCaseReference(world), world.earlierWarrantNumbers.length)).status;
 }
 
-Given('the case has a closed warrant with return name {string}', async ({ page, context, world }, returnName: string) => {
-  await closeWarrantWithReturn(page, context, world, returnName);
+Given('the case has a closed warrant with return name {string}', async ({ world }, returnName: string) => {
+  await closeWarrantWithReturn(world, returnName);
 });
 
-Given('the case has a warrant closed with return name {string}', async ({ page, context, world }, returnName: string) => {
-  await closeWarrantWithReturn(page, context, world, returnName);
+Given('the case has a warrant closed with return name {string}', async ({ world }, returnName: string) => {
+  await closeWarrantWithReturn(world, returnName);
 });
 
 Given(
   'the case has a warrant {string} closed with return name {string}',
-  async ({ page, context, world }, alias: string, returnName: string) => {
-    await closeWarrantWithReturn(page, context, world, returnName);
+  async ({ world }, alias: string, returnName: string) => {
+    await closeWarrantWithReturn(world, returnName);
     world.aliases[alias] = world.earlierWarrantNumbers.at(-1) as string;
   }
 );
 
 Given(
   'the case has a closed warrant with return name {string} generated {string} ago',
-  async ({ page, context, world }, returnName: string, age: string) => {
-    await closeWarrantWithReturn(page, context, world, returnName);
+  async ({ world }, returnName: string, age: string) => {
+    await closeWarrantWithReturn(world, returnName);
     await backdateWarrantGeneration(world, monthsIn(age));
   }
 );
@@ -84,11 +85,11 @@ When('I apply and pay for a new {string}', async ({ page, world, $tags }, type: 
   }
 });
 
-When('the caseworker approves it', async ({ page, context, world }) => {
+When('the caseworker approves it', async ({ world }) => {
   try {
-    await approveWarrantAsCaseworker(page, world, { feeOutstanding: false });
+    await approveWarrantAsCaseworker(world, { feeOutstanding: false });
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
 });
 
@@ -134,9 +135,19 @@ Then(
     }
     const expected = (await enforcementsOnTheCase(world)).length;
     await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
-    // Each warrant or writ on the tab is headed with its number.
+    // Each warrant or writ on the tab is headed with its number. The further application is submitted through
+    // the API, so the tab can be opened before pcs-api has it: each try re-fetches the case.
     await expect
-      .poll(async () => (await enforcementSections(page)).length, { timeout: VERY_LONG_TIMEOUT })
+      .poll(
+        async () => {
+          const sections = (await enforcementSections(page)).length;
+          if (sections !== expected) {
+            await reopenCurrentTab(page);
+          }
+          return sections;
+        },
+        { timeout: VERY_LONG_TIMEOUT, intervals: [2_000] }
+      )
       .toBe(expected);
     const numbers = (await enforcementSections(page)).map(section => section.heading);
     const upper = numbers.indexOf(actualNumber(world, upperAlias));

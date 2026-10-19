@@ -10,7 +10,9 @@
  */
 export const MARK_NOTICE_SERVED = 'Mark notice of eviction as served';
 
-import { BrowserContext, Page, expect } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
+import { ccdDateTime, submitEventAs } from './event-api';
+import { CLAIMANT_LEGAL_REPRESENTATIVE, expectSignedInAs, requireEmailFor, signInAs } from './session';
 import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 
@@ -77,37 +79,48 @@ export async function enterServedYesterday(page: Page): Promise<void> {
 }
 
 /**
- * Marks the notice of eviction as served as the bailiff, end to end, with a bailiff note if one is given, and
- * signs back in as the claimant's legal representative. Needs an eviction scheduled without dispensing with
- * service.
+ * Has the bailiff mark the notice of eviction as served through CCD's data store API, with the XUI journey's
+ * answers: served yesterday at 09:00, by hand, with a bailiff note if one is given. Needs an eviction scheduled
+ * without dispensing with service. Expects the claimant's legal representative next.
  */
-export async function markNoticeServedAsBailiff(
-  page: Page,
-  context: BrowserContext,
-  world: EnforcementWorld,
-  bailiffNote?: string
-): Promise<void> {
-  const { signInAs } = await import('./enforcement-journeys');
-  const { restoreClaimantSession } = await import('./approve-warrant');
-  try {
-    await signInAs('bailiff', page, context);
-    await ensureOnNoticeServedPage(page);
-    await enterServedYesterday(page);
-    await page.locator(noticeServed.fields.servedHow).fill('By hand to the occupant');
-    await page.locator(`${noticeServed.fields.addNote}_${bailiffNote ? 'Yes' : 'No'}`).check();
-    if (bailiffNote) {
-      await page.locator(noticeServed.fields.noteText).fill(bailiffNote);
-    }
-    await page.getByRole('button', { name: 'Continue', exact: true }).click();
-    await page.getByRole('button', { name: 'Save and continue', exact: true }).click();
-    await expect(page.getByRole('heading', { name: noticeServed.confirmationHeader }))
-      .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
-    world.noticeServed = true;
-    if (bailiffNote) {
-      world.enteredNote = bailiffNote;
-    }
-  } finally {
-    await restoreClaimantSession(page, context);
+export async function markNoticeServedAsBailiff(world: EnforcementWorld, bailiffNote?: string): Promise<void> {
+  const confirmation = await submitEventAs(requireEmailFor('bailiff'), 'markNoticeOfEvictionServed', {
+    noticeOfEvictionServedAt: ccdDateTime(-1, '09:00'),
+    noticeOfEvictionServedHow: DEFAULT_SERVED_HOW,
+    noticeOfEvictionAddBailiffNote: bailiffNote ? 'Yes' : 'No',
+    ...(bailiffNote ? { bailiffNoteText: bailiffNote } : {}),
+  });
+  expect(confirmation.header, 'the "Mark notice of eviction as served" confirmation').toContain(noticeServed.confirmationHeader);
+  recordNoticeServed(world, bailiffNote);
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
+}
+
+/**
+ * The bailiff's journey in XUI, for a scenario whose When is marking the notice served: the same answers as
+ * `markNoticeServedAsBailiff`, then check your answers and the confirmation. Expects the claimant's legal
+ * representative next, without signing them in.
+ */
+export async function markNoticeServedInXui(page: Page, world: EnforcementWorld, bailiffNote?: string): Promise<void> {
+  await signInAs('bailiff', page);
+  await ensureOnNoticeServedPage(page);
+  await enterServedYesterday(page);
+  await page.locator(noticeServed.fields.servedHow).fill(DEFAULT_SERVED_HOW);
+  await page.locator(`${noticeServed.fields.addNote}_${bailiffNote ? 'Yes' : 'No'}`).check();
+  if (bailiffNote) {
+    await page.locator(noticeServed.fields.noteText).fill(bailiffNote);
+  }
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByRole('button', { name: 'Save and continue', exact: true }).click();
+  await expect(page.getByRole('heading', { name: noticeServed.confirmationHeader }))
+    .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  recordNoticeServed(world, bailiffNote);
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
+}
+
+function recordNoticeServed(world: EnforcementWorld, bailiffNote: string | undefined): void {
+  world.noticeServed = true;
+  if (bailiffNote) {
+    world.enteredNote = bailiffNote;
   }
 }
 

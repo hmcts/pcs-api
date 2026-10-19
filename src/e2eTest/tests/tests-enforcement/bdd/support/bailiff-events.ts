@@ -18,6 +18,8 @@ import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { openCaseSummary, requireCaseReference, startEvent } from './enforcement-journeys';
 import { errorSummaries } from './error-summary';
 import { answerRow } from './schedule-eviction';
+import { submitEventAs } from './event-api';
+import { expectSignedInAs, requireEmailFor } from './session';
 
 export const ALLOCATE_BAILIFF = 'Allocate case to bailiff';
 export const SET_RISK_LEVEL = 'Set risk level';
@@ -174,4 +176,24 @@ export async function submitAllocation(page: Page, world: EnforcementWorld): Pro
   await expectBailiffConfirmation(page, `Case assigned to ${localUserName(email as string)}`, requireCaseReference(world));
   world.allocatedBailiff = email;
   world.currentEvent = undefined;
+}
+
+/**
+ * Has the bailiff set the risk level through CCD's data store API, with `chooseRiskLevel`'s answers. Expects the
+ * bailiff next, as the XUI journey left them signed in.
+ */
+export async function setRiskLevelAsBailiff(level: string, reason = 'Known history of violence'): Promise<void> {
+  const confirmation = await submitEventAs(requireEmailFor('bailiff'), 'setRiskLevel', {
+    riskLevel: level.toUpperCase(),
+    ...(level === setRiskLevel.high ? { riskLevelReason: reason } : {}),
+  });
+  expect(`${confirmation.header ?? ''} ${confirmation.body ?? ''}`).toContain(`Risk level set to ${level}`);
+  expectSignedInAs('bailiff');
+}
+
+/** Has the bailiff add a bailiff note through CCD's data store API. Expects the bailiff next. */
+export async function addBailiffNoteAsBailiff(note: string): Promise<void> {
+  const confirmation = await submitEventAs(requireEmailFor('bailiff'), 'addBailiffNote', { bailiffNoteText: note });
+  expect(`${confirmation.header ?? ''} ${confirmation.body ?? ''}`).toContain('Bailiff note added');
+  expectSignedInAs('bailiff');
 }

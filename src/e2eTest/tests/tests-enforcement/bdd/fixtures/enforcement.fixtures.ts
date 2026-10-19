@@ -6,7 +6,7 @@ import { initializeEnforcementExecutor, performAction } from '@utils/controller-
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { submitCaseApiData } from '@data/api-data';
-import { resetSignedInRole } from '../support/session';
+import { CLAIMANT_LEGAL_REPRESENTATIVE, answerCookieQuestion, requireEmailFor, resetSession } from '../support/session';
 import { resetClockIfMoved } from '../support/test-clock';
 import { demoHoldMs } from '../support/demo-pacing';
 import { disablePagePacing, enablePagePacing } from '@utils/page-pacing';
@@ -142,10 +142,12 @@ export const test = base.extend<EnforcementFixtures>({
   },
   // Same per-test set-up and tear-down as the tests-enforcement specs' beforeEach/afterEach.
   enforcementExecutor: [
-    async ({ page, world }, use, testInfo) => {
+    async ({ page, context, world }, use, testInfo) => {
       initializeExecutor(page);
       initializeEnforcementExecutor(page);
-      resetSignedInRole();
+      resetSession();
+      // The storage state is the claimant's session; every other user's answer is added when they sign in.
+      await answerCookieQuestion(context, requireEmailFor(CLAIMANT_LEGAL_REPRESENTATIVE));
       defendantDetails.length = 0;
       moneyMap.clear();
       fieldsMap.clear();

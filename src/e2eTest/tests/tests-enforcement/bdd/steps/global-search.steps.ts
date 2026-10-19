@@ -2,53 +2,36 @@
 //
 // pcs-api indexes every warrant and writ number on the case as a global search "Other reference"
 // (`EnforcementNumberSearchReferences`, HDPI-7677). The numbers are generated on approval, so the steps get
-// real ones by applying through "Enforce the order" and approving through "Decide enforcement", then map the
-// feature file's illustrative numbers ("WP-0001") onto them.
+// real ones by applying through "Enforce the order" and approving through "Decide enforcement", submitted through
+// the data store API, then map the feature file's illustrative numbers ("WP-0001") onto them.
 //
 // Searching needs a user with the GS_profile access profile, which `SearchCriteria` is restricted to. The
 // local bailiff users have it through their `hmcts-admin` organisation role (cftlib-am-role-assignments.json);
 // the hearing centre admin who approves does not.
-import { BrowserContext, Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
-import {
-  answerApplicationQuestions,
-  canSignInAs,
-  chooseApplicationType,
-  createIssuedCase,
-  openCaseSummary,
-  requireCaseReference,
-  signInAs,
-  signStatementOfTruth,
-  startEvent,
-  submitApplication,
-} from '../support/enforcement-journeys';
-import { approveApplicationAsCaseworker, restoreClaimantSession } from '../support/approve-warrant';
-import { currentSignedInRole } from '../support/session';
+import { canSignInAs, createIssuedCase, requireCaseReference, signInAs } from '../support/enforcement-journeys';
+import { approveApplicationAsCaseworker, expectClaimantNext } from '../support/approve-warrant';
+import { expectSignedInAs, expectedSignedInRole } from '../support/session';
 import { expectSearchFindsCase, searchByOtherReference } from '../support/global-search';
-import { closeApprovedWarrant } from '../support/repeat-enforcement';
+import { applyAsClaimant, closeApprovedWarrant } from '../support/repeat-enforcement';
 
 const OTHER_REFERENCE = 'Other reference';
 /** The final return that closes a live warrant so that another application can be made. */
 const CLOSING_RETURN_NAME = 'Warrant withdrawn';
 const DEFENDANT_LEGAL_REPRESENTATIVE = 'defendant legal representative';
 
-/** Applies for `type` as the claimant's legal representative and approves it; returns the number it was given. */
+/**
+ * The claimant's legal representative applies for `type` and a hearing centre admin approves it, both through
+ * the data store API; returns the number it was given.
+ */
 async function generateEnforcement(
-  page: Page,
-  context: BrowserContext,
   world: EnforcementWorld,
   type: Extract<EnforcementType, 'warrant of possession' | 'writ of possession'>
 ): Promise<string> {
-  await restoreClaimantSession(page, context);
-  await openCaseSummary(page);
-  await startEvent('Enforce the order');
-  await chooseApplicationType(type, world, page);
-  await answerApplicationQuestions(type, world);
-  await signStatementOfTruth(type);
-  await submitApplication(page);
-  return approveApplicationAsCaseworker(page, world, type === 'writ of possession' ? 'Writ' : 'Warrant');
+  await applyAsClaimant(world, type);
+  return approveApplicationAsCaseworker(world, type === 'writ of possession' ? 'Writ' : 'Warrant');
 }
 
 /** The real number behind one of the feature file's illustrative numbers. */
@@ -63,7 +46,7 @@ function realNumber(world: EnforcementWorld, illustrative: string): string {
   return number;
 }
 
-Given('a PCS case {string} with warrants {string} and {string}', async ({ page, context, world }, _reference: string, first: string, second: string) => {
+Given('a PCS case {string} with warrants {string} and {string}', async ({ world }, _reference: string, first: string, second: string) => {
   approximatePrecondition(
     'HDPI-7677',
     `"${first}" is a writ of possession, not a warrant: an approved warrant stays live and blocks a second `
@@ -72,29 +55,29 @@ Given('a PCS case {string} with warrants {string} and {string}', async ({ page, 
   );
   await createIssuedCase(world);
   try {
-    world.enforcementNumbers[first] = await generateEnforcement(page, context, world, 'writ of possession');
-    world.enforcementNumbers[second] = await generateEnforcement(page, context, world, 'warrant of possession');
+    world.enforcementNumbers[first] = await generateEnforcement(world, 'writ of possession');
+    world.enforcementNumbers[second] = await generateEnforcement(world, 'warrant of possession');
     world.warrantNumber = world.enforcementNumbers[second];
     world.warrantApproved = true;
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
 });
 
 // The Background leaves its warrant live, and "Enforce the order" refuses another application while it is, so
 // the bailiff staff close it with a final return first.
-When('a new writ {string} is generated on the case', async ({ page, context, world }, illustrative: string) => {
+When('a new writ {string} is generated on the case', async ({ world }, illustrative: string) => {
   if (world.warrantApproved) {
     approximatePrecondition(
       'HDPI-8424',
       'the live warrant is closed with a final return first, because only one enforcement can be live at a time'
     );
-    await closeApprovedWarrant(page, context, world, CLOSING_RETURN_NAME);
+    await closeApprovedWarrant(world, CLOSING_RETURN_NAME);
   }
   try {
-    world.enforcementNumbers[illustrative] = await generateEnforcement(page, context, world, 'writ of possession');
+    world.enforcementNumbers[illustrative] = await generateEnforcement(world, 'writ of possession');
   } finally {
-    await signInAs('bailiff', page, context);
+    expectSignedInAs('bailiff');
   }
 });
 
@@ -131,7 +114,7 @@ Given('I am signed in as a defendant legal representative', async ({ page, conte
       $tags
     );
   }
-  expect(currentSignedInRole(), 'the Background\'s bailiff').toBe('bailiff');
+  expect(expectedSignedInRole(), 'the Background\'s bailiff').toBe('bailiff');
   for (const number of Object.values(world.enforcementNumbers)) {
     await expectSearchFindsCase(page, number, requireCaseReference(world));
   }

@@ -14,18 +14,12 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@data/api-data';
 import { caseSummary } from '@data/page-data';
-import { user, users } from '@data/user-data';
-import { staff } from '@data/user-data/staff.user.data';
-import { dismissCookieBanner } from '@config/cookie-banner';
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
-import { CLAIMANT_LEGAL_REPRESENTATIVE, currentSignedInRole, recordSignedInRole } from './session';
+import { ensureSignedIn, signInAs as signInAsUser } from './session';
 import {
-  assignDefendantCaseRole,
   basicClaimFixtureClaim,
   createCaseFromFixture,
   isLocalStack,
-  localUsers,
-  signInToIdamSimulator,
   testCaseFixtures,
   type TestCaseFixture,
   waitForServiceRequest,
@@ -56,7 +50,6 @@ import {
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
 import { decideEnforcement } from './decide-enforcement';
-import { showDemoCaptionStatus } from './demo-captions';
 import { demoEmphasise, demoPause } from '@utils/page-pacing';
 
 
@@ -184,8 +177,8 @@ async function createCaseFromEnforcementFixture(world: EnforcementWorld, fixture
 }
 
 export async function openCaseSummary(page: Page): Promise<void> {
+  await ensureSignedIn(page);
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await page
     .waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`, { timeout: LONG_TIMEOUT })
     .catch(() => undefined);
@@ -207,15 +200,31 @@ function isOnCaseSummary(page: Page): boolean {
 /**
  * Asserts whether a case tab is on the open case. Waits for the Summary tab first, so "not shown" is only
  * checked once XUI has rendered the tabs.
+ *
+ * A tab the case gains is waited for across reloads: set-up goes through the APIs, so the case can be opened
+ * in the same moment the event that adds the tab is recorded, and the page already rendered never gains it.
  */
 export async function expectCaseTab(page: Page, tabName: string, shown: boolean): Promise<void> {
   await expect(page.getByRole('tab', { name: caseSummary.mainHeader, exact: true })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
   const tab = page.getByRole('tab', { name: tabName, exact: true });
-  if (shown) {
-    await expect(tab).toBeVisible();
-  } else {
+  if (!shown) {
     await expect(tab).toHaveCount(0);
+    return;
   }
+  await expect
+    .poll(
+      async () => {
+        const count = await tab.count();
+        if (count === 0) {
+          await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => undefined);
+          await expect(page.getByRole('tab', { name: caseSummary.mainHeader, exact: true }))
+            .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+        }
+        return count;
+      },
+      { timeout: VERY_LONG_TIMEOUT, intervals: [2_000] }
+    )
+    .toBeGreaterThan(0);
 }
 
 /** The case summary "Next step" drop down (same locator as the select action). */
@@ -230,7 +239,7 @@ export async function nextStepOptions(page: Page): Promise<string[]> {
 }
 
 /** How long the demo videos show the chosen event before Go is clicked. */
-const DEMO_NEXT_STEP_PAUSE_MS = 1000;
+const DEMO_NEXT_STEP_PAUSE_MS = 800;
 
 /** Chooses an event in the "Next step" drop down. The demo videos show the drop down being chosen from. */
 async function selectNextStep(label: string): Promise<void> {
@@ -526,123 +535,12 @@ function requireSubmitPayload(world: EnforcementWorld): SubmitCasePayload {
   return world.submitPayload;
 }
 
-/**
- * XUI users the steps can sign in as, keyed by the role names in the feature files. The claimant's legal
- * representative is the storage-state user (config/global-setup.config.ts), so needs no sign-in.
- *
- * On a local cftlib stack the bailiff staff are the users `CftlibConfig` seeds, with their bailiff
- * organisation roles in `cftlib-am-role-assignments.json`. On AAT there are still no bailiff users
- * (HDPI-7539), so the bailiff entries resolve to undefined there and the scenarios stay pending.
- */
-const signInUsers: Record<string, () => string | undefined> = {
-  'hearing-centre-admin': () => (isLocalStack() ? localUsers.hearingCentreAdmin : user.hearingCenterAdmin.email),
-  'hearing-centre-team-leader': () =>
-    isLocalStack() ? localUsers.hearingCentreTeamLeader : staff.pcs_hearing_centre_team_leader_email,
-  judge: () => (isLocalStack() ? localUsers.judge : users.find(candidate => candidate.user === 'County Court Judge')?.email),
-  // On a local stack signInAs gives this user the [DEFENDANTSOLICITOR] case role through pcs-api testing
-  // support, because link-defendant-solicitor-to-party answers 500 "Failed to create CCD case" there.
-  'defendant legal representative': () => (isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email),
-  bailiff: () => (isLocalStack() ? localUsers.bailiff : undefined),
-  'bailiff-admin': () => (isLocalStack() ? localUsers.bailiffAdmin : undefined),
-  'bailiff-manager': () => (isLocalStack() ? localUsers.bailiffManager : undefined),
-};
-
-export { CLAIMANT_LEGAL_REPRESENTATIVE } from './session';
-
-function claimantLegalRepresentativeEmail(): string {
-  return isLocalStack() ? localUsers.claimantSolicitor : (user.localAuthorityOrg1Usr1.email as string);
-}
-
-/** Feature-file names for users whose sign-in role is spelled differently. */
-const FEATURE_USER_ROLES: Record<string, string> = {
-  'hearing centre admin': 'hearing-centre-admin',
-  'hearing centre team leader': 'hearing-centre-team-leader',
-  'bailiff admin': 'bailiff-admin',
-  'bailiff manager': 'bailiff-manager',
-};
-
-/** The sign-in role for a user as the feature files name them, e.g. "hearing centre admin". */
-export const signInRoleFor = (user: string): string => FEATURE_USER_ROLES[user] ?? user;
-
-export function canSignInAs(role: string): boolean {
-  return role === CLAIMANT_LEGAL_REPRESENTATIVE || Boolean(signInUsers[signInRoleFor(role)]?.());
-}
+export { CLAIMANT_LEGAL_REPRESENTATIVE, canSignInAs, signInRoleFor } from './session';
 
 /**
- * Signs in to XUI as `user`, a sign-in role or the feature files' name for one, in place of the storage-state
- * user, as the case tabs specs do. A defendant legal representative is first linked to the scenario's case so
- * that they can open it: by Notice of Change on AAT, by a [DEFENDANTSOLICITOR] case role on a local stack.
+ * Signs in to XUI as `user`, a sign-in role or the feature files' name for one, unless the browser already is
+ * that user, and expects them for the steps that follow (see session.ts).
  */
-export async function signInAs(user: string, page: Page, context: BrowserContext): Promise<void> {
-  const role = signInRoleFor(user);
-  if (role === CLAIMANT_LEGAL_REPRESENTATIVE) {
-    // Already the storage-state user, unless an earlier step swapped the session for another role.
-    if (currentSignedInRole() === CLAIMANT_LEGAL_REPRESENTATIVE) {
-      return;
-    }
-    await signInFresh(claimantLegalRepresentativeEmail(), page, context);
-    recordSignedInRole(CLAIMANT_LEGAL_REPRESENTATIVE);
-    return;
-  }
-  const email = signInUsers[role]?.();
-  if (!email) {
-    throw new Error(`No XUI user to sign in as "${role}"`);
-  }
-  if (role === 'defendant legal representative') {
-    if (isLocalStack()) {
-      await assignDefendantCaseRole(String(process.env.CASE_NUMBER), email, '[DEFENDANTSOLICITOR]');
-    } else {
-      await performCommonAction('getCaseAPIDynamic', { req: 'Link Solicitor', email, password: process.env.IDAM_PCS_USER_PASSWORD });
-    }
-  }
-  await signInFresh(email, page, context);
-  recordSignedInRole(role);
-}
-
-/** Drops whatever session the browser has and signs in from the XUI landing page. */
-async function signInFresh(email: string, page: Page, context: BrowserContext): Promise<void> {
-  await showDemoCaptionStatus(page, `Signing in as ${email}`);
-  await clearBrowserSession(page, context);
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
-  await dismissCookieBanner(page, 'additional');
-  if (isLocalStack()) {
-    await signInToIdamSimulator(page, email);
-  } else {
-    await performAction('login', { email, password: process.env.IDAM_PCS_USER_PASSWORD });
-  }
-  await dismissCookieBanner(page, 'analytics');
-  await showDemoCaptionStatus(page, undefined);
-}
-
-/**
- * Storage goes before the cookies: once the cookies are gone XUI's next request finds no session and redirects
- * to sign-in, and an evaluate racing that redirect fails with "Execution context was destroyed". The page may
- * also still be navigating after the previous step (a post-sign-in redirect, a submitted event), so a
- * navigation that destroys the context is waited out and the clear retried. XUI keeps its session in cookies, so
- * a page still navigating after the retries is left as it is: the sign-in that follows replaces its state.
- */
-async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      await page.evaluate(() => {
-        try {
-          localStorage.clear();
-          sessionStorage.clear();
-        } catch {
-          // The page may not have an origin yet (about:blank).
-        }
-      });
-      break;
-    } catch (error) {
-      if (!isNavigationRace(error)) {
-        throw error;
-      }
-      await page.waitForLoadState('load', { timeout: 10_000 }).catch(() => undefined);
-    }
-  }
-  await context.clearCookies();
-}
-
-function isNavigationRace(error: unknown): boolean {
-  return error instanceof Error && /Execution context was destroyed|navigat/i.test(error.message);
+export async function signInAs(user: string, page: Page, _context?: BrowserContext): Promise<void> {
+  await signInAsUser(user, page);
 }

@@ -11,7 +11,6 @@ import {
   openCaseSummary,
   requireCaseReference,
   signInAs,
-  startEvent,
 } from '../support/enforcement-journeys';
 import {
   ENFORCEMENT_STATUS_TAB,
@@ -26,17 +25,17 @@ import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 import {
   AWAITING_BAILIFF_ALLOCATION,
   approveApplicationAsCaseworker,
-  restoreClaimantSession,
+  expectClaimantNext,
   scheduleEvictionOnApprovedWarrant,
   setUpWarrantAtStatus,
 } from '../support/approve-warrant';
-import { ADD_BAILIFF_NOTE, SET_RISK_LEVEL, addBailiffNote, chooseRiskLevel, continueButton } from '../support/bailiff-events';
+import { addBailiffNoteAsBailiff, setRiskLevelAsBailiff } from '../support/bailiff-events';
 import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { fixturePropertyAddress, isLocalStack } from '@config/local-stack.config';
 import { markNoticeServedAsBailiff } from '../support/notice-served';
 import {
-  applyForWarrantOfRestitution,
+  applyAsClaimant,
   closeWarrantWithReturn,
   generateWarrantOfRestitution,
 } from '../support/repeat-enforcement';
@@ -65,26 +64,26 @@ function tabNotBuilt(tabName: string) {
 const actual = (world: EnforcementWorld, quoted: string): string => world.aliases[quoted] ?? quoted;
 
 /** An approved warrant, so a generated one: the tabs only appear once a warrant has been generated. */
-Given('the case has a warrant of possession', async ({ page, context, world }) => {
-  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
+Given('the case has a warrant of possession', async ({ world }) => {
+  await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
 });
 
-Given('the case has a warrant of possession {string}', async ({ page, context, world }, number: string) => {
-  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
+Given('the case has a warrant of possession {string}', async ({ world }, number: string) => {
+  await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
   world.aliases[number] = world.warrantNumber as string;
 });
 
-Given('the case has no generated warrant or writ', async ({ page, context, world }) => {
+Given('the case has no generated warrant or writ', async ({ world }) => {
   // An application awaiting review: submitted and paid for, but not approved, so nothing is generated.
-  await setUpWarrantAtStatus(page, context, world, 'Awaiting review');
+  await setUpWarrantAtStatus(world, 'Awaiting review');
 });
 
-Given('the claimant\'s warrant application is {string}', async ({ page, context, world }, status: string) => {
-  await setUpWarrantAtStatus(page, context, world, status);
+Given('the claimant\'s warrant application is {string}', async ({ world }, status: string) => {
+  await setUpWarrantAtStatus(world, status);
 });
 
-Given('a warrant has been generated', async ({ page, context, world }) => {
-  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
+Given('a warrant has been generated', async ({ world }) => {
+  await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
 });
 
 const WARRANT_TYPES = ['warrant of possession', 'warrant of restitution'];
@@ -93,7 +92,7 @@ const WARRANT_TYPES = ['warrant of possession', 'warrant of restitution'];
 // for after an earlier warrant closed with a successful eviction. That warrant was generated too, so the
 // "Risk assessment" tab is already on the case before the restitution is (RiskAssessmentTabView keeps it once
 // the warrant closes), and the tab then moves on to the restitution.
-Given('the claimant applied for a {string}', async ({ page, context, world, $tags }, type: string) => {
+Given('the claimant applied for a {string}', async ({ world, $tags }, type: string) => {
   if (!WARRANT_TYPES.includes(type)) {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} application` }, $tags);
   }
@@ -102,35 +101,32 @@ Given('the claimant applied for a {string}', async ({ page, context, world, $tag
     return;
   }
   approximatePrecondition('HDPI-7350', 'an earlier warrant, closed with a successful eviction, already shows the "Risk assessment" tab');
-  await closeWarrantWithReturn(page, context, world, 'Eviction successful');
-  await applyForWarrantOfRestitution(page, world);
+  await closeWarrantWithReturn(world, 'Eviction successful');
+  await applyAsClaimant(world, 'warrant of restitution');
 });
 
-When('the {string} is generated', async ({ page, context, world, $tags }, type: string) => {
+// The caseworker's approval is what the scenario is about, but not a journey it looks at, so it goes through the
+// API too. The hearing centre admin is expected next, as the XUI journey left them signed in.
+When('the {string} is generated', async ({ world, $tags }, type: string) => {
   if (!WARRANT_TYPES.includes(type)) {
     return markPending({ ticket: 'HDPI-7419', summary: `approving a ${type}` }, $tags);
   }
-  try {
-    // Restitution has no fee, so the application is already awaiting review.
-    await approveApplicationAsCaseworker(page, world, 'Warrant', { feeOutstanding: type === 'warrant of possession' });
-  } catch (error) {
-    await restoreClaimantSession(page, context);
-    throw error;
-  }
+  // Restitution has no fee, so the application is already awaiting review.
+  await approveApplicationAsCaseworker(world, 'Warrant', { feeOutstanding: type === 'warrant of possession' });
 });
 
-async function setUpApprovedWrit(page: Parameters<typeof approveApplicationAsCaseworker>[0], world: EnforcementWorld): Promise<void> {
+async function setUpApprovedWrit(world: EnforcementWorld): Promise<void> {
   await createCaseWithWrit(world);
-  await approveApplicationAsCaseworker(page, world, 'Writ');
+  await approveApplicationAsCaseworker(world, 'Writ');
 }
 
 Given(
   'the case has a writ of possession {string} approved by a judge\'s order dated {string}',
-  async ({ page, context, world }, number: string, orderDate: string) => {
+  async ({ world }, number: string, orderDate: string) => {
     try {
-      await setUpApprovedWrit(page, world);
+      await setUpApprovedWrit(world);
     } finally {
-      await restoreClaimantSession(page, context);
+      expectClaimantNext();
     }
     world.aliases[number] = world.warrantNumber as string;
     const now = new Date();
@@ -143,15 +139,15 @@ Given(
   }
 );
 
-Given('the case has only a writ of possession', async ({ page, context, world }) => {
+Given('the case has only a writ of possession', async ({ world }) => {
   try {
-    await setUpApprovedWrit(page, world);
+    await setUpApprovedWrit(world);
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
 });
 
-Given('the notice of eviction {string}', async ({ page, context, world, $tags }, served: string) => {
+Given('the notice of eviction {string}', async ({ world, $tags }, served: string) => {
   if (served === 'has not been served') {
     // True by construction: the scenario never marks the notice of eviction as served.
     return;
@@ -159,8 +155,8 @@ Given('the notice of eviction {string}', async ({ page, context, world, $tags },
   if (served !== 'has been served' || !canSignInAs('bailiff')) {
     return markPending({ ticket: 'HDPI-7539', summary: 'a bailiff user to schedule the eviction and mark the notice served' }, $tags);
   }
-  await scheduleEvictionOnApprovedWarrant(page, context, world);
-  await markNoticeServedAsBailiff(page, context, world);
+  await scheduleEvictionOnApprovedWarrant(world);
+  await markNoticeServedAsBailiff(world);
 });
 
 Given('no risk level or bailiff note has been added', async ({ world }) => {
@@ -169,25 +165,15 @@ Given('no risk level or bailiff note has been added', async ({ world }) => {
   expect(world.enteredNote, 'a bailiff note added by this scenario').toBeUndefined();
 });
 
-Given('a warrant has been generated with a risk level and a bailiff note', async ({ page, context, world }) => {
-  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
+Given('a warrant has been generated with a risk level and a bailiff note', async ({ world }) => {
+  await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
   try {
-    await signInAs('bailiff', page, context);
-    await openCaseSummary(page);
-    await startEvent(SET_RISK_LEVEL);
-    await chooseRiskLevel(page, 'Medium');
-    await continueButton(page).click();
-    await expect(page.getByRole('heading', { name: 'Risk level set to Medium' })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+    await setRiskLevelAsBailiff('Medium');
     world.riskLevel = 'Medium';
-
-    await openCaseSummary(page);
-    await startEvent(ADD_BAILIFF_NOTE);
-    await page.getByLabel(addBailiffNote.noteLabel).fill('Rear gate is locked');
-    await continueButton(page).click();
-    await expect(page.getByRole('heading', { name: 'Bailiff note added' })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+    await addBailiffNoteAsBailiff('Rear gate is locked');
     world.enteredNote = 'Rear gate is locked';
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
 });
 
@@ -371,16 +357,16 @@ Then('the case header does not show {string}', async ({ page, world }, number: s
 // The generation dates are illustrative: both are generated today, the closed warrant first.
 Given(
   'the case has a closed warrant {string} generated on {string}',
-  async ({ page, context, world }, number: string, _generatedOn: string) => {
-    await closeWarrantWithReturn(page, context, world, 'Eviction successful');
+  async ({ world }, number: string, _generatedOn: string) => {
+    await closeWarrantWithReturn(world, 'Eviction successful');
     world.aliases[number] = world.earlierWarrantNumbers.at(-1) as string;
   }
 );
 
 Given(
   'a live warrant of restitution {string} generated on {string}',
-  async ({ page, context, world }, number: string, _generatedOn: string) => {
-    world.aliases[number] = await generateWarrantOfRestitution(page, context, world);
+  async ({ world }, number: string, _generatedOn: string) => {
+    world.aliases[number] = await generateWarrantOfRestitution(world);
   }
 );
 
@@ -397,11 +383,11 @@ Then('{string} is listed above {string}', async ({ page, world }, upper: string,
   expect(upperIndex, `${upper} is listed above ${lower}`).toBeLessThan(lowerIndex);
 });
 
-Given('the case has a writ of possession', async ({ page, context, world }) => {
+Given('the case has a writ of possession', async ({ world }) => {
   try {
-    await setUpApprovedWrit(page, world);
+    await setUpApprovedWrit(world);
   } finally {
-    await restoreClaimantSession(page, context);
+    expectClaimantNext();
   }
 });
 
