@@ -10,7 +10,9 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.RawWarrantRestDetails;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDocumentService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatementOfTruthService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WarrantOfRestitutionMapper;
 
@@ -46,6 +49,8 @@ class WarrantOfRestitutionStrategyTest {
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
     private EnforcementDocumentService enforcementDocumentService;
+    @Mock
+    private EnforcementStatementOfTruthService enforcementStatementOfTruthService;
 
     @Test
     void shouldProcessWarrantOfRestitutionDetailsAndSaveToRepository() {
@@ -120,5 +125,42 @@ class WarrantOfRestitutionStrategyTest {
         // Then
         verify(enforcementDocumentService).createAllDocuments(enforcementOrderEntity, enforcementOrder);
         verify(enforcementOrderRepository).save(enforcementOrderEntity);
+    }
+
+    /**
+     * The journey signs the warrant journey's statement of truth page, so the answers arrive on the warrant
+     * details of a warrant of restitution application (HDPI-7555).
+     */
+    @Test
+    void shouldStoreTheStatementOfTruthSignedOnTheWarrantPage() {
+        // Given
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantDetails(WarrantDetails.builder().statementOfTruth(statementOfTruth).build())
+                .build();
+        EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder().build();
+        when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+                .thenReturn(WarrantOfRestitutionEntity.builder().build());
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(enforcementStatementOfTruthService).processStatementOfTruth(statementOfTruth, enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldStoreNoStatementOfTruthWhenTheApplicationNeverReachedThePage() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder().build();
+        when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+                .thenReturn(WarrantOfRestitutionEntity.builder().build());
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(enforcementStatementOfTruthService).processStatementOfTruth(null, enforcementOrderEntity);
     }
 }

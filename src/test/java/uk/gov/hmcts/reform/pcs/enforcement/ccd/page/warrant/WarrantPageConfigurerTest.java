@@ -46,8 +46,6 @@ class WarrantPageConfigurerTest extends BasePageTest {
         inOrder.verify(pageBuilder).add(isA(ConfirmIfDOBKnownPage.class));
         inOrder.verify(pageBuilder).add(defendantsDOBPage);
         inOrder.verify(warrantRiskPagesConfigurer).configurePages(pageBuilder);
-        inOrder.verify(pageBuilder).add(isA(LanguageUsedPage.class));
-        inOrder.verify(pageBuilder).add(isA(StatementOfTruthPage.class));
         verifyNoMoreInteractions(pageBuilder, warrantRiskPagesConfigurer);
     }
 }

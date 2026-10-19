@@ -46,6 +46,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -187,6 +188,38 @@ class EnforcementOrderServiceTest {
 
         // Then
         assertThat(retrieved).isNull();
+    }
+
+    @Test
+    void shouldReturnEveryTypeTheClaimHasAppliedFor() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        EnforcementOrderEntity warrant = new EnforcementOrderEntity();
+        warrant.setEnforcementOrder(buildEnforcementOrderWithSpecifiedType(WARRANT));
+        EnforcementOrderEntity writ = new EnforcementOrderEntity();
+        writ.setEnforcementOrder(buildEnforcementOrderWithSpecifiedType(WRIT));
+        EnforcementOrderEntity noType = new EnforcementOrderEntity();
+        noType.setEnforcementOrder(EnforcementOrder.builder().build());
+        when(enforcementOrderRepository.findByClaimId(claimId)).thenReturn(List.of(warrant, writ, noType));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        Set<SelectEnforcementType> types = enforcementOrderService.retrieveEnforcementTypes(CASE_REFERENCE);
+
+        // Then
+        assertThat(types).containsExactlyInAnyOrder(WARRANT, WRIT);
+    }
+
+    @Test
+    void shouldReturnNoTypesForAClaimWithNoApplication() {
+        // Given
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(buildPcsCaseEntity(pcsCaseId, claimId));
+
+        // When
+        Set<SelectEnforcementType> types = enforcementOrderService.retrieveEnforcementTypes(CASE_REFERENCE);
+
+        // Then
+        assertThat(types).isEmpty();
     }
 
     @Test

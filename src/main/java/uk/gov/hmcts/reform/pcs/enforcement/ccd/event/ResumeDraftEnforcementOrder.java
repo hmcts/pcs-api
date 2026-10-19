@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementDeclarationPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
@@ -43,6 +44,7 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
     private final WarrantPageConfigurer warrantPagesConfigurer;
     private final WritPageConfigurer writPageConfigurer;
     private final WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
+    private final EnforcementDeclarationPageConfigurer enforcementDeclarationPageConfigurer;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final EnforcementSubmitEvent enforcementSubmitEvent;
 
@@ -64,6 +66,7 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
+        enforcementDeclarationPageConfigurer.configurePages(pageBuilder);
         SummaryFields.excludeNeverShownFields(eventBuilder);
     }
 

@@ -10,6 +10,10 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementTyp
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
+/**
+ * Shown in the warrant of possession and warrant of restitution journeys, which record the statement of truth
+ * in the same fields (HDPI-7555).
+ */
 public class StatementOfTruthPage implements CcdPageConfiguration {
 
     private static final String WARRANT_COMPLETED_BY_CLAIMANT = "warrantCompletedBy=\"CLAIMANT\"";
@@ -20,7 +24,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfTruth")
             .pageLabel("Statement of truth")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_OR_RESTITUTION_FLOW)
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")

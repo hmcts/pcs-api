@@ -23,8 +23,5 @@ public class WarrantPageConfigurer implements PageConfigurer {
             .add(new ConfirmIfDOBKnownPage())
             .add(defendantsDOBPage);
         warrantRiskPagesConfigurer.configurePages(pageBuilder);
-        pageBuilder
-            .add(new LanguageUsedPage())
-            .add(new StatementOfTruthPage());
     }
 }

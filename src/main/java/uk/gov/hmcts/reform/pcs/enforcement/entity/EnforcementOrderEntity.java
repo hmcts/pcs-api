@@ -114,8 +114,8 @@ public class EnforcementOrderEntity {
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
     /**
-     * The statement of truth the claimant signed. Null when the application captured none: the restitution
-     * journeys do not ask for one, and a draft submitted before reaching the page has none.
+     * The statement of truth the claimant signed. Null when the application captured none: a draft submitted
+     * before reaching the page has none.
      */
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "sot_id")

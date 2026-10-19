@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
@@ -310,6 +311,35 @@ class WarrantOfRestitutionMapperTest {
         // Then
         assertThat(result.getIsDifficultToAccessProperty()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getClarificationOnAccessDifficultyText()).isEqualTo("Hard to access");
+    }
+
+    /**
+     * The journey asks which language the claimant used on the warrant journey's page (HDPI-7555).
+     */
+    @Test
+    void shouldMapTheLanguageAnsweredOnTheWarrantPage() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantDetails(WarrantDetails.builder().languageUsed(LanguageUsed.ENGLISH_AND_WELSH).build())
+                .build();
+
+        // When
+        WarrantOfRestitutionEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
+
+        // Then
+        assertThat(result.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH_AND_WELSH);
+    }
+
+    @Test
+    void shouldMapNoLanguageWhenTheApplicationNeverReachedThePage() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+
+        // When
+        WarrantOfRestitutionEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
+
+        // Then
+        assertThat(result.getLanguageUsed()).isNull();
     }
 
     @Test

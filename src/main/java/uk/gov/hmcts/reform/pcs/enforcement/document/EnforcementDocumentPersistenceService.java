@@ -206,17 +206,18 @@ public class EnforcementDocumentPersistenceService {
     }
 
     /**
-     * The warrant and writ journeys ask which language the claimant used; the restitution journeys do not yet.
+     * Every journey asks which language the claimant used, on the page of the type's family: a warrant of
+     * restitution answers the warrant journey's page and a writ of restitution the writ journey's (HDPI-7555).
      */
     private static String language(EnforcementOrder enforcementOrder, SelectEnforcementType enforcementType) {
         if (enforcementOrder == null || enforcementType == null) {
             return null;
         }
         Optional<LanguageUsed> languageUsed = switch (enforcementType) {
-            case WARRANT -> Optional.ofNullable(enforcementOrder.getWarrantDetails())
+            case WARRANT, WARRANT_OF_RESTITUTION -> Optional.ofNullable(enforcementOrder.getWarrantDetails())
                 .map(WarrantDetails::getLanguageUsed);
-            case WRIT -> Optional.ofNullable(enforcementOrder.getWritDetails()).map(WritDetails::getLanguageUsed);
-            case WARRANT_OF_RESTITUTION, WRIT_OF_RESTITUTION -> Optional.empty();
+            case WRIT, WRIT_OF_RESTITUTION -> Optional.ofNullable(enforcementOrder.getWritDetails())
+                .map(WritDetails::getLanguageUsed);
         };
         return languageUsed.map(LanguageUsed::getLabel).orElse(null);
     }
