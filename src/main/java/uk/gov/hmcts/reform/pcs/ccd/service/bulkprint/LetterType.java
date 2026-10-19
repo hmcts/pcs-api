@@ -19,4 +19,8 @@ public enum LetterType {
     GEN_APP_PACK("GEN-00-IN0");
 
     private final String code;
+
+    public boolean includesCoveringLetter() {
+        return this == DEFENCE_PACK || this == DEFENCE_PACK_LEGAL_REP || this == GEN_APP_PACK;
+    }
 }

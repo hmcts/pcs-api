@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.service.coverletter.CoveringLetterProvider;
 import uk.gov.hmcts.reform.pcs.ccd.service.coversheet.CoversheetProvider;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -41,6 +42,8 @@ class BulkPrintServiceTest {
 
     @Mock
     private CoversheetProvider coversheetProvider;
+    @Mock
+    private CoveringLetterProvider coveringLetterProvider;
     @Mock
     private LetterDocumentFetcher letterDocumentFetcher;
     @Mock
@@ -98,18 +101,27 @@ class BulkPrintServiceTest {
     @ParameterizedTest(name = "{0} sends letter type {1}")
     @CsvSource({
         "CLAIMANT_CLAIM_PACK, CPC-01-IN0",
-        "DEFENCE_PACK, DEF-01-IN0"
+        "DEFENCE_PACK, DEF-01-IN0",
+        "DEFENCE_PACK_LEGAL_REP, DEF-01-IN1",
+        "GEN_APP_PACK, GEN-00-IN0"
     })
     @DisplayName("Sends renamed IN0 letter type codes for claim and defence packs")
     void shouldSendRenamedLetterTypeCode(LetterType letterType, String expectedLetterType) {
-        byte[] coversheetBytes = "coversheet".getBytes();
-        byte[] documentBytes = "document".getBytes();
-        byte[] mergedBytes = "merged-pdf".getBytes();
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
+        byte[] coversheetBytes = "coversheet".getBytes();
         when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
+        byte[] letterBytes = "covering-letter".getBytes();
+        if (letterType.includesCoveringLetter()) {
+            when(coveringLetterProvider.render(any(), any(), any(), any(), any())).thenReturn(letterBytes);
+        }
+        byte[] documentBytes = "document".getBytes();
         when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
-        when(pdfMerger.merge(List.of(coversheetBytes, documentBytes))).thenReturn(mergedBytes);
+        List<byte[]> pdfs = letterType.includesCoveringLetter()
+            ? List.of(coversheetBytes, letterBytes, documentBytes)
+            : List.of(coversheetBytes, documentBytes);
+        byte[] mergedBytes = "merged-pdf".getBytes();
+        when(pdfMerger.merge(pdfs)).thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
         DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
@@ -120,6 +132,7 @@ class BulkPrintServiceTest {
 
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo(expectedLetterType);
+        verify(pdfMerger).merge(pdfs);
     }
 
     @Test
@@ -131,6 +144,7 @@ class BulkPrintServiceTest {
             pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "Jane Doe", blank, List.of()))
             .isInstanceOf(MissingPostalAddressException.class);
 
-        verifyNoInteractions(coversheetProvider, letterDocumentFetcher, pdfMerger, sendLetterApi);
+        verifyNoInteractions(coversheetProvider, coveringLetterProvider, letterDocumentFetcher, pdfMerger,
+            sendLetterApi);
     }
 }

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.service.coverletter.CoveringLetterProvider;
 import uk.gov.hmcts.reform.pcs.ccd.service.coversheet.CoversheetProvider;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -32,6 +33,7 @@ public class BulkPrintService {
     private static final String CASE_REFERENCE = "caseReference";
 
     private final CoversheetProvider coversheetProvider;
+    private final CoveringLetterProvider coveringLetterProvider;
     private final LetterDocumentFetcher letterDocumentFetcher;
     private final PdfMerger pdfMerger;
     private final SendLetterApi sendLetterApi;
@@ -39,12 +41,14 @@ public class BulkPrintService {
     private final CaseReferenceFormatter caseReferenceFormatter;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
+                            CoveringLetterProvider coveringLetterProvider,
                             LetterDocumentFetcher letterDocumentFetcher,
                             PdfMerger pdfMerger,
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter) {
         this.coversheetProvider = coversheetProvider;
+        this.coveringLetterProvider = coveringLetterProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
         this.pdfMerger = pdfMerger;
         this.sendLetterApi = sendLetterApi;
@@ -59,6 +63,9 @@ public class BulkPrintService {
 
         List<byte[]> pdfs = new ArrayList<>();
         pdfs.add(coversheetProvider.render(recipientName, address, caseReference));
+        if (letterType.includesCoveringLetter()) {
+            pdfs.add(coveringLetterProvider.render(pcsCase, recipient, recipientName, address, caseReference));
+        }
         documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));
         Document mergedLetter = new Document(Base64.getEncoder().encodeToString(pdfMerger.merge(pdfs)), SINGLE_COPY);
 
