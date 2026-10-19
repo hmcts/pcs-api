@@ -71,7 +71,7 @@ public class RiskDetails {
     private String protestGroupDetails;
 
     @CCD(
-        label = "Why did the police or social services visit the property?",
+        label = "Why did the police visit the property?",
         hint = "If you can, include the number of visits and the crime reference number. "
             + "You can enter up to 6,800 characters",
         typeOverride = TextArea
