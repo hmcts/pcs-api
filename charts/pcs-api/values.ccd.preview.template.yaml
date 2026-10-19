@@ -343,7 +343,7 @@ aac-manage-case-assignment:
 pcs-frontend:
   enabled: true
   nodejs:
-    image: ${PCS_FRONTEND_IMAGE}
+    image: 'hmctsprod.azurecr.io/pcs/frontend:latest'
     imagePullPolicy: Always
     ingressHost: pcs-frontend-${SERVICE_FQDN}
     keyVaults:

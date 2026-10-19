@@ -247,7 +247,7 @@ withPipeline(type, product, component) {
         sh """
           git init -q .
           git remote add origin https://github.com/hmcts/pcs-frontend.git
-          git fetch -q --depth=1 origin ${env.PCS_FRONTEND_E2E_REF}
+          git fetch -q --depth=1 origin refs/heads/master
           git checkout -q FETCH_HEAD
           git log --oneline -1
         """
@@ -318,15 +318,6 @@ def setPreviewEnvVars(githubApi) {
   def frontendLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pcs-frontend-pr:")
   if (frontendLabels && frontendLabels.size() > 0) {
     env.PCS_FRONTEND_CHANGE_ID = frontendLabels[0].replace("pcs-frontend-pr:", "")
-  }
-
-  // A pcs-frontend-pr:<id> label pins the deployed image and the E2E suite to that frontend PR.
-  if (env.PCS_FRONTEND_CHANGE_ID) {
-    env.PCS_FRONTEND_IMAGE = "hmctsprod.azurecr.io/pcs/frontend:pr-${env.PCS_FRONTEND_CHANGE_ID}"
-    env.PCS_FRONTEND_E2E_REF = "refs/pull/${env.PCS_FRONTEND_CHANGE_ID}/head"
-  } else {
-    env.PCS_FRONTEND_IMAGE = "hmctsprod.azurecr.io/pcs/frontend:latest"
-    env.PCS_FRONTEND_E2E_REF = "refs/heads/master"
   }
 
   // pr-values:ccd deploys the frontend into this preview, so link to it rather than to AAT.
