@@ -62,8 +62,11 @@ class EnforcementEmailTest {
             .containsExactly(EnforcementEmail.ENFORCEMENT_NUMBER);
         assertThat(EnforcementEmail.WRIT_APPROVED.getPersonalisation())
             .containsExactly(EnforcementEmail.ENFORCEMENT_NUMBER);
-        assertThat(EnforcementEmail.APPLICATION_REJECTED.getPersonalisation())
+        assertThat(EnforcementEmail.WARRANT_OF_RESTITUTION_APPROVED.getPersonalisation()).isEmpty();
+        assertThat(EnforcementEmail.WARRANT_REJECTED.getPersonalisation())
             .containsExactly(EnforcementEmail.REJECTION_REASON);
+        assertThat(EnforcementEmail.WRIT_REJECTED.getPersonalisation()).isEmpty();
+        assertThat(EnforcementEmail.WARRANT_OF_RESTITUTION_REJECTED.getPersonalisation()).isEmpty();
         assertThat(EnforcementEmail.EVICTION_SCHEDULED.getPersonalisation())
             .containsExactly(EnforcementEmail.EVICTION_DATE_TIME);
         assertThat(EnforcementEmail.EVICTION_RESCHEDULED.getPersonalisation())
@@ -100,23 +103,33 @@ class EnforcementEmailTest {
         assertThat(Set.copyOf(devTemplates.values())).hasSameSizeAs(devTemplates.values());
     }
 
+    /**
+     * HDPI-7538 leaves only the writ-of-restitution approval TBC ("Remove bit about NICE and advise claimants
+     * to contact HCEO"), so that is the one type the claimant hears nothing about (OPEN-QUESTIONS 55).
+     */
     @Test
-    void shouldHaveAnApprovalEmailForAWarrantAndAWritOnly() {
+    void shouldHaveAnApprovalEmailForEveryTypeButAWritOfRestitution() {
         assertThat(EnforcementEmail.forApproval(SelectEnforcementType.WARRANT))
             .isEqualTo(EnforcementEmail.WARRANT_APPROVED);
         assertThat(EnforcementEmail.forApproval(SelectEnforcementType.WRIT))
             .isEqualTo(EnforcementEmail.WRIT_APPROVED);
-        assertThat(EnforcementEmail.forApproval(SelectEnforcementType.WARRANT_OF_RESTITUTION)).isNull();
+        assertThat(EnforcementEmail.forApproval(SelectEnforcementType.WARRANT_OF_RESTITUTION))
+            .isEqualTo(EnforcementEmail.WARRANT_OF_RESTITUTION_APPROVED);
         assertThat(EnforcementEmail.forApproval(SelectEnforcementType.WRIT_OF_RESTITUTION)).isNull();
         assertThat(EnforcementEmail.forApproval(null)).isNull();
     }
 
+    /**
+     * HDPI-7538's writ-of-restitution rejection content is a bare "TBC" (OPEN-QUESTIONS 55).
+     */
     @Test
-    void shouldHaveARejectionEmailForAWarrantOnly() {
+    void shouldHaveARejectionEmailForEveryTypeButAWritOfRestitution() {
         assertThat(EnforcementEmail.forRejection(SelectEnforcementType.WARRANT))
-            .isEqualTo(EnforcementEmail.APPLICATION_REJECTED);
-        assertThat(EnforcementEmail.forRejection(SelectEnforcementType.WRIT)).isNull();
-        assertThat(EnforcementEmail.forRejection(SelectEnforcementType.WARRANT_OF_RESTITUTION)).isNull();
+            .isEqualTo(EnforcementEmail.WARRANT_REJECTED);
+        assertThat(EnforcementEmail.forRejection(SelectEnforcementType.WRIT))
+            .isEqualTo(EnforcementEmail.WRIT_REJECTED);
+        assertThat(EnforcementEmail.forRejection(SelectEnforcementType.WARRANT_OF_RESTITUTION))
+            .isEqualTo(EnforcementEmail.WARRANT_OF_RESTITUTION_REJECTED);
         assertThat(EnforcementEmail.forRejection(SelectEnforcementType.WRIT_OF_RESTITUTION)).isNull();
         assertThat(EnforcementEmail.forRejection(null)).isNull();
     }

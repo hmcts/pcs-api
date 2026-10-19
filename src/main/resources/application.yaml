@@ -414,7 +414,10 @@ enforcement-notify:
     writ-of-restitution-application-received: ${ENFORCEMENT_WRIT_RESTITUTION_APPLICATION_TEMPLATE_ID:}
     warrant-approved: ${ENFORCEMENT_WARRANT_APPROVED_TEMPLATE_ID:}
     writ-approved: ${ENFORCEMENT_WRIT_APPROVED_TEMPLATE_ID:}
-    application-rejected: ${ENFORCEMENT_APPLICATION_REJECTED_TEMPLATE_ID:}
+    warrant-of-restitution-approved: ${ENFORCEMENT_WARRANT_RESTITUTION_APPROVED_TEMPLATE_ID:}
+    warrant-rejected: ${ENFORCEMENT_WARRANT_REJECTED_TEMPLATE_ID:}
+    writ-rejected: ${ENFORCEMENT_WRIT_REJECTED_TEMPLATE_ID:}
+    warrant-of-restitution-rejected: ${ENFORCEMENT_WARRANT_RESTITUTION_REJECTED_TEMPLATE_ID:}
     eviction-scheduled: ${ENFORCEMENT_EVICTION_SCHEDULED_TEMPLATE_ID:}
     eviction-rescheduled: ${ENFORCEMENT_EVICTION_RESCHEDULED_TEMPLATE_ID:}
     claimant-confirmed-attendance: ${ENFORCEMENT_CLAIMANT_CONFIRMED_ATTENDANCE_TEMPLATE_ID:}

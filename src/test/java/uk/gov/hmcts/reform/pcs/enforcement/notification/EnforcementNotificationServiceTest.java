@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -62,12 +61,54 @@ class EnforcementNotificationServiceTest {
             .containsExactly(Map.entry(EnforcementEmail.ENFORCEMENT_NUMBER, "P123456"));
     }
 
+    /**
+     * The agreed body tells the claimant the warrant has gone to the bailiff and names no warrant number, so
+     * the number it is sent is ignored by the template.
+     */
+    @Test
+    void shouldEmailTheClaimantOnApprovalOfAWarrantOfRestitution() {
+        underTest.notifyClaimantOfApproval(CASE_REFERENCE, SelectEnforcementType.WARRANT_OF_RESTITUTION,
+                                           "WR-00000042");
+
+        assertThat(personalisationSentFor(EnforcementEmail.WARRANT_OF_RESTITUTION_APPROVED))
+            .containsExactly(Map.entry(EnforcementEmail.ENFORCEMENT_NUMBER, "WR-00000042"));
+    }
+
     @Test
     void shouldEmailTheClaimantTheReasonOnRejection() {
         underTest.notifyClaimantOfRejection(CASE_REFERENCE, SelectEnforcementType.WARRANT, "No order was made");
 
-        assertThat(personalisationSentFor(EnforcementEmail.APPLICATION_REJECTED))
+        assertThat(personalisationSentFor(EnforcementEmail.WARRANT_REJECTED))
             .containsExactly(Map.entry(EnforcementEmail.REJECTION_REASON, "No order was made"));
+    }
+
+    /**
+     * Each decision email is its own template, so the enforcement type decides which one is sent.
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, WARRANT_REJECTED",
+        "WRIT, WRIT_REJECTED",
+        "WARRANT_OF_RESTITUTION, WARRANT_OF_RESTITUTION_REJECTED",
+    })
+    void shouldEmailTheClaimantTheRejectionForTheirEnforcementType(SelectEnforcementType enforcementType,
+                                                                   EnforcementEmail email) {
+        underTest.notifyClaimantOfRejection(CASE_REFERENCE, enforcementType, "No order was made");
+
+        verify(sender).send(eq(CASE_REFERENCE), eq(email), any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, WARRANT_APPROVED",
+        "WRIT, WRIT_APPROVED",
+        "WARRANT_OF_RESTITUTION, WARRANT_OF_RESTITUTION_APPROVED",
+    })
+    void shouldEmailTheClaimantTheApprovalForTheirEnforcementType(SelectEnforcementType enforcementType,
+                                                                  EnforcementEmail email) {
+        underTest.notifyClaimantOfApproval(CASE_REFERENCE, enforcementType, "W123456");
+
+        verify(sender).send(eq(CASE_REFERENCE), eq(email), any());
     }
 
     @Test
@@ -123,26 +164,23 @@ class EnforcementNotificationServiceTest {
     }
 
     /**
-     * HDPI-7538 has no approval wording for either kind of restitution, so nothing is sent rather than an
-     * email the service has not agreed (OPEN-QUESTIONS 56).
+     * HDPI-7538's writ-of-restitution approval content is "TBC Remove bit about NICE and advise claimants to
+     * contact HCEO", so nothing is sent rather than an email the service has not agreed (OPEN-QUESTIONS 55).
      */
-    @ParameterizedTest
-    @EnumSource(value = SelectEnforcementType.class,
-        names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
-    void shouldNotEmailOnApprovalOfARestitutionApplication(SelectEnforcementType enforcementType) {
-        underTest.notifyClaimantOfApproval(CASE_REFERENCE, enforcementType, "W123456");
+    @Test
+    void shouldNotEmailOnApprovalOfAWritOfRestitution() {
+        underTest.notifyClaimantOfApproval(CASE_REFERENCE, SelectEnforcementType.WRIT_OF_RESTITUTION, "H123456");
 
         verifyNoInteractions(sender);
     }
 
     /**
-     * HDPI-7538 only has rejection wording for a warrant of possession (OPEN-QUESTIONS 56).
+     * HDPI-7538's writ-of-restitution rejection content is a bare "TBC" (OPEN-QUESTIONS 55).
      */
-    @ParameterizedTest
-    @EnumSource(value = SelectEnforcementType.class,
-        names = {"WRIT", "WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
-    void shouldNotEmailOnRejectionOfAnApplicationWithNoAgreedWording(SelectEnforcementType enforcementType) {
-        underTest.notifyClaimantOfRejection(CASE_REFERENCE, enforcementType, "No order was made");
+    @Test
+    void shouldNotEmailOnRejectionOfAWritOfRestitution() {
+        underTest.notifyClaimantOfRejection(CASE_REFERENCE, SelectEnforcementType.WRIT_OF_RESTITUTION,
+                                            "No order was made");
 
         verifyNoInteractions(sender);
     }

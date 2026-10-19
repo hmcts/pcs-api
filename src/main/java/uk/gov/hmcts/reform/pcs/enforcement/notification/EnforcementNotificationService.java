@@ -43,8 +43,10 @@ public class EnforcementNotificationService {
     /**
      * Tells the claimant the caseworker approved their application, with the warrant or writ number.
      *
-     * <p>Only a warrant and a writ of possession have an approval email: the restitution wording is TBC
-     * (OPEN-QUESTIONS 56), so nothing is sent for those types.</p>
+     * <p>Every type but the writ of restitution has an approval email: that wording is still TBC
+     * (OPEN-QUESTIONS 55), so nothing is sent for it. The number is passed for all of them; Notify ignores a
+     * personalisation value its template has no placeholder for, and the agreed warrant-of-restitution body
+     * has none.</p>
      */
     public void notifyClaimantOfApproval(long caseReference, SelectEnforcementType enforcementType,
                                          String enforcementNumber) {
@@ -55,8 +57,9 @@ public class EnforcementNotificationService {
     /**
      * Tells the claimant the caseworker rejected their application, with the caseworker's reason.
      *
-     * <p>Only a warrant of possession has a rejection email: the writ and restitution wording is TBC
-     * (OPEN-QUESTIONS 56), so nothing is sent for those types.</p>
+     * <p>Every type but the writ of restitution has a rejection email: that wording is still TBC
+     * (OPEN-QUESTIONS 55), so nothing is sent for it. Only the warrant-of-possession body is meant to carry
+     * the reason, and the other templates ignore it.</p>
      */
     public void notifyClaimantOfRejection(long caseReference, SelectEnforcementType enforcementType,
                                           String rejectionReason) {
