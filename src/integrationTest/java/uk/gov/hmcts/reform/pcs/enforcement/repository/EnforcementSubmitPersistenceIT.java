@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -27,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -183,6 +187,54 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             "SELECT version FROM enf_case WHERE id = ?", Integer.class, enforcementId))
             .as("the insert is the only write of the enforcement")
             .isZero();
+    }
+
+    /**
+     * CDAM serves a document that is on no case only until its TTL passes, a day after it was uploaded, so the
+     * evidence uploaded with a warrant of restitution must be attached to its case in CDAM (HDPI-9440, as
+     * HDPI-9435 does for the rest of the service).
+     */
+    @Test
+    @DisplayName("attaches the evidence uploaded with a warrant of restitution to its case in CDAM")
+    void shouldAttachTheUploadedEvidenceToItsCaseInCdam() {
+        long caseReference = 1000000000000010L;
+        ClaimEntity claim = savedClaim(caseReference);
+        UUID documentId = UUID.randomUUID();
+        EnforcementOrder application = enforcementOrder(SelectEnforcementType.WARRANT_OF_RESTITUTION);
+        application.getWarrantOfRestitutionDetails().setAdditionalDocuments(List.of(
+            ListValue.<EvidenceOfDefendants>builder().id("1").value(uploadedEvidence(documentId)).build()));
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, application);
+        entityManager.flush();
+
+        assertThat(jdbcTemplate.queryForList(
+            "SELECT c.case_reference FROM document d JOIN pcs_case c ON c.id = d.case_id "
+                + "WHERE d.url = ?", Long.class, dmStoreUrl(documentId)))
+            .as("the uploaded evidence is on the case")
+            .containsExactly(caseReference);
+        assertThat(jdbcTemplate.queryForList(
+            "SELECT convert_from(s.task_data, 'UTF8')::jsonb ->> 'documentId' "
+                + "FROM scheduled_tasks s JOIN document d ON d.id::text = s.task_instance "
+                + "WHERE s.task_name = 'attach-document-task' AND d.url = ?",
+            String.class, dmStoreUrl(documentId)))
+            .as("the uploaded evidence is attached to its case in CDAM")
+            .containsExactly(documentId.toString());
+    }
+
+    private static EvidenceOfDefendants uploadedEvidence(UUID documentId) {
+        Document document = new Document();
+        document.setUrl(dmStoreUrl(documentId));
+        document.setBinaryUrl(dmStoreUrl(documentId) + "/binary");
+        document.setFilename("Police report.pdf");
+        return EvidenceOfDefendants.builder()
+            .documentType(EvidenceDocumentType.POLICE_REPORT)
+            .document(document)
+            .description("Police report")
+            .build();
+    }
+
+    private static String dmStoreUrl(UUID documentId) {
+        return "http://dm-store/documents/" + documentId;
     }
 
     private static EnforcementOrder enforcementOrder(SelectEnforcementType enforcementType) {
