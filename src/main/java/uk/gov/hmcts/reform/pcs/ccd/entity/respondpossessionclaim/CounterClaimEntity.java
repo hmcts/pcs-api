@@ -30,7 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleInvalidation;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleChangeListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -43,7 +43,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@EntityListeners(CaseBundleInvalidation.class)
+@EntityListeners(CaseBundleChangeListener.class)
 @Table(name = "counter_claim")
 @Getter
 @Setter

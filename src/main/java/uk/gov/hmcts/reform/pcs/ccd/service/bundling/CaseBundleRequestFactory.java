@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +33,7 @@ public class CaseBundleRequestFactory {
     static final String BUNDLE_TITLE = "Case bundle";
     private static final ZoneId UK = ZoneId.of("Europe/London");
 
-    public BundleRequest build(UUID externalId, PcsCaseEntity pcsCase) {
+    public BundleRequest build(PcsCaseEntity pcsCase) {
         Map<CaseFileCategory, List<DocumentEntity>> byFolder = pcsCase.getDocuments().stream()
             .filter(CaseBundleScope::isVisibleToInternalReaders)
             .filter(document -> !isUnlinkableMedia(document))
@@ -52,7 +51,6 @@ public class CaseBundleRequestFactory {
                 .build()));
 
         return BundleRequest.builder()
-            .externalId(externalId)
             .title(BUNDLE_TITLE)
             .fileName(pcsCase.getCaseReference() + "-case-bundle.pdf")
             .root(root.build())

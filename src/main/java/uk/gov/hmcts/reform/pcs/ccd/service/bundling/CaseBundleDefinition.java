@@ -22,9 +22,9 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
     }
 
     @Override
-    public SelectedCaseBundle select(String caseKey, UUID jobId) {
+    public SelectedCaseBundle select(String caseKey) {
         var pcsCase = cases.findById(UUID.fromString(caseKey)).orElseThrow();
         return new SelectedCaseBundle(pcsCase.getCaseReference(), CaseType.getCaseType(),
-            CaseType.getJurisdictionId(), requests.build(jobId, pcsCase));
+            CaseType.getJurisdictionId(), requests.build(pcsCase));
     }
 }

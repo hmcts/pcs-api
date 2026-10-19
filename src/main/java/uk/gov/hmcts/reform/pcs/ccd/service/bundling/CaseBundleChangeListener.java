@@ -13,10 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 
 /** All document writes, including cascades, plus changes that make application documents visible. */
 @Component
-public class CaseBundleInvalidation {
+public class CaseBundleChangeListener {
     private final ObjectProvider<CaseBundles> bundles;
 
-    public CaseBundleInvalidation(ObjectProvider<CaseBundles> bundles) {
+    public CaseBundleChangeListener(ObjectProvider<CaseBundles> bundles) {
         this.bundles = bundles;
     }
 
@@ -36,7 +36,7 @@ public class CaseBundleInvalidation {
         };
         // Only the association identifier is read; no lazy load or repository query during flush.
         if (pcsCase != null) {
-            managed.invalidate(CaseBundleDefinition.NAME, pcsCase.getId().toString());
+            managed.changed(CaseBundleDefinition.NAME, pcsCase.getId().toString());
         }
     }
 }

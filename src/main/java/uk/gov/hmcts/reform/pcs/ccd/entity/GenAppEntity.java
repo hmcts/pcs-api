@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleInvalidation;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleChangeListener;
 
 import java.time.LocalDate;
 import java.math.BigDecimal;
@@ -42,7 +42,7 @@ import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@EntityListeners(CaseBundleInvalidation.class)
+@EntityListeners(CaseBundleChangeListener.class)
 @Builder
 @Getter
 @Setter
