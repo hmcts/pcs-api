@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
@@ -122,8 +123,13 @@ public class EnforcementOrderEntity {
     @JsonManagedReference
     private List<SelectedDefendantEntity> selectedDefendants = new ArrayList<>();
 
+    /**
+     * Batched, because the case view and batch print both read the documents of every enforcement on a claim,
+     * which without it is a query per enforcement.
+     */
     @OneToMany(fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "enf_case_id")
+    @BatchSize(size = 20)
     @Builder.Default
     private List<DocumentEntity> documents = new ArrayList<>();
 

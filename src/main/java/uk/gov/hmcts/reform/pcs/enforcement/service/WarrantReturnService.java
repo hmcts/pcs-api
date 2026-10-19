@@ -23,9 +23,12 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
@@ -232,16 +235,35 @@ public class WarrantReturnService {
     @Transactional(readOnly = true)
     public Optional<WarrantReturnEntity> findLatestReturn(PcsCaseEntity pcsCaseEntity) {
         return currentEnforcementService.findCurrentEnforcement(pcsCaseEntity)
-            .flatMap(enforcement -> warrantReturnRepository
+            .flatMap(this::findLatestReturn);
+    }
+
+    /**
+     * One enforcement's most recent return, if it has one. While a case view is being built, the claim's
+     * enforcements' returns are loaded together, since the view asks for several of them.
+     */
+    @Transactional(readOnly = true)
+    public Optional<WarrantReturnEntity> findLatestReturn(EnforcementOrderEntity enforcement) {
+        return EnforcementCaseViewLoads.latestReturns(claimIdOf(enforcement), this::loadLatestReturns)
+            .map(latestReturns -> Optional.ofNullable(latestReturns.get(enforcement.getId())))
+            .orElseGet(() -> warrantReturnRepository
                 .findFirstByEnforcementOrderIdOrderByRecordedAtDesc(enforcement.getId()));
     }
 
     /**
-     * One enforcement's most recent return, if it has one.
+     * Each of the claim's enforcements' most recent return, by enforcement id, in one query. Enforcements
+     * with no return are absent.
      */
-    @Transactional(readOnly = true)
-    public Optional<WarrantReturnEntity> findLatestReturn(EnforcementOrderEntity enforcement) {
-        return warrantReturnRepository.findFirstByEnforcementOrderIdOrderByRecordedAtDesc(enforcement.getId());
+    private Map<UUID, WarrantReturnEntity> loadLatestReturns(UUID claimId) {
+        Map<UUID, WarrantReturnEntity> latestReturns = new HashMap<>();
+        warrantReturnRepository.findByEnforcementOrderClaimIdOrderByRecordedAtDesc(claimId)
+            .forEach(warrantReturn ->
+                         latestReturns.putIfAbsent(warrantReturn.getEnforcementOrder().getId(), warrantReturn));
+        return latestReturns;
+    }
+
+    private static UUID claimIdOf(EnforcementOrderEntity enforcement) {
+        return enforcement.getClaim() == null ? null : enforcement.getClaim().getId();
     }
 
     static boolean isWarrant(EnforcementOrderEntity enforcement) {
