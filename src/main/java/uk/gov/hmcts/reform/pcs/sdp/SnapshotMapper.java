@@ -8,8 +8,6 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
 
-import java.util.List;
-
 /**
  * Maps PCS claim source values into SDP snapshot model fields.
  */
@@ -32,12 +30,7 @@ public class SnapshotMapper {
                                          String extractDate,
                                          String snapshotId,
                                          String publishedDate,
-                                         String claimReference,
-                                         int snapshotVersion,
-                                         String recordedDate,
-                                         SnapshotDimensions dimensions,
-                                         SnapshotMilestones milestones,
-                                         List<SnapshotParty> parties) {
+                                         ClaimSnapshot claim) {
         return ClaimSnapshotRecord.builder()
             .contractVersion(CONTRACT_VERSION)
             .producer(Producer.builder()
@@ -47,14 +40,7 @@ public class SnapshotMapper {
             .extractDate(extractDate)
             .snapshotId(snapshotId)
             .publishedDate(publishedDate)
-            .claim(ClaimSnapshot.builder()
-                .claimReference(claimReference)
-                .snapshotVersion(snapshotVersion)
-                .recordedDate(recordedDate)
-                .dimensions(dimensions)
-                .milestones(milestones)
-                .parties(parties)
-                .build())
+            .claim(claim)
             .build();
     }
 
