@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("integration")
 @Transactional
 @SuppressWarnings("deprecation")
-@DisplayName("Claimant risk assessment updates (V046)")
+@DisplayName("Claimant risk assessment updates (V149)")
 class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
 
     private static final String UPDATE_BANNER = "The claimant has updated their risk assessment.";

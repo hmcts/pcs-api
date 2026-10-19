@@ -12,7 +12,7 @@ public class LiveEnforcementExistsException extends RuntimeException {
     public static final String MESSAGE = "There is already a live warrant or writ on this case";
 
     /**
-     * The partial unique index (V058) the database refuses a second live enforcement with.
+     * The partial unique index (V154) the database refuses a second live enforcement with.
      */
     public static final String CONSTRAINT_NAME = "enf_case_one_live_per_claim";
 

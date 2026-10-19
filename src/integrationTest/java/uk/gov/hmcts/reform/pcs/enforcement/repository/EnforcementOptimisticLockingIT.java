@@ -33,12 +33,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * The enforcement is updated from the case event, the Payments callback and the document generation task,
- * which take no common lock, so enf_case carries a version column (V057) and a write from a stale copy is
+ * which take no common lock, so enf_case carries a version column (V153) and a write from a stale copy is
  * refused rather than overwriting someone else's.
  */
 @SpringBootTest(properties = "db-scheduler.polling-interval-seconds=3600")
 @ActiveProfiles("integration")
-@DisplayName("Enforcement optimistic locking (V057)")
+@DisplayName("Enforcement optimistic locking (V153)")
 class EnforcementOptimisticLockingIT extends AbstractPostgresContainerIT {
 
     @Autowired
