@@ -181,7 +181,7 @@ class EnforcementStatusTabMarkdownTest {
             .contains(">Scheduled eviction</h3>")
             .contains(">Eviction outcome</h3>")
             .doesNotContain("Claimant eviction confirmation")
-            .doesNotContain("attend on");
+            .doesNotContain("(or someone from your organisation) attend on");
     }
 
     private static String render(EnforcementOrderEntity enforcement, WarrantReturnEntity latestReturn) {

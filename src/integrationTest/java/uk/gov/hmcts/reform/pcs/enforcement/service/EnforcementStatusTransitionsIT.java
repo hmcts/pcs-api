@@ -328,7 +328,7 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         long caseReference = nextCaseReference();
         final UUID id = savedEnforcement(caseReference, AWAITING_BAILIFF_ALLOCATION).getId();
 
-        EnforcementChange<Void> allocated = bailiffAllocationService.allocate(
+        EnforcementChange<String> allocated = bailiffAllocationService.allocate(
             caseReference, new BailiffUser(BAILIFF_USER_ID, "Sam Jones", "sam@justice.gov.uk"));
         entityManager.flush();
         entityManager.clear();
@@ -458,9 +458,10 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         // 19-enforcement-status-model.feature "Status transitions", plus the writ's transfer to the High Court.
         expected.put(AWAITING_PAYMENT, EnumSet.of(AWAITING_REVIEW));
         expected.put(AWAITING_REVIEW, EnumSet.of(AWAITING_BAILIFF_ALLOCATION, REJECTED, TRANSFERRED_TO_HIGH_COURT));
-        expected.put(AWAITING_BAILIFF_ALLOCATION, EnumSet.of(AWAITING_SCHEDULING));
-        // A return can be recorded at any point after a bailiff is allocated (11-record-warrant-return.feature),
-        // so every status from here on can also close, go into breathing space or go back for scheduling.
+        // A return can be recorded at any point once the warrant has been generated (HDPI-7347,
+        // 11-record-warrant-return.feature), so every status from here on can also close, go into breathing
+        // space or go back for scheduling.
+        expected.put(AWAITING_BAILIFF_ALLOCATION, EnumSet.of(AWAITING_SCHEDULING, CLOSED, BREATHING_SPACE));
         expected.put(AWAITING_SCHEDULING, EnumSet.of(AWAITING_CLAIMANT_CONFIRMATION, CLOSED, BREATHING_SPACE));
         expected.put(AWAITING_CLAIMANT_CONFIRMATION, EnumSet.of(CLAIMANT_CONFIRMED, CLAIMANT_UNABLE_TO_ATTEND,
                                                                 CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING));

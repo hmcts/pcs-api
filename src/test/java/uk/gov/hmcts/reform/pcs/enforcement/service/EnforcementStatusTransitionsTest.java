@@ -64,8 +64,10 @@ class EnforcementStatusTransitionsTest {
         new Transition(CLAIMANT_CONFIRMED, "the bailiff reschedules a confirmed eviction",
                        AWAITING_CLAIMANT_CONFIRMATION),
         new Transition(CLOSED, "the bailiff records \"Reopen warrant\"", AWAITING_BAILIFF_ALLOCATION),
-        // 11-record-warrant-return.feature (HDPI-8424): a return can be recorded at any point after a bailiff is
-        // allocated, and from breathing space
+        // 11-record-warrant-return.feature (HDPI-8424): a return can be recorded at any point once the warrant
+        // has been generated, and from breathing space
+        new Transition(AWAITING_BAILIFF_ALLOCATION, "the bailiff records a closing final return", CLOSED),
+        new Transition(AWAITING_BAILIFF_ALLOCATION, "the bailiff records a breathing space return", BREATHING_SPACE),
         new Transition(AWAITING_SCHEDULING, "the bailiff records a closing final return", CLOSED),
         new Transition(AWAITING_SCHEDULING, "the bailiff records a breathing space return", BREATHING_SPACE),
         new Transition(AWAITING_CLAIMANT_CONFIRMATION, "the bailiff records a closing final return", CLOSED),

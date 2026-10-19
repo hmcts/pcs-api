@@ -162,7 +162,7 @@ const STATUS_LABELS: Record<string, string> = {
   AWAITING_SCHEDULING: 'Awaiting scheduling',
   AWAITING_CLAIMANT_CONFIRMATION: 'Awaiting claimant confirmation',
   CLAIMANT_CONFIRMED: 'Claimant confirmed',
-  CLAIMANT_UNABLE_TO_ATTEND: 'Claimant unable to attend',
+  CLAIMANT_UNABLE_TO_ATTEND: 'Claimant unable to attend on this date',
   AWAITING_PROPERTY_VISIT: 'Awaiting property visit',
   BREATHING_SPACE: 'Breathing space',
   TRANSFERRED_TO_HIGH_COURT: 'Transferred to the High Court',
@@ -171,7 +171,6 @@ const STATUS_LABELS: Record<string, string> = {
 
 /** Feature-file spellings of a status that differ from the EnforcementStatus label. */
 const STATUS_ALIASES: Record<string, string> = {
-  'Claimant unable to attend on this date': 'Claimant unable to attend',
   'Transferred to High Court': 'Transferred to the High Court',
 };
 

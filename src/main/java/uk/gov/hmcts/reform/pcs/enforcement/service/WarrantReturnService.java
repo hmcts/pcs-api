@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnTyp
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -48,9 +47,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLOSE
 @Service
 public class WarrantReturnService {
 
-    public static final String NOT_ALLOCATED_MESSAGE =
-        "A bailiff must be allocated to the warrant before a return can be recorded";
-
     /**
      * Only warrants go to county court bailiffs. A writ goes to a High Court Enforcement Officer.
      */
@@ -58,12 +54,13 @@ public class WarrantReturnService {
         EnumSet.of(SelectEnforcementType.WARRANT, SelectEnforcementType.WARRANT_OF_RESTITUTION));
 
     /**
-     * Every status once a bailiff has been allocated, while the warrant is live, plus CLOSED for "Reopen
-     * warrant". A return can be recorded at several points, not just after the claimant confirms.
+     * Every status the warrant has been generated in, which HDPI-7347 makes the only condition on recording a
+     * return: a warrant still waiting for a bailiff can take one, as can a closed warrant through "Reopen
+     * warrant".
      */
     static final Set<EnforcementStatus> RECORDABLE_STATUSES = Collections.unmodifiableSet(EnumSet.of(
-        AWAITING_SCHEDULING, AWAITING_CLAIMANT_CONFIRMATION, CLAIMANT_CONFIRMED, CLAIMANT_UNABLE_TO_ATTEND,
-        AWAITING_PROPERTY_VISIT, BREATHING_SPACE, CLOSED));
+        AWAITING_BAILIFF_ALLOCATION, AWAITING_SCHEDULING, AWAITING_CLAIMANT_CONFIRMATION, CLAIMANT_CONFIRMED,
+        CLAIMANT_UNABLE_TO_ATTEND, AWAITING_PROPERTY_VISIT, BREATHING_SPACE, CLOSED));
 
     private final CurrentEnforcementService currentEnforcementService;
     private final WarrantReturnRepository warrantReturnRepository;
@@ -93,23 +90,20 @@ public class WarrantReturnService {
     }
 
     /**
-     * The warrant a return would be recorded against: the claim's current enforcement, if it is a warrant
-     * that a bailiff has been allocated to. For the start callback and the mid-event page: it refuses by
-     * throwing, which
+     * The warrant a return would be recorded against: the claim's current enforcement, if a warrant has been
+     * generated on it. For the start callback and the mid-event page: it refuses by throwing, which
      * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
      * error on the callback response.
      *
-     * @throws NoEnforcementException if the claim has no warrant, or it has not been approved yet
-     * @throws EnforcementEventNotAvailableException if the warrant is waiting for a bailiff to be allocated
+     * @throws NoEnforcementException if no warrant has been generated on the claim
      */
     @Transactional(readOnly = true)
     public EnforcementOrderEntity findWarrant(long caseReference) {
         EnforcementOrderEntity current = currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null);
-        return switch (refusal(current)) {
-            case NO_WARRANT -> throw new NoEnforcementException();
-            case NOT_ALLOCATED -> throw new EnforcementEventNotAvailableException(NOT_ALLOCATED_MESSAGE);
-            case NONE -> current;
-        };
+        if (!hasGeneratedWarrant(current)) {
+            throw new NoEnforcementException();
+        }
+        return current;
     }
 
     /**
@@ -117,45 +111,22 @@ public class WarrantReturnService {
      */
     private EnforcementChange<EnforcementOrderEntity> findRecordableWarrant(long caseReference) {
         EnforcementOrderEntity current = currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null);
-        return switch (refusal(current)) {
-            case NO_WARRANT -> EnforcementChange.refused(NoEnforcementException.MESSAGE);
-            case NOT_ALLOCATED -> EnforcementChange.refused(NOT_ALLOCATED_MESSAGE);
-            case NONE -> EnforcementChange.made(current);
-        };
+        return hasGeneratedWarrant(current)
+            ? EnforcementChange.made(current)
+            : EnforcementChange.refused(NoEnforcementException.MESSAGE);
     }
 
     /**
-     * Why a return cannot be recorded on the claim's current enforcement, or {@link Refusal#NONE} when it can.
+     * Whether a return can be recorded on the claim's current enforcement: a warrant has been generated on it.
+     * HDPI-7347 asks for that one condition, and for the event to be offered and refused with "There is no
+     * warrant on this case" when it is not met, so there is nothing to hide the event on.
      *
      * @param currentEnforcement the claim's current enforcement, or null if it has none
      */
-    static Refusal refusal(EnforcementOrderEntity currentEnforcement) {
-        if (currentEnforcement == null || !isWarrant(currentEnforcement)) {
-            return Refusal.NO_WARRANT;
-        }
-        EnforcementStatus status = currentEnforcement.getStatus();
-        if (status == AWAITING_BAILIFF_ALLOCATION) {
-            return Refusal.NOT_ALLOCATED;
-        }
-        // Not approved yet (or rejected), so no warrant has been generated.
-        return RECORDABLE_STATUSES.contains(status) ? Refusal.NONE : Refusal.NO_WARRANT;
-    }
-
-    /**
-     * Whether "Record warrant return" is offered on the claim's current enforcement. It is hidden only for a
-     * warrant still waiting for a bailiff. With no warrant on the claim it is offered and refused when it starts,
-     * because HDPI-7347 asks for the error "There is no warrant on this case".
-     *
-     * @param currentEnforcement the claim's current enforcement, or null if it has none
-     */
-    public static boolean canOfferRecordWarrantReturn(EnforcementOrderEntity currentEnforcement) {
-        return refusal(currentEnforcement) != Refusal.NOT_ALLOCATED;
-    }
-
-    enum Refusal {
-        NONE,
-        NO_WARRANT,
-        NOT_ALLOCATED
+    private static boolean hasGeneratedWarrant(EnforcementOrderEntity currentEnforcement) {
+        return currentEnforcement != null
+            && isWarrant(currentEnforcement)
+            && RECORDABLE_STATUSES.contains(currentEnforcement.getStatus());
     }
 
     /**

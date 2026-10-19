@@ -107,7 +107,7 @@ class EnforcementTestingSupportControllerTest {
     @Test
     void shouldReturnNoContentWhenTheBailiffIsAllocated() {
         givenTheCallerIsAuthenticated();
-        givenTheAllocation(EnforcementChange.made());
+        givenTheAllocation(EnforcementChange.made("WP-00000001"));
 
         assertThat(underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST)
                        .getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -116,7 +116,7 @@ class EnforcementTestingSupportControllerTest {
     @Test
     void shouldAllocateTheRequestedBailiffToTheCase() {
         givenTheCallerIsAuthenticated();
-        givenTheAllocation(EnforcementChange.made());
+        givenTheAllocation(EnforcementChange.made("WP-00000001"));
 
         underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST);
 
@@ -133,7 +133,7 @@ class EnforcementTestingSupportControllerTest {
         AtomicReference<Object> principalDuringAllocation = new AtomicReference<>();
         when(bailiffAllocationService.allocate(CASE_REFERENCE, EXPECTED_BAILIFF)).thenAnswer(invocation -> {
             principalDuringAllocation.set(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-            return EnforcementChange.made();
+            return EnforcementChange.made("WP-00000001");
         });
 
         underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST);
@@ -216,7 +216,7 @@ class EnforcementTestingSupportControllerTest {
         verifyNoInteractions(enforcementBackdateService);
     }
 
-    private void givenTheAllocation(EnforcementChange<Void> outcome) {
+    private void givenTheAllocation(EnforcementChange<String> outcome) {
         when(bailiffAllocationService.allocate(CASE_REFERENCE, EXPECTED_BAILIFF)).thenReturn(outcome);
     }
 

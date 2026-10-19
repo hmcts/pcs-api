@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
 import java.util.List;
@@ -87,7 +86,7 @@ public class RecordWarrantReturnPage implements CcdPageConfiguration, CcdPage {
         List<String> errors;
         try {
             errors = warrantReturnService.validate(details.getId(), warrantReturn);
-        } catch (NoEnforcementException | EnforcementEventNotAvailableException ex) {
+        } catch (NoEnforcementException ex) {
             errors = List.of(ex.getMessage());
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

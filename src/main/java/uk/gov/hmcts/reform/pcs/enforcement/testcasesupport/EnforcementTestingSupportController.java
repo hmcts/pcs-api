@@ -110,7 +110,7 @@ public class EnforcementTestingSupportController {
         log.info("Testing support: allocating the warrant on case {} to bailiff {}", caseReference,
                  request.userId());
         BailiffUser bailiff = new BailiffUser(request.userId(), request.name(), request.email());
-        EnforcementChange<Void> allocated =
+        EnforcementChange<String> allocated =
             runAsCaller(authorization, () -> bailiffAllocationService.allocate(caseReference, bailiff));
 
         // The service refuses rather than throwing, so the refusal has to be turned into a failure here or

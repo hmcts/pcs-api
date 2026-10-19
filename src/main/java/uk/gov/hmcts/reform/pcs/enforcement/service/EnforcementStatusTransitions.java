@@ -106,6 +106,9 @@ public class EnforcementStatusTransitions {
         // closes the warrant, puts it in breathing space or sends it back for scheduling. A warrant in breathing
         // space can still take a return (19-enforcement-status-model.feature event availability), which is how
         // it leaves breathing space (OPEN-QUESTIONS 4).
+        // HDPI-7347 keys "Record warrant return" on the warrant having been generated, so a warrant still
+        // waiting for a bailiff can take one.
+        allow(allowed, AWAITING_BAILIFF_ALLOCATION, CLOSED, BREATHING_SPACE);
         allow(allowed, AWAITING_SCHEDULING, CLOSED, BREATHING_SPACE);
         allow(allowed, AWAITING_CLAIMANT_CONFIRMATION, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
         allow(allowed, CLAIMANT_UNABLE_TO_ATTEND, CLOSED, BREATHING_SPACE, AWAITING_SCHEDULING);
