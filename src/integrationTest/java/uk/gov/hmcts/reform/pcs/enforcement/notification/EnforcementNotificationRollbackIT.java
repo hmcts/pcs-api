@@ -4,6 +4,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -200,9 +202,89 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
             .as(caseworker)
             .submitExpectingSuccess();
 
-        verify(sender).send(caseReference, EnforcementEmail.APPLICATION_REJECTED,
+        verify(sender).send(caseReference, EnforcementEmail.WARRANT_REJECTED,
                             Map.of(EnforcementEmail.REJECTION_REASON, "The possession order was set aside"));
         assertOneEmailQueued();
+    }
+
+    @Test
+    @DisplayName("Decide enforcement queues the warrant of restitution approval email")
+    void warrantOfRestitutionApprovalQueuesTheEmail() {
+        givenEnforcement(SelectEnforcementType.WARRANT_OF_RESTITUTION, EnforcementStatus.AWAITING_REVIEW);
+
+        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null))
+            .as(caseworker)
+            .submitExpectingSuccess();
+
+        String warrantNumber = storedEnforcement().getEnforcementNumber();
+        assertThat(warrantNumber).startsWith("WR-");
+        verify(sender).send(caseReference, EnforcementEmail.WARRANT_OF_RESTITUTION_APPROVED,
+                            Map.of(EnforcementEmail.ENFORCEMENT_NUMBER, warrantNumber));
+        assertOneEmailQueued();
+    }
+
+    /**
+     * Each enforcement type has its own rejection template, so the one the type chooses is the one queued.
+     */
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({
+        "WRIT, WRIT_REJECTED",
+        "WARRANT_OF_RESTITUTION, WARRANT_OF_RESTITUTION_REJECTED",
+    })
+    @DisplayName("Decide enforcement queues the rejection email for the enforcement type")
+    void rejectionQueuesTheEmailForTheType(SelectEnforcementType enforcementType, EnforcementEmail email) {
+        givenEnforcement(enforcementType, EnforcementStatus.AWAITING_REVIEW);
+
+        events.event(caseReference, EventId.decideEnforcement.name(),
+                     decision(EnforcementDecision.REJECT, "The possession order was set aside"))
+            .as(caseworker)
+            .submitExpectingSuccess();
+
+        verify(sender).send(caseReference, email,
+                            Map.of(EnforcementEmail.REJECTION_REASON, "The possession order was set aside"));
+        assertOneEmailQueued();
+    }
+
+    /**
+     * HDPI-7538 leaves the writ-of-restitution wording TBC, so the decision is recorded and nothing is
+     * emailed (OPEN-QUESTIONS 55).
+     */
+    @Test
+    @DisplayName("Deciding a writ of restitution records the decision and emails no one")
+    void writOfRestitutionDecisionEmailsNoOne() {
+        givenEnforcement(SelectEnforcementType.WRIT_OF_RESTITUTION, EnforcementStatus.AWAITING_REVIEW);
+
+        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null))
+            .as(caseworker)
+            .submitExpectingSuccess();
+
+        assertThat(storedEnforcement().getStatus()).isEqualTo(EnforcementStatus.TRANSFERRED_TO_HIGH_COURT);
+        verifyNoInteractions(sender);
+        assertNoEmailQueued();
+    }
+
+    /**
+     * The decide-enforcement counterpart of the schedule-eviction case below: the rejection is recorded, its
+     * email cannot be queued, and the caseworker is asked to submit again rather than given a 500 with the
+     * enforcement left rejected and the claimant never told.
+     */
+    @Test
+    @DisplayName("Decide enforcement whose email cannot be queued is refused, and records nothing")
+    void decisionWhoseEmailCannotBeQueuedIsRefused() {
+        givenEnforcement(SelectEnforcementType.WRIT, EnforcementStatus.AWAITING_REVIEW);
+        doThrow(new NotificationException("Failed to save Case Notification.",
+                                          new DataIntegrityViolationException("case_notification")))
+            .when(sender).send(eq(caseReference), any(), any());
+
+        var rejected = events.event(caseReference, EventId.decideEnforcement.name(),
+                                    decision(EnforcementDecision.REJECT, "The possession order was set aside"))
+            .as(caseworker)
+            .submitExpectingErrors();
+
+        assertThat(rejected.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
+        assertThat(storedEnforcement().getStatus()).isEqualTo(EnforcementStatus.AWAITING_REVIEW);
+        assertThat(storedEnforcement().getRejectionReason()).isNull();
+        assertNoEmailQueued();
     }
 
     @Test

@@ -75,6 +75,18 @@ Feature: Caseworker decides an enforcement application
     And the enforcement status changes to "Transferred to High Court"
     And the claimant receives the "Application for a writ successful" email telling them to give the writ to a High Court Enforcement Officer
 
+  # A warrant of restitution application cannot be seeded through the API yet (HDPI-7419), and cannot be
+  # submitted at all (OPEN-QUESTIONS #12).
+  @HDPI-9566 @HDPI-7538 @pending
+  Scenario: Approving a warrant of restitution tells the claimant it has gone to the bailiff
+    Given the enforcement is of type "warrant of restitution"
+    And I have accepted the application
+    When I submit the "Decide enforcement" event
+    Then I see the "Warrant of restitution approved" confirmation screen
+    And a warrant number is assigned to the enforcement
+    And the enforcement status changes to "Awaiting bailiff allocation"
+    And the claimant receives the "Caseworker generates the warrant of restitution" email
+
   @HDPI-9566
   Scenario Outline: Generated document is sealed and visible according to type
     Given the enforcement is of type "<type>"
@@ -122,3 +134,26 @@ Feature: Caseworker decides an enforcement application
     And the "Risk assessment" tab is not shown
     And the claimant receives the "Caseworker rejects the warrant of possession application" email
     And the claimant can apply again using "Enforce the order"
+
+  @HDPI-8656 @HDPI-9566 @HDPI-7538
+  Scenario: Rejecting a writ of possession application
+    Given the enforcement is of type "writ of possession"
+    And I am on the "Decide enforcement" screen
+    When I select "Reject"
+    And I enter a reason for rejecting
+    And I submit the "Decide enforcement" event
+    Then I see the "Writ of possession rejected" confirmation screen
+    And the enforcement status changes to "Rejected"
+    And the claimant receives the "Caseworker rejects the writ of possession application" email
+
+  # Seeding a warrant of restitution, as above.
+  @HDPI-8656 @HDPI-7538 @pending
+  Scenario: Rejecting a warrant of restitution application
+    Given the enforcement is of type "warrant of restitution"
+    And I am on the "Decide enforcement" screen
+    When I select "Reject"
+    And I enter a reason for rejecting
+    And I submit the "Decide enforcement" event
+    Then I see the "Warrant of restitution rejected" confirmation screen
+    And the enforcement status changes to "Rejected"
+    And the claimant receives the "Caseworker rejects the warrant of restitution application" email

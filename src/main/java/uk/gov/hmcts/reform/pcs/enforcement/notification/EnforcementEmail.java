@@ -39,16 +39,33 @@ public enum EnforcementEmail {
 
     /**
      * 02-caseworker-decides-enforcement.feature, "Approving a warrant of possession generates the sealed
-     * warrant" and "Approving a writ of possession generates the sealed writ for the claimant".
+     * warrant", "Approving a writ of possession generates the sealed writ for the claimant" and "Approving a
+     * warrant of restitution tells the claimant it has gone to the bailiff".
+     *
+     * <p>The restitution body HDPI-7538 gives is the warrant one plus a warning that some courts have a
+     * backlog, and names no warrant number; its subject-line cell is blank, so the row's own name stands in
+     * until the service writes one.</p>
      */
     WARRANT_APPROVED("Caseworker generates the warrant of possession", "warrant-approved", "enforcementNumber"),
     WRIT_APPROVED("Application for a writ successful", "writ-approved", "enforcementNumber"),
+    WARRANT_OF_RESTITUTION_APPROVED(
+        "Caseworker generates the warrant of restitution", "warrant-of-restitution-approved"),
 
     /**
-     * 02-caseworker-decides-enforcement.feature, "Rejecting an application".
+     * 02-caseworker-decides-enforcement.feature, "Rejecting an application", "Rejecting a writ of possession
+     * application" and "Rejecting a warrant of restitution application".
+     *
+     * <p>A warrant of possession is the one rejection HDPI-7538 still leaves TBC — "depends on designs for
+     * reject enforcement designs - can we populate with the free text reason entered by caseworker?" — which
+     * is why it is the only one that takes the caseworker's reason. The writ and warrant-of-restitution
+     * bodies are finished, say only that the request was refused and what the claimant can do instead, and
+     * use no reason. Neither row gives a subject line.</p>
      */
-    APPLICATION_REJECTED(
-        "Caseworker rejects the warrant of possession application", "application-rejected", "rejectionReason"),
+    WARRANT_REJECTED(
+        "Caseworker rejects the warrant of possession application", "warrant-rejected", "rejectionReason"),
+    WRIT_REJECTED("Caseworker rejects the writ of possession application", "writ-rejected"),
+    WARRANT_OF_RESTITUTION_REJECTED(
+        "Caseworker rejects the warrant of restitution application", "warrant-of-restitution-rejected"),
 
     /**
      * 05-schedule-eviction.feature and 07-reschedule-eviction.feature, "Claimant is asked to confirm the
@@ -111,9 +128,9 @@ public enum EnforcementEmail {
 
     /**
      * The email telling the claimant their application was approved, or null for a type whose content the
-     * service has not written yet. HDPI-7538 names an approval email for a warrant and for a writ of
-     * possession only; the restitution wording is TBC (OPEN-QUESTIONS 56), and nothing is sent until it
-     * exists.
+     * service has not written yet. HDPI-7538 gives finished bodies for a warrant of possession, a writ of
+     * possession and a warrant of restitution. Only the writ of restitution is still TBC — "Remove bit about
+     * NICE and advise claimants to contact HCEO" (OPEN-QUESTIONS 55) — and nothing is sent for it.
      */
     public static EnforcementEmail forApproval(SelectEnforcementType enforcementType) {
         if (enforcementType == null) {
@@ -122,22 +139,27 @@ public enum EnforcementEmail {
         return switch (enforcementType) {
             case WARRANT -> WARRANT_APPROVED;
             case WRIT -> WRIT_APPROVED;
-            case WARRANT_OF_RESTITUTION, WRIT_OF_RESTITUTION -> null;
+            case WARRANT_OF_RESTITUTION -> WARRANT_OF_RESTITUTION_APPROVED;
+            case WRIT_OF_RESTITUTION -> null;
         };
     }
 
     /**
      * The email telling the claimant their application was rejected, or null for a type whose content the
-     * service has not written yet. HDPI-7538 names a rejection email for a warrant of possession only; the
-     * writ and restitution wording is TBC (OPEN-QUESTIONS 56).
+     * service has not written yet. HDPI-7538 gives finished bodies for the writ of possession and warrant of
+     * restitution rejections, and leaves the writ of restitution as a bare "TBC" (OPEN-QUESTIONS 55). The
+     * warrant of possession rejection is wired to the reason the caseworker typed while its own wording is
+     * settled.
      */
     public static EnforcementEmail forRejection(SelectEnforcementType enforcementType) {
         if (enforcementType == null) {
             return null;
         }
         return switch (enforcementType) {
-            case WARRANT -> APPLICATION_REJECTED;
-            case WRIT, WARRANT_OF_RESTITUTION, WRIT_OF_RESTITUTION -> null;
+            case WARRANT -> WARRANT_REJECTED;
+            case WRIT -> WRIT_REJECTED;
+            case WARRANT_OF_RESTITUTION -> WARRANT_OF_RESTITUTION_REJECTED;
+            case WRIT_OF_RESTITUTION -> null;
         };
     }
 }
