@@ -111,7 +111,8 @@ export async function signInAs(name: string, page: Page): Promise<void> {
  *
  * In the demo project the session an earlier scenario of the same feature left signed in as this user is
  * carried into this one instead, so the video does not show the same sign-in once per scenario
- * (demo-continuity.ts). Everywhere else, and whenever XUI no longer knows that session, the sign-in runs.
+ * (demo-continuity.ts). Everywhere else, and whenever XUI does not answer for that session as this user, the
+ * sign-in runs.
  */
 export async function ensureSignedIn(page: Page): Promise<void> {
   const role = expectedRole;
@@ -122,7 +123,7 @@ export async function ensureSignedIn(page: Page): Promise<void> {
   if (signedInRole === role) {
     return;
   }
-  if (!(await restoreSession(role, page.context()))) {
+  if (!(await restoreSession(role, email, page))) {
     await signInFresh(email, page);
   }
   signedInRole = role;

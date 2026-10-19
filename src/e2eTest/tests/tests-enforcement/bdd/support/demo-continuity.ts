@@ -15,7 +15,15 @@
  *     different status, a different enforcement type or with an extra step gets a case of its own.
  *   - the signed-in session, as the browser context's cookies. Playwright gives every test a fresh context
  *     and will not reuse one at all while it is recording video, so the session cannot simply be left open;
- *     the cookies are put into the new context instead, and only after XUI has confirmed it still knows them.
+ *     the cookies are put into the new context instead, and kept only once XUI has named the user they are
+ *     signed in as and it is the user the caller asked for.
+ *
+ * Why this cannot film the wrong user. A session is carried over only when XUI, asked whose the restored
+ * cookies are, names the user being signed in as; one belonging to anyone else is dropped, and the caller
+ * signs in as it would have without this file. The page is then opened on XUI again: changing the cookies
+ * under a page leaves the user who rendered it on screen, with their tabs and their view of the case, and the
+ * step that opens the case next navigates to a URL that can differ from the one the page is on only by its
+ * fragment, which would not reload it.
  *
  * Why this cannot film the wrong state. The case is handed to the next scenario only when all of:
  *
@@ -42,7 +50,7 @@
  * The case role the held case keeps is dropped when it is released. The last case a worker holds keeps it,
  * which costs the claimant's legal representative one extra case in their case list per feature filmed.
  */
-import { BrowserContext, Cookie, TestInfo, test } from '@playwright/test';
+import { BrowserContext, Cookie, Page, TestInfo, test } from '@playwright/test';
 import Axios from 'axios';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { performAction } from '@utils/controller-enforcement';
@@ -208,16 +216,22 @@ export async function rememberSession(context: BrowserContext, role: string): Pr
 
 /**
  * Puts the session last signed in as `role` into this scenario's browser context, so it does not have to sign
- * in again. Answers false unless XUI still knows that session, in which case the caller signs in as usual.
+ * in again. Answers false unless XUI answers for the restored cookies as `email`, in which case the caller
+ * signs in as usual; a session that turns out to be somebody else's is dropped rather than carried on with.
  */
-export async function restoreSession(role: string, context: BrowserContext): Promise<boolean> {
+export async function restoreSession(role: string, email: string, page: Page): Promise<boolean> {
+  const context = page.context();
   const cookies = enabled ? sessions.get(role) : undefined;
   if (!cookies?.length) {
     return false;
   }
   await context.clearCookies();
   await context.addCookies(cookies);
-  if (await xuiKnowsSession(context)) {
+  if ((await xuiSignedInAs(context)) === email.toLowerCase()) {
+    // Swapping the cookies under the page leaves the user who rendered it on screen: their tabs, their case
+    // view. A page.goto to a URL that differs from the one it is on only by its fragment would not reload it,
+    // so the page is opened on XUI again, which is what the sign-in this is standing in for would have done.
+    await page.goto(String(process.env.MANAGE_CASE_BASE_URL), { waitUntil: 'domcontentloaded' });
     return true;
   }
   sessions.delete(role);
@@ -231,16 +245,22 @@ export function noteSignedInRole(role: string): void {
 }
 
 /**
- * Whether XUI still has the session the context's cookies belong to: it answers a signed-in-only page itself
- * rather than redirecting to IDAM. `context.request` shares the context's cookies.
+ * Who XUI says the context's cookies are signed in as, lower cased, or undefined when it has no session for
+ * them. XUI serves its Angular app to anyone, so a page that loads proves nothing about the session; its
+ * `/api/user/details` answers 401 without one and names the user with one. `context.request` shares the
+ * context's cookies.
  */
-async function xuiKnowsSession(context: BrowserContext): Promise<boolean> {
+async function xuiSignedInAs(context: BrowserContext): Promise<string | undefined> {
   const base = String(process.env.MANAGE_CASE_BASE_URL);
   try {
-    const response = await context.request.get(`${base}/cases`);
-    return response.ok() && new URL(response.url()).origin === new URL(base).origin;
+    const response = await context.request.get(`${base}/api/user/details`);
+    if (!response.ok()) {
+      return undefined;
+    }
+    const details = (await response.json()) as { userInfo?: { email?: string } };
+    return details.userInfo?.email?.toLowerCase();
   } catch {
-    return false;
+    return undefined;
   }
 }
 
