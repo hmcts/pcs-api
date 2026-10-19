@@ -88,7 +88,8 @@ public final class EnforcementDataUtil {
         EnforcementOrder.EnforcementOrderBuilder builder = EnforcementOrder.builder()
                 .chooseEnforcementType(buildEnforcementTypes(enforcementType));
 
-        if (enforcementType == SelectEnforcementType.WRIT) {
+        if (enforcementType == SelectEnforcementType.WRIT
+            || enforcementType == SelectEnforcementType.WRIT_OF_RESTITUTION) {
             return builder
                     .writDetails(WritDetails.builder()
                             .nameAndAddressForEviction(uk.gov.hmcts.reform.pcs.enforcement.domain.writ

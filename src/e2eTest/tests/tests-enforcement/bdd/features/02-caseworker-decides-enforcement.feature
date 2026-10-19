@@ -88,8 +88,8 @@ Feature: Caseworker decides an enforcement application
       | warrant of possession  | county court | internal users                 |
       | writ of possession     | High Court   | claimant and internal users    |
 
-    # A warrant of restitution application cannot be submitted yet (OPEN-QUESTIONS #12) and a writ of
-    # restitution is never offered (OPEN-QUESTIONS #11).
+    # Both restitution applications wait on the helpers driving their journeys, not on pcs-api: the sealing and
+    # visibility rules, the document templates and the writ of restitution's reachability are all in place.
     @pending
     Examples:
       | type                   | seal         | visible to                     |

@@ -431,7 +431,9 @@ const WITNESS_STATEMENT_DESCRIPTION = "Neighbour's witness statement";
 
 /**
  * Warrant of restitution with the seeded warrant's answers left as they are
- * (enforcement.warrantOfRestitution.spec.ts "all NO selection"). The journey ends on placeholder pages today.
+ * (enforcement.warrantOfRestitution.spec.ts "all NO selection"). It stops on the last placeholder page: the
+ * journey's language and statement of truth pages are the warrant journey's, which these helpers do not drive
+ * for a restitution application yet.
  */
 async function answerWarrantOfRestitutionQuestions(): Promise<void> {
   const seeded = enforceWarrantApiData.enforceCasePayloadNoJourney;

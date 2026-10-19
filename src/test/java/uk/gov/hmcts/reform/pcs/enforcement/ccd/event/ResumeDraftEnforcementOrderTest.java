@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.PlacedFields;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementDeclarationPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
@@ -48,6 +49,8 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
     @Mock
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
     @Mock
+    private EnforcementDeclarationPageConfigurer enforcementDeclarationPageConfigurer;
+    @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private EnforcementOrderService enforcementOrderService;
@@ -73,6 +76,7 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
         verify(warrantPageConfigurer).configurePages(savingPageBuilder);
         verify(writPageConfigurer).configurePages(savingPageBuilder);
         verify(warrantOfRestitutionPageConfigurer).configurePages(savingPageBuilder);
+        verify(enforcementDeclarationPageConfigurer).configurePages(savingPageBuilder);
     }
 
     /**

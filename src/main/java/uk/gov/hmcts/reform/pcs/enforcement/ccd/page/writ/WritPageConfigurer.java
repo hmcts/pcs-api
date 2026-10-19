@@ -19,8 +19,6 @@ public class WritPageConfigurer implements PageConfigurer {
             .add(new MissedPaymentsWritPage())
             .add(new ConfirmHCEOfficerPage())
             .add(new HCEOfficerDetailsPage())
-            .add(new EnforcementOfficerSelectionPage())
-            .add(new LanguageUsedWritPage())
-            .add(new StatementOfTruthWritPage());
+            .add(new EnforcementOfficerSelectionPage());
     }
 }

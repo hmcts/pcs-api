@@ -217,6 +217,35 @@ class EnforcementDocumentPersistenceServiceTest {
         assertThat(payload.getLanguage()).isEqualTo("Welsh");
     }
 
+    /**
+     * The restitution journeys answer the language page of their type's family, so the payload reads the
+     * warrant answers for a warrant of restitution and the writ answers for a writ of restitution
+     * (HDPI-7555).
+     */
+    @Test
+    void shouldTakeTheLanguageFromTheWarrantAnswersForAWarrantOfRestitution() {
+        enforcement.setEnforcementOrder(
+            buildEnforcementOrderWithSpecifiedType(SelectEnforcementType.WARRANT_OF_RESTITUTION));
+        enforcement.getEnforcementOrder().getWarrantDetails().setLanguageUsed(LanguageUsed.WELSH);
+
+        EnforcementDocumentPayload payload =
+            underTest.buildPayload(enforcement, EnforcementOutput.WARRANT_OF_RESTITUTION, pcsCase);
+
+        assertThat(payload.getLanguage()).isEqualTo("Welsh");
+    }
+
+    @Test
+    void shouldTakeTheLanguageFromTheWritAnswersForAWritOfRestitution() {
+        enforcement.setEnforcementOrder(
+            buildEnforcementOrderWithSpecifiedType(SelectEnforcementType.WRIT_OF_RESTITUTION));
+        enforcement.getEnforcementOrder().getWritDetails().setLanguageUsed(LanguageUsed.ENGLISH);
+
+        EnforcementDocumentPayload payload =
+            underTest.buildPayload(enforcement, EnforcementOutput.WRIT_OF_RESTITUTION, pcsCase);
+
+        assertThat(payload.getLanguage()).isEqualTo("English");
+    }
+
     @Test
     void shouldSendTheClaimantsAnswersToTheTemplateAsJson() throws Exception {
         EnforcementDocumentPayload payload =

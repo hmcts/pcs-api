@@ -23,9 +23,13 @@ import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
-import java.util.List;
+import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -46,17 +50,30 @@ public class EnforcementOrderService {
     private final ObjectMapper objectMapper;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        List<EnforcementOrderEntity> enforcementEntities =
-                enforcementOrderRepository.findByClaimId(claimEntity.getId());
-
-        return enforcementEntities
-                .stream()
-                .map(EnforcementOrderEntity::getEnforcementOrder)
+        return claimApplications(caseReference)
                 .filter(order -> SelectEnforcementType.from(order) == enforcementType)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Every type the claim has applied for, whatever became of the application. "Enforce the order" offers a
+     * restitution type on this: it is what the claimant has already applied for that decides whether they can
+     * apply to restore possession.
+     */
+    public Set<SelectEnforcementType> retrieveEnforcementTypes(long caseReference) {
+        return claimApplications(caseReference)
+                .map(SelectEnforcementType::from)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(SelectEnforcementType.class)));
+    }
+
+    private Stream<EnforcementOrder> claimApplications(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
+        return enforcementOrderRepository.findByClaimId(claimEntity.getId())
+                .stream()
+                .map(EnforcementOrderEntity::getEnforcementOrder);
     }
 
     /**

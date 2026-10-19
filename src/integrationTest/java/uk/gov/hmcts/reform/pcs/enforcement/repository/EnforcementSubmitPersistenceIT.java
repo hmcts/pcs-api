@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
@@ -131,6 +134,37 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
     }
 
     /**
+     * Every type asks which language the claimant used and takes a statement of truth, the restitution types on
+     * the pages of their possession type (HDPI-7555), so every type stores both.
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, 1000000000000006, enf_warrant",
+        "WRIT, 1000000000000007, enf_writ",
+        "WARRANT_OF_RESTITUTION, 1000000000000008, enf_warrant_of_restitution",
+        "WRIT_OF_RESTITUTION, 1000000000000009, enf_writ_of_restitution",
+    })
+    @DisplayName("stores the language used and the statement of truth for every type")
+    void shouldStoreTheLanguageUsedAndTheStatementOfTruth(SelectEnforcementType enforcementType,
+                                                          long caseReference,
+                                                          String childTable) {
+        final ClaimEntity claim = savedClaim(caseReference);
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, signedApplication(enforcementType));
+        entityManager.flush();
+        entityManager.clear();
+
+        UUID enforcementId = enforcementOrderRepository.findByClaimId(claim.getId()).getFirst().getId();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT language_used FROM " + childTable + " WHERE enf_case_id = ?", String.class, enforcementId))
+            .isEqualTo(LanguageUsed.WELSH.name());
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT full_name FROM statement_of_truth WHERE id = "
+                + "(SELECT sot_id FROM enf_case WHERE id = ?)", String.class, enforcementId))
+            .isEqualTo("Sam Shah");
+    }
+
+    /**
      * The application is stored as it will read back, so the row is not dirty the moment it is inserted: a
      * second write of the same JSON costs a statement and moves the version under the document generation and
      * Payments callback that read the enforcement next.
@@ -162,6 +196,30 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             .writDetails(WritDetails.builder().build())
             .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder().build())
             .build();
+    }
+
+    /**
+     * An application of the type with the language and statement of truth answered, on the pages the type's
+     * journey ends on: the warrant pages for a warrant and a warrant of restitution, the writ pages for a writ
+     * and a writ of restitution.
+     */
+    private static EnforcementOrder signedApplication(SelectEnforcementType enforcementType) {
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);
+        statementOfTruth.setFullNameParty("Sam Shah");
+        statementOfTruth.setPositionParty("Housing officer");
+
+        EnforcementOrder application = enforcementOrder(enforcementType);
+        boolean writ = enforcementType == SelectEnforcementType.WRIT
+            || enforcementType == SelectEnforcementType.WRIT_OF_RESTITUTION;
+        if (writ) {
+            application.getWritDetails().setLanguageUsed(LanguageUsed.WELSH);
+            application.getWritDetails().setStatementOfTruth(statementOfTruth);
+        } else {
+            application.getWarrantDetails().setLanguageUsed(LanguageUsed.WELSH);
+            application.getWarrantDetails().setStatementOfTruth(statementOfTruth);
+        }
+        return application;
     }
 
     private ClaimEntity savedClaim(long caseReference) {

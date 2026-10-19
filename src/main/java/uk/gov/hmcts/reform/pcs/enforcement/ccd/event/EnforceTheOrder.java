@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsExcept
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementDeclarationPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
@@ -40,6 +42,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.enforcement.util.EnforcementTypeUtil.createDynamicStringList;
@@ -62,6 +65,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final WarrantPageConfigurer warrantPagesConfigurer;
     private final WritPageConfigurer writPageConfigurer;
     private final WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
+    private final EnforcementDeclarationPageConfigurer enforcementDeclarationPageConfigurer;
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
     private final DefendantService defendantService;
@@ -88,6 +92,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
+        enforcementDeclarationPageConfigurer.configurePages(pageBuilder);
         SummaryFields.excludeNeverShownFields(eventBuilder);
     }
 
@@ -134,16 +139,25 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         );
     }
 
+    /**
+     * The types the claimant may apply for. A restitution type restores possession after an eviction the
+     * claimant has already been granted, so each is only offered once the claim has an application of the
+     * matching possession type: a warrant of restitution needs a warrant, as
+     * {@link EnforcementPageContent#WARRANT_OF_RESTITUTION_INFO_TEXT} tells the claimant, and a writ of
+     * restitution needs a writ by the same reasoning, which no ticket states (OPEN-QUESTIONS #11).
+     */
     private void setEnforcementTypes(long caseReference, EnforcementOrder enforcementOrder) {
         List<SelectEnforcementType> enforcementTypes = new ArrayList<>(List.of(WARRANT, WRIT));
 
-        EnforcementOrder retrievedWarrantOrder =
-                enforcementOrderService.retrieveEnforcementOrder(caseReference, WARRANT);
-        if (retrievedWarrantOrder != null) {
+        Set<SelectEnforcementType> appliedFor = enforcementOrderService.retrieveEnforcementTypes(caseReference);
+        if (appliedFor.contains(WARRANT)) {
             enforcementTypes.add(WARRANT_OF_RESTITUTION);
             setWarrantRestInfoText(enforcementOrder, EnforcementPageContent.WARRANT_OF_RESTITUTION_INFO_TEXT);
         } else {
             setWarrantRestInfoText(enforcementOrder, "");
+        }
+        if (appliedFor.contains(WRIT)) {
+            enforcementTypes.add(WRIT_OF_RESTITUTION);
         }
         enforcementOrder.setChooseEnforcementType(createDynamicStringList(enforcementTypes));
     }

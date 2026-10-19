@@ -50,8 +50,6 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, HCEOfficerDetailsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, LanguageUsedWritPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, StatementOfTruthWritPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

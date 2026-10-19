@@ -178,7 +178,19 @@ public class WarrantOfRestitutionMapper {
             mapAdditionalInformation(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
             mapPropertyAccessDetails(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
         }
+        mapLanguageUsed(warrantOfRestitutionEntity, enforcementOrder.getWarrantDetails());
         return warrantOfRestitutionEntity;
+    }
+
+    /**
+     * The journey asks which language the claimant used on the warrant journey's page, so the answer is on
+     * {@link WarrantDetails} (HDPI-7555).
+     */
+    private void mapLanguageUsed(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
+                                 WarrantDetails warrantDetails) {
+        if (warrantDetails != null) {
+            warrantOfRestitutionEntity.setLanguageUsed(warrantDetails.getLanguageUsed());
+        }
     }
 
     private void mapDefendantReturned(WarrantOfRestitutionEntity warrantOfRestitutionEntity,

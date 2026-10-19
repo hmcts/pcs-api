@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementDeclarationPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.EnforcementPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
@@ -41,7 +42,9 @@ import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -58,7 +61,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
-import static uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT_OF_RESTITUTION;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WRIT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,6 +87,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     private WritPageConfigurer writPageConfigurer;
     @Mock
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
+    @Mock
+    private EnforcementDeclarationPageConfigurer enforcementDeclarationPageConfigurer;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @InjectMocks
@@ -123,6 +130,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         verify(warrantPageConfigurer).configurePages(savingPageBuilder);
         verify(writPageConfigurer).configurePages(savingPageBuilder);
         verify(warrantOfRestitutionPageConfigurer).configurePages(savingPageBuilder);
+        verify(enforcementDeclarationPageConfigurer).configurePages(savingPageBuilder);
     }
 
     @Test
@@ -356,12 +364,12 @@ class EnforceTheOrderTest extends BaseEventTest {
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
     }
 
-    @Test
-    void shouldAlsoSetWarrantRestTypeIfWarrantExists() {
+    @ParameterizedTest
+    @MethodSource("restitutionOfferScenarios")
+    void shouldOnlyOfferARestitutionTypeOnceTheMatchingPossessionTypeHasBeenAppliedFor(
+            Set<SelectEnforcementType> appliedFor, SelectEnforcementType restitutionType, boolean offered) {
         // Given
-        EnforcementOrder warrantEnforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
-        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
-                .thenReturn(warrantEnforcementOrder);
+        when(enforcementOrderService.retrieveEnforcementTypes(TEST_CASE_REFERENCE)).thenReturn(appliedFor);
 
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder().build())
@@ -372,17 +380,29 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
-        boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
-                .anyMatch(item ->
-                        item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
-        assertThat(warrantOfRestitutionOptionExists).isTrue();
+        boolean restitutionOptionExists = enforcementTypes.getListItems().stream()
+                .anyMatch(item -> item.getCode().equals(restitutionType.name()));
+        assertThat(restitutionOptionExists).isEqualTo(offered);
+    }
+
+    private static Stream<Arguments> restitutionOfferScenarios() {
+        return Stream.of(
+            argumentSet("warrant of restitution with a warrant",
+                        EnumSet.of(WARRANT), WARRANT_OF_RESTITUTION, true),
+            argumentSet("warrant of restitution without a warrant",
+                        EnumSet.of(WRIT), WARRANT_OF_RESTITUTION, false),
+            argumentSet("writ of restitution with a writ",
+                        EnumSet.of(WRIT), WRIT_OF_RESTITUTION, true),
+            argumentSet("writ of restitution without a writ",
+                        EnumSet.of(WARRANT), WRIT_OF_RESTITUTION, false)
+        );
     }
 
     @Test
-    void shouldNotSetWarrantRestTypeIfWarrantDoesntExist() {
+    void shouldOnlyOfferThePossessionTypesOnAClaimWithNoEarlierApplication() {
         // Given
-        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
-                .thenReturn(null);
+        when(enforcementOrderService.retrieveEnforcementTypes(TEST_CASE_REFERENCE))
+                .thenReturn(EnumSet.noneOf(SelectEnforcementType.class));
 
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder().build())
@@ -392,11 +412,9 @@ class EnforceTheOrderTest extends BaseEventTest {
         callStartHandler(caseData);
 
         // Then
-        DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
-        boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
-                .anyMatch(item ->
-                        item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
-        assertThat(warrantOfRestitutionOptionExists).isFalse();
+        assertThat(caseData.getEnforcementOrder().getChooseEnforcementType().getListItems())
+                .extracting(DynamicStringListElement::getCode)
+                .containsExactly(WARRANT.name(), WRIT.name());
     }
 
     @Test
