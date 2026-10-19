@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -33,6 +34,10 @@ import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
+import java.util.Collection;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -69,6 +74,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final SecurityContextService securityContextService;
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
+    private final MessageService messageService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -140,8 +146,19 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         // The task the judge opened the order from: its return, or the application it decides.
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
+        staffMessage(change).ifPresent(message -> messageService.recordOrderMessage(order,
+            order.getAuthorName(), change.orderType().getLabel().toLowerCase(Locale.UK), message));
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
+    }
+
+    /** The judge's message for court staff with their order, if they wrote one, which the Messages tab keeps. */
+    private static Optional<String> staffMessage(OrderChange change) {
+        Map<String, Object> formData = change.formData() == null ? Map.of() : change.formData();
+        Object ticked = formData.get("staff-message");
+        boolean wanted = ticked instanceof Collection<?> values ? values.contains("yes") : "yes".equals(ticked);
+        return Optional.ofNullable(formData.get("staff-message-text"))
+            .map(Object::toString).map(String::trim).filter(text -> wanted && !text.isEmpty());
     }
 
     /**

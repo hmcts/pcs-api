@@ -29,6 +29,7 @@ public enum EventId {
     manageHearing,
     enterGenApp,
     referGenAppToJudge,
+    sendReplyMessage,
     caseworkerUploadDocuments,
     removeDocument,
     legalRepDocumentUpload,

@@ -1,0 +1,11 @@
+### Review message{% if urgent %} (urgent){% endif %}
+
+{{senderName}} sent a message: {{subject}}.
+
+<a href="{{messagesUrl}}">Read the message</a> on the case's Messages tab, then reply to it or close it with
+Send and reply to messages. The task will close when you do.
+{% if decideUrl %}
+
+The message is about application {{application}}. <a href="{{decideUrl}}">Decide the application</a> by making an
+order on it.
+{% endif %}

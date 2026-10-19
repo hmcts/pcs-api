@@ -1,0 +1,52 @@
+{% macro thread(message) %}
+<details class="govuk-details govuk-!-margin-bottom-3">
+  <summary class="govuk-details__summary">
+    <span class="govuk-details__summary-text">
+      {% if message.urgent %}<strong class="govuk-tag govuk-tag--red">Urgent</strong> {% endif %}{{ message.subject }}
+    </span>
+    <br><span class="govuk-body-s">From {{ message.from }} to {{ message.to }}, sent {{ message.sent | date("d MMM yyyy, h:mm a") }}, last updated {{ message.updated | date("d MMM yyyy, h:mm a") }}</span>
+  </summary>
+  <div class="govuk-details__text">
+    <dl class="govuk-summary-list govuk-!-margin-bottom-3">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key govuk-!-font-size-16">Status</dt>
+        <dd class="govuk-summary-list__value govuk-!-font-size-16">{{ message.status }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key govuk-!-font-size-16">What it relates to</dt>
+        <dd class="govuk-summary-list__value govuk-!-font-size-16">{{ message.categories }}</dd>
+      </div>
+      {% if message.application %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key govuk-!-font-size-16">Application</dt>
+        <dd class="govuk-summary-list__value govuk-!-font-size-16">{{ message.application }}{% if message.decideUrl %} <a class="govuk-link" href="{{ message.decideUrl }}">Decide the application</a>{% endif %}</dd>
+      </div>
+      {% endif %}
+    </dl>
+    {% for entry in message.entries %}
+    <div class="govuk-inset-text govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+      <p class="govuk-body-s govuk-!-margin-bottom-1"><strong>{{ entry.from }}</strong> to {{ entry.to }}, {{ entry.sent | date("d MMM yyyy, h:mm a") }}{% if entry.urgent %} (urgent){% endif %}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0" style="white-space: pre-wrap">{{ entry.body }}</p>
+    </div>
+    {% endfor %}
+    {% if message.status == "Closed" %}
+    <p class="govuk-body-s">Closed by {{ message.closedBy }}{% if message.closureNote %}: {{ message.closureNote }}{% endif %}</p>
+    {% endif %}
+  </div>
+</details>
+{% endmacro %}
+<div class="govuk-width-container">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m govuk-!-margin-top-4">Open messages</h2>
+      {% if open is empty %}
+      <p class="govuk-body">There are no open messages.</p>
+      {% endif %}
+      {% for message in open %}{{ thread(message) }}{% endfor %}
+      {% if closed is not empty %}
+      <h2 class="govuk-heading-m govuk-!-margin-top-6">Closed messages</h2>
+      {% for message in closed %}{{ thread(message) }}{% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>

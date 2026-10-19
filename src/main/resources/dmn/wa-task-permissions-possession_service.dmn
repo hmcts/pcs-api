@@ -26,7 +26,7 @@
       <rule id="DecisionRule_17sqvb4">
         <description></description>
         <inputEntry id="UnaryTests_0kkhvpk">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ConfirmOrderReview"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ConfirmOrderReview", "ReviewMessageStaff"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1hbvv3u">
           <text></text>
@@ -55,7 +55,7 @@
       </rule>
       <rule id="DecisionRule_1qs3glb">
         <inputEntry id="UnaryTests_0l9ifw6">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ConfirmOrderReview"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ConfirmOrderReview", "ReviewMessageStaff"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_175p0w3">
           <text></text>
@@ -137,6 +137,35 @@
           <text>1</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_bphtpg8">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_msg4pud8zq">
+        <inputEntry id="UnaryTests_msgerjzc8x">
+          <text>"ReviewMessageJudge"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgsnngmwd">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msgn9awvol">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgtkxrguw">
+          <text>"judge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgqxw26d1">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msg27t6lv0">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msg36m8mzd">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgoe3g4rk">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgh9fyjqb">
           <text>true</text>
         </outputEntry>
       </rule>
