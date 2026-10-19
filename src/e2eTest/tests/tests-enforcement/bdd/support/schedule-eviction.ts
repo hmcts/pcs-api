@@ -7,10 +7,14 @@
  */
 import { Page, expect } from '@playwright/test';
 import { expectSingleErrorMessage } from './error-summary';
+import { fillDateTimeField } from './date-time-field';
 import { LONG_TIMEOUT } from 'playwright.config';
 
 export const SCHEDULE_EVICTION = 'Schedule eviction';
 export const RESCHEDULE_EVICTION = 'Reschedule eviction';
+
+/** The eviction date and time field, which XUI renders as six inputs. */
+export const evictionDateTimeField = '#evictionDateTime';
 
 export const scheduleEviction = {
   pageLabel: 'Schedule eviction',
@@ -79,14 +83,10 @@ export function resolveEvictionTime(time: string): { hour: string; minute: strin
  * "date and time are needed" case exercises the real required-field validation.
  */
 export async function enterEvictionDateTime(page: Page, date: string, time: string): Promise<void> {
-  const parts: Record<string, string | undefined> = {
+  await fillDateTimeField(page, evictionDateTimeField, {
     ...(resolveEvictionDate(date) ?? {}),
     ...(resolveEvictionTime(time) ?? {}),
-  };
-  for (const field of ['day', 'month', 'year', 'hour', 'minute'] as const) {
-    const input = page.locator(`#evictionDateTime-${field}`);
-    await input.fill(parts[field] ?? '');
-  }
+  });
 }
 
 export const dispenseWithServiceRadio = (page: Page, answer: string) =>

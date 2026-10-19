@@ -11,6 +11,7 @@
 import { Page, expect } from '@playwright/test';
 import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { ccdDateTime, submitEventAs } from './event-api';
+import { fillDateTimeField } from './date-time-field';
 
 export const RECORD_WARRANT_RETURN = 'Record warrant return';
 
@@ -177,12 +178,7 @@ export function pastEviction(): { date: string; time: string } {
 export async function enterReturnEvictionDateTime(page: Page, date: string, time: string): Promise<void> {
   const [day, month, year] = date.split('/');
   const [hour, minute] = time.split(':');
-  const parts: Record<string, string> = { day, month, year, hour, minute };
-  for (const [part, value] of Object.entries(parts)) {
-    const input = page.locator(`${warrantReturn.evictionDateTimeField}-${part}`);
-    await expect(input).toBeVisible({ timeout: LONG_TIMEOUT });
-    await input.fill(value);
-  }
+  await fillDateTimeField(page, warrantReturn.evictionDateTimeField, { day, month, year, hour, minute });
 }
 
 /**

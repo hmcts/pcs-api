@@ -32,11 +32,7 @@ import {
   expectNoticeOfEvictionVisibleTo,
   viewAsEachDefendant,
 } from '../support/defendant-visibility';
-import {
-  expectCheckYourAnswers,
-  resolveEvictionDate,
-  resolveEvictionTime,
-} from '../support/schedule-eviction';
+import { expectCheckYourAnswers } from '../support/schedule-eviction';
 import { expectBailiffConfirmationWithWarrantNumber } from '../support/bailiff-events';
 import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 import { expectEnforcementSection, openCaseTab, tabSections } from '../support/enforcement-status-tab';
@@ -111,13 +107,7 @@ Then('the notice of eviction has been served', async ({ page, world }) => {
 /** Answers the page and goes on to CCD's check-your-answers, ready for "I submit the event". */
 Given('I served the notice on {string} at {string} {string}', async ({ page, world }, date: string, time: string, how: string) => {
   await ensureOnNoticeServedPage(page);
-  const parts: Record<string, string> = {
-    ...(resolveEvictionDate(date) ?? {}),
-    ...(resolveEvictionTime(time) ?? {}),
-  };
-  for (const part of ['day', 'month', 'year', 'hour', 'minute']) {
-    await page.locator(`${noticeServed.fields.servedAt}-${part}`).fill(parts[part] ?? '');
-  }
+  await enterServedAt(page, date, time);
   await page.locator(noticeServed.fields.servedHow).fill(how);
   await page.locator(`${noticeServed.fields.addNote}_No`).check();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();

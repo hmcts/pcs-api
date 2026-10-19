@@ -17,6 +17,7 @@ import {
   tabTime,
 } from '../support/enforcement-status-tab';
 import { expectCheckYourAnswers, resolveEvictionDate, resolveEvictionTime } from '../support/schedule-eviction';
+import { fillDateTimeField } from '../support/date-time-field';
 import {
   REOPEN_WARRANT,
   RECORD_WARRANT_RETURN,
@@ -137,13 +138,10 @@ Given(
     await chooseOutcome(page, outcome);
     const [returnName] = await optionsOf(await visibleReturnNameDropDown(page));
     await chooseReturnName(page, returnName);
-    const parts: Record<string, string> = {
+    await fillDateTimeField(page, warrantReturn.evictionDateTimeField, {
       ...(resolveEvictionDate(date) ?? {}),
       ...(resolveEvictionTime(time) ?? {}),
-    };
-    for (const part of ['day', 'month', 'year', 'hour', 'minute']) {
-      await page.locator(`${warrantReturn.evictionDateTimeField}-${part}`).fill(parts[part] ?? '');
-    }
+    });
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await expectCheckYourAnswers(page);
     world.currentEvent = RECORD_WARRANT_RETURN;
