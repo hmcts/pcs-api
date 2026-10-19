@@ -122,8 +122,8 @@ class TestingSupportControllerTest {
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
                                                  featureToggleService,
-                                                 scheduledTasksService
-                                                 featureToggleService,documentRepository,
+                                                 scheduledTasksService,
+                                                 documentRepository,
                                                  caseDocumentClientApi, documentIdExtractor
         );
     }
