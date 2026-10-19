@@ -12,6 +12,7 @@ export const MARK_NOTICE_SERVED = 'Mark notice of eviction as served';
 
 import { Page, expect } from '@playwright/test';
 import { ccdDateTime, submitEventAs } from './event-api';
+import { fillDateTimeField } from './date-time-field';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, expectSignedInAs, requireEmailFor, signInAs } from './session';
 import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
@@ -66,16 +67,13 @@ export async function ensureOnNoticeServedPage(page: Page): Promise<void> {
 export async function enterServedYesterday(page: Page): Promise<void> {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const parts: Record<string, string> = {
+  await fillDateTimeField(page, noticeServed.fields.servedAt, {
     day: String(yesterday.getDate()),
     month: String(yesterday.getMonth() + 1),
     year: String(yesterday.getFullYear()),
     hour: '09',
     minute: '00',
-  };
-  for (const [part, value] of Object.entries(parts)) {
-    await page.locator(`${noticeServed.fields.servedAt}-${part}`).fill(value);
-  }
+  });
 }
 
 /**
@@ -130,10 +128,10 @@ export const DEFAULT_SERVED_HOW = 'By hand to the occupant';
 /** Fills the served date-time's inputs from a "dd/MM/yyyy" date and an "HH:mm" time. */
 export async function enterServedAt(page: Page, date: string, time: string): Promise<void> {
   const { resolveEvictionDate, resolveEvictionTime } = await import('./schedule-eviction');
-  const parts: Record<string, string> = { ...(resolveEvictionDate(date) ?? {}), ...(resolveEvictionTime(time) ?? {}) };
-  for (const part of ['day', 'month', 'year', 'hour', 'minute']) {
-    await page.locator(`${noticeServed.fields.servedAt}-${part}`).fill(parts[part] ?? '');
-  }
+  await fillDateTimeField(page, noticeServed.fields.servedAt, {
+    ...(resolveEvictionDate(date) ?? {}),
+    ...(resolveEvictionTime(time) ?? {}),
+  });
 }
 
 /**

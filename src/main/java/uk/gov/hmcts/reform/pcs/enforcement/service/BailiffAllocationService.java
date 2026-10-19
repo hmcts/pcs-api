@@ -127,11 +127,13 @@ public class BailiffAllocationService {
         EnforcementOrderEntity enforcement = allocatable.change();
         Instant now = Instant.now(utcClock);
 
-        boolean alreadyAllocated =
-            bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(enforcement.getId()).stream()
-                .anyMatch(allocation -> allocation.getBailiffUserId().equals(bailiff.userId()));
+        List<BailiffAllocationEntity> active =
+            bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(enforcement.getId());
+        boolean alreadyAllocated = active.stream()
+            .anyMatch(allocation -> allocation.getBailiffUserId().equals(bailiff.userId()));
 
         if (!alreadyAllocated) {
+            boolean replacingABailiff = !active.isEmpty();
             endActiveAllocations(enforcement);
             BailiffAllocationEntity allocation =
                 bailiffAllocationRepository.save(BailiffAllocationEntity.builder()
@@ -152,11 +154,13 @@ public class BailiffAllocationService {
             //  granted to the allocated-bailiff role rather than to a user, so rewriting the assignment is
             //  what moves them. Assigning each task through wa-task-management-api would need a user token
             //  and pcs_api on its authorised-services list.
-            EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
-                caseReference, "the allocated bailiff's risk assessment task",
-                () -> enforcementWaTaskService.bailiffAllocated(caseReference, allocation.getId()));
-            if (scheduled.refused()) {
-                return EnforcementChange.refused(scheduled.errors());
+            if (needsRiskAssessmentTask(enforcement, replacingABailiff)) {
+                EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
+                    caseReference, "the allocated bailiff's risk assessment task",
+                    () -> enforcementWaTaskService.bailiffAllocated(caseReference, allocation.getId()));
+                if (scheduled.refused()) {
+                    return EnforcementChange.refused(scheduled.errors());
+                }
             }
         }
 
@@ -168,5 +172,18 @@ public class BailiffAllocationService {
         // opens the event from the task.
         log.info("Enforcement {} allocated to bailiff {}", enforcement.getId(), bailiff.userId());
         return EnforcementChange.made();
+    }
+
+    /**
+     * Whether the allocation needs its own "Review risks and set level" task. The risk level is set once per
+     * warrant, so a warrant that has one recorded asks for nothing. Nor does a reallocation: the previous
+     * bailiff's task for the same warrant is still open, and the role assignment the TODO in {@link #allocate}
+     * describes is what moves it to the new bailiff. Asking again would leave the new bailiff with two
+     * identical tasks and nothing to do with the second.
+     *
+     * @param replacingABailiff whether this allocation replaces one that was still active
+     */
+    private static boolean needsRiskAssessmentTask(EnforcementOrderEntity enforcement, boolean replacingABailiff) {
+        return enforcement.getRiskLevelSetAt() == null && !replacingABailiff;
     }
 }

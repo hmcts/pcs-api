@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { ElementHandle, Locator, Page } from '@playwright/test';
 
 /**
  * Human-speed actions for the demo videos. Playwright's videos show no mouse pointer and `fill()` puts a
@@ -9,8 +9,13 @@ import { Locator, Page } from '@playwright/test';
  *
  * - a pointer is drawn and glides to the element (scrolling it into view first) before a click, check,
  *   select or upload, and ripples as it clicks;
- * - `fill()` into a text field types the value a character at a time;
+ * - `fill()` into a free-text field types the value a character at a time;
  * - `selectOption()` outlines the drop down and shows the chosen option before carrying on.
+ *
+ * A date or date-time field is the exception: XUI validates the whole field on every keystroke, so a value
+ * typed into it shows "The data entered is not valid" until the last digit is in. Those inputs are filled in
+ * one go, and {@link fillDateParts} sets all the parts of one field in a single page call so that a
+ * half-filled date is never on screen.
  *
  * With pacing off the wrappers call straight through, and nothing is wrapped until the demo turns pacing
  * on. The visual parts never fail a test: their errors are swallowed and the real action still runs.
@@ -89,16 +94,7 @@ async function typeVisibly(locator: Locator, original: LocatorMethod, args: unkn
   if (typeof value !== 'string' || value.length === 0) {
     return original.apply(locator, args);
   }
-  const typeable = await locator
-    .evaluate(
-      element =>
-        element instanceof HTMLTextAreaElement ||
-        (element instanceof HTMLInputElement &&
-          ['', 'text', 'email', 'password', 'search', 'tel', 'url', 'number'].includes(element.type)),
-      undefined,
-      { timeout: 2_000 },
-    )
-    .catch(() => false);
+  const typeable = await locator.evaluate(isFreeText, undefined, { timeout: 2_000 }).catch(() => false);
   if (!typeable) {
     await pointAt(locator);
     return original.apply(locator, args);
@@ -116,6 +112,78 @@ async function typeVisibly(locator: Locator, original: LocatorMethod, args: unkn
     return original.apply(locator, args);
   }
   return undefined;
+}
+
+/**
+ * Runs in the page. Self-contained: Playwright serialises it. Whether the element is a field a value should
+ * be typed into: a text area or a text-like input, but not one part of a date or date-time field, which XUI
+ * gives an id of the field's id and the part ("evictionDateTime-day") and validates as a whole on every
+ * keystroke, so it shows an error until the last part is in.
+ */
+function isFreeText(element: SVGElement | HTMLElement): boolean {
+  if (element instanceof HTMLTextAreaElement) {
+    return true;
+  }
+  if (!(element instanceof HTMLInputElement)) {
+    return false;
+  }
+  return (
+    ['', 'text', 'email', 'password', 'search', 'tel', 'url', 'number'].includes(element.type) &&
+    !/-(day|month|year|hour|minute|second)$/i.test(element.id)
+  );
+}
+
+/**
+ * Fills the parts of one date or date-time field — day, month, year and any time parts — in the order given.
+ *
+ * XUI holds the parts in a single form control and revalidates it on every keystroke, so filling them one
+ * after another leaves "The data entered is not valid" on screen from the first part until the last. In the
+ * demo the pointer is shown moving to the field and then every part is set in a single page call, which the
+ * browser paints once, so the half-filled state is never seen. With pacing off each part is filled in turn,
+ * exactly as calling `fill` on it would.
+ */
+export async function fillDateParts(parts: { input: Locator; value: string }[]): Promise<void> {
+  const fillInTurn = async (): Promise<void> => {
+    for (const { input, value } of parts) {
+      await input.fill(value);
+    }
+  };
+  const page = parts[0]?.input.page();
+  if (!page || activeFor?.() !== page) {
+    return fillInTurn();
+  }
+  await pointAt(parts[0].input);
+  const handles = await Promise.all(
+    parts.map(({ input, value }) =>
+      input
+        .elementHandle({ timeout: 2_000 })
+        .then(element => (element ? { element: element as ElementHandle<HTMLInputElement>, value } : undefined))
+        .catch(() => undefined),
+    ),
+  );
+  const found = handles.filter((handle): handle is { element: ElementHandle<HTMLInputElement>; value: string } => !!handle);
+  if (found.length === parts.length) {
+    await page.evaluate(setPartsTogether, found).catch(() => undefined);
+  }
+  const filled = await Promise.all(
+    parts.map(({ input, value }) => input.inputValue({ timeout: 1_000 }).then(actual => actual === value, () => false)),
+  );
+  if (!filled.every(Boolean)) {
+    await fillInTurn();
+  }
+}
+
+/**
+ * Runs in the page. Self-contained: Playwright serialises it. One task, so the browser paints the field once,
+ * with every part in it.
+ */
+function setPartsTogether(parts: { element: HTMLInputElement; value: string }[]): void {
+  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+  for (const { element, value } of parts) {
+    setValue?.call(element, value);
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+  }
 }
 
 async function selectVisibly(locator: Locator, original: LocatorMethod, args: unknown[]): Promise<unknown> {

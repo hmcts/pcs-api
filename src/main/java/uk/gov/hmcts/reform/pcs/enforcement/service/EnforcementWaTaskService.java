@@ -131,10 +131,12 @@ public class EnforcementWaTaskService {
      * A new eviction date needs its warrant return task due on that date instead, so the task for the
      * previous date goes.
      *
-     * <p>The notice of eviction task only changes when service does. A new date clears the service record,
-     * so a task that is already open is still the one to do and is left alone rather than replaced; a new
-     * date that dispenses with service leaves nothing to serve, and one that stops dispensing with it needs
-     * the task the original appointment never got.</p>
+     * <p>A new date comes with a new notice of eviction to serve, and clears the service record of the
+     * previous one. So the notice of eviction task is created when the new appointment needs serving and the
+     * previous appointment's task is no longer open to do it: either it was never created, because that
+     * appointment dispensed with service, or it has been closed by the bailiff serving that notice. A task
+     * that is still open is the one to do and is left alone rather than replaced, and a new date that
+     * dispenses with service leaves nothing to serve.</p>
      */
     public void evictionRescheduled(long caseReference, UUID enforcementId, Eviction previous, Eviction eviction) {
         cancelWarrantReturnTask(caseReference, enforcementId, previous.dateTime(),
@@ -145,7 +147,8 @@ public class EnforcementWaTaskService {
         if (eviction.serviceDispensedWith() && !previous.serviceDispensedWith()) {
             camundaService.cancelTask(caseReference, MARK_NOTICE_OF_EVICTION_SERVED,
                                       evictionReference(enforcementId, previous));
-        } else if (!eviction.serviceDispensedWith() && previous.serviceDispensedWith()) {
+        } else if (!eviction.serviceDispensedWith()
+            && (previous.serviceDispensedWith() || previous.noticeServed())) {
             camundaService.createTask(caseReference, MARK_NOTICE_OF_EVICTION_SERVED,
                                       evictionReference(enforcementId, eviction));
         }
@@ -214,9 +217,10 @@ public class EnforcementWaTaskService {
     }
 
     /**
-     * An eviction appointment on a warrant: when it is, and whether the court dispensed with serving the
-     * notice of eviction.
+     * An eviction appointment on a warrant: when it is, whether the court dispensed with serving the notice of
+     * eviction, and whether that notice has been served. A new appointment's notice has never been served,
+     * because a new date clears the service record.
      */
-    public record Eviction(LocalDateTime dateTime, boolean serviceDispensedWith) {
+    public record Eviction(LocalDateTime dateTime, boolean serviceDispensedWith, boolean noticeServed) {
     }
 }

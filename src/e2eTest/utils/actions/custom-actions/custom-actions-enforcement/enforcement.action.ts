@@ -222,7 +222,6 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion, option: breathingSpaceData.option });
     await performAction('reTryOnCallBackError', defendantInBreathingSpace.continueButton, breathingSpaceData.nextPage as string);
-    await performAction('clickButton', defendantInBreathingSpace.continueButton);
   }
 
   private async missedPayments(missedPaymentsData: actionRecord) {
