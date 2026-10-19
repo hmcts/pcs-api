@@ -368,10 +368,13 @@ final class RiskAssessmentTabMarkdown {
     }
 
     /**
-     * The answers on the claimant's application, for a warrant of possession or a warrant of restitution.
+     * The answers on the claimant's application, for a warrant of possession or a warrant of restitution. An
+     * enforcement that stored no application is rendered from an empty one the caller substitutes, so an
+     * application is required here.
      */
     @SuppressWarnings("deprecation")
     static ClaimantAnswers answersOf(EnforcementOrder order, boolean warrantOfRestitution) {
+        Objects.requireNonNull(order, "The enforcement application is missing");
         if (warrantOfRestitution) {
             WarrantOfRestitutionDetails details = Optional.ofNullable(order.getWarrantOfRestitutionDetails())
                 .orElseGet(WarrantOfRestitutionDetails::new);

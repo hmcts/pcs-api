@@ -112,12 +112,14 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
 
     SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        EvictionSchedule schedule = answeredSchedule(eventPayload.caseData().getEnforcementOrder());
+        EnforcementOrder enforcementOrder = eventPayload.caseData().getEnforcementOrder();
+        EvictionSchedule schedule = enforcementOrder == null ? null : enforcementOrder.getEvictionSchedule();
 
         List<String> errors = validator.validateEvictionDate(schedule);
         if (!errors.isEmpty()) {
             return SubmitResponse.<State>builder().errors(errors).build();
         }
+        Objects.requireNonNull(schedule, "The event was accepted with no eviction schedule");
         LocalDateTime evictionDateTime = Objects.requireNonNull(
                 schedule.getEvictionDateTime(), "The eviction schedule was accepted with no date and time")
             .truncatedTo(ChronoUnit.MINUTES);
@@ -133,14 +135,5 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
                 caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), caseReference,
                 saved.change()))
             .build();
-    }
-
-    /**
-     * The answers the event's page collected, or an empty schedule when the event data holds none: the
-     * validator refuses both the same way.
-     */
-    private static EvictionSchedule answeredSchedule(EnforcementOrder enforcementOrder) {
-        EvictionSchedule schedule = enforcementOrder == null ? null : enforcementOrder.getEvictionSchedule();
-        return schedule == null ? EvictionSchedule.builder().build() : schedule;
     }
 }
