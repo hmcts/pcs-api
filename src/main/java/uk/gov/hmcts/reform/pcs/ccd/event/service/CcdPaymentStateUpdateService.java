@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import java.time.Instant;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTask.CCD_PAYMENT_DATE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_DATE_TASK_DESCRIPTOR;
 
 @AllArgsConstructor
 @Service

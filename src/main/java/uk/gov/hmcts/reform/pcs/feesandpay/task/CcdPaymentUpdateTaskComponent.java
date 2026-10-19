@@ -16,7 +16,7 @@ import java.time.Duration;
 
 @Slf4j
 @Component
-public class CcdPaymentUpdateTask {
+public class CcdPaymentUpdateTaskComponent {
 
     private static final String CCD_PAYMENT_UPDATE_TASK = "ccd-payment-update-task";
 
@@ -27,9 +27,9 @@ public class CcdPaymentUpdateTask {
     private final int maxRetriesCcdPaymentUpdate;
     private final Duration ccdPaymentUpdateBackoffDelay;
 
-    public CcdPaymentUpdateTask(CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
-        @Value("${ccd.payment.update.max-retries}") int maxRetriesCcdPaymentUpdate,
-        @Value("${ccd.payment.update.backoff-delay-seconds}") Duration ccdPaymentUpdateBackoffDelay) {
+    public CcdPaymentUpdateTaskComponent(CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
+         @Value("${ccd.payment.update.max-retries:3}") int maxRetriesCcdPaymentUpdate,
+         @Value("${ccd.payment.update.backoff-delay-seconds:5s}") Duration ccdPaymentUpdateBackoffDelay) {
         this.ccdPaymentStateUpdateService = ccdPaymentStateUpdateService;
         this.maxRetriesCcdPaymentUpdate = maxRetriesCcdPaymentUpdate;
         this.ccdPaymentUpdateBackoffDelay = ccdPaymentUpdateBackoffDelay;
