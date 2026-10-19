@@ -189,6 +189,13 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         return List.of();
     }
 
+    /**
+     * The two High Court transfer questions are test support only. Production shows neither, so no writ
+     * application is ever checked against a transfer: validateWritTransfer finds nothing to refuse and
+     * CannotApplyForWritInfoPage, which needs a "No" answer, can never be reached. That is accepted rather
+     * than fixed, so the decide-enforcement confirmation deliberately does not tell the caseworker that the
+     * claim has been transferred.
+     */
     private String claimTransferredShowCondition() {
         return TestSupportEnvironment.isNonProdTestSupportEnabled() ? WRIT_FLOW : NEVER_SHOW;
     }
