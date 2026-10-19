@@ -18,15 +18,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -57,7 +53,7 @@ public class CaseMessageEntity {
 
     private String subject;
 
-    /** The categories, comma separated. */
+    /** What the message relates to, as the category labels to show. */
     private String categories;
 
     @Column(name = "gen_app_id")
@@ -81,11 +77,6 @@ public class CaseMessageEntity {
     @OrderBy("createdAt ASC")
     @Builder.Default
     private List<CaseMessageEntryEntity> entries = new ArrayList<>();
-
-    public Set<MessageCategory> categorySet() {
-        return categories == null || categories.isBlank() ? Set.of()
-            : Arrays.stream(categories.split(",")).map(MessageCategory::valueOf).collect(Collectors.toSet());
-    }
 
     public void addEntry(CaseMessageEntryEntity entry) {
         entries.add(entry);

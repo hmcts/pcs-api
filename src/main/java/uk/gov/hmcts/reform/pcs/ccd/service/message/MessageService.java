@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntity;
@@ -12,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 
@@ -57,7 +55,8 @@ public class MessageService {
         Instant now = Instant.now(utcClock);
         CaseMessageEntity message = CaseMessageEntity.builder()
             .subject(subject)
-            .categories(categories.stream().map(Enum::name).sorted().collect(Collectors.joining(",")))
+            .categories(categories.stream().sorted().map(MessageCategory::getLabel)
+                .collect(Collectors.joining(", ")))
             .genAppId(genApp == null ? null : genApp.getId())
             .status(CaseMessageEntity.Status.OPEN)
             .createdAt(now)
@@ -88,7 +87,7 @@ public class MessageService {
         MessageRecipient told = message.latest().getSenderRole();
         long caseReference = pcsCase.getCaseReference();
         String description = taskDescriptionService.createReviewClosedMessageDescription(closedBy,
-            message.getSubject(), note, "/cases/case-details/%d#Messages".formatted(caseReference));
+            message.getSubject(), note, caseReference);
         camundaService.createTask(caseReference,
             told.isJudicial() ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF, description, false);
         return told;
@@ -103,8 +102,8 @@ public class MessageService {
             .orElseGet(() -> {
                 CaseMessageEntity started = CaseMessageEntity.builder()
                     .subject(truncate("Message with " + orderType + " order", 60))
-                    .categories(order.getGenAppId() == null ? MessageCategory.OTHER.name()
-                        : MessageCategory.APPLICATION.name())
+                    .categories(order.getGenAppId() == null ? MessageCategory.OTHER.getLabel()
+                        : MessageCategory.APPLICATION.getLabel())
                     .genAppId(order.getGenAppId())
                     .orderId(order.getId())
                     .status(CaseMessageEntity.Status.OPEN)
@@ -114,14 +113,7 @@ public class MessageService {
                 return started;
             });
         message.addEntry(entry(new Writing(judgeName, MessageRecipient.DISTRICT_JUDGE, MessageRecipient.COURT_STAFF,
-            false, truncate(body, 750)), now));
-    }
-
-    /** Closes the message an order carried once the order is issued. */
-    public void closeOrderMessage(OrderEntity order, String closedBy) {
-        order.getPcsCase().getMessages().stream()
-            .filter(message -> order.getId().equals(message.getOrderId()) && message.isOpen())
-            .forEach(message -> close(message, closedBy, "Order issued"));
+            false, body), now));
     }
 
     private void askToReview(PcsCaseEntity pcsCase, CaseMessageEntity message, GenAppEntity genApp) {
@@ -131,10 +123,7 @@ public class MessageService {
         String decideUrl = genApp == null || !toJudge || !genApp.isOpen() ? null
             : orderTasks.decideUrl(caseReference, genApp);
         String description = taskDescriptionService.createReviewMessageDescription(
-            latest.getSenderName(), message.getSubject(), latest.isUrgent(),
-            "/cases/case-details/%d#Messages".formatted(caseReference),
-            "/cases/case-details/%s/%s/%d/trigger/%s?tid=${[id]}".formatted(CaseType.getJurisdictionId(),
-                CaseType.getCaseType(), caseReference, EventId.sendReplyMessage.name()),
+            latest.getSenderName(), message.getSubject(), latest.isUrgent(), caseReference,
             genApp == null ? null : "GA" + genApp.getRank(), decideUrl);
         TaskType taskType = toJudge ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF;
         camundaService.createTask(caseReference, taskType, description, latest.isUrgent());
