@@ -31,11 +31,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalMatchers.and;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
@@ -45,7 +43,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 
 /**
  * Court staff and judges message each other on a case: a message gives the recipient role's pool a task, a reply
- * gives the other side one, and closing it gives no one a task. The Messages tab shows each thread.
+ * gives the other side one, and closing it without a reply tells the other side with a task. The Messages tab
+ * shows each thread.
  */
 @DisplayName("Send and reply to messages")
 class SendReplyMessageIT extends OrderEventIT {
@@ -89,7 +88,7 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("lets the judge reply, giving court staff a task, then court staff close it without one")
+    @DisplayName("lets the judge reply, giving court staff a task, then court staff close it, giving the judges one")
     void repliesThenCloses() {
         send();
         clearInvocations(camundaService);
@@ -123,7 +122,8 @@ class SendReplyMessageIT extends OrderEventIT {
             })
             .as(caseworker).submitExpectingSuccess();
 
-        verify(camundaService, never()).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE), anyString(),
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
+            contains("Tom Caseworker closed the message without replying: Decide GA1. Their note: Listed."),
             eq(false));
         assertThat(replyList(caseworker)).isEmpty();
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();

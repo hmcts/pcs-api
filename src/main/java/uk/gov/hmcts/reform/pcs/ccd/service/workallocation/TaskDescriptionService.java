@@ -282,6 +282,16 @@ public class TaskDescriptionService {
         return renderTemplate("review-message", context);
     }
 
+    public String createReviewClosedMessageDescription(String closedBy, String subject, String note,
+                                                       String messagesUrl) {
+        Map<String, Object> context = new HashMap<>();
+        context.put("closedBy", closedBy);
+        context.put("subject", subject);
+        context.put("note", note);
+        context.put("messagesUrl", messagesUrl);
+        return renderTemplate("review-closed-message", context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();

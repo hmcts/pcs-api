@@ -1,0 +1,6 @@
+### Review message
+
+{{closedBy}} closed the message without replying: {{subject}}.{% if note %} Their note: {{note}}{% endif %}
+
+
+<a href="{{messagesUrl}}">Read the message</a> on the case's Messages tab, then mark this task as done.

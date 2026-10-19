@@ -766,11 +766,14 @@ public class PCSCase {
         typeOverride = TextArea)
     private String messageBody;
 
-    @CCD(label = "Which message are you replying to?", searchable = false, typeOverride = DynamicRadioList)
+    @CCD(label = "Which message are you replying to?", searchable = false)
     private DynamicList messageReplyList;
 
     @CCD(searchable = false)
     private String messageSummaryMarkdown;
+
+    @CCD(label = "Message history", searchable = false, typeOverride = TextArea)
+    private String messageHistory;
 
     @CCD(label = "Do you need to reply?", searchable = false)
     private VerticalYesNo messageNeedReply;
