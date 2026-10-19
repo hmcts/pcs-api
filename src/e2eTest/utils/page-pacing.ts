@@ -17,8 +17,11 @@ let lastHoldEndedAt = 0;
 /** How long an emphasised element is shown before the action on it. */
 const EMPHASIS_MS = 400;
 
-/** Sign-in pages (the local IDAM simulator, IDAM web) are not part of the story: never held. */
-const SIGN_IN_URL = /:5062\/|idam-web|\/login\b|\/sign-in\b/;
+/**
+ * Pages that are not part of the story and so are never held: the sign-in pages (the local IDAM simulator,
+ * IDAM web), the OAuth hand-back XUI redirects through, and a context with nothing loaded yet.
+ */
+const UNINTERESTING_URL = /^about:|:5062\/|idam-web|\/login\b|\/sign-in\b|\/oauth2\/callback|\/receiver\b/;
 
 export function enablePagePacing(page: Page, ms: number): void {
   holdMs = ms;
@@ -48,7 +51,7 @@ export async function holdIfPageChanged(page: Page): Promise<void> {
     return;
   }
   await scrollToTop(page);
-  if (SIGN_IN_URL.test(page.url())) {
+  if (!(await worthHolding(page))) {
     lastHeldUrl = page.url();
     return;
   }
@@ -61,10 +64,27 @@ export async function holdIfPageChanged(page: Page): Promise<void> {
  * page-change pause directly followed by this one does not double the wait.
  */
 export async function holdPage(page: Page): Promise<void> {
-  if (!holdMs || page.isClosed() || SIGN_IN_URL.test(page.url())) {
+  if (!holdMs || page.isClosed() || !(await worthHolding(page))) {
     return;
   }
   await wait(page, holdMs - (Date.now() - lastHoldEndedAt));
+}
+
+/**
+ * Whether the screen is one a viewer would want time to read. A sign-in or redirect URL never is, and neither
+ * is a page with nothing rendered yet: XUI's redirects between sign-in steps show a blank white document for
+ * as long as they are held, which reads as dead air in the video.
+ */
+async function worthHolding(page: Page): Promise<boolean> {
+  if (UNINTERESTING_URL.test(page.url())) {
+    return false;
+  }
+  return page
+    .evaluate(() => {
+      const main = document.querySelector('main, h1, .govuk-heading-l, .govuk-heading-xl');
+      return Boolean(main && (main as HTMLElement).innerText?.trim());
+    })
+    .catch(() => true);
 }
 
 /**

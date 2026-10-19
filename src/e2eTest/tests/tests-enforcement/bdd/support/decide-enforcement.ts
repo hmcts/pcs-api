@@ -6,11 +6,7 @@ import { Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { LONG_TIMEOUT } from 'playwright.config';
-import { dismissCookieBanner } from '@config/cookie-banner';
-import { user } from '@data/user-data';
-import { performAction } from '@utils/controller-enforcement';
-import { isLocalStack, localUsers, signInToIdamSimulator } from '@config/local-stack.config';
-import { recordSignedInRole } from './session';
+import { signInAs } from './session';
 
 export const DECIDE_ENFORCEMENT = 'Decide enforcement';
 
@@ -47,18 +43,9 @@ export async function recordEnforcementFeePaid(): Promise<void> {
   expect(response.status, 'the enforcement fee is recorded as paid').toBe(204);
 }
 
-/** Drops the claimant legal representative's session from global set-up and signs in as a hearing centre admin. */
+/** Signs in as a hearing centre admin, unless the browser already is one. */
 export async function signInAsHearingCentreAdmin(page: Page): Promise<void> {
-  await page.context().clearCookies();
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await dismissCookieBanner(page, 'additional');
-  if (isLocalStack()) {
-    await signInToIdamSimulator(page, localUsers.hearingCentreAdmin);
-  } else {
-    await performAction('login', user.hearingCenterAdmin);
-  }
-  await dismissCookieBanner(page, 'analytics');
-  recordSignedInRole('hearing-centre-admin');
+  await signInAs('hearing-centre-admin', page);
 }
 
 function caseDetails(page: Page) {

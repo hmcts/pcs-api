@@ -18,14 +18,14 @@ import { Locator, Page } from '@playwright/test';
 type Point = { x: number; y: number };
 type LocatorMethod = (this: Locator, ...args: unknown[]) => Promise<unknown>;
 
-const MOVE_MS = 500;
-const SETTLE_MS = 300;
+const MOVE_MS = 400;
+const SETTLE_MS = 250;
 const CLICK_MS = 150;
 const SCROLL_MS = 450;
-const SELECTED_MS = 900;
+const SELECTED_MS = 750;
 /** Typing a long value is capped at about this long, so a note does not take a minute to type. */
 const TYPING_BUDGET_MS = 4000;
-const TYPING_MAX_DELAY_MS = 80;
+const TYPING_MAX_DELAY_MS = 65;
 const TYPING_MIN_DELAY_MS = 15;
 /** Space kept clear at the bottom of the viewport for the step caption bar. */
 const CAPTION_CLEARANCE_PX = 190;

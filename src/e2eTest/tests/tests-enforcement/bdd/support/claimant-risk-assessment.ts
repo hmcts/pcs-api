@@ -14,7 +14,7 @@
  */
 import { Page, expect } from '@playwright/test';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { activeTab } from './enforcement-status-tab';
+import { activeTab, reopenCurrentTab } from './enforcement-status-tab';
 
 export const CONFIRM_EVICTION = 'Confirm the eviction date';
 
@@ -69,6 +69,52 @@ const followUps = {
   vulnerableReason: 'An elderly relative with dementia lives there',
   accessDifficulty: 'The entrance is a locked communal gate',
 };
+
+/**
+ * The risk answers "Confirm the eviction details" asks again and pre-fills (its fields in
+ * `CaseEventToFields/confirmEviction.json`), which an API submit sends back.
+ */
+export const RISK_ANSWER_FIELDS = [
+  'warrantAnyRiskToBailiff',
+  'warrantEnforcementRiskCategories',
+  'warrantEnforcementViolentDetails',
+  'warrantEnforcementFirearmsDetails',
+  'warrantEnforcementCriminalDetails',
+  'warrantEnforcementVerbalOrWrittenThreatsDetails',
+  'warrantEnforcementProtestGroupMemberDetails',
+  'warrantEnforcementPoliceOrSocialServicesDetails',
+  'warrantEnforcementDogsOrOtherAnimalsDetails',
+  'vulnerablePeoplePresent',
+  'vulnerableAdultsChildren',
+  'warrantIsDifficultToAccessProperty',
+  'warrantClarificationOnAccessDifficultyText',
+  'warrantAdditionalInformationSelect',
+  'warrantAdditionalInformationDetails',
+];
+
+/** The field values `changeRiskAnswer` leaves behind when it changes `question` to "Yes", for an API submit. */
+export function riskAnswerChange(question: string): Record<string, unknown> {
+  switch (riskQuestion(question)) {
+    case riskQuestions.anyRiskToBailiff:
+      return {
+        warrantAnyRiskToBailiff: 'YES',
+        warrantEnforcementRiskCategories: ['VIOLENT_OR_AGGRESSIVE'],
+        warrantEnforcementViolentDetails: followUps.violentDetails,
+      };
+    case riskQuestions.vulnerablePeople:
+      return {
+        vulnerablePeoplePresent: 'YES',
+        vulnerableAdultsChildren: { vulnerableCategory: 'VULNERABLE_ADULTS', vulnerableReasonText: followUps.vulnerableReason },
+      };
+    case riskQuestions.difficultToAccess:
+      return {
+        warrantIsDifficultToAccessProperty: 'YES',
+        warrantClarificationOnAccessDifficultyText: followUps.accessDifficulty,
+      };
+    default:
+      throw new Error(`Changing "${question}" is not supported`);
+  }
+}
 
 const pageHeadings = {
   livingInTheProperty: 'Everyone living at the property',
@@ -190,12 +236,26 @@ export type ClaimantRiskAnswerRow = Record<string, string>;
 /**
  * The open tab's row for one question, in the table shown once the claimant has changed an answer. Fails if the
  * tab does not list it.
+ *
+ * The page is reloaded between tries: the change is set up through the API, so the tab can be opened in the
+ * same moment pcs-api records it, and polling the markup already rendered would never see it arrive.
  */
 export async function claimantRiskAnswerRow(page: Page, question: string): Promise<ClaimantRiskAnswerRow> {
   const rows = activeTab(page).locator('tr.govuk-table__row').filter({
     has: page.locator('th[scope="row"]', { hasText: question }),
   });
-  await expect.poll(async () => rows.count(), { timeout: VERY_LONG_TIMEOUT }).toBeGreaterThan(0);
+  await expect
+    .poll(
+      async () => {
+        const count = await rows.count();
+        if (count === 0) {
+          await reopenCurrentTab(page);
+        }
+        return count;
+      },
+      { timeout: VERY_LONG_TIMEOUT, intervals: [2_000] }
+    )
+    .toBeGreaterThan(0);
   const row = rows.first();
   const cells = row.locator('td');
   return {
@@ -204,3 +264,4 @@ export async function claimantRiskAnswerRow(page: Page, question: string): Promi
     [claimantRiskAssessmentFields.updatedAnswer]: (await cells.nth(1).innerText()).trim(),
   };
 }
+

@@ -41,14 +41,29 @@ export async function showDemoCaptionStatus(page: Page, status: string | undefin
   await render(page);
 }
 
+/**
+ * Draws the current caption on the page. A page mid-navigation rejects the evaluate, and one whose document
+ * has not run the init script yet has no render function, either of which would leave the previous step's
+ * caption on screen; both are retried once the document has loaded. After that the next document picks the
+ * caption up through the binding.
+ */
 async function render(page: Page): Promise<void> {
-  if (page.isClosed()) {
-    return;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    if (page.isClosed()) {
+      return;
+    }
+    const drawn = await page
+      .evaluate(([name, caption]) => {
+        const draw = (window as unknown as Record<string, ((c: unknown) => void) | undefined>)[name];
+        draw?.(caption);
+        return Boolean(draw);
+      }, [RENDER, current] as const)
+      .catch(() => false);
+    if (drawn) {
+      return;
+    }
+    await page.waitForLoadState('domcontentloaded', { timeout: 5_000 }).catch(() => undefined);
   }
-  // A page mid-navigation rejects the evaluate; its next document picks the caption up through the binding.
-  await page
-    .evaluate(([name, caption]) => (window as unknown as Record<string, (c: unknown) => void>)[name]?.(caption), [RENDER, current] as const)
-    .catch(() => undefined);
 }
 
 async function install(context: BrowserContext): Promise<void> {

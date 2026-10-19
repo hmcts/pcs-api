@@ -19,7 +19,7 @@ import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { nextStepOptions, openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
-import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
+import { CLAIMANT_LEGAL_REPRESENTATIVE, expectSignedInAs } from '../support/session';
 import { RISK_ASSESSMENT_TAB, expectTabField, openTabFields } from '../support/case-tabs';
 import { activeTab, openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import { backdateEnforcement } from '../support/backdate-enforcement';
@@ -28,6 +28,7 @@ import {
   ALLOCATE_BAILIFF,
   SET_RISK_LEVEL,
   addBailiffNote,
+  addBailiffNoteAsBailiff,
   bailiffSearchBox,
   chooseBailiff,
   chooseRiskLevel,
@@ -59,9 +60,9 @@ import { expectEvictionResult, isEvictionResult } from './schedule-eviction.step
 
 // The allocation itself cannot be made (HDPI-7356 / HDPI-8189), but a bailiff reaches the warrant through
 // their `bailiff` organisation role regardless, which is what the rest of the scenario needs.
-Given('a PCS case {string} with a warrant of possession allocated to me', async ({ page, context, world }, _reference: string) => {
+Given('a PCS case {string} with a warrant of possession allocated to me', async ({ world }, _reference: string) => {
   const { setUpWarrantAtStatus, AWAITING_BAILIFF_ALLOCATION } = await import('../support/approve-warrant');
-  await setUpWarrantAtStatus(page, context, world, AWAITING_BAILIFF_ALLOCATION);
+  await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
   approximatePrecondition(
     'HDPI-8189',
     'no bailiff is allocated: allocateBailiff needs staff reference data cftlib does not run, and the '
@@ -230,9 +231,9 @@ Then('the reason is visible to internal users only', async ({ page, context, wor
 const NOTE_DATE_TIME = /^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/;
 
 // The local bailiff user stands in for the bailiff the feature names, whose name the steps then expect.
-Given('I am signed in to XUI as bailiff {string}', async ({ page, context, world, $tags }, name: string) => {
+Given('I am signed in to XUI as bailiff {string}', async ({ world, $tags }, name: string) => {
   const email = requireStandIn(name, $tags);
-  await signInAs('bailiff', page, context);
+  expectSignedInAs('bailiff');
   world.aliases[name] = localUserName(email);
 });
 
@@ -329,17 +330,16 @@ Then('the note cannot be edited', async ({ page, world }) => {
 });
 
 /**
- * Adds a note as the bailiff, moves the enforcement's timestamps back by the days between the two dates, and
- * adds the second. The notes are dated relative to today rather than on the feature's dates. Leaves the bailiff
- * signed in.
+ * Has the bailiff add a note through the API, moves the enforcement's timestamps back by the days between the
+ * two dates, and adds the second. The notes are dated relative to today rather than on the feature's dates.
+ * Expects the bailiff next.
  */
-Given('the case has bailiff notes added on {string} and {string}', async ({ page, context, world }, first: string, second: string) => {
+Given('the case has bailiff notes added on {string} and {string}', async ({ world }, first: string, second: string) => {
   const daysBetween = Math.round((Date.parse(second) - Date.parse(first)) / 86_400_000);
   expect(daysBetween, `"${second}" to be after "${first}"`).toBeGreaterThan(0);
-  await signInAs('bailiff', page, context);
-  await addNoteAsSignedInUser(page, world, `Note from ${first}`);
+  await addBailiffNoteAsBailiff(`Note from ${first}`);
   await backdateEnforcement(requireCaseReference(world), { period: `P${daysBetween}D` });
-  await addNoteAsSignedInUser(page, world, `Note from ${second}`);
+  await addBailiffNoteAsBailiff(`Note from ${second}`);
   approximatePrecondition(
     'HDPI-7593',
     `the notes were added ${daysBetween} days apart, ending today, rather than on ${first} and ${second}`
@@ -359,14 +359,6 @@ Then('the note from {string} is shown first', async ({ page }, date: string) => 
 /** A note's date as the tab shows it, e.g. "1 Feb 2026". */
 function noteDate(date: Date): string {
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-async function addNoteAsSignedInUser(page: Page, world: EnforcementWorld, note: string): Promise<void> {
-  await openCaseSummary(page);
-  await startEvent(ADD_BAILIFF_NOTE);
-  await page.getByLabel(addBailiffNote.noteLabel).fill(note);
-  await continueButton(page).click();
-  await expectBailiffConfirmation(page, 'Bailiff note added', requireCaseReference(world));
 }
 
 // ---------------------------------------------------------------------------

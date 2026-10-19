@@ -35,7 +35,7 @@ function resolveWorkers(): number {
 
 function demoSlowMo(): number {
   const parsed = Number(process.env.DEMO_SLOW_MO?.trim());
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 350;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 275;
 }
 
 // Enforcement BDD: `yarn bddgen` turns the .feature files into specs under .features-gen/ (gitignored).
