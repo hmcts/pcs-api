@@ -99,6 +99,14 @@ public class WarrantReturnService {
      */
     @Transactional(readOnly = true)
     public EnforcementOrderEntity findWarrant(long caseReference) {
+        return requireWarrant(caseReference);
+    }
+
+    /**
+     * The same read as {@link #findWarrant}, for the service's own callers: calling the public method from
+     * inside the service would go round the transaction proxy and leave the read with no transaction at all.
+     */
+    private EnforcementOrderEntity requireWarrant(long caseReference) {
         EnforcementOrderEntity current = currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null);
         if (!hasGeneratedWarrant(current)) {
             throw new NoEnforcementException();
@@ -131,9 +139,12 @@ public class WarrantReturnService {
 
     /**
      * The errors to show for the answers, against the warrant's current status.
+     *
+     * @throws NoEnforcementException if no warrant has been generated on the claim
      */
+    @Transactional(readOnly = true)
     public List<String> validate(long caseReference, WarrantReturnDetails details) {
-        return warrantReturnValidator.validate(details, findWarrant(caseReference).getStatus());
+        return warrantReturnValidator.validate(details, requireWarrant(caseReference).getStatus());
     }
 
     /**

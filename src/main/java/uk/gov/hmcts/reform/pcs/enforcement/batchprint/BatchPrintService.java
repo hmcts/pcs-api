@@ -30,12 +30,12 @@ import java.util.concurrent.TimeUnit;
  * bailiff's right to each case is checked by {@link BatchPrintPlanner} first.
  *
  * <p>Cases are fetched and merged in parallel, at most {@value #MAX_CONCURRENT_CASES} at a time across every
- * batch print the instance is building, and each case is merged into a temp file of its own
- * ({@link BatchPrintPdfMerger}). That bounds both the load on CDAM and the documents held in memory, whatever
- * the number of cases or of bailiffs printing at once. A document that cannot be fetched or read leaves only its
- * case out, and the bailiff is told which; a request whose cases cannot get their turn at those slots within
- * {@link #MAX_WAIT_FOR_A_SLOT} per wave of {@value #MAX_CONCURRENT_CASES} is refused whole with
- * {@link BatchPrintBusyException}.
+ * batch print the instance is building, and each case is merged into a file of its own in the request's
+ * {@link BatchPrintTempDirectory} ({@link BatchPrintPdfMerger}). That bounds both the load on CDAM and the
+ * documents held in memory, whatever the number of cases or of bailiffs printing at once. A document that
+ * cannot be fetched or read leaves only its case out, and the bailiff is told which; a request whose cases
+ * cannot get their turn at those slots within {@link #MAX_WAIT_FOR_A_SLOT} per wave of
+ * {@value #MAX_CONCURRENT_CASES} is refused whole with {@link BatchPrintBusyException}.
  */
 @Slf4j
 @Service
@@ -79,15 +79,32 @@ public class BatchPrintService {
     }
 
     /**
-     * Builds the batch print, as a temp file the caller owns and has to delete.
+     * Builds the batch print, in a temp directory the caller owns and has to delete. A request that is refused
+     * or that has nothing to print leaves no directory behind.
      *
      * @throws BatchPrintBusyException if the instance is too busy to fetch this request's documents
      */
     public BatchPrint print(String bailiffUserId, List<String> caseReferences) {
+        Path directory = createMergeDirectory();
+        // The caller only takes the directory on with the file it has to stream, so a refusal and a print with
+        // nothing in it both leave it here to delete.
+        boolean handedOver = false;
+        try {
+            BatchPrint batchPrint = buildBatchPrint(bailiffUserId, caseReferences, directory);
+            handedOver = !batchPrint.isEmpty();
+            return batchPrint;
+        } finally {
+            if (!handedOver) {
+                BatchPrintTempDirectory.delete(directory);
+            }
+        }
+    }
+
+    private BatchPrint buildBatchPrint(String bailiffUserId, List<String> caseReferences, Path directory) {
         BatchPrintPlan plan = batchPrintPlanner.plan(bailiffUserId, caseReferences);
 
         Duration slotBudget = slotBudget(plan.included().size());
-        List<CaseFile> caseFiles = mergeEachCase(plan.included(), Instant.now().plus(slotBudget));
+        List<CaseFile> caseFiles = mergeEachCase(directory, plan.included(), Instant.now().plus(slotBudget));
         try {
             if (caseFiles.stream().anyMatch(CaseFile::tooBusy)) {
                 log.warn("Batch print for bailiff {} refused: no slot for {} of its {} case(s) within {}",
@@ -104,9 +121,20 @@ public class BatchPrintService {
             BatchPrintPlan printed = plan.exclude(unavailable);
             log.info("Batch print for bailiff {}: {} case(s) printed, {} left out", bailiffUserId,
                      printed.included().size(), printed.excluded().size());
-            return new BatchPrint(printedFiles.isEmpty() ? null : mergeCases(printedFiles), printed);
+            if (printedFiles.isEmpty()) {
+                return new BatchPrint(null, printed, null);
+            }
+            return new BatchPrint(mergeCases(directory, printedFiles), printed, directory);
         } finally {
             caseFiles.forEach(CaseFile::delete);
+        }
+    }
+
+    private Path createMergeDirectory() {
+        try {
+            return pdfMerger.createMergeDirectory();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to create the batch print temp directory", e);
         }
     }
 
@@ -124,11 +152,12 @@ public class BatchPrintService {
     /**
      * Each case's merged file, in the order given, with no file for a case that could not be fetched or merged.
      */
-    private List<CaseFile> mergeEachCase(List<PrintableCase> printableCases, Instant waitUntil) {
+    private List<CaseFile> mergeEachCase(Path directory, List<PrintableCase> printableCases, Instant waitUntil) {
         List<Future<CaseFile>> futures = new ArrayList<>();
         // Closing the executor waits for every case, so none is still being written once this returns.
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            printableCases.forEach(printable -> futures.add(executor.submit(() -> mergeCase(printable, waitUntil))));
+            printableCases.forEach(
+                printable -> futures.add(executor.submit(() -> mergeCase(directory, printable, waitUntil))));
         }
         List<CaseFile> caseFiles = new ArrayList<>();
         for (int i = 0; i < futures.size(); i++) {
@@ -140,7 +169,7 @@ public class BatchPrintService {
         return caseFiles;
     }
 
-    private CaseFile mergeCase(PrintableCase printable, Instant waitUntil) {
+    private CaseFile mergeCase(Path directory, PrintableCase printable, Instant waitUntil) {
         try {
             if (!caseSlots.tryAcquire(millisUntil(waitUntil), TimeUnit.MILLISECONDS)) {
                 return CaseFile.busy(printable.caseReference());
@@ -149,7 +178,7 @@ public class BatchPrintService {
                 List<byte[]> documents = printable.documents().stream()
                     .map(document -> letterDocumentFetcher.fetchBytes(document.documentId()))
                     .toList();
-                return CaseFile.merged(printable.caseReference(), pdfMerger.mergeCase(documents));
+                return CaseFile.merged(printable.caseReference(), pdfMerger.mergeCase(directory, documents));
             } finally {
                 caseSlots.release();
             }
@@ -167,9 +196,9 @@ public class BatchPrintService {
         return Math.max(0, Duration.between(Instant.now(), waitUntil).toMillis());
     }
 
-    private Path mergeCases(List<Path> caseFiles) {
+    private Path mergeCases(Path directory, List<Path> caseFiles) {
         try {
-            return pdfMerger.mergeCases(caseFiles);
+            return pdfMerger.mergeCases(directory, caseFiles);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to merge the batch print", e);
         }

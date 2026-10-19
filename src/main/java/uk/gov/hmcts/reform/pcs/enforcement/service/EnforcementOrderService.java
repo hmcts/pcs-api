@@ -131,7 +131,10 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcementOrder);
+        // EnforcementSubmitEvent refuses an application that records no type before it gets here, so the fee,
+        // the initial status and the type's strategy below all have a type to work from.
+        SelectEnforcementType enforcementType = Objects.requireNonNull(
+            SelectEnforcementType.from(enforcementOrder), "The enforcement application records no type");
         // Decided before the new application is saved, so it only sees the claim's earlier enforcements.
         boolean paymentOutstanding = isPaymentOutstanding(claimEntity, enforcementType);
         final Optional<FeeDetails> feeOwed = paymentOutstanding

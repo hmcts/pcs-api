@@ -104,8 +104,8 @@ public class RiskAssessmentTabView {
     }
 
     private static RiskAssessmentTabMarkdown.ClaimantAnswers claimantAnswers(EnforcementOrderEntity enforcement) {
-        EnforcementOrder application = Optional.ofNullable(enforcement.getEnforcementOrder())
-            .orElseGet(EnforcementOrder::new);
+        EnforcementOrder submitted = enforcement.getEnforcementOrder();
+        EnforcementOrder application = submitted != null ? submitted : new EnforcementOrder();
         boolean restitution = SelectEnforcementType.from(application) == SelectEnforcementType.WARRANT_OF_RESTITUTION
             || enforcement.getWarrantOfRestitutionDetails() != null;
         return RiskAssessmentTabMarkdown.answersOf(application, restitution);

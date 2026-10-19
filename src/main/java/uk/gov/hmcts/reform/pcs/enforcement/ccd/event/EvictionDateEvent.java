@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffStaffRoles.BAILIFF_STAFF_ROLES;
@@ -111,14 +112,15 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
 
     SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        EnforcementOrder enforcementOrder = eventPayload.caseData().getEnforcementOrder();
-        EvictionSchedule schedule = enforcementOrder == null ? null : enforcementOrder.getEvictionSchedule();
+        EvictionSchedule schedule = answeredSchedule(eventPayload.caseData().getEnforcementOrder());
 
         List<String> errors = validator.validateEvictionDate(schedule);
         if (!errors.isEmpty()) {
             return SubmitResponse.<State>builder().errors(errors).build();
         }
-        LocalDateTime evictionDateTime = schedule.getEvictionDateTime().truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime evictionDateTime = Objects.requireNonNull(
+                schedule.getEvictionDateTime(), "The eviction schedule was accepted with no date and time")
+            .truncatedTo(ChronoUnit.MINUTES);
         EnforcementChange<String> saved =
             save(caseReference, evictionDateTime, schedule.getEvictionDispenseWithService() == YesOrNo.YES);
         if (saved.refused()) {
@@ -131,5 +133,14 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
                 caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), caseReference,
                 saved.change()))
             .build();
+    }
+
+    /**
+     * The answers the event's page collected, or an empty schedule when the event data holds none: the
+     * validator refuses both the same way.
+     */
+    private static EvictionSchedule answeredSchedule(EnforcementOrder enforcementOrder) {
+        EvictionSchedule schedule = enforcementOrder == null ? null : enforcementOrder.getEvictionSchedule();
+        return schedule == null ? EvictionSchedule.builder().build() : schedule;
     }
 }

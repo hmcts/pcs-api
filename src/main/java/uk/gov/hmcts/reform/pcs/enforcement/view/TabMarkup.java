@@ -91,15 +91,15 @@ final class TabMarkup {
         return String.join("\n", blocks);
     }
 
-    static String date(LocalDate date) {
+    static String formatDate(LocalDate date) {
         return DATE.format(date);
     }
 
-    static String date(LocalDateTime dateTime) {
+    static String formatDate(LocalDateTime dateTime) {
         return DATE.format(dateTime);
     }
 
-    static String time(LocalDateTime dateTime) {
+    static String formatTime(LocalDateTime dateTime) {
         return TIME.format(dateTime);
     }
 

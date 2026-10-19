@@ -39,7 +39,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -178,6 +180,10 @@ public class EnforcementTestDocumentSeeder {
         }
     }
 
+    /**
+     * {@link MultipartFile} hands its content out as a byte array, so the content is held as one; equality is
+     * on the content itself rather than on the array's identity.
+     */
     private record InMemoryPdf(String fileName, byte[] content) implements MultipartFile {
 
         @Override
@@ -218,6 +224,24 @@ public class EnforcementTestDocumentSeeder {
         @Override
         public void transferTo(File destination) throws IOException {
             Files.write(destination.toPath(), content);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof InMemoryPdf pdf)) {
+                return false;
+            }
+            return Objects.equals(fileName, pdf.fileName) && Arrays.equals(content, pdf.content);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(fileName, Arrays.hashCode(content));
+        }
+
+        @Override
+        public String toString() {
+            return "InMemoryPdf[fileName=%s, content=%d bytes]".formatted(fileName, content.length);
         }
     }
 }

@@ -145,8 +145,8 @@ final class EnforcementStatusTabMarkdown {
             return paragraph(NOT_YET_SERVED);
         }
         List<Row> rows = new ArrayList<>();
-        rows.add(new Row(DATE_SERVED, TabMarkup.date(servedAt)));
-        rows.add(new Row(TIME_SERVED, TabMarkup.time(servedAt)));
+        rows.add(new Row(DATE_SERVED, TabMarkup.formatDate(servedAt)));
+        rows.add(new Row(TIME_SERVED, TabMarkup.formatTime(servedAt)));
         if (enforcement.getNoticeServedHow() != null) {
             rows.add(new Row(HOW_SERVED, enforcement.getNoticeServedHow()));
         }
@@ -159,8 +159,8 @@ final class EnforcementStatusTabMarkdown {
             return paragraph(NOT_YET_SCHEDULED);
         }
         return summaryList(List.of(
-            new Row(EVICTION_DATE, TabMarkup.date(evictionAt)),
-            new Row(EVICTION_TIME, TabMarkup.time(evictionAt))
+            new Row(EVICTION_DATE, TabMarkup.formatDate(evictionAt)),
+            new Row(EVICTION_TIME, TabMarkup.formatTime(evictionAt))
         ));
     }
 
@@ -174,7 +174,7 @@ final class EnforcementStatusTabMarkdown {
         if (evictionAt == null || canAttend == null) {
             return paragraph(NOT_YET_CONFIRMED);
         }
-        String question = CAN_ATTEND.formatted(TabMarkup.date(evictionAt), TabMarkup.time(evictionAt));
+        String question = CAN_ATTEND.formatted(TabMarkup.formatDate(evictionAt), TabMarkup.formatTime(evictionAt));
         return summaryList(List.of(new Row(question, canAttend ? "Yes" : "No")));
     }
 
@@ -190,8 +190,8 @@ final class EnforcementStatusTabMarkdown {
         }
         if (latestReturn.getEvictionAt() != null) {
             LocalDateTime evictionAt = latestReturn.getEvictionAt().atZone(UK_ZONE_ID).toLocalDateTime();
-            rows.add(new Row(EVICTION_DATE, TabMarkup.date(evictionAt)));
-            rows.add(new Row(EVICTION_TIME, TabMarkup.time(evictionAt)));
+            rows.add(new Row(EVICTION_DATE, TabMarkup.formatDate(evictionAt)));
+            rows.add(new Row(EVICTION_TIME, TabMarkup.formatTime(evictionAt)));
         }
         if (latestReturn.getAdditionalDetails() != null) {
             rows.add(new Row(ADDITIONAL_DETAILS, latestReturn.getAdditionalDetails()));

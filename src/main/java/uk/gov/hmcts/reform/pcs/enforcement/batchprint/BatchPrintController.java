@@ -181,7 +181,7 @@ public class BatchPrintController {
                 .body(batchPrint.plan());
         }
         // The file is streamed after this method returns, and may never be streamed at all.
-        BatchPrintFileCleanupFilter.deleteWhenRequestFinishes(httpRequest, batchPrint.pdf());
+        BatchPrintFileCleanupFilter.deleteWhenRequestFinishes(httpRequest, batchPrint.directory());
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_PDF)
             .header(HttpHeaders.CONTENT_DISPOSITION,

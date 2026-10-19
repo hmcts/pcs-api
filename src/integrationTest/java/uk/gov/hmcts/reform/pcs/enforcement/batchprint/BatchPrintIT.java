@@ -188,8 +188,9 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
     }
 
     /**
-     * The batch print is streamed from a temp file, so nothing of it may be left in the filesystem once the
-     * request is over: {@link BatchPrintFileCleanupFilter} runs in the real filter chain to see to that.
+     * The batch print is streamed from a temp file in a directory of its own, so neither may be left in the
+     * filesystem once the request is over: {@link BatchPrintFileCleanupFilter} runs in the real filter chain
+     * to see to that.
      */
     private static Set<Path> batchPrintTempFiles() throws IOException {
         try (Stream<Path> tempFiles = Files.list(Path.of(System.getProperty("java.io.tmpdir")))) {

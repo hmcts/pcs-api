@@ -364,7 +364,7 @@ final class RiskAssessmentTabMarkdown {
     }
 
     private static String ukDate(Instant instant) {
-        return instant == null ? null : TabMarkup.date(instant.atZone(UK_ZONE_ID).toLocalDate());
+        return instant == null ? null : TabMarkup.formatDate(instant.atZone(UK_ZONE_ID).toLocalDate());
     }
 
     /**

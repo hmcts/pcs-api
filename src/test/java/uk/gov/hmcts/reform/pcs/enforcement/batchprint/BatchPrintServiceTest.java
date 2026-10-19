@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -58,13 +59,12 @@ class BatchPrintServiceTest {
     }
 
     /**
-     * The batch print file outlives print(): in the service it is the request that deletes it.
+     * The batch print file and the directory holding it outlive print(): in the service it is the request that
+     * deletes them.
      */
     @AfterEach
-    void deleteTempFiles() throws IOException {
-        for (Path file : pdfMerger.created) {
-            Files.deleteIfExists(file);
-        }
+    void deleteTempFiles() {
+        pdfMerger.directories.forEach(BatchPrintTempDirectory::delete);
     }
 
     @Test
@@ -123,6 +123,8 @@ class BatchPrintServiceTest {
         assertThat(batchPrint.plan()).isEqualTo(nothing);
         verify(letterDocumentFetcher, never()).fetchBytes(any());
         assertThat(pdfMerger.created).isEmpty();
+        assertThat(batchPrint.directory()).isNull();
+        assertThat(pdfMerger.directories).hasSize(1).noneMatch(Files::exists);
     }
 
     @Test
@@ -168,6 +170,29 @@ class BatchPrintServiceTest {
         assertThat(pdfMerger.created.subList(0, 2)).noneMatch(Files::exists);
         assertThat(batchPrint.pdf()).isEqualTo(pdfMerger.created.get(2)).exists();
         assertThat(Files.size(batchPrint.pdf())).isPositive();
+        assertThat(batchPrint.directory()).isEqualTo(pdfMerger.directories.getFirst());
+    }
+
+    /**
+     * The file holds several cases' warrants, risk assessments and notices of eviction, and the system temp
+     * directory is writable by every user on the host, so a batch print is built in a directory of its own
+     * that only the user pcs-api runs as can read.
+     */
+    @Test
+    void shouldBuildTheBatchPrintInADirectoryOnlyItsOwnerCanRead() throws IOException {
+        when(batchPrintPlanner.plan(BAILIFF, CHOSEN)).thenReturn(new BatchPrintPlan(
+            List.of(printable("1111111111111111", document(BatchPrintDocumentKind.WARRANT))), List.of()));
+        when(letterDocumentFetcher.fetchBytes(any())).thenReturn(onePagePdf("Warrant"));
+
+        BatchPrint batchPrint = underTest.print(BAILIFF, CHOSEN);
+
+        Path directory = batchPrint.directory();
+        assertThat(batchPrint.pdf()).hasParent(directory);
+        assertThat(directory).isNotEqualTo(Path.of(System.getProperty("java.io.tmpdir")));
+        assertThat(Files.getPosixFilePermissions(directory))
+            .isEqualTo(PosixFilePermissions.fromString("rwx------"));
+        assertThat(Files.getPosixFilePermissions(batchPrint.pdf()))
+            .isEqualTo(PosixFilePermissions.fromString("rw-------"));
     }
 
     /**
@@ -194,6 +219,7 @@ class BatchPrintServiceTest {
             .hasMessage(BatchPrintBusyException.MESSAGE);
 
         assertThat(pdfMerger.created).hasSize(1).noneMatch(Files::exists);
+        assertThat(pdfMerger.directories).hasSize(1).noneMatch(Files::exists);
     }
 
     /**
@@ -296,23 +322,31 @@ class BatchPrintServiceTest {
     }
 
     /**
-     * The real merger, noting every temp file it creates: case files first, in completion order, then the
-     * batch print file.
+     * The real merger, noting every directory it is asked for and every temp file it creates: case files
+     * first, in completion order, then the batch print file.
      */
     private static final class RecordingMerger extends BatchPrintPdfMerger {
 
         private final List<Path> created = Collections.synchronizedList(new ArrayList<>());
+        private final List<Path> directories = Collections.synchronizedList(new ArrayList<>());
 
         @Override
-        public Path mergeCase(List<byte[]> documents) throws IOException {
-            Path file = super.mergeCase(documents);
+        public Path createMergeDirectory() throws IOException {
+            Path directory = super.createMergeDirectory();
+            directories.add(directory);
+            return directory;
+        }
+
+        @Override
+        public Path mergeCase(Path directory, List<byte[]> documents) throws IOException {
+            Path file = super.mergeCase(directory, documents);
             created.add(file);
             return file;
         }
 
         @Override
-        public Path mergeCases(List<Path> caseFiles) throws IOException {
-            Path file = super.mergeCases(caseFiles);
+        public Path mergeCases(Path directory, List<Path> caseFiles) throws IOException {
+            Path file = super.mergeCases(directory, caseFiles);
             created.add(file);
             return file;
         }

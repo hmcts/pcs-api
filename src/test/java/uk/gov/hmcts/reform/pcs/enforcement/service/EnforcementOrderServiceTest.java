@@ -110,13 +110,9 @@ class EnforcementOrderServiceTest {
     private static final FeeDetails FEE = FeeDetails.builder().code("FEE0380").feeAmount(new BigDecimal("148")).build();
 
     @BeforeEach
-    void stubSaveToReturnTheEnforcementItWasGiven() {
+    void stubSaveAndTheFeeLookUp() {
         lenient().when(enforcementOrderRepository.saveAndFlush(any(EnforcementOrderEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-    }
-
-    @BeforeEach
-    void stubTheFeeLookUp() {
         lenient().when(enforcementFeeService.lookUpFee(any())).thenReturn(FEE);
     }
 

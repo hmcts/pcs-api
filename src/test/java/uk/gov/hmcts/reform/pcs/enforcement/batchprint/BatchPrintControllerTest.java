@@ -77,12 +77,13 @@ class BatchPrintControllerTest {
 
     @Test
     void shouldReturnThePdfNamingThePrintedAndLeftOutCases() throws IOException {
-        Path pdf = Files.createTempFile("batch-print-controller-test-", ".pdf");
+        Path directory = Files.createTempDirectory("batch-print-controller-test-");
+        Path pdf = Files.createTempFile(directory, "batch-", ".pdf");
         BatchPrintPlan plan = new BatchPrintPlan(
             List.of(new PrintableCase("1111111111111111", "WP-1", List.of(), List.of())),
             List.of(ExcludedCase.of("2222222222222222", BatchPrintExclusion.NOT_ALLOCATED),
                     ExcludedCase.of("not-a-case", BatchPrintExclusion.INVALID_REFERENCE)));
-        when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(pdf, plan));
+        when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(pdf, plan, directory));
 
         ResponseEntity<?> response = underTest.print(httpRequest, AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
 
@@ -95,18 +96,20 @@ class BatchPrintControllerTest {
         assertThat(response.getHeaders().getFirst(BatchPrintController.EXCLUDED_HEADER))
             .isEqualTo("2222222222222222=NOT_ALLOCATED");
         assertThat(response.getBody()).isEqualTo(new FileSystemResource(pdf));
+        BatchPrintTempDirectory.delete(directory);
     }
 
     /**
-     * Whether or not Spring goes on to write the body, the request is left holding the temp file for
+     * Whether or not Spring goes on to write the body, the request is left holding the temp directory for
      * {@link BatchPrintFileCleanupFilter} to delete.
      */
     @Test
-    void shouldHaveTheTempFileDeletedWhenTheRequestFinishes() throws Exception {
-        Path pdf = Files.createTempFile("batch-print-controller-test-", ".pdf");
+    void shouldHaveTheTempDirectoryDeletedWhenTheRequestFinishes() throws Exception {
+        Path directory = Files.createTempDirectory("batch-print-controller-test-");
+        Path pdf = Files.createTempFile(directory, "batch-", ".pdf");
         BatchPrintPlan plan = new BatchPrintPlan(
             List.of(new PrintableCase("1111111111111111", "WP-1", List.of(), List.of())), List.of());
-        when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(pdf, plan));
+        when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(pdf, plan, directory));
 
         underTest.print(httpRequest, AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
         assertThat(pdf).exists();
@@ -115,13 +118,14 @@ class BatchPrintControllerTest {
                                                    new MockFilterChain());
 
         assertThat(pdf).doesNotExist();
+        assertThat(directory).doesNotExist();
     }
 
     @Test
     void shouldExplainWhyWhenNothingCanBePrinted() {
         BatchPrintPlan plan = new BatchPrintPlan(
             List.of(), List.of(ExcludedCase.of("2222222222222222", BatchPrintExclusion.NOT_ALLOCATED)));
-        when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(null, plan));
+        when(batchPrintService.print(BAILIFF, CHOSEN)).thenReturn(new BatchPrint(null, plan, null));
 
         ResponseEntity<?> response = underTest.print(httpRequest, AUTHORIZATION, S2S, new BatchPrintRequest(CHOSEN));
 
