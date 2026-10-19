@@ -33,7 +33,7 @@ class ClaimSnapshotFileWriterTest {
 
     @Test
     void shouldWriteSnapshotRecordsAsSnakeCaseJsonArray() throws Exception {
-        ClaimSnapshotRecord record = ClaimSnapshotRecord.builder()
+        ClaimSnapshotRecord snapshotRecord = ClaimSnapshotRecord.builder()
             .contractVersion("4.1.0")
             .producer(Producer.builder()
                 .system("possessions-ccd")
@@ -56,7 +56,7 @@ class ClaimSnapshotFileWriterTest {
 
         Path outputPath = tempDir.resolve("claim_snapshot_export.json");
 
-        byte[] written = fileWriter.write(List.of(record), outputPath);
+        byte[] written = fileWriter.write(List.of(snapshotRecord), outputPath);
 
         assertThat(outputPath).exists();
         assertThat(written).isEqualTo(Files.readAllBytes(outputPath));

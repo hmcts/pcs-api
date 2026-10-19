@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
@@ -86,12 +87,14 @@ class SnapshotMapperTest {
             "2026-03-09",
             "snapshot-123",
             "2026-03-09T12:00:00Z",
-            "PCS-1001",
-            2,
-            "2026-03-01 10:00:00",
-            dimensions,
-            milestones,
-            List.of(party)
+            ClaimSnapshot.builder()
+                .claimReference("PCS-1001")
+                .snapshotVersion(2)
+                .recordedDate("2026-03-01 10:00:00")
+                .dimensions(dimensions)
+                .milestones(milestones)
+                .parties(List.of(party))
+                .build()
         );
 
         assertThat(result.getContractVersion()).isEqualTo("4.1.0");

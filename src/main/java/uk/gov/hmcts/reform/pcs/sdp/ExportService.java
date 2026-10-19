@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
+import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
@@ -92,9 +93,9 @@ public class ExportService {
 
         List<ClaimSnapshotRecord> records = new ArrayList<>();
         List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
-        for (ClaimEntity claim : claims) {
-            ClaimSnapshotRecord record = mapClaim(claim, extractDate, publishedDates);
-            String hash = snapshotHasher.hash(record.getClaim());
+        for (ClaimEntity claim : claims) { 
+            ClaimSnapshotRecord snapshotRecord = mapClaim(claim, extractDate, publishedDates);
+            String hash = snapshotHasher.hash(snapshotRecord.getClaim());
             SdpClaimSnapshotEntity snapshot = stored.get(claim.getId());
             if (snapshot == null) {
                 snapshot = SdpClaimSnapshotEntity.builder()
@@ -112,8 +113,8 @@ public class ExportService {
             } else {
                 continue;
             }
-            record.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
-            records.add(record);
+            snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
+            records.add(snapshotRecord);
         }
 
         String filename = "claim_snapshot_" + extractDate + ".json";
@@ -164,12 +165,14 @@ public class ExportService {
             extractDate,
             UUID.randomUUID().toString(),
             resolvePublishedDate(publishedDates.get(caseId)),
-            claimReference,
-            0,
-            formatDateTime(claim.getClaimSubmittedDate()),
-            dimensions,
-            milestones,
-            parties
+            ClaimSnapshot.builder()
+                .claimReference(claimReference)
+                .snapshotVersion(0)
+                .recordedDate(formatDateTime(claim.getClaimSubmittedDate()))
+                .dimensions(dimensions)
+                .milestones(milestones)
+                .parties(parties)
+                .build()
         );
     }
 
