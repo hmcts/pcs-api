@@ -120,6 +120,22 @@ class WaDmnTablesTest {
         });
     }
 
+    /**
+     * wa-task-management-api collects the configuration rows into a map keyed by attribute name, so two rules
+     * setting the same attribute for one task type fails the whole configuration with
+     * {@code IllegalStateException: Duplicate key}, on initiation and on reconfiguration alike. A catch-all rule
+     * therefore has to exclude the task types a later rule overrides rather than rely on rule order.
+     */
+    @Test
+    void shouldSetEveryConfigurationAttributeOncePerTaskType() {
+        DmnDecisionTable configuration = WaDmn.CONFIGURATION.table();
+
+        assertThat(taskTypeCatalogue().keySet()).allSatisfy(taskType ->
+            assertThat(configuration.collect(Map.of("taskType", taskType), "name"))
+                .describedAs("configuration attributes of %s", taskType)
+                .doesNotHaveDuplicates());
+    }
+
     @Test
     void shouldUseOnlyRecognisedPermissionTokens() {
         assertThat(WaDmn.PERMISSIONS.table().rules())
@@ -152,8 +168,9 @@ class WaDmnTablesTest {
     }
 
     /**
-     * The configuration attributes of a task type, with the RULE ORDER hit policy applied: every matching rule
-     * contributes, and the last value for an attribute name wins.
+     * The configuration attributes of a task type: every matching rule contributes one. Two rules that set the
+     * same attribute for the same task type is a configuration error, not a last-one-wins override - see
+     * {@link #shouldSetEveryConfigurationAttributeOncePerTaskType}.
      */
     static Map<String, String> configurationAttributes(DmnDecisionTable configuration, String taskType) {
         Map<String, String> attributes = new LinkedHashMap<>();

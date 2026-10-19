@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentAttributes;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -89,6 +90,21 @@ class BailiffDirectoryServiceTest {
     }
 
     @Test
+    void shouldNotFindABailiffInAnotherJurisdiction() {
+        givenRoles(role("ORGANISATION", "bailiff", "CIVIL"));
+
+        assertThat(underTest.findBailiff(USER_ID)).isEmpty();
+        verify(idamClient, never()).getUserByUserId(anyString(), anyString());
+    }
+
+    @Test
+    void shouldNotFindABailiffRoleWithNoJurisdiction() {
+        givenRoles(role("ORGANISATION", "bailiff", null));
+
+        assertThat(underTest.findBailiff(USER_ID)).isEmpty();
+    }
+
+    @Test
     void shouldNotFindAUserWithNoRoleAssignments() {
         givenRoles();
 
@@ -138,6 +154,13 @@ class BailiffDirectoryServiceTest {
         assertThat(underTest.isBailiff(USER_ID)).isFalse();
     }
 
+    @Test
+    void shouldSayABailiffInAnotherJurisdictionIsNotABailiff() {
+        givenRoles(role("ORGANISATION", "bailiff", "CIVIL"));
+
+        assertThat(underTest.isBailiff(USER_ID)).isFalse();
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = " ")
@@ -154,6 +177,16 @@ class BailiffDirectoryServiceTest {
     }
 
     private static RoleAssignment role(String roleType, String roleName) {
-        return RoleAssignment.builder().actorId(USER_ID).roleType(roleType).roleName(roleName).build();
+        return role(roleType, roleName, "PCS");
+    }
+
+    private static RoleAssignment role(String roleType, String roleName, String jurisdiction) {
+        return RoleAssignment.builder()
+            .actorId(USER_ID)
+            .roleType(roleType)
+            .roleName(roleName)
+            .attributes(jurisdiction == null ? null
+                            : RoleAssignmentAttributes.builder().jurisdiction(jurisdiction).build())
+            .build();
     }
 }

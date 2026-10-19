@@ -185,7 +185,7 @@
           "primaryLocation": "20262",
           "jurisdiction": "PCS",
           "region": "1",
-          "workTypes": "routine_work,applications,decision_making_work,error_management"
+          "workTypes": "bailiff_work,enforcement_support,error_management"
         },
         "authorisations": []
       }
@@ -219,7 +219,7 @@
           "primaryLocation": "20262",
           "jurisdiction": "PCS",
           "region": "1",
-          "workTypes": "routine_work,applications,decision_making_work,error_management"
+          "workTypes": "enforcement_support,error_management"
         },
         "authorisations": []
       }
@@ -253,7 +253,7 @@
           "primaryLocation": "20262",
           "jurisdiction": "PCS",
           "region": "1",
-          "workTypes": "routine_work,applications,decision_making_work,error_management"
+          "workTypes": "bailiff_work,enforcement_support,error_management"
         },
         "authorisations": []
       },

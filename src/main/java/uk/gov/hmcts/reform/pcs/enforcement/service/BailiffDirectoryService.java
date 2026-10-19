@@ -9,7 +9,9 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentAttributes;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -22,7 +24,9 @@ import java.util.stream.Stream;
 /**
  * Finds the bailiff chosen in the "Find the bailiff's name" type-ahead. XUI's StaffUser type-ahead searches
  * staff reference data by role category, which cannot tell a bailiff from other admin staff, so the choice
- * is checked here against the user's AM organisational roles. The name and email come from IDAM.
+ * is checked here against the user's AM organisational roles. The access control configuration qualifies the
+ * bailiff role with {@code @Jurisdiction PCS}, so a bailiff in another jurisdiction is not one of ours. The
+ * name and email come from IDAM.
  *
  * <p>TODO(HDPI-7356): limit the bailiffs to the case's court location once that rule is agreed
  * (OPEN-QUESTIONS 24), by checking the role assignment's primaryLocation or region.
@@ -88,8 +92,11 @@ public class BailiffDirectoryService {
     }
 
     private static boolean isBailiffRole(RoleAssignment assignment) {
+        RoleAssignmentAttributes attributes = assignment.getAttributes();
         return ORGANISATION_ROLE_TYPE.equals(assignment.getRoleType())
-            && UserRole.BAILIFF.getRole().equals(assignment.getRoleName());
+            && UserRole.BAILIFF.getRole().equals(assignment.getRoleName())
+            && attributes != null
+            && CaseType.getJurisdictionId().equals(attributes.getJurisdiction());
     }
 
     private static String fullName(UserDetails user) {

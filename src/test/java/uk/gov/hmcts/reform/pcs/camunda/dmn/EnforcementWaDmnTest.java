@@ -302,9 +302,9 @@ class EnforcementWaDmnTest {
         }
 
         @Test
-        void shouldGiveTheAllocationTaskToBailiffStaffRatherThanToABailiff() {
+        void shouldGiveTheAllocationTaskToEveryRoleThatAllocates() {
             assertThat(permissions.collect(inputsFor(ALLOCATE_CASE_TO_BAILIFF), "name"))
-                .containsExactly("bailiff-admin", "bailiff-manager");
+                .containsExactly("bailiff", "bailiff-admin", "bailiff-manager");
         }
 
         @Test
