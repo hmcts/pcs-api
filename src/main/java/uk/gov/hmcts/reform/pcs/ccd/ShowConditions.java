@@ -48,6 +48,15 @@ public class ShowConditions {
             .collect(Collectors.joining(" AND "));
     }
 
+    public static String featureFlagsDisabled(FeatureFlag... featureFlags) {
+        return Arrays.stream(featureFlags)
+            .map(featureFlag -> {
+                String name = getCcdFieldName(featureFlag);
+                return "featureFlags.%s=\"NO\"".formatted(name);
+            })
+            .collect(Collectors.joining(" AND "));
+    }
+
     private static String getCcdFieldName(FeatureFlag featureFlag) {
         return switch (featureFlag) {
             case RELEASE_1_DOT_2 -> "release1dot2Enabled";
@@ -57,6 +66,7 @@ public class ShowConditions {
             case WALES_MAKE_A_CLAIM -> "walesMakeAClaimEnabled";
             case CUI_RESPOND_TO_CLAIM_LR -> "cuiRespondToClaimLrEnabled";
             case MAKE_ORDER -> "makeOrderEnabled";
+            case ENFORCEMENT -> "enforcementEnabled";
             default -> throw new IllegalArgumentException("Flag %s does not have a CCD field yet"
                                                               .formatted(featureFlag.name()));
         };
