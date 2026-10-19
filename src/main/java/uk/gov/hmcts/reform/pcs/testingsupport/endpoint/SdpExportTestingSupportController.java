@@ -24,16 +24,7 @@ public class SdpExportTestingSupportController {
 
     @PostMapping("/sdp/export-claim-snapshots")
     public ResponseEntity<Map<String, Object>> exportClaimSnapshots() {
-        ExportResult result = exportService.exportAllClaims();
-        return ResponseEntity.ok(Map.of(
-            "outputPath", result.outputPath().toAbsolutePath().toString(),
-            "recordCount", result.recordCount()
-        ));
-    }
-
-    @PostMapping("/sdp/export-claim-snapshots/delta")
-    public ResponseEntity<Map<String, Object>> exportDeltaClaimSnapshots() {
-        ExportResult result = exportService.exportDeltaClaims();
+        ExportResult result = exportService.exportClaims();
         return ResponseEntity.ok(Map.of(
             "outputPath", result.outputPath().toAbsolutePath().toString(),
             "recordCount", result.recordCount()

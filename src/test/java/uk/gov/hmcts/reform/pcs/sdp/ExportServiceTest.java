@@ -116,12 +116,12 @@ class ExportServiceTest {
                     .build()
             ));
 
-        ExportResult result = exportService.exportAllClaims();
+        ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(result.outputPath()).exists();
         assertThat(result.outputPath().getFileName().toString())
-            .isEqualTo("claim_snapshot_full_2026-03-09.json");
+            .isEqualTo("claim_snapshot_2026-03-08.json");
 
         String json = Files.readString(result.outputPath());
         assertThat(json).contains("\"contract_version\" : \"4.1.0\"");
@@ -131,20 +131,20 @@ class ExportServiceTest {
         assertThat(json).contains("\"environment\" : \"local\"");
         assertThat(json).contains("\"snapshot_version\" : 1");
         assertThat(json).contains("\"published_date\" : \"2026-02-05T10:00:00Z\"");
-        verify(blobUploader).upload(eq("claim_snapshot_full_2026-03-09.json"), any(byte[].class));
+        verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
     }
 
     @Test
     void shouldExportNewClaimAsVersionOne() throws Exception {
         givenClaimWithHash();
 
-        ExportResult result = exportService.exportDeltaClaims();
+        ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(result.outputPath().getFileName().toString())
-            .isEqualTo("claim_snapshot_delta_2026-03-08.json");
+            .isEqualTo("claim_snapshot_2026-03-08.json");
         assertThat(Files.readString(result.outputPath())).contains("\"snapshot_version\" : 1");
-        verify(blobUploader).upload(eq("claim_snapshot_delta_2026-03-08.json"), any(byte[].class));
+        verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getClaimId()).isEqualTo(CLAIM_ID);
@@ -158,7 +158,7 @@ class ExportServiceTest {
         givenClaimWithHash();
         givenStoredSnapshot(2, "old-hash");
 
-        ExportResult result = exportService.exportDeltaClaims();
+        ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(Files.readString(result.outputPath())).contains("\"snapshot_version\" : 3");
@@ -174,7 +174,7 @@ class ExportServiceTest {
         givenClaimWithHash();
         givenStoredSnapshot(2, HASH);
 
-        ExportResult result = exportService.exportDeltaClaims();
+        ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isZero();
         verifyNoInteractions(blobUploader);
@@ -183,23 +183,12 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldIncludeUnchangedClaimInFullLoad() throws Exception {
-        givenClaimWithHash();
-        givenStoredSnapshot(2, HASH);
-
-        ExportResult result = exportService.exportAllClaims();
-
-        assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(Files.readString(result.outputPath())).contains("\"snapshot_version\" : 2");
-    }
-
-    @Test
     void shouldNotSaveSnapshotsWhenUploadFails() {
         givenClaimWithHash();
         doThrow(new IllegalStateException("upload failed"))
             .when(blobUploader).upload(any(), any(byte[].class));
 
-        assertThatThrownBy(() -> exportService.exportDeltaClaims())
+        assertThatThrownBy(() -> exportService.exportClaims())
             .isInstanceOf(IllegalStateException.class);
         verify(sdpClaimSnapshotRepository, never()).saveAll(anyList());
     }
@@ -209,7 +198,7 @@ class ExportServiceTest {
         exportService = exportService(Optional.empty());
         when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of());
 
-        ExportResult result = exportService.exportAllClaims();
+        ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isZero();
         assertThat(result.outputPath()).exists();

@@ -80,24 +80,9 @@ public class ExportService {
         this.outputDirectory = Path.of(outputDirectory);
     }
 
-    /**
-     * Runs a full claim snapshot extract.
-     */
     @Transactional
-    public ExportResult exportAllClaims() {
-        return export(LocalDate.now(utcClock), "full", true);
-    }
-
-    /**
-     * Runs a delta claim snapshot extract.
-     */
-    @Transactional
-    public ExportResult exportDeltaClaims() {
-        return export(LocalDate.now(utcClock).minusDays(1), "delta", false);
-    }
-
-    private ExportResult export(LocalDate extractDate, String loadType, boolean includeUnchanged) {
-        String extractDateValue = extractDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+    public ExportResult exportClaims() {
+        String extractDate = LocalDate.now(utcClock).minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
         List<ClaimEntity> claims = claimRepository.findAllForSdpSnapshotExport();
         Map<UUID, SdpClaimSnapshotEntity> stored = sdpClaimSnapshotRepository
             .findAllById(claims.stream().map(ClaimEntity::getId).toList()).stream()
@@ -108,7 +93,7 @@ public class ExportService {
         List<ClaimSnapshotRecord> records = new ArrayList<>();
         List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
         for (ClaimEntity claim : claims) {
-            ClaimSnapshotRecord record = mapClaim(claim, extractDateValue, publishedDates);
+            ClaimSnapshotRecord record = mapClaim(claim, extractDate, publishedDates);
             String hash = snapshotHasher.hash(record.getClaim());
             SdpClaimSnapshotEntity snapshot = stored.get(claim.getId());
             if (snapshot == null) {
@@ -124,14 +109,14 @@ public class ExportService {
                 snapshot.setSnapshotHash(hash);
                 snapshot.setExportedAt(now);
                 changed.add(snapshot);
-            } else if (!includeUnchanged) {
+            } else {
                 continue;
             }
             record.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
             records.add(record);
         }
 
-        String filename = "claim_snapshot_" + loadType + "_" + extractDateValue + ".json";
+        String filename = "claim_snapshot_" + extractDate + ".json";
         Path outputPath = outputDirectory.resolve(filename);
         byte[] json = claimSnapshotFileWriter.write(records, outputPath);
         if (!records.isEmpty()) {
