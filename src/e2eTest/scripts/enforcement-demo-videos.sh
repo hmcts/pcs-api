@@ -9,8 +9,10 @@
 #
 # Runs against a local cftlib stack (ENVIRONMENT=local), one feature at a time with one worker, in the
 # `enforcement-bdd-demo` Playwright project, which records every scenario at human speed (see
-# tests/tests-enforcement/bdd/support/demo-pacing.ts). Feature 19 (the status model) is technical design and
-# is never filmed. Scenarios tagged @pending or @not-filmed are left out: @not-filmed marks the unhappy and edge
+# tests/tests-enforcement/bdd/support/demo-pacing.ts). Two features are never filmed: 19 (the status model) is
+# technical design, and 17 (batch print) has no screen of its own — it is an API, so its only browser step is a
+# sign-in and the video is 17 seconds of XUI with nothing to show. Film it once a case-selection screen exists
+# (OPEN-QUESTIONS 57). Scenarios tagged @pending or @not-filmed are left out: @not-filmed marks the unhappy and edge
 # cases (form validation, cancel, change from check your answers, refusals, access denied) that the demo does
 # not need, unless the user story calls them out. CI's enforcement-bdd project still runs them.
 #
@@ -44,7 +46,7 @@ FEATURE_FILTERS=("$@")
 
 E2E_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FEATURES_DIR="$E2E_DIR/tests/tests-enforcement/bdd/features"
-EXCLUDED_FEATURE="19-enforcement-status-model"
+EXCLUDED_FEATURES=("19-enforcement-status-model" "17-batch-print")
 
 XUI_URL="${MANAGE_CASE_BASE_URL:-http://localhost:3000}"
 XUI_CONTAINER="${XUI_CONTAINER:-cftlib-xui-manage-cases-1}"
@@ -191,7 +193,11 @@ npx bddgen || { echo "bddgen failed" >&2; exit 1; }
 FEATURES=()
 for path in "$FEATURES_DIR"/[0-9][0-9]-*.feature; do
   feature="$(basename "$path" .feature)"
-  [[ "$feature" == "$EXCLUDED_FEATURE" ]] && continue
+  excluded=false
+  for skip in "${EXCLUDED_FEATURES[@]}"; do
+    [[ "$feature" == "$skip" ]] && excluded=true
+  done
+  [[ "$excluded" == true ]] && continue
   if (( ${#FEATURE_FILTERS[@]} )); then
     match=false
     for filter in "${FEATURE_FILTERS[@]}"; do
