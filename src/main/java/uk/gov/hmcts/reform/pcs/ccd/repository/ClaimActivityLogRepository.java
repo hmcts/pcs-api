@@ -21,13 +21,13 @@ public interface ClaimActivityLogRepository extends JpaRepository<ClaimActivityL
     List<ClaimActivityLogEntity> findAllByPcsCase_IdInAndActivityType(Collection<UUID> caseIds,
                                                                       ClaimActivityType activityType);
 
-    @Query("SELECT DISTINCT log.pcsCase.id FROM ClaimActivityLogEntity log "
-        + "WHERE log.activityType = :activityType AND log.status = :status")
+    @Query("select distinct log.pcsCase.id from ClaimActivityLogEntity log "
+        + "where log.activityType = :activityType and log.status = :status")
     List<UUID> findCaseIdsByActivityTypeAndStatus(@Param("activityType") ClaimActivityType activityType,
                                                   @Param("status") ClaimActivityStatus status);
 
-    @Query("SELECT DISTINCT log.pcsCase.id FROM ClaimActivityLogEntity log "
-        + "WHERE log.activityType = :activityType AND log.status = :status AND log.createdAt >= :createdAfter")
+    @Query("select distinct log.pcsCase.id from ClaimActivityLogEntity log "
+        + "where log.activityType = :activityType and log.status = :status and log.createdAt >= :createdAfter")
     List<UUID> findCaseIdsByActivityTypeAndStatusCreatedAfter(@Param("activityType") ClaimActivityType activityType,
                                                               @Param("status") ClaimActivityStatus status,
                                                               @Param("createdAfter") LocalDateTime createdAfter);
