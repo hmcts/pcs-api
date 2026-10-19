@@ -48,7 +48,8 @@ export const findBailiff = {
   fieldLabel: "Find the bailiff's name",
   emailLabel: 'Email address',
   checkYourAnswers: 'Check your answers',
-  submitButton: 'Submit',
+  /** XUI labels every check-your-answers submit the same way. */
+  submitButton: 'Save and continue',
   changeLink: 'Change',
 };
 
