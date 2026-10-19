@@ -71,6 +71,7 @@ import static org.mockito.Mockito.when;
 class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
 
     private static final String TASK_NAME = "enforcement-document-generation-task";
+    private static final String ATTACH_TASK_NAME = "attach-document-task";
 
     @Autowired
     private EnforcementDecisionService enforcementDecisionService;
@@ -112,7 +113,7 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
      */
     @AfterEach
     void removeScheduledDocuments() {
-        jdbcTemplate.update("DELETE FROM scheduled_tasks WHERE task_name = ?", TASK_NAME);
+        jdbcTemplate.update("DELETE FROM scheduled_tasks WHERE task_name IN (?, ?)", TASK_NAME, ATTACH_TASK_NAME);
     }
 
     @Test
@@ -197,6 +198,42 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
         enforcementDocumentGenerator.generate(id, EnforcementOutput.WARRANT_OF_POSSESSION);
         assertThat(jdbcTemplate.queryForObject(
             "SELECT count(*) FROM document WHERE enf_case_id = ?", Integer.class, id)).isEqualTo(1);
+    }
+
+    /**
+     * CDAM serves a document that is on no case only until its TTL passes, a day after it was uploaded, so
+     * filing a document must also attach it to its case in CDAM (HDPI-9440, as HDPI-9435 does for the rest of
+     * the service).
+     */
+    @Test
+    @DisplayName("generating a document attaches it to its case in CDAM")
+    void generatingAttachesTheDocumentToItsCaseInCdam() {
+        long caseReference = 4109410941094109L;
+        UUID id = savedEnforcement(caseReference, SelectEnforcementType.WARRANT,
+                                   EnforcementStatus.AWAITING_BAILIFF_ALLOCATION);
+        UUID documentId = UUID.randomUUID();
+        String documentUrl = "http://dm-store/documents/" + documentId;
+        when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString())).thenReturn(documentUrl);
+        when(caseDocumentClientApi.getMetadataForDocument(any(), any(), eq(documentId)))
+            .thenReturn(metadata(documentUrl, "Warrant of possession - " + caseReference + ".pdf"));
+
+        enforcementDocumentGenerator.generate(id, EnforcementOutput.WARRANT_OF_POSSESSION);
+
+        assertThat(attachTasks(id)).singleElement().satisfies(attach -> assertThat(attach)
+            .containsEntry("case_reference", String.valueOf(caseReference))
+            .containsEntry("document_id", documentId.toString()));
+    }
+
+    /**
+     * The attach task db-scheduler runs for each document filed against this enforcement, with the case and
+     * DM Store document it will ask CDAM to attach.
+     */
+    private List<Map<String, Object>> attachTasks(UUID enforcementId) {
+        return jdbcTemplate.queryForList(
+            "SELECT convert_from(s.task_data, 'UTF8')::jsonb ->> 'caseReference' AS case_reference, "
+                + "convert_from(s.task_data, 'UTF8')::jsonb ->> 'documentId' AS document_id "
+                + "FROM scheduled_tasks s JOIN document d ON d.id::text = s.task_instance "
+                + "WHERE s.task_name = ? AND d.enf_case_id = ?", ATTACH_TASK_NAME, enforcementId);
     }
 
     /**
