@@ -22,9 +22,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs-solicitor1@test.com',
+    claimantContactEmail: 'pcs.local.auth1user1@test.com',
     isCorrectClaimantContactEmail: 'YES',
     formattedClaimantContactAddress: '2 Second Avenue<br>London<br>W3 7RX',
     isCorrectClaimantContactAddress: 'YES',
@@ -99,9 +99,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs-solicitor1@test.com',
+    claimantContactEmail: 'pcs.local.auth1user1@test.com',
     isCorrectClaimantContactEmail: 'YES',
     formattedClaimantContactAddress: '2 Second Avenue<br>London<br>W3 7RX',
     isCorrectClaimantContactAddress: 'YES',
@@ -152,9 +152,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs-solicitor1@test.com',
+    claimantContactEmail: 'pcs.local.auth1user1@test.com',
     isCorrectClaimantContactEmail: 'YES',
     formattedClaimantContactAddress: '2 Second Avenue<br>London<br>W3 7RX',
     isCorrectClaimantContactAddress: 'YES',
@@ -226,9 +226,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs-solicitor1@test.com',
+    claimantContactEmail: 'pcs.local.auth1user1@test.com',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
@@ -289,7 +289,7 @@ export const submitCaseApiData = {
     mediationAttempted: 'NO',
     settlementAttempted: 'NO',
     noticeServed: 'No',
-    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
+    claimantNamePossessiveForm: 'PCS_Local_Auth_Org_Testing’s',
     claimantCircumstancesSelect: 'NO',
     hasDefendantCircumstancesInfo: 'NO',
     suspensionOfRTB_ShowHousingActsPage: 'No',
@@ -319,9 +319,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs-solicitor1@test.com',
+    claimantContactEmail: 'pcs.local.auth1user1@test.com',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
@@ -395,7 +395,7 @@ export const submitCaseApiData = {
     rentArrears_Total: '23999',
     rentArrears_RecoveryAttempted: 'NO',
     arrearsJudgmentWanted: 'NO',
-    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
+    claimantNamePossessiveForm: 'PCS_Local_Auth_Org_Testing’s',
     claimantCircumstancesSelect: 'NO',
     hasDefendantCircumstancesInfo: 'NO',
     suspensionOfRTB_ShowHousingActsPage: 'No',
@@ -431,9 +431,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs-solicitor1@test.com',
+    claimantContactEmail: 'pcs.local.auth1user1@test.com',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
@@ -509,7 +509,7 @@ export const submitCaseApiData = {
     notice_ServiceMethod: 'FIRST_CLASS_POST',
     notice_AbleToUploadDocument: 'No',
     notice_UnableToUploadReason: 'no documents to upload',
-    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
+    claimantNamePossessiveForm: 'PCS_Local_Auth_Org_Testing’s',
     claimantCircumstancesSelect: 'YES',
     claimantCircumstancesDetails: 'claimant circumstances test data',
     hasDefendantCircumstancesInfo: 'YES',
@@ -531,7 +531,7 @@ export const submitCaseApiData = {
     hasUnderlesseeOrMortgagee: 'YES',
     underlesseeOrMortgagee1: {
       nameKnown: 'YES',
-      name: 'peter',
+      name: names.firstNames[0],
       addressKnown: 'YES',
       address: {
         AddressLine1: '4 Second Avenue',
@@ -564,7 +564,7 @@ export const submitCaseApiData = {
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
     legislativeCountry: 'England',
     claimantType: {
@@ -658,7 +658,7 @@ export const submitCaseApiData = {
     rentArrears_RecoveryAttempted: 'YES',
     rentArrears_RecoveryAttemptDetails: 'test attempts made',
     arrearsJudgmentWanted: 'YES',
-    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
+    claimantNamePossessiveForm: 'PCS_Local_Auth_Org_Testing’s',
     claimantCircumstancesSelect: 'YES',
     claimantCircumstancesDetails: 'claimant circumstances',
     hasDefendantCircumstancesInfo: 'YES',
@@ -788,9 +788,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'Possession Claims Solicitor Org',
+    claimantName: 'PCS_Local_Auth_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs-solicitor1@test.com',
+    claimantContactEmail: 'pcs.local.auth1user1@test.com',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
@@ -866,7 +866,7 @@ export const submitCaseApiData = {
     notice_ServiceMethod: 'FIRST_CLASS_POST',
     notice_AbleToUploadDocument: 'No',
     notice_UnableToUploadReason: 'no documents to upload',
-    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
+    claimantNamePossessiveForm: 'PCS_Local_Auth_Org_Testing’s',
     claimantCircumstancesSelect: 'YES',
     claimantCircumstancesDetails: 'claimant circumstances test data',
     hasDefendantCircumstancesInfo: 'YES',
@@ -888,7 +888,7 @@ export const submitCaseApiData = {
     hasUnderlesseeOrMortgagee: 'YES',
     underlesseeOrMortgagee1: {
       nameKnown: 'YES',
-      name: 'peter',
+      name: names.firstNames[0],
       addressKnown: 'YES',
       address: {
         AddressLine1: '4 Second Avenue',
