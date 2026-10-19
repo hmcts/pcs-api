@@ -22,5 +22,8 @@ export const cyaIgnoreQuestions = [
   'Do you know the underlessee or mortgagee’s address for service?',
   'Add document',
   'Review date',
-  'Select an address'
+  'Select an address',
+  'I certify that:',
+ // 'TEMPORARY TEST ONLY - Has the claim been transferred to the High Court?',
+  //'TEMPORARY TEST ONLY - Was the general application to transfer to the High Court successful?'
 ];

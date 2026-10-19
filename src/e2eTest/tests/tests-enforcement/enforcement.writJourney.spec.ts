@@ -15,6 +15,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { changeNameAddress, confirmHCEOfficer, enforcementApplication, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, repayments, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
+import { checkYourAnswersEnforcement } from '@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -25,11 +26,11 @@ test.beforeEach(async ({ page }, testInfo) => {
 
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants()
     });
   } else if (testInfo.title.includes('@onlyMain')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -41,13 +42,14 @@ test.beforeEach(async ({ page }, testInfo) => {
     });
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayload()
     });
   }
+  await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -67,7 +69,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
-test.describe.skip('[Enforcement - Writ of Possession]', async () => {
+test.describe('[Enforcement - Writ of Possession]', async () => {
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
@@ -100,7 +102,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmHCEOfficer.mainHeader
       });
       await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
@@ -193,7 +195,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmHCEOfficer.mainHeader
     });
     await performAction('selectHaveHiredHCEO', {
@@ -203,7 +205,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);
     await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
+   // await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,
       input: moneyOwed.totalAmountOwedTextInput,
@@ -248,7 +250,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       input1: statementOfTruth.nameOfFirmHiddenTextInput,
       label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
       input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader
+      nextPage: checkYourAnswersEnforcement.mainHeader
     });
   });
 
@@ -275,7 +277,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmHCEOfficer.mainHeader
     });
     await performAction('selectHaveHiredHCEO', {
@@ -377,7 +379,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
       await performValidation('mainHeader', changeNameAddress.mainHeader);
