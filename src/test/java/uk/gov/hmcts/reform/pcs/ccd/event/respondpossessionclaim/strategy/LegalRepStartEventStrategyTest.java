@@ -298,9 +298,6 @@ class LegalRepStartEventStrategyTest {
 
         LegalRepForDefendantAccessValidator accessValidator =
             new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
-        CaseDetailsTabView caseDetailsTabView = mock(CaseDetailsTabView.class);
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), anyBoolean()))
-            .thenReturn(new CaseDetailsTab());
 
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,
@@ -335,10 +332,6 @@ class LegalRepStartEventStrategyTest {
 
     @Test
     void shouldExcludeRespondedDefendantsFromSelectionList() {
-
-        CaseDetailsTabView caseDetailsTabView = mock(CaseDetailsTabView.class);
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), anyBoolean()))
-            .thenReturn(new CaseDetailsTab());
 
         // Given
         String organisationId = "ORG-123";
@@ -410,10 +403,6 @@ class LegalRepStartEventStrategyTest {
 
         PartyEntity responded1 = representedDefendant(respondedId1, "RespondedOne", organisationId);
         PartyEntity responded2 = representedDefendant(respondedId2, "RespondedTwo", organisationId);
-
-        CaseDetailsTabView caseDetailsTabView = mock(CaseDetailsTabView.class);
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), anyBoolean()))
-            .thenReturn(new CaseDetailsTab());
 
         ClaimEntity claimEntity = ClaimEntity.builder().build();
         Stream.of(responded1, responded2).forEach(defendant ->
