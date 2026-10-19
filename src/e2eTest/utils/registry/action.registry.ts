@@ -212,6 +212,7 @@ export class ActionRegistry {
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
     ['removeFile', new RemoveFileAction()],
+    ['getAllPartyDetails', new CreateCaseAction()],    
   ]);
 
   static getAction(actionName: string): IAction {
