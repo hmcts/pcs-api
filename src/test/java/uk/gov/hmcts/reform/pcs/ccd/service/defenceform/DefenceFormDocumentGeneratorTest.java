@@ -40,6 +40,12 @@ class DefenceFormDocumentGeneratorTest {
     }
 
     @Test
+    void expectedDefenceFormFilenameMatchesGeneratedFilename() {
+        assertThat(DefenceFormDocumentGenerator.expectedDefenceFormFilename(2))
+            .isEqualTo("Defence - Defendant 2");
+    }
+
+    @Test
     void usesLegalRepTemplateWhenPayloadFlagged() {
         DefenceFormPayload payload = DefenceFormPayload.builder().completedByLegalRepresentative(true).build();
         when(docAssemblyService.generateDocument(
