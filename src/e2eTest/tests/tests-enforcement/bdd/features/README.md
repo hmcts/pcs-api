@@ -126,9 +126,15 @@ Four things differ from an AAT run, all handled by the `ENVIRONMENT=local` branc
 
 ### Bailiff users
 
+The bailiff is seeded as **Sam Jones** at `sam.jones@justice.gov.uk`, the name and address the feature files
+give the bailiff, so that the screen says what the Gherkin does. The name comes from
+[`CftlibConfig`](../../../../cftlib/java/uk/gov/hmcts/reform/pcs/CftlibConfig.java) (IDAM) and
+[wiremock's staff reference data stub](../../../../../wiremock/mappings/rd-professional/get-users-by-service-name.json)
+(the StaffUser type-ahead), which have to agree.
+
 | Email | RAS organisation role |
 |---|---|
-| `pcs-bailiff@localhost` | `bailiff` |
+| `sam.jones@justice.gov.uk` | `bailiff` |
 | `pcs-bailiff-admin@localhost` | `bailiff-admin` |
 | `pcs-bailiff-manager@localhost` | `bailiff-manager`, `task-supervisor` |
 | `caseworker@pcs.com` | `hearing-centre-admin`, `ctsc-team-leader` |
@@ -206,8 +212,10 @@ precondition when it cannot reach the status a scenario asks for.
   repeat warrant period. CCD keeps its own clock, so the dates CCD stamps on the case stay on the real time,
   and pcs-api queues its db-scheduler tasks from the real time, so moving the clock backwards is always safe
   while moving it forwards leaves a task queued in the meantime waiting. The offset is process wide, so a
-  scenario that sets the clock cannot run alongside one that depends on the real date: run those on their
-  own worker (`E2E_WORKERS=1`). It is put back after each scenario that moved it.
+  scenario that sets the clock cannot run alongside one that depends on the real date: those scenarios are
+  tagged `@clock` and the suite runs them in a pass of their own on a single worker. It is put back after each
+  scenario that moved it. The endpoint only exists where pcs-api runs with `ENABLE_TESTING_SUPPORT_CLOCK` — a
+  local stack and a per-PR preview — so on AAT the `@clock` scenarios are not run.
 - **Link a defendant legal representative through Notice of Change.** pcs-api's
   `link-defendant-solicitor-to-party` answers 500 "Failed to create CCD case" locally, so `signInAs` gives the
   local defendant solicitor the `[DEFENDANTSOLICITOR]` case role instead, through

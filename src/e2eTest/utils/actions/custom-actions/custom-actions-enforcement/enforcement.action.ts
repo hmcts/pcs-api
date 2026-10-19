@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionRecord } from '@utils/interfaces/action.interface';
+import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourHCEO,
   evidenceUpload
@@ -222,7 +222,6 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion, option: breathingSpaceData.option });
     await performAction('reTryOnCallBackError', defendantInBreathingSpace.continueButton, breathingSpaceData.nextPage as string);
-    await performAction('clickButton', defendantInBreathingSpace.continueButton);
   }
 
   private async missedPayments(missedPaymentsData: actionRecord) {
@@ -507,11 +506,24 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
     await performAction('reTryOnCallBackError', repayments.continueButton, amtToPay.nextPage as string);
   }
 
+  /**
+   * What to type into a free-text field: the caller's own answer when it gives one, otherwise a string one
+   * character over the field's limit, as the character-limit checks need. Callers that are filmed for the
+   * demo videos (tests-enforcement/bdd) give a real answer, so the recording shows a sentence rather than
+   * thousands of random characters.
+   */
+  private async textToEnter(page: Page, label: string, input: actionData | actionRecord): Promise<string> {
+    if (typeof input === 'string' && input !== 'MAXPLUS') {
+      return input;
+    }
+    return EnforcementCommonUtils.generateMoreThanMaxString(page, label, input as string | number);
+  }
+
   private async provideHowDefendantReturnToProperty(provideEvidence: actionRecord, page: Page) {
     await this.addFieldsToMap(provideEvidence);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, provideEvidence.label as string, provideEvidence.input as number);
+    const testInput = await this.textToEnter(page, provideEvidence.label as string, provideEvidence.input);
     await performAction('inputText', provideEvidence.label, testInput);
     fieldsMap.set(provideEvidence.label as string, testInput);
     await performAction('reTryOnCallBackError', !provideEvidence?.button ? provideEvidence.button = 'Continue' : provideEvidence.button as string, provideEvidence.nextPage as string);
@@ -575,7 +587,7 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
     if (Array.isArray(uploadEvidence.documents)) {
       for (let fileIndex = 0; fileIndex < uploadEvidence.documents.length; fileIndex++) {
         const document = uploadEvidence.documents[fileIndex];
-        const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, document.label as string, document.description as number);
+        const testInput = await this.textToEnter(page, document.label as string, document.description);
         await performActions(
           'Add Document',
           ['uploadFile', document.fileName],

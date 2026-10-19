@@ -62,6 +62,16 @@ Then('the {string} task is completed', async ({ $tags }, task: string) => {
   noTasksYet(`the "${task}" task is not created, so it cannot be completed`);
 });
 
+// Nothing creates enforcement tasks, so the absence of one proves nothing. Approximated like the steps
+// above rather than pending, so the scenario it belongs to — the claimant going through "Confirm the
+// eviction date" without changing a risk answer — is still run and filmed.
+Then('no {string} task is created', async ({ $tags }, task: string) => {
+  if ($tags.includes('@work-allocation')) {
+    return markPending({ ticket: 'HDPI-8627', summary: `checking that no "${task}" task is created` }, $tags);
+  }
+  noTasksYet(`no tasks are created at all, so the absence of a "${task}" task is not evidence`);
+});
+
 Then('open bailiff tasks for the enforcement are cancelled', async () =>
   noTasksYet('no bailiff tasks are created, so none are cancelled'));
 
@@ -210,7 +220,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'Enforcement work allocation tasks'
   '{string} can still open all of their allocated cases and tasks',
   'a {string} task {string}',
   'a {string} task is created for the allocated bailiff',
-  'no {string} task is created',
   'I have started the {string} journey from the task',
   'the scheduled task job runs',
   'a {string} task is created and assigned to me',

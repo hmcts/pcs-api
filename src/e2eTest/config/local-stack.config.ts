@@ -82,7 +82,7 @@ export const localUsers = {
   defendantSolicitor: 'pcs-org1-solicitor2@test.com',
   hearingCentreAdmin: 'caseworker@pcs.com',
   hearingCentreTeamLeader: 'pcs-hearing-centre-team-leader-01@localhost',
-  bailiff: 'pcs-bailiff@localhost',
+  bailiff: 'sam.jones@justice.gov.uk',
   bailiffAdmin: 'pcs-bailiff-admin@localhost',
   bailiffManager: 'pcs-bailiff-manager@localhost',
   judge: 'judge@pcs.com',
@@ -98,7 +98,7 @@ export type LocalUserKey = keyof typeof localUsers;
  * alongside the allocation, so the allocation shortcut needs a real one.
  */
 export const localUserNames: Record<string, string> = {
-  [localUsers.bailiff]: 'Bob Bailiff',
+  [localUsers.bailiff]: 'Sam Jones',
   [localUsers.bailiffAdmin]: 'Ada BailiffAdmin',
   [localUsers.bailiffManager]: 'Mark BailiffManager',
 };

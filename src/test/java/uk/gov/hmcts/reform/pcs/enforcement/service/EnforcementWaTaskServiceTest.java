@@ -83,7 +83,7 @@ class EnforcementWaTaskServiceTest {
 
     @Test
     void shouldCreateTheNoticeAndReturnTasksWhenTheEvictionIsScheduled() {
-        underTest.evictionScheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false));
+        underTest.evictionScheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false, false));
 
         verify(camundaService).createTask(CASE_REFERENCE, MARK_NOTICE_OF_EVICTION_SERVED, evictionReference());
         verify(camundaService).createTask(CASE_REFERENCE, RECORD_WARRANT_RETURN, evictionReference(),
@@ -93,7 +93,7 @@ class EnforcementWaTaskServiceTest {
 
     @Test
     void shouldCreateNoNoticeTaskWhenServiceIsDispensedWith() {
-        underTest.evictionScheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, true));
+        underTest.evictionScheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, true, false));
 
         verify(camundaService).createTask(CASE_REFERENCE, RECORD_WARRANT_RETURN, evictionReference(),
                                           EVICTION_DATE.atZone(UK_ZONE_ID).toInstant());
@@ -104,8 +104,8 @@ class EnforcementWaTaskServiceTest {
     void shouldMoveTheReturnTaskToTheNewEvictionDateAndLeaveTheNoticeTaskAlone() {
         LocalDateTime newDate = EVICTION_DATE.plusDays(7);
 
-        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false),
-                                      new Eviction(newDate, false));
+        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false, false),
+                                      new Eviction(newDate, false, false));
 
         // The previous date's request has not reached Camunda, so it is dropped as well as cancelled.
         verify(camundaService).cancelPendingTaskCreation(RECORD_WARRANT_RETURN, evictionReference());
@@ -120,8 +120,8 @@ class EnforcementWaTaskServiceTest {
     void shouldCancelTheNoticeTaskWhenTheNewAppointmentDispensesWithService() {
         LocalDateTime newDate = EVICTION_DATE.plusDays(7);
 
-        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false),
-                                      new Eviction(newDate, true));
+        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false, false),
+                                      new Eviction(newDate, true, false));
 
         verify(camundaService).cancelTask(CASE_REFERENCE, MARK_NOTICE_OF_EVICTION_SERVED, evictionReference());
     }
@@ -130,11 +130,38 @@ class EnforcementWaTaskServiceTest {
     void shouldCreateTheNoticeTaskWhenTheNewAppointmentStopsDispensingWithService() {
         LocalDateTime newDate = EVICTION_DATE.plusDays(7);
 
-        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, true),
-                                      new Eviction(newDate, false));
+        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, true, false),
+                                      new Eviction(newDate, false, false));
 
         verify(camundaService).createTask(CASE_REFERENCE, MARK_NOTICE_OF_EVICTION_SERVED,
                                           TaskReference.of(ENFORCEMENT_ID, newDate));
+    }
+
+    /**
+     * The task for the previous appointment was closed when the bailiff served that notice, and the new date
+     * has taken the service record and defendant visibility away again, so the new notice has to be served by
+     * someone.
+     */
+    @Test
+    void shouldCreateTheNoticeTaskWhenThePreviousNoticeHadAlreadyBeenServed() {
+        LocalDateTime newDate = EVICTION_DATE.plusDays(7);
+
+        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false, true),
+                                      new Eviction(newDate, false, false));
+
+        verify(camundaService).createTask(CASE_REFERENCE, MARK_NOTICE_OF_EVICTION_SERVED,
+                                          TaskReference.of(ENFORCEMENT_ID, newDate));
+    }
+
+    @Test
+    void shouldCreateNoNoticeTaskWhenTheNewAppointmentDispensesWithServingTheNoticeThatWasServed() {
+        LocalDateTime newDate = EVICTION_DATE.plusDays(7);
+
+        underTest.evictionRescheduled(CASE_REFERENCE, ENFORCEMENT_ID, new Eviction(EVICTION_DATE, false, true),
+                                      new Eviction(newDate, true, false));
+
+        verify(camundaService, never()).createTask(CASE_REFERENCE, MARK_NOTICE_OF_EVICTION_SERVED,
+                                                   TaskReference.of(ENFORCEMENT_ID, newDate));
     }
 
     @Test

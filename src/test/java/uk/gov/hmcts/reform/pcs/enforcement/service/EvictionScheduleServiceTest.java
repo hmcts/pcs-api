@@ -90,7 +90,7 @@ class EvictionScheduleServiceTest {
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfScheduledEviction(CASE_REFERENCE, EVICTION);
         verify(enforcementWaTaskService).evictionScheduled(CASE_REFERENCE, enforcement.getId(),
-                                                           new Eviction(EVICTION, false));
+                                                           new Eviction(EVICTION, false, false));
     }
 
     @Test
@@ -102,7 +102,7 @@ class EvictionScheduleServiceTest {
         assertThat(enforcement.getDispenseWithService()).isTrue();
         assertThat(enforcement.isDefendantsCanSeeEnforcement()).isFalse();
         verify(enforcementWaTaskService).evictionScheduled(CASE_REFERENCE, enforcement.getId(),
-                                                           new Eviction(EVICTION, true));
+                                                           new Eviction(EVICTION, true, false));
     }
 
     @ParameterizedTest
@@ -225,8 +225,8 @@ class EvictionScheduleServiceTest {
         verify(enforcementDocumentScheduler).scheduleEvictionNotices(enforcement.getId());
         verify(enforcementNotificationService).notifyClaimantOfRescheduledEviction(CASE_REFERENCE, newDate);
         verify(enforcementWaTaskService).evictionRescheduled(CASE_REFERENCE, enforcement.getId(),
-                                                             new Eviction(EVICTION, false),
-                                                             new Eviction(newDate, false));
+                                                             new Eviction(EVICTION, false, false),
+                                                             new Eviction(newDate, false, false));
     }
 
     @Test
@@ -241,8 +241,28 @@ class EvictionScheduleServiceTest {
         // The previous appointment dispensed with service and the new one does not, so the notice task is
         // created for the first time here rather than left alone.
         verify(enforcementWaTaskService).evictionRescheduled(CASE_REFERENCE, enforcement.getId(),
-                                                             new Eviction(EVICTION, true),
-                                                             new Eviction(newDate, false));
+                                                             new Eviction(EVICTION, true, false),
+                                                             new Eviction(newDate, false, false));
+    }
+
+    /**
+     * The service record of the previous notice is read before the new date clears it, so the tasks can tell
+     * that the notice for the new date is the second one the bailiff has to serve.
+     */
+    @Test
+    void shouldTellTheTasksThatThePreviousNoticeHadBeenServed() {
+        EnforcementOrderEntity enforcement = current(CLAIMANT_CONFIRMED);
+        enforcement.setBailiffDate(EVICTION);
+        enforcement.setDispenseWithService(false);
+        enforcement.setNoticeServedAt(SERVED);
+        enforcement.setNoticeServedHow("by hand to the occupant");
+        LocalDateTime newDate = EVICTION.plusDays(7);
+
+        underTest.reschedule(CASE_REFERENCE, newDate, false);
+
+        verify(enforcementWaTaskService).evictionRescheduled(CASE_REFERENCE, enforcement.getId(),
+                                                             new Eviction(EVICTION, false, true),
+                                                             new Eviction(newDate, false, false));
     }
 
     @ParameterizedTest

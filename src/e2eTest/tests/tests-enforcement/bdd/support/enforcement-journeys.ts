@@ -419,6 +419,17 @@ async function answerBreathingSpaceAndMissedPayments(nextPage: string): Promise<
 }
 
 /**
+ * What the claimant writes about the defendants' return, and the description of the evidence they file.
+ * The character-limit checks that fill these fields with a string one over the limit live in
+ * enforcement.warrantOfRestitution.spec.ts; the journey the demo videos film answers them as a claimant
+ * would.
+ */
+const HOW_THE_DEFENDANTS_RETURNED =
+  'The defendants broke the lock on the back door and moved back in on 3 February 2026. '
+  + 'A neighbour saw them carrying furniture into the property and has given a witness statement.';
+const WITNESS_STATEMENT_DESCRIPTION = "Neighbour's witness statement";
+
+/**
  * Warrant of restitution with the seeded warrant's answers left as they are
  * (enforcement.warrantOfRestitution.spec.ts "all NO selection"). The journey ends on placeholder pages today.
  */
@@ -428,7 +439,7 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
   await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
   await performAction('provideHowDefendantReturnToProperty', {
     label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
-    input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
+    input: HOW_THE_DEFENDANTS_RETURNED,
     nextPage: provideEvidence.mainHeader,
   });
   await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
@@ -436,7 +447,7 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
       {
         type: evidenceUpload.witnessStatementDropDownInput,
         fileName: 'witnessStatement.pdf',
-        description: evidenceUpload.shortDescriptionHiddenTextInput,
+        description: WITNESS_STATEMENT_DESCRIPTION,
         docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
         label: evidenceUpload.shortDescriptionHiddenTextLabel,
       },

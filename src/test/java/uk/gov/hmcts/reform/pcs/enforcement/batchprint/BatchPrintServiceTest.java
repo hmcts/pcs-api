@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -192,6 +194,67 @@ class BatchPrintServiceTest {
             .hasMessage(BatchPrintBusyException.MESSAGE);
 
         assertThat(pdfMerger.created).hasSize(1).noneMatch(Files::exists);
+    }
+
+    /**
+     * The slot budget is there to refuse a bailiff whose documents cannot be fetched because the instance is
+     * busy with other bailiffs' batch prints. A full batch queues behind its own cases for several times the
+     * budget, and must not refuse itself for doing so.
+     */
+    @Test
+    void shouldPrintAFullBatchThatTakesLongerThanOneWavesWaitToFetch() throws IOException {
+        Duration perWaveBudget = Duration.ofMillis(300);
+        underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger,
+                                          BatchPrintService.MAX_CONCURRENT_CASES, perWaveBudget);
+        List<PrintableCase> cases = IntStream.range(0, BatchPrintController.MAX_CASES)
+            .mapToObj(i -> printable(String.valueOf(1000000000000000L + i), document(BatchPrintDocumentKind.WARRANT)))
+            .toList();
+        List<String> references = cases.stream().map(PrintableCase::caseReference).toList();
+        when(batchPrintPlanner.plan(BAILIFF, references)).thenReturn(new BatchPrintPlan(cases, List.of()));
+        byte[] pdf = onePagePdf("Warrant");
+        when(letterDocumentFetcher.fetchBytes(any())).thenAnswer(invocation -> {
+            Thread.sleep(perWaveBudget.dividedBy(2).toMillis());
+            return pdf;
+        });
+
+        BatchPrint batchPrint = underTest.print(BAILIFF, references);
+
+        assertThat(batchPrint.plan().included()).extracting(PrintableCase::caseReference)
+            .containsExactlyElementsOf(references);
+        assertThat(pageTexts(batchPrint)).hasSize(BatchPrintController.MAX_CASES);
+    }
+
+    /**
+     * The refusal is still what a bailiff gets when the instance is genuinely busy: another request is holding
+     * the slots for longer than this one will wait for them.
+     */
+    @Test
+    void shouldRefuseTheRequestWhenAnotherRequestHoldsTheSlotsForLongerThanTheBudget() throws Exception {
+        underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger, 1,
+                                          Duration.ofMillis(100));
+        List<String> otherRequest = List.of("9999999999999999");
+        List<String> thisRequest = CHOSEN.subList(0, 1);
+        when(batchPrintPlanner.plan("other-bailiff", otherRequest)).thenReturn(new BatchPrintPlan(
+            List.of(printable(otherRequest.getFirst(), document(BatchPrintDocumentKind.WARRANT))), List.of()));
+        when(batchPrintPlanner.plan(BAILIFF, thisRequest)).thenReturn(new BatchPrintPlan(
+            List.of(printable(thisRequest.getFirst(), document(BatchPrintDocumentKind.WARRANT))), List.of()));
+        CountDownLatch slotTaken = new CountDownLatch(1);
+        byte[] pdf = onePagePdf("Warrant");
+        when(letterDocumentFetcher.fetchBytes(any())).thenAnswer(invocation -> {
+            slotTaken.countDown();
+            Thread.sleep(1000);
+            return pdf;
+        });
+
+        Thread other = new Thread(() -> underTest.print("other-bailiff", otherRequest));
+        other.start();
+        assertThat(slotTaken.await(5, TimeUnit.SECONDS)).isTrue();
+
+        assertThatThrownBy(() -> underTest.print(BAILIFF, thisRequest))
+            .isInstanceOf(BatchPrintBusyException.class)
+            .hasMessage(BatchPrintBusyException.MESSAGE);
+
+        other.join();
     }
 
     private static List<String> pageTexts(BatchPrint batchPrint) throws IOException {

@@ -33,8 +33,9 @@ import java.util.concurrent.TimeUnit;
  * batch print the instance is building, and each case is merged into a temp file of its own
  * ({@link BatchPrintPdfMerger}). That bounds both the load on CDAM and the documents held in memory, whatever
  * the number of cases or of bailiffs printing at once. A document that cannot be fetched or read leaves only its
- * case out, and the bailiff is told which; a request that cannot get its turn at those slots within
- * {@link #MAX_WAIT_FOR_A_SLOT} is refused whole with {@link BatchPrintBusyException}.
+ * case out, and the bailiff is told which; a request whose cases cannot get their turn at those slots within
+ * {@link #MAX_WAIT_FOR_A_SLOT} per wave of {@value #MAX_CONCURRENT_CASES} is refused whole with
+ * {@link BatchPrintBusyException}.
  */
 @Slf4j
 @Service
@@ -43,9 +44,10 @@ public class BatchPrintService {
     static final int MAX_CONCURRENT_CASES = 6;
 
     /**
-     * How long a request will wait, in total, for its turn at the case slots. {@link #print} runs on the
-     * request thread, so an unbounded wait holds that thread for as long as every other batch print being
-     * built takes, which outlives the gateway's own timeout and leaves the bailiff nothing to read.
+     * How long a request will wait for its turn at the case slots, for each wave of
+     * {@value #MAX_CONCURRENT_CASES} cases it has to get through. {@link #print} runs on the request thread, so
+     * an unbounded wait holds that thread for as long as every other batch print being built takes, which
+     * outlives the gateway's own timeout and leaves the bailiff nothing to read.
      */
     static final Duration MAX_WAIT_FOR_A_SLOT = Duration.ofSeconds(30);
 
@@ -53,6 +55,7 @@ public class BatchPrintService {
     private final LetterDocumentFetcher letterDocumentFetcher;
     private final BatchPrintPdfMerger pdfMerger;
     private final Semaphore caseSlots;
+    private final int maxConcurrentCases;
     private final Duration maxWaitForASlot;
 
     @Autowired
@@ -71,6 +74,7 @@ public class BatchPrintService {
         this.letterDocumentFetcher = letterDocumentFetcher;
         this.pdfMerger = pdfMerger;
         this.caseSlots = new Semaphore(maxConcurrentCases, true);
+        this.maxConcurrentCases = maxConcurrentCases;
         this.maxWaitForASlot = maxWaitForASlot;
     }
 
@@ -82,13 +86,13 @@ public class BatchPrintService {
     public BatchPrint print(String bailiffUserId, List<String> caseReferences) {
         BatchPrintPlan plan = batchPrintPlanner.plan(bailiffUserId, caseReferences);
 
-        Instant waitUntil = Instant.now().plus(maxWaitForASlot);
-        List<CaseFile> caseFiles = mergeEachCase(plan.included(), waitUntil);
+        Duration slotBudget = slotBudget(plan.included().size());
+        List<CaseFile> caseFiles = mergeEachCase(plan.included(), Instant.now().plus(slotBudget));
         try {
             if (caseFiles.stream().anyMatch(CaseFile::tooBusy)) {
                 log.warn("Batch print for bailiff {} refused: no slot for {} of its {} case(s) within {}",
                          bailiffUserId, caseFiles.stream().filter(CaseFile::tooBusy).count(), caseFiles.size(),
-                         maxWaitForASlot);
+                         slotBudget);
                 throw new BatchPrintBusyException();
             }
             List<ExcludedCase> unavailable = caseFiles.stream()
@@ -104,6 +108,17 @@ public class BatchPrintService {
         } finally {
             caseFiles.forEach(CaseFile::delete);
         }
+    }
+
+    /**
+     * How long the request as a whole will wait at the case slots: {@link #MAX_WAIT_FOR_A_SLOT} for each wave of
+     * {@value #MAX_CONCURRENT_CASES} cases, because only that many of its own cases can be fetched at a time.
+     * A single budget for the whole request would be spent queueing behind its own cases, so the largest
+     * batches would refuse themselves however idle the instance was; a budget per wave is spent only on the
+     * batch prints other bailiffs are having built.
+     */
+    private Duration slotBudget(int caseCount) {
+        return maxWaitForASlot.multipliedBy(Math.max(1, Math.ceilDiv(caseCount, maxConcurrentCases)));
     }
 
     /**

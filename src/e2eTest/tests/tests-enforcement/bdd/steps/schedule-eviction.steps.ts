@@ -6,6 +6,7 @@
 // tasks (HDPI-8627), and the warrant number on the confirmation.
 import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
 import { openCaseSummary, requireCaseReference } from '../support/enforcement-journeys';
 import { basicClaimFixtureClaim } from '@config/local-stack.config';
@@ -111,22 +112,40 @@ export const EVICTION_RESULTS: Record<string, string> = {
   'an error that the date is not valid': evictionDateErrors.invalid,
   'an error that the date must be today or in the future': evictionDateErrors.inThePast,
   'an error that the time is not valid': evictionDateErrors.invalid,
-  'an error that the time cannot be in the future': noticeServed.errors.servedInTheFuture,
+};
+
+/**
+ * One outcome is worded the same by two journeys that show different messages: the served date and time in
+ * "Mark notice of eviction as served" (feature 08) and the eviction date and time in "Record warrant return"
+ * (feature 11, whose steps are still pending under HDPI-7347). It is resolved from the journey the scenario
+ * is in rather than fixed to one of them.
+ */
+const TIME_IN_FUTURE_RESULT = 'an error that the time cannot be in the future';
+
+const TIME_IN_FUTURE_ERRORS: Record<string, string> = {
+  [MARK_NOTICE_SERVED]: noticeServed.errors.servedInTheFuture,
 };
 
 export const isEvictionResult = (result: string): boolean => result in EVICTION_RESULTS
+  || result === TIME_IN_FUTURE_RESULT
   || result === CHECK_YOUR_ANSWERS_RESULT;
 
 export const CHECK_YOUR_ANSWERS_RESULT = "the 'Check your answers' screen";
 
 /** Asserts one of feature 05's outcomes. Called from the shared `I see {string}` step. */
-export async function expectEvictionResult(page: Page, result: string): Promise<void> {
+export async function expectEvictionResult(page: Page, world: EnforcementWorld, result: string): Promise<void> {
   if (result === CHECK_YOUR_ANSWERS_RESULT) {
     await expectCheckYourAnswers(page);
     return;
   }
   if (result === 'an error that date and time are needed') {
     await expectEvictionDateNeeded(page);
+    return;
+  }
+  if (result === TIME_IN_FUTURE_RESULT) {
+    const message = TIME_IN_FUTURE_ERRORS[world.currentEvent ?? ''];
+    expect(message, `the "${TIME_IN_FUTURE_RESULT}" message of the "${world.currentEvent}" journey`).toBeDefined();
+    await expectEvictionError(page, message);
     return;
   }
   await expectEvictionError(page, EVICTION_RESULTS[result]);

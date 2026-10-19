@@ -44,6 +44,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,7 +63,9 @@ import static org.mockito.Mockito.when;
  * filed in the Enforcement folder on both the case and the enforcement. The scheduler polls hourly so that the
  * test, not a background poll, runs the generation.
  */
-@SpringBootTest(properties = "db-scheduler.polling-interval-seconds=3600")
+@SpringBootTest(properties = {"db-scheduler.polling-interval-seconds=3600",
+    // concurrentGenerationFilesBothDocuments holds two transactions open at once
+    "spring.datasource.hikari.maximum-pool-size=4"})
 @ActiveProfiles("integration")
 @DisplayName("Enforcement document generation")
 class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
@@ -192,6 +199,47 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
             "SELECT count(*) FROM document WHERE enf_case_id = ?", Integer.class, id)).isEqualTo(1);
     }
 
+    /**
+     * An event that schedules two documents has db-scheduler generate them on two threads, so one of them files
+     * its document against an enforcement another has written to since it read it. Filing a document changes no
+     * column of the enforcement, so it must not be refused as a stale write.
+     */
+    @Test
+    @DisplayName("two documents generated at the same time are both filed")
+    void concurrentGenerationFilesBothDocuments() throws Exception {
+        long caseReference = 4108410841084108L;
+        UUID id = savedEnforcement(caseReference, SelectEnforcementType.WARRANT,
+                                   EnforcementStatus.AWAITING_SCHEDULING);
+        when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString()))
+            .thenAnswer(invocation -> "http://dm-store/documents/" + UUID.randomUUID());
+        when(caseDocumentClientApi.getMetadataForDocument(any(), any(), any())).thenAnswer(invocation -> {
+            UUID documentId = invocation.getArgument(2);
+            return metadata("http://dm-store/documents/" + documentId, documentId + ".pdf");
+        });
+        CountDownLatch evictionNoticeRead = new CountDownLatch(1);
+        CountDownLatch appointmentNoticeFiled = new CountDownLatch(1);
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            final Future<?> evictionNotice = executor.submit(() -> transactionTemplate.executeWithoutResult(s -> {
+                enforcementDocumentGenerator.generate(id, EnforcementOutput.NOTICE_OF_EVICTION);
+                evictionNoticeRead.countDown();
+                await(appointmentNoticeFiled);
+            }));
+            assertThat(evictionNoticeRead.await(30, TimeUnit.SECONDS)).isTrue();
+
+            enforcementDocumentGenerator.generate(id, EnforcementOutput.NOTICE_OF_APPOINTMENT);
+
+            appointmentNoticeFiled.countDown();
+            evictionNotice.get(30, TimeUnit.SECONDS);
+        } finally {
+            executor.shutdownNow();
+        }
+
+        assertThat(jdbcTemplate.queryForList("SELECT type FROM document WHERE enf_case_id = ?", String.class, id))
+            .containsExactlyInAnyOrder("NOTICE_OF_EVICTION", "NOTICE_OF_APPOINTMENT");
+    }
+
     @Test
     @DisplayName("a Docmosis failure files nothing and is left for the task to retry")
     void docmosisFailureFilesNothing() {
@@ -236,6 +284,17 @@ class EnforcementDocumentGenerationIT extends AbstractPostgresContainerIT {
             .containsEntry("status", "FAILURE")
             .containsEntry("document_type", "WARRANT_OF_POSSESSION")
             .containsEntry("terminal", "true"));
+    }
+
+    private static void await(CountDownLatch latch) {
+        try {
+            if (!latch.await(30, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Timed out waiting for the other generation");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
     }
 
     private List<String> scheduledInstances(UUID enforcementId) {

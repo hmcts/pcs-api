@@ -100,7 +100,7 @@ Feature: Bailiff records the warrant return
     When I choose the "Interim" return
     Then I see a mandatory "Return name" drop down with "Application unsuccessful & warrant returned to bailiff", "Request for additional information", "No animal handler in attendance (Parties unaware of animal)", "No Police presence (Police refused to attend when asked to)", "Children left unattended in property", "Crowds or protests", "Obstruction by Defendants", "Safeguarding or vulnerability concerns", "Defendant states they are in Breathing Space (Standard or Mental Health)", "Claimant advised Defendant in Breathing Space", "Other interim return" and "Reopen warrant"
 
-  @HDPI-7347 @pending @not-filmed
+  @HDPI-7347 @pending @not-filmed @clock
   Scenario: Successful eviction needs the eviction date and time
     Given today is "08/07/2026" and the time is "10:00"
     And I chose the outcome "Eviction successful"

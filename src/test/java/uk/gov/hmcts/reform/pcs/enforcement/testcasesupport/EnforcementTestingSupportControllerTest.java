@@ -47,9 +47,9 @@ class EnforcementTestingSupportControllerTest {
     private static final String S2S_TOKEN = "s2s";
     private static final String USER_TOKEN = "Bearer user-token";
     private static final AllocateBailiffRequest ALLOCATE_REQUEST =
-        new AllocateBailiffRequest("60d20156-049f-3f7f-881d-fce79ba89b76", "Bob Bailiff", "pcs-bailiff@localhost");
+        new AllocateBailiffRequest("39d73e7f-842b-3c7f-874d-2a3d3c627310", "Sam Jones", "sam.jones@justice.gov.uk");
     private static final BailiffUser EXPECTED_BAILIFF =
-        new BailiffUser("60d20156-049f-3f7f-881d-fce79ba89b76", "Bob Bailiff", "pcs-bailiff@localhost");
+        new BailiffUser("39d73e7f-842b-3c7f-874d-2a3d3c627310", "Sam Jones", "sam.jones@justice.gov.uk");
 
     @Mock
     private EnforcementFeePaidSimulator enforcementFeePaidSimulator;

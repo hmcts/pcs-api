@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -141,6 +142,9 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
     private EnforcementDocumentScheduler enforcementDocumentScheduler;
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     private EnforcementFeePaidSimulator enforcementFeePaidSimulator;
 
     @Autowired
@@ -183,7 +187,8 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
             enforcementOrderRepository, currentEnforcementService, pcsCaseService, mock(DraftCaseDataService.class),
             strategyFactory, enforcementStatusTransitions, repeatWarrantFeeWaiver,
             mock(EnforcementNotificationService.class), enforcementDocumentScheduler,
-            mock(EnforcementFeeService.class, RETURNS_MOCKS), mock(EnforcementWaTaskService.class));
+            mock(EnforcementFeeService.class, RETURNS_MOCKS), mock(EnforcementWaTaskService.class),
+            objectMapper);
     }
 
     @Test

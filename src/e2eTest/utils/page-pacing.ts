@@ -13,6 +13,7 @@ let holdMs = 0;
 let pacedPage: Page | undefined;
 let lastHeldUrl: string | undefined;
 let lastHoldEndedAt = 0;
+let suspended = 0;
 
 /** How long an emphasised element is shown before the action on it. */
 const EMPHASIS_MS = 400;
@@ -36,6 +37,7 @@ export function disablePagePacing(): void {
   pacedPage = undefined;
   lastHeldUrl = undefined;
   lastHoldEndedAt = 0;
+  suspended = 0;
 }
 
 export function pagePacingEnabled(): boolean {
@@ -43,11 +45,28 @@ export function pagePacingEnabled(): boolean {
 }
 
 /**
+ * Runs `action` at full speed even while the demo pacing is on: no holds, no pointer, no typed-out text.
+ * For the parts of a run that are plumbing rather than story — signing in, above all, which otherwise spends
+ * a quarter of a minute typing a username and a password into the IDAM simulator's bare form. The step
+ * caption still shows, so the video still says who is being signed in as.
+ *
+ * `lastHeldUrl` is deliberately left alone, so the first screen reached afterwards is still held.
+ */
+export async function withoutPagePacing<T>(action: () => Promise<T>): Promise<T> {
+  suspended++;
+  try {
+    return await action();
+  } finally {
+    suspended--;
+  }
+}
+
+/**
  * On the first action or validation that sees a new URL: scrolls to the top, so the case header and the
  * "Next step" drop down are in view, then pauses. The rest of the actions on that URL do not.
  */
 export async function holdIfPageChanged(page: Page): Promise<void> {
-  if (!holdMs || page.isClosed() || page.url() === lastHeldUrl) {
+  if (!activePage() || page.isClosed() || page.url() === lastHeldUrl) {
     return;
   }
   await scrollToTop(page);
@@ -64,7 +83,7 @@ export async function holdIfPageChanged(page: Page): Promise<void> {
  * page-change pause directly followed by this one does not double the wait.
  */
 export async function holdPage(page: Page): Promise<void> {
-  if (!holdMs || page.isClosed() || !(await worthHolding(page))) {
+  if (!activePage() || page.isClosed() || !(await worthHolding(page))) {
     return;
   }
   await wait(page, holdMs - (Date.now() - lastHoldEndedAt));
@@ -124,7 +143,7 @@ export async function demoPause(ms: number): Promise<void> {
 }
 
 function activePage(): Page | undefined {
-  return holdMs && pacedPage && !pacedPage.isClosed() ? pacedPage : undefined;
+  return holdMs && !suspended && pacedPage && !pacedPage.isClosed() ? pacedPage : undefined;
 }
 
 async function scrollToTop(page: Page): Promise<void> {
