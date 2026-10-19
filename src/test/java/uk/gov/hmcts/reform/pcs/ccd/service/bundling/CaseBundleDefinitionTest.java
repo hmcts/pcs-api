@@ -25,13 +25,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CaseBundleRequestFactoryTest {
-
-    private final CaseBundleRequestFactory underTest = new CaseBundleRequestFactory();
+class CaseBundleDefinitionTest {
 
     @Test
     void shouldMakeOneFolderPerCaseFileCategoryInDisplayOrder() {
-        BundleRequest request = underTest.build(caseWith());
+        BundleRequest request = CaseBundleDefinition.build(caseWith());
 
         assertThat(request.fileName()).isEqualTo("1234567812345678-case-bundle.pdf");
         assertThat(request.root().sections()).extracting(BundleSection::title)
@@ -52,7 +50,7 @@ class CaseBundleRequestFactoryTest {
         undated.setSubmittedDate(Instant.parse("2026-02-01T10:00:00Z"));
         DocumentEntity claim = document("claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 5, 1));
 
-        BundleRequest request = underTest.build(caseWith(late, early, undated, claim));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(late, early, undated, claim));
 
         assertThat(titles(request, "Evidence")).containsExactly("early.pdf", "undated.pdf", "late.pdf");
         assertThat(titles(request, "Statements of case")).containsExactly("claim.pdf");
@@ -70,7 +68,7 @@ class CaseBundleRequestFactoryTest {
         DocumentEntity nonCdam = document("external.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         nonCdam.setDocumentId(null);
 
-        BundleRequest request = underTest.build(caseWith(kept, accessCode, nonCdam));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(kept, accessCode, nonCdam));
 
         assertThat(request.allDocuments()).extracting(BundleDocument::title).containsExactly("kept.pdf");
     }
@@ -80,7 +78,7 @@ class CaseBundleRequestFactoryTest {
         DocumentEntity stray = document("stray.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         stray.setCategoryId("somethingElse");
 
-        BundleRequest request = underTest.build(caseWith(stray));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(stray));
 
         assertThat(titles(request, "Uncategorised documents")).containsExactly("stray.pdf");
     }
@@ -90,7 +88,7 @@ class CaseBundleRequestFactoryTest {
         DocumentEntity recording = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
         recording.setContentType("audio/mpeg");
 
-        BundleRequest request = underTest.build(caseWith(recording));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(recording));
 
         assertThat(section(request, "Hearing documents").documents().getFirst().media()).hasValueSatisfying(
             media -> assertThat(media.accessUrl()).isEqualTo(recording.getBinaryUrl()));
@@ -102,7 +100,7 @@ class CaseBundleRequestFactoryTest {
         typed.setType(DocumentType.WITNESS_STATEMENT);
         DocumentEntity untyped = document(null, CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 2));
 
-        BundleRequest request = underTest.build(caseWith(typed, untyped));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(typed, untyped));
 
         assertThat(titles(request, "Evidence")).containsExactly("Witness statement", "Document");
     }
@@ -124,7 +122,7 @@ class CaseBundleRequestFactoryTest {
         draftCounterclaim.setCounterClaim(counterClaim);
 
         BundleRequest request =
-            underTest.build(caseWith(issuedApp, pendingApp, withoutNotice, draftCounterclaim));
+            CaseBundleDefinition.build(caseWith(issuedApp, pendingApp, withoutNotice, draftCounterclaim));
 
         assertThat(request.allDocuments()).extracting(BundleDocument::title)
             .containsExactly("issued-app.pdf", "without-notice.pdf");
@@ -136,7 +134,7 @@ class CaseBundleRequestFactoryTest {
         recording.setContentType("audio/mpeg");
         recording.setBinaryUrl(" ");
 
-        BundleRequest request = underTest.build(caseWith(recording));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(recording));
 
         assertThat(request.allDocuments()).isEmpty();
     }
