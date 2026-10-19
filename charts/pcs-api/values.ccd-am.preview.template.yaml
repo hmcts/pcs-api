@@ -8,6 +8,11 @@
 # instead of AAT. Apply only ONE of `pr-values:ccd` or `pr-values:ccd-am` to a PR — never both — so
 # there's only ever one values file supplying these keys and no Helm merge ordering ambiguity
 # between the two label overlays.
+#
+# The preview RAS starts empty after any reinstall. pcs-api only resolves a user's organisation when
+# they hold an ORGANISATION role there, so seed the smoke/e2e users (or save them in the preview
+# manage-org, which fires the ORM refresh) or case creation fails with
+# "Organisation must be provided to create a case".
 global:
   ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
   ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
@@ -376,6 +381,10 @@ am-org-role-mapping-service:
       ORM_ENV: pr
       PROFESSIONAL_SCHEDULING_ENABLED: true
       PROFESSIONAL_REFRESH_API_ENABLED: true
+      # Every PRM cron defaults to disabled since ORM #2871 (24 Sep 2026), so without this ORM never loads
+      # this PR's access types and a manage-org save grants no roles. P2-P6 stay off: on a fresh preview DB
+      # they start from 2000-01-01 and sweep every organisation and user in AAT PRD.
+      CRON_PRM_P1_FIND_CASE_DEFINITION_CHANGES: "0 */5 * * * *"
 
 aac-manage-case-assignment:
   enabled: true
