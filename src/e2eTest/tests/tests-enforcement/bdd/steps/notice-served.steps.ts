@@ -91,14 +91,15 @@ Then('I see an error that the answer must be 500 characters or fewer', async ({ 
 
 // Two uses. In feature 08 it follows the bailiff's own submit, so it checks the confirmation. In features 12
 // and 14 it is a Given on a case whose eviction has not been scheduled yet, so it schedules the eviction and
-// serves the notice, with a bailiff note so that the defendant checks have one to look for.
+// serves the notice, with a bailiff note so that the defendant checks have one to look for. Feature 12's
+// Background leaves the case without a warrant, so there the warrant is built first.
 Then('the notice of eviction has been served', async ({ page, world }) => {
   if (world.evictionScheduled) {
     await expect(page.getByRole('heading', { name: noticeServed.confirmationHeader })).toBeVisible();
     expect(requireCaseReference(world)).toBeDefined();
     return;
   }
-  if (world.caseReference) {
+  if (world.warrantApproved) {
     await scheduleEvictionOnApprovedWarrant(world);
   } else {
     await setUpWarrantAtStatus(world, AWAITING_CLAIMANT_CONFIRMATION);

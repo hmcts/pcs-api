@@ -200,15 +200,31 @@ function isOnCaseSummary(page: Page): boolean {
 /**
  * Asserts whether a case tab is on the open case. Waits for the Summary tab first, so "not shown" is only
  * checked once XUI has rendered the tabs.
+ *
+ * A tab the case gains is waited for across reloads: set-up goes through the APIs, so the case can be opened
+ * in the same moment the event that adds the tab is recorded, and the page already rendered never gains it.
  */
 export async function expectCaseTab(page: Page, tabName: string, shown: boolean): Promise<void> {
   await expect(page.getByRole('tab', { name: caseSummary.mainHeader, exact: true })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
   const tab = page.getByRole('tab', { name: tabName, exact: true });
-  if (shown) {
-    await expect(tab).toBeVisible();
-  } else {
+  if (!shown) {
     await expect(tab).toHaveCount(0);
+    return;
   }
+  await expect
+    .poll(
+      async () => {
+        const count = await tab.count();
+        if (count === 0) {
+          await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => undefined);
+          await expect(page.getByRole('tab', { name: caseSummary.mainHeader, exact: true }))
+            .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+        }
+        return count;
+      },
+      { timeout: VERY_LONG_TIMEOUT, intervals: [2_000] }
+    )
+    .toBeGreaterThan(0);
 }
 
 /** The case summary "Next step" drop down (same locator as the select action). */

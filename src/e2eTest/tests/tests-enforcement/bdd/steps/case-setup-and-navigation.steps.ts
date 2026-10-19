@@ -3,6 +3,7 @@ import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import type { Page } from '@playwright/test';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
+import { CLAIMANT_LEGAL_REPRESENTATIVE, expectSignedInAs } from '../support/session';
 import {
   canSignInAs,
   createCaseWithWarrant,
@@ -89,16 +90,17 @@ Given('a PCS case {string} with a warrant of possession', async ({ world }, _ref
 });
 
 // The claimant legal representative is the storage-state user from config/global-setup.config.ts, who also
-// creates the case through the API. Opening the case shows the session is valid and the user can see it.
-Given('I am signed in to XUI as the claimant\'s legal representative', async ({ page }) => {
-  await openCaseSummary(page);
+// creates the case through the API, so the browser already is them. Saying so is all this does: the first
+// step that acts in XUI opens the case (session.ts).
+Given('I am signed in to XUI as the claimant\'s legal representative', async () => {
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
 });
 
-Given('I am signed in to XUI as the claimant\'s legal representative with the {string} case role', async ({ page, $tags }, caseRole: string) => {
+Given('I am signed in to XUI as the claimant\'s legal representative with the {string} case role', async ({ $tags }, caseRole: string) => {
   if (caseRole !== '[CLAIMANTSOLICITOR]') {
     return markPending({ ticket: 'HDPI-7539', summary: `signing in with the ${caseRole} case role` }, $tags);
   }
-  await openCaseSummary(page);
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
 });
 
 Given('there is no live enforcement on the case', async ({ world }) => {
@@ -107,8 +109,9 @@ Given('there is no live enforcement on the case', async ({ world }) => {
   expect(world.enforcementSeeded, 'an enforcement seeded on the case').toBe(false);
 });
 
-// Internal users and the defendant's legal representative sign in in place of the storage-state user.
-Given('I am signed in to XUI as a {string}', async ({ page, context, $tags }, role: string) => {
+// Internal users and the defendant's legal representative replace the storage-state user. The sign-in itself
+// waits for the first step that acts in XUI, so set-up leaves the browser alone.
+Given('I am signed in to XUI as a {string}', async ({ $tags }, role: string) => {
   if (!canSignInAs(role)) {
     return markPending(
       {
@@ -118,7 +121,7 @@ Given('I am signed in to XUI as a {string}', async ({ page, context, $tags }, ro
       $tags
     );
   }
-  await signInAs(role, page, context);
+  expectSignedInAs(role);
 });
 
 When('I open the case', async ({ page }) => {
@@ -249,21 +252,21 @@ pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the li
 // The cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json) make these sign-ins real.
 // "the allocated bailiff" is approximated: no bailiff can be allocated (HDPI-7356 / HDPI-8189), but a
 // bailiff reaches the warrant through their `bailiff` organisation role.
-Given('I am signed in to XUI as a bailiff', async ({ page, context }) => {
-  await signInAs('bailiff', page, context);
+Given('I am signed in to XUI as a bailiff', async () => {
+  expectSignedInAs('bailiff');
 });
 
-Given('I am signed in to XUI as a bailiff manager', async ({ page, context }) => {
-  await signInAs('bailiff-manager', page, context);
+Given('I am signed in to XUI as a bailiff manager', async () => {
+  expectSignedInAs('bailiff-manager');
 });
 
-Given('I am signed in to XUI as a bailiff admin', async ({ page, context }) => {
-  await signInAs('bailiff-admin', page, context);
+Given('I am signed in to XUI as a bailiff admin', async () => {
+  expectSignedInAs('bailiff-admin');
 });
 
-Given('I am signed in to XUI as the allocated bailiff', async ({ page, context }) => {
+Given('I am signed in to XUI as the allocated bailiff', async () => {
   approximatePrecondition('HDPI-8189', 'signed in as a bailiff; no allocated-bailiff case role is granted yet');
-  await signInAs('bailiff', page, context);
+  expectSignedInAs('bailiff');
 });
 
 pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement work allocation tasks' }, [
@@ -315,9 +318,8 @@ function inDecideEnforcement(world: EnforcementWorld): boolean {
   return world.currentEvent === DECIDE_ENFORCEMENT;
 }
 
-Given('I am signed in to XUI as a hearing centre admin', async ({ page }) => {
-  await signInAsHearingCentreAdmin(page);
-  await openCaseSummary(page);
+Given('I am signed in to XUI as a hearing centre admin', async () => {
+  expectSignedInAs('hearing-centre-admin');
 });
 
 // The feature files name a journey by its event or by its first page's heading. Only an event the scenario

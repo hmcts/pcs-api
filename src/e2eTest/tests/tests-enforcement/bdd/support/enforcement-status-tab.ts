@@ -51,6 +51,25 @@ export async function openCaseTab(page: Page, caseReference: string, tabName: st
 export const activeTab = (page: Page) => page.locator('.mat-tab-body-active').first();
 
 /**
+ * Re-fetches the open case and selects the tab that was open again.
+ *
+ * Set-up goes through the APIs, so a tab can be opened in the same moment pcs-api records what the scenario
+ * then asserts, and polling markup that is already rendered would never see it arrive. Polls that wait for
+ * something set up that way reload between tries.
+ */
+export async function reopenCurrentTab(page: Page): Promise<void> {
+  const selected = page.locator('[role="tab"][aria-selected="true"]').first();
+  const tabName = (await selected.count()) ? (await selected.innerText()).trim() : undefined;
+  await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => undefined);
+  if (!tabName) {
+    return;
+  }
+  const tab = page.getByRole('tab', { name: tabName, exact: true });
+  await expect(tab).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
+  await tab.click();
+}
+
+/**
  * Every heading on the selected tab, in order, with what follows it up to the next heading. Waits for the
  * markup to render first: XUI fills the tab asynchronously after it is selected.
  */

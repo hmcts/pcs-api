@@ -236,15 +236,23 @@ export async function recordWarrantReturn(
   return label;
 }
 
-/** The "Eviction details" table: claimant type, claimant name and defendant names, each filled in. */
+/**
+ * The "Eviction details" claimant type, claimant name and defendant names, each filled in. "Record warrant
+ * return" renders them as a GOV.UK table, "Schedule eviction" and "Reschedule eviction" as a summary list, so
+ * each key is matched in whichever of the two the screen uses.
+ */
 export async function expectEvictionDetailsTable(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: warrantReturn.evictionDetailsHeading })).toBeVisible({
     timeout: LONG_TIMEOUT,
   });
-  const table = page.locator('table').filter({ hasText: warrantReturn.evictionDetailsRows[0] }).first();
-  for (const header of warrantReturn.evictionDetailsRows) {
-    const row = table.getByRole('row').filter({ has: page.getByRole('rowheader', { name: header, exact: true }) });
-    await expect(row.getByRole('cell')).toHaveText(/\S/);
+  for (const key of warrantReturn.evictionDetailsRows) {
+    const tableValue = page
+      .locator('table')
+      .getByRole('row')
+      .filter({ has: page.getByRole('rowheader', { name: key, exact: true }) })
+      .getByRole('cell');
+    const listValue = page.locator('dl').locator('dt', { hasText: key }).locator('xpath=following-sibling::dd[1]');
+    await expect(tableValue.or(listValue).first()).toHaveText(/\S/, { timeout: LONG_TIMEOUT });
   }
 }
 

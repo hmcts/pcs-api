@@ -36,6 +36,7 @@ import {
   linkCitizenDefendant,
   linkDefendantLegalRepresentative,
   viewAsEachDefendant,
+  viewAsEachDefendantOnceEnforcementVisible,
 } from '../support/defendant-visibility';
 
 const DISPENSE_WITH_SERVICE_QUESTION = 'Has the court given permission to dispense with service?';
@@ -292,6 +293,11 @@ Then(
     await expectNoEnforcementInformation(page, context, world);
 
     await closeApprovedWarrant(world, 'Warrant withdrawn');
-    await expectEnforcementTab(page, await viewAsEachDefendant(page, context, world), ENFORCEMENT_STATUS_TAB, true);
+    await expectEnforcementTab(
+      page,
+      await viewAsEachDefendantOnceEnforcementVisible(page, context, world),
+      ENFORCEMENT_STATUS_TAB,
+      true
+    );
   }
 );

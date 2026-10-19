@@ -12,6 +12,7 @@
  * user (the IDAM simulator's), so outside it the steps that need the citizen stay pending (HDPI-7539).
  */
 import { BrowserContext, Page } from '@playwright/test';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition } from '../fixtures/pending';
 import type { DefendantView, EnforcementWorld } from '../fixtures/enforcement.fixtures';
@@ -98,6 +99,29 @@ export async function viewAsEachDefendant(page: Page, context: BrowserContext, w
   }
   world.defendantViews = views;
   return views;
+}
+
+/**
+ * Has each linked defendant view the case once the enforcement is theirs to see. The event that opens it up is
+ * submitted through the API, so the case data can still be the one from before it: the first defendant's view
+ * is re-read until it carries the "Enforcement status" tab.
+ */
+export async function viewAsEachDefendantOnceEnforcementVisible(
+  page: Page,
+  context: BrowserContext,
+  world: EnforcementWorld
+): Promise<DefendantView[]> {
+  const caseReference = requireCaseReference(world);
+  const defendant = world.citizenDefendant ?? world.defendantLegalRepresentative;
+  if (defendant) {
+    await expect
+      .poll(async () => Boolean((await caseDataAs(caseReference, defendant)).enforcementStatusTabMarkdown), {
+        timeout: VERY_LONG_TIMEOUT,
+        intervals: [1_000],
+      })
+      .toBe(true);
+  }
+  return viewAsEachDefendant(page, context, world);
 }
 
 /** The views the last "defendant views the case" step captured, or fresh ones if there are none. */

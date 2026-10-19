@@ -19,7 +19,7 @@ import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { nextStepOptions, openCaseSummary, requireCaseReference, signInAs, startEvent } from '../support/enforcement-journeys';
-import { CLAIMANT_LEGAL_REPRESENTATIVE } from '../support/session';
+import { CLAIMANT_LEGAL_REPRESENTATIVE, expectSignedInAs } from '../support/session';
 import { RISK_ASSESSMENT_TAB, expectTabField, openTabFields } from '../support/case-tabs';
 import { activeTab, openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import { backdateEnforcement } from '../support/backdate-enforcement';
@@ -231,9 +231,9 @@ Then('the reason is visible to internal users only', async ({ page, context, wor
 const NOTE_DATE_TIME = /^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/;
 
 // The local bailiff user stands in for the bailiff the feature names, whose name the steps then expect.
-Given('I am signed in to XUI as bailiff {string}', async ({ page, context, world, $tags }, name: string) => {
+Given('I am signed in to XUI as bailiff {string}', async ({ world, $tags }, name: string) => {
   const email = requireStandIn(name, $tags);
-  await signInAs('bailiff', page, context);
+  expectSignedInAs('bailiff');
   world.aliases[name] = localUserName(email);
 });
 

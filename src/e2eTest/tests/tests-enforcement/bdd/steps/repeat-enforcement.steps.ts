@@ -12,6 +12,7 @@ import {
   currentEnforcement,
   enforcementSections,
   openCaseTab,
+  reopenCurrentTab,
 } from '../support/enforcement-status-tab';
 import {
   applyForFurtherWarrant,
@@ -134,9 +135,19 @@ Then(
     }
     const expected = (await enforcementsOnTheCase(world)).length;
     await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
-    // Each warrant or writ on the tab is headed with its number.
+    // Each warrant or writ on the tab is headed with its number. The further application is submitted through
+    // the API, so the tab can be opened before pcs-api has it: each try re-fetches the case.
     await expect
-      .poll(async () => (await enforcementSections(page)).length, { timeout: VERY_LONG_TIMEOUT })
+      .poll(
+        async () => {
+          const sections = (await enforcementSections(page)).length;
+          if (sections !== expected) {
+            await reopenCurrentTab(page);
+          }
+          return sections;
+        },
+        { timeout: VERY_LONG_TIMEOUT, intervals: [2_000] }
+      )
       .toBe(expected);
     const numbers = (await enforcementSections(page)).map(section => section.heading);
     const upper = numbers.indexOf(actualNumber(world, upperAlias));
