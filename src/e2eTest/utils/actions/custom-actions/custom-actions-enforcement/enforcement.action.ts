@@ -298,6 +298,7 @@ export class EnforcementAction implements IAction {
     if (userInput.option === 'Yes') {
       const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, userInput.label as string, userInput.input as number);
       await performAction('inputText', userInput.label, testInput);
+      console.log( `Test input - `+ testInput);
       fieldsMap.set(userInput.label as string, testInput);
     };
     await performAction('reTryOnCallBackError', !userInput?.button ? userInput.button = 'Continue' : userInput.button as string, userInput.nextPage as string);

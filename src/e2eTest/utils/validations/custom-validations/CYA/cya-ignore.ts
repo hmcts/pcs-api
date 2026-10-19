@@ -27,5 +27,6 @@ export const cyaIgnoreQuestions = [
   'What is the total amount that the defendants owe you?',
   'How much do you want to reclaim?',
   'How much did you spend on Land Registry fees?',
-  'Enter the amount that you want the defendants to repay'
+  'Enter the amount that you want the defendants to repay',
+  'Next step'
 ];

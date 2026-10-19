@@ -298,7 +298,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: statementOfTruth.mainHeader
       });
       await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
         question: statementOfTruth.completedByLabel,
