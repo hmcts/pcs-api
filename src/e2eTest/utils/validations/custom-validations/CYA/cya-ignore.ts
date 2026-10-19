@@ -23,5 +23,9 @@ export const cyaIgnoreQuestions = [
   'Add document',
   'Review date',
   'Select an address',
-  'I certify that:'
+  'I certify that:',
+  'What is the total amount that the defendants owe you?',
+  'How much do you want to reclaim?',
+  'How much did you spend on Land Registry fees?',
+  'Enter the amount that you want the defendants to repay'
 ];
