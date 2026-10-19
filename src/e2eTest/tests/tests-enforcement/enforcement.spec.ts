@@ -215,10 +215,9 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.englishRadioOption,
-        nextPage: suspendedOrder.mainHeader
+        nextPage: statementOfTruth.mainHeader
       });
       await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
         question: statementOfTruth.completedByLabel,
@@ -557,7 +556,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.englishRadioOption,
-        nextPage: suspendedOrder.mainHeader,
+        nextPage: statementOfTruth.mainHeader,
       });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
