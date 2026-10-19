@@ -66,7 +66,12 @@ public class EnforcementDocumentGenerator {
             payload.get(), templateId.get(), OutputType.PDF,
             persistenceService.outputFilename(output, payload.get()));
         try {
-            return persistenceService.attach(enforcementId, output, documentUrl);
+            Optional<DocumentEntity> filed = persistenceService.attach(enforcementId, output, documentUrl);
+            if (filed.isEmpty()) {
+                // Another attempt filed the document first, so this render was never put on the case.
+                deleteOrphanedDocument(enforcementId, documentUrl);
+            }
+            return filed;
         } catch (Exception e) {
             deleteOrphanedDocument(enforcementId, documentUrl);
             throw e;

@@ -19,6 +19,13 @@ yarn bddgen                  # generate specs into .features-gen/ (gitignored)
 yarn test:enforcement:bdd    # bddgen, then the enforcement-bdd project without @pending and @open-question
 ```
 
+`test:enforcement:bdd` runs the project in two passes (`scripts/run-enforcement-bdd.ts`). The first runs
+everything except `@clock` on the configured workers; the second runs the `@clock` scenarios on a single
+worker, because pcs-api's test clock is a process-wide offset and nothing that measures against the real
+date may run while it is shifted. The second pass only runs where pcs-api has
+`ENABLE_TESTING_SUPPORT_CLOCK` — a local stack and a per-PR preview — so on AAT the `@clock` scenarios are
+left out.
+
 To run one feature, scenario or tag, generate first and then use Playwright as normal:
 
 ```bash

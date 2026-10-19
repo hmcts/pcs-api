@@ -156,15 +156,20 @@ export const test = base.extend<EnforcementFixtures>({
         enablePagePacing(page, holdMs);
       }
       await use();
-      await resetClockIfMoved();
-      disablePagePacing();
-      defendantDetails.length = 0;
-      moneyMap.clear();
-      fieldsMap.clear();
-      if (world.caseReference) {
-        await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
+      // A clock this scenario moved is left on the stack for everything that follows, so putting it back comes
+      // first; the rest of the tear-down still has to run if that fails, and the failure is still reported.
+      try {
+        await resetClockIfMoved();
+      } finally {
+        disablePagePacing();
+        defendantDetails.length = 0;
+        moneyMap.clear();
+        fieldsMap.clear();
+        if (world.caseReference) {
+          await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
+        }
+        PageContentValidation.finaliseTest();
       }
-      PageContentValidation.finaliseTest();
     },
     { auto: true },
   ],

@@ -28,7 +28,7 @@ Feature: Bailiff marks the notice of eviction as served
     When I select "Continue" without answering
     Then I see errors for "When did you serve the 'notice of eviction'?" and "How did you serve the 'notice of eviction'?"
 
-  @HDPI-7346
+  @HDPI-7346 @clock
   Scenario Outline: Served date and time validation
     Given today is "08/07/2026" and the time is "10:00"
     When I enter a served date of "<date>" and time "<time>"

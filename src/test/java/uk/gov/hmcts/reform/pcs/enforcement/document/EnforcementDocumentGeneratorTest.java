@@ -96,6 +96,19 @@ class EnforcementDocumentGeneratorTest {
     }
 
     @Test
+    void shouldDeleteTheRenderedDocumentWhenAnotherAttemptFiledItFirst() {
+        when(persistenceService.buildPayloadIfNotGenerated(ENFORCEMENT_ID, EnforcementOutput.WARRANT_OF_POSSESSION))
+            .thenReturn(Optional.of(payload));
+        when(docAssemblyService.generateDocument(any(), anyString(), any(), any())).thenReturn(DOCUMENT_URL);
+        when(persistenceService.attach(ENFORCEMENT_ID, EnforcementOutput.WARRANT_OF_POSSESSION, DOCUMENT_URL))
+            .thenReturn(Optional.empty());
+
+        assertThat(underTest.generate(ENFORCEMENT_ID, EnforcementOutput.WARRANT_OF_POSSESSION)).isEmpty();
+
+        verify(documentImportService).deleteDocument(DOCUMENT_URL);
+    }
+
+    @Test
     void shouldDeleteTheRenderedDocumentWhenFilingItFails() {
         when(persistenceService.buildPayloadIfNotGenerated(ENFORCEMENT_ID, EnforcementOutput.WARRANT_OF_POSSESSION))
             .thenReturn(Optional.of(payload));
