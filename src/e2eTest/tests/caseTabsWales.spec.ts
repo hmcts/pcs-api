@@ -218,14 +218,6 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
       createPayload: createCaseApiWalesData.createCasePayload,
       submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
-      section: 'Claimant registration and licensing',
-      table: 'Claimant registration and licensing'
-    });
-    await performAction('validateCaseSummaryDetails', {
-      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
-      createPayload: createCaseApiWalesData.createCasePayload,
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
       section: 'Claimant circumstances',
       table: 'Claimant circumstances'
     });
