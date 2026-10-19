@@ -22,27 +22,26 @@ public enum GroupAccessType implements CCDAccessGroup {
     PROFESSIONAL_ORG_CLAIMANT_ACCESS(
         ORGANISATION_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
         new DisplaySettings(
-            "Claimant access",
-            "Grants users access to all possession cases in which this organisation is the claimant or acts "
-                + "for the claimant",
+            "Claims made by your organisation",
+            "View and manage all possession claims your organisation has made.",
             1, true, true, true, true)
     ),
 
     SOLICITOR_ORG_CLAIMANT_ACCESS(
         SOLICITOR_PROFILE, CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
         new DisplaySettings(
-            "Claimant access",
-            "Grants users access to all possession cases in which this organisation is the claimant or acts "
-                + "for the claimant",
+            "Claims you have made for a claimant",
+            "View and manage all possession claims your organisation has made as the legal representative "
+                + "for the claimant.",
             2, true, true, true, true)
     ),
 
     SOLICITOR_ORG_DEFENDANT_ACCESS(
         SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
         new DisplaySettings(
-            "Defendant access",
-            "Grants users access to all possession cases in which this organisation is the defendant or acts "
-                + "for the defendant",
+            "Cases where you represent a defendant",
+            "View and manage all possession cases where your organisation is the legal representative "
+                + "for a defendant.",
             3, true, true, true, true)
     ),
 
