@@ -339,6 +339,7 @@ sonarqube {
     property "sonar.projectName", "Reform :: pcs-api"
     property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api-2"
     property "sonar.exclusions", ".github/workflows/publish-openapi.yaml"
+    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/**/*.java"
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
       "**/model/*.java," +
