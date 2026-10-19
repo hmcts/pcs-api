@@ -7,6 +7,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -47,6 +48,9 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
     @Autowired
     private OAuth2AuthorizedClientManager authorizedClientManager;
 
+    @Autowired
+    private OAuth2AuthorizedClientService authorizedClientService;
+
     private String solicitorToken;
     private String hearingCentreTeamLeaderToken;
 
@@ -55,6 +59,7 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
         solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
         hearingCentreTeamLeaderToken = new IdamTokenProvider(
             authorizedClientManager,
+            authorizedClientService,
             "system-user",
             "pcs-hearing-centre-team-leader-01@localhost",
             "password"

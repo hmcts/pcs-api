@@ -7,8 +7,8 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
 import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocument;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJob;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobReport;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobState;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
 import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -30,9 +30,10 @@ import java.util.UUID;
 
 /**
  * Fills the Bundle tab: the case bundle, whether it reflects the case as it is now, and which
- * documents could not be included and why. What the bundle contains comes from the report of
- * the document-bundling job that rendered it. Nothing is set while case bundling is switched off
- * or before a bundle has been asked for, which hides the tab.
+ * documents could not be included and why. The bundle's PDF is the case's CASE_BUNDLE document;
+ * what it contains is the metadata document-bundling recorded for the job that rendered it.
+ * Nothing is set while case bundling is switched off or before a bundle has been asked for, which
+ * hides the tab.
  */
 @Component
 @RequiredArgsConstructor
@@ -67,15 +68,16 @@ public class BundleTabView {
         if (bundle.isEmpty() && latest.isEmpty()) {
             return;
         }
-        Optional<BundleJobReport> report = bundle.map(DocumentEntity::getBundleJobId).flatMap(jobs::findReport);
-        List<ListValue<MissingBundleDocument>> missing = report.map(BundleTabView::missingDocuments)
+        Optional<BundleMetadata> metadata = bundle.map(DocumentEntity::getBundleJobId)
+            .flatMap(jobs::findBundleForJob);
+        List<ListValue<MissingBundleDocument>> missing = metadata.map(BundleTabView::missingDocuments)
             .orElse(List.of());
 
         pcsCase.setBundleTab(BundleTab.builder()
             .status(status(bundle, latest, !missing.isEmpty()))
             .bundle(bundle.map(this::document).orElse(null))
             .lastUpdated(bundle.map(DocumentEntity::getSubmittedDate).map(LAST_UPDATED::format).orElse(null))
-            .pages(report.map(BundleJobReport::pageCount).orElse(null))
+            .pages(metadata.map(BundleMetadata::pageCount).orElse(null))
             // Left unset rather than empty, so the tab shows nothing when nothing is missing.
             .missingDocuments(missing.isEmpty() ? null : missing)
             .build());
@@ -116,13 +118,13 @@ public class BundleTabView {
             .build();
     }
 
-    private static List<ListValue<MissingBundleDocument>> missingDocuments(BundleJobReport report) {
-        return report.missingDocuments().stream()
+    private static List<ListValue<MissingBundleDocument>> missingDocuments(BundleMetadata bundle) {
+        return bundle.missingDocuments().stream()
             .map(missing -> ListValue.<MissingBundleDocument>builder()
                 .id(missing.documentId())
                 .value(MissingBundleDocument.builder()
-                           .documentName(title(report.request().root(), missing))
-                           .folder(folder(report.request().root(), missing.documentId()))
+                           .documentName(title(bundle.request().root(), missing))
+                           .folder(folder(bundle.request().root(), missing.documentId()))
                            .page(missing.startPage())
                            .reason(missing.reason().message())
                            .build())

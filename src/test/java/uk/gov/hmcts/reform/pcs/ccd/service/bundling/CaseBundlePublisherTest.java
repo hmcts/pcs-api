@@ -13,6 +13,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleArtifact;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleErrorCode;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleExecutionContext;
+import uk.gov.hmcts.ccd.sdk.bundling.api.BundleOutcome;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleRequest;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleResult;
 import uk.gov.hmcts.ccd.sdk.bundling.api.DocumentReference;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentReason;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJob;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobContext;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobState;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
 import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -164,8 +166,8 @@ class CaseBundlePublisherTest {
         assertThat(stored.getSubmittedDate()).isNotNull();
         // Selected just after midnight, UK time.
         assertThat(stored.getIssueDate()).isEqualTo(LocalDate.of(2026, 10, 6));
-        assertThat(summary).isEqualTo(Map.of("stored", true, "documentId", stored.getId().toString(),
-                                             "pageCount", 12, "missingDocuments", 1));
+        // The bundle's details are recorded by document-bundling; the summary only says where it went.
+        assertThat(summary).isEqualTo(Map.of("stored", true, "documentId", stored.getId().toString()));
         verify(caseDocumentClientApi, never()).deleteDocument(anyString(), anyString(), any(), anyBoolean());
     }
 
@@ -207,6 +209,23 @@ class CaseBundlePublisherTest {
         assertThat(summary).isEqualTo(Map.of("stored", false));
         verifyNoInteractions(caseDocumentClientApi, coreCaseDataApi);
         verify(documentRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldJudgeTheStoredBundleByItsRecordedMetadataOnceItsJobIsGone() throws IOException {
+        UUID purgedJob = UUID.randomUUID();
+        DocumentEntity newer = DocumentEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCase)
+            .type(DocumentType.CASE_BUNDLE).documentId(UUID.randomUUID()).bundleJobId(purgedJob).build();
+        when(bundleJobs.findBundleForJob(purgedJob)).thenReturn(Optional.of(metadata(purgedJob,
+            CLAIMED_AT.plusSeconds(60))));
+        when(documentRepository.findByPcsCase_IdAndType(CASE_ID, DocumentType.CASE_BUNDLE))
+            .thenReturn(Optional.of(newer));
+
+        Object summary = publish(thisJob);
+
+        assertThat(summary).isEqualTo(Map.of("stored", false));
+        verify(bundleJobs, never()).find(any());
+        verifyNoInteractions(caseDocumentClientApi, coreCaseDataApi);
     }
 
     @Test
@@ -287,6 +306,12 @@ class CaseBundlePublisherTest {
             .documentId(cdamId)
             .bundleJobId(job.externalId())
             .build();
+    }
+
+    private static BundleMetadata metadata(UUID jobId, Instant selectedAt) {
+        return new BundleMetadata(UUID.randomUUID(), jobId, Optional.empty(), Optional.empty(), selectedAt,
+                                  selectedAt, mock(BundleRequest.class), BundleOutcome.COMPLETED, FILE_NAME,
+                                  "application/pdf", PDF.length, "sha", 12, List.of(), List.of(), List.of());
     }
 
     private static BundleJob olderJob() {

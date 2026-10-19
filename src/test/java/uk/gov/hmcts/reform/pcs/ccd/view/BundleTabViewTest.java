@@ -17,8 +17,8 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.DocumentReference;
 import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocument;
 import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentReason;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJob;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobReport;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobState;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
 import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -84,7 +84,7 @@ class BundleTabViewTest {
     void shouldShowTheStoredBundleAndThatItIsUpToDate() {
         final DocumentEntity bundle = storedBundle();
         when(bundleJobs.findLatest(COALESCE_KEY)).thenReturn(Optional.of(job(STORED_JOB, BundleJobState.COMPLETED)));
-        when(bundleJobs.findReport(STORED_JOB)).thenReturn(Optional.of(report(List.of())));
+        when(bundleJobs.findBundleForJob(STORED_JOB)).thenReturn(Optional.of(metadata(List.of())));
 
         underTest.setCaseFields(caseData, pcsCase);
 
@@ -103,7 +103,7 @@ class BundleTabViewTest {
     void shouldListTheMissingDocumentsWithTheirFolderPageAndReason() {
         storedBundle();
         when(bundleJobs.findLatest(COALESCE_KEY)).thenReturn(Optional.of(job(STORED_JOB, BundleJobState.COMPLETED)));
-        when(bundleJobs.findReport(STORED_JOB)).thenReturn(Optional.of(report(List.of(
+        when(bundleJobs.findBundleForJob(STORED_JOB)).thenReturn(Optional.of(metadata(List.of(
             missing("witness", MissingDocumentReason.UNREADABLE, 12),
             missing("unknown", MissingDocumentReason.NOT_FOUND, 30)))));
 
@@ -129,7 +129,7 @@ class BundleTabViewTest {
         storedBundle();
         when(bundleJobs.findLatest(COALESCE_KEY))
             .thenReturn(Optional.of(job(UUID.randomUUID(), newerJobState)));
-        when(bundleJobs.findReport(STORED_JOB)).thenReturn(Optional.of(report(List.of())));
+        when(bundleJobs.findBundleForJob(STORED_JOB)).thenReturn(Optional.of(metadata(List.of())));
 
         underTest.setCaseFields(caseData, pcsCase);
 
@@ -156,10 +156,10 @@ class BundleTabViewTest {
     }
 
     @Test
-    void shouldShowTheBundleWithoutDetailsWhenItsJobHasNoReport() {
+    void shouldShowTheBundleWithoutDetailsWhileItsMetadataIsNotYetRecorded() {
         storedBundle();
         when(bundleJobs.findLatest(COALESCE_KEY)).thenReturn(Optional.empty());
-        when(bundleJobs.findReport(STORED_JOB)).thenReturn(Optional.empty());
+        when(bundleJobs.findBundleForJob(STORED_JOB)).thenReturn(Optional.empty());
 
         underTest.setCaseFields(caseData, pcsCase);
 
@@ -197,7 +197,7 @@ class BundleTabViewTest {
                                    reason, BundleErrorCode.DOCUMENT_INSPECTION_FAILED, "detail", page);
     }
 
-    private static BundleJobReport report(List<MissingDocument> missing) {
+    private static BundleMetadata metadata(List<MissingDocument> missing) {
         BundleRequest request = BundleRequest.builder()
             .externalId(STORED_JOB)
             .title("Case bundle")
@@ -209,7 +209,9 @@ class BundleTabViewTest {
                                    .build())
                       .build())
             .build();
-        return new BundleJobReport(request, BundleOutcome.COMPLETED, "1234-case-bundle.pdf", 100, "sha", 42,
-                                   List.of(), missing, List.of());
+        Instant selectedAt = Instant.parse("2026-10-06T14:04:00Z");
+        return new BundleMetadata(UUID.randomUUID(), STORED_JOB, Optional.of(COALESCE_KEY), Optional.of("1234"),
+                                  selectedAt, selectedAt, request, BundleOutcome.COMPLETED, "1234-case-bundle.pdf",
+                                  "application/pdf", 100, "sha", 42, List.of(), missing, List.of());
     }
 }

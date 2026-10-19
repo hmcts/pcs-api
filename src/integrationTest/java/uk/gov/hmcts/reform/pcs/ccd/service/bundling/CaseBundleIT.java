@@ -29,7 +29,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
 import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentReason;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJob;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobReport;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobState;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobWorker;
 import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
@@ -112,6 +112,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         tx = new TransactionTemplate(transactionManager);
         // The worker claims any waiting job, so start each test with an empty outbox.
         jdbc.update("delete from bundling.bundle_job", Map.of());
+        jdbc.update("delete from bundling.bundle", Map.of());
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("Bearer system");
         when(coreCaseDataApi.startEvent(anyString(), anyString(), anyString(), anyString()))
@@ -213,7 +214,12 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         DocumentEntity first = storedBundle(caseId);
         assertThat(first.getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
         assertThat(first.getBundleJobId()).isEqualTo(firstJob.externalId());
-        BundleJobReport firstReport = bundleJobs.findReport(firstJob.externalId()).orElseThrow();
+        // The document row holds the PDF; document-bundling recorded everything else about it.
+        BundleMetadata firstReport = bundleJobs.findBundleForJob(firstJob.externalId()).orElseThrow();
+        assertThat(firstReport.bundleKey()).contains(CaseBundleScope.coalesceKey(caseId));
+        assertThat(firstReport.fileName()).isEqualTo(first.getFileName());
+        assertThat(firstReport.size()).isEqualTo(first.getSize());
+        assertThat(firstReport.pageCount()).isPositive();
         assertThat(titles(firstReport, "Evidence")).containsExactly("Inspection report.pdf", "Witness statement.pdf");
         assertThat(titles(firstReport, "Statements of case")).containsExactly("Claim form.pdf");
         assertThat(firstReport.request().root().sections()).hasSize(CaseFileCategory.values().length);
@@ -240,7 +246,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(second.getId()).as("replaced in place").isEqualTo(first.getId());
         assertThat(second.getDocumentId()).isNotEqualTo(first.getDocumentId());
         assertThat(second.getBundleJobId()).isEqualTo(secondJob.externalId());
-        assertThat(titles(bundleJobs.findReport(secondJob.externalId()).orElseThrow(), "Evidence"))
+        assertThat(titles(bundleJobs.findBundleForJob(secondJob.externalId()).orElseThrow(), "Evidence"))
             .containsExactly("Inspection report.pdf", "Witness statement.pdf", "Late evidence.pdf");
         verify(caseDocumentClientApi).deleteDocument("Bearer system", "s2s", first.getDocumentId(), true);
     }
@@ -258,7 +264,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
 
         BundleJob job = runQueuedJob(caseId);
 
-        assertThat(bundleJobs.findReport(job.externalId()).orElseThrow().missingDocuments())
+        assertThat(bundleJobs.findBundleForJob(job.externalId()).orElseThrow().missingDocuments())
             .singleElement()
             .satisfies(missing -> assertThat(missing.reason()).isEqualTo(MissingDocumentReason.NOT_FOUND));
         assertThat(uploadedBundleText()).contains("Deleted.pdf (missing)", MissingDocumentReason.NOT_FOUND.message());
@@ -373,7 +379,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         return documentRepository.findByPcsCase_IdAndType(caseId, DocumentType.CASE_BUNDLE).orElseThrow();
     }
 
-    private static List<String> titles(BundleJobReport report, String folder) {
+    private static List<String> titles(BundleMetadata report, String folder) {
         return report.request().root().sections().stream()
             .filter(section -> section.title().equals(folder))
             .map(BundleSection::documents)

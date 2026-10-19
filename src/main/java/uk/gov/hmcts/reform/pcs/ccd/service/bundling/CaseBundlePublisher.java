@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.BundleResult;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJob;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobCompletionHandler;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobContext;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
 import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -43,9 +44,10 @@ import java.util.UUID;
 
 /**
  * Stores a finished case bundle. A case has one bundle: a CASE_BUNDLE document, replaced in place
- * each time the bundle is regenerated, with the previous PDF deleted from CDAM. What the bundle
- * contains, where each document landed and which are missing is in the rendering job's report,
- * which the document row points at.
+ * each time the bundle is regenerated, with the previous PDF deleted from CDAM. The document row
+ * holds only the PDF and the id of the job that rendered it: document-bundling records everything
+ * else about the bundle (what it contains, where each document landed, which are missing) in its
+ * own bundling.bundle table when the job completes.
  *
  * <p>The PDF is uploaded to CDAM and attached to the case through the attachCaseBundle event
  * (CDAM grants ATTACH only to ccd_data); an unattached document expires after its TTL and is not
@@ -118,11 +120,7 @@ public class CaseBundlePublisher implements BundleJobCompletionHandler {
                  stored.document().isPresent() ? "stored" : "discarded as superseded", result.pageCount(),
                  result.missingDocuments().size());
         return stored.document()
-            .<Object>map(document -> Map.of(
-                STORED, true,
-                "documentId", document.getId().toString(),
-                "pageCount", result.pageCount(),
-                "missingDocuments", result.missingDocuments().size()))
+            .<Object>map(document -> Map.of(STORED, true, "documentId", document.getId().toString()))
             .orElse(Map.of(STORED, false));
     }
 
@@ -139,9 +137,18 @@ public class CaseBundlePublisher implements BundleJobCompletionHandler {
         return stored
             .map(DocumentEntity::getBundleJobId)
             .filter(storedJobId -> !storedJobId.equals(job.externalId()))
-            .flatMap(bundleJobs::find)
-            .map(storedJob -> selectedAt(storedJob).isAfter(selectedAt(job)))
+            .flatMap(this::selectedAt)
+            .map(storedSelectedAt -> storedSelectedAt.isAfter(selectedAt(job)))
             .orElse(false);
+    }
+
+    /**
+     * When the stored bundle's documents were selected: from its recorded metadata, which outlives
+     * the job row, or from the job while its metadata is still being recorded.
+     */
+    private Optional<Instant> selectedAt(UUID storedJobId) {
+        return bundleJobs.findBundleForJob(storedJobId).map(BundleMetadata::selectedAt)
+            .or(() -> bundleJobs.find(storedJobId).map(CaseBundlePublisher::selectedAt));
     }
 
     private static Instant selectedAt(BundleJob job) {
