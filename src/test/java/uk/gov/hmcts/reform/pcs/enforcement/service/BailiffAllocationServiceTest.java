@@ -107,8 +107,41 @@ class BailiffAllocationServiceTest {
         assertThat(saved.getBailiffUserId()).isEqualTo("sam-id");
         assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
         verify(enforcementOrderRepository, never()).save(any());
-        // The new allocation's own risk task: the open bailiff tasks follow the allocated-bailiff role.
-        verify(enforcementWaTaskService).bailiffAllocated(CASE_REFERENCE, saved.getId());
+    }
+
+    /**
+     * The previous bailiff's "Review risks and set level" task is still open and still the one to do, and the
+     * allocated-bailiff role assignment is what moves it. A second request would leave the new bailiff looking
+     * at two identical tasks.
+     */
+    @Test
+    void shouldNotAskForASecondRiskTaskWhenReallocating() {
+        EnforcementOrderEntity enforcement = givenCurrentEnforcement(CLAIMANT_CONFIRMED);
+        givenActiveAllocations(enforcement, allocation(enforcement, "alex-id"));
+        givenSaveAssignsAnId();
+
+        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+
+        assertThat(allocated.refused()).isFalse();
+        verifyNoInteractions(enforcementWaTaskService);
+    }
+
+    /**
+     * A warrant a return reopened for allocation has no bailiff, so the new one is asked for the risk level
+     * only if it is not recorded already.
+     */
+    @Test
+    void shouldNotAskForTheRiskTaskWhenTheRiskLevelIsAlreadyRecorded() {
+        EnforcementOrderEntity enforcement = givenCurrentEnforcement(AWAITING_BAILIFF_ALLOCATION);
+        enforcement.setRiskLevelSetAt(NOW.minusSeconds(86400));
+        givenActiveAllocations(enforcement);
+        givenSaveAssignsAnId();
+
+        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+
+        assertThat(allocated.refused()).isFalse();
+        assertThat(enforcement.getStatus()).isEqualTo(AWAITING_SCHEDULING);
+        verifyNoInteractions(enforcementWaTaskService);
     }
 
     @Test

@@ -139,14 +139,14 @@ public class EvictionScheduleService {
         }
         EnforcementOrderEntity enforcement = live.change();
         setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        final Eviction appointment = appointmentOf(enforcement);
         // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
             caseReference, "the eviction notices, the claimant's email and the eviction tasks", () -> {
                 enforcementDocumentScheduler.scheduleEvictionNotices(enforcement.getId());
                 // TODO HDPI-7355: email the notice of appointment to the claimant.
                 enforcementNotificationService.notifyClaimantOfScheduledEviction(caseReference, evictionDateTime);
-                enforcementWaTaskService.evictionScheduled(caseReference, enforcement.getId(),
-                                                           new Eviction(evictionDateTime, dispenseWithService));
+                enforcementWaTaskService.evictionScheduled(caseReference, enforcement.getId(), appointment);
             });
         if (scheduled.refused()) {
             return EnforcementChange.refused(scheduled.errors());
@@ -168,10 +168,11 @@ public class EvictionScheduleService {
             return EnforcementChange.refused(live.errors());
         }
         EnforcementOrderEntity enforcement = live.change();
-        // Read before the new date overwrites them, so the previous appointment's tasks can be cancelled.
-        final Eviction previous = new Eviction(enforcement.getBailiffDate(),
-                                               Boolean.TRUE.equals(enforcement.getDispenseWithService()));
+        // Read before the new date overwrites them, so the previous appointment's tasks can be cancelled and
+        // the notice it had served can be served again.
+        final Eviction previous = appointmentOf(enforcement);
         setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
+        final Eviction appointment = appointmentOf(enforcement);
         // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
         // "Reschedule eviction" is closed by XUI through the task-completion DMN.
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
@@ -181,7 +182,7 @@ public class EvictionScheduleService {
                 enforcementDocumentScheduler.scheduleEvictionNotices(enforcement.getId());
                 enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
                 enforcementWaTaskService.evictionRescheduled(caseReference, enforcement.getId(), previous,
-                                                             new Eviction(evictionDateTime, dispenseWithService));
+                                                             appointment);
             });
         if (scheduled.refused()) {
             return EnforcementChange.refused(scheduled.errors());
@@ -232,6 +233,15 @@ public class EvictionScheduleService {
         enforcement.setDefendantsCanSeeEnforcement(defendantsCanSeeEnforcement(enforcement));
         enforcementStatusTransitions.transition(enforcement, AWAITING_CLAIMANT_CONFIRMATION);
         enforcementOrderRepository.save(enforcement);
+    }
+
+    /**
+     * The eviction appointment the warrant holds now, as the work allocation tasks see it.
+     */
+    private static Eviction appointmentOf(EnforcementOrderEntity enforcement) {
+        return new Eviction(enforcement.getBailiffDate(),
+                            Boolean.TRUE.equals(enforcement.getDispenseWithService()),
+                            enforcement.getNoticeServedAt() != null);
     }
 
     /**
