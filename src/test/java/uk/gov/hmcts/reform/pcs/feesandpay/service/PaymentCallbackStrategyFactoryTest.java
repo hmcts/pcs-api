@@ -52,6 +52,15 @@ class PaymentCallbackStrategyFactoryTest {
     }
 
     @Test
+    void shouldReturnPaymentCallbackHandlerForEnforcement() {
+        // When
+        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.ENFORCEMENT);
+
+        // Then
+        assertThat(result).isSameAs(enforcementPaymentCallbackHandler);
+    }
+
+    @Test
     void shouldHaveARegisteredStrategyForEveryJourneyId() {
         for (PaymentCallbackHandlerType paymentCallbackHandlerType : PaymentCallbackHandlerType.values()) {
             PaymentCallbackStrategy result = underTest.getStrategy(paymentCallbackHandlerType);
