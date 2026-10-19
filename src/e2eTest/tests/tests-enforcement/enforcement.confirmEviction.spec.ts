@@ -18,12 +18,13 @@ test.beforeEach(async ({ page }, testInfo) => {
   fieldsMap.clear();
 
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('getDefendantDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayload
+    defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload()
   });
+  await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {

@@ -22,5 +22,13 @@ export const cyaIgnoreQuestions = [
   'Do you know the underlessee or mortgagee’s address for service?',
   'Add document',
   'Review date',
-  'Select an address'
+  'Select an address',
+  'I certify that:',
+  'Next step',
+  'TEMPORARY TEST ONLY - Has the claim been transferred to the High Court?',
+  'TEMPORARY TEST ONLY - Was the general application to transfer to the High Court successful?',
+  'What is the total amount that the defendants owe you?',
+  'How much do you want to reclaim?',
+  'Enter the amount that you want the defendants to repay',
+  'How much did you spend on Land Registry fees?'
 ];
