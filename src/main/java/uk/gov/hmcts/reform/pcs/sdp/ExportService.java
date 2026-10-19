@@ -47,8 +47,6 @@ import java.util.stream.Collectors;
 @Service
 public class ExportService {
 
-    private static final int DEFAULT_SNAPSHOT_VERSION = 1;
-
     private final ClaimRepository claimRepository;
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SnapshotMapper claimSnapshotMapper;
@@ -83,7 +81,7 @@ public class ExportService {
     }
 
     /**
-     * Runs a full claim snapshot extract and writes JSON under the configured output directory.
+     * Runs a full claim snapshot extract.
      */
     @Transactional
     public ExportResult exportAllClaims() {
@@ -91,7 +89,7 @@ public class ExportService {
     }
 
     /**
-     * Exports claims that are new or have changed since they were last exported.
+     * Runs a delta claim snapshot extract.
      */
     @Transactional
     public ExportResult exportDeltaClaims() {
@@ -182,7 +180,7 @@ public class ExportService {
             UUID.randomUUID().toString(),
             resolvePublishedDate(publishedDates.get(caseId)),
             claimReference,
-            DEFAULT_SNAPSHOT_VERSION,
+            0,
             formatDateTime(claim.getClaimSubmittedDate()),
             dimensions,
             milestones,
