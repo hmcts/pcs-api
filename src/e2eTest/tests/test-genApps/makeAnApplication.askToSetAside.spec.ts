@@ -111,7 +111,6 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     });
     await performValidation('mainHeader', statementOfTruth.mainHeader);
     await performAction('selectStatementOfTruth', {
-      question: statementOfTruth.completedByTheDefendantsLegalParagraph,
       option: statementOfTruth.theDefendantBelievesCheckBox,
       label1: statementOfTruth.fullNameTextLabel,
       input1: statementOfTruth.fullNameTextInput,
@@ -141,7 +140,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayload(),
       genApp: CaseManagementCommonUtils.renameDocument('genApps.docx', '', appType),
       defendantIndex: 1
     });
