@@ -158,6 +158,52 @@ class CaseworkerDocumentListServiceTest {
             .contains("Counter claim CC3 - submitted 12 May 2026");
     }
 
+    @Test
+    void shouldOmitCcNumberWhenRelease14IsOnAndRankIsNull() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(PartyEntity.builder().id(DEFENDANT_ID).build())
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(LocalDateTime.of(2026, 5, 12, 10, 0))
+            .build();
+
+        DynamicStringList result = underTest.buildRelatedSubmissionsList(
+            caseWithParties(), List.of(), List.of(counterClaim));
+
+        assertThat(result.getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .contains("Counter claim - submitted 12 May 2026");
+    }
+
+    @Test
+    void shouldUseBareCcWhenPartyLabelHasNoNumber() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        UUID friendId = UUID.fromString("55555555-5555-5555-5555-555555555555");
+        PartyEntity friend = PartyEntity.builder()
+            .id(friendId)
+            .firstName("Fran")
+            .lastName("Friend")
+            .build();
+        PcsCaseEntity pcsCase = caseWithParties();
+        pcsCase.getMainClaim().addParty(friend, PartyRole.LITIGATION_FRIEND);
+
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(friend)
+            .rank(3)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(LocalDateTime.of(2026, 5, 12, 10, 0))
+            .build();
+
+        DynamicStringList result = underTest.buildRelatedSubmissionsList(
+            pcsCase, List.of(), List.of(counterClaim));
+
+        assertThat(result.getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .contains("Counter claim CC - submitted 12 May 2026");
+    }
+
     private static PcsCaseEntity caseWithParties() {
         PartyEntity claimant = PartyEntity.builder()
             .id(CLAIMANT_ID)
