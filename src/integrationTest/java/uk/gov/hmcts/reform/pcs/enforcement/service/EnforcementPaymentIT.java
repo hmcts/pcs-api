@@ -64,6 +64,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,7 +87,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
  * Register and Payments are mocked.
  *
  * <p>This context polls for db-scheduler tasks hourly, so the test runs the fees-and-pay task's work itself from
- * the task data the submit scheduled, then cancels the task so that another test context's scheduler does not
+ * the task data the submit scheduled, then removes the task so that another test context's scheduler does not
  * run it against a real Payments.</p>
  */
 @PcsCcdEventTest
@@ -311,8 +312,7 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
     void feePaidShortcutWithoutAServiceRequest() {
         submit(SelectEnforcementType.WARRANT);
         EnforcementOrderEntity enforcement = storedEnforcement();
-        schedulerClient.cancel(TaskInstanceId.of(FEES_AND_PAY_TASK_DESCRIPTOR.getTaskName(),
-                                                 EnforcementFeeService.instanceId(enforcement.getId())));
+        removeScheduledServiceRequest(enforcement.getId());
 
         assertThat(enforcementFeePaidSimulator.recordFeePaid(caseReference)).isTrue();
 
@@ -331,17 +331,28 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
     }
 
     /**
-     * Reads the fees-and-pay task the submit scheduled and cancels it, so the test can do its work instead.
+     * Reads the fees-and-pay task the submit scheduled and removes it, so the test can do its work instead.
      */
     private FeesAndPayTaskData takeScheduledServiceRequest(UUID enforcementId) throws IOException {
-        TaskInstanceId taskInstance = TaskInstanceId.of(FEES_AND_PAY_TASK_DESCRIPTOR.getTaskName(),
-                                                        EnforcementFeeService.instanceId(enforcementId));
-        // The client does not know the task's data class, so it hands back the serialised JSON.
-        byte[] data = (byte[]) schedulerClient.getScheduledExecution(taskInstance)
-            .orElseThrow(() -> new AssertionError("No service request was scheduled for " + enforcementId))
-            .getData();
-        schedulerClient.cancel(taskInstance);
+        // The row holds the serialised JSON, as the client does not know the task's data class.
+        byte[] data = removeScheduledServiceRequest(enforcementId)
+            .orElseThrow(() -> new AssertionError("No service request was scheduled for " + enforcementId));
         return objectMapper.readValue(data, FeesAndPayTaskData.class);
+    }
+
+    /**
+     * Reads the enforcement's fees-and-pay row and deletes it in one statement. Another test context's
+     * scheduler polling this shared database can pick the row up at any point after the submit commits, and
+     * db-scheduler refuses to cancel an execution that is being run, so the row is taken in SQL rather than
+     * through {@link SchedulerClient#cancel}.
+     */
+    private Optional<byte[]> removeScheduledServiceRequest(UUID enforcementId) {
+        return jdbcTemplate.queryForList(
+                "DELETE FROM scheduled_tasks WHERE task_name = ? AND task_instance = ? RETURNING task_data",
+                byte[].class, FEES_AND_PAY_TASK_DESCRIPTOR.getTaskName(),
+                EnforcementFeeService.instanceId(enforcementId))
+            .stream()
+            .findFirst();
     }
 
     /**
