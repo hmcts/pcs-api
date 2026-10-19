@@ -26,6 +26,9 @@ def secrets = [
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
     secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
     secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
+  ],
+  'ccd-${env}': [
+    secret('session-keys', 'SESSION_KEYS')
   ]
 ]
 
@@ -117,7 +120,8 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup("", true)
+    // Do not modify: imports the CCD definition into production.
+    enableHighLevelDataSetup()
     setAatEnvVars()
     env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.

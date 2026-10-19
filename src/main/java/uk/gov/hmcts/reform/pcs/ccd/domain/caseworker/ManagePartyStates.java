@@ -15,6 +15,7 @@ public final class ManagePartyStates {
         State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
         State.DECISION_OUTCOME,
         State.ALL_FINAL_ORDERS_ISSUED,
+        State.CLOSED,
     };
 
     private ManagePartyStates() {
