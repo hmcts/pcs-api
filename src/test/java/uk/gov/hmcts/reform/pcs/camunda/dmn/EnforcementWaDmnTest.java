@@ -307,11 +307,18 @@ class EnforcementWaDmnTest {
                 .containsExactly("bailiff", "bailiff-admin", "bailiff-manager");
         }
 
+        /**
+         * A bailiff who can access the case can act on its warrants, so the tasks are granted to the bailiff
+         * role as well as to the allocated-bailiff case role, with the same permissions.
+         */
         @Test
-        void shouldGiveTheRemainingTasksToTheAllocatedBailiffAndTheirManager() {
-            assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType ->
-                assertThat(permissions.collect(inputsFor(taskType), "name"))
-                    .containsExactly("allocated-bailiff", "bailiff-manager"));
+        void shouldGiveTheRemainingTasksToAnyBailiffAndTheirManager() {
+            assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType -> {
+                List<Map<String, String>> rows = permissions.evaluate(inputsFor(taskType));
+                assertThat(rows).extracting(row -> row.get("name"))
+                    .containsExactly("allocated-bailiff", "bailiff", "bailiff-manager");
+                assertThat(rows.get(1).get("value")).isEqualTo(rows.getFirst().get("value"));
+            });
         }
 
         @Test

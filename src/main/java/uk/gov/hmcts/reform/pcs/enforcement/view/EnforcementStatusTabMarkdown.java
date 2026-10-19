@@ -102,6 +102,9 @@ final class EnforcementStatusTabMarkdown {
         }
         summary.add(new Row(STATUS, enforcement.getStatus().getLabel()));
         if (WRITS.contains(type)) {
+            // HDPI-7351 asks for the date of the Judge's order, which no field records, so the date the
+            // caseworker approved the writ stands in. Nothing in production checks that the claim was
+            // transferred to the High Court at all (EnforcementApplicationPage).
             if (enforcement.getApprovedAt() != null) {
                 summary.add(new Row(HIGH_COURT_TRANSFER_DATE, TabMarkup.SHORT_DATE.format(
                     enforcement.getApprovedAt().atZone(UK_ZONE_ID).toLocalDate())));

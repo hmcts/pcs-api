@@ -258,6 +258,36 @@
           <text>true</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_enfBailiffTasks">
+        <description>A bailiff who can access the case can act on its warrants, so every bailiff can see and claim these tasks; only the allocated bailiff gets one assigned to them</description>
+        <inputEntry id="UnaryTests_enfBailiffTasksTaskType">
+          <text>"ReviewRisksAndSetLevel", "MarkNoticeOfEvictionServed", "RescheduleEviction", "ReviewUpdatedRiskInformation", "RecordWarrantReturn"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_enfBailiffTasksCase">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffTasksCategory">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffTasksName">
+          <text>"bailiff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffTasksValue">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffTasksRoleCategory">
+          <text>"ENFORCEMENT"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffTasksAuthorisations">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffTasksPriority">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_enfBailiffTasksAutoAssignable">
+          <text>false</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_enfBailiffManagerOversight">
         <description>Reallocating an enforcement reassigns its open bailiff tasks, which needs Assign and Unassign</description>
         <inputEntry id="UnaryTests_enfBailiffManagerOversightTaskType">

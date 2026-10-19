@@ -45,13 +45,20 @@ final class DecideEnforcementConfirmation {
         return outcome.decision() == EnforcementDecision.ACCEPT;
     }
 
+    /**
+     * Nothing in production checks that the claim was transferred to the High Court before a writ was applied
+     * for (EnforcementApplicationPage), so the writ copy says only what approving the application did and what
+     * the claimant has to do next, and never that the claim has been transferred.
+     */
     private static String whatHappensNext(EnforcementDecisionOutcome outcome) {
         if (!approved(outcome)) {
             return "The claimant can apply again.";
         }
         if (outcome.isWrit()) {
-            return "The writ will be added to the ‘Enforcement’ folder in the case file view, where the claimant"
-                + " can see it. The claimant needs to give the writ to a High Court Enforcement Officer.";
+            return "The sealed writ will be added to the ‘Enforcement’ folder in the case file view, where the"
+                + " claimant can see it. The claimant needs to give the writ to a High Court Enforcement Officer,"
+                + " who will then contact them to arrange the eviction. There is no further enforcement step for"
+                + " the court on this writ.";
         }
         return "The warrant will be added to the ‘Enforcement’ folder in the case file view. The case now needs"
             + " to be allocated to a bailiff.";
