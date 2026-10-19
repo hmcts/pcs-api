@@ -355,7 +355,7 @@ pcs-frontend:
           - pcs-pcq-token-key
           - launchdarkly-sdk-key
     environment:
-      PCS_API_URL: https://${SERVICE_FQDN}-java
+      PCS_API_URL: https://${SERVICE_FQDN}
       CCD_URL: https://ccd-data-store-api-${SERVICE_FQDN}
       CDAM_URL: https://ccd-case-document-am-api-${SERVICE_FQDN}
       XUI_BASE_URI: https://xui-${SERVICE_FQDN}
@@ -365,18 +365,17 @@ pcs-frontend:
       PAYMENT_RETURN_URL: https://pcs-frontend-${SERVICE_FQDN}/payment/return
       CUI_RA_CALLBACK_URL: https://pcs-frontend-${SERVICE_FQDN}/case/:caseReference/respond-to-claim/reasonable-adjustments/callback/:id
       CUI_RA_LOGOUT_URL: https://pcs-frontend-${SERVICE_FQDN}/logout
-redis:
-  image:
-    registry: hmctsprod.azurecr.io
-    repository: imported/bitnami/redis
-  enabled: true
-  master:
-    readinessProbe:
-      timeoutSeconds: 10
-      periodSeconds: 10
-    livenessProbe:
-      timeoutSeconds: 10
-
-
-
-
+  redis:
+    image:
+      registry: hmctsprod.azurecr.io
+      repository: imported/bitnami/redis
+    enabled: true
+    master:
+      # HDPI-8155: Dynatrace node instrumentation on preview adds ~1s per
+      # spawned process; the chart-default 2s exec-probe budget leaves redis
+      # permanently Running-but-not-Ready (frontends then ECONNREFUSED :6379).
+      readinessProbe:
+        timeoutSeconds: 10
+        periodSeconds: 10
+      livenessProbe:
+        timeoutSeconds: 10
