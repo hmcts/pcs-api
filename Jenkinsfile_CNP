@@ -320,9 +320,7 @@ def setPreviewEnvVars(githubApi) {
     env.PCS_FRONTEND_CHANGE_ID = frontendLabels[0].replace("pcs-frontend-pr:", "")
   }
 
-  // The image the pcs-frontend subchart deploys into this preview, and the ref its E2E suite
-  // is taken from. A pcs-frontend-pr:<id> label pins both to that frontend PR so an API change
-  // can be tested against an unmerged frontend change; otherwise both track frontend master.
+  // A pcs-frontend-pr:<id> label pins the deployed image and the E2E suite to that frontend PR.
   if (env.PCS_FRONTEND_CHANGE_ID) {
     env.PCS_FRONTEND_IMAGE = "hmctsprod.azurecr.io/pcs/frontend:pr-${env.PCS_FRONTEND_CHANGE_ID}"
     env.PCS_FRONTEND_E2E_REF = "refs/pull/${env.PCS_FRONTEND_CHANGE_ID}/head"
@@ -331,9 +329,7 @@ def setPreviewEnvVars(githubApi) {
     env.PCS_FRONTEND_E2E_REF = "refs/heads/master"
   }
 
-  // With pr-values:ccd the frontend is deployed into this preview, so pcs-api and XUI must hand
-  // out links to that instance rather than to AAT, or any journey that follows an API-generated
-  // link leaves the preview for a frontend talking to AAT CCD where the case does not exist.
+  // pr-values:ccd deploys the frontend into this preview, so link to it rather than to AAT.
   if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
     env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   } else if (env.PCS_FRONTEND_CHANGE_ID) {

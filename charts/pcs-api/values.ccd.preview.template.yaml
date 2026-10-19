@@ -366,8 +366,6 @@ pcs-frontend:
       PAYMENT_RETURN_URL: https://pcs-frontend-${SERVICE_FQDN}/payment/return
       CUI_RA_CALLBACK_URL: https://pcs-frontend-${SERVICE_FQDN}/case/:caseReference/respond-to-claim/reasonable-adjustments/callback/:id
       CUI_RA_LOGOUT_URL: https://pcs-frontend-${SERVICE_FQDN}/logout
-      # Must match pcs-api's LAUNCHDARKLY_ENV, or an environment-targeted flag resolves
-      # differently in the UI than in the API within the same preview.
       LAUNCHDARKLY_ENV: ${SERVICE_NAME}
   redis:
     image:
@@ -375,9 +373,6 @@ pcs-frontend:
       repository: imported/bitnami/redis
     enabled: true
     master:
-      # HDPI-8155: Dynatrace node instrumentation on preview adds ~1s per
-      # spawned process; the chart-default 2s exec-probe budget leaves redis
-      # permanently Running-but-not-Ready (frontends then ECONNREFUSED :6379).
       readinessProbe:
         timeoutSeconds: 10
         periodSeconds: 10
