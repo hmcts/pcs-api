@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
@@ -30,6 +32,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +57,9 @@ class LegalRepStartEventHydrationVerificationTest {
     @Mock
     private UploadTimestampProvider uploadTimestampProvider;
 
+    @Mock
+    private CaseDetailsTabView caseDetailsTabView;
+
     private LegalRepStartEventStrategy underTest;
 
     @BeforeEach
@@ -63,8 +71,13 @@ class LegalRepStartEventHydrationVerificationTest {
             organisationService,
             new TenancyLicenceView(uploadTimestampProvider),
             new NoticeOfPossessionView(),
-            new RentArrearsView(uploadTimestampProvider)
+            new RentArrearsView(uploadTimestampProvider),
+            caseDetailsTabView
         );
+        lenient().when(caseDetailsTabView.buildCaseDetailsTab(
+            any(PCSCase.class), any(PcsCaseEntity.class), anyBoolean()
+        ))
+            .thenReturn(new CaseDetailsTab());
     }
 
     @Test

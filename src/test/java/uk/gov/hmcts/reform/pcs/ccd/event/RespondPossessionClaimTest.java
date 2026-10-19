@@ -89,6 +89,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -183,6 +184,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        lenient().when(caseDetailsTabView.buildCaseDetailsTab(
+            any(PCSCase.class), any(PcsCaseEntity.class), anyBoolean()
+        )).thenReturn(new CaseDetailsTab());
 
         // Create handlers with real dependencies
 
@@ -213,7 +217,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                    organisationService,
                                                    tenancyLicenceView,
                                                    noticeOfPossessionView,
-                                                   rentArrearsView)
+                                                   rentArrearsView,
+                                                   caseDetailsTabView)
             )
         );
 
