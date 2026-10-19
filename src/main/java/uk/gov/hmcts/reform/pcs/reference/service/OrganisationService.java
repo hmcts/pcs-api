@@ -180,9 +180,9 @@ public class OrganisationService {
     }
 
     /**
-     * Prefer a specific PRD profile when present. Every organisation also carries the generic
-     * ORGANISATION_PROFILE. Fall back to that when it is the only profile, so claimant orgs of any
-     * MyHMCTS type can still be stamped for case access.
+     * The organisation profile PRM keys the group access catalogue on. Every organisation also
+     * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
+     * single profile that identifies an access type.
      *
      * @return The organisation profile, or null if there is none
      */
@@ -192,10 +192,7 @@ public class OrganisationService {
         }
         return organisationDetails.getOrganisationProfileIds().stream()
             .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
-            .findFirst()
-            .orElseGet(() -> organisationDetails.getOrganisationProfileIds().contains(GENERIC_ORGANISATION_PROFILE)
-                ? GENERIC_ORGANISATION_PROFILE
-                : null);
+            .findFirst().orElse(null);
     }
 
     /**
