@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.MissingBundleDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
-import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleScope;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -65,7 +64,7 @@ public class BundleTabView {
         pcsCase.setBundleTab(BundleTab.builder().status(status)
             .bundle(publication.map(current -> {
                 var document = current.document();
-                document.setCategoryId(CaseBundleScope.BUNDLES_CATEGORY_ID);
+                document.setCategoryId(CaseBundleDefinition.FOLDER_ID);
                 return document;
             }).orElse(null))
             .lastUpdated(publication.map(current -> LAST_UPDATED.format(current.publishedAt())).orElse(null))

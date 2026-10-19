@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleScope;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -225,8 +225,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .build();
         }
         builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
-            .categoryID(CaseBundleScope.BUNDLES_CATEGORY_ID)
-            .categoryLabel(CaseBundleScope.BUNDLES_CATEGORY_LABEL)
+            .categoryID(CaseBundleDefinition.FOLDER_ID)
+            .categoryLabel(CaseBundleDefinition.FOLDER_LABEL)
             .displayOrder(CaseFileCategory.values().length + 1)
             .build();
     }

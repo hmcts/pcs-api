@@ -55,7 +55,7 @@ class CaseBundleDefinitionTest {
         assertThat(titles(request, "Evidence")).containsExactly("early.pdf", "undated.pdf", "late.pdf");
         assertThat(titles(request, "Statements of case")).containsExactly("claim.pdf");
         BundleDocument first = section(request, "Evidence").documents().getFirst();
-        assertThat(first.reference().provider()).isEqualTo(CaseBundleScope.CDAM_PROVIDER);
+        assertThat(first.reference().provider()).isEqualTo(CaseBundleDefinition.CDAM_PROVIDER);
         assertThat(first.reference().id()).isEqualTo(early.getDocumentId().toString());
     }
 

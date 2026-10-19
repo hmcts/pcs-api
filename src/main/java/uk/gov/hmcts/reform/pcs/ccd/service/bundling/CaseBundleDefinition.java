@@ -13,8 +13,14 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentPolicy;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.SelectedCaseBundle;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 
 import java.time.LocalDate;
@@ -37,6 +43,11 @@ import java.util.stream.Collectors;
 public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundleDefinition {
 
     public static final String NAME = "case-bundle";
+    /** Case file view folder for generated bundles; not a CaseFileCategory, as those drive the upload journeys. */
+    public static final String FOLDER_ID = "bundles";
+    public static final String FOLDER_LABEL = "Bundles";
+    /** The document-bundling provider name for documents held in CDAM. */
+    static final String CDAM_PROVIDER = "cdam";
     static final String BUNDLE_TITLE = "Case bundle";
     private static final ZoneId UK = ZoneId.of("Europe/London");
 
@@ -56,7 +67,7 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
 
     static BundleRequest build(PcsCaseEntity pcsCase) {
         Map<CaseFileCategory, List<DocumentEntity>> byFolder = pcsCase.getDocuments().stream()
-            .filter(CaseBundleScope::isVisibleToInternalReaders)
+            .filter(CaseBundleDefinition::isVisibleToInternalReaders)
             .filter(document -> !isUnlinkableMedia(document))
             .collect(Collectors.groupingBy(CaseBundleDefinition::folder));
 
@@ -103,7 +114,7 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
         BundleDocument.Builder builder = BundleDocument.builder()
             .id(document.getId().toString())
             .title(title(document))
-            .reference(new DocumentReference(CaseBundleScope.CDAM_PROVIDER, document.getDocumentId().toString()))
+            .reference(new DocumentReference(CDAM_PROVIDER, document.getDocumentId().toString()))
             .date(date(document));
         // Audio and video are never fetched: the bundle gets a page linking to the recording.
         if (isRecording(document)) {
@@ -123,6 +134,20 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
     // A recording is represented by a page linking to it, which needs a link.
     private static boolean isUnlinkableMedia(DocumentEntity document) {
         return isRecording(document) && StringUtils.isBlank(document.getBinaryUrl());
+    }
+
+    // What an internal user sees in case file view: keep in step with DocumentsView.
+    private static boolean isVisibleToInternalReaders(DocumentEntity document) {
+        if (document.getDocumentId() == null || document.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
+            return false;
+        }
+        GenAppEntity genApp = document.getGeneralApplication();
+        if (genApp != null && genApp.getWithoutNotice() != VerticalYesNo.YES
+            && genApp.getState() != GenAppState.GEN_APP_ISSUED) {
+            return false;
+        }
+        CounterClaimEntity counterClaim = document.getCounterClaim();
+        return counterClaim == null || counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
     }
 
     private static String title(DocumentEntity document) {
