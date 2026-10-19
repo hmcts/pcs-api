@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.message;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 
 import java.time.Clock;
@@ -26,22 +27,13 @@ import java.util.stream.Collectors;
  * too, which the order's review task already carries, so it gives no task of its own.
  */
 @Service
+@RequiredArgsConstructor
 public class MessageService {
 
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
-    private final Clock clock;
-    private final String frontendUrl;
-
-    public MessageService(CamundaService camundaService,
-                          TaskDescriptionService taskDescriptionService,
-                          Clock utcClock,
-                          @Value("${frontend.url}") String frontendUrl) {
-        this.camundaService = camundaService;
-        this.taskDescriptionService = taskDescriptionService;
-        this.clock = utcClock;
-        this.frontendUrl = frontendUrl;
-    }
+    private final OrderTasks orderTasks;
+    private final Clock utcClock;
 
     /** What someone writes in a message: who, as what, to whom, whether it is urgent, and what it says. */
     public record Writing(String senderName, MessageRecipient senderRole, MessageRecipient recipient,
@@ -57,9 +49,9 @@ public class MessageService {
             .toList();
     }
 
-    public CaseMessageEntity send(PcsCaseEntity pcsCase, String subject, Collection<MessageCategory> categories,
-                                  GenAppEntity genApp, Writing writing) {
-        Instant now = Instant.now(clock);
+    public void send(PcsCaseEntity pcsCase, String subject, Collection<MessageCategory> categories,
+                     GenAppEntity genApp, Writing writing) {
+        Instant now = Instant.now(utcClock);
         CaseMessageEntity message = CaseMessageEntity.builder()
             .subject(subject)
             .categories(categories.stream().map(Enum::name).sorted().collect(Collectors.joining(",")))
@@ -70,11 +62,10 @@ public class MessageService {
         message.addEntry(entry(writing, now));
         pcsCase.addMessage(message);
         askToReview(pcsCase, message, genApp);
-        return message;
     }
 
     public void reply(PcsCaseEntity pcsCase, CaseMessageEntity message, Writing writing) {
-        message.addEntry(entry(writing, Instant.now(clock)));
+        message.addEntry(entry(writing, Instant.now(utcClock)));
         GenAppEntity genApp = message.getGenAppId() == null ? null
             : pcsCase.findGenApp(message.getGenAppId()).orElse(null);
         askToReview(pcsCase, message, genApp);
@@ -84,12 +75,12 @@ public class MessageService {
         message.setStatus(CaseMessageEntity.Status.CLOSED);
         message.setClosedByName(closedBy);
         message.setClosureNote(note);
-        message.setUpdatedAt(Instant.now(clock));
+        message.setUpdatedAt(Instant.now(utcClock));
     }
 
     /** A judge's message for court staff with their order, kept with the case's other messages. */
     public void recordOrderMessage(OrderEntity order, String judgeName, String orderType, String body) {
-        Instant now = Instant.now(clock);
+        Instant now = Instant.now(utcClock);
         CaseMessageEntity message = order.getPcsCase().getMessages().stream()
             .filter(existing -> order.getId().equals(existing.getOrderId()) && existing.isOpen())
             .findFirst()
@@ -122,8 +113,7 @@ public class MessageService {
         long caseReference = pcsCase.getCaseReference();
         boolean toJudge = latest.getRecipientRole().isJudicial();
         String decideUrl = genApp == null || !toJudge || !genApp.isOpen() ? null
-            : "%s/cases/%d/event/ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=%s&taskId=${[id]}"
-                .formatted(frontendUrl, caseReference, genApp.getId());
+            : orderTasks.decideUrl(caseReference, genApp);
         String description = taskDescriptionService.createReviewMessageDescription(
             latest.getSenderName(), message.getSubject(), latest.isUrgent(),
             "/cases/case-details/%d#Messages".formatted(caseReference),

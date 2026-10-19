@@ -10,7 +10,7 @@
     <dl class="govuk-summary-list govuk-!-margin-bottom-3">
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key govuk-!-font-size-16">Status</dt>
-        <dd class="govuk-summary-list__value govuk-!-font-size-16">{{ message.status }}</dd>
+        <dd class="govuk-summary-list__value govuk-!-font-size-16">{% if message.closedBy %}Closed{% else %}Open{% endif %}</dd>
       </div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key govuk-!-font-size-16">What it relates to</dt>
@@ -29,7 +29,7 @@
       <p class="govuk-body govuk-!-margin-bottom-0" style="white-space: pre-wrap">{{ entry.body }}</p>
     </div>
     {% endfor %}
-    {% if message.status == "Closed" %}
+    {% if message.closedBy %}
     <p class="govuk-body-s">Closed by {{ message.closedBy }}{% if message.closureNote %}: {{ message.closureNote }}{% endif %}</p>
     {% endif %}
   </div>
