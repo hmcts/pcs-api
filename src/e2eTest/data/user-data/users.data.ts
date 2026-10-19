@@ -1,6 +1,7 @@
 export const users = [{
   user: 'Creator',
-  email: 'pcs-solicitor2@test.com',
+  email: 'pcs.local.auth1user1@test.com',
+  //email: 'pcs-solicitor2@test.com',
   password: process.env.IDAM_PCS_USER_PASSWORD,
   tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
 },
