@@ -136,7 +136,8 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
         return isRecording(document) && StringUtils.isBlank(document.getBinaryUrl());
     }
 
-    // What an internal user sees in case file view: keep in step with DocumentsView.
+    // What an internal user sees in case file view: keep in step with DocumentsView. An entity read
+    // here needs CaseBundleChangeListener, or changes to it leave the bundle stale.
     private static boolean isVisibleToInternalReaders(DocumentEntity document) {
         if (document.getDocumentId() == null || document.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;

@@ -5,7 +5,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundleView;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobReport;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -54,7 +55,7 @@ public class BundleTabView {
         }
         var publication = view.current();
         List<ListValue<MissingBundleDocument>> missing = publication
-            .map(current -> missingDocuments(current.report())).orElse(List.of());
+            .map(BundleTabView::missingDocuments).orElse(List.of());
         String status = switch (view.lifecycle()) {
             case PREPARING, NONE -> PREPARING;
             case UPDATING -> UPDATING;
@@ -62,18 +63,19 @@ public class BundleTabView {
             case UP_TO_DATE -> missing.isEmpty() ? UP_TO_DATE : UP_TO_DATE_WITH_MISSING;
         };
         pcsCase.setBundleTab(BundleTab.builder().status(status)
-            .bundle(publication.map(current -> {
-                var document = current.document();
-                document.setCategoryId(CaseBundleDefinition.FOLDER_ID);
-                return document;
-            }).orElse(null))
-            .lastUpdated(publication.map(current -> LAST_UPDATED.format(current.publishedAt())).orElse(null))
-            .pages(publication.map(current -> current.report().pageCount()).orElse(null))
+            .bundle(publication.map(current -> Document.builder()
+                .url(current.stored().orElseThrow().url())
+                .binaryUrl(current.stored().orElseThrow().binaryUrl())
+                .filename(current.fileName())
+                .categoryId(CaseBundleDefinition.FOLDER_ID)
+                .build()).orElse(null))
+            .lastUpdated(publication.map(current -> LAST_UPDATED.format(current.recordedAt())).orElse(null))
+            .pages(publication.map(BundleMetadata::pageCount).orElse(null))
             .missingDocuments(missing.isEmpty() ? null : missing).build());
     }
 
-    private static List<ListValue<MissingBundleDocument>> missingDocuments(BundleJobReport report) {
-        return report.missingDocuments().stream().map(missing -> ListValue.<MissingBundleDocument>builder()
+    private static List<ListValue<MissingBundleDocument>> missingDocuments(BundleMetadata bundle) {
+        return bundle.missingDocuments().stream().map(missing -> ListValue.<MissingBundleDocument>builder()
             .id(missing.documentId()).value(new MissingBundleDocument(missing.title(),
                 String.join(" / ", missing.sectionPath()), missing.startPage(), missing.reason().message()))
             .build()).toList();

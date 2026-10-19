@@ -94,9 +94,9 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
         PCSCase judge = view(reference, "judge");
         // Reading back loses the bundle's Document fields: Jackson applies the unwrapped prefix to them too.
-        assertThat(judge.getBundleTab().getPages()).isEqualTo(first.report().pageCount());
+        assertThat(judge.getBundleTab().getPages()).isEqualTo(first.pageCount());
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
-            .doesNotContain(first.document().getUrl());
+            .doesNotContain(first.stored().orElseThrow().url());
         assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
@@ -118,7 +118,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         transaction.executeWithoutResult(status -> documents.deleteById(sourceId));
         run(key);
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
-            .report().documents()).isEmpty();
+            .documents()).isEmpty();
     }
 
     @Test
@@ -137,7 +137,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         });
         run(key);
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
-            .report().request().allDocuments()).isEmpty();
+            .request().allDocuments()).isEmpty();
         transaction.executeWithoutResult(status -> pcsCases.findByCaseReference(reference).orElseThrow()
             .getCounterClaims().stream().filter(claim -> claim.getId().equals(claimId)).findFirst().orElseThrow()
             .setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED));
@@ -145,7 +145,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             .isEqualTo(CaseBundleView.Lifecycle.UPDATING);
         run(key);
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
-            .report().request().allDocuments()).extracting(source -> source.title())
+            .request().allDocuments()).extracting(source -> source.title())
             .containsExactly("Counterclaim.pdf");
     }
 
