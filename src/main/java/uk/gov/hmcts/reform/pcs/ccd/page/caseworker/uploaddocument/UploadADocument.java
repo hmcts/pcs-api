@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.caseworkeruploaddocument;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.uploaddocument;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

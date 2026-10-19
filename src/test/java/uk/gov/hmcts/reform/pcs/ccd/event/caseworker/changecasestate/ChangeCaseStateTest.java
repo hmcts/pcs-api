@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.changecasestate;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.changecasestate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

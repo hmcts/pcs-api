@@ -22,13 +22,13 @@ public interface DefendantResponseRepository extends JpaRepository<DefendantResp
      * @param partyIdamId The party's IDAM user ID
      * @return true if a response exists, false otherwise
      */
-    boolean existsByClaimPcsCaseCaseReferenceAndPartyIdamId(Long caseReference, UUID partyIdamId);
+    boolean existsByClaimPcsCaseCaseReferenceAndPartyIdamId(Long caseReference, String partyIdamId);
 
     @EntityGraph(attributePaths = {
         "party"
     })
     Optional<DefendantResponseEntity> findWithDetailsByClaimPcsCaseCaseReferenceAndPartyIdamId(
         Long caseReference,
-        UUID partyIdamId
+        String partyIdamId
     );
 }

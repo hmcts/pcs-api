@@ -54,7 +54,7 @@ public class OutstandingCounterClaimPaymentService {
     }
 
     @Transactional(readOnly = true)
-    public OutstandingCounterClaimPayment getOutstandingForDefendant(long caseReference, UUID idamUserId) {
+    public OutstandingCounterClaimPayment getOutstandingForDefendant(long caseReference, String idamUserId) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity defendant = defendantAccessValidator.validateAndGetDefendant(caseEntity, idamUserId);
 
