@@ -62,6 +62,16 @@ Then('the {string} task is completed', async ({ $tags }, task: string) => {
   noTasksYet(`the "${task}" task is not created, so it cannot be completed`);
 });
 
+// A scenario whose point is something else — the risk assessment tab appearing when the warrant is approved —
+// only states in passing that the task is created, so it is approximated like the steps above and the scenario
+// is still run and filmed. In the work allocation feature (18) the task is the point, so there it stays pending.
+Then('an {string} task is created', async ({ $tags }, task: string) => {
+  if ($tags.includes('@work-allocation')) {
+    return markPending({ ticket: 'HDPI-8627', summary: `creating the "${task}" task` }, $tags);
+  }
+  noTasksYet(`the "${task}" task is not created`);
+});
+
 // Nothing creates enforcement tasks, so the absence of one proves nothing. Approximated like the steps
 // above rather than pending, so the scenario it belongs to — the claimant going through "Confirm the
 // eviction date" without changing a risk answer — is still run and filmed.
@@ -212,7 +222,6 @@ pendingSteps({ ticket: 'HDPI-8627', summary: 'Enforcement work allocation tasks'
   'a {string} work allocation task is created',
   'the task is due in 10 working days',
   'I select the {string} task from the case {string} tab',
-  'an {string} task is created',
   'I select the {string} task',
   'a {string} task is created and assigned to {string}',
   'open bailiff tasks on the case are reassigned to {string}',
