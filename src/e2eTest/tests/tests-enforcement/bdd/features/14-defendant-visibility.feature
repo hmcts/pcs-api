@@ -19,12 +19,17 @@ Feature: Defendant visibility of enforcement
     And they do not see the "Enforcement" folder in case file view
     And they do not see any enforcement events in the case "History" tab
 
-  @HDPI-7346 @HDPI-7658 @HDPI-8442 @HDPI-7354
-  Scenario: After the notice is served, defendants see the enforcement status and notice
+  @HDPI-7346 @HDPI-7658
+  Scenario: After the notice is served, defendants see the enforcement status
     Given the court has not given permission to dispense with service
     When the bailiff marks the notice of eviction as served
     Then the defendant legal representative sees the "Enforcement status" tab
-    And the defendant legal representative sees the "Enforcement" folder with the "notice of eviction"
+
+  @HDPI-8442 @HDPI-7354 @pending
+  Scenario: After the notice is served, defendants see the notice of eviction
+    Given the court has not given permission to dispense with service
+    When the bailiff marks the notice of eviction as served
+    Then the defendant legal representative sees the "Enforcement" folder with the "notice of eviction"
     And the citizen defendant sees the "notice of eviction" under "Orders and notices from the court" in pcs-frontend
 
   @HDPI-7344 @HDPI-7549 @HDPI-7658

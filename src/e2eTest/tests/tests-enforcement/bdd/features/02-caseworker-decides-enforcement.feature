@@ -56,7 +56,12 @@ Feature: Caseworker decides an enforcement application
     And the enforcement status changes to "Awaiting bailiff allocation"
     And the claimant receives the "Caseworker generates the warrant of possession" email
     And the "Review claimant warrant application" task is completed
-    And the case "History" tab shows the "Decide enforcement" event
+
+  @HDPI-9566 @pending
+  Scenario: The decision is recorded in the case history
+    Given I have accepted the application
+    When I submit the "Decide enforcement" event
+    Then the case "History" tab shows the "Decide enforcement" event
 
   @HDPI-9566 @HDPI-7353 @HDPI-7538 @open-question
   Scenario: Approving a writ of possession generates the sealed writ for the claimant

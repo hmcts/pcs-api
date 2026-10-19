@@ -55,6 +55,13 @@ Feature: Allocate an enforcement to a bailiff
     Then I return to the case summary
     And no bailiff is allocated
 
+  @HDPI-7356 @HDPI-8183
+  Scenario: Submitting the allocation assigns the case to the bailiff
+    Given I am on the "Check your answers" screen with "Sam Jones" chosen
+    When I submit the allocation
+    Then I see the "Case assigned to Sam Jones" confirmation with the case number and warrant number
+    And the enforcement status changes to "Awaiting scheduling"
+
   @HDPI-8189 @HDPI-7539 @pending
   Scenario: Allocating the bailiff grants the allocated bailiff case role
     Given I am on the "Check your answers" screen with "Sam Jones" chosen
