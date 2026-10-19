@@ -26,6 +26,10 @@ public class ClaimVisibilityService {
     public List<VisibilityRestrictionReason> getVisibilityRestrictions(PcsCaseEntity pcsCaseEntity) {
         ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
 
+        if (mainClaim == null) {
+            return List.of();
+        }
+
         List<VisibilityRestrictionReason> visibilityRestrictionReasons = new ArrayList<>();
 
         boolean genAppExpected = mainClaim.getGenAppExpected() == VerticalYesNo.YES;
