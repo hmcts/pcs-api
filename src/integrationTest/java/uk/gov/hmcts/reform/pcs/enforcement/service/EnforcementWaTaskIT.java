@@ -307,6 +307,26 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("A return recorded while another node is sending the warrant return request still succeeds")
+    void closingReturnSucceedsWhileTheReturnRequestIsBeingSent() {
+        UUID enforcementId = givenEnforcement(SelectEnforcementType.WARRANT, EnforcementStatus.CLAIMANT_CONFIRMED,
+                                              enforcement -> enforcement.setBailiffDate(EVICTION));
+        String pendingRequest = "CREATE-RecordWarrantReturn-" + enforcementId + "-" + EVICTION;
+        givenScheduledEviction(enforcementId);
+        givenRequestIsBeingSent(pendingRequest);
+
+        events.event(caseReference, EventId.recordWarrantReturn.name(), caseWith(finalReturn()))
+            .as(bailiff)
+            .submitExpectingSuccess();
+
+        // The request is on its way to Camunda, so it is left for the node sending it to finish with, and
+        // the task it creates is terminated by the cancellation this return asked for instead.
+        assertThat(storedRequests()).contains(pendingRequest);
+        assertThat(requests()).filteredOn(instanceId -> instanceId.startsWith("CANCEL-RecordWarrantReturn-"))
+            .hasSize(1);
+    }
+
+    @Test
     @DisplayName("A return that reopens the warrant asks for a new allocation and cancels the bailiff's tasks")
     void reopeningReturnAsksForANewAllocation() {
         givenEnforcement(SelectEnforcementType.WARRANT, EnforcementStatus.CLOSED,
@@ -366,6 +386,29 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
 
     private String caseReferencePattern() {
         return "%\"caseReference\":" + caseReference + "%";
+    }
+
+    /**
+     * The warrant return request the scheduled eviction leaves behind, due on the eviction date, committed
+     * as scheduling the eviction would have left it.
+     */
+    private void givenScheduledEviction(UUID enforcementId) {
+        new TransactionTemplate(transactionManager).executeWithoutResult(ignored ->
+            enforcementWaTaskService.evictionScheduled(
+                caseReference, enforcementId,
+                new EnforcementWaTaskService.Eviction(EVICTION, true, false)));
+    }
+
+    /**
+     * Picks the request as a scheduler on another node does when it comes due, which is what this case
+     * cannot be allowed to fail over: the request is already on its way to Camunda.
+     */
+    private void givenRequestIsBeingSent(String instanceId) {
+        int picked = jdbcTemplate.update(
+            "UPDATE scheduled_tasks SET picked = true, picked_by = 'another-node', last_heartbeat = now(), "
+                + "version = version + 1 WHERE task_name = ? AND task_instance = ?",
+            CAMUNDA_REQUEST_TASK_DESCRIPTOR.getTaskName(), instanceId);
+        assertThat(picked).as("the request to pick").isEqualTo(1);
     }
 
     /**
