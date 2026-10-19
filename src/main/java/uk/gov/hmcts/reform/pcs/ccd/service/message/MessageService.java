@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 
 /**
  * Messages between court staff and judges on a case. Sending or replying gives the recipient role's pool a task to
- * review the message; closing one gives no one a task. A judge's message to court staff with an order is a message
+ * review the message; closing one without a reply gives the pool of whoever wrote its latest message a task to see
+ * that it is closed. A judge's message to court staff with an order is a message
  * too, which the order's review task already carries, so it gives no task of its own.
  */
 @Service
@@ -78,6 +79,19 @@ public class MessageService {
         message.setClosedByName(closedBy);
         message.setClosureNote(note);
         message.setUpdatedAt(Instant.now(utcClock));
+    }
+
+    /** Closes the message without a reply, telling the side that wrote its latest message, whose side it returns. */
+    public MessageRecipient closeWithoutReply(PcsCaseEntity pcsCase, CaseMessageEntity message, String closedBy,
+                                              String note) {
+        close(message, closedBy, note);
+        MessageRecipient told = message.latest().getSenderRole();
+        long caseReference = pcsCase.getCaseReference();
+        String description = taskDescriptionService.createReviewClosedMessageDescription(closedBy,
+            message.getSubject(), note, "/cases/case-details/%d#Messages".formatted(caseReference));
+        camundaService.createTask(caseReference,
+            told.isJudicial() ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF, description, false);
+        return told;
     }
 
     /** A judge's message for court staff with their order, kept with the case's other messages. */

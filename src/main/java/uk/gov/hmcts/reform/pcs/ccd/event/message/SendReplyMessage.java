@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -50,8 +51,9 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
  * Court staff and judges send each other messages on a case, and reply to or close the messages sent to their
- * side. A message is for a role, whose pool gets a task to review it. A message about an application names it, so
- * the judge's task can open the application to decide it with an order.
+ * side. A message is for a role, whose pool gets a task to review it, as does whoever's message is closed without
+ * a reply. A message about an application names it, so the judge's task can open the application to decide it with
+ * an order.
  */
 @Component
 @AllArgsConstructor
@@ -68,6 +70,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private final MessageService messageService;
     private final SecurityContextService securityContextService;
     private final TextAreaValidationService textAreaValidationService;
+    private final AddressFormatter addressFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -113,8 +116,9 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         pages.page("replyOrClose", this::checkReply)
             .showCondition(replying)
             .pageLabel("Reply to a message")
+            .readonly(PCSCase::getMessageSummaryMarkdown, ShowConditions.NEVER_SHOW, true)
             .label("replyOrClose-summary", "${messageSummaryMarkdown}")
-            .readonly(PCSCase::getMessageSummaryMarkdown, ShowConditions.NEVER_SHOW)
+            .readonly(PCSCase::getMessageHistory)
             .mandatory(PCSCase::getMessageNeedReply)
             .mandatory(PCSCase::getMessageReplyRecipient, "messageNeedReply=\"YES\"")
             .mandatory(PCSCase::getMessageReplyUrgent, "messageNeedReply=\"YES\"")
@@ -160,6 +164,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
                 .errors(List.of(NO_MESSAGES)).build();
         }
         caseData.setMessageSummaryMarkdown(summary(message.get()));
+        caseData.setMessageHistory(history(message.get()));
         if (caseData.getMessageReplyRecipient() == null) {
             caseData.setMessageReplyRecipient(message.get().latest().getSenderRole());
         }
@@ -195,7 +200,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
                 new Writing(name, senderRole, caseData.getMessageRecipient(),
                     caseData.getMessageUrgent() == VerticalYesNo.YES, caseData.getMessageBody().trim()));
-            return confirmed("Your message has been sent",
+            return confirmed(caseData, eventPayload.caseReference(), "Your message has been sent",
                 "A task to review the message has been created for " + caseData.getMessageRecipient().getLabel()
                     + ".");
         }
@@ -208,13 +213,15 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             messageService.reply(pcsCase, message.get(), new Writing(name, senderRole,
                 caseData.getMessageReplyRecipient(), caseData.getMessageReplyUrgent() == VerticalYesNo.YES,
                 caseData.getMessageReply().trim()));
-            return confirmed("Reply sent", "A task to review the reply has been created for "
-                + caseData.getMessageReplyRecipient().getLabel() + ".");
+            return confirmed(caseData, eventPayload.caseReference(), "Reply sent",
+                "A task to review the reply has been created for " + caseData.getMessageReplyRecipient().getLabel()
+                    + ".");
         }
         String note = caseData.getMessageClosureNote() == null || caseData.getMessageClosureNote().isBlank()
             ? null : caseData.getMessageClosureNote().trim();
-        messageService.close(message.get(), name, note);
-        return confirmed("Message closed", "The message is closed. No task has been created.");
+        MessageRecipient told = messageService.closeWithoutReply(pcsCase, message.get(), name, note);
+        return confirmed(caseData, eventPayload.caseReference(), "Message closed",
+            "A task has been created for " + told.getLabel() + " to review.");
     }
 
     /** The open message chosen, if it is still waiting for the user's side. */
@@ -230,19 +237,18 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return id == null ? Optional.empty() : pcsCase.findGenApp(id).filter(GenAppEntity::isOpen);
     }
 
-    /** The message as the reply page plays it back: what it is about, and every message so far. */
+    /** The message's subject and what it is about, heading the reply page. */
     private static String summary(CaseMessageEntity message) {
-        StringBuilder summary = new StringBuilder()
-            .append("### ").append(message.getSubject()).append("\n\n")
-            .append("**What it relates to:** ").append(message.categorySet().stream()
-                .sorted().map(MessageCategory::getLabel).collect(Collectors.joining(", "))).append("\n\n");
-        for (CaseMessageEntryEntity entry : message.getEntries()) {
-            summary.append("**").append(entry.getSenderName()).append("** to ")
-                .append(entry.getRecipientRole().getLabel()).append(", ").append(when(entry))
-                .append(entry.isUrgent() ? " (urgent)" : "").append("\n\n")
-                .append(entry.getBody().replace("\n", "\n\n")).append("\n\n---\n\n");
-        }
-        return summary.toString();
+        return "### " + message.getSubject() + "\n\n**What it relates to:** " + message.categorySet().stream()
+            .sorted().map(MessageCategory::getLabel).collect(Collectors.joining(", "));
+    }
+
+    /** Every message so far, which the reply page and check your answers play back. */
+    private static String history(CaseMessageEntity message) {
+        return message.getEntries().stream()
+            .map(entry -> entry.getSenderName() + " to " + entry.getRecipientRole().getLabel() + ", " + when(entry)
+                + (entry.isUrgent() ? " (urgent)" : "") + "\n" + entry.getBody())
+            .collect(Collectors.joining("\n\n"));
     }
 
     private static String when(CaseMessageEntryEntity entry) {
@@ -259,10 +265,24 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder().errors(List.of(error)).build();
     }
 
-    private static SubmitResponse<State> confirmed(String header, String body) {
+    private SubmitResponse<State> confirmed(PCSCase caseData, long caseReference, String header, String next) {
+        String address = caseData.getPropertyAddress() == null ? ""
+            : addressFormatter.formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
+        String parties = caseData.getCaseNameHmctsInternal() == null ? "" : caseData.getCaseNameHmctsInternal();
         return SubmitResponse.<State>builder()
-            .confirmationHeader("# " + header)
-            .confirmationBody(body)
+            .confirmationBody("""
+                ---
+                <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+                <span class="govuk-panel__title govuk-!-font-size-36">%s</span><br>
+                <span class="govuk-panel__body">Case number #%s</span><br>
+                <span class="govuk-panel__body">%s</span><br>
+                <span class="govuk-panel__body">%s</span><br>
+                </div>
+
+                <h3>What happens next</h3>
+
+                %s
+                """.formatted(header, caseReference, address, parties, next))
             .build();
     }
 }
