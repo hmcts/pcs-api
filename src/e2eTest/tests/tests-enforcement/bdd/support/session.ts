@@ -18,6 +18,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { assignDefendantCaseRole, isLocalStack, localUsers, signInToIdamSimulator } from '@config/local-stack.config';
 import { performAction as performCommonAction } from '@utils/controller';
 import { performAction } from '@utils/controller-enforcement';
+import { withoutPagePacing } from '@utils/page-pacing';
 import { showDemoCaptionStatus } from './demo-captions';
 import { userId } from './event-api';
 
@@ -143,19 +144,27 @@ export async function answerCookieQuestion(context: BrowserContext, email: strin
   ]);
 }
 
-/** Drops whatever session the browser has and signs in from the XUI landing page. */
+/**
+ * Drops whatever session the browser has and signs in from the XUI landing page.
+ *
+ * Signing in is plumbing, not part of the journey being demonstrated, so it runs at full speed even in the
+ * demo project: the caption says who is being signed in as, but the sign-in form is filled without the
+ * pointer, the typing and the per-screen holds, which otherwise take a quarter of a minute.
+ */
 async function signInFresh(email: string, page: Page): Promise<void> {
   await showDemoCaptionStatus(page, `Signing in as ${email}`);
-  await clearBrowserSession(page);
-  await answerCookieQuestion(page.context(), email);
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
-  if (isLocalStack()) {
-    await signInToIdamSimulator(page, email);
-  } else {
-    // AAT's IDAM has its own cookie banner on the sign-in page.
-    await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email, password: process.env.IDAM_PCS_USER_PASSWORD });
-  }
+  await withoutPagePacing(async () => {
+    await clearBrowserSession(page);
+    await answerCookieQuestion(page.context(), email);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
+    if (isLocalStack()) {
+      await signInToIdamSimulator(page, email);
+    } else {
+      // AAT's IDAM has its own cookie banner on the sign-in page.
+      await dismissCookieBanner(page, 'additional');
+      await performAction('login', { email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    }
+  });
   await showDemoCaptionStatus(page, undefined);
 }
 

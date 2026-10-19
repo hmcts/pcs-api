@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.toCollection;
 @Component
 public class CftlibConfig implements CFTLibConfigurer {
 
-    private static final String BAILIFF = "pcs-bailiff@localhost";
+    private static final String BAILIFF = "sam.jones@justice.gov.uk";
     private static final String BAILIFF_ADMIN = "pcs-bailiff-admin@localhost";
     private static final String BAILIFF_MANAGER = "pcs-bailiff-manager@localhost";
 
@@ -43,7 +43,7 @@ public class CftlibConfig implements CFTLibConfigurer {
      * Forename and surname of the staff users that staff reference data lists, keyed by email.
      */
     private static final Map<String, String[]> STAFF_NAMES = Map.of(
-        BAILIFF, new String[] {"Bob", "Bailiff"},
+        BAILIFF, new String[] {"Sam", "Jones"},
         BAILIFF_ADMIN, new String[] {"Ada", "BailiffAdmin"},
         BAILIFF_MANAGER, new String[] {"Mark", "BailiffManager"}
     );
