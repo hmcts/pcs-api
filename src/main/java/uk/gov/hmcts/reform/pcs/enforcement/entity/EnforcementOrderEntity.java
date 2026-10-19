@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.type.SqlTypes;
@@ -130,10 +131,14 @@ public class EnforcementOrderEntity {
      * Filing a document changes no column of the enforcement, only the document's enf_case_id, so it is left
      * out of the optimistic locking: without this, an event that schedules two documents has db-scheduler
      * generate them on two threads, and the second to commit is refused as a stale write.
+     *
+     * <p>Batched, because the case view and batch print both read the documents of every enforcement on a claim,
+     * which without it is a query per enforcement.
      */
     @OneToMany(fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "enf_case_id")
     @OptimisticLock(excluded = true)
+    @BatchSize(size = 20)
     @Builder.Default
     private List<DocumentEntity> documents = new ArrayList<>();
 

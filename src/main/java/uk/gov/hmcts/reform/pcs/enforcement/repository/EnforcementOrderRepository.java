@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EnforcementOrderRepository extends JpaRepository<EnforcementOrderEntity, UUID> {
+
+    /**
+     * The claim's enforcements, with the risk profile, warrant and warrant of restitution rows each one maps
+     * eagerly joined in rather than fetched a query at a time per enforcement.
+     */
+    @EntityGraph(attributePaths = {"riskProfileDetails", "warrantDetails", "warrantOfRestitutionDetails"})
     List<EnforcementOrderEntity> findByClaimId(UUID claimId);
 
     /**

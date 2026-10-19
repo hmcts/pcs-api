@@ -61,7 +61,7 @@ public class ChangeNameAddressWritPage implements CcdPageConfiguration {
                 <div class="govuk-warning-text">
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
-                    <span class="govuk-warning-text__assistive">Warning</span>
+                    <span class="govuk-visually-hidden">Warning</span>
                     If the name and address is incorrect, the bailiff will not be able to carry out the eviction.
                   </strong>
                 </div>
