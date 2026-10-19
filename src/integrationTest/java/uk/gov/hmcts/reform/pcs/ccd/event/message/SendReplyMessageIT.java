@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -71,12 +73,16 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("sends an urgent message about an application to the judges, whose task links to deciding it")
+    @DisplayName("sends an urgent message about an application to the judges, whose task links to deciding it and to "
+        + "replying, which closes the task")
     void sendsAMessageAboutAnApplication() {
         UUID genAppId = send();
 
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
-            contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&amp;genAppId=" + genAppId), eq(true));
+            and(contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&amp;genAppId=" + genAppId),
+                contains("/cases/case-details/PCS/%s/%d/trigger/sendReplyMessage?tid=${[id]}"
+                    .formatted(CaseType.getCaseType(), caseReference))),
+            eq(true));
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
         assertThat(tab).contains("Decide GA1", "Urgent", "Tom Caseworker", "District Judge",
             "Please decide this before the hearing on Friday.", "GA1: Adjourn the hearing");

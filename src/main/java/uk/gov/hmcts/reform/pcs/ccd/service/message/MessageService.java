@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntity;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 
@@ -117,6 +119,8 @@ public class MessageService {
         String description = taskDescriptionService.createReviewMessageDescription(
             latest.getSenderName(), message.getSubject(), latest.isUrgent(),
             "/cases/case-details/%d#Messages".formatted(caseReference),
+            "/cases/case-details/%s/%s/%d/trigger/%s?tid=${[id]}".formatted(CaseType.getJurisdictionId(),
+                CaseType.getCaseType(), caseReference, EventId.sendReplyMessage.name()),
             genApp == null ? null : "GA" + genApp.getRank(), decideUrl);
         TaskType taskType = toJudge ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF;
         camundaService.createTask(caseReference, taskType, description, latest.isUrgent());

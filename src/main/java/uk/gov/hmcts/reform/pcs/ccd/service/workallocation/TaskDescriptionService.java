@@ -260,13 +260,15 @@ public class TaskDescriptionService {
     }
 
     /**
-     * A message for a role's pool to review: who sent it, its subject, and links to the case's Messages tab and, for a
-     * message about an application, to deciding that application with an order.
+     * A message for a role's pool to review: who sent it, its subject, and links to the case's Messages tab, to
+     * replying to or closing it and, for a message about an application, to deciding that application with an order.
+     * The reply link passes XUI the task's id, so XUI closes this task when the event is submitted.
      */
     public String createReviewMessageDescription(String senderName,
                                                  String subject,
                                                  boolean urgent,
                                                  String messagesUrl,
+                                                 String replyUrl,
                                                  String application,
                                                  String decideUrl) {
         Map<String, Object> context = new HashMap<>();
@@ -274,6 +276,7 @@ public class TaskDescriptionService {
         context.put("subject", subject);
         context.put("urgent", urgent);
         context.put("messagesUrl", messagesUrl);
+        context.put("replyUrl", replyUrl);
         context.put("application", application);
         context.put("decideUrl", decideUrl);
         return renderTemplate("review-message", context);
