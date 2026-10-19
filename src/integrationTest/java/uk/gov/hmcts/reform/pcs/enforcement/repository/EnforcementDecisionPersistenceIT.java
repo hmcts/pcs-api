@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Enforcement decision persistence (V038)")
+@DisplayName("Enforcement decision persistence (V143)")
 class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
 
     @Autowired

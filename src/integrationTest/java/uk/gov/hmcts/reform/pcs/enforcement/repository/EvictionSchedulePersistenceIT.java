@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Eviction schedule and notice of eviction persistence (V043)")
+@DisplayName("Eviction schedule and notice of eviction persistence (V146)")
 class EvictionSchedulePersistenceIT extends AbstractPostgresContainerIT {
 
     private static final LocalDateTime EVICTION = LocalDateTime.parse("2099-06-25T10:00");

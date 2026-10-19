@@ -309,7 +309,7 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("indexes active allocations by lower-cased bailiff id (V050)")
+    @DisplayName("indexes active allocations by lower-cased bailiff id (V150)")
     void indexesActiveAllocationsByBailiff() {
         assertThat(jdbcTemplate.queryForObject(
             "SELECT indexdef FROM pg_indexes WHERE indexname = 'idx_enf_bailiff_allocation_active_bailiff'",

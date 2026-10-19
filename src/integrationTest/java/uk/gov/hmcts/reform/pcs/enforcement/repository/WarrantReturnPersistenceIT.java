@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Warrant return persistence (V044)")
+@DisplayName("Warrant return persistence (V147)")
 class WarrantReturnPersistenceIT extends AbstractPostgresContainerIT {
 
     private static final Instant EVICTED = Instant.parse("2026-07-08T08:15:00Z");

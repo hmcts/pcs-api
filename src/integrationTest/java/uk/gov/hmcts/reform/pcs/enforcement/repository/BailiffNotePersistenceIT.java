@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Bailiff note persistence (V039)")
+@DisplayName("Bailiff note persistence (V144)")
 class BailiffNotePersistenceIT extends AbstractPostgresContainerIT {
 
     private static final Instant FIRST_FEB = Instant.parse("2026-02-01T16:20:00Z");

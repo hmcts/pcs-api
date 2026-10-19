@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Bailiff allocation and risk level persistence (V042)")
+@DisplayName("Bailiff allocation and risk level persistence (V145)")
 class BailiffAllocationAndRiskLevelPersistenceIT extends AbstractPostgresContainerIT {
 
     private static final Instant FIRST_FEB = Instant.parse("2026-02-01T16:20:00Z");

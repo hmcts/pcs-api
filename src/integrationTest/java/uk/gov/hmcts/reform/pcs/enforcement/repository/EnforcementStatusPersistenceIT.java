@@ -34,10 +34,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Enforcement status persistence (V037)")
+@DisplayName("Enforcement status persistence (V142)")
 class EnforcementStatusPersistenceIT extends AbstractPostgresContainerIT {
 
-    private static final String MIGRATION = "db/migration/V037__add_status_to_enf_case.sql";
+    private static final String MIGRATION = "db/migration/V142__add_status_to_enf_case.sql";
 
     @Autowired
     private EnforcementOrderRepository enforcementOrderRepository;
