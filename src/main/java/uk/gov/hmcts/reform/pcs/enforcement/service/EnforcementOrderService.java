@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class EnforcementOrderService {
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
     private final EnforcementFeeService enforcementFeeService;
     private final EnforcementWaTaskService enforcementWaTaskService;
+    private final ObjectMapper objectMapper;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -208,7 +210,17 @@ public class EnforcementOrderService {
         enforcementOrder.setRiskAssessmentClaimantMarkdown(null);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
-        enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
+        enforcementOrderEntity.setEnforcementOrder(storedForm(enforcementOrder));
         return enforcementOrderEntity;
+    }
+
+    /**
+     * The application as it will read back out of the enforcement_order JSON column. Hibernate dirty-checks that
+     * column against a JSON round trip of the value it holds, and reading an order materialises every
+     * {@link com.fasterxml.jackson.annotation.JsonUnwrapped} nested object the application left null, so storing
+     * the submitted order as built would make the row dirty the moment it was inserted and cost a second write.
+     */
+    private EnforcementOrder storedForm(EnforcementOrder enforcementOrder) {
+        return objectMapper.convertValue(enforcementOrder, EnforcementOrder.class);
     }
 }

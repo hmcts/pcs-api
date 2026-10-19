@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -93,6 +94,8 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
     private EnforcementDecisionService enforcementDecisionService;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private final Map<UUID, Long> caseReferences = new HashMap<>();
 
@@ -191,7 +194,7 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
             pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
             enforcementStatusTransitions, waiver, mock(EnforcementNotificationService.class),
             mock(EnforcementDocumentScheduler.class), mock(EnforcementFeeService.class, RETURNS_MOCKS),
-            mock(EnforcementWaTaskService.class));
+            mock(EnforcementWaTaskService.class), objectMapper);
         List<UUID> before = enforcementIds(claimId);
         long caseReference = caseReferences.get(claimId);
 

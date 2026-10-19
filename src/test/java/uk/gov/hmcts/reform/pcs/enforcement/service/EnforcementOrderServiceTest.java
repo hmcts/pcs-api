@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffNote;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -94,6 +96,8 @@ class EnforcementOrderServiceTest {
     @Spy
     private EnforcementStatusTransitions enforcementStatusTransitions =
         new EnforcementStatusTransitions(Clock.fixed(NOW, ZoneOffset.UTC));
+    @Spy
+    private ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
 
@@ -238,7 +242,9 @@ class EnforcementOrderServiceTest {
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getClaim()).isSameAs(claimEntity);
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        // The application is stored as it will read back, so the row is not dirty the moment it is inserted.
+        assertThat(savedEntity.getEnforcementOrder())
+            .isEqualTo(objectMapper.convertValue(enforcementOrder, EnforcementOrder.class));
         assertThat(savedEntity.getStatus()).isEqualTo(EnforcementStatus.AWAITING_PAYMENT);
         assertThat(savedEntity.getStatusUpdatedAt()).isEqualTo(NOW);
         assertThat(savedEntity.getSubmittedAt()).isEqualTo(NOW);

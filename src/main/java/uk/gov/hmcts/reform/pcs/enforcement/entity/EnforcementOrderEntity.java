@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
@@ -52,9 +53,12 @@ public class EnforcementOrderEntity {
     private UUID id;
 
     /**
-     * The enforcement is updated from the case event, the Payments callback and the document generation task,
-     * which take no common lock, so it is updated under optimistic locking: a write from a copy loaded before
+     * The enforcement's columns are written from the case event, the Payments callback and the scheduled tasks,
+     * which take no common lock, so they are written under optimistic locking: a write from a copy loaded before
      * someone else's write fails with an ObjectOptimisticLockingFailureException instead of overwriting it.
+     *
+     * <p>Filing a document is excluded, see {@link #documents}: it writes no column of the enforcement, and
+     * several documents are generated at once.</p>
      */
     @Version
     @Column(name = "version")
@@ -122,8 +126,14 @@ public class EnforcementOrderEntity {
     @JsonManagedReference
     private List<SelectedDefendantEntity> selectedDefendants = new ArrayList<>();
 
+    /**
+     * Filing a document changes no column of the enforcement, only the document's enf_case_id, so it is left
+     * out of the optimistic locking: without this, an event that schedules two documents has db-scheduler
+     * generate them on two threads, and the second to commit is refused as a stale write.
+     */
     @OneToMany(fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "enf_case_id")
+    @OptimisticLock(excluded = true)
     @Builder.Default
     private List<DocumentEntity> documents = new ArrayList<>();
 
