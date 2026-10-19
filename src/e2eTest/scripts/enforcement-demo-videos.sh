@@ -9,7 +9,11 @@
 #
 # Runs against a local cftlib stack (ENVIRONMENT=local), one feature at a time with one worker, in the
 # `enforcement-bdd-demo` Playwright project, which records every scenario at human speed (see
-# tests/tests-enforcement/bdd/support/demo-pacing.ts). Two features are never filmed: 19 (the status model) is
+# tests/tests-enforcement/bdd/support/demo-pacing.ts). In that project consecutive scenarios of one feature
+# that share an identical Background run against the same case and the same signed-in session
+# (tests/tests-enforcement/bdd/support/demo-continuity.ts), so the stitched video is one pass through the
+# journey rather than the same set-up and sign-in once per scenario. A scenario that changes the case, or that
+# fails, ends the run: the one after it sets up a case of its own. Two features are never filmed: 19 (the status model) is
 # technical design, and 17 (batch print) has no screen of its own — it is an API, so its only browser step is a
 # sign-in and the video is 17 seconds of XUI with nothing to show. Film it once a case-selection screen exists
 # (OPEN-QUESTIONS 57). Scenarios tagged @pending or @not-filmed are left out: @not-filmed marks the unhappy and edge

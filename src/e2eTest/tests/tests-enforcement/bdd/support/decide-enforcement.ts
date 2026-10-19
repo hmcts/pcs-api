@@ -6,6 +6,7 @@ import { Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { LONG_TIMEOUT } from 'playwright.config';
+import { backgroundSetUp } from './demo-continuity';
 import { signInAs } from './session';
 
 export const DECIDE_ENFORCEMENT = 'Decide enforcement';
@@ -35,12 +36,14 @@ export const decideEnforcement = {
  * handler. The application moves from "Awaiting payment" to "Awaiting review".
  */
 export async function recordEnforcementFeePaid(): Promise<void> {
-  const api = Axios.create({
-    baseURL: process.env.CASE_API_URL,
-    headers: { ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}` },
+  await backgroundSetUp(async () => {
+    const api = Axios.create({
+      baseURL: process.env.CASE_API_URL,
+      headers: { ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}` },
+    });
+    const response = await api.post(`/testing-support/enforcement/${process.env.CASE_NUMBER}/fee-paid`);
+    expect(response.status, 'the enforcement fee is recorded as paid').toBe(204);
   });
-  const response = await api.post(`/testing-support/enforcement/${process.env.CASE_NUMBER}/fee-paid`);
-  expect(response.status, 'the enforcement fee is recorded as paid').toBe(204);
 }
 
 /** Signs in as a hearing centre admin, unless the browser already is one. */

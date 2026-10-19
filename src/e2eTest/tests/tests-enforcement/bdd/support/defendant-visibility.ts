@@ -19,6 +19,7 @@ import type { DefendantView, EnforcementWorld } from '../fixtures/enforcement.fi
 import { assignDefendantCaseRole, caseDataAs, isLocalStack, localUsers } from '@config/local-stack.config';
 import { user } from '@data/user-data';
 import { expectCaseTab, openCaseSummary, requireCaseReference, signInAs } from './enforcement-journeys';
+import { backgroundSetUp } from './demo-continuity';
 
 export const DEFENDANT_LEGAL_REPRESENTATIVE = 'defendant legal representative';
 export const CITIZEN_DEFENDANT = 'citizen defendant';
@@ -64,15 +65,19 @@ export function canLinkCitizenDefendant(): boolean {
 
 /** Gives the defendant solicitor the [DEFENDANTSOLICITOR] case role on the scenario's case. */
 export async function linkDefendantLegalRepresentative(world: EnforcementWorld): Promise<void> {
-  const email = isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email;
-  await assignDefendantCaseRole(requireCaseReference(world), email, '[DEFENDANTSOLICITOR]');
-  world.defendantLegalRepresentative = email;
+  await backgroundSetUp(async () => {
+    const email = isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email;
+    await assignDefendantCaseRole(requireCaseReference(world), email, '[DEFENDANTSOLICITOR]');
+    world.defendantLegalRepresentative = email;
+  });
 }
 
 /** Gives the local citizen the [DEFENDANT] case role on the scenario's case, as their access code would. */
 export async function linkCitizenDefendant(world: EnforcementWorld): Promise<void> {
-  await assignDefendantCaseRole(requireCaseReference(world), localUsers.citizenDefendant, '[DEFENDANT]');
-  world.citizenDefendant = localUsers.citizenDefendant;
+  await backgroundSetUp(async () => {
+    await assignDefendantCaseRole(requireCaseReference(world), localUsers.citizenDefendant, '[DEFENDANT]');
+    world.citizenDefendant = localUsers.citizenDefendant;
+  });
 }
 
 /**

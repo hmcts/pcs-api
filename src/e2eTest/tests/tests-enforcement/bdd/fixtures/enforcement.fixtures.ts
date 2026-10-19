@@ -7,6 +7,7 @@ import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-act
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { submitCaseApiData } from '@data/api-data';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, answerCookieQuestion, requireEmailFor, resetSession } from '../support/session';
+import { beginScenario, endScenario, recordBrowserRequest } from '../support/demo-continuity';
 import { resetClockIfMoved } from '../support/test-clock';
 import { demoHoldMs } from '../support/demo-pacing';
 import { disablePagePacing, enablePagePacing } from '@utils/page-pacing';
@@ -146,6 +147,10 @@ export const test = base.extend<EnforcementFixtures>({
       initializeExecutor(page);
       initializeEnforcementExecutor(page);
       resetSession();
+      await beginScenario(testInfo);
+      // An event submitted in XUI is a POST to the data store, which is how the demo project tells that a
+      // case it is holding for the next scenario has been changed.
+      context.on('request', request => recordBrowserRequest(request.method(), request.url()));
       // The storage state is the claimant's session; every other user's answer is added when they sign in.
       await answerCookieQuestion(context, requireEmailFor(CLAIMANT_LEGAL_REPRESENTATIVE));
       defendantDetails.length = 0;
@@ -165,7 +170,10 @@ export const test = base.extend<EnforcementFixtures>({
         defendantDetails.length = 0;
         moneyMap.clear();
         fieldsMap.clear();
-        if (world.caseReference) {
+        // The demo project keeps this scenario's case, and its case role, when the next scenario can film
+        // against it (support/demo-continuity.ts).
+        const caseHeldForNextScenario = await endScenario(testInfo, world, context);
+        if (world.caseReference && !caseHeldForNextScenario) {
           await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
         }
         PageContentValidation.finaliseTest();

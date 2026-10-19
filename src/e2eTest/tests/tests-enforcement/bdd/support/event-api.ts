@@ -13,6 +13,7 @@
 import Axios, { AxiosInstance } from 'axios';
 import { IdamUtils } from '@hmcts/playwright-common';
 import { isLocalStack, localIdamToken } from '@config/local-stack.config';
+import { recordCaseChange } from './demo-continuity';
 
 /** What pcs-api's submitted callback gave back for the confirmation page. */
 export type EventConfirmation = { header?: string; body?: string };
@@ -101,6 +102,7 @@ export async function submitEventAs(
       `Submitting ${eventId} on ${caseReference} as ${email} returned ${submitted.status}: ${JSON.stringify(submitted.data)}`
     );
   }
+  recordCaseChange(caseReference);
   const confirmation = submitted.data?.after_submit_callback_response ?? {};
   return { header: confirmation.confirmation_header ?? undefined, body: confirmation.confirmation_body ?? undefined };
 }
