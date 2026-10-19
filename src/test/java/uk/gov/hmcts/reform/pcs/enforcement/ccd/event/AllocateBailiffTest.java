@@ -161,21 +161,22 @@ class AllocateBailiffTest extends BaseEventTest {
     @Test
     void shouldAllocateTheChosenBailiffAndConfirmIt() {
         when(bailiffDirectoryService.findBailiff(SAM_ID)).thenReturn(Optional.of(SAM));
-        when(bailiffAllocationService.allocate(anyLong(), any())).thenReturn(EnforcementChange.made());
+        when(bailiffAllocationService.allocate(anyLong(), any())).thenReturn(EnforcementChange.made("WP-00000001"));
 
         SubmitResponse<State> response = callSubmitHandler(caseWithBailiff(SAM_ID));
 
         verify(bailiffAllocationService).allocate(TEST_CASE_REFERENCE, SAM);
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getConfirmationHeader()).isEqualTo("# Case assigned to Sam Jones");
-        assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
+        assertThat(response.getConfirmationBody())
+            .isEqualTo("Case number: 0000-0000-0000-1234\n\nWarrant number: WP-00000001");
     }
 
     @Test
     void shouldConfirmWithTheEmailWhenTheBailiffHasNoName() {
         when(bailiffDirectoryService.findBailiff(SAM_ID))
             .thenReturn(Optional.of(new BailiffUser(SAM_ID, "", "sam.jones@justice.gov.uk")));
-        when(bailiffAllocationService.allocate(anyLong(), any())).thenReturn(EnforcementChange.made());
+        when(bailiffAllocationService.allocate(anyLong(), any())).thenReturn(EnforcementChange.made("WP-00000001"));
 
         SubmitResponse<State> response = callSubmitHandler(caseWithBailiff(SAM_ID));
 

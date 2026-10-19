@@ -59,7 +59,7 @@ Feature: Allocate an enforcement to a bailiff
   Scenario: Submitting the allocation assigns the case to the bailiff
     Given I am on the "Check your answers" screen with "Sam Jones" chosen
     When I submit the allocation
-    Then I see the "Case assigned to Sam Jones" confirmation with the case number
+    Then I see the "Case assigned to Sam Jones" confirmation with the case number and warrant number
     And the enforcement status changes to "Awaiting scheduling"
 
   @HDPI-8189 @HDPI-7539 @pending

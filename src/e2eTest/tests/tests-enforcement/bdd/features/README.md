@@ -21,7 +21,7 @@ Mock-up journeys for delivering the Bailiff Management epic ([HDPI-7342](https:/
   - `Awaiting scheduling`
   - `Awaiting claimant confirmation`
   - `Claimant confirmed`
-  - `Claimant unable to attend`
+  - `Claimant unable to attend on this date`
   - `Awaiting property visit`
   - `Breathing space`
   - `Closed`
@@ -185,7 +185,7 @@ precondition when it cannot reach the status a scenario asks for.
 | `Awaiting bailiff allocation` | `decideEnforcement` → Accept, as a hearing centre admin |
 | `Awaiting scheduling` | `POST /testing-support/enforcement/{ref}/allocate-bailiff` |
 | `Awaiting claimant confirmation` | `scheduleEviction`, as the bailiff, answering "No" to dispensing with service |
-| `Claimant confirmed` / `Claimant unable to attend` | `confirmEviction`, as the claimant |
+| `Claimant confirmed` / `Claimant unable to attend on this date` | `confirmEviction`, as the claimant |
 | `Breathing space`, `Closed`, `Rejected`, `Transferred to the High Court` | no route yet (HDPI-7419) |
 
 ### What a local stack cannot do

@@ -19,7 +19,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.ClaimantEventFlagAccess
  *
  * <p>"Schedule eviction", "Reschedule eviction" and "Mark notice of eviction as served" read the flags on
  * {@link EvictionSchedule}, and "Confirm the eviction details" reads
- * {@link EnforcementOrder#getShowConfirmEvictionJourney()}.</p>
+ * {@link EnforcementOrder#getShowConfirmEvictionJourney()}. "Record warrant return" has no flag: HDPI-7347
+ * asks for it to be offered whatever the claim's enforcement is, and refused when it starts.</p>
  */
 @Builder
 @Data
@@ -51,13 +52,6 @@ public class EnforcementEventAvailability {
      */
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private YesOrNo canSetRiskLevel;
-
-    /**
-     * Gates "Record warrant return". It is only false for a warrant still waiting for a bailiff: with no warrant
-     * on the claim the event is offered and refused with "There is no warrant on this case", as HDPI-7347 asks.
-     */
-    @CCD(searchable = false, access = {InternalTabAccess.class})
-    private YesOrNo canRecordWarrantReturn;
 
     /**
      * Gates "Add a bailiff note": the claim has an enforcement.

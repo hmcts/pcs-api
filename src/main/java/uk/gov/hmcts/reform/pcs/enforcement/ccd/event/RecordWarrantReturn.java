@@ -20,14 +20,12 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RecordedWarrantReturn;
 import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.recordWarrantReturn;
@@ -36,9 +34,9 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 /**
  * The allocated bailiff, or other bailiff staff, record a return on the claim's warrant (HDPI-7347, HDPI-8423,
- * HDPI-8424). It is available for a warrant of possession or restitution once a bailiff is allocated, and on a
- * closed warrant to reopen it. The return is kept as the warrant's history, moves its status as the return
- * name requires, and emails the claimant.
+ * HDPI-8424). It is available once a warrant of possession or restitution has been generated on the claim,
+ * including while it waits for a bailiff, and on a closed warrant to reopen it. The return is kept as the
+ * warrant's history, moves its status as the return name requires, and emails the claimant.
  *
  * <p>The "Record warrant return" task is created when the eviction is scheduled, due on the eviction date
  * ({@link uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService}), and closed by XUI through
@@ -50,10 +48,10 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> {
 
     /**
-     * Hidden only for a warrant waiting for a bailiff (EnforcementEventAvailabilityView). With no warrant it is
-     * offered, and the start callback shows "There is no warrant on this case" (HDPI-7347).
+     * Always offered: HDPI-7347 asks for the event to be refused when it starts, with "There is no warrant on
+     * this case", rather than taken out of the next step drop down.
      */
-    static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canRecordWarrantReturn=\"Yes\"");
+    static final String SHOW_CONDITION = featureFlagsEnabled(ENFORCEMENT);
 
     static final String EVENT_NAME = "Record warrant return";
     static final String CONFIRMATION_HEADER = "# Outcome recorded as %s";
@@ -84,8 +82,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
     /**
      * Refuses to start without a warrant that can take a return, and starts with empty answers.
      *
-     * @throws NoEnforcementException if the claim has no warrant
-     * @throws EnforcementEventNotAvailableException if the warrant has no bailiff allocated yet
+     * @throws NoEnforcementException if no warrant has been generated on the claim
      */
     PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         warrantReturnService.findWarrant(eventPayload.caseReference());

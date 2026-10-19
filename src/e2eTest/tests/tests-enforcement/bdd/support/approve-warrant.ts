@@ -158,7 +158,8 @@ export async function rescheduleEvictionAsBailiff(
 
 /**
  * The claimant answers "Can you attend the eviction on this date?" through "Confirm the eviction details", moving
- * the warrant from "Awaiting claimant confirmation" to "Claimant confirmed" or "Claimant unable to attend".
+ * the warrant from "Awaiting claimant confirmation" to "Claimant confirmed" or "Claimant unable to attend on this
+ * date".
  *
  * The event pre-fills the warrant's risk answers. They go back as they are, except `changeRiskAnswer`: one risk
  * question whose answer the claimant changes to "Yes", with its follow-up answers (HDPI-7552), as the XUI journey
@@ -204,13 +205,7 @@ export const AWAITING_BAILIFF_ALLOCATION = 'Awaiting bailiff allocation';
 export const AWAITING_SCHEDULING = 'Awaiting scheduling';
 export const AWAITING_CLAIMANT_CONFIRMATION = 'Awaiting claimant confirmation';
 export const CLAIMANT_CONFIRMED = 'Claimant confirmed';
-export const CLAIMANT_UNABLE_TO_ATTEND = 'Claimant unable to attend';
-
-/** Feature-file spellings of a status that differ from the EnforcementStatus label. */
-const STATUS_ALIASES: Record<string, string> = {
-  'Claimant unable to attend on this date': CLAIMANT_UNABLE_TO_ATTEND,
-};
-
+export const CLAIMANT_UNABLE_TO_ATTEND = 'Claimant unable to attend on this date';
 export const BREATHING_SPACE = 'Breathing space';
 export const CLOSED = 'Closed';
 
@@ -227,7 +222,7 @@ const SETTABLE_STATUSES = [
 ];
 
 /** Whether `setUpWarrantAtStatus` reaches `status` itself, rather than approximating it. */
-export const canSetUpStatus = (status: string): boolean => SETTABLE_STATUSES.includes(STATUS_ALIASES[status] ?? status);
+export const canSetUpStatus = (status: string): boolean => SETTABLE_STATUSES.includes(status);
 
 /**
  * The warrant returns that move a warrant to "Closed" and to "Breathing space". A warrant can take a return
@@ -261,22 +256,21 @@ export async function recordReturnAsHearingCentreAdmin(returnName: string): Prom
  */
 export async function bringWarrantToStatus(world: EnforcementWorld, status: string): Promise<void> {
   const { currentEnforcement, expectEnforcementStatus } = await import('./enforcement-status-tab');
-  const target = STATUS_ALIASES[status] ?? status;
   const expected = expectedSignedInRole();
   const current = world.caseReference
     ? (await currentEnforcement(world.caseReference, world.earlierWarrantNumbers.length)).status
     : undefined;
-  if (current === target) {
+  if (current === status) {
     return;
   }
-  if (current && RETURNS_REACHING[target] && RETURN_RECORDABLE_STATUSES.includes(current)) {
-    await recordReturnAsHearingCentreAdmin(RETURNS_REACHING[target]);
+  if (current && RETURNS_REACHING[status] && RETURN_RECORDABLE_STATUSES.includes(current)) {
+    await recordReturnAsHearingCentreAdmin(RETURNS_REACHING[status]);
   } else {
     world.allocatedBailiff = undefined;
     world.evictionScheduled = false;
-    await setUpWarrantAtStatus(world, target);
+    await setUpWarrantAtStatus(world, status);
   }
-  await expectEnforcementStatus(undefined, requireCaseReference(world), target, world.earlierWarrantNumbers.length);
+  await expectEnforcementStatus(undefined, requireCaseReference(world), status, world.earlierWarrantNumbers.length);
   expectSignedInAs(expected);
 }
 
@@ -317,19 +311,18 @@ export async function setUpWarrantAtStatus(world: EnforcementWorld, status: stri
 }
 
 async function driveWarrantToStatus(world: EnforcementWorld, status: string): Promise<void> {
-  const target = STATUS_ALIASES[status] ?? status;
   await createCaseWithWarrant(world);
 
-  if (target === AWAITING_PAYMENT) {
+  if (status === AWAITING_PAYMENT) {
     return;
   }
-  if (target === AWAITING_REVIEW) {
+  if (status === AWAITING_REVIEW) {
     await recordEnforcementFeePaid();
     return;
   }
 
   await approveWarrantAsCaseworker(world);
-  if (target === AWAITING_BAILIFF_ALLOCATION) {
+  if (status === AWAITING_BAILIFF_ALLOCATION) {
     return;
   }
 
@@ -342,21 +335,21 @@ async function driveWarrantToStatus(world: EnforcementWorld, status: string): Pr
     'the bailiff was allocated through pcs-api testing support rather than the allocateBailiff event, whose '
       + 'staff type-ahead needs reference data cftlib does not run'
   );
-  if (target === AWAITING_SCHEDULING) {
+  if (status === AWAITING_SCHEDULING) {
     return;
   }
-  if (target === CLOSED || target === BREATHING_SPACE) {
-    await recordReturnAsHearingCentreAdmin(RETURNS_REACHING[target]);
+  if (status === CLOSED || status === BREATHING_SPACE) {
+    await recordReturnAsHearingCentreAdmin(RETURNS_REACHING[status]);
     return;
   }
 
   await scheduleEvictionAsBailiff(world);
-  if (target === AWAITING_CLAIMANT_CONFIRMATION) {
+  if (status === AWAITING_CLAIMANT_CONFIRMATION) {
     return;
   }
 
-  if (target === CLAIMANT_CONFIRMED || target === CLAIMANT_UNABLE_TO_ATTEND) {
-    await confirmEvictionAsClaimant(world, target === CLAIMANT_CONFIRMED);
+  if (status === CLAIMANT_CONFIRMED || status === CLAIMANT_UNABLE_TO_ATTEND) {
+    await confirmEvictionAsClaimant(world, status === CLAIMANT_CONFIRMED);
     return;
   }
 

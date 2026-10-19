@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.entity.BailiffAllocationEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.BailiffAllocationRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.WarrantReturnRepository;
@@ -150,14 +149,16 @@ class WarrantReturnServiceTest {
         assertThatThrownBy(() -> underTest.findWarrant(CASE_REFERENCE)).isInstanceOf(NoEnforcementException.class);
     }
 
+    /**
+     * HDPI-7347 asks only for the warrant to have been generated, so a warrant still waiting for a bailiff
+     * can take a return.
+     */
     @Test
-    void shouldRefuseAWarrantWithNoBailiffAllocated() {
-        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE))
-            .thenReturn(Optional.of(enforcement(SelectEnforcementType.WARRANT, AWAITING_BAILIFF_ALLOCATION)));
+    void shouldFindAWarrantStillWaitingForABailiff() {
+        EnforcementOrderEntity warrant = enforcement(SelectEnforcementType.WARRANT, AWAITING_BAILIFF_ALLOCATION);
+        when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(warrant));
 
-        assertThatThrownBy(() -> underTest.findWarrant(CASE_REFERENCE))
-            .isInstanceOf(EnforcementEventNotAvailableException.class)
-            .hasMessage("A bailiff must be allocated to the warrant before a return can be recorded");
+        assertThat(underTest.findWarrant(CASE_REFERENCE)).isSameAs(warrant);
     }
 
     @Test
@@ -377,15 +378,20 @@ class WarrantReturnServiceTest {
     }
 
     @Test
-    void shouldRefuseRatherThanThrowWhenNoBailiffIsAllocatedYet() {
-        givenWarrant(AWAITING_BAILIFF_ALLOCATION);
+    void shouldCloseAWarrantStillWaitingForABailiff() {
+        EnforcementOrderEntity warrant = givenWarrant(AWAITING_BAILIFF_ALLOCATION);
 
         EnforcementChange<RecordedWarrantReturn> recorded = underTest.recordReturn(
-            CASE_REFERENCE, interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order"));
+            CASE_REFERENCE, WarrantReturnDetails.builder()
+                .type(WarrantReturnType.FINAL)
+                .outcome(WarrantReturnOutcome.EVICTION_CANCELLED)
+                .unsuccessfulReturnName(UnsuccessfulWarrantReturnName.WARRANT_WITHDRAWN)
+                .additionalDetails("Claimant withdrew the warrant")
+                .build());
 
-        assertThat(recorded.errors()).containsExactly(WarrantReturnService.NOT_ALLOCATED_MESSAGE);
-        verify(warrantReturnRepository, never()).save(any());
-        verifyNoInteractions(enforcementWaTaskService);
+        assertThat(recorded.refused()).isFalse();
+        assertThat(savedReturn().getReturnName()).isEqualTo(WarrantReturnName.WARRANT_WITHDRAWN);
+        assertThat(warrant.getStatus()).isEqualTo(CLOSED);
     }
 
     @Test

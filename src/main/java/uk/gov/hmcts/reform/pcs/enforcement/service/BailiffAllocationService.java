@@ -116,10 +116,11 @@ public class BailiffAllocationService {
      * Allocates the claim's current warrant to the bailiff. Allocating it again to its current bailiff
      * changes nothing.
      *
-     * @return made, or the errors to show when the claim has no approved, live warrant
+     * @return made, with the warrant's number (null for a warrant that has none), or the errors to show when
+     *     the claim has no approved, live warrant
      */
     @Transactional
-    public EnforcementChange<Void> allocate(long caseReference, BailiffUser bailiff) {
+    public EnforcementChange<String> allocate(long caseReference, BailiffUser bailiff) {
         EnforcementChange<EnforcementOrderEntity> allocatable = findAllocatableEnforcement(caseReference);
         if (allocatable.refused()) {
             return EnforcementChange.refused(allocatable.errors());
@@ -171,7 +172,7 @@ public class BailiffAllocationService {
         // "Allocate case to bailiff" is closed by XUI through the task-completion DMN when the caseworker
         // opens the event from the task.
         log.info("Enforcement {} allocated to bailiff {}", enforcement.getId(), bailiff.userId());
-        return EnforcementChange.made();
+        return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
     /**

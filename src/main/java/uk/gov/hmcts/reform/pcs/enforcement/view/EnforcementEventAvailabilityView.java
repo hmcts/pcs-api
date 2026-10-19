@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
-import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -57,7 +56,6 @@ public class EnforcementEventAvailabilityView {
             .canDecideEnforcement(YesOrNo.from(EnforcementDecisionService.canDecideEnforcement(current)))
             .canAllocateBailiff(YesOrNo.from(BailiffAllocationService.canAllocateBailiff(current)))
             .canSetRiskLevel(YesOrNo.from(RiskLevelService.canSetRiskLevel(current)))
-            .canRecordWarrantReturn(YesOrNo.from(WarrantReturnService.canOfferRecordWarrantReturn(current)))
             .canAddBailiffNote(YesOrNo.from(BailiffNoteService.canAddBailiffNote(current)))
             .build();
     }

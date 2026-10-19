@@ -44,6 +44,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIM
 class BailiffAllocationServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final String WARRANT_NUMBER = "WP-00000001";
     private static final Instant NOW = Instant.parse("2026-02-01T16:20:00Z");
     private static final BailiffUser SAM = new BailiffUser("sam-id", "Sam Jones", "sam.jones@justice.gov.uk");
 
@@ -75,9 +76,10 @@ class BailiffAllocationServiceTest {
         givenSaveAssignsAnId();
         when(securityContextService.getCurrentUserId()).thenReturn("manager-id");
 
-        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+        EnforcementChange<String> allocated = underTest.allocate(CASE_REFERENCE, SAM);
 
         assertThat(allocated.refused()).isFalse();
+        assertThat(allocated.change()).isEqualTo(WARRANT_NUMBER);
         BailiffAllocationEntity saved = savedAllocation();
         assertThat(saved.getEnforcementOrder()).isSameAs(enforcement);
         assertThat(saved.getBailiffUserId()).isEqualTo("sam-id");
@@ -120,7 +122,7 @@ class BailiffAllocationServiceTest {
         givenActiveAllocations(enforcement, allocation(enforcement, "alex-id"));
         givenSaveAssignsAnId();
 
-        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+        EnforcementChange<String> allocated = underTest.allocate(CASE_REFERENCE, SAM);
 
         assertThat(allocated.refused()).isFalse();
         verifyNoInteractions(enforcementWaTaskService);
@@ -137,7 +139,7 @@ class BailiffAllocationServiceTest {
         givenActiveAllocations(enforcement);
         givenSaveAssignsAnId();
 
-        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+        EnforcementChange<String> allocated = underTest.allocate(CASE_REFERENCE, SAM);
 
         assertThat(allocated.refused()).isFalse();
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_SCHEDULING);
@@ -170,7 +172,7 @@ class BailiffAllocationServiceTest {
         doThrow(new DataIntegrityViolationException("scheduled_tasks"))
             .when(enforcementWaTaskService).bailiffAllocated(anyLong(), any());
 
-        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+        EnforcementChange<String> allocated = underTest.allocate(CASE_REFERENCE, SAM);
 
         assertThat(allocated.errors()).containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
         assertThat(enforcement.getStatus()).isEqualTo(AWAITING_BAILIFF_ALLOCATION);
@@ -181,7 +183,7 @@ class BailiffAllocationServiceTest {
     void shouldRefuseWhenTheClaimHasNoEnforcement() {
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.empty());
 
-        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+        EnforcementChange<String> allocated = underTest.allocate(CASE_REFERENCE, SAM);
 
         assertThat(allocated.errors()).containsExactly(NoEnforcementException.MESSAGE);
         verify(bailiffAllocationRepository, never()).save(any());
@@ -193,7 +195,7 @@ class BailiffAllocationServiceTest {
     void shouldRefuseAWarrantThatIsNotApprovedOrNotLive(EnforcementStatus status) {
         givenCurrentEnforcement(status);
 
-        EnforcementChange<Void> allocated = underTest.allocate(CASE_REFERENCE, SAM);
+        EnforcementChange<String> allocated = underTest.allocate(CASE_REFERENCE, SAM);
 
         assertThat(allocated.errors()).containsExactly(BailiffAllocationService.NOT_AVAILABLE_MESSAGE);
         verify(bailiffAllocationRepository, never()).save(any());
@@ -223,6 +225,7 @@ class BailiffAllocationServiceTest {
         EnforcementOrderEntity enforcement = EnforcementOrderEntity.builder()
             .id(UUID.randomUUID())
             .warrantDetails(new WarrantEntity())
+            .enforcementNumber(WARRANT_NUMBER)
             .status(status)
             .build();
         when(currentEnforcementService.findCurrentEnforcement(CASE_REFERENCE)).thenReturn(Optional.of(enforcement));

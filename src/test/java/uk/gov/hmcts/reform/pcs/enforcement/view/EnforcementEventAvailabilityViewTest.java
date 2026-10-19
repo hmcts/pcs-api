@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.WarrantOfRestitutionEntity;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.repository.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffNoteService;
@@ -31,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
-import uk.gov.hmcts.reform.pcs.enforcement.service.WarrantReturnService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -77,8 +75,6 @@ class EnforcementEventAvailabilityViewTest {
     @InjectMocks
     private BailiffNoteService bailiffNoteService;
     @InjectMocks
-    private WarrantReturnService warrantReturnService;
-    @InjectMocks
     private EvictionScheduleService evictionScheduleService;
 
     private final PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
@@ -107,9 +103,6 @@ class EnforcementEventAvailabilityViewTest {
             .isEqualTo(YesOrNo.from(starts(() -> riskLevelService.getEnforcementForRiskLevel(CASE_REFERENCE))));
         assertThat(flags.getCanAddBailiffNote())
             .isEqualTo(YesOrNo.from(bailiffNoteService.hasEnforcement(CASE_REFERENCE)));
-        // Offered unless the start would refuse for want of a bailiff: "no warrant" is refused with an error.
-        assertThat(flags.getCanRecordWarrantReturn())
-            .isEqualTo(YesOrNo.from(!refusedAsNotAvailable(() -> warrantReturnService.findWarrant(CASE_REFERENCE))));
 
         EvictionSchedule schedule = Optional.ofNullable(pcsCase.getEnforcementOrder().getEvictionSchedule())
             .orElseGet(EvictionSchedule::new);
@@ -122,7 +115,7 @@ class EnforcementEventAvailabilityViewTest {
     }
 
     @Test
-    void shouldOfferOnlyApplyingForEnforcementAndRecordingAReturnWhenTheClaimHasNoEnforcement() {
+    void shouldOfferOnlyApplyingForEnforcementWhenTheClaimHasNoEnforcement() {
         givenTheCurrentEnforcementIs(null);
         PCSCase pcsCase = PCSCase.builder().build();
 
@@ -134,7 +127,6 @@ class EnforcementEventAvailabilityViewTest {
                 .canDecideEnforcement(YesOrNo.NO)
                 .canAllocateBailiff(YesOrNo.NO)
                 .canSetRiskLevel(YesOrNo.NO)
-                .canRecordWarrantReturn(YesOrNo.YES)
                 .canAddBailiffNote(YesOrNo.NO)
                 .build());
     }
@@ -150,11 +142,10 @@ class EnforcementEventAvailabilityViewTest {
     }
 
     @Test
-    void shouldHideRecordWarrantReturnUntilABailiffIsAllocated() {
+    void shouldOfferAllocationAndTheRiskLevelOnAWarrantAwaitingABailiff() {
         EnforcementEventAvailability flags = EnforcementEventAvailabilityView.availability(
             enforcement(SelectEnforcementType.WARRANT, AWAITING_BAILIFF_ALLOCATION));
 
-        assertThat(flags.getCanRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
         assertThat(flags.getCanAllocateBailiff()).isEqualTo(YesOrNo.YES);
         assertThat(flags.getCanSetRiskLevel()).isEqualTo(YesOrNo.YES);
     }
@@ -166,7 +157,6 @@ class EnforcementEventAvailabilityViewTest {
 
         assertThat(flags.getCanApplyForEnforcement()).isEqualTo(YesOrNo.YES);
         assertThat(flags.getCanAddBailiffNote()).isEqualTo(YesOrNo.YES);
-        assertThat(flags.getCanRecordWarrantReturn()).isEqualTo(YesOrNo.YES);
         assertThat(flags.getCanAllocateBailiff()).isEqualTo(YesOrNo.NO);
     }
 
@@ -243,17 +233,6 @@ class EnforcementEventAvailabilityViewTest {
             startCheck.run();
             return true;
         } catch (RuntimeException refused) {
-            return false;
-        }
-    }
-
-    private static boolean refusedAsNotAvailable(Runnable startCheck) {
-        try {
-            startCheck.run();
-            return false;
-        } catch (EnforcementEventNotAvailableException refused) {
-            return true;
-        } catch (RuntimeException refusedWithAnotherError) {
             return false;
         }
     }

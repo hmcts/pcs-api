@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.ConfirmationNumbers;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.allocatebailiff.AllocateBailiffConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.allocatebailiff.FindBailiffPage;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.BailiffAllocationDetails;
@@ -97,13 +98,14 @@ public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
         if (bailiff.isEmpty()) {
             return errorResponse(FindBailiffPage.NOT_A_BAILIFF_ERROR);
         }
-        EnforcementChange<Void> allocated = bailiffAllocationService.allocate(caseReference, bailiff.get());
+        EnforcementChange<String> allocated = bailiffAllocationService.allocate(caseReference, bailiff.get());
         if (allocated.refused()) {
             return errorResponse(allocated.errors());
         }
         return SubmitResponse.<State>builder()
             .confirmationHeader("# Case assigned to " + displayName(bailiff.get()))
-            .confirmationBody("Case number: " + caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
+            .confirmationBody(ConfirmationNumbers.caseAndWarrant(
+                caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), allocated.change()))
             .build();
     }
 

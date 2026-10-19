@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDet
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailableException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
@@ -78,8 +77,8 @@ class RecordWarrantReturnTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeHiddenOnlyForAWarrantWaitingForABailiff() {
-        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\" AND canRecordWarrantReturn=\"Yes\"");
+    void shouldBeOfferedWhateverTheClaimsEnforcementIs() {
+        assertConfiguredShowConditions("featureFlags.enforcementEnabled=\"YES\"");
     }
 
     @Test
@@ -139,15 +138,6 @@ class RecordWarrantReturnTest extends BaseEventTest {
         assertThatThrownBy(() -> callStartHandler(PCSCase.builder().build()))
             .isInstanceOf(NoEnforcementException.class)
             .hasMessage("There is no warrant on this case");
-    }
-
-    @Test
-    void shouldRefuseToStartBeforeABailiffIsAllocated() {
-        when(warrantReturnService.findWarrant(TEST_CASE_REFERENCE)).thenThrow(
-            new EnforcementEventNotAvailableException(WarrantReturnService.NOT_ALLOCATED_MESSAGE));
-
-        assertThatThrownBy(() -> callStartHandler(PCSCase.builder().build()))
-            .isInstanceOf(EnforcementEventNotAvailableException.class);
     }
 
     @Test

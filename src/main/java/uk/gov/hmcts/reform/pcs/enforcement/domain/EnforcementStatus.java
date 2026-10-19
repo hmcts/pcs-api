@@ -22,7 +22,7 @@ public enum EnforcementStatus implements HasLabel {
     AWAITING_SCHEDULING("Awaiting scheduling"),
     AWAITING_CLAIMANT_CONFIRMATION("Awaiting claimant confirmation"),
     CLAIMANT_CONFIRMED("Claimant confirmed"),
-    CLAIMANT_UNABLE_TO_ATTEND("Claimant unable to attend"),
+    CLAIMANT_UNABLE_TO_ATTEND("Claimant unable to attend on this date"),
     AWAITING_PROPERTY_VISIT("Awaiting property visit"),
     BREATHING_SPACE("Breathing space"),
     /**
