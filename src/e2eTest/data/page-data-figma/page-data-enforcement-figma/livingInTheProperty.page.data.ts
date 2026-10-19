@@ -14,7 +14,6 @@ export const livingInTheProperty = {
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
   notSureRadioOption:`I’m not sure`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`

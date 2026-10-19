@@ -104,7 +104,6 @@ export class ActionEnforcementRegistry {
     ['selectBreathingSpace', new EnforcementAction()],
     ['selectMissedPayments', new EnforcementAction()],
     ['verifyRadioOptions', new EnforcementAction()],
-    ['verifySaveAndReturnToggle', new EnforcementAction()],
     ['errorValidationMissedPayments', new EnforcementAction()],
     ['verifyPermissionScreen', new EnforcementAction()],
     ['verifyMissedPaymentsPrePopulated', new EnforcementAction()],

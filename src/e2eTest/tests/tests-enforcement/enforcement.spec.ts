@@ -107,7 +107,6 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         link: enforcementApplication.quoteFromBailiffLinkHidden,
         newPage: enforcementApplication.hceoPageTitleHidden
       }); */
-      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,

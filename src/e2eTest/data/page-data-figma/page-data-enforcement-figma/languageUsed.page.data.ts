@@ -6,7 +6,6 @@ export const languageUsed = {
   englishRadioOption: `English`,
   welshRadioOption: `Welsh`,
   englishAndWelshRadioOption: `English and Welsh`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

@@ -10,7 +10,6 @@ export const evictionRisksPosed = {
   protestGroupCheckbox: `Member of a group that protests evictions`,
   policeVisitsCheckbox: `Police visits to the property`,
   aggressiveAnimalsCheckbox: `Aggressive dogs or other animals`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

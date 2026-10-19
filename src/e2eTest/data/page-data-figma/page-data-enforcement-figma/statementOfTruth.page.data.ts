@@ -22,7 +22,6 @@ export const statementOfTruth = {
   positionOrOfficeHeldHiddenTextInput: `Solicitor`,
   positionOrOfficeHeldChangeHiddenTextInput: `Solicitor Test`,
   signThisStatementHiddenCheckbox: `The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   theClaimantBelievesHiddenCheckBox: `The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.`,

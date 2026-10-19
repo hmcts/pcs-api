@@ -10,7 +10,6 @@ export const explainHowDefendantsReturned = {
   otherEvidenceList: `any other evidence you have that proves that the defendants are currently living at the property`,
   howDidTheDefendantsReturnToThePropertyTextLabel: `How did the defendants return to the property?`,
   howDidTheDefendantsReturnToThePropertyTextInput: 2000,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

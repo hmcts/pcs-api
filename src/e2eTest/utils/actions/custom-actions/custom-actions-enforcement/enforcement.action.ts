@@ -68,7 +68,7 @@ export class EnforcementAction implements IAction{
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
       ['cannotApplyForWarrantInfo', () => this.validateCannotApplyForWarrant(fieldName as actionRecord)],
-      ['verifyMissedPaymentsPage', () => this.verifyMissedPaymentsPage(fieldName as actionRecord, page)],
+      ['verifyMissedPaymentsPage', () => this.verifyMissedPaymentsPage(fieldName as actionRecord)],
       ['errorValidationMissedPayments', () => this.errorValidationMissedPayments(fieldName as actionRecord)],
       ['verifyPermissionScreen', () => this.verifyPermissionScreen(fieldName as actionRecord)],
       ['verifyMissedPaymentsPrePopulated', () => this.verifyMissedPaymentsPrePopulated(fieldName as actionRecord, page)],
@@ -164,9 +164,8 @@ private async selectBreathingSpace(data: actionRecord, page: Page) {
   await performAction('clickRadioButton', { question: data.question, option: data.option });
   await performAction('reTryOnCallBackError', enforcementApplication.continueButton, data.nextPage as string);
 }
-private async verifyMissedPaymentsPage(data: actionRecord, page: Page) {
+private async verifyMissedPaymentsPage(data: actionRecord) {
   await test.step('radio options', () => this.verifyRadioOptions(data));
-  await test.step('save and return toggle', () => this.verifySaveAndReturnToggle(data, page));
 }
 private async selectMissedPayments(data: actionRecord, page: Page) {
   await performAction('clickRadioButton', { question: data.question, option: data.option });
@@ -202,12 +201,6 @@ private async verifyRadioOptions(data: actionRecord) {
   }
 }
 
-private async verifySaveAndReturnToggle(data: actionRecord, page: Page) {
-  await performAction('expandSummary', data.label as string);
-  await performValidation('text', { elementType: 'expandableText', text: data.text as string });
-  await performAction('expandSummary', data.hideLabel as string);
-  await performValidation('elementNotToBeVisible', { elementType: 'expandableText', text: data.text as string });
-}
 private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
   await performAction('clickButton', enforcementApplication.previousButton); 
   await performValidation('text', { elementType: 'heading', text: data.nextPage as string }); 
@@ -227,12 +220,6 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
   private async missedPayments(missedPaymentsData: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('expandSummary', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
-    await performValidation('text', { elementType: 'paragraph', text: missedPayments.thisWillSaveHiddenParagraph });
-    await performValidation('text', { elementType: 'listItem', text: missedPayments.cancelHiddenListItem });
-    await performValidation('text', { elementType: 'listItem', text: missedPayments.chooseHiddenListItem });
-    await performValidation('text', { elementType: 'containerText', text: missedPayments.ifYouWantToSaveHiddenText });
-    await performAction('expandSummary', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
     await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
     await performAction('reTryOnCallBackError', missedPayments.continueButton, missedPaymentsData.nextPage as string);
   }

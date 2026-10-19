@@ -4,7 +4,6 @@ export const confirmHCEOfficer = {
   haveYouHiredHCEOQuestion: `Have you hired a High Court Enforcement Officer?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

@@ -94,7 +94,6 @@ test.describe('[Enforcement - Warrant of Restitution] @nightly', async () => {
         link: enforcementApplication.quoteFromBailiffLinkHidden,
         newPage: enforcementApplication.hceoPageTitleHidden
       });
-      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
@@ -188,7 +187,6 @@ test.describe('[Enforcement - Warrant of Restitution] @nightly', async () => {
         link: enforcementApplication.quoteFromBailiffLinkHidden,
         newPage: enforcementApplication.hceoPageTitleHidden
       });
-      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
         option: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,

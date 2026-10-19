@@ -15,7 +15,6 @@ export const repaymentsWrit = {
   noneRadioOptions: `None of it`,
   enterTheAmountTextLabelHidden: `Enter the amount that you want the defendants to repay`,
   enterTheAmountTextInputHidden: `100.50`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`

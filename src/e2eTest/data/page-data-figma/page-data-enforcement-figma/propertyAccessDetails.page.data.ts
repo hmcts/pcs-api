@@ -8,7 +8,6 @@ export const propertyAccessDetails = {
   whyItsDifficultToAccessToThePropertyTextLabelHidden: `Explain why it’s difficult to access the property`,
   maxCharactersHintTextHidden: `You can enter up to 6800 characters.`,
   whyItsDifficultToAccessToThePropertyTextInputHidden: 1100,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`
