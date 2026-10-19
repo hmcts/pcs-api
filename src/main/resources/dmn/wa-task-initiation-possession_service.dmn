@@ -1258,7 +1258,7 @@ else
       </rule>
       <rule id="DecisionRule_msghmfwpb3">
         <inputEntry id="UnaryTests_msg9n92lx9">
-          <text>"referGenAppToJudge"</text>
+          <text>"sendReplyMessage"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_msg70wncr2">
           <text></text>
@@ -1302,7 +1302,7 @@ else
       </rule>
       <rule id="DecisionRule_msg43fyfyn">
         <inputEntry id="UnaryTests_msg7yn3slb">
-          <text>"referGenAppToJudge"</text>
+          <text>"sendReplyMessage"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_msgtbd2qg3">
           <text></text>

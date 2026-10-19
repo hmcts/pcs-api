@@ -23,7 +23,7 @@ public class MessagesRenderer {
 
     /** A message thread as the tab shows it; decideUrl is set for an open message about an open application. */
     public record Thread(String subject, String categories, String application, String decideUrl, String from,
-                         String to, boolean urgent, String status, LocalDateTime sent, LocalDateTime updated,
+                         String to, boolean urgent, LocalDateTime sent, LocalDateTime updated,
                          List<Entry> entries, String closedBy, String closureNote) {
     }
 

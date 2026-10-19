@@ -60,7 +60,6 @@ public class MessagesView {
             first.getSenderName(),
             latest.getRecipientRole().getLabel(),
             message.isUrgent(),
-            message.isOpen() ? "Open" : "Closed",
             LocalDateTime.ofInstant(first.getCreatedAt(), UK_ZONE_ID),
             LocalDateTime.ofInstant(message.getUpdatedAt(), UK_ZONE_ID),
             message.getEntries().stream().map(entry -> new Entry(entry.getSenderName(),

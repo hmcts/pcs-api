@@ -79,28 +79,21 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
-        createTask(caseId, taskType, taskDescription, scheduledTo, null);
+        createTask(caseId, taskType, taskDescription, scheduledTo, null, null);
     }
 
     /** Creates a task assigned to one user. */
     public void createTask(long caseId, TaskType taskType, String taskDescription, String assignee) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee, null);
     }
 
     /** Creates a task for a role's pool that is urgent or not, which the configuration DMN prioritises. */
     public void createTask(long caseId, TaskType taskType, String taskDescription, boolean urgent) {
-        scheduleCamundaRequest(CamundaRequestTaskData.builder()
-            .action(Action.CREATE)
-            .caseReference(caseId)
-            .taskType(taskType)
-            .taskDescription(taskDescription)
-            .idempotencyKey(UUID.randomUUID())
-            .urgent(urgent)
-            .build(), Instant.now(utcClock));
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), null, urgent);
     }
 
     private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
-                            String assignee) {
+                            String assignee, Boolean urgent) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
@@ -108,6 +101,7 @@ public class CamundaService {
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
             .assignee(assignee)
+            .urgent(urgent)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);

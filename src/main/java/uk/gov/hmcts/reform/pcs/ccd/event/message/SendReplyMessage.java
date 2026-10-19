@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -66,6 +67,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseService pcsCaseService;
     private final MessageService messageService;
     private final SecurityContextService securityContextService;
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -143,8 +145,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
                                                                       CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
         List<String> errors = new ArrayList<>();
-        limit(errors, caseData.getMessageSubject(), SUBJECT_LIMIT, "Subject");
-        limit(errors, caseData.getMessageBody(), MESSAGE_LIMIT, "Message");
+        textAreaValidationService.validateTextArea(caseData.getMessageSubject(), "Subject", SUBJECT_LIMIT, errors);
+        textAreaValidationService.validateTextArea(caseData.getMessageBody(), "Message", MESSAGE_LIMIT, errors);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
     }
 
@@ -169,9 +171,10 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = details.getData();
         List<String> errors = new ArrayList<>();
         if (caseData.getMessageNeedReply() == VerticalYesNo.YES) {
-            limit(errors, caseData.getMessageReply(), MESSAGE_LIMIT, "Reply");
+            textAreaValidationService.validateTextArea(caseData.getMessageReply(), "Reply", MESSAGE_LIMIT, errors);
         } else {
-            limit(errors, caseData.getMessageClosureNote(), CLOSURE_NOTE_LIMIT, "Note for closing the message");
+            textAreaValidationService.validateTextArea(caseData.getMessageClosureNote(),
+                "Note for closing the message", CLOSURE_NOTE_LIMIT, errors);
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
     }
@@ -179,12 +182,11 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(eventPayload.caseReference());
-        String name = userName();
+        String name = securityContextService.getCurrentUserDetails().getName();
         MessageRecipient senderRole = MessageRecipient.of(isJudge());
 
         if (caseData.getMessageAction() == MessageAction.SEND) {
-            Set<MessageCategory> categories = caseData.getMessageCategories() == null ? Set.of()
-                : caseData.getMessageCategories();
+            Set<MessageCategory> categories = caseData.getMessageCategories();
             GenAppEntity genApp = categories.contains(MessageCategory.APPLICATION)
                 ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
             if (categories.contains(MessageCategory.APPLICATION) && genApp == null) {
@@ -248,21 +250,9 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .replace("AM", "am").replace("PM", "pm");
     }
 
-    private static void limit(List<String> errors, String text, int limit, String name) {
-        if (text != null && text.trim().length() > limit) {
-            errors.add("%s must be %d characters or less".formatted(name, limit));
-        }
-    }
-
     private boolean isJudge() {
         UserInfo user = securityContextService.getCurrentUserDetails();
         return user != null && user.getRoles() != null && user.getRoles().contains(JUDICIARY_IDAM_ROLE);
-    }
-
-    private String userName() {
-        UserInfo user = securityContextService.getCurrentUserDetails();
-        return user == null || user.getName() == null || user.getName().isBlank()
-            ? (isJudge() ? "A judge" : "Court staff") : user.getName();
     }
 
     private static SubmitResponse<State> rejected(String error) {

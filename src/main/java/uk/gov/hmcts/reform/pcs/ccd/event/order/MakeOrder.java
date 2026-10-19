@@ -35,7 +35,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -147,7 +146,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         staffMessage(change).ifPresent(message -> messageService.recordOrderMessage(order,
-            order.getAuthorName(), change.orderType().getLabel().toLowerCase(Locale.UK), message));
+            order.getAuthorName(), OrderTasks.inWords(change.orderType()), message));
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
     }

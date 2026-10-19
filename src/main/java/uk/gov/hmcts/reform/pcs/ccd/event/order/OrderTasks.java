@@ -60,11 +60,16 @@ public class OrderTasks {
 
     /** Asks the judges to decide an application court staff referred, starting an order on it from the task. */
     public void askJudgeToDecide(long caseReference, GenAppEntity genApp, String applicant, String note) {
-        String decideUrl = "%s/cases/%d/event/ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=%s&taskId=${[id]}"
-            .formatted(frontendUrl, caseReference, genApp.getId());
         String description = taskDescriptionService.createDecideGenAppDescription(currentUserName(COURT_STAFF),
-            applicant, "GA" + genApp.getRank(), genApp.getType().getShortName(), note, decideUrl);
+            applicant, "GA" + genApp.getRank(), genApp.getType().getShortName(), note,
+            decideUrl(caseReference, genApp));
         camundaService.createTask(caseReference, TaskType.DECIDE_GEN_APP, description);
+    }
+
+    /** The task link that starts the judge's order deciding the application. */
+    public String decideUrl(long caseReference, GenAppEntity genApp) {
+        return "%s/cases/%d/event/ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=%s&taskId=${[id]}"
+            .formatted(frontendUrl, caseReference, genApp.getId());
     }
 
     private String eventUrl(long caseReference, String event, OrderEntity order) {
@@ -72,7 +77,7 @@ public class OrderTasks {
             .formatted(frontendUrl, caseReference, event, order.getId());
     }
 
-    private static String inWords(OrderType orderType) {
+    static String inWords(OrderType orderType) {
         return orderType.getLabel().toLowerCase(Locale.UK);
     }
 
