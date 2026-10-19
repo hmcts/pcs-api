@@ -34,7 +34,7 @@ class BlobUploaderTest {
 
     @Test
     void shouldUploadJson() {
-        String blobName = "claim_snapshot_full_2026-10-13.json";
+        String blobName = "claim_snapshot_2026-10-13.json";
         byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
         when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
 
