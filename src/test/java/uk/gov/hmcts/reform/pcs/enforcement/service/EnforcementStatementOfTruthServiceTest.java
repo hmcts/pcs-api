@@ -37,7 +37,7 @@ class EnforcementStatementOfTruthServiceTest {
         StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement
                 = new StatementOfTruthDetailsEnforcement();
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
-        StatementOfTruthEntity statementOfTruthEntity = mock(StatementOfTruthEntity.class);
+        StatementOfTruthEntity statementOfTruthEntity = StatementOfTruthEntity.builder().fullName("Sam Shah").build();
         StatementOfTruthEntity savedStatementOfTruthEntity = mock(StatementOfTruthEntity.class);
 
         when(statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement))
@@ -63,6 +63,25 @@ class EnforcementStatementOfTruthServiceTest {
 
         // When
         underTest.processStatementOfTruth(null, enforcementOrderEntity);
+
+        // Then
+        assertThat(enforcementOrderEntity.getStatementOfTruth()).isNull();
+        verifyNoInteractions(statementOfTruthRepository);
+    }
+
+    /**
+     * The answers are unwrapped into the application's own fields, so an application submitted before the
+     * statement of truth page carries an instance with nothing in it rather than no instance.
+     */
+    @Test
+    void shouldPersistNothingWhenNobodySignedTheStatementOfTruth() {
+        // Given the real mapper, which is what dereferences the statement of truth
+        EnforcementStatementOfTruthService underTest = new EnforcementStatementOfTruthService(
+            new StatementOfTruthMapper(Clock.systemUTC()), statementOfTruthRepository);
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+
+        // When
+        underTest.processStatementOfTruth(new StatementOfTruthDetailsEnforcement(), enforcementOrderEntity);
 
         // Then
         assertThat(enforcementOrderEntity.getStatementOfTruth()).isNull();

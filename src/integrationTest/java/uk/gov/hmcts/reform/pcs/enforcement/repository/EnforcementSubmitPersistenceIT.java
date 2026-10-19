@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.enforcement.repository;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -169,6 +171,44 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
     }
 
     /**
+     * An application that was never asked the questions, or was submitted as a draft before reaching them, has
+     * no language and no statement of truth to store.
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, 1000000000000011, enf_warrant",
+        "WRIT, 1000000000000012, enf_writ",
+        "WARRANT_OF_RESTITUTION, 1000000000000013, enf_warrant_of_restitution",
+        "WRIT_OF_RESTITUTION, 1000000000000014, enf_writ_of_restitution",
+    })
+    @DisplayName("stores no statement of truth for an application that answered neither question")
+    void shouldStoreNoStatementOfTruthForAnUnansweredApplication(SelectEnforcementType enforcementType,
+                                                                 long caseReference,
+                                                                 String childTable) throws JsonProcessingException {
+        final ClaimEntity claim = savedClaim(caseReference);
+        final int statementsOfTruth = countStatementsOfTruth();
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, unansweredApplication(enforcementType));
+        entityManager.flush();
+        entityManager.clear();
+
+        UUID enforcementId = enforcementOrderRepository.findByClaimId(claim.getId()).getFirst().getId();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT language_used FROM " + childTable + " WHERE enf_case_id = ?", String.class, enforcementId))
+            .isNull();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT sot_id FROM enf_case WHERE id = ?", Integer.class, enforcementId))
+            .isNull();
+        assertThat(countStatementsOfTruth())
+            .as("no statement of truth is inserted for an application that signed none")
+            .isEqualTo(statementsOfTruth);
+    }
+
+    private int countStatementsOfTruth() {
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM statement_of_truth", Integer.class);
+    }
+
+    /**
      * The application is stored as it will read back, so the row is not dirty the moment it is inserted: a
      * second write of the same JSON costs a statement and moves the version under the document generation and
      * Payments callback that read the enforcement next.
@@ -239,15 +279,33 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
 
     private static EnforcementOrder enforcementOrder(SelectEnforcementType enforcementType) {
         return EnforcementOrder.builder()
-            .chooseEnforcementType(DynamicStringList.builder()
-                                       .value(DynamicStringListElement.builder()
-                                                  .code(enforcementType.name())
-                                                  .build())
-                                       .build())
+            .chooseEnforcementType(chosenType(enforcementType))
             .warrantDetails(WarrantDetails.builder().build())
             .writDetails(WritDetails.builder().build())
             .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder().build())
             .build();
+    }
+
+    private static DynamicStringList chosenType(SelectEnforcementType enforcementType) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                       .code(enforcementType.name())
+                       .build())
+            .build();
+    }
+
+    /**
+     * An application of the type with no answer to either question, as it arrives from the data store: each
+     * application's answers are unwrapped into the case's own fields, so a submit that carries none of them
+     * still deserialises to an application holding an empty statement of truth rather than no statement of
+     * truth. Only reading the case data back gives the test that shape.
+     */
+    private EnforcementOrder unansweredApplication(SelectEnforcementType enforcementType)
+        throws JsonProcessingException {
+
+        EnforcementOrder application = objectMapper.readValue("{}", PCSCase.class).getEnforcementOrder();
+        application.setChooseEnforcementType(chosenType(enforcementType));
+        return application;
     }
 
     /**
