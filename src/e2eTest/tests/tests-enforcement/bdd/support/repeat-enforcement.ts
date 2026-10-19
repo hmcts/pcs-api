@@ -18,15 +18,7 @@ import {
   recordReturnAsHearingCentreAdmin,
   setUpWarrantAtStatus,
 } from './approve-warrant';
-import {
-  answerApplicationQuestions,
-  chooseApplicationType,
-  openCaseSummary,
-  requireCaseReference,
-  signStatementOfTruth,
-  startEvent,
-  submitApplication,
-} from './enforcement-journeys';
+import { applyForEnforcement, requireCaseReference } from './enforcement-journeys';
 import { EnforcementRow, enforcementRows } from './enforcement-status-tab';
 import { chooseFromList, submitEventAs } from './event-api';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, expectSignedInAs, requireEmailFor } from './session';
@@ -70,29 +62,16 @@ export async function closeApprovedWarrant(world: EnforcementWorld, returnName: 
  * world whether pcs-api's confirmation asked for the fee.
  */
 export async function applyForFurtherWarrant(page: Page, world: EnforcementWorld): Promise<void> {
-  await openCaseSummary(page);
-  await startEvent('Enforce the order');
-  await chooseApplicationType('warrant of possession', world, page);
-  await answerApplicationQuestions('warrant of possession', world);
-  await signStatementOfTruth('warrant of possession');
-  world.askedToPayFee = await submitApplication(page);
+  world.askedToPayFee = await applyForEnforcement('warrant of possession', world, page);
 }
 
 /**
  * The claimant applies for a warrant of restitution through "Enforce the order", which pcs-api only offers once
- * the case has had a warrant. The journey ends on the "Anything else that could help with the eviction"
- * placeholder, with no statement of truth (OPEN-QUESTIONS 12), so it goes from there to check your answers.
- * Restitution has no fee, so the application starts in "Awaiting review" (OPEN-QUESTIONS 12).
+ * the case has had a warrant. Restitution has no fee, so the application starts in "Awaiting review"
+ * (OPEN-QUESTIONS 12).
  */
 export async function applyForWarrantOfRestitution(page: Page, world: EnforcementWorld): Promise<void> {
-  await openCaseSummary(page);
-  await startEvent('Enforce the order');
-  await chooseApplicationType('warrant of restitution', world, page);
-  await answerApplicationQuestions('warrant of restitution', world);
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Submit application', exact: true }))
-    .toBeVisible({ timeout: VERY_LONG_TIMEOUT });
-  world.askedToPayFee = await submitApplication(page);
+  world.askedToPayFee = await applyForEnforcement('warrant of restitution', world, page);
 }
 
 /** The statement of truth `signStatementOfTruth` signs, as "Enforce the order" stores it for a warrant and a writ. */

@@ -436,9 +436,9 @@ const WITNESS_STATEMENT_DESCRIPTION = "Neighbour's witness statement";
 
 /**
  * Warrant of restitution with the seeded warrant's answers left as they are
- * (enforcement.warrantOfRestitution.spec.ts "all NO selection"). It stops on the last placeholder page: the
- * journey's language and statement of truth pages are the warrant journey's, which these helpers do not drive
- * for a restitution application yet.
+ * (enforcement.warrantOfRestitution.spec.ts "all NO selection"). The "Anything else that could help with the
+ * eviction" placeholder has no fields, so it is passed with a Continue, and the language question is the
+ * warrant journey's own page (pcs-api EnforcementDeclarationPageConfigurer). Ends on the statement of truth.
  */
 async function answerWarrantOfRestitutionQuestions(): Promise<void> {
   const seeded = enforceWarrantApiData.enforceCasePayloadNoJourney;
@@ -477,6 +477,12 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
     inputData: [{ type: 'radio', inputRadioQuestion: propertyAccessDetails.accessToThePropertyQuestion, expectedAnswer: seeded.warrantIsDifficultToAccessProperty }],
   });
   await performAction('reTryOnCallBackError', propertyAccessDetails.continueButton, additionalInformation.mainHeader);
+  await performAction('reTryOnCallBackError', additionalInformation.continueButton, languageUsed.mainHeader);
+  await performAction('selectLanguageUsed', {
+    question: languageUsed.whichLanguageUsedQuestion,
+    option: languageUsed.englishRadioOption,
+    nextPage: statementOfTruth.mainHeader,
+  });
 }
 
 /**
@@ -487,8 +493,11 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
  * and position. The two actions take those under different keys: `selectStatementOfTruth` reads the
  * certification from `selectCheckbox` and the agreement from `option2`, `selectStatementOfTruthWrit` reads
  * them from `option1` and `claimantBelieveCheckBox`.
+ *
+ * A restitution application signs its family's page: the warrant one for a warrant of restitution, the writ
+ * one for a writ of restitution.
  */
-export async function signStatementOfTruth(type: 'warrant of possession' | 'writ of possession'): Promise<void> {
+export async function signStatementOfTruth(type: EnforcementType): Promise<void> {
   await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
   const signedByLegalRepresentative = {
     question: statementOfTruth.completedByParagraph,
@@ -501,7 +510,7 @@ export async function signStatementOfTruth(type: 'warrant of possession' | 'writ
     input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
     nextPage: checkYourAnswers.mainHeader,
   };
-  if (type === 'warrant of possession') {
+  if (type === 'warrant of possession' || type === 'warrant of restitution') {
     await performAction('selectStatementOfTruth', {
       ...signedByLegalRepresentative,
       selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
@@ -536,6 +545,19 @@ export async function submitApplication(page: Page): Promise<boolean> {
   }
   await performValidation('bannerAlert', 'Case #.* has been updated with event: Enforce the order');
   return askedToPayFee;
+}
+
+/**
+ * The whole "Enforce the order" journey for `type` in XUI, from the case summary to the submitted banner.
+ * Returns whether pcs-api's confirmation asked for the fee.
+ */
+export async function applyForEnforcement(type: EnforcementType, world: EnforcementWorld, page: Page): Promise<boolean> {
+  await openCaseSummary(page);
+  await startEvent('Enforce the order');
+  await chooseApplicationType(type, world, page);
+  await answerApplicationQuestions(type, world);
+  await signStatementOfTruth(type);
+  return submitApplication(page);
 }
 
 /** The case this scenario created. Fails with a clear message if no "Given a PCS case ..." step ran. */

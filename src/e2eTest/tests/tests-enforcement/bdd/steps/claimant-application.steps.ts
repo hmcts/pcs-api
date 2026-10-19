@@ -5,11 +5,10 @@ import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/
 import type { PendingScope } from '../fixtures/pending';
 import {
   answerApplicationQuestions,
+  applyForEnforcement,
   chooseApplicationType,
-  openCaseSummary,
   requireCaseReference,
   signStatementOfTruth,
-  startEvent,
   submitApplication,
 } from '../support/enforcement-journeys';
 import { recordEnforcementFeePaid } from '../support/decide-enforcement';
@@ -24,13 +23,9 @@ function asEnforcementType(type: string): EnforcementType {
   return type as EnforcementType;
 }
 
-// pcs-api offers a writ of restitution once the claim has a writ, and both restitution journeys end on the
-// language and statement of truth pages of their type's family. These helpers have no steps for either yet.
+// pcs-api offers a writ of restitution once the claim has a writ, which these helpers have no set-up for.
 const writOfRestitutionJourneyNotDriven: PendingScope = {
   summary: 'these helpers cannot drive the writ of restitution journey',
-};
-const restitutionJourneyEndNotDriven: PendingScope = {
-  summary: 'these helpers cannot drive a restitution journey past its application questions',
 };
 
 /** Whole "Enforce the order" journey from the case summary to the submitted banner. */
@@ -38,15 +33,7 @@ async function applyFor(type: EnforcementType, world: EnforcementWorld, page: Pa
   if (type === 'writ of restitution') {
     return markPending(writOfRestitutionJourneyNotDriven, tags);
   }
-  if (type === 'warrant of restitution') {
-    return markPending(restitutionJourneyEndNotDriven, tags);
-  }
-  await openCaseSummary(page);
-  await startEvent('Enforce the order');
-  await chooseApplicationType(type, world, page);
-  await answerApplicationQuestions(type, world);
-  await signStatementOfTruth(type);
-  world.askedToPayFee = await submitApplication(page);
+  world.askedToPayFee = await applyForEnforcement(type, world, page);
 }
 
 When('I choose to apply for a {string}', async ({ page, world, $tags }, type: string) => {
@@ -61,10 +48,10 @@ When('I answer the {string} application questions', async ({ world }, type: stri
   await answerApplicationQuestions(asEnforcementType(type), world);
 });
 
-When('I sign the statement of truth', async ({ world, $tags }) => {
+When('I sign the statement of truth', async ({ world }) => {
   const type = world.applicationType;
-  if (type !== 'warrant of possession' && type !== 'writ of possession') {
-    return markPending(restitutionJourneyEndNotDriven, $tags);
+  if (!type) {
+    throw new Error('No application type has been chosen: start with "When I choose to apply for a ..."');
   }
   await signStatementOfTruth(type);
 });

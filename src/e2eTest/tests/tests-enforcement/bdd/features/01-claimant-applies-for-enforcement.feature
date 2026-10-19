@@ -22,9 +22,10 @@ Feature: Claimant applies for enforcement of a possession order
     Then the "Enforce the order" event is not offered in the next steps drop down
 
   # Runs locally against cftlib: the case comes from the "Make A Claim Basic Case" fixture (one defendant, no
-  # arrears, no suspended order), which the journey helpers adapt to. Both restitution journeys now ask the
-  # language and statement of truth questions and a writ of restitution is offered once the claim has a writ,
-  # but the helpers here have no steps for either journey's end yet.
+  # arrears, no suspended order), which the journey helpers adapt to. The helpers drive the warrant of
+  # restitution journey to its end, but a restitution has no fee and so starts in "Awaiting review", which the
+  # "Awaiting payment" row cannot expect until OPEN-QUESTIONS 12 is settled. A writ of restitution is offered
+  # once the claim has a writ, which these helpers have no set-up for.
   Scenario Outline: Claimant applies for a <type>
     When I start the "Enforce the order" event
     And I choose to apply for a "<type>"
@@ -86,7 +87,8 @@ Feature: Claimant applies for enforcement of a possession order
 
   # Locally Docmosis is a wiremock stub that returns one placeholder PDF for every document, so the answers are
   # checked in the data pcs-api sends Docmosis to fill the template with (support/docmosis-renders.ts). The
-  # warrant of restitution rows wait on the helpers driving that journey to its end, not on pcs-api.
+  # warrant of restitution row waits on the fee: "submit and pay" records a payment against the application
+  # awaiting one, and a restitution never awaits payment (OPEN-QUESTIONS 12).
   @HDPI-7555
   Scenario Outline: Enforcement application output contains the answers for the enforcement type
     When I submit and pay for a "<type>" application
@@ -123,7 +125,7 @@ Feature: Claimant applies for enforcement of a possession order
       | type                   | template                                   |
       | writ of possession     | Request for a writ received                |
 
-    # Both restitution applications wait on the helpers driving their journeys, and on templates for the two
+    # Both restitution applications wait on the same fee gap as the rows above, and on templates for the two
     # restitution submitted emails, whose subject and body HDPI-7538 leaves blank (OPEN-QUESTIONS #55).
     @pending
     Examples:
