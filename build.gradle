@@ -209,10 +209,11 @@ tasks.register('integration', Test) {
   group = "Verification"
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
-  maxHeapSize = '1g'
   failFast = true
-  // Spring caches each distinct test context; the default 512m runs out once they all load.
-  maxHeapSize = '1g'
+  // Spring caches each distinct test context, and every one of them loads the whole CCD definition
+  // through CCDDefinitionGenerator.loadConfigs, so this grows with the definition. At 1g loadConfigs
+  // ran out of heap once the enforcement declaration pages were added.
+  maxHeapSize = '2g'
 }
 
 tasks.register('smoke', Test) {
