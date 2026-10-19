@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -70,7 +69,6 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private final MessageService messageService;
     private final SecurityContextService securityContextService;
     private final TextAreaValidationService textAreaValidationService;
-    private final AddressFormatter addressFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -165,9 +163,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         }
         caseData.setMessageSummaryMarkdown(summary(message.get()));
         caseData.setMessageHistory(history(message.get()));
-        if (caseData.getMessageReplyRecipient() == null) {
-            caseData.setMessageReplyRecipient(message.get().latest().getSenderRole());
-        }
+        caseData.setMessageReplyRecipient(message.get().latest().getSenderRole());
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).build();
     }
 
@@ -200,7 +196,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
                 new Writing(name, senderRole, caseData.getMessageRecipient(),
                     caseData.getMessageUrgent() == VerticalYesNo.YES, caseData.getMessageBody().trim()));
-            return confirmed(caseData, eventPayload.caseReference(), "Your message has been sent",
+            return confirmed("Your message has been sent",
                 "A task to review the message has been created for " + caseData.getMessageRecipient().getLabel()
                     + ".");
         }
@@ -213,14 +209,14 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             messageService.reply(pcsCase, message.get(), new Writing(name, senderRole,
                 caseData.getMessageReplyRecipient(), caseData.getMessageReplyUrgent() == VerticalYesNo.YES,
                 caseData.getMessageReply().trim()));
-            return confirmed(caseData, eventPayload.caseReference(), "Reply sent",
+            return confirmed("Reply sent",
                 "A task to review the reply has been created for " + caseData.getMessageReplyRecipient().getLabel()
                     + ".");
         }
         String note = caseData.getMessageClosureNote() == null || caseData.getMessageClosureNote().isBlank()
             ? null : caseData.getMessageClosureNote().trim();
         MessageRecipient told = messageService.closeWithoutReply(pcsCase, message.get(), name, note);
-        return confirmed(caseData, eventPayload.caseReference(), "Message closed",
+        return confirmed("Message closed",
             "A task has been created for " + told.getLabel() + " to review.");
     }
 
@@ -239,8 +235,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
     /** The message's subject and what it is about, heading the reply page. */
     private static String summary(CaseMessageEntity message) {
-        return "### " + message.getSubject() + "\n\n**What it relates to:** " + message.categorySet().stream()
-            .sorted().map(MessageCategory::getLabel).collect(Collectors.joining(", "));
+        return "### " + message.getSubject() + "\n\n**What it relates to:** " + message.getCategories();
     }
 
     /** Every message so far, which the reply page and check your answers play back. */
@@ -265,24 +260,10 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder().errors(List.of(error)).build();
     }
 
-    private SubmitResponse<State> confirmed(PCSCase caseData, long caseReference, String header, String next) {
-        String address = caseData.getPropertyAddress() == null ? ""
-            : addressFormatter.formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
-        String parties = caseData.getCaseNameHmctsInternal() == null ? "" : caseData.getCaseNameHmctsInternal();
+    private static SubmitResponse<State> confirmed(String header, String next) {
         return SubmitResponse.<State>builder()
-            .confirmationBody("""
-                ---
-                <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-                <span class="govuk-panel__title govuk-!-font-size-36">%s</span><br>
-                <span class="govuk-panel__body">Case number #%s</span><br>
-                <span class="govuk-panel__body">%s</span><br>
-                <span class="govuk-panel__body">%s</span><br>
-                </div>
-
-                <h3>What happens next</h3>
-
-                %s
-                """.formatted(header, caseReference, address, parties, next))
+            .confirmationHeader("# " + header)
+            .confirmationBody(next)
             .build();
     }
 }

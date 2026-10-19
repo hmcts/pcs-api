@@ -267,28 +267,26 @@ public class TaskDescriptionService {
     public String createReviewMessageDescription(String senderName,
                                                  String subject,
                                                  boolean urgent,
-                                                 String messagesUrl,
-                                                 String replyUrl,
+                                                 long caseReference,
                                                  String application,
                                                  String decideUrl) {
         Map<String, Object> context = new HashMap<>();
         context.put("senderName", senderName);
         context.put("subject", subject);
         context.put("urgent", urgent);
-        context.put("messagesUrl", messagesUrl);
-        context.put("replyUrl", replyUrl);
+        context.put("caseReference", caseReference);
         context.put("application", application);
         context.put("decideUrl", decideUrl);
         return renderTemplate("review-message", context);
     }
 
     public String createReviewClosedMessageDescription(String closedBy, String subject, String note,
-                                                       String messagesUrl) {
+                                                       long caseReference) {
         Map<String, Object> context = new HashMap<>();
         context.put("closedBy", closedBy);
         context.put("subject", subject);
         context.put("note", note);
-        context.put("messagesUrl", messagesUrl);
+        context.put("caseReference", caseReference);
         return renderTemplate("review-closed-message", context);
     }
 

@@ -25,7 +25,7 @@ CREATE TABLE case_message_entry (
     sender_role     TEXT NOT NULL,
     recipient_role  TEXT NOT NULL,
     urgent          BOOLEAN NOT NULL,
-    body            VARCHAR(750) NOT NULL
+    body            TEXT NOT NULL
 );
 
 CREATE INDEX case_message_entry_message_idx ON case_message_entry(message_id);

@@ -1,21 +1,21 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import io.pebbletemplates.pebble.PebbleEngine;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.MessagesRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.MessagesRenderer.Entry;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.MessagesRenderer.Thread;
+import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -26,11 +26,20 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 @Component
 public class MessagesView {
 
-    private final MessagesRenderer messagesRenderer;
+    private final PebbleEngine pebbleEngine;
     private final String frontendUrl;
 
-    public MessagesView(MessagesRenderer messagesRenderer, @Value("${frontend.url}") String frontendUrl) {
-        this.messagesRenderer = messagesRenderer;
+    /** A message thread as the tab shows it; decideUrl is set for an open message about an open application. */
+    public record Thread(String subject, String categories, String application, String decideUrl, String from,
+                         String to, boolean urgent, String status, LocalDateTime sent, LocalDateTime updated,
+                         List<Entry> entries, String closedBy, String closureNote) {
+    }
+
+    public record Entry(String from, String to, boolean urgent, LocalDateTime sent, String body) {
+    }
+
+    public MessagesView(PebbleEngine pebbleEngine, @Value("${frontend.url}") String frontendUrl) {
+        this.pebbleEngine = pebbleEngine;
         this.frontendUrl = frontendUrl;
     }
 
@@ -42,7 +51,13 @@ public class MessagesView {
         List<Thread> closed = pcsCaseEntity.getMessages().stream().filter(message -> !message.isOpen())
             .sorted(Comparator.comparing(CaseMessageEntity::getUpdatedAt).reversed())
             .map(message -> thread(message, pcsCaseEntity)).toList();
-        pcsCase.setMessagesMarkdown(messagesRenderer.render(open, closed));
+        StringWriter writer = new StringWriter();
+        try {
+            pebbleEngine.getTemplate("tabs/messages").evaluate(writer, Map.of("open", open, "closed", closed));
+        } catch (IOException e) {
+            throw new TemplateRenderingException("Failed to render template", e);
+        }
+        pcsCase.setMessagesMarkdown(writer.toString());
     }
 
     private Thread thread(CaseMessageEntity message, PcsCaseEntity pcsCase) {
@@ -52,7 +67,7 @@ public class MessagesView {
             : pcsCase.findGenApp(message.getGenAppId()).orElse(null);
         return new Thread(
             message.getSubject(),
-            message.categorySet().stream().sorted().map(MessageCategory::getLabel).collect(Collectors.joining(", ")),
+            message.getCategories(),
             genApp == null ? null : "GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName()),
             genApp == null || !genApp.isOpen() || !message.isOpen() ? null
                 : "%s/case/%d/make-order?genAppId=%s".formatted(frontendUrl, pcsCase.getCaseReference(),
