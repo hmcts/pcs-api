@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.FeePaymentInfo;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
@@ -56,15 +57,10 @@ import uk.gov.hmcts.reform.pcs.testingsupport.service.ScheduledTasksService;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.ArrayList;
 
 
 import static java.util.Objects.isNull;
@@ -400,33 +396,19 @@ public class TestingSupportController {
         @PathVariable long caseReference
     ) {
         try {
-            // 1. Fetch the core case entity just like the pin method does
-            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            Optional<PcsCaseEntity> maybeCase =
+                pcsCaseRepository.findByCaseReference(caseReference);
+
             if (maybeCase.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
-            PcsCaseEntity pcsCaseEntity = maybeCase.get();
-
-            List<FeePaymentInfo> feePaymentInfo = new ArrayList<>();
-
-            for (ClaimEntity claim : pcsCaseEntity.getClaims()) {
-                if (claim.getFeePayments() == null) {
-                    continue;
-                }
-
-                for (FeePaymentEntity feePayment : claim.getFeePayments()) {
-                    FeePaymentInfo minimalFeePayment = new FeePaymentInfo(
-                        feePayment.getId(),
-                        feePayment.getServiceRequestReference(),
-                        feePayment.getRequestDate(),
-                        feePayment.getAmount(),
-                        feePayment.getPaymentStatus()
-                    );
-
-                    feePaymentInfo.add(minimalFeePayment);
-                }
-            }
+            List<FeePaymentInfo> feePaymentInfo = maybeCase.get().getClaims().stream()
+                .map(ClaimEntity::getFeePayments)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .map(feePayment -> modelMapper.map(feePayment, FeePaymentInfo.class))
+                .toList();
 
             return ResponseEntity.ok(feePaymentInfo);
 
@@ -434,15 +416,6 @@ public class TestingSupportController {
             log.error("Failed to get Fee Payment details for case reference {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
-    }
-
-    private record FeePaymentInfo(
-        Integer id,
-        String serviceRequestReference,
-        java.time.LocalDateTime requestDate,
-        BigDecimal amount,
-        PaymentStatus paymentStatus
-    ) {
     }
 
     @Operation(
