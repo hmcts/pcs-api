@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.time.LocalDate;
@@ -40,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
@@ -87,7 +87,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private ExternalStartResponse<MakeOrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
-        MakeOrderStart.Order workingOrder = findDraft(caseReference, UUID.fromString(start.user().id()))
+        MakeOrderStart.Order workingOrder = findDraft(caseReference, IdamUserIds.normalise(start.user().id()))
             .map(MakeOrder::toOrder)
             .orElseGet(() -> new MakeOrderStart.Order(null, DraftOrderState.DRAFT, 0, null, Map.of(), null));
         return ExternalStartResponse.started(new MakeOrderStart(workingOrder, caseContext(findCase(caseReference))));
@@ -97,7 +97,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         MakeOrderRequest request = submit.payload();
         OrderChange change = request.order();
         long caseReference = submit.caseReference();
-        UUID judge = UUID.fromString(submit.user().id());
+        String judge = IdamUserIds.normalise(submit.user().id());
         DraftOrderEntity draft = change.id() == null
             ? newDraft(caseReference, judge)
             : workingDraft(caseReference, judge, change);
@@ -114,7 +114,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /** A judge has one draft per case, which the database also enforces. */
-    private DraftOrderEntity newDraft(long caseReference, UUID judge) {
+    private DraftOrderEntity newDraft(long caseReference, String judge) {
         if (findDraft(caseReference, judge).isPresent()) {
             throw ExternalRejection.because("You already have an order draft for this case");
         }
@@ -126,7 +126,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /** The judge's own draft this change is for, at the version they last saw. */
-    private DraftOrderEntity workingDraft(long caseReference, UUID judge, OrderChange change) {
+    private DraftOrderEntity workingDraft(long caseReference, String judge, OrderChange change) {
         DraftOrderEntity draft = draftOrderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
                 change.id(), caseReference, judge, DraftOrderState.DRAFT)
@@ -138,7 +138,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         return draft;
     }
 
-    private Optional<DraftOrderEntity> findDraft(long caseReference, UUID judge) {
+    private Optional<DraftOrderEntity> findDraft(long caseReference, String judge) {
         return draftOrderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
             caseReference, judge, DraftOrderState.DRAFT);
     }

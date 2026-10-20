@@ -10,6 +10,8 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
+import { caseSummary, home } from '@data/page-data';
+import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {
   propertyAccessDetails,
   livingInTheProperty,
@@ -31,6 +33,8 @@ import {
   statementOfTruth,
   confirmHCEOfficer
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
+import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -76,11 +80,42 @@ export class EnforcementAction implements IAction {
       ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
-      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)]
+      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
+      ['deleteDraftApplication', () => this.deleteDraftApplication()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
+  }
+
+  private async deleteDraftApplication(): Promise<void> {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('errorMessage', {
+      header: deleteThisDraftApplication.errorMessageHeader,
+      message: deleteThisDraftApplication.deleteDraftApplicationRequiredError,
+    });
+    await performAction('clickRadioButton', {
+      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
+      option: deleteThisDraftApplication.noRadioOption,
+    });
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+    await performAction('clickTab', home.caseSummary);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
+    await performAction('clickRadioButton', {
+      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
+      option: deleteThisDraftApplication.yesRadioOption,
+    });
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('mainHeader', draftApplicationDeleted.mainHeader);
+    await performAction('clickButton', draftApplicationDeleted.closeAndReturnToCaseListButton);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
   }
 
   private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord) {

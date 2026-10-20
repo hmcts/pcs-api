@@ -2,8 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary, home } from '@data/page-data';
-import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
+import { caseSummary } from '@data/page-data';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -43,6 +42,7 @@ import {
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
+
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -95,7 +95,7 @@ test.afterEach(async () => {
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
 // It will be enabled once the feature is included in the execution scope.
-test.describe('[Enforcement - Warrant of Possession]', async () => {
+test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
@@ -799,8 +799,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     });
 });
 
-test.describe('[Enforcement - Delete Draft Application]', () => {
-  test('Delete the draft application @enforcement @rerun', async ({ page }) => {
+test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a warrant of possession @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -811,33 +811,24 @@ test.describe('[Enforcement - Delete Draft Application]', () => {
     });
     await performAction('clickButton', nameAndAddressForEviction.cancelLink);
     await performValidation('mainHeader', caseSummary.mainHeader);
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('deleteDraftApplication');
+  });
+
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a writ of possession @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
-    await performAction('clickButton', deleteThisDraftApplication.continueButton);
-    await performValidation('errorMessage', {
-      header: deleteThisDraftApplication.errorMessageHeader,
-      message: deleteThisDraftApplication.deleteDraftApplicationRequiredError,
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
+      nextPage: nameAndAddressForEviction.mainHeader,
     });
-    await performAction('clickRadioButton', {
-      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
-      option: deleteThisDraftApplication.noRadioOption,
-    });
-    await performAction('clickButton', deleteThisDraftApplication.continueButton);
-    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
-    await performAction('clickTab', home.caseSummary);
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
     await performValidation('mainHeader', caseSummary.mainHeader);
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
-    await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
-    await performAction('clickRadioButton', {
-      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
-      option: deleteThisDraftApplication.yesRadioOption,
-   });
-    await performAction('clickButton', deleteThisDraftApplication.continueButton);
-    await performValidation('mainHeader', draftApplicationDeleted.mainHeader);
-    await performAction('clickButton', draftApplicationDeleted.closeAndReturnToCaseListButton);
-    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+    await performAction('deleteDraftApplication');
   });
   test ('Resume the draft application @enforcement @rerun', async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);

@@ -186,7 +186,7 @@ class LegalRepresentativePartyLinkServiceTest {
     @Test
     void linkLegalRepresentativeToParty_WithLinkedDefendant_RevokesDefendantRole() {
         // given
-        UUID defendantIdamId = UUID.randomUUID();
+        String defendantIdamId = UUID.randomUUID().toString();
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
 
@@ -809,7 +809,7 @@ class LegalRepresentativePartyLinkServiceTest {
     void linkLegalRepresentativeToParty_CompletesDatabaseWorkBeforeAnySideEffect() {
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
-        UUID defendantIdamId = UUID.randomUUID();
+        String defendantIdamId = UUID.randomUUID().toString();
         PartyEntity partyEntity = PartyEntity.builder().id(partyId).idamId(defendantIdamId).build();
 
         when(pcsCaseService.loadCase(caseReference)).thenReturn(caseWithDefendant(caseReference, partyEntity));

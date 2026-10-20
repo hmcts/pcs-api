@@ -18,6 +18,10 @@ public class AddressMapper {
         return modelMapper.map(addressEntity, AddressUK.class);
     }
 
+    public AddressEntity toCorrespondenceAddressEntity(AddressUK address) {
+        return modelMapper.map(address, AddressEntity.class);
+    }
+
     public AddressEntity toAddressEntityAndNormalise(AddressUK addressUK) {
         AddressEntity addressEntity = modelMapper.map(addressUK, AddressEntity.class);
         addressEntity.setPostcode(normalisePostcode(addressEntity.getPostcode()));

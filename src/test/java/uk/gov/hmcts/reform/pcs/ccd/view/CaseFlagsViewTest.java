@@ -50,7 +50,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CaseFlagsViewTest {
 
-    private static final UUID AUTHENTICATED_USER_ID = UUID.randomUUID();
+    private static final String AUTHENTICATED_USER_ID = UUID.randomUUID().toString();
 
     @Mock
     private PartySupportOwnershipResolver partySupportOwnershipResolver;
