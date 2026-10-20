@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNullElse;
 import java.util.Objects;
 import static java.util.function.Function.identity;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.caseAccessGroupIdFor;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.ORGANISATION_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
@@ -46,12 +45,9 @@ public final class CaseAccessGroupsUtil {
         parties.stream()
             .filter(CaseAccessGroupsUtil::isClaimant)
             .findFirst()
-            .flatMap(party -> {
-                caseAccessGroupIdFor(ORGANISATION_PROFILE.getId(), CLAIMANT, party.getOrganisationId())
-                    .ifPresent(defaultClaimantAccessGroupId -> caseAccessGroups
-                        .add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, defaultClaimantAccessGroupId)));
-                return caseAccessGroupIdFor(party.getOrganisationProfileId(), CLAIMANT, party.getOrganisationId());
-            }).ifPresent(caseAccessGroupId -> {
+            .flatMap(party ->
+                         caseAccessGroupIdFor(party.getOrganisationProfileId(), CLAIMANT, party.getOrganisationId()))
+            .ifPresent(caseAccessGroupId -> {
                 log.info("Found claimant case access group: {}", caseAccessGroupId);
                 caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId));
             });
@@ -79,7 +75,7 @@ public final class CaseAccessGroupsUtil {
             .peek(caseAccessGroupId ->
                       log.info("Found defendant case access group: {}", caseAccessGroupId))
             .forEach(caseAccessGroupId ->
-                         caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));;
+                         caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));
 
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)
