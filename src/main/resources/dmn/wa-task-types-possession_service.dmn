@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_1kep5qz" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_1kep5qz" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.49.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
   <decision id="wa-task-types-pcs-pcs" name="Task Types DMN" camunda:historyTimeToLive="P90D">
     <decisionTable id="DecisionTable_17knzal" hitPolicy="COLLECT">
       <input id="Input_1">
@@ -179,10 +179,10 @@
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1m0mo6l">
-          <text></text>
+          <text>"TranslateClaimForm"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1erxuws">
-          <text></text>
+          <text>"Translate Claim Form"</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_1bganmm">
@@ -190,10 +190,10 @@
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_01il25t">
-          <text></text>
+          <text>"TranslateGenAppForm"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1rbx9wv">
-          <text></text>
+          <text>"Translate Gen App Form"</text>
         </outputEntry>
       </rule>
     </decisionTable>

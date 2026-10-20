@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 @Service
 public class GenAppDocumentGenerator {
 
+    public static final String OUTPUT_FILENAME_PREFIX = "General Application";
     private static final String TEMPLATE_ID = "CV-PCS-GAP-ENG-Application-Summary.docx";
 
     private final PcsCaseService pcsCaseService;

@@ -1156,7 +1156,7 @@ class GenAppServiceTest {
             verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
-            verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+            verify(genAppWaTaskService).createTranslationTasksForGenApp(genAppEntity);
         }
 
         @Test

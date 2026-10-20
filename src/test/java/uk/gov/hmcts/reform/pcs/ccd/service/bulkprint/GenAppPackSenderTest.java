@@ -32,6 +32,9 @@ class GenAppPackSenderTest {
     @Mock
     private BulkPrintService bulkPrintService;
     @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
+
+    @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
 
     private GenAppPackSender underTest;
@@ -44,7 +47,7 @@ class GenAppPackSenderTest {
     @BeforeEach
     void setUp() {
         underTest = new GenAppPackSender(packRecipientResolver, bulkPrintService,
-            new PackSendRecorder(accessCodeActivityLogService));
+            new PackSendRecorder(accessCodeActivityLogService, bulkPrintQueueService));
     }
 
     @Test

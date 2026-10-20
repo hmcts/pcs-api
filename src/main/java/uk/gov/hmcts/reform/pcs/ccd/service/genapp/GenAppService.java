@@ -220,7 +220,7 @@ public class GenAppService {
         genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
         notificationService.sendGenAppReceivedEmail(genAppEntity);
         genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
-        genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+        genAppWaTaskService.createTranslationTasksForGenApp(genAppEntity);
     }
 
     private DocumentEntity createSubmissionDocumentEntity(Document document,

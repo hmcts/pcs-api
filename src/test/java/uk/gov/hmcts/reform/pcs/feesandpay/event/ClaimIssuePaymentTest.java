@@ -15,11 +15,13 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.claim.ClaimWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -49,7 +52,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
     @Mock
     private SchedulerClient schedulerClient;
-    @Mock
+    @Mock(strictness = LENIENT)
     private PcsCaseService pcsCaseService;
     @Mock
     private ClaimFormScheduler claimFormScheduler;
@@ -57,6 +60,10 @@ class ClaimIssuePaymentTest extends BaseEventTest {
     private DefendantAccessCodeService defendantAccessCodeService;
     @Mock
     private ClaimWaTaskService claimWaTaskService;
+    @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
 
     @Captor
     private ArgumentCaptor<SchedulableInstance<?>> schedulableInstanceCaptor;
@@ -66,6 +73,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         setEventUnderTest(paymentEvent);
         // Default: no defendants need a code (tests that schedule override this).
         lenient().when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(anyLong()))

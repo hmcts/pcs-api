@@ -43,7 +43,7 @@ public class GenAppWaTaskService {
         camundaService.createTask(caseReference, taskType, description);
     }
 
-    public void createTranslationTaskForGenApp(GenAppEntity genAppEntity) {
+    public void createTranslationTasksForGenApp(GenAppEntity genAppEntity) {
         if (!translationWAService.isTranslationRequired(genAppEntity.getLanguageUsed())) {
             return;
         }

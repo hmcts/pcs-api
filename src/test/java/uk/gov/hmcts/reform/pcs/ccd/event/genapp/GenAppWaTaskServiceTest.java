@@ -115,7 +115,7 @@ class GenAppWaTaskServiceTest {
             .thenReturn("General Application GA1 - Defendant 1");
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
@@ -138,7 +138,7 @@ class GenAppWaTaskServiceTest {
         when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
@@ -155,7 +155,7 @@ class GenAppWaTaskServiceTest {
             .build();
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
@@ -187,7 +187,7 @@ class GenAppWaTaskServiceTest {
             .thenReturn("General Application GA1 - Claimant 1");
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(

@@ -66,12 +66,15 @@ public class PackSkipRules {
     }
 
     private Optional<String> claimPackSkipReason(PcsCaseEntity pcsCase, ClaimEntity claim) {
-        boolean translation = requiresTranslation(claim.getLanguageUsed()) || hasActiveTranslationFlag(pcsCase);
+        boolean translationPending =
+            (requiresTranslation(claim.getLanguageUsed()) || hasActiveTranslationFlag(pcsCase))
+            && claim.getTranslatedDocuments().isEmpty();
+
         boolean genAppExpected = claim.getGenAppExpected() == VerticalYesNo.YES;
-        if (translation && genAppExpected) {
+        if (translationPending && genAppExpected) {
             return Optional.of(TRANSLATION_REQUIRED + " and gen app expected");
         }
-        if (translation) {
+        if (translationPending) {
             return Optional.of(TRANSLATION_REQUIRED);
         }
         if (genAppExpected) {
@@ -108,7 +111,7 @@ public class PackSkipRules {
         if (reason.isEmpty()) {
             return false;
         }
-        log.debug("Skipping {} pack for case {} - {}", packType, pcsCase.getId(), reason.get());
+        log.info("### Skipping {} pack for case {} - {}", packType, pcsCase.getId(), reason.get());
         return true;
     }
 

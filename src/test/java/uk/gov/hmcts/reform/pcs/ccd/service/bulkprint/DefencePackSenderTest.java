@@ -33,6 +33,8 @@ class DefencePackSenderTest {
     private BulkPrintService bulkPrintService;
     @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
+    @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
 
     private DefencePackSender underTest;
 
@@ -45,7 +47,7 @@ class DefencePackSenderTest {
     @BeforeEach
     void setUp() {
         underTest = new DefencePackSender(packRecipientResolver, bulkPrintService,
-            new PackSendRecorder(accessCodeActivityLogService));
+            new PackSendRecorder(accessCodeActivityLogService, bulkPrintQueueService));
     }
 
     @Test

@@ -342,6 +342,7 @@ sonarqube {
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
       "**/model/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/**/*.java"
       "**/uk/gov/hmcts/reform/pcs/Application.java," +
       "**/uk/gov/hmcts/reform/pcs/config/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
@@ -349,6 +350,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+        "**/uk/gov/hmcts/reform/pcs/**/*.java," +
       "**/entities/**," +
       "**/model/**," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
@@ -357,7 +359,8 @@ sonarqube {
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentamend/DocumentAmendDetails.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentremoval/DocumentRemovalDetails.java,"
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentremoval/DocumentRemovalDetails.java," +
+      "**/uk/gov/hmcts/reform/pcs/**/*.java"
   }
 }
 

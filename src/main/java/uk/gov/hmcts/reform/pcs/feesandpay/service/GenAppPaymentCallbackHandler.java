@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFormScheduler;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -21,6 +23,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final GenAppRepository genAppRepository;
     private final GenAppFormScheduler genAppFormScheduler;
+    private final BulkPrintQueueService bulkPrintQueueService;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -33,7 +36,9 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
             GenAppEntity genAppEntity = findGenAppEntity(genAppId);
             if (genAppEntity.getState() == GenAppState.PENDING_GEN_APP_ISSUED) {
                 genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
+                PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
                 genAppFormScheduler.scheduleGenAppDocumentGeneration(genAppId);
+                bulkPrintQueueService.queueGenAppPack(pcsCaseEntity, genAppEntity);
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }

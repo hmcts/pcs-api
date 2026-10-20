@@ -13,10 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.claim.ClaimWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 
 import java.time.Instant;
@@ -36,6 +38,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     private final DefendantAccessCodeService defendantAccessCodeService;
     private final ClaimFormScheduler claimFormScheduler;
     private final ClaimWaTaskService claimWaTaskService;
+    private final BulkPrintQueueService bulkPrintQueueService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -74,6 +77,9 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
             scheduleAccessCodeFormGeneration(caseReference);
             claimWaTaskService.createTasksForIssuedClaim(caseReference);
+
+            PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+            bulkPrintQueueService.queueClaimPack(pcsCaseEntity, pcsCaseEntity.getMainClaim());
         }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }

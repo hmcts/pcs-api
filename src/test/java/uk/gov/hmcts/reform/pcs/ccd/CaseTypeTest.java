@@ -111,7 +111,8 @@ class CaseTypeTest {
             AccessType.AccessTypeBuilder.builder("accessTypeId");
         final AccessTypeRole.AccessTypeRoleBuilder accessTypeRoleBuilder =
             AccessTypeRole.AccessTypeRoleBuilder.builder("accessTypeId");
-
+        final Tab.TabBuilder<PCSCase, AccessProfile> caseStatusTabBuilder =
+            Tab.TabBuilder.builder(PCSCase.class, utils);
         when(builder.searchInputFields()).thenReturn(searchBuilder);
         when(builder.searchCasesFields()).thenReturn(searchCasesBuilder);
         when(builder.searchResultFields()).thenReturn(searchBuilder);
@@ -129,6 +130,7 @@ class CaseTypeTest {
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
+        when(builder.tab("caseStatus", "Case Status")).thenReturn(caseStatusTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
         lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
@@ -278,6 +280,7 @@ class CaseTypeTest {
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("caseStatus", "Case Status")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
     }

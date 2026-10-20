@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
@@ -63,6 +64,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppWaTaskService genAppWaTaskService;
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
+    private final BulkPrintQueueService bulkPrintQueueService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -104,7 +106,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
-            genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+
+            PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+            bulkPrintQueueService.queueGenAppPack(pcsCaseEntity, genAppEntity);
+            genAppWaTaskService.createTranslationTasksForGenApp(genAppEntity);
         } else {
             schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
         }
@@ -122,7 +127,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             notificationService.sendGenAppReceivedEmail(genAppEntity);
             genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
-            genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+            genAppWaTaskService.createTranslationTasksForGenApp(genAppEntity);
+
+            PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+            bulkPrintQueueService.queueGenAppPack(pcsCaseEntity, genAppEntity);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
                 .state(initialState)

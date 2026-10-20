@@ -8,17 +8,14 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.GenAppPackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +33,7 @@ public class BulkPrintScheduledTask {
 
     private final FeatureToggleService featureToggleService;
     private final ClaimActivityLogRepository claimActivityLogRepository;
+    private final BulkPrintQueueService bulkPrintQueueService;
     private final ClaimPackSender claimPackSender;
     private final DefencePackSender defencePackSender;
     private final GenAppPackSender genAppPackSender;
@@ -43,14 +41,17 @@ public class BulkPrintScheduledTask {
     private final Integer lookbackHours;
 
     public BulkPrintScheduledTask(FeatureToggleService featureToggleService,
-                                        ClaimActivityLogRepository claimActivityLogRepository,
-                                        ClaimPackSender claimPackSender,
-                                        DefencePackSender defencePackSender,
-                                        GenAppPackSender genAppPackSender,
-                                        @Value("${bulk-print.schedule}") String schedule,
-                                        @Value("${bulk-print.lookback-hours:#{null}}") Integer lookbackHours) {
+                                  ClaimActivityLogRepository claimActivityLogRepository,
+                                  BulkPrintQueueService bulkPrintQueueService,
+                                  ClaimPackSender claimPackSender,
+                                  DefencePackSender defencePackSender,
+                                  GenAppPackSender genAppPackSender,
+                                  @Value("${bulk-print.schedule}") String schedule,
+                                  @Value("${bulk-print.lookback-hours:#{null}}") Integer lookbackHours) {
         this.featureToggleService = featureToggleService;
         this.claimActivityLogRepository = claimActivityLogRepository;
+        this.bulkPrintQueueService = bulkPrintQueueService;
+
         this.claimPackSender = claimPackSender;
         this.defencePackSender = defencePackSender;
         this.genAppPackSender = genAppPackSender;
@@ -102,6 +103,10 @@ public class BulkPrintScheduledTask {
     }
 
     private List<UUID> discoverCandidateCases() {
+        // TODO: Add cut off? Also add logging?
+        return bulkPrintQueueService.getCaseIdsPendingPacks();
+
+        /*
         if (lookbackHours == null) {
             return claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
                 ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS);
@@ -111,5 +116,6 @@ public class BulkPrintScheduledTask {
         LocalDateTime cutoff = LocalDateTime.now(ZoneOffset.UTC).minusHours(lookbackHours);
         return claimActivityLogRepository.findCaseIdsByActivityTypeAndStatusCreatedAfter(
             ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS, cutoff);
+        */
     }
 }

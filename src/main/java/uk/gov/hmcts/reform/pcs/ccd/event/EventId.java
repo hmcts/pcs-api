@@ -34,5 +34,7 @@ public enum EventId {
     manageParties,
     reindexCases,
     defendantPaperResponse,
-    legalRepresentativeContactDetails
+    legalRepresentativeContactDetails,
+    uploadTranslatedClaimForm,
+    uploadTranslatedGenAppForm
 }
