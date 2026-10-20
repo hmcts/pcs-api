@@ -285,7 +285,8 @@ public class DocumentService {
             type = DocumentType.OTHER;
             categoryId = CaseFileCategory.APPLICATIONS.getId();
         } else if (selectedCounterClaim != null) {
-            renamed = documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, party.getId());
+            renamed = documentNameService.appendCounterClaimPostfix(
+                originalFilename, selectedCounterClaim, mainClaim, party.getId());
             type = DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM;
             // Set explicitly: mapDocumentTypeToCategory has no mapping for this type
             categoryId = CaseFileCategory.STATEMENTS_OF_CASE.getId();
@@ -385,7 +386,7 @@ public class DocumentService {
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
                 .fileName(documentNameService.appendCounterClaimPostfix(
-                    ccDoc.getDocument().getFilename(), claim, party.getId()))
+                    ccDoc.getDocument().getFilename(), counterClaim, claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())
@@ -548,29 +549,48 @@ public class DocumentService {
         PartyEntity party,
         GenAppEntity selectedGenApp
     ) {
+        createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments, pcsCaseEntity, party, selectedGenApp, null);
+    }
+
+    public void createDocumentEntitiesFromLegalRepDocuments(
+        List<LegalRepDocument> legalRepDocuments,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity party,
+        GenAppEntity selectedGenApp,
+        CounterClaimEntity selectedCounterClaim
+    ) {
         List<DocumentEntity> documentEntities = legalRepDocuments.stream()
             .map(legalRepDoc -> {
 
                 DocumentType resolvedDocumentType = resolveDocumentType(legalRepDoc);
 
-                String categoryId = resolveDocumentCategory(legalRepDoc)
-                    .map(CaseFileCategory::getId)
-                    .orElse(null);
+                String categoryId = (selectedCounterClaim != null)
+                    ? CaseFileCategory.STATEMENTS_OF_CASE.getId()
+                    : resolveDocumentCategory(legalRepDoc)
+                        .map(CaseFileCategory::getId)
+                        .orElse(null);
 
                 ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
 
                 String documentUrl = legalRepDoc.getDocument().getUrl();
                 String originalFilename = legalRepDoc.getDocument().getFilename();
-                String renamed = (selectedGenApp != null)
-                    ? documentNameService.appendGenAppPostfix(
-                    originalFilename, selectedGenApp, mainClaim, party.getId())
-                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
+                String renamed;
+                if (selectedGenApp != null) {
+                    renamed = documentNameService.appendGenAppPostfix(
+                        originalFilename, selectedGenApp, mainClaim, party.getId());
+                } else if (selectedCounterClaim != null) {
+                    renamed = documentNameService.appendCounterClaimPostfix(
+                        originalFilename, selectedCounterClaim, mainClaim, party.getId());
+                } else {
+                    renamed = documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
+                }
 
                 return DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
                 .url(documentUrl)
                 .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                 .generalApplication(selectedGenApp)
+                .counterClaim(selectedCounterClaim)
                 .fileName(renamed)
                 .party(party)
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
@@ -588,7 +608,7 @@ public class DocumentService {
         createAdditionalDocsWATask(
             party,
             selectedGenApp,
-            null,
+            selectedCounterClaim,
             pcsCaseEntity.getCaseReference(),
             pcsCaseEntity.getMainClaim(),
             documentEntities

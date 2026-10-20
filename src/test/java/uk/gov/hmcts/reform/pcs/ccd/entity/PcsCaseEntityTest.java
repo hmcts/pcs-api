@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -69,6 +70,32 @@ class PcsCaseEntityTest {
         // Then
         verify(genAppEntity).setRank(6);
         verify(genAppEntity).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldAddCounterClaimEntityAndSetCaseLevelRank() {
+        CounterClaimEntity counterClaim1 = CounterClaimEntity.builder().build();
+        CounterClaimEntity counterClaim2 = CounterClaimEntity.builder().build();
+
+        underTest.addCounterClaim(counterClaim1);
+        underTest.addCounterClaim(counterClaim2);
+
+        assertThat(counterClaim1.getRank()).isEqualTo(1);
+        assertThat(counterClaim1.getPcsCase()).isSameAs(underTest);
+
+        assertThat(counterClaim2.getRank()).isEqualTo(2);
+        assertThat(counterClaim2.getPcsCase()).isSameAs(underTest);
+    }
+
+    @Test
+    void shouldAssignRankToCounterClaimWhenRankIsNull() {
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder().build();
+        underTest.getCounterClaims().add(counterClaim);
+        assertThat(counterClaim.getRank()).isNull();
+
+        underTest.assignCounterClaimRank(counterClaim);
+
+        assertThat(counterClaim.getRank()).isEqualTo(1);
     }
 
     @Test
