@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
+import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -101,6 +102,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
+    private final JudicialNoteView judicialNoteView;
 
     // The SDK calls this overload, whose default calls getCase(request) on this instance, bypassing its
     // transaction. Without one, the bundle status query takes a second pooled connection.
@@ -200,6 +202,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
+        judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         return new SubmittedCase(pcsCase, pcsCaseEntity);

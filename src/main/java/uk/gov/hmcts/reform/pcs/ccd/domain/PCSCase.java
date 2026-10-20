@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -118,6 +119,7 @@ public class PCSCase {
     public static final String PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL =
         "Explain why you have not followed the pre-action protocol";
     public static final String NOTE_LABEL = "Note";
+    public static final String JUDICIAL_NOTE_LABEL = "Write a note about this case";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
@@ -804,6 +806,16 @@ public class PCSCase {
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
+
+    @CCD(
+        label = JUDICIAL_NOTE_LABEL,
+        hint = "You can enter up to 30,000 characters",
+        typeOverride = TextArea
+    )
+    private String judicialNote;
+
+    @CCD(searchable = false, access = {JudicialReadAccess.class})
+    private String judicialNotesMarkdown;
 
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private String caseReviewDatesMarkdown;

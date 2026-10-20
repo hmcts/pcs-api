@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
+import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -152,6 +153,9 @@ class PCSCaseViewTest {
     @Mock
     private OrganisationService organisationService;
 
+    @Mock
+    private JudicialNoteView judicialNoteView;
+
     private PCSCaseView underTest;
 
     @BeforeEach
@@ -168,7 +172,8 @@ class PCSCaseViewTest {
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, ordersView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
-                                    hearingView, legalRepresentativeSummaryService, organisationService
+                                    hearingView, legalRepresentativeSummaryService, organisationService,
+                                    judicialNoteView
         );
     }
 
@@ -401,6 +406,7 @@ class PCSCaseViewTest {
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(featureFlagView).setCaseFields(pcsCase);
         verify(hearingView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(judicialNoteView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
     }
