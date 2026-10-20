@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -31,16 +33,21 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.UploadRelatedEvid
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterGenApp;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @Component
 @RequiredArgsConstructor
@@ -51,6 +58,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     private final GenAppService genAppService;
     private final ApplicationDetails applicationDetails;
     private final AddressFormatter addressFormatter;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -81,8 +89,28 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         caseData.setPartyRadioList(buildApplicantPartyList(mainClaim));
+        EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest() == null
+            ? EnterGenAppRequest.builder().build()
+            : caseData.getEnterGenAppRequest();
+        enterGenAppRequest.setApplicationTypeOptionList(buildApplicationTypeList());
+        caseData.setEnterGenAppRequest(enterGenAppRequest);
 
         return caseData;
+    }
+
+    private DynamicStringList buildApplicationTypeList() {
+        boolean release1bEnabled = featureToggleService.isEnabled(FeatureFlag.RELEASE_1B);
+        List<DynamicStringListElement> listItems = Arrays.stream(EnterGenAppType.values())
+            .filter(value -> release1bEnabled || value != EnterGenAppType.SUSPEND)
+            .map(value -> DynamicStringListElement.builder()
+                .code(value.name())
+                .label(value.getLabel())
+                .build())
+            .toList();
+
+        return DynamicStringList.builder()
+            .listItems(listItems)
+            .build();
     }
 
     private DynamicList buildApplicantPartyList(ClaimEntity mainClaim) {
