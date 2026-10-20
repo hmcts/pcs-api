@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Map;
@@ -25,8 +27,13 @@ public class OrdersView {
     );
 
     private final OrderStepRepository orderStepRepository;
+    private final FeatureToggleService featureToggleService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
+            pcsCase.setOrdersMarkdown(null);
+            return;
+        }
         List<OrderStepEntity> orders = orderStepRepository.findLatestByCaseId(pcsCaseEntity.getId());
         pcsCase.setOrdersMarkdown(orders.isEmpty() ? "There are no orders on this case." : table(orders));
     }
