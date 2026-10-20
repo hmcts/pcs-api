@@ -30,6 +30,8 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
     public ArrayNode feePaymentInfoList;
     public Long testingSupportCaseReference;
 
+    private String caseReference;
+
     @Steps
     ApiSteps apiSteps;
 
@@ -38,6 +40,15 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
         idamUser = PcsIdamTokenClient.UserType.solicitorUser;
         serviceAuthorisationToken = TestConstants.PCS_API;
         super.initialise();
+    }
+
+    public PCSTestingSupportApiSteps setCaseReference(String caseReference) {
+        this.caseReference = caseReference;
+        return this;
+    }
+
+    public String getCaseReference() {
+        return caseReference;
     }
 
     @Override
@@ -85,11 +96,11 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
 
 
 
-    @Step("Get Fee payment info for case {0}")
-    public PCSTestingSupportApiSteps getFeePaymentInfo(String caseReference) {
+    @Step("Get Fee payment info for case")
+    public PCSTestingSupportApiSteps getFeePaymentInfo() {
         Callable<ArrayNode> fetchPaymentInfo = () -> {
             String paymentInfoJson = createRequest()
-                .pathParam("caseReference", caseReference)
+                .pathParam("caseReference", this.caseReference)
                 .when()
                 .get(Endpoints.GetPaymentInfoDetails.getResource())
                 .then()
@@ -129,9 +140,9 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
         return this;
     }
 
-    public String getPaymentReferenceForPartyId(String caseReference, String partyId) {
-        getFeePaymentInfo(caseReference);
+    public String getPaymentReferenceForPartyId( String partyId) {
         System.out.println("fee payment unfo: " + feePaymentInfoList);
+        System.out.println("Party id: " + partyId);
 
         if (feePaymentInfoList == null) {
             return null;
@@ -161,26 +172,74 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
     }
 
 
-    @Step("a pin is fetched")
-    public PCSTestingSupportApiSteps accessCodeIsFetched(String caseReference) {
-        Callable<String> fetchPins = () -> {
-            Map<String, Object> pins = createRequest()
-                .pathParam("caseReference", caseReference)
-                .when()
-                .get(Endpoints.GetPins.getResource())
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(new TypeRef<Map<String, Object>>() {});
+    private Map<String, Object> getAccessCodes(){
+        Map<String, Object> pins = createRequest()
+            .pathParam("caseReference", this.caseReference)
+            .when()
+            .get(Endpoints.GetPins.getResource())
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<Map<String, Object>>() {});
 
-                System.out.println("Fetched pins: " + pins);
+        System.out.println("Fetched pins: " + pins);
+        return pins;
+    }
+
+    @Step("a pin is fetched")
+    public PCSTestingSupportApiSteps accessCodeIsFetched() {
+        Callable<String> fetchPins = () -> {
+            Map<String,Object> pins = this.getAccessCodes();
             if (pins != null && !pins.isEmpty()) {
                 partiesAccessCodes = pins;
                 return pins.keySet().iterator().next();
             }
             return null;
         };
+        try {
+            await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(fetchPins, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Access code not available for case: " + caseReference, e
+            );
+        }
+        return this;
+    }
 
+    private String validateAndReturnAccessCodeForUser(String firstname , String lastname){
+        if (partiesAccessCodes == null || partiesAccessCodes.isEmpty()) {
+            accessCodeIsFetched();
+        }
+        for (Map.Entry<String, Object> pinEntry : partiesAccessCodes.entrySet()) {
+            if (!(pinEntry.getValue() instanceof Map<?, ?> partyDetails)) {
+                continue;
+            }
+            boolean matchesNames = hasValue(firstname)
+                && hasValue(lastname)
+                && firstname.equals(asString(partyDetails.get("firstName")))
+                && lastname.equals(asString(partyDetails.get("lastName")));
+            if (matchesNames) {
+                return pinEntry.getKey();
+            }
+        }
+        return null;
+    }
+
+    @Step("a pin is fetched for user {0} {1}")
+    public PCSTestingSupportApiSteps accessCodeIsFetchedForUser(String firstname , String lastname) {
+        Callable<String> fetchPins = () -> {
+            Map<String,Object> pins = this.getAccessCodes();
+            if (pins != null && !pins.isEmpty()) {
+//                partiesAccessCodes = pins;
+                validateAndReturnAccessCodeForUser(firstname, lastname);
+                return pins.keySet().iterator().next();
+            }
+            return null;
+        };
         try {
             await()
                 .atMost(Duration.ofSeconds(15))
@@ -196,6 +255,7 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
     }
 
 
+
     @Step("access code validated")
     public String validateAccessCodeForParty(
         String caseReference,
@@ -203,45 +263,8 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
         String firstName,
         String lastName
     ) {
-        if (partiesAccessCodes == null || partiesAccessCodes.isEmpty()) {
-            accessCodeIsFetched(caseReference);
-        }
 
-        String accessCode = null;
-        System.out.println("partiesAccessCodes for case " + caseReference + ": " + partiesAccessCodes);
-        boolean noPartyDetailsProvided = partyId == null && firstName == null && lastName == null;
-        for (Map.Entry<String, Object> pinEntry : partiesAccessCodes.entrySet()) {
-            if (!(pinEntry.getValue() instanceof Map<?, ?> partyDetails)) {
-                continue;
-            }
-
-            Object mappedPartyId = partyDetails.containsKey("party_id")
-                ? partyDetails.get("party_id")
-                : partyDetails.containsKey("partyId")
-                    ? partyDetails.get("partyId")
-                    : partyDetails.get("id");
-            boolean matchesPartyId = hasValue(partyId)
-                && partyId.equals(mappedPartyId == null ? null : mappedPartyId.toString());
-            boolean matchesNames = hasValue(firstName)
-                && hasValue(lastName)
-                && firstName.equals(asString(partyDetails.get("firstName")))
-                && lastName.equals(asString(partyDetails.get("lastName")));
-            boolean hasAnyPartyDetail = hasValue(asString(mappedPartyId))
-                || hasValue(asString(partyDetails.get("firstName")))
-                || hasValue(asString(partyDetails.get("lastName")));
-
-            if (matchesPartyId || matchesNames || (noPartyDetailsProvided && !hasAnyPartyDetail)) {
-                accessCode = pinEntry.getKey();
-                break;
-            }
-        }
-
-        if (accessCode == null) {
-            throw new IllegalStateException(
-                "Access code not found for party " + partyId + " in case " + caseReference
-            );
-        }
-        String selectedAccessCode = accessCode;
+        String selectedAccessCode = validateAndReturnAccessCodeForUser(firstName, lastName);;
 
         String idempotencyKey = UUID.randomUUID().toString();
         Callable<String> validateCode = () -> {

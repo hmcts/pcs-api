@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -15,10 +17,13 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -42,6 +47,8 @@ public class CcdTestCaseOrchestrator {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddressFor(legislativeCountry, payloadMerge))
+            .defendant1(withDefendant1Details(payloadMerge))
+            .additionalDefendants(withAdditionalDefendant1Details(payloadMerge))
             .legislativeCountry(legislativeCountry)
             .build();
 
@@ -147,6 +154,28 @@ public class CcdTestCaseOrchestrator {
             return objectMapper.convertValue(payloadMerge.get("propertyAddress"), AddressUK.class);
         }
         return addressFor(legislativeCountry);
+    }
+
+    private DefendantDetails withDefendant1Details(JsonNode payloadMerge) {
+        if (payloadMerge != null && payloadMerge.hasNonNull("defendant1")) {
+            return objectMapper.convertValue(payloadMerge.get("defendant1"), DefendantDetails.class);
+        }
+        return null;
+    }
+
+    private List<ListValue<DefendantDetails>> withAdditionalDefendant1Details(JsonNode payloadMerge) {
+        if (payloadMerge != null && payloadMerge.hasNonNull("additionaDefendants")) {
+            return objectMapper.convertValue(
+                payloadMerge.get("additionaDefendants"),
+                new TypeReference<List<ListValue<DefendantDetails>>>() {
+                    @Override
+                    public Type getType() {
+                        return super.getType();
+                    }
+                }
+            );
+        }
+        return List.of();
     }
 
     private AddressUK addressFor(LegislativeCountry legislativeCountry) {

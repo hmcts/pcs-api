@@ -52,14 +52,14 @@ public class CCDDataStoreApiSteps {
         currentUserId = null;
         event_token = null;
         currentEventId = null;
-        serviceAuthorisationToken = new ServiceAuthenticationGenerator().generate(CCD_DATA);
+        this.serviceAuthorisationToken = new ServiceAuthenticationGenerator().generate(CCD_DATA);
         request = createRequest();
         return this;
     }
 
     @Step("with user {0}")
     public CCDDataStoreApiSteps withUser(String userIdentifier) {
-        idamToken = PcsIdamTokenClient.generateTokenForUser(userIdentifier);
+        this.idamToken = PcsIdamTokenClient.generateTokenForUser(userIdentifier);
         currentUserId = TestUsers.getIdamId(userIdentifier);
         request = createRequest().header(TestConstants.AUTHORIZATION, "Bearer " + idamToken);
         return this;
@@ -128,8 +128,7 @@ public class CCDDataStoreApiSteps {
     }
 
     @Step("Fetch case data {0}")
-    public CCDDataStoreApiSteps fetchCaseDetails(String caseReference) {
-        setCaseReference(caseReference);
+    public CCDDataStoreApiSteps fetchCaseDetails() {
         String caseDataJson = accessCaseDetails()
             .then()
             .assertThat()
@@ -146,10 +145,10 @@ public class CCDDataStoreApiSteps {
         return this;
     }
 
-   
 
-    public Map<String, String> getDefendantParty(String caseReference, int defendantIndex) {
-        fetchCaseDetails(caseReference);
+
+    public Map<String, String> getDefendantParty(int defendantIndex) {
+        fetchCaseDetails();
         JsonNode defendant = caseData.at("/data/allDefendants/" + defendantIndex);
         JsonNode defendantId = defendant.path("id");
         if (defendantId.isMissingNode() || defendantId.isNull()) {
@@ -163,6 +162,23 @@ public class CCDDataStoreApiSteps {
         defendantDetails.put("firstName", defendant.path("value").path("firstName").asText(null));
         defendantDetails.put("lastName", defendant.path("value").path("lastName").asText(null));
         return defendantDetails;
+    }
+
+    public Map<String, String> getClaimantParty(int index) {
+        fetchCaseDetails();
+        JsonNode claimant = caseData.at("/data/allClaimants/" + index);
+        JsonNode claimantId = claimant.path("id");
+        if (claimantId.isMissingNode() || claimantId.isNull()) {
+            throw new IllegalStateException(
+                "No claimant at index " + index + " for case " + caseReference
+            );
+        }
+
+        Map<String, String> claimantDetails = new HashMap<>();
+        claimantDetails.put("id", claimantId.asText());
+        claimantDetails.put("orgName", claimant.path("value").path("orgName").asText(null));
+        claimantDetails.put("emailAddress", claimant.path("value").path("emailAddress").asText(null));
+        return claimantDetails;
     }
 
     @Step("assert case state is {0}")
@@ -186,7 +202,7 @@ public class CCDDataStoreApiSteps {
         .then()
             .statusCode(200)
             .extract().response();
-        event_token = response.jsonPath().getString("event_token");
+        event_token = response.jsonPath().getString("token");
         return this;
     }
 
@@ -234,21 +250,7 @@ public class CCDDataStoreApiSteps {
         return this;
     }
 
-    public String getClaimantPartyId(String caseReference) {
-        fetchCaseDetails(caseReference);
-        if (caseData == null) {
-            return null;
-        }
-
-        JsonNode claimantId = caseData.at("/data/allClaimants/0/id");
-        if (claimantId.isMissingNode() || claimantId.isNull()) {
-            return null;
-        }
-
-        return claimantId.asText();
-    }
-
-    @Step("submit event {0} for case {1}")
+    @Step("submit event {0} for case")
     public CCDDataStoreApiSteps submitEvent(String event, ObjectNode eventData) {
         if (event_token == null || event_token.isBlank()) {
             throw new IllegalStateException("No event token available. Call triggerEvent before submitEvent.");
@@ -259,11 +261,12 @@ public class CCDDataStoreApiSteps {
         response = createRequest()
             .pathParam("caseReference", this.caseReference)
             .header("Accept", "application/vnd.uk.gov.hmcts.ccd-data-store-api.create-event.v2+json;charset=UTF-8")
+            .header("experimental", true)
             .body(requestBody)
             .when()
             .post("/cases/{caseReference}/events")
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract().response();
         return this;
     }
@@ -290,6 +293,20 @@ public class CCDDataStoreApiSteps {
         internalCaseId = decodedJWT.getClaim("case-id").asString();
         return internalCaseId;
     }
+    public String getClaimantPartyId() {
+        fetchCaseDetails();
+        if (caseData == null) {
+            return null;
+        }
+
+        JsonNode claimantId = caseData.at("/data/allClaimants/0/id");
+        if (claimantId.isMissingNode() || claimantId.isNull()) {
+            return null;
+        }
+
+        return claimantId.asText();
+    }
+
 
     public String getCaseVersion() {
         return response.jsonPath().getString("case_details.version");
@@ -297,7 +314,7 @@ public class CCDDataStoreApiSteps {
 
     public Response accessCaseDetails() {
         response = createRequest()
-            .pathParam("caseReference", caseReference)
+            .pathParam("caseReference", this.caseReference)
             .header("experimental",
                     "true")
             .when()
@@ -309,9 +326,9 @@ public class CCDDataStoreApiSteps {
         RequestSpecification newRequest = SerenityRest.given()
             .baseUri(DATA_STORE_URL)
             .contentType(ContentType.JSON)
-            .header(TestConstants.SERVICE_AUTHORIZATION, serviceAuthorisationToken);
-        if (idamToken != null) {
-            newRequest = newRequest.header(TestConstants.AUTHORIZATION, "Bearer " + idamToken);
+            .header(TestConstants.SERVICE_AUTHORIZATION, this.serviceAuthorisationToken);
+        if (this.idamToken != null) {
+            newRequest = newRequest.header(TestConstants.AUTHORIZATION, "Bearer " + this.idamToken);
         }
         return newRequest;
     }

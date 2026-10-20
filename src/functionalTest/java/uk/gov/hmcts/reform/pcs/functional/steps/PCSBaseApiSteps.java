@@ -35,6 +35,8 @@ public class PCSBaseApiSteps {
 
     private Response response;
 
+    private String caseReference;
+
     public void initialise() {
         serviceAuthorisationToken = new ServiceAuthenticationGenerator().generate();
     }
@@ -42,6 +44,7 @@ public class PCSBaseApiSteps {
     public void initialise(String startPayloadPath, String submitPayloadPath,
                            Map<String, Object> startReplacements, Map<String, Object> submitReplacements) {
         initialise();
+        caseReference = null;
         startRequestBody = null;
         submitRequestBody = null;
         serviceAuthorisationToken = new ServiceAuthenticationGenerator().generate();
@@ -55,8 +58,17 @@ public class PCSBaseApiSteps {
         }
     }
 
+    public PCSBaseApiSteps setCaseReference(String caseReference) {
+        this.caseReference = caseReference;
+        return this;
+    }
+
+    public String getCaseReference() {
+        return caseReference;
+    }
+
     public PCSBaseApiSteps withUser(String userIdentifier) {
-        idamToken = PcsIdamTokenClient.generateTokenForUser(userIdentifier);
+        this.idamToken = PcsIdamTokenClient.generateTokenForUser(userIdentifier);
         return this;
     }
 
@@ -111,14 +123,14 @@ public class PCSBaseApiSteps {
     }
 
     @Step("update payment")
-    public PCSBaseApiSteps updatePayment(String caseReference, String paymentReference) {
+    public PCSBaseApiSteps updatePayment(String serviceRequestRef) {
 
-        System.out.println("Updating payment for caseReference: " + caseReference + ", paymentReference: " + paymentReference);
+        System.out.println("Updating payment for caseReference: " + this.caseReference + ", paymentReference: " + serviceRequestRef);
         String paymentUpdateRequest = PayloadLoader.load(
-            "/payloads/paymentUpdateRequest.json",
+            "/payloads/payment-update-CallbackRequest.json",
             Map.of(
-                "serviceRequestReference", paymentReference,
-                "ccdCaseNumber", caseReference
+                "requestReference", serviceRequestRef,
+                "caseReference", this.caseReference
             )
         );
 
@@ -161,12 +173,11 @@ public class PCSBaseApiSteps {
     }
 
     protected RequestSpecification createRequest() {
-        String userToken = idamToken == null ? PcsIdamTokenClient.generateToken(idamUser) : idamToken;
         return SerenityRest.given()
             .baseUri(System.getenv("TEST_URL"))
             .contentType(ContentType.JSON)
             .header(TestConstants.SERVICE_AUTHORIZATION, serviceAuthorisationToken)
-            .header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
+            .header(TestConstants.AUTHORIZATION, "Bearer " + this.idamToken);
     }
 
 

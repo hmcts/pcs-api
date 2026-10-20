@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,23 +17,42 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.eventData.ResumePossessionCl
 
 import java.util.Map;
 
-@Tag("Functional1")
+@Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CaseEventFlowSampleTest extends BaseApi {
 
     @Steps
     TestContext testContext;
 
-    @Title("Event flow - create case with multiple defendants")
+    private static String caseId = null;
+
+    @Title("Create case with testing support endpoint")
+    @Order(1)
     @Test
+    void createCaseWithtestSupport(){
+                testContext.initialize().asUser("ORG_LOCALAUTHORITY.solicitor1");
+        ObjectNode createCaseTestSupportPayload = EventDataUtil.forEvent(CaseTypeEvents.CREATE_CASE_TEST_SUPPORT).getData();
+        testContext.withPCSTestingSupportApiSteps()
+            .createCaseForLegislativeCountry("england", createCaseTestSupportPayload, true);
+        testContext.setCaseReference(
+            testContext.withPCSTestingSupportApiSteps().getTestingSupportCaseReference().toString()
+        );
+        caseId = testContext.getCaseReference();
+    }
+
+    @Title("Event flow - create case with multiple defendants")
+    @Order(1)
+//    @Test
     void createCaseWithMultipleDefendants() {
         testContext.initialize().asUser("ORG_LOCALAUTHORITY.solicitor1");
 
         testContext.withCCDDataStoreApiSteps()
             .createPossessionClaimCase("england");
         testContext.setCaseReference(testContext.withCCDDataStoreApiSteps().getCaseReference());
+        caseId = testContext.getCaseReference();
 
         ObjectNode resumePossessionClaimPayload = ((ResumePossessionClaimEventData) EventDataUtil
             .forEvent(CaseTypeEvents.RESUME_POSSESSION_CLAIM))
@@ -55,24 +73,35 @@ class CaseEventFlowSampleTest extends BaseApi {
     }
 
     @Title("Event flow - respond to possession claim")
+    @Order(2)
     @Test
     void respondPossessionClaim() {
-        testContext.initialize().asUser("ORG_LOCALAUTHORITY.solicitor1");
-        testContext.withPCSTestingSupportApiSteps()
-            .createCaseForLegislativeCountry("england", null, true);
-        testContext.setCaseReference(
-            testContext.withPCSTestingSupportApiSteps().getTestingSupportCaseReference().toString()
-        );
-        Map<String, String> defendantParty = testContext.withCCDDataStoreApiSteps()
-            .getDefendantParty(testContext.getCaseReference(), 0);
+        testContext.initialize().setCaseReference(caseId);
+        testContext.asUser("ORG_LOCALAUTHORITY.solicitor1");
+        Map<String, String> claimantParty = testContext.withCCDDataStoreApiSteps()
+            .fetchCaseDetails()
+            .getClaimantParty( 0);
+
+        Map<String, String> defenantParty = testContext.withCCDDataStoreApiSteps()
+            .fetchCaseDetails()
+            .getDefendantParty( 1);
+
+        String serviceRequestRef = testContext.withPCSTestingSupportApiSteps()
+            .getFeePaymentInfo()
+            .getPaymentReferenceForPartyId(claimantParty.get("id"));
+
+        System.out.println("serviceRequestRef reference : "+serviceRequestRef);
+        testContext.withPCSBaseApiSteps()
+            .updatePayment(serviceRequestRef);
 
         testContext.asUser("DEFENDANT.CITIZEN_1")
             .withPCSTestingSupportApiSteps()
+            .accessCodeIsFetchedForUser(defenantParty.get("firstName"),defenantParty.get("lastName"))
             .validateAccessCodeForParty(
                 testContext.getCaseReference(),
-                defendantParty.get("id"),
-                defendantParty.get("firstName"),
-                defendantParty.get("lastName")
+                defenantParty.get("id"),
+                defenantParty.get("firstName"),
+                defenantParty.get("lastName")
             );
 
         ObjectNode respondPossessionClaimEventPayload =
