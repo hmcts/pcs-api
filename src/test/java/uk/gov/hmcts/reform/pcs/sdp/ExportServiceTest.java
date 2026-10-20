@@ -205,6 +205,73 @@ class ExportServiceTest {
         verifyNoInteractions(blobUploader);
     }
 
+    @Test
+    void shouldExportClaimWhenTenancyLicenceIsMissing() throws Exception {
+        ClaimEntity claimWithoutTenancy = claim();
+        claimWithoutTenancy.getPcsCase().setTenancyLicence(null);
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithoutTenancy));
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        assertThat(Files.readString(result.outputPath())).contains("\"tenancy_type\" : \"AAA3-OTH\"");
+    }
+
+    @Test
+    void shouldExportClaimWhenNoticeOfPossessionIsMissing() throws Exception {
+        ClaimEntity claimWithoutNotice = claim();
+        claimWithoutNotice.setNoticeOfPossession(null);
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithoutNotice));
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        assertThat(Files.readString(result.outputPath())).doesNotContain("postal_claim_received_by_court_date");
+    }
+
+    @Test
+    void shouldExportClaimWhenPartiesAreMissing() throws Exception {
+        ClaimEntity claimWithoutParties = claim();
+        claimWithoutParties.setClaimParties(null);
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithoutParties));
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        assertThat(Files.readString(result.outputPath())).contains("\"parties\" : [ ]");
+    }
+
+    @Test
+    void shouldExportClaimWhenPartiesAreEmpty() throws Exception {
+        ClaimEntity claimWithEmptyParties = claim();
+        claimWithEmptyParties.setClaimParties(List.of());
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithEmptyParties));
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        assertThat(Files.readString(result.outputPath())).contains("\"parties\" : [ ]");
+    }
+
+    @Test
+    void shouldSkipClaimPartyWhenPartyIsMissing() throws Exception {
+        ClaimEntity claimWithNullParty = claim();
+        claimWithNullParty.setClaimParties(List.of(
+            ClaimPartyEntity.builder().role(PartyRole.DEFENDANT).build()
+        ));
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithNullParty));
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        assertThat(Files.readString(result.outputPath())).contains("\"parties\" : [ ]");
+    }
+
     private void givenClaimWithHash() {
         when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claim()));
         when(snapshotHasher.hash(any())).thenReturn(HASH);

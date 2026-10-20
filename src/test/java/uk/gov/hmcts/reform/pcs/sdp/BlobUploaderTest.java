@@ -15,6 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -45,5 +47,18 @@ class BlobUploaderTest {
         assertThat(options.getHeaders().getContentType()).isEqualTo("application/json");
         assertThat(new String(BinaryData.fromFlux(options.getDataFlux()).block().toBytes(), StandardCharsets.UTF_8))
             .isEqualTo("{\"ok\":true}");
+    }
+
+    @Test
+    void shouldRethrowWhenUploadFails() {
+        String blobName = "claim_snapshot_2026-10-13.json";
+        byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
+        when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
+        when(blobClient.uploadWithResponse(any(), isNull(), eq(Context.NONE)))
+            .thenThrow(new IllegalStateException("upload failed"));
+
+        assertThatThrownBy(() -> new BlobUploader(blobContainerClient).upload(blobName, json))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("upload failed");
     }
 }
