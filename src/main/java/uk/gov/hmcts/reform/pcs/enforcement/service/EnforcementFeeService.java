@@ -55,8 +55,6 @@ public class EnforcementFeeService {
             .relatedEntityId(enforcementId)
             .build();
 
-        // The real time, not the injected clock's: db-scheduler decides when a task is due against the
-        // system clock, so a task scheduled from a clock the tests have moved forwards would never be due.
         schedulerClient.scheduleIfNotExists(
             FEES_AND_PAY_TASK_DESCRIPTOR
                 .instance(instanceId(enforcementId))

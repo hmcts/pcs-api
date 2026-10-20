@@ -8,7 +8,6 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { submitCaseApiData } from '@data/api-data';
 import { CLAIMANT_LEGAL_REPRESENTATIVE, answerCookieQuestion, requireEmailFor, resetSession } from '../support/session';
 import { beginScenario, endScenario, recordBrowserRequest } from '../support/demo-continuity';
-import { resetClockIfMoved } from '../support/test-clock';
 import { demoHoldMs } from '../support/demo-pacing';
 import { disablePagePacing, enablePagePacing } from '@utils/page-pacing';
 import type { BatchPrintFile, BatchPrintPlan } from '../support/batch-print';
@@ -95,20 +94,15 @@ export const test = base.extend<EnforcementFixtures>({
         enablePagePacing(page, holdMs);
       }
       await use();
-      // A clock this scenario moved outlives it, so it goes back first, and the rest of the tear-down still runs.
-      try {
-        await resetClockIfMoved();
-      } finally {
-        disablePagePacing();
-        defendantDetails.length = 0;
-        moneyMap.clear();
-        fieldsMap.clear();
-        const caseHeldForNextScenario = await endScenario(testInfo, world, context);
-        if (world.caseReference && !caseHeldForNextScenario) {
-          await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
-        }
-        PageContentValidation.finaliseTest();
+      disablePagePacing();
+      defendantDetails.length = 0;
+      moneyMap.clear();
+      fieldsMap.clear();
+      const caseHeldForNextScenario = await endScenario(testInfo, world, context);
+      if (world.caseReference && !caseHeldForNextScenario) {
+        await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
       }
+      PageContentValidation.finaliseTest();
     },
     { auto: true },
   ],

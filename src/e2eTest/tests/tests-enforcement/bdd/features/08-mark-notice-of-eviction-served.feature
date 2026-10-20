@@ -28,27 +28,26 @@ Feature: Bailiff marks the notice of eviction as served
     When I select "Continue" without answering
     Then I see errors for "When did you serve the 'notice of eviction'?" and "How did you serve the 'notice of eviction'?"
 
-  @HDPI-7346 @clock
+  @HDPI-7346
   Scenario Outline: Served date and time validation
-    Given today is "08/07/2026" and the time is "10:00"
     When I enter a served date of "<date>" and time "<time>"
     And I select "Continue"
     Then I see "<result>"
 
     @not-filmed
     Examples:
-      | date       | time  | result                                    |
-      | 08/07/2026 | 16:00 | an error that the time cannot be in the future |
+      | date  | time                | result                                         |
+      | today | one minute from now | an error that the time cannot be in the future |
 
     Examples:
-      | date       | time  | result                                    |
-      | 08/07/2026 | 09:00 | the 'Check your answers' screen           |
+      | date  | time           | result                          |
+      | today | one minute ago | the 'Check your answers' screen |
 
     # An earlier day reaches the same screen as a time earlier today.
     @not-filmed
     Examples:
-      | date       | time  | result                                    |
-      | 07/07/2026 | 16:00 | the 'Check your answers' screen           |
+      | date      | time  | result                          |
+      | yesterday | 16:00 | the 'Check your answers' screen |
 
   @HDPI-7346 @not-filmed
   Scenario: How the notice was served is limited to 500 characters

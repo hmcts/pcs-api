@@ -46,9 +46,6 @@ public class EnforcementDocumentScheduler {
         outputs.forEach(output -> schedule(enforcementId, output));
     }
 
-    /**
-     * Uses the real clock, not the injected one: db-scheduler judges due time against the system clock.
-     */
     private void schedule(UUID enforcementId, EnforcementOutput output) {
         schedulerClient.scheduleIfNotExists(
             EnforcementDocumentGenerationComponent.ENFORCEMENT_DOCUMENT_TASK_DESCRIPTOR

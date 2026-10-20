@@ -17,7 +17,6 @@ import {
   xuiEvents,
 } from '../support/enforcement-journeys';
 import { enforcementRows } from '../support/enforcement-status-tab';
-import { setClockToUkDateTime } from '../support/test-clock';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
@@ -296,10 +295,6 @@ Then('the {string} journey opens', async ({ page, world, $tags }, journey: strin
     return markPending(genericStepPending, $tags);
   }
   await expect(page.getByRole('heading', { name: started.firstPageHeader })).toBeVisible();
-});
-
-Given('today is {string} and the time is {string}', async ({}, date: string, time: string) => {
-  await setClockToUkDateTime(date, time);
 });
 
 const screenEvents: Record<string, string> = {

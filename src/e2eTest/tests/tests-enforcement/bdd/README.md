@@ -34,10 +34,8 @@ ENVIRONMENT=local yarn test:enforcement:bdd
 cftlib port, and each can be overridden by exporting it. For the other environments see
 [`test-README.md`](../../../test-README.md).
 
-`test:enforcement:bdd` runs the suite in two passes (`scripts/run-enforcement-bdd.ts`): everything except
-`@clock` on the configured workers, then the `@clock` scenarios on a single worker, because pcs-api's test
-clock is a process-wide offset. The clock endpoint only exists where pcs-api runs with
-`ENABLE_TESTING_SUPPORT_CLOCK` — a local stack and a per-PR preview — so elsewhere the second pass is skipped.
+`test:enforcement:bdd` runs the whole suite except `@pending` and `@open-question`
+(`scripts/run-enforcement-bdd.ts`).
 
 To run one feature, scenario or tag, generate the specs first:
 
@@ -55,7 +53,6 @@ The `enforcement-bdd` project reads only `.features-gen/` (gitignored). `chrome`
 | --- | --- |
 | `@pending` | nothing implemented beyond set-up; skipped before a case is created, and left out of `test:enforcement:bdd` |
 | `@open-question` | waiting on a business decision; also left out |
-| `@clock` | moves pcs-api's clock, so runs in a pass of its own on one worker |
 | `@not-filmed` | left out of the demo videos |
 
 Steps for journeys pcs-api has not built yet are registered with `pendingSteps(...)`. A scenario that reaches

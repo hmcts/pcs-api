@@ -26,15 +26,34 @@ export const evictionDateErrors = {
 
 const pad = (value: number): string => String(value).padStart(2, '0');
 
-/** "yesterday" and "tomorrow" are relative so the scenarios do not rot; an explicit date is taken literally. */
+const DAY_OFFSETS: Record<string, number> = { yesterday: -1, today: 0, tomorrow: 1 };
+
+/** pcs-api validates these fields against a UK clock, so "now" is read in UK time rather than the machine's. */
+function ukNow(offset: { days?: number; minutes?: number }): Record<string, string> {
+  const when = new Date();
+  when.setUTCDate(when.getUTCDate() + (offset.days ?? 0));
+  when.setUTCMinutes(when.getUTCMinutes() + (offset.minutes ?? 0));
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(when);
+  return Object.fromEntries(parts.map(part => [part.type, part.value]));
+}
+
+/** "yesterday", "today" and "tomorrow" are relative so the scenarios do not rot; an explicit date is taken literally. */
 export function resolveEvictionDate(date: string): { day: string; month: string; year: string } | undefined {
   if (!date.trim()) {
     return undefined;
   }
-  if (date === 'yesterday' || date === 'tomorrow') {
-    const when = new Date();
-    when.setDate(when.getDate() + (date === 'tomorrow' ? 1 : -1));
-    return { day: pad(when.getDate()), month: pad(when.getMonth() + 1), year: String(when.getFullYear()) };
+  const dayOffset = DAY_OFFSETS[date];
+  if (dayOffset !== undefined) {
+    const { day, month, year } = ukNow({ days: dayOffset });
+    return { day, month, year };
   }
   const slashed = date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (slashed) {
@@ -48,13 +67,25 @@ export function resolveEvictionDate(date: string): { day: string; month: string;
     }
     return { day: pad(Number(spelled[1])), month: pad(month + 1), year: spelled[3] };
   }
-  throw new Error(`Unrecognised eviction date "${date}". Use dd/MM/yyyy, "yesterday", "tomorrow" or "25 June 2026"`);
+  throw new Error(
+    `Unrecognised eviction date "${date}". Use dd/MM/yyyy, "yesterday", "today", "tomorrow" or "25 June 2026"`
+  );
 }
 
-/** Splits "10:00" or "25:00" into its parts, leaving them as given so invalid times still reach the app. */
+const MINUTE_OFFSETS: Record<string, number> = { 'one minute from now': 1, 'one minute ago': -1 };
+
+/**
+ * "one minute from now" and "one minute ago" are relative; "10:00" or "25:00" are split as given so invalid
+ * times still reach the app.
+ */
 export function resolveEvictionTime(time: string): { hour: string; minute: string } | undefined {
   if (!time.trim()) {
     return undefined;
+  }
+  const minuteOffset = MINUTE_OFFSETS[time];
+  if (minuteOffset !== undefined) {
+    const { hour, minute } = ukNow({ minutes: minuteOffset });
+    return { hour, minute };
   }
   const [hour, minute = '00'] = time.split(':');
   return { hour, minute };
