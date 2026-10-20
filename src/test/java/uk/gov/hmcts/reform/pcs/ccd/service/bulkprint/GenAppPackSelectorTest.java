@@ -213,15 +213,30 @@ class GenAppPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Excludes defendant ExUI GAs submitted with a firm name on the statement of truth")
-    void shouldExcludeDefendantExUiGenApps() {
+    @DisplayName("Includes defendant LR with-notice GAs submitted with a firm name on the statement of truth")
+    void shouldIncludeDefendantLrGenApps() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        GenAppEntity exUiGa = defendantCuiWithNoticeGa(withNoticePdf, defendant);
-        exUiGa.setStatementOfTruth(StatementOfTruthEntity.builder().firmName("Example Firm").build());
+        GenAppEntity lrGa = defendantLrWithNoticeGa(withNoticePdf, defendant);
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
+            List.of(lrGa), claimant, defendant));
+
+        assertThat(result).extracting(candidate -> candidate.recipient().getId())
+            .containsExactly(claimant.getId(), defendant.getId());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
+    @DisplayName("Does not send a defendant LR with-notice GA pack when the application requires translation")
+    void shouldSkipDefendantLrGenAppWhenTranslationRequired(LanguageUsed languageUsed) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity lrGa = defendantLrWithNoticeGa(withNoticePdf, defendant);
+        lrGa.setLanguageUsed(languageUsed);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(
-            List.of(exUiGa), claimant, defendant))).isEmpty();
+            List.of(lrGa), claimant, defendant))).isEmpty();
     }
 
     @Test
@@ -465,6 +480,12 @@ class GenAppPackSelectorTest {
             .submissionDocument(document)
             .party(applicantDefendant)
             .build();
+    }
+
+    private GenAppEntity defendantLrWithNoticeGa(DocumentEntity document, PartyEntity applicantDefendant) {
+        GenAppEntity genApp = defendantCuiWithNoticeGa(document, applicantDefendant);
+        genApp.setStatementOfTruth(StatementOfTruthEntity.builder().firmName("Example Firm").build());
+        return genApp;
     }
 
     private GenAppEntity withoutNoticeGa(DocumentEntity document) {
