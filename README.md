@@ -391,11 +391,26 @@ environment used for targeting.
 
 ### Local Dev
 
-When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` to `true` and optionally specify one or more files
-containing flags values to be used. This is set up by default for cftLibTest and bootWithCcd
+When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` to `true` which will mean that the feature flag
+settings from `gradle.properties` will be used as the fallback. This is set up by default for cftLibTest and bootWithCcd.
 
-With no key the client runs offline and every flag uses its default,
-so it still runs locally; local and `cftlibTest` set `LAUNCHDARKLY_OFFLINE=true`.
+To override a flag when running locally, set the corresponding **Gradle** property on the command line,
+for example:
+
+```
+./gradlew bootWithCcd -Pfeature.bulk-print-enabled=true
+```
+
+To override a flag in CftLib tests only, set the **system** property for that task type, for example:
+```
+  cftlibTest {
+    ...
+
+    // Override feature flags for tests
+    systemProperty 'feature.bulk-print-enabled', 'true'
+
+  }
+```
 
 ## License
 
