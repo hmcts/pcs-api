@@ -142,6 +142,31 @@ class DecideApplicationIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("keeps the hearing context with the case draft beside an application draft")
+    void keepsTheHearingWithTheCaseDraft() {
+        UUID genAppId = refer();
+        int hearingId = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
+        var forHearing = events.external(caseReference, MAKE_ORDER).as(judge)
+            .withClientContext(Map.of("hearingId", Integer.toString(hearingId)));
+        MakeOrderRequest draft = startDraft("hearing draft");
+        forHearing.submitExpectingSuccess(new MakeOrderRequest(draft.action(), draft.order(), null,
+            new MakeOrderRequest.HearingChange(hearingId, null, null, null)));
+
+        var forApplication = asJudgeDeciding(genAppId);
+        forApplication.submitExpectingSuccess(decision(SAVE_DRAFT, Order.none(genAppId), "grant", null));
+
+        OrderStart application = forApplication.start();
+        assertThat(application.order().genAppId()).isEqualTo(genAppId);
+        assertThat(application.caseContext().application()).isNotNull();
+        assertThat(application.hearing()).isNull();
+        OrderStart hearing = events.external(caseReference, MAKE_ORDER).as(judge).start();
+        assertThat(hearing.order().formData()).containsEntry("notes", "hearing draft");
+        assertThat(hearing.order().genAppId()).isNull();
+        assertThat(hearing.hearing().id()).isEqualTo(hearingId);
+        assertThat(hearing.caseContext().application()).isNull();
+    }
+
+    @Test
     @DisplayName("completes the judge's task when they send their order on the application for review")
     void completesTheTaskOnSubmission() {
         Order submitted = judgeDecides(refer(), "grant");
