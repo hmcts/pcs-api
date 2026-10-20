@@ -68,7 +68,7 @@ public class PcsCaseService {
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
-        List<DocumentEntity> documentEntities = documentService.buildDocumentEntitiesForCase(pcsCase);
+        List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
@@ -108,7 +108,7 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
         if (pcsCase.getPartySupport() != null) {
-            UUID authenticatedUserId = securityContextService.getCurrentUserId();
+            String authenticatedUserId = securityContextService.getCurrentUserId();
             caseFlagService.mergePartySupportFlags(
                 pcsCase.getPartySupport(),
                 pcsCaseEntity.getParties(),

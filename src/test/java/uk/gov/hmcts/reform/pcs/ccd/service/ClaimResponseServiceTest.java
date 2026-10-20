@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ClaimResponseServiceTest {
 
-    private static final UUID TEST_IDAM_ID = UUID.randomUUID();
+    private static final String TEST_IDAM_ID = UUID.randomUUID().toString();
     private static final UUID TEST_PARTY_ID = UUID.randomUUID();
     private static final AddressUK TEST_ADDRESS = AddressUK.builder()
         .addressLine1("123 Test Street")

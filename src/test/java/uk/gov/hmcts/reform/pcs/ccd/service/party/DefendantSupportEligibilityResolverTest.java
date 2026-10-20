@@ -20,7 +20,7 @@ import static org.mockito.Mockito.lenient;
 @ExtendWith(MockitoExtension.class)
 class DefendantSupportEligibilityResolverTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
 
     @Mock
     private PartySupportOwnershipResolver partySupportOwnershipResolver;
@@ -85,6 +85,19 @@ class DefendantSupportEligibilityResolverTest {
 
         assertThat(underTest.resolveEligibleDefendantPartyIds(caseEntity, USER_ID))
             .containsExactlyInAnyOrder(firstDefendant.getId(), secondDefendant.getId());
+    }
+
+    @Test
+    void shouldExcludeRemovedDefendants() {
+        PartyEntity activeDefendant = partyWithId();
+        PartyEntity removedDefendant = partyWithId();
+        removedDefendant.setRemoved(true);
+        PcsCaseEntity caseEntity = caseWith(activeDefendant, PartyRole.DEFENDANT);
+        addParty(caseEntity, removedDefendant, PartyRole.DEFENDANT);
+        representing(activeDefendant, removedDefendant);
+
+        assertThat(underTest.resolveEligibleDefendantPartyIds(caseEntity, USER_ID))
+            .containsExactly(activeDefendant.getId());
     }
 
     @Test

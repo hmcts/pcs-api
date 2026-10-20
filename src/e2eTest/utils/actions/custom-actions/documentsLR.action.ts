@@ -40,6 +40,7 @@ export class DocumentsAction implements IAction {
       ],
       ['uploadAdditionalDocsLR', () => this.uploadAdditionalDocsLR(fieldName as actionRecord)],
       ['selectDocumentRelatingTo', () => this.selectDocumentRelatingTo(fieldName as actionRecord)],
+      ['verifyPdfLinks', () => this.verifyPdfLinks(fieldName.expectedTexts as string[], page)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -405,6 +406,11 @@ export class DocumentsAction implements IAction {
       }
     }
     await performAction('clickButton', uploadYourDocuments.continueButton);
+  }
+
+  private async verifyPdfLinks(expectedTexts: string[], page: Page) {
+    const links = page.locator('ul.govuk-list li a.govuk-link');
+    await expect(links).toHaveText(expectedTexts);
   }
 
   private async selectDocumentRelatingTo(selectDoc: actionRecord) {

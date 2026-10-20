@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 
@@ -46,8 +45,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
 
     private static final long CASE_REFERENCE = 1781622472192628L;
-    private static final UUID DEFENDANT_USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
-    private static final UUID OTHER_USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174099");
+    private static final String DEFENDANT_USER_ID = "123e4567-e89b-12d3-a456-426614174001";
+    private static final String OTHER_USER_ID = "123e4567-e89b-12d3-a456-426614174099";
 
     private static final String AUTH_HEADER = "Bearer test-token";
 
@@ -128,7 +127,7 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
             .build();
     }
 
-    private void setAuthenticatedUser(UUID userId) {
+    private void setAuthenticatedUser(String userId) {
         UserInfo userInfo = UserInfo.builder()
             .uid(userId.toString())
             .roles(List.of(CITIZEN.getRole()))

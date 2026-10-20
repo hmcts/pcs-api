@@ -45,7 +45,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload;
   } else if (title.includes('GENADJ_WITHOUT_NOTICE')) {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload;
-  } 
+  }
 
   if (genAppPayload) {
     await performAction('makeAnApplicationAPI', {
@@ -98,7 +98,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
   });
 
   test('Claimant LR Upload documents when GenApps submitted - SET_ASIDE', async () => {
-    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToSetAsideRadioOptionHidden} ${getFormattedDate()}`;
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
