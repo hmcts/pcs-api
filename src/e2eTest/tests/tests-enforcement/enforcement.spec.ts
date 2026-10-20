@@ -121,6 +121,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           text2: enforcementApplication.writFeeValidationTextHidden
         });
       });
+
       await test.step(`And the user validates the Get quote from Bailiff link`, async () => {
         await performAction('validateGetQuoteFromBailiffLink', {
           type: enforcementApplication.summaryWritOrWarrantLink,
@@ -128,9 +129,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           newPage: enforcementApplication.hceoPageTitleHidden
         });
       });
+
       await test.step(`And the user expands Save application and return link`, async () => {
         await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       });
+
       await test.step(`And the user selects the application type`, async () => {
         await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
         await performAction('selectApplicationType', {
@@ -139,6 +142,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           nextPage: nameAndAddressForEviction.mainHeader
         });
       });
+
       await test.step(`Then the user selects the defendant name and address for eviction`, async () => {
         await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
         await performAction('selectNameAndAddressForEviction', {
@@ -148,6 +152,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           nextPage: confirmDefendantsDOB.mainHeader
         });
       });
+
       await test.step(`Then the user selects the defendant name and address for eviction`, async () => {
         await performAction('errorValidationConfirmDefendantsDOBPage', confirmDefendantsDOB.errorValidation);
         await performAction('confirmDefendantsDOB', {
@@ -156,6 +161,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           nextPage: knownDefendantsDOBInformation.mainHeader
         });
       });
+
       await test.step(`And the user enters defendant DOB`, async () => {
         await performAction('errorValidationEnterDefendantsDOBPage', knownDefendantsDOBInformation.errorValidation);
         await performAction('enterDefendantsDOB', {
@@ -164,6 +170,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           nextPage: peopleWhoWillBeEvicted.mainHeader
         });
       });
+
       await test.step(`And the user selects the people who will be evicted`, async () => {
         await performAction('errorValidationPeopleWhoWillBeEvictedPage', peopleWhoWillBeEvicted.errorValidation);
         await performAction('selectPeopleWhoWillBeEvicted', {
@@ -172,6 +179,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           nextPage: livingInTheProperty.mainHeader
         });
       });
+
       await test.step(`And the user selects if the people pose risk to bailiff`, async () => {
         await performAction('selectEveryoneLivingAtTheProperty', {
           question: livingInTheProperty.riskToBailiffQuestion,
@@ -179,6 +187,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           nextPage: evictionRisksPosed.mainHeader
         });
       });
+
       await test.step(`And the user selects the kind of risk they pose to bailiff`, async () => {
         await performAction('errorValidationRiskPosedByEveryonePage', evictionRisksPosed.errorValidation);
         await performAction('selectRiskPosedByEveryoneAtProperty', {
@@ -195,6 +204,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           nextPage: violentAggressiveRisk.mainHeader
         });
       });
+
       await performAction('errorValidationViolentOrAggressiveBehaviourPage', violentAggressiveRisk.errorValidation);
       await performAction('provideRiskPosedByEveryoneAtProperty', {
         label: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveQuestion,
@@ -298,6 +308,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.yesRadioOption,
         nextPage: statementOfTruth.mainHeader
       });
+
+    await test.step(`Then enter the details on the SOT page, verify the CYA page`, async () => {
       await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
@@ -312,13 +324,20 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input2: statementOfTruth.nameOfFirmHiddenTextInput,
         nextPage: checkYourAnswersEnforcement.mainHeader
       });
-      await performAction('continueFromCYAPage', {
+    });
+
+    await test.step(`And continue to the pay the claim fee page`, async () => {
+        await performAction('continueFromCYAPage', {
         nextPage: payTheClaimFeeConfirm.mainHeader
       });
+    });
+
+    await test.step(`And verify the pay the claim fee page content`, async () => {
      await performAction('selectPayClaimFee', {
        link: payTheClaimFeeConfirm.payYourApplicationFeeLink
      });
     });
+  });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
