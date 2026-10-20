@@ -11,6 +11,8 @@ global:
   postgresUsername: "hmcts"
   amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
   databaseNamePrefix: "pr-${CHANGE_ID}-"
+  security:
+    allowInsecureImages: true
 
 java:
   environment:
@@ -338,3 +340,41 @@ aac-manage-case-assignment:
             alias: IDAM_NOC_APPROVER_PASSWORD
           - name: notify-mca-api-key-secret
             alias: NOTIFY_MCA_API_KEY
+pcs-frontend:
+  enabled: true
+  nodejs:
+    image: 'hmctsprod.azurecr.io/pcs/frontend:latest'
+    imagePullPolicy: Always
+    ingressHost: pcs-frontend-${SERVICE_FQDN}
+    keyVaults:
+      pcs:
+        secrets:
+          - app-insights-connection-string
+          - pcs-frontend-s2s-secret
+          - pcs-frontend-idam-secret
+          - pcs-os-client-lookup-key
+          - pcs-pcq-token-key
+          - launchdarkly-sdk-key
+    environment:
+      PCS_API_URL: https://${SERVICE_FQDN}
+      CCD_URL: https://ccd-data-store-api-${SERVICE_FQDN}
+      CDAM_URL: https://ccd-case-document-am-api-${SERVICE_FQDN}
+      XUI_BASE_URI: https://xui-${SERVICE_FQDN}
+      REDIRECTS_MANAGE_CASE_RETURN_URL: https://xui-${SERVICE_FQDN}/cases/case-details/PCS/PCS
+      REDIS_CONNECTION_STRING: redis://${SERVICE_NAME}-redis-master:6379
+      OIDC_REDIRECT_URI: https://pcs-frontend-${SERVICE_FQDN}/oauth2/callback
+      PAYMENT_RETURN_URL: https://pcs-frontend-${SERVICE_FQDN}/payment/return
+      CUI_RA_CALLBACK_URL: https://pcs-frontend-${SERVICE_FQDN}/case/:caseReference/respond-to-claim/reasonable-adjustments/callback/:id
+      CUI_RA_LOGOUT_URL: https://pcs-frontend-${SERVICE_FQDN}/logout
+      LAUNCHDARKLY_ENV: ${SERVICE_NAME}
+  redis:
+    image:
+      registry: hmctsprod.azurecr.io
+      repository: imported/bitnami/redis
+    enabled: true
+    master:
+      readinessProbe:
+        timeoutSeconds: 10
+        periodSeconds: 10
+      livenessProbe:
+        timeoutSeconds: 10
