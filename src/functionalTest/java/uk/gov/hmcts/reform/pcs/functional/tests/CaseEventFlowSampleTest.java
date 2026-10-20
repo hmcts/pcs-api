@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.config.CaseTypeEvents;
 import uk.gov.hmcts.reform.pcs.functional.testutils.EventDataUtil;
 import uk.gov.hmcts.reform.pcs.functional.testutils.TestContext;
-import uk.gov.hmcts.reform.pcs.functional.testutils.eventData.ResumePossessionClaimEventData;
+import uk.gov.hmcts.reform.pcs.functional.testutils.eventdata.ResumePossessionClaimEventData;
 
 import java.util.Map;
 
@@ -32,9 +36,10 @@ class CaseEventFlowSampleTest extends BaseApi {
     @Title("Create case with testing support endpoint")
     @Order(1)
     @Test
-    void createCaseWithtestSupport(){
-                testContext.initialize().asUser("ORG_LOCALAUTHORITY.solicitor1");
-        ObjectNode createCaseTestSupportPayload = EventDataUtil.forEvent(CaseTypeEvents.CREATE_CASE_TEST_SUPPORT).getData();
+    void createCaseWithTestSupport() {
+        testContext.initialize().asUser("ORG_LOCALAUTHORITY.solicitor1");
+        ObjectNode createCaseTestSupportPayload = EventDataUtil.forEvent(CaseTypeEvents.CREATE_CASE_TEST_SUPPORT)
+                                                                .getData();
         testContext.withPCSTestingSupportApiSteps()
             .createCaseForLegislativeCountry("england", createCaseTestSupportPayload, true);
         testContext.setCaseReference(
@@ -45,7 +50,7 @@ class CaseEventFlowSampleTest extends BaseApi {
 
     @Title("Event flow - create case with multiple defendants")
     @Order(1)
-//    @Test
+    //@Test
     void createCaseWithMultipleDefendants() {
         testContext.initialize().asUser("ORG_LOCALAUTHORITY.solicitor1");
 
@@ -80,17 +85,17 @@ class CaseEventFlowSampleTest extends BaseApi {
         testContext.asUser("ORG_LOCALAUTHORITY.solicitor1");
         Map<String, String> claimantParty = testContext.withCCDDataStoreApiSteps()
             .fetchCaseDetails()
-            .getClaimantParty( 0);
+            .getClaimantParty(0);
 
         Map<String, String> defenantParty = testContext.withCCDDataStoreApiSteps()
             .fetchCaseDetails()
-            .getDefendantParty( 1);
+            .getDefendantParty(1);
 
         String serviceRequestRef = testContext.withPCSTestingSupportApiSteps()
             .getFeePaymentInfo()
             .getPaymentReferenceForPartyId(claimantParty.get("id"));
 
-        System.out.println("serviceRequestRef reference : "+serviceRequestRef);
+        System.out.println("serviceRequestRef reference : " + serviceRequestRef);
         testContext.withPCSBaseApiSteps()
             .updatePayment(serviceRequestRef);
 

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import net.serenitybdd.annotations.Steps;
-import net.serenitybdd.rest.SerenityRest;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
@@ -55,7 +54,6 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
     public PCSTestingSupportApiSteps withUser(String userIdentifier) {
         initialise();
         super.withUser(userIdentifier);
-//        apiSteps.withUser(userIdentifier);
         return this;
     }
 
@@ -140,7 +138,7 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
         return this;
     }
 
-    public String getPaymentReferenceForPartyId( String partyId) {
+    public String getPaymentReferenceForPartyId(String partyId) {
         System.out.println("fee payment unfo: " + feePaymentInfoList);
         System.out.println("Party id: " + partyId);
 
@@ -172,7 +170,7 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
     }
 
 
-    private Map<String, Object> getAccessCodes(){
+    private Map<String, Object> getAccessCodes() {
         Map<String, Object> pins = createRequest()
             .pathParam("caseReference", this.caseReference)
             .when()
@@ -210,7 +208,7 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
         return this;
     }
 
-    private String validateAndReturnAccessCodeForUser(String firstname , String lastname){
+    private String validateAndReturnAccessCodeForUser(String firstname, String lastname) {
         if (partiesAccessCodes == null || partiesAccessCodes.isEmpty()) {
             accessCodeIsFetched();
         }
@@ -230,11 +228,11 @@ public class PCSTestingSupportApiSteps extends PCSBaseApiSteps {
     }
 
     @Step("a pin is fetched for user {0} {1}")
-    public PCSTestingSupportApiSteps accessCodeIsFetchedForUser(String firstname , String lastname) {
+    public PCSTestingSupportApiSteps accessCodeIsFetchedForUser(String firstname, String lastname) {
         Callable<String> fetchPins = () -> {
             Map<String,Object> pins = this.getAccessCodes();
             if (pins != null && !pins.isEmpty()) {
-//                partiesAccessCodes = pins;
+                //partiesAccessCodes = pins;
                 validateAndReturnAccessCodeForUser(firstname, lastname);
                 return pins.keySet().iterator().next();
             }
