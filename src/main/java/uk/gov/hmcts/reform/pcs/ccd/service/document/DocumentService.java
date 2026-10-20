@@ -439,6 +439,7 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_OF_HEARING,
                 WITH_NOTICE_ORDER,
+                POSSESSION_ORDER,
                 WITHOUT_NOTICE_ORDER,
                 ORDER,
                 NOTICE_OF_ALLOCATION_TO_TRACK ->

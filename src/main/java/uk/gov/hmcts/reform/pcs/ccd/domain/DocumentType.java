@@ -22,6 +22,7 @@ public enum DocumentType implements HasLabel {
     CORRESPONDENCE_FROM_DEFENDANT("Correspondence from defendant"),
     CORRESPONDENCE_FROM_CLAIMANT("Correspondence from claimant"),
     POSSESSION_NOTICE("Possession notice"),
+    POSSESSION_ORDER("Possession order"),
     NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION("Notice for service out of the jurisdiction"),
     PHOTOGRAPHIC_EVIDENCE("Photographic evidence"),
     INSPECTION_OR_REPORT("Inspection or report"),

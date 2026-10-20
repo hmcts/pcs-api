@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentU
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
@@ -115,7 +116,11 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             organisationService,
             legalRepPartySelectionService,
             partyService,
-            new ExistingApplicationDocumentLinkBuilder(partyService));
+            new ExistingApplicationDocumentLinkBuilder(
+                partyService,
+                new DocumentIdExtractor()
+            )
+        );
 
         setEventUnderTest(legalRepDocumentUpload);
     }

@@ -168,6 +168,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
+        buildOrdersTab(builder);
+
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -382,5 +384,17 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("orders", "Orders")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .showCondition(ShowConditions.and(
+            ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS),
+            ShowConditions.featureFlagsEnabled(FeatureFlag.ENFORCEMENT)
+            )
+            )
+            .label("ordersTableLabel", null, "${ordersTab_TableMarkup}")
+            .field("ordersTab_TableMarkup", NEVER_SHOW);
     }
 }

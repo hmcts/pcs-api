@@ -99,6 +99,7 @@ class CaseTypeTest {
         final TabBuilder<PCSCase, AccessProfile> ordersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> ordersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> supportTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
@@ -127,6 +128,7 @@ class CaseTypeTest {
         when(builder.tab("orders", "Orders")).thenReturn(ordersTabBuilder);
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
+        when(builder.tab("orders", "Orders")).thenReturn(ordersTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
@@ -148,6 +150,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseLinksTab = caseLinksTabBuilder.build();
         final Tab<PCSCase, AccessProfile> casePartiesTab = casePartiesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFileViewTab = caseFileViewTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseDetailsTab = caseDetailsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
@@ -173,6 +176,13 @@ class CaseTypeTest {
             .contains("LinkedCasesComponentLauncher!=\"\"");
         assertThat(caseFileViewTab.getFields()).hasSize(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
+        assertThat(ordersTab.getFields()).extracting(TabField::getId)
+            .containsExactly("ordersTableLabel", "ordersTab_TableMarkup");
+        assertThat(ordersTab.getFields()).extracting(TabField::getShowCondition)
+            .containsExactly(null, ShowConditions.NEVER_SHOW);
+        assertThat(ordersTab.getShowCondition())
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\""
+                            + " AND featureFlags.enforcementEnabled=\"YES\"");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(caseNotesTab.getFields()).extracting(TabField::getId).contains("caseReviewDatesMarkdown");
         assertThat(caseNotesTab.getFields()).extracting(TabField::getId).doesNotContain("caseReviewDates");
@@ -182,6 +192,7 @@ class CaseTypeTest {
         assertThat(casePartiesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
         assertThat(caseDetailsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
         assertThat(caseFileViewTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(ordersTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
         assertThat(serviceRequestTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
         assertThat(caseHistoryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
@@ -282,6 +293,7 @@ class CaseTypeTest {
         when(builder.tab("orders", "Orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFileView", "Case File View")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("orders", "Orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));

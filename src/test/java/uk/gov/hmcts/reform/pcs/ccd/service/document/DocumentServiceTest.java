@@ -1766,6 +1766,21 @@ class DocumentServiceTest {
         }
     }
 
+    @Test
+    void shouldMapPossessionOrderToOrdersAndNoticeOfHearingsCategory() {
+        // When
+        Optional<CaseFileCategory> result =
+            underTest.mapDocumentTypeToCategory(
+                DocumentType.POSSESSION_ORDER
+            );
+
+        // Then
+        assertThat(result)
+            .contains(
+                CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS
+            );
+    }
+
     private static Stream<Arguments> documentTypeToCategoryScenarios() {
         return Stream.of(
             Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, CaseFileCategory.PROPERTY_DOCUMENTS),

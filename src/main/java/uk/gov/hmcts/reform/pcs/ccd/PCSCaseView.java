@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.OrdersTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
@@ -99,6 +100,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
+    private final OrdersTabView ordersTabView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -176,6 +178,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         asbProhibitedConductView.setCaseFields(pcsCase, pcsCaseEntity);
+        ordersTabView.setCaseFields(pcsCase, pcsCaseEntity);
 
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);

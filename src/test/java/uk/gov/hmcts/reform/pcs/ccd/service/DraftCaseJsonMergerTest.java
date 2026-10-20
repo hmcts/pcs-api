@@ -94,6 +94,7 @@ class DraftCaseJsonMergerTest {
                             "documentAmendDetails",
                             "enterGenAppRequest",
                             "casePartiesTab",
+                            "ordersTab",
                             "caseDetailsTab",
                             "summaryTab",
                             "defendantPaperResponse")
