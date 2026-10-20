@@ -1,11 +1,3 @@
-/**
- * Moving an enforcement's timestamps into the past through pcs-api testing support
- * (`POST /testing-support/enforcement/{caseReference}/backdate`), for the rules measured from when something
- * happened: the claimant's 72 hours to confirm an eviction and the free repeat warrant within 12 calendar
- * months of the first being generated. Every timestamp the enforcement owns moves by the same amount: the
- * eviction date and time, when it was approved (generated), its status change, notes, allocations, returns
- * and documents.
- */
 import Axios from 'axios';
 import { expect } from '../fixtures/enforcement.fixtures';
 
@@ -14,7 +6,6 @@ export type Backdate = {
   period?: string;
   /** ISO-8601 duration, e.g. `PT73H`. */
   duration?: string;
-  /** The warrant or writ number; the case's current enforcement when omitted. */
   enforcementNumber?: string;
 };
 
@@ -30,10 +21,6 @@ export async function backdateEnforcement(caseReference: string, backdate: Backd
   expect(response.status, `backdating the enforcement on ${caseReference} by ${JSON.stringify(backdate)}`).toBe(204);
 }
 
-/**
- * An age as the feature files write it ("6 months", "13 months", "2 years", "73 hours", "5 days") as the
- * ISO-8601 amount the backdate endpoint takes.
- */
 export function ageAsBackdate(age: string): Backdate {
   const match = /^\s*(\d+)\s+(hour|day|week|month|year)s?\s*$/i.exec(age);
   if (!match) {

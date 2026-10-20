@@ -1,18 +1,3 @@
-/**
- * Batch print (feature 17, HDPI-8012).
- *
- * pcs-api offers batch print as an API, not a CCD event: CCD has no screen that acts on several cases, and
- * XUI's "My work" cannot act on several tasks at once. So the steps call it the way a selection screen
- * would, as the bailiff, with the bailiff's own IDAM token:
- *
- *   - `POST /enforcement/batch-print/check` says what would be printed and why any case is left out;
- *   - `POST /enforcement/batch-print` returns the PDF, naming the printed and left-out cases in headers.
- *
- * The warrant, risk assessment and notice of eviction printed are the ones pcs-api generates as the warrant is
- * approved and its eviction scheduled. A rescheduled notice of eviction cannot be driven yet, so one is filed
- * as a placeholder through `POST /testing-support/enforcement/{caseReference}/documents`. Generating and
- * filing both upload through CDAM, which needs dm-store, which cftlib only runs with `LOCAL_DOC_SERVICES=true`.
- */
 import Axios from 'axios';
 import { localIdamToken, localUsers } from '@config/local-stack.config';
 
@@ -20,7 +5,6 @@ export const PRINT_ENFORCEMENT_DOCUMENTS = 'Print enforcement documents';
 
 export type DocumentKind = 'WARRANT' | 'RISK_ASSESSMENT' | 'NOTICE_OF_EVICTION';
 
-/** The documents printed for each case, in print order. */
 export const PRINTED_KINDS: DocumentKind[] = ['WARRANT', 'RISK_ASSESSMENT', 'NOTICE_OF_EVICTION'];
 
 export interface PrintableDocument {
@@ -50,7 +34,6 @@ export interface BatchPrintPlan {
 export interface BatchPrintFile {
   status: number;
   contentType: string;
-  /** The first bytes of the body, which for a PDF read "%PDF". */
   signature: string;
   includedCases: string[];
   excludedCases: string[];
@@ -67,10 +50,7 @@ async function bailiffHeaders(bailiffEmail: string): Promise<Record<string, stri
   return { ...serviceHeaders(), Authorization: `Bearer ${await localIdamToken(bailiffEmail)}` };
 }
 
-/**
- * Files a one-page placeholder PDF reading `title` in the case's Enforcement folder, against its current
- * enforcement. Documents filed later count as later: batch print takes the latest of each kind.
- */
+/** Files a one-page placeholder PDF in the case's Enforcement folder. Batch print takes the latest of each kind. */
 export async function filePlaceholderDocument(caseReference: string, kind: DocumentKind, title: string): Promise<string> {
   const response = await Axios.post(
     `${process.env.CASE_API_URL}/testing-support/enforcement/${caseReference}/documents`,

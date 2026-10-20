@@ -53,14 +53,10 @@ async function globalSetupConfig(): Promise<void> {
   } else if (await localDocumentStoreIsUp()) {
     await uploadTestDocuments();
   } else {
-    // cftlib always starts CDAM, but dm-store behind it only runs with LOCAL_DOC_SERVICES=true. Without it
-    // there is nowhere to put a document, so the suite skips the upload; local cases are built from the
-    // `createTestCase` fixtures, which reference no documents.
     console.log('\n⚠️  dm-store is not running (boot cftlib with LOCAL_DOC_SERVICES=true). Skipping document upload.\n');
   }
 }
 
-/** The user whose session the suite runs as: the claimant's legal representative. */
 function suiteUser(): { email: string; password: string } {
   if (isLocalStack()) {
     return { email: localUsers.claimantSolicitor, password: process.env.IDAM_PCS_USER_PASSWORD as string };

@@ -1,4 +1,3 @@
-// Claimant legal representative applies for enforcement through "Enforce the order" (features 01 and 15).
 import { Given, When } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
@@ -23,12 +22,10 @@ function asEnforcementType(type: string): EnforcementType {
   return type as EnforcementType;
 }
 
-// pcs-api offers a writ of restitution once the claim has a writ, which these helpers have no set-up for.
 const writOfRestitutionJourneyNotDriven: PendingScope = {
   summary: 'these helpers cannot drive the writ of restitution journey',
 };
 
-/** Whole "Enforce the order" journey from the case summary to the submitted banner. */
 async function applyFor(type: EnforcementType, world: EnforcementWorld, page: Page, tags: string[]): Promise<void> {
   if (type === 'writ of restitution') {
     return markPending(writOfRestitutionJourneyNotDriven, tags);
@@ -68,11 +65,6 @@ When('I submit an application for a {string}', async ({ page, world, $tags }, ty
   await applyFor(asEnforcementType(type), world, page, $tags);
 });
 
-/**
- * A local stack has no Payments service to take the enforcement fee (HDPI-2877), so the fee is paid through pcs-api
- * testing support, which sends a paid callback through pcs-api's enforcement payment handler and so moves the
- * application from "Awaiting payment" to "Awaiting review" as paying the service request would.
- */
 async function payEnforcementFee(): Promise<void> {
   approximatePrecondition('HDPI-2877', 'the enforcement fee is paid through testing support, not from the Service Request tab');
   await recordEnforcementFeePaid();

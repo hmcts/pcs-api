@@ -1,7 +1,3 @@
-// Further enforcement on the same case (feature 15, and the free repeat warrant in feature 01; HDPI-8424).
-//
-// A closed warrant is built by driving the real events (see support/repeat-enforcement.ts). The warrant
-// numbers in the feature files are illustrative, so the steps map them to the numbers pcs-api gives.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
@@ -79,7 +75,6 @@ When('I apply and pay for a new {string}', async ({ page, world, $tags }, type: 
     return markPending(furtherTypeNotBuilt(type), $tags);
   }
   await applyForFurtherWarrant(page, world);
-  // A free repeat warrant has nothing to pay and is already awaiting review.
   if ((await currentStatus(world)) === AWAITING_PAYMENT) {
     await recordEnforcementFeePaid();
   }
@@ -135,8 +130,7 @@ Then(
     }
     const expected = (await enforcementsOnTheCase(world)).length;
     await openCaseTab(page, requireCaseReference(world), ENFORCEMENT_STATUS_TAB);
-    // Each warrant or writ on the tab is headed with its number. The further application is submitted through
-    // the API, so the tab can be opened before pcs-api has it: each try re-fetches the case.
+    // Submitted through the API, so the tab can be opened before pcs-api has it: each try re-fetches the case.
     await expect
       .poll(
         async () => {

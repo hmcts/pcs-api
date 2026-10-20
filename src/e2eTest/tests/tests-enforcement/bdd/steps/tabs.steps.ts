@@ -1,4 +1,3 @@
-// Enforcement status tab, risk assessment tab, case file view documents and defendant visibility (features 12-14).
 import { DataTable } from 'playwright-bdd';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
@@ -46,13 +45,10 @@ import {
   expectEnforcementTab,
 } from '../support/defendant-visibility';
 
-/** Whether a scenario opened the case as one of the defendants. */
 const isDefendant = (user?: string): boolean => user === CITIZEN_DEFENDANT || user === DEFENDANT_LEGAL_REPRESENTATIVE;
 
-/** The two tabs the enforcement work adds; any other tab name is still someone else's feature. */
 const ENFORCEMENT_TABS = [ENFORCEMENT_STATUS_TAB, RISK_ASSESSMENT_TAB];
 
-/** The internal sections of the "Risk assessment" tab. */
 const RISK_INTERNAL_SECTIONS = ['Bailiff note', 'Risk assessment level'];
 const CLAIMANT_RISK_SECTION = 'Claimant risk level';
 
@@ -60,10 +56,8 @@ function tabNotBuilt(tabName: string) {
   return { summary: `the "${tabName}" tab` };
 }
 
-/** What the scenario produced for a value the feature quotes illustratively, such as a warrant number. */
 const actual = (world: EnforcementWorld, quoted: string): string => world.aliases[quoted] ?? quoted;
 
-/** An approved warrant, so a generated one: the tabs only appear once a warrant has been generated. */
 Given('the case has a warrant of possession', async ({ world }) => {
   await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
 });
@@ -74,7 +68,6 @@ Given('the case has a warrant of possession {string}', async ({ world }, number:
 });
 
 Given('the case has no generated warrant or writ', async ({ world }) => {
-  // An application awaiting review: submitted and paid for, but not approved, so nothing is generated.
   await setUpWarrantAtStatus(world, 'Awaiting review');
 });
 
@@ -88,10 +81,6 @@ Given('a warrant has been generated', async ({ world }) => {
 
 const WARRANT_TYPES = ['warrant of possession', 'warrant of restitution'];
 
-// pcs-api only offers a warrant of restitution once the case has had a warrant, so the restitution is applied
-// for after an earlier warrant closed with a successful eviction. That warrant was generated too, so the
-// "Risk assessment" tab is already on the case before the restitution is (RiskAssessmentTabView keeps it once
-// the warrant closes), and the tab then moves on to the restitution.
 Given('the claimant applied for a {string}', async ({ world, $tags }, type: string) => {
   if (!WARRANT_TYPES.includes(type)) {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} application` }, $tags);
@@ -105,13 +94,10 @@ Given('the claimant applied for a {string}', async ({ world, $tags }, type: stri
   await applyAsClaimant(world, 'warrant of restitution');
 });
 
-// The caseworker's approval is what the scenario is about, but not a journey it looks at, so it goes through the
-// API too. The hearing centre admin is expected next, as the XUI journey left them signed in.
 When('the {string} is generated', async ({ world, $tags }, type: string) => {
   if (!WARRANT_TYPES.includes(type)) {
     return markPending({ ticket: 'HDPI-7419', summary: `approving a ${type}` }, $tags);
   }
-  // Restitution has no fee, so the application is already awaiting review.
   await approveApplicationAsCaseworker(world, 'Warrant', { feeOutstanding: type === 'warrant of possession' });
 });
 
@@ -149,7 +135,6 @@ Given('the case has only a writ of possession', async ({ world }) => {
 
 Given('the notice of eviction {string}', async ({ world, $tags }, served: string) => {
   if (served === 'has not been served') {
-    // True by construction: the scenario never marks the notice of eviction as served.
     return;
   }
   if (served !== 'has been served' || !canSignInAs('bailiff')) {
@@ -160,7 +145,6 @@ Given('the notice of eviction {string}', async ({ world, $tags }, served: string
 });
 
 Given('no risk level or bailiff note has been added', async ({ world }) => {
-  // True by construction: the warrant was only just approved.
   expect(world.riskLevel, 'a risk level set by this scenario').toBeUndefined();
   expect(world.enteredNote, 'a bailiff note added by this scenario').toBeUndefined();
 });
@@ -221,7 +205,6 @@ Then('the {string} tab is {string}', async ({ page, context, world, $tags }, tab
     throw new Error(`Unknown tab visibility "${visibility}". Expected "shown" or "hidden"`);
   }
   if (isDefendant(world.openedAs)) {
-    // Checks the case data CCD gives the defendant as well as, for a legal representative, the XUI tab.
     await expectEnforcementTab(page, await defendantViews(page, context, world), tabName, visibility === 'shown');
     return;
   }
@@ -257,16 +240,11 @@ Then(
   }
 );
 
-// A row in the summary under the first warrant or writ on the "Enforcement status" tab.
 Then('I see {string} as {string}', async ({ page, world }, label: string, value: string) => {
   const [enforcement] = await enforcementSections(page);
   expect(enforcement.summary[label], label).toBe(actual(world, value));
 });
 
-/**
- * A section of the open tab shows a placeholder or an introduction. The claimant's application is dated the
- * day the scenario submitted it, so a date in the quoted text stands for today.
- */
 Then('{string} shows {string}', async ({ page }, section: string, text: string) => {
   const expected = text.replace(/\bon \d{1,2} [A-Z][a-z]+ \d{4}\b/, `on ${todayTabDate()}`);
   if (expected !== text) {
@@ -278,11 +256,9 @@ Then('{string} shows {string}', async ({ page }, section: string, text: string) 
 
 Then('I see the green print button between the tabs and the {string} section', async ({ page }, section: string) => {
   const tab = activeTab(page);
-  // govuk-button is the GOV.UK green button.
   const print = tab.locator('a.govuk-button', { hasText: 'Print' });
   await expect(print).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
   await expect(tab.getByRole('heading', { name: section, exact: true })).toBeVisible();
-  // The button and the section headings in page order.
   const order = await tab.locator('a.govuk-button, h2').evaluateAll(elements =>
     elements.map(element => (element.textContent ?? '').trim()));
   const printIndex = order.findIndex(text => text.startsWith('Print'));
@@ -326,7 +302,6 @@ Then('the claimant risk assessment section says {string} instead of {string}', a
   expect(text).not.toContain(claimant);
 });
 
-/** Feature 06: the claimant's answer, under "Claimant eviction confirmation" on the status tab. */
 Then('the {string} tab shows my answers under {string}', async ({ page, world }, tabName: string, section: string) => {
   expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
   await expectEnforcementSection(page, requireCaseReference(world), section, block => {
@@ -354,7 +329,6 @@ Then('the case header does not show {string}', async ({ page, world }, number: s
   await expect(page.locator('ccd-case-header')).not.toContainText(actual(world, number));
 });
 
-// The generation dates are illustrative: both are generated today, the closed warrant first.
 Given(
   'the case has a closed warrant {string} generated on {string}',
   async ({ world }, number: string, _generatedOn: string) => {

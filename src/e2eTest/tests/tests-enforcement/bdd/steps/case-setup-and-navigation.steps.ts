@@ -1,4 +1,3 @@
-// Case set-up, signing in and moving around the case in XUI. Shared by every feature.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import type { Page } from '@playwright/test';
@@ -55,7 +54,6 @@ import {
   standInBailiff,
 } from '../support/bailiff-events';
 
-/** Tickets that deliver the enforcement events the steps cannot drive yet. */
 const eventTickets: Record<string, string> = {
   'Decide enforcement': 'HDPI-8656',
   'Allocate case to bailiff': 'HDPI-7356',
@@ -71,7 +69,6 @@ function eventNotBuilt(eventName: string) {
   return { ticket: eventTickets[eventName], summary: `the "${eventName}" event` };
 }
 
-// The case reference in the feature files is illustrative: each scenario creates its own case.
 Given('a PCS case {string}', async ({ world }, _reference: string) => {
   await createIssuedCase(world);
 });
@@ -89,9 +86,6 @@ Given('a PCS case {string} with a warrant of possession', async ({ world }, _ref
   await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
 });
 
-// The claimant legal representative is the storage-state user from config/global-setup.config.ts, who also
-// creates the case through the API, so the browser already is them. Saying so is all this does: the first
-// step that acts in XUI opens the case (session.ts).
 Given('I am signed in to XUI as the claimant\'s legal representative', async () => {
   expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
 });
@@ -104,13 +98,10 @@ Given('I am signed in to XUI as the claimant\'s legal representative with the {s
 });
 
 Given('there is no live enforcement on the case', async ({ world }) => {
-  // True by construction: the scenario's case is new and nothing has been enforced on it yet.
   expect(world.caseReference, 'a case created by this scenario').toBeDefined();
   expect(world.enforcementSeeded, 'an enforcement seeded on the case').toBe(false);
 });
 
-// Internal users and the defendant's legal representative replace the storage-state user. The sign-in itself
-// waits for the first step that acts in XUI, so set-up leaves the browser alone.
 Given('I am signed in to XUI as a {string}', async ({ $tags }, role: string) => {
   if (!canSignInAs(role)) {
     return markPending(
@@ -128,18 +119,14 @@ When('I open the case', async ({ page }) => {
   await openCaseSummary(page);
 });
 
-// Users the suite has no sign-in for in this environment, such as a bailiff outside a local stack, wait on
-// HDPI-7539.
 When('a {string} opens the case', async ({ page, context, world, $tags }, user: string) => {
   world.openedAs = user;
   world.defendantViews = undefined;
   if (user === DEFENDANT_LEGAL_REPRESENTATIVE) {
-    // The tab checks read the case data CCD gives this user as well as their XUI tabs.
     world.defendantLegalRepresentative = isLocalStack() ? localUsers.defendantSolicitor : testUsers.defendantSolicitor.email;
     world.citizenDefendant = undefined;
   }
   if (user === CITIZEN_DEFENDANT) {
-    // Not an XUI user: their view is the case data CCD gives them, which is what pcs-frontend renders.
     if (!canLinkCitizenDefendant()) {
       return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case: only a local stack has a citizen user' }, $tags);
     }
@@ -156,7 +143,6 @@ When('a {string} opens the case', async ({ page, context, world, $tags }, user: 
   await openCaseSummary(page);
 });
 
-// "An internal user" is a hearing centre admin, the caseworker every enforcement case is decided by.
 When('an internal user opens the case', async ({ page, context }) => {
   await signInAs('hearing-centre-admin', page, context);
   await openCaseSummary(page);
@@ -180,10 +166,6 @@ Then('the {string} event is available in the next steps drop down', async ({ pag
   await expect.poll(() => nextStepOptions(page)).toContain(event.label);
 });
 
-/**
- * An enforcement event that cannot be used is hidden by its show condition rather than offered and then refused
- * by its start callback, so "not available" means missing from the next step drop down.
- */
 async function expectNotOffered(page: Page, $tags: string[], eventName: string): Promise<void> {
   const event = xuiEvents[eventName];
   if (!event) {
@@ -206,20 +188,14 @@ When('I start the {string} event', async ({ page, world, $tags }, eventName: str
   if (!xuiEvents[eventName]) {
     return markPending(eventNotBuilt(eventName), $tags);
   }
-  // A scenario that signed in as another role is on the XUI landing page, not the case.
   await openCaseSummary(page);
-  // A start callback can refuse the event; the scenario then asserts the error it gave.
   world.startEventError = await startEventAllowingRefusal(page, eventName);
   if (!world.startEventError) {
     world.currentEvent = eventName;
   }
 });
 
-/**
- * The message a start callback refused the event with. CCD puts a generic "Unable to proceed because there
- * are one or more callback Errors or Warnings" in the error summary and the real message in a separate
- * "Errors" list, so the specific text is matched on the page.
- */
+/** CCD puts the callback's own message in a separate "Errors" list rather than the error summary, so the page text is matched. */
 Then('I see the error {string}', async ({ world }, message: string) => {
   expect(world.startEventError, 'the event to have been refused by its start callback').toBeDefined();
   expect(world.startEventError).toContain(message);
@@ -234,8 +210,6 @@ When('I start the {string} event from the next steps drop down', async ({ page, 
   world.currentEvent = eventName;
 });
 
-// The earlier and the new enforcements are all on the case the scenario started with, and it still opens under
-// that reference. The page itself proves nothing: the steps before may have signed someone else in.
 Then('the case reference is unchanged', async ({ page, world }) => {
   const caseReference = requireCaseReference(world);
   const numbers = (await enforcementRows(caseReference)).map(row => row.number);
@@ -249,9 +223,6 @@ Then('the case reference is unchanged', async ({ page, world }) => {
 pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the live enforcement' }, [
 ]);
 
-// The cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json) make these sign-ins real.
-// "the allocated bailiff" is approximated: no bailiff can be allocated (HDPI-7356 / HDPI-8189), but a
-// bailiff reaches the warrant through their `bailiff` organisation role.
 Given('I am signed in to XUI as a bailiff', async () => {
   expectSignedInAs('bailiff');
 });
@@ -280,10 +251,6 @@ pendingSteps(genericStepPending, [
   '{string}',
 ]);
 
-/**
- * The event page the scenario is on names the case and the property, but neither the warrant number nor
- * anything that would give it away.
- */
 Then('the warrant number is not shown in the header', async ({ page, world, $tags }) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
@@ -299,7 +266,6 @@ Then('the warrant number is not shown in the header', async ({ page, world, $tag
   await expect(page.locator('body')).not.toContainText(world.warrantNumber as string);
 });
 
-/** CCD's check your answers for the event the scenario is in: every answer has a Change link. */
 Then('the {string} screen shows my answers with {string} links', async ({ page, world, $tags }, screen: string, link: string) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
@@ -312,8 +278,6 @@ Then('the {string} screen shows my answers with {string} links', async ({ page, 
   }
 });
 
-// Generic XUI steps. Only "Decide enforcement" drives them today; any other event stays pending.
-
 function inDecideEnforcement(world: EnforcementWorld): boolean {
   return world.currentEvent === DECIDE_ENFORCEMENT;
 }
@@ -322,8 +286,6 @@ Given('I am signed in to XUI as a hearing centre admin', async () => {
   expectSignedInAs('hearing-centre-admin');
 });
 
-// The feature files name a journey by its event or by its first page's heading. Only an event the scenario
-// started itself counts: opening one from a task waits on HDPI-8627.
 Then('the {string} journey opens', async ({ page, world, $tags }, journey: string) => {
   if (journey === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
     await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
@@ -336,19 +298,10 @@ Then('the {string} journey opens', async ({ page, world, $tags }, journey: strin
   await expect(page.getByRole('heading', { name: started.firstPageHeader })).toBeVisible();
 });
 
-/**
- * Moves pcs-api's clock, so that a scenario can put a date and time in the past or the future. Only pcs-api's:
- * CCD keeps its own clock, so what the scenario did before this step is still stamped with the real date.
- * The clock is put back after the scenario (support/test-clock.ts).
- */
 Given('today is {string} and the time is {string}', async ({}, date: string, time: string) => {
   await setClockToUkDateTime(date, time);
 });
 
-/**
- * The screens the suite can open, keyed by the name the feature files use. Each is the first (and, for the
- * bailiff events, only) page of a built event, so "I am on the X screen" just starts that event.
- */
 const screenEvents: Record<string, string> = {
   [DECIDE_ENFORCEMENT]: DECIDE_ENFORCEMENT,
   [setRiskLevel.pageLabel]: SET_RISK_LEVEL,
@@ -360,8 +313,6 @@ const screenEvents: Record<string, string> = {
 };
 
 Given('I am on the {string} screen', async ({ page, world, $tags }, screen: string) => {
-  // "Allocate case to bailiff" is the only built bailiff event with a check your answers screen. Reaching it
-  // means choosing a bailiff, so it is the feature's main bailiff.
   if (screen === findBailiff.checkYourAnswers && world.journey === ALLOCATE_BAILIFF) {
     return goToAllocationCheckYourAnswers(page, world, standInBailiff('Sam Jones') as string);
   }
@@ -374,12 +325,10 @@ Given('I am on the {string} screen', async ({ page, world, $tags }, screen: stri
   world.currentEvent = event;
 });
 
-/** Events whose first page has the case number and property address but no "claimant name vs defendant name" line. */
 const eventsWithoutPartiesLine: Record<string, string> = {
   [MARK_NOTICE_SERVED]: 'HDPI-7346',
 };
 
-// Every built event's first page carries the same read-only case-details summary list.
 Then('I see the case number, the possession property address and {string}', async ({ page, world, $tags }, partyNames: string) => {
   if (!world.currentEvent) {
     return markPending(genericStepPending, $tags);
@@ -410,8 +359,6 @@ Then('the {string} button is disabled', async ({ page, world, $tags }, button: s
 });
 
 When('I select {string}', async ({ page, world, $tags }, option: string) => {
-  // Continue and Cancel are on every enforcement event page, so they do not need to know which event
-  // the scenario is in.
   if (option === decideEnforcement.cancelLink) {
     return page.getByText(decideEnforcement.cancelLink, { exact: true }).click();
   }
@@ -454,10 +401,6 @@ When('I submit the {string} event', async ({ page, world, $tags }, eventName: st
   if (eventName === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
     return submitDecision(page);
   }
-  // The eviction events use CCD's own check-your-answers, so submitting is "Save and continue". Several
-  // scenarios submit without any set-up because they are really about what the submit produces (documents,
-  // notifications): for Schedule eviction the whole journey is run for them, for Reschedule eviction they
-  // stay pending.
   if (eventName === SCHEDULE_EVICTION && world.currentEvent !== eventName && !world.evictionScheduled) {
     return scheduleEvictionInXui(page, world);
   }
@@ -472,7 +415,6 @@ When('I submit the {string} event', async ({ page, world, $tags }, eventName: st
   return markPending(genericStepPending, $tags);
 });
 
-/** The first page of an event the scenario has started, by the name the feature files give that screen. */
 Then('the {string} screen opens', async ({ page, world, $tags }, screen: string) => {
   const event = screenEvents[screen];
   if (!event || world.currentEvent !== event) {

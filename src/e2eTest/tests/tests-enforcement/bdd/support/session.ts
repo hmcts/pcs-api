@@ -1,15 +1,10 @@
 /**
- * Who the browser is signed in as, within one scenario, and signing in lazily.
+ * Who the browser is signed in as, within one scenario. Set-up never signs anyone in or out: it goes through the
+ * APIs and at most says who the scenario expects next, so a video shows a sign-in only when the scenario's own
+ * journey changes user. The pages that open XUI call `ensureSignedIn`, which signs in only if the browser is
+ * someone else.
  *
- * Each test starts from `storageState`, i.e. signed in as the claimant's legal representative. A step that acts
- * in XUI says who it acts as with `signInAs`, or leaves it to whoever the scenario last expected; the pages that
- * open XUI (`openCaseSummary`, `openCaseTab`, global search) call `ensureSignedIn` first, which signs in only if
- * the browser is someone else. Set-up never signs anyone in or out: it goes through the APIs (event-api.ts), and
- * at most says who the scenario expects next with `expectSignedInAs`. So a video shows a sign-in only when the
- * scenario's own journey changes user.
- *
- * Reset by the `enforcementExecutor` fixture before each scenario, because the module outlives a test within a
- * worker process.
+ * Reset before each scenario by the `enforcementExecutor` fixture: the module outlives a test within a worker.
  */
 import { BrowserContext, Page } from '@playwright/test';
 import { user, users } from '@data/user-data';
@@ -26,13 +21,7 @@ import { userId } from './event-api';
 export const CLAIMANT_LEGAL_REPRESENTATIVE = 'claimant legal representative';
 export const DEFENDANT_LEGAL_REPRESENTATIVE_ROLE = 'defendant legal representative';
 
-/**
- * XUI users the steps can sign in as, keyed by the role names in the feature files.
- *
- * On a local cftlib stack the bailiff staff are the users `CftlibConfig` seeds, with their bailiff
- * organisation roles in `cftlib-am-role-assignments.json`. On AAT there are still no bailiff users
- * (HDPI-7539), so the bailiff entries resolve to undefined there and the scenarios stay pending.
- */
+/** On AAT there are still no bailiff users (HDPI-7539), so those entries are undefined and the scenarios stay pending. */
 const signInUsers: Record<string, () => string | undefined> = {
   [CLAIMANT_LEGAL_REPRESENTATIVE]: () =>
     isLocalStack() ? localUsers.claimantSolicitor : (user.localAuthorityOrg1Usr1.email as string),
@@ -49,7 +38,6 @@ const signInUsers: Record<string, () => string | undefined> = {
   'bailiff-manager': () => (isLocalStack() ? localUsers.bailiffManager : undefined),
 };
 
-/** Feature-file names for users whose sign-in role is spelled differently. */
 const FEATURE_USER_ROLES: Record<string, string> = {
   'hearing centre admin': 'hearing-centre-admin',
   'hearing centre team leader': 'hearing-centre-team-leader',
@@ -57,17 +45,14 @@ const FEATURE_USER_ROLES: Record<string, string> = {
   'bailiff manager': 'bailiff-manager',
 };
 
-/** The sign-in role for a user as the feature files name them, e.g. "hearing centre admin". */
 export const signInRoleFor = (name: string): string => FEATURE_USER_ROLES[name] ?? name;
 
-/** The email of the user the suite signs in as for `role`, or undefined where this environment has none. */
 export const emailFor = (role: string): string | undefined => signInUsers[signInRoleFor(role)]?.();
 
 export function canSignInAs(role: string): boolean {
   return Boolean(emailFor(role));
 }
 
-/** Like `emailFor`, for a role every set-up needs. */
 export function requireEmailFor(role: string): string {
   const email = emailFor(role);
   if (!email) {
@@ -80,13 +65,10 @@ let signedInRole: string = CLAIMANT_LEGAL_REPRESENTATIVE;
 let expectedRole: string = CLAIMANT_LEGAL_REPRESENTATIVE;
 const defendantLinkedCases = new Set<string>();
 
-/** Who the browser is signed in as now. */
 export const currentSignedInRole = (): string => signedInRole;
 
-/** Who the next step acting in XUI acts as, unless it names someone itself. */
 export const expectedSignedInRole = (): string => expectedRole;
 
-/** Says who the scenario's next XUI step acts as, without touching the browser. */
 export function expectSignedInAs(name: string): void {
   expectedRole = signInRoleFor(name);
 }
@@ -98,21 +80,15 @@ export function resetSession(): void {
   defendantLinkedCases.clear();
 }
 
-/** Expects `name` next and signs the browser in as them now, unless it already is. */
 export async function signInAs(name: string, page: Page): Promise<void> {
   expectSignedInAs(name);
   await ensureSignedIn(page);
 }
 
 /**
- * Signs the browser in as the expected user if it is someone else; does nothing if it already is. A defendant
- * legal representative is first linked to the scenario's case so that they can open it: by Notice of Change on
- * AAT, by a [DEFENDANTSOLICITOR] case role on a local stack.
- *
- * In the demo project the session an earlier scenario of the same feature left signed in as this user is
- * carried into this one instead, so the video does not show the same sign-in once per scenario
- * (demo-continuity.ts). Everywhere else, and whenever XUI does not answer for that session as this user, the
- * sign-in runs.
+ * Signs the browser in as the expected user if it is someone else. In the demo project the session an earlier
+ * scenario of the same feature left signed in as this user is carried into this one instead, but only when XUI
+ * answers for it as this user (demo-continuity.ts); otherwise the sign-in runs.
  */
 export async function ensureSignedIn(page: Page): Promise<void> {
   const role = expectedRole;
@@ -143,10 +119,7 @@ async function linkDefendantLegalRepresentative(email: string): Promise<void> {
   defendantLinkedCases.add(caseReference);
 }
 
-/**
- * Answers XUI's cookie question for `email` before XUI asks it. exui-common-lib's cookie banner only shows while
- * there is no `hmcts-exui-cookies-<IDAM user id>-mc-accepted` cookie; "false" is "Reject analytics cookies".
- */
+/** exui-common-lib's cookie banner only shows while there is no `hmcts-exui-cookies-<IDAM user id>-mc-accepted` cookie. */
 export async function answerCookieQuestion(context: BrowserContext, email: string): Promise<void> {
   const domain = new URL(String(process.env.MANAGE_CASE_BASE_URL)).hostname;
   await context.addCookies([
@@ -154,13 +127,7 @@ export async function answerCookieQuestion(context: BrowserContext, email: strin
   ]);
 }
 
-/**
- * Drops whatever session the browser has and signs in from the XUI landing page.
- *
- * Signing in is plumbing, not part of the journey being demonstrated, so it runs at full speed even in the
- * demo project: the caption says who is being signed in as, but the sign-in form is filled without the
- * pointer, the typing and the per-screen holds, which otherwise take a quarter of a minute.
- */
+/** Signing in is plumbing rather than part of the journey, so it runs at full speed even in the demo project. */
 async function signInFresh(email: string, page: Page): Promise<void> {
   await showDemoCaptionStatus(page, `Signing in as ${email}`);
   await withoutPagePacing(async () => {
@@ -179,11 +146,9 @@ async function signInFresh(email: string, page: Page): Promise<void> {
 }
 
 /**
- * Storage goes before the cookies: once the cookies are gone XUI's next request finds no session and redirects
- * to sign-in, and an evaluate racing that redirect fails with "Execution context was destroyed". The page may
- * also still be navigating after the previous step (a post-sign-in redirect, a submitted event), so a
- * navigation that destroys the context is waited out and the clear retried. XUI keeps its session in cookies, so
- * a page still navigating after the retries is left as it is: the sign-in that follows replaces its state.
+ * Storage goes before the cookies: once the cookies are gone XUI's next request finds no session and redirects to
+ * sign-in, and an evaluate racing that redirect fails. The page may also still be navigating after the previous
+ * step, so a navigation that destroys the context is waited out and the clear retried.
  */
 async function clearBrowserSession(page: Page): Promise<void> {
   for (let attempt = 1; attempt <= 3; attempt++) {

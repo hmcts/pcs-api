@@ -1,10 +1,3 @@
-// Bailiff marks the notice of eviction as served (feature 08).
-//
-// Reachable because the warrant can be driven to "Awaiting claimant confirmation": allocate a bailiff
-// through pcs-api testing support, then schedule an eviction answering "No" to dispensing with service.
-// What is still missing is the WA task (HDPI-8627) and a "claimant name vs defendant name" line on the page.
-// The served time in the future is reachable: "today is ..." moves pcs-api's clock (support/test-clock.ts).
-// What defendants see once the notice is served uses feature 14's checks (support/defendant-visibility.ts).
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
 import { requireCaseReference } from '../support/enforcement-journeys';
@@ -43,8 +36,6 @@ Given('a PCS case {string} with a scheduled eviction', async ({ world }, _refere
   await setUpWarrantAtStatus(world, AWAITING_CLAIMANT_CONFIRMATION);
 });
 
-// Feature 08's Background has already scheduled the eviction, answering "No" to dispensing with service, so
-// this only checks it. Feature 14 starts from an approved warrant, so this schedules it.
 Given('the court has not given permission to dispense with service', async ({ world }) => {
   if (!world.evictionScheduled) {
     await scheduleEvictionOnApprovedWarrant(world);
@@ -67,10 +58,6 @@ Then('I am not asked about permission to dispense with service', async ({ page }
   await expect(page.getByText('Has the court given permission to dispense with service?')).toHaveCount(0);
 });
 
-/**
- * Puts 501 characters into the "how" box. The served date and the bailiff-note question are filled too,
- * because they are mandatory and their errors would otherwise stop the page before the length rule runs.
- */
 When('I enter 501 characters for {string}', async ({ page, $tags }, field: string) => {
   if (field !== noticeServed.servedHowQuestion) {
     return markPending({ summary: `entering 501 characters into "${field}"` }, $tags);
@@ -85,10 +72,6 @@ Then('I see an error that the answer must be 500 characters or fewer', async ({ 
   await expectSingleErrorMessage(page, noticeServed.tooLongError);
 });
 
-// Two uses. In feature 08 it follows the bailiff's own submit, so it checks the confirmation. In features 12
-// and 14 it is a Given on a case whose eviction has not been scheduled yet, so it schedules the eviction and
-// serves the notice, with a bailiff note so that the defendant checks have one to look for. Feature 12's
-// Background leaves the case without a warrant, so there the warrant is built first.
 Then('the notice of eviction has been served', async ({ page, world }) => {
   if (world.evictionScheduled) {
     await expect(page.getByRole('heading', { name: noticeServed.confirmationHeader })).toBeVisible();
@@ -104,7 +87,6 @@ Then('the notice of eviction has been served', async ({ page, world }) => {
   world.defendantViews = undefined;
 });
 
-/** Answers the page and goes on to CCD's check-your-answers, ready for "I submit the event". */
 Given('I served the notice on {string} at {string} {string}', async ({ page, world }, date: string, time: string, how: string) => {
   await ensureOnNoticeServedPage(page);
   await enterServedAt(page, date, time);
@@ -132,11 +114,6 @@ Then(
   }
 );
 
-/**
- * The Background scheduled the eviction without permission to dispense with service, and only a reschedule
- * can change that answer. A reschedule is offered once the claimant has said whether they can attend, so the
- * claimant confirms first.
- */
 Given('the court has given permission to dispense with service', async ({ world }) => {
   approximatePrecondition(
     'HDPI-7549',
@@ -160,10 +137,6 @@ Then('the notice served date and time show as {string}', async ({ page, world },
   });
 });
 
-/**
- * The newest note on the "Risk assessment" tab: the one this scenario added, by the signed-in bailiff, with
- * the "1 Feb 2026 16:20pm" layout the bailiffs use.
- */
 Then(
   'the note is shown under {string} on the {string} tab with my name, date and time',
   async ({ page, world }, section: string, tabName: string) => {
@@ -177,7 +150,6 @@ Then(
   }
 );
 
-/** Enters the served date and time, and a "how" and "No" to a bailiff note so that only the date is being tested. */
 When('I enter a served date of {string} and time {string}', async ({ page, world }, date: string, time: string) => {
   await ensureOnNoticeServedPage(page);
   world.currentEvent = MARK_NOTICE_SERVED;
@@ -212,8 +184,6 @@ Given('I have answered the questions', async ({ page, world, $tags }) => {
   await page.locator(`${noticeServed.fields.addNote}_No`).check();
 });
 
-// What defendants see once the notice is served. The checks are feature 14's: the XUI tabs for the defendant's
-// legal representative, and the case data CCD gives each defendant.
 Then('defendants can see the {string} tab', async ({ page, context, world }, tabName: string) => {
   await ensureDefendantsLinked(world);
   await expectEnforcementTab(page, await viewAsEachDefendant(page, context, world), tabName, true);
@@ -226,8 +196,6 @@ Then('defendants cannot see the {string} tab', async ({ page, context, world }, 
   expectNoEnforcementFields(views);
 });
 
-// XUI draws the Enforcement folder for everyone (OPEN-QUESTIONS 50); what pcs-api controls is that the
-// defendant gets a document in it.
 Then('defendants can see the {string} folder in case file view', async ({ world }, folder: string) => {
   expect(folder).toBe('Enforcement');
   await ensureDefendantsLinked(world);

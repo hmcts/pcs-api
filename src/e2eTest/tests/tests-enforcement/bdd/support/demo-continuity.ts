@@ -1,54 +1,15 @@
 /**
- * One continuous pass per feature, for the demo videos.
+ * Demo project only: consecutive scenarios of one feature whose Background text is identical run against the
+ * case it set up and the session it signed in, so the video reads as one pass. CI's `enforcement-bdd` project
+ * is untouched, because there a cascading failure costs more than a slow run.
  *
- * Every scenario re-runs its feature's Background, so a feature whose scenarios share one Background was
- * filmed as the same preamble over and over: set a case up through the APIs, sign in, open the case, once per
- * scenario. In the `enforcement-bdd-demo` project consecutive scenarios that share an identical Background
- * instead run against the same case and the same signed-in session, so the video reads as one journey. CI's
- * `enforcement-bdd` project is untouched — there each scenario still sets up its own case and signs in for
- * itself, because a cascading failure costs far more than a slow run.
+ * It cannot film the wrong user: a restored session is kept only once XUI, asked whose the cookies are, names
+ * the user being signed in as, and the page is then opened on XUI again rather than left as whoever rendered it.
  *
- * Two things are carried from one scenario to the next:
- *
- *   - the case the Background set up, keyed on the feature file and the resolved text of every Background
- *     step. Two scenarios share a case only when both are character-identical, so a Background asking for a
- *     different status, a different enforcement type or with an extra step gets a case of its own.
- *   - the signed-in session, as the browser context's cookies. Playwright gives every test a fresh context
- *     and will not reuse one at all while it is recording video, so the session cannot simply be left open;
- *     the cookies are put into the new context instead, and kept only once XUI has named the user they are
- *     signed in as and it is the user the caller asked for.
- *
- * Why this cannot film the wrong user. A session is carried over only when XUI, asked whose the restored
- * cookies are, names the user being signed in as; one belonging to anyone else is dropped, and the caller
- * signs in as it would have without this file. The page is then opened on XUI again: changing the cookies
- * under a page leaves the user who rendered it on screen, with their tabs and their view of the case, and the
- * step that opens the case next navigates to a URL that can differ from the one the page is on only by its
- * fragment, which would not reload it.
- *
- * Why this cannot film the wrong state. The case is handed to the next scenario only when all of:
- *
- *   - the Background text is identical, so the set-up asked for is the same;
- *   - no event was submitted on it after its Background finished. Every event submitted through the data
- *     store API (event-api.ts) and every event submitted in XUI (the browser's POST to
- *     `/cases/<reference>/events`) is recorded against the case it was submitted on;
- *   - the case's state and enforcements, re-read from the data store, are identical to what they were when
- *     the Background finished. That is a positive check against the real case, not a record of what the suite
- *     believes it did;
- *   - the scenario did not fail. One that failed may have been part way through a submit. One that stopped at
- *     a pending step keeps its case: it did nothing after its Background, and the fingerprint would show it if
- *     it had.
- *
- * Anything else — a different Background, a submitted event, a changed case, a failure — makes the next
- * scenario set up its own case, which is what every scenario did before.
- *
- * Set-up this file cannot skip would re-run against the reused case, so a Background whose set-up does not go
- * through a helper wrapped in {@link backgroundSetUp} is never reused: an event submitted by a Background step
- * outside those helpers is noticed the first time the Background runs, and the case is then offered to nobody
- * (feature 16 builds its two warrants that way). A Background that sets up more than one case is not offered
- * either, because only one case is held.
- *
- * The case role the held case keeps is dropped when it is released. The last case a worker holds keeps it,
- * which costs the claimant's legal representative one extra case in their case list per feature filmed.
+ * It cannot film the wrong state: the case is handed on only when the Background text is identical, no event
+ * was submitted on it after the Background finished, its state and enforcements re-read from the data store are
+ * unchanged, and the scenario did not fail. Anything else makes the next scenario set up its own case. Set-up
+ * outside a {@link backgroundSetUp} helper cannot be skipped, so such a Background is never reused.
  */
 import { BrowserContext, Cookie, Page, TestInfo, test } from '@playwright/test';
 import Axios from 'axios';
@@ -56,10 +17,8 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { performAction } from '@utils/controller-enforcement';
 import { DEMO_PROJECT } from './demo-pacing';
 
-/** The fields of playwright-bdd's step data this file reads. */
 export type BddStep = { textWithKeyword?: string; isBg?: boolean };
 
-/** What the Background left behind, kept for the next scenario with the same Background. */
 type HeldCase = {
   key: string;
   caseReference: string;
@@ -72,14 +31,10 @@ type HeldCase = {
 };
 
 let enabled = false;
-/** The spec file the held case and the sessions belong to: a different feature starts again. */
 let scope: string | undefined;
 let held: HeldCase | undefined;
-/** Backgrounds whose set-up this file cannot skip, so their case is never offered to a second scenario. */
 const notReusable = new Set<string>();
-/** The cookies of the last session signed in as each role. */
 const sessions = new Map<string, Cookie[]>();
-/** Who the browser is signed in as now, as session.ts last reported it. */
 let currentRole = '';
 
 let started = false;
@@ -87,12 +42,9 @@ let key: string | undefined;
 let reusing = false;
 let inBackground = false;
 let setUpDepth = 0;
-/** Whether a Background step submitted an event outside a {@link backgroundSetUp} helper. */
 let unskippableSetUp = false;
-/** The cases this scenario's Background set up. */
 const backgroundCases = new Set<string>();
 
-/** Starts a scenario, and a new feature's cache when the spec file changes. */
 export async function beginScenario(testInfo: TestInfo): Promise<void> {
   enabled = testInfo.project.name === DEMO_PROJECT;
   started = false;
@@ -113,10 +65,6 @@ export async function beginScenario(testInfo: TestInfo): Promise<void> {
   }
 }
 
-/**
- * Before each step: claims the feature's case at the scenario's first step, and captures it once the
- * Background has finished.
- */
 export async function enteringStep(steps: BddStep[], stepIndex: number, world: object): Promise<void> {
   if (!enabled) {
     return;
@@ -133,15 +81,13 @@ export async function enteringStep(steps: BddStep[], stepIndex: number, world: o
   inBackground = backgroundStep;
 }
 
-/** Ends a scenario. Returns whether its case is being held, and so should keep its case role. */
 export async function endScenario(testInfo: TestInfo, world: { caseReference?: string }, context: BrowserContext): Promise<boolean> {
   if (!enabled) {
     return false;
   }
   inBackground = false;
   await rememberSession(context, currentRole);
-  // A scenario that stopped at a pending step keeps its case: it did nothing, and anything it did do would
-  // show in the fingerprint the next scenario checks. One that failed may have been part way through a submit.
+  // A scenario that stopped at a pending step keeps its case: anything it did would show in the fingerprint.
   const failed = testInfo.status === 'failed' || testInfo.status === 'timedOut';
   if (held && (held.changed || failed)) {
     await releaseHeldCase();
@@ -149,10 +95,6 @@ export async function endScenario(testInfo: TestInfo, world: { caseReference?: s
   return held !== undefined && held.caseReference === world.caseReference;
 }
 
-/**
- * Set-up a scenario that is reusing its feature's case can skip, and whose changes to the case are expected
- * while the Background runs. Runs `setUp` whenever there is nothing to reuse.
- */
 export async function backgroundSetUp(setUp: () => Promise<void>): Promise<void> {
   if (!enabled || !inBackground) {
     await setUp();
@@ -172,7 +114,6 @@ export async function backgroundSetUp(setUp: () => Promise<void>): Promise<void>
   }
 }
 
-/** Records that an event has been submitted on `caseReference`, whoever submitted it. */
 export function recordCaseChange(caseReference: string | undefined): void {
   if (!enabled || !caseReference) {
     return;
@@ -188,10 +129,8 @@ export function recordCaseChange(caseReference: string | undefined): void {
   }
 }
 
-/** The data store event submit, which is what XUI posts when an event is submitted in the browser. */
 const CASE_EVENT_SUBMIT = /\/cases\/(\d{16})\/events(?:[/?]|$)/;
 
-/** Records an event submitted in the browser. Attached to the browser context by the fixtures. */
 export function recordBrowserRequest(method: string, url: string): void {
   if (!enabled || method === 'GET') {
     return;
@@ -202,7 +141,6 @@ export function recordBrowserRequest(method: string, url: string): void {
   }
 }
 
-/** Keeps the cookies of the session signed in as `role`, so the next scenario wanting them can carry on. */
 export async function rememberSession(context: BrowserContext, role: string): Promise<void> {
   if (!enabled) {
     return;
@@ -214,11 +152,6 @@ export async function rememberSession(context: BrowserContext, role: string): Pr
   }
 }
 
-/**
- * Puts the session last signed in as `role` into this scenario's browser context, so it does not have to sign
- * in again. Answers false unless XUI answers for the restored cookies as `email`, in which case the caller
- * signs in as usual; a session that turns out to be somebody else's is dropped rather than carried on with.
- */
 export async function restoreSession(role: string, email: string, page: Page): Promise<boolean> {
   const context = page.context();
   const cookies = enabled ? sessions.get(role) : undefined;
@@ -228,9 +161,8 @@ export async function restoreSession(role: string, email: string, page: Page): P
   await context.clearCookies();
   await context.addCookies(cookies);
   if ((await xuiSignedInAs(context)) === email.toLowerCase()) {
-    // Swapping the cookies under the page leaves the user who rendered it on screen: their tabs, their case
-    // view. A page.goto to a URL that differs from the one it is on only by its fragment would not reload it,
-    // so the page is opened on XUI again, which is what the sign-in this is standing in for would have done.
+    // Swapping the cookies under the page leaves the user who rendered it on screen, and a goto differing only
+    // by fragment would not reload it, so the page is opened on XUI again.
     await page.goto(String(process.env.MANAGE_CASE_BASE_URL), { waitUntil: 'domcontentloaded' });
     return true;
   }
@@ -239,17 +171,11 @@ export async function restoreSession(role: string, email: string, page: Page): P
   return false;
 }
 
-/** Told by session.ts, so that the session saved at the end of a scenario is saved under the right user. */
 export function noteSignedInRole(role: string): void {
   currentRole = role;
 }
 
-/**
- * Who XUI says the context's cookies are signed in as, lower cased, or undefined when it has no session for
- * them. XUI serves its Angular app to anyone, so a page that loads proves nothing about the session; its
- * `/api/user/details` answers 401 without one and names the user with one. `context.request` shares the
- * context's cookies.
- */
+/** XUI serves its Angular app to anyone, so a page that loads proves nothing; `/api/user/details` answers 401 without a session. */
 async function xuiSignedInAs(context: BrowserContext): Promise<string | undefined> {
   const base = String(process.env.MANAGE_CASE_BASE_URL);
   try {
@@ -264,13 +190,11 @@ async function xuiSignedInAs(context: BrowserContext): Promise<string | undefine
   }
 }
 
-/** The feature file and the resolved text of every Background step, or undefined when there is no Background. */
 function backgroundKey(steps: BddStep[]): string | undefined {
   const background = steps.filter(step => step.isBg).map(step => step.textWithKeyword ?? '');
   return background.length ? `${scope}\n${background.join('\n')}` : undefined;
 }
 
-/** Gives this scenario the case held for `backgroundKey`, if it may still have it. */
 async function claimHeldCase(backgroundKey: string, world: object): Promise<boolean> {
   if (notReusable.has(backgroundKey) || !held || held.key !== backgroundKey || held.changed) {
     return false;
@@ -289,7 +213,6 @@ async function claimHeldCase(backgroundKey: string, world: object): Promise<bool
   return true;
 }
 
-/** Holds the case this scenario's Background set up, for the next scenario with the same Background. */
 async function holdCase(world: { caseReference?: string }): Promise<void> {
   if (reusing || key === undefined) {
     return;
@@ -315,7 +238,6 @@ async function holdCase(world: { caseReference?: string }): Promise<void> {
   };
 }
 
-/** Drops the held case, giving up the case role the scenario that set it up kept for it. */
 async function releaseHeldCase(): Promise<void> {
   const releasing = held;
   held = undefined;
@@ -334,13 +256,7 @@ async function releaseHeldCase(): Promise<void> {
 /** Reads that could not be made, so that each one gives a fingerprint nothing can match. */
 let unreadableCases = 0;
 
-/**
- * The case as the Background left it: its state and every enforcement on it, from the data store. Anything the
- * enforcement journeys do changes one of them, so an identical fingerprint means an untouched case.
- *
- * A case that cannot be read is given a fingerprint of its own, which no later read can match: the scenario
- * carries on and sets up a case for itself rather than failing over a check that is only there to save time.
- */
+/** The case's state and every enforcement on it. Anything the enforcement journeys do changes one of them, so an identical fingerprint means an untouched case. */
 async function caseFingerprint(caseReference: string): Promise<string> {
   try {
     const response = await Axios.get(`${process.env.DATA_STORE_URL_BASE}/cases/${caseReference}`, {
@@ -357,10 +273,7 @@ async function caseFingerprint(caseReference: string): Promise<string> {
   }
 }
 
-/**
- * A copy of the world's data, so that handing it to the next scenario cannot share anything with the one that
- * set it up. The world holds only the strings, booleans, arrays and records the steps put on it.
- */
+/** A copy, so that handing the world to the next scenario cannot share anything with the one that set it up. */
 function plainCopy(world: Record<string, unknown>): Record<string, unknown> {
   return JSON.parse(JSON.stringify(world));
 }
@@ -379,10 +292,6 @@ function stableJson(value: unknown): string {
   return JSON.stringify(value) ?? 'null';
 }
 
-/**
- * The defendant names the enforcement journeys read, which the fixtures clear before each scenario. The action
- * only reads the claim, so the names are worked out again rather than carried over.
- */
 async function restoreDefendantDetails(world: Record<string, unknown>): Promise<void> {
   const claim = world.submitPayload as { defendant1?: { nameKnown?: string }; addAnotherDefendant?: string } | undefined;
   if (!claim?.defendant1) {
@@ -395,7 +304,6 @@ async function restoreDefendantDetails(world: Record<string, unknown>): Promise<
   });
 }
 
-/** The running test's annotations, so the Background's approximated preconditions follow its case. */
 function testAnnotations(): { type: string; description?: string }[] {
   return test.info().annotations;
 }

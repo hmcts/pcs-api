@@ -1,13 +1,3 @@
-// Find a case by warrant or writ number (feature 16).
-//
-// pcs-api indexes every warrant and writ number on the case as a global search "Other reference"
-// (`EnforcementNumberSearchReferences`, HDPI-7677). The numbers are generated on approval, so the steps get
-// real ones by applying through "Enforce the order" and approving through "Decide enforcement", submitted through
-// the data store API, then map the feature file's illustrative numbers ("WP-0001") onto them.
-//
-// Searching needs a user with the GS_profile access profile, which `SearchCriteria` is restricted to. The
-// local bailiff users have it through their `hmcts-admin` organisation role (cftlib-am-role-assignments.json);
-// the hearing centre admin who approves does not.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending } from '../fixtures/pending';
@@ -18,14 +8,9 @@ import { expectSearchFindsCase, searchByOtherReference } from '../support/global
 import { applyAsClaimant, closeApprovedWarrant } from '../support/repeat-enforcement';
 
 const OTHER_REFERENCE = 'Other reference';
-/** The final return that closes a live warrant so that another application can be made. */
 const CLOSING_RETURN_NAME = 'Warrant withdrawn';
 const DEFENDANT_LEGAL_REPRESENTATIVE = 'defendant legal representative';
 
-/**
- * The claimant's legal representative applies for `type` and a hearing centre admin approves it, both through
- * the data store API; returns the number it was given.
- */
 async function generateEnforcement(
   world: EnforcementWorld,
   type: Extract<EnforcementType, 'warrant of possession' | 'writ of possession'>
@@ -34,7 +19,6 @@ async function generateEnforcement(
   return approveApplicationAsCaseworker(world, type === 'writ of possession' ? 'Writ' : 'Warrant');
 }
 
-/** The real number behind one of the feature file's illustrative numbers. */
 function realNumber(world: EnforcementWorld, illustrative: string): string {
   const number = world.enforcementNumbers[illustrative];
   if (!number) {
@@ -64,8 +48,6 @@ Given('a PCS case {string} with warrants {string} and {string}', async ({ world 
   }
 });
 
-// The Background leaves its warrant live, and "Enforce the order" refuses another application while it is, so
-// the bailiff staff close it with a final return first.
 When('a new writ {string} is generated on the case', async ({ world }, illustrative: string) => {
   if (world.warrantApproved) {
     approximatePrecondition(
@@ -102,8 +84,6 @@ Then(
   }
 );
 
-// A defendant search that finds nothing proves nothing if the case is not indexed yet, so before swapping
-// users this checks that the bailiff signed in by the Background can find the case by every number.
 Given('I am signed in as a defendant legal representative', async ({ page, context, world, $tags }) => {
   if (!canSignInAs(DEFENDANT_LEGAL_REPRESENTATIVE)) {
     return markPending(
@@ -121,7 +101,6 @@ Given('I am signed in as a defendant legal representative', async ({ page, conte
   await signInAs(DEFENDANT_LEGAL_REPRESENTATIVE, page, context);
 });
 
-// XUI may not offer the search page to a professional user at all; that also returns nothing.
 Then('no results are returned', async ({ page, world }) => {
   expect(world.searchedReference, 'a global search earlier in the scenario').toBeDefined();
   const outcome = await searchByOtherReference(page, world.searchedReference as string);

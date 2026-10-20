@@ -1,13 +1,5 @@
-/**
- * The `recordWarrantReturn` event (feature 11).
- *
- * One page with show-condition-driven drop downs. `Return` (Final / Interim) reveals either `Outcome`
- * (Final only) or the interim return names; the Final return names are split across two fields, one for
- * the successful outcome and one shared by unsuccessful and cancelled, because they offer different lists.
- *
- * `recordWarrantReturn` is available from "Awaiting scheduling" onwards (`RECORDABLE_STATUSES`), so these
- * scenarios do not need the claimant to have confirmed the eviction first.
- */
+// The Final return names are split across two fields, one for the successful outcome and one shared by
+// unsuccessful and cancelled, because they offer different lists.
 import { Page, expect } from '@playwright/test';
 import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { ccdDateTime, submitEventAs } from './event-api';
@@ -35,7 +27,6 @@ export const warrantReturn = {
   evictionCancelled: 'Eviction cancelled',
 };
 
-/** The drop down a feature step names, by its visible label. */
 const FIELD_BY_LABEL: Record<string, string> = {
   Return: warrantReturn.typeField,
   Outcome: warrantReturn.outcomeField,
@@ -49,11 +40,7 @@ export function returnDropDown(page: Page, label: string) {
   return page.locator(selector);
 }
 
-/**
- * The `Return name` drop down currently on the page. Which of the three fields is shown depends on the
- * return type and outcome already chosen, and CCD re-evaluates the show conditions asynchronously, so
- * this polls rather than reading visibility once.
- */
+/** Which of the three fields is shown depends on the choices already made, and CCD re-evaluates the show conditions asynchronously, so this polls. */
 export async function visibleReturnNameDropDown(page: Page) {
   const candidates = [
     warrantReturn.successfulReturnNameField,
@@ -74,17 +61,12 @@ export async function visibleReturnNameDropDown(page: Page) {
   return page.locator((await shown()) as string);
 }
 
-/** Option labels, with CCD's placeholder removed. */
 export async function optionsOf(field: ReturnType<Page['locator']>): Promise<string[]> {
   await expect(field).toBeVisible({ timeout: LONG_TIMEOUT });
   const options = await field.locator('option').allTextContents();
   return options.map(option => option.trim()).filter(option => option && !option.startsWith('--'));
 }
 
-/**
- * Opens the event if the page is not already showing it. Feature 11's Rule only signs the bailiff in, so a
- * scenario can go straight to "I choose the Final return" without an explicit navigation step.
- */
 export async function ensureOnWarrantReturnPage(page: Page): Promise<void> {
   if (await page.locator(warrantReturn.typeField).isVisible().catch(() => false)) {
     return;
@@ -107,14 +89,12 @@ export async function chooseOutcome(page: Page, outcome: string): Promise<void> 
   await outcomeField.selectOption({ label: outcome });
 }
 
-/** Chooses a return name in whichever of the three fields is showing. */
 export async function chooseReturnName(page: Page, returnName: string): Promise<void> {
   await ensureOnWarrantReturnPage(page);
   const field = await visibleReturnNameDropDown(page);
   await field.selectOption({ label: returnName });
 }
 
-/** The interim return names, lower-cased: pcs-api's InterimWarrantReturnName. */
 const INTERIM_RETURN_NAMES = [
   'application unsuccessful & warrant returned to bailiff',
   'request for additional information',
@@ -130,15 +110,12 @@ const INTERIM_RETURN_NAMES = [
   'reopen warrant',
 ];
 
-/** The one final return name for a successful eviction; every other final name is "Eviction unsuccessful". */
 const SUCCESSFUL_RETURN_NAME = 'eviction successful';
 
 export const REOPEN_WARRANT = 'Reopen warrant';
 
-/** The "Additional details" the suite gives with every return; some return names require them. */
 export const SUITE_ADDITIONAL_DETAILS = 'Recorded by the enforcement BDD suite';
 
-/** The return, and for a final return the outcome, whose drop down offers `returnName` (ignoring case). */
 export function returnFor(returnName: string): { type: string; outcome?: string } {
   const name = returnName.toLowerCase();
   if (INTERIM_RETURN_NAMES.includes(name)) {
@@ -150,11 +127,7 @@ export function returnFor(returnName: string): { type: string; outcome?: string 
   return { type: warrantReturn.final, outcome: warrantReturn.evictionUnsuccessful };
 }
 
-/**
- * The feature files write return names in their own case ("Warrant Suspended by Order"); pcs-api's labels
- * keep the capitals of the HDPI-8424 list ("Warrant suspended by Order"). Chooses the option ignoring case
- * and returns pcs-api's label.
- */
+/** The feature files write return names in their own case, so the option is chosen ignoring case. */
 export async function chooseReturnNameIgnoringCase(page: Page, returnName: string): Promise<string> {
   const field = await visibleReturnNameDropDown(page);
   const labels = await optionsOf(field);
@@ -174,19 +147,13 @@ export function pastEviction(): { date: string; time: string } {
   return { date: `${pad(when.getDate())}/${pad(when.getMonth() + 1)}/${when.getFullYear()}`, time: '10:00' };
 }
 
-/** Fills the "Eviction date and time" inputs from a "dd/MM/yyyy" date and an "HH:mm" time. */
 export async function enterReturnEvictionDateTime(page: Page, date: string, time: string): Promise<void> {
   const [day, month, year] = date.split('/');
   const [hour, minute] = time.split(':');
   await fillDateTimeField(page, warrantReturn.evictionDateTimeField, { day, month, year, hour, minute });
 }
 
-/**
- * Answers the "Record warrant return" page for `returnName`: the return and outcome that offer it, the name,
- * a past eviction date and time when the eviction was successful, and additional details. Additional details
- * are optional for most names and mandatory for some; always giving them keeps one route for all of them.
- * Returns pcs-api's label for the name.
- */
+/** Additional details are mandatory for some return names and optional for the rest; always giving them keeps one route for all of them. */
 export async function answerWarrantReturn(
   page: Page,
   returnName: string,
@@ -212,10 +179,6 @@ export async function expectReturnCheckYourAnswers(page: Page): Promise<void> {
   });
 }
 
-/**
- * Records a return named `returnName` on the case's warrant, opening the event if it is not already open,
- * and waits for pcs-api's "Outcome recorded as" confirmation. Returns pcs-api's label for the name.
- */
 export async function recordWarrantReturn(
   page: Page,
   returnName: string,
@@ -232,11 +195,7 @@ export async function recordWarrantReturn(
   return label;
 }
 
-/**
- * The "Eviction details" claimant type, claimant name and defendant names, each filled in. "Record warrant
- * return" renders them as a GOV.UK table, "Schedule eviction" and "Reschedule eviction" as a summary list, so
- * each key is matched in whichever of the two the screen uses.
- */
+/** "Record warrant return" renders these as a GOV.UK table and the schedule screens as a summary list, so each key is matched in either. */
 export async function expectEvictionDetailsTable(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: warrantReturn.evictionDetailsHeading })).toBeVisible({
     timeout: LONG_TIMEOUT,
@@ -252,7 +211,6 @@ export async function expectEvictionDetailsTable(page: Page): Promise<void> {
   }
 }
 
-/** pcs-api's return name codes by label: the InterimWarrantReturnName, SuccessfulWarrantReturnName and UnsuccessfulWarrantReturnName fixed lists. */
 const RETURN_NAME_CODES: Record<string, string> = {
   'Application unsuccessful & warrant returned to bailiff': 'APPLICATION_UNSUCCESSFUL_WARRANT_RETURNED',
   'Children left unattended in property': 'CHILDREN_LEFT_UNATTENDED',
@@ -281,11 +239,6 @@ const RETURN_NAME_CODES: Record<string, string> = {
   'Warrant withdrawn': 'WARRANT_WITHDRAWN',
 };
 
-/**
- * Records a return named `returnName` as `email` through CCD's data store API, with the answers
- * `answerWarrantReturn` gives in XUI: the return and outcome that offer the name, yesterday at 10:00 for a
- * successful eviction, and the suite's additional details. Returns pcs-api's label for the name.
- */
 export async function recordWarrantReturnAs(
   email: string,
   returnName: string,

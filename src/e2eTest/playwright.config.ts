@@ -38,8 +38,6 @@ function demoSlowMo(): number {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 275;
 }
 
-// Enforcement BDD: `yarn bddgen` turns the .feature files into specs under .features-gen/ (gitignored).
-// Only the enforcement-bdd project reads them; projects using testDir 'tests/' never pick them up.
 const ENFORCEMENT_BDD_DIR = 'tests/tests-enforcement/bdd';
 const enforcementBddTestDir = defineBddConfig({
   features: `${ENFORCEMENT_BDD_DIR}/features/**/*.feature`,
@@ -107,24 +105,15 @@ export default defineConfig({
         headless: !!process.env.CI,
       },
     },
-    // Demo recording: one video per scenario, headed-size viewport, no retries hiding a re-run.
-    // A separate project so CI's `enforcement-bdd` keeps `video: 'retain-on-failure'`; nothing selects
-    // this one unless you ask for it by name. It runs at human speed: `slowMo` (DEMO_SLOW_MO, ms) on every
-    // browser action, and the BDD fixtures hold each new page and each When/Then step for DEMO_HOLD_MS, caption
-    // every step, and show every click, selection and piece of typing with a visible pointer
-    // (tests-enforcement/bdd/support/demo-pacing.ts). Consecutive scenarios of one feature that share an
-    // identical Background run against the same case and the same signed-in session, so the video is one pass
-    // (tests-enforcement/bdd/support/demo-continuity.ts); that needs a feature's scenarios to run in order in
-    // one worker, which is what turning off `fullyParallel` for this project gives.
-    // scripts/enforcement-demo-videos.sh stitches the videos.
+    // Demo recording (scripts/enforcement-demo-videos.sh). Not parallel: a feature's scenarios must run in
+    // order in one worker to share a case and a session (tests-enforcement/bdd/support/demo-continuity.ts).
     {
       name: 'enforcement-bdd-demo',
       testDir: enforcementBddTestDir,
-      // Unhappy and edge cases are tagged @not-filmed and kept out of the demo; enforcement-bdd still runs them.
       grepInvert: /@not-filmed/,
       fullyParallel: false,
       retries: 0,
-      // Human-speed actions (a visible pointer, typed text) make a long journey take several times longer.
+      // Human-speed actions make a long journey take several times longer.
       timeout: 1800 * 1000,
       use: {
         ...devices['Desktop Chrome'],

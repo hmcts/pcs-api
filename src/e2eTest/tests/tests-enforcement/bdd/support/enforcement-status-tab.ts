@@ -1,16 +1,5 @@
-/**
- * Reading the enforcement tabs, and the enforcement status itself.
- *
- * pcs-api renders both enforcement tabs as GOV.UK markup in a single markdown label
- * (`EnforcementStatusTabMarkdown`, `RiskAssessmentTabMarkdown`): headings followed by summary lists
- * (`dt` / `dd` rows) or a placeholder paragraph such as "Not yet scheduled". On the "Enforcement status" tab
- * each warrant or writ is an `h2` headed with its number, and its sections ("Eviction notice", "Scheduled
- * eviction", ...) are `h3`s. On the "Risk assessment" tab the sections are `h2`s.
- *
- * The tab only appears once a warrant or writ has been generated, so the status of an application that is
- * still awaiting payment or review is read from the case data instead: the `enforcements` collection pcs-api
- * sets on the case view lists every application with its status.
- */
+// pcs-api renders both enforcement tabs as GOV.UK markup in one markdown label, so they are read as headings
+// with summary-list rows. A tab only exists once a warrant or writ is generated; earlier statuses come from the case data.
 import { Page, expect } from '@playwright/test';
 import Axios from 'axios';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
@@ -19,10 +8,6 @@ import { ensureSignedIn } from './session';
 
 export const ENFORCEMENT_STATUS_TAB = 'Enforcement status';
 
-/**
- * One heading on a tab, with what is under it: every summary list row (`rows`, merged), each summary list on
- * its own (`lists`, for repeated entries such as bailiff notes) and the paragraph text.
- */
 export type TabBlock = {
   level: number;
   heading: string;
@@ -31,7 +16,6 @@ export type TabBlock = {
   text: string;
 };
 
-/** One warrant or writ on the "Enforcement status" tab. */
 export type EnforcementSection = {
   heading: string;
   summary: Record<string, string>;
@@ -47,16 +31,9 @@ export async function openCaseTab(page: Page, caseReference: string, tabName: st
   await page.getByRole('tab', { name: tabName, exact: true }).click();
 }
 
-/** The tab that is currently selected. */
 export const activeTab = (page: Page) => page.locator('.mat-tab-body-active').first();
 
-/**
- * Re-fetches the open case and selects the tab that was open again.
- *
- * Set-up goes through the APIs, so a tab can be opened in the same moment pcs-api records what the scenario
- * then asserts, and polling markup that is already rendered would never see it arrive. Polls that wait for
- * something set up that way reload between tries.
- */
+/** Re-fetches the case and selects the tab again: set-up goes through the APIs, so already-rendered markup would never gain what is asserted. */
 export async function reopenCurrentTab(page: Page): Promise<void> {
   const selected = page.locator('[role="tab"][aria-selected="true"]').first();
   const tabName = (await selected.count()) ? (await selected.innerText()).trim() : undefined;
@@ -69,10 +46,7 @@ export async function reopenCurrentTab(page: Page): Promise<void> {
   await tab.click();
 }
 
-/**
- * Every heading on the selected tab, in order, with what follows it up to the next heading. Waits for the
- * markup to render first: XUI fills the tab asynchronously after it is selected.
- */
+/** Waits for the markup first: XUI fills the tab asynchronously after it is selected. */
 export async function tabBlocks(page: Page): Promise<TabBlock[]> {
   const panel = activeTab(page);
   await expect(panel.locator('h2').first()).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
@@ -112,12 +86,10 @@ export async function tabBlocks(page: Page): Promise<TabBlock[]> {
   });
 }
 
-/** The headed sections of the selected tab, by heading. For the "Risk assessment" tab. */
 export async function tabSections(page: Page): Promise<Record<string, TabBlock>> {
   return Object.fromEntries((await tabBlocks(page)).map(block => [block.heading, block]));
 }
 
-/** Every warrant and writ on the selected "Enforcement status" tab, in the order the tab lists them. */
 export async function enforcementSections(page: Page): Promise<EnforcementSection[]> {
   const sections: EnforcementSection[] = [];
   for (const block of await tabBlocks(page)) {
@@ -130,7 +102,6 @@ export async function enforcementSections(page: Page): Promise<EnforcementSectio
   return sections;
 }
 
-/** The case's only warrant or writ on the "Enforcement status" tab, opening the tab first. */
 export async function soleEnforcementSection(page: Page, caseReference: string): Promise<EnforcementSection> {
   await openCaseTab(page, caseReference, ENFORCEMENT_STATUS_TAB);
   const sections = await enforcementSections(page);
@@ -138,10 +109,6 @@ export async function soleEnforcementSection(page: Page, caseReference: string):
   return sections[0];
 }
 
-/**
- * One section of the case's only warrant, polling the tab so that what a just-submitted event wrote is
- * picked up once CCD has it.
- */
 export async function expectEnforcementSection(
   page: Page,
   caseReference: string,
@@ -153,7 +120,6 @@ export async function expectEnforcementSection(
   }).toPass({ timeout: VERY_LONG_TIMEOUT });
 }
 
-/** EnforcementStatus labels by the code the case data carries. */
 const STATUS_LABELS: Record<string, string> = {
   AWAITING_PAYMENT: 'Awaiting payment',
   AWAITING_REVIEW: 'Awaiting review',
@@ -169,12 +135,10 @@ const STATUS_LABELS: Record<string, string> = {
   CLOSED: 'Closed',
 };
 
-/** Feature-file spellings of a status that differ from the EnforcementStatus label. */
 const STATUS_ALIASES: Record<string, string> = {
   'Transferred to High Court': 'Transferred to the High Court',
 };
 
-/** SelectEnforcementType labels by the code the case data carries. */
 const TYPE_LABELS: Record<string, string> = {
   WARRANT: 'Warrant of possession',
   WRIT: 'Writ of possession',
@@ -184,7 +148,6 @@ const TYPE_LABELS: Record<string, string> = {
 
 export type EnforcementRow = { status?: string; number?: string; type?: string };
 
-/** Every enforcement on the case, current first, as the case data lists them. */
 export async function enforcementRows(caseReference: string): Promise<EnforcementRow[]> {
   const response = await Axios.get(`${process.env.DATA_STORE_URL_BASE}/cases/${caseReference}`, {
     headers: {
@@ -202,21 +165,12 @@ export async function enforcementRows(caseReference: string): Promise<Enforcemen
   }));
 }
 
-/**
- * The enforcement the case is working on: its only one, or, when `earlierCount` enforcements came before it,
- * the first the case data lists (the live one, else the most recently changed). Fails if the case does not
- * have exactly `earlierCount + 1` enforcements.
- */
 export async function currentEnforcement(caseReference: string, earlierCount = 0): Promise<EnforcementRow> {
   const rows = await enforcementRows(caseReference);
   expect(rows, `${earlierCount + 1} enforcement(s) on the case`).toHaveLength(earlierCount + 1);
   return rows[0];
 }
 
-/**
- * Asserts the status of the case's current enforcement (see {@link currentEnforcement}). Polls so that a
- * status set by a just-submitted event is picked up once CCD has it.
- */
 export async function expectEnforcementStatus(
   _page: Page | undefined,
   caseReference: string,
@@ -229,7 +183,6 @@ export async function expectEnforcementStatus(
     .toBe(expected);
 }
 
-/** The warrant or writ number of the case's only enforcement, or undefined when none has been generated. */
 export async function enforcementNumber(_page: Page, caseReference: string): Promise<string | undefined> {
   const rows = await enforcementRows(caseReference);
   expect(rows, 'exactly one enforcement on the case').toHaveLength(1);
@@ -241,25 +194,21 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-/** A date as the enforcement tabs show it: "15 March 2026". */
 export function tabDate(day: number, month: number, year: number): string {
   return `${day} ${MONTHS[month - 1]} ${year}`;
 }
 
-/** Today's date as the enforcement tabs show it. */
 export function todayTabDate(): string {
   const now = new Date();
   return tabDate(now.getDate(), now.getMonth() + 1, now.getFullYear());
 }
 
-/** A 24-hour "09:30" as the enforcement tabs show it: "09:30 AM". */
 export function tabTime(time: string): string {
   const [hour, minute = '00'] = time.split(':').map(part => Number(part));
   const twelveHour = hour % 12 === 0 ? 12 : hour % 12;
   return `${String(twelveHour).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${hour < 12 ? 'AM' : 'PM'}`;
 }
 
-/** "dd/MM/yyyy", "30 June 2027" or "Wednesday 30 June 2027" as the enforcement tabs show it. */
 export function tabDateOf(date: string): string {
   const slashed = date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (slashed) {

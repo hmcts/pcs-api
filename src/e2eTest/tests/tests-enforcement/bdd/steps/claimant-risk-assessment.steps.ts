@@ -1,9 +1,3 @@
-// The claimant updates the risk assessment in "Confirm the eviction details" and the bailiff reviews it on the
-// "Risk assessment" tab (feature 09, and the risk assessment scenarios of feature 06). HDPI-7552.
-//
-// The dates in the feature files cannot be set up: the original answers are the seeded application's, given
-// today, and the update is made today. The steps assert today's date and record the gap as an approximated
-// precondition. The "Review updated risk information" task is not created (HDPI-8627).
 import { BrowserContext, Page } from '@playwright/test';
 import { Given, Then, When, expect, test } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
@@ -30,7 +24,6 @@ import {
   tabQuestion,
 } from '../support/claimant-risk-assessment';
 
-/** The internal sections of the "Risk assessment" tab, and the heading of the review banner. */
 const INTERNAL_SECTIONS = ['Bailiff note', 'Risk assessment level', 'Important'];
 
 function inConfirmEviction(currentEvent: string | undefined): boolean {
@@ -41,7 +34,6 @@ async function claimantSectionText(page: Page): Promise<string> {
   return (await tabSections(page))[CLAIMANT_RISK_SECTION]?.text ?? '';
 }
 
-/** The changed question's row: the original answer differs from the updated one, which is the changed answer. */
 async function expectChangedAnswer(page: Page, world: EnforcementWorld): Promise<void> {
   expect(world.riskQuestion, 'a risk answer changed by this scenario').toBeDefined();
   const row = await claimantRiskAnswerRow(page, world.riskQuestion as string);
@@ -53,10 +45,6 @@ async function openRiskAssessmentAs(role: string, page: Page, context: BrowserCo
   await signInAs(role, page, context);
   await openCaseTab(page, requireCaseReference(world), RISK_ASSESSMENT_TAB);
 }
-
-// ---------------------------------------------------------------------------
-// Feature 06: the claimant changes (or keeps) their answers while confirming
-// ---------------------------------------------------------------------------
 
 When('I change my answer to {string} to {string}', async ({ page, world, $tags }, question: string, answer: string) => {
   if (!inConfirmEviction(world.currentEvent)) {
@@ -78,7 +66,6 @@ When('I do not change any risk assessment answers', async ({ page, world, $tags 
   await continueToCheckYourAnswers(page);
 });
 
-// The bailiff reads the internal tab, which shows the same answers as the claimant's.
 Then('the updated answer is stored alongside my original answer with today\'s date', async ({ page, context, world }) => {
   await expectConfirmEvictionSubmitted(page);
   await openRiskAssessmentAs('bailiff', page, context, world);
@@ -107,11 +94,6 @@ Then('I do not see the risk level or bailiff notes', async ({ page }) => {
   await expect(page.getByText(UPDATE_BANNER)).toBeHidden();
 });
 
-// ---------------------------------------------------------------------------
-// Feature 09: the bailiff reviews the updated risk assessment
-// ---------------------------------------------------------------------------
-
-// Set before the claimant's update, as in the feature, so the update is waiting for review.
 Given('the risk level is {string}', async ({ world }, level: string) => {
   await setRiskLevelAsBailiff(level);
   world.riskLevel = level;
@@ -121,10 +103,6 @@ Given('the claimant submitted the original risk assessment on {string}', async (
   approximatePrecondition('HDPI-7552', `the original answers are the seeded application's, given today rather than on ${date}`);
 });
 
-/**
- * Allocates and schedules the warrant, so the claimant is asked to confirm, then confirms with "Is anyone
- * living at the property vulnerable?" changed to "Yes".
- */
 Given('the claimant updated the risk assessment on {string} in {string}', async ({ world }, date: string, journey: string) => {
   expect(journey).toBe(CONFIRM_EVICTION);
   approximatePrecondition('HDPI-7552', `the claimant updated the risk assessment today rather than on ${date}`);
@@ -182,11 +160,6 @@ Then('I see the original and updated answers side by side in a table', async ({ 
   }
 });
 
-/**
- * The "Important" banner above the internal sections lists every question the claimant changed. The items
- * are not links: XUI picks the tab from the URL fragment, so an in-page link would change tab. OPEN-QUESTIONS
- * 34 proposes a plain list, which is what is checked; the links are recorded as not checked.
- */
 Then('I see an important banner with links to each question whose answer changed', async ({ page, world }) => {
   expect(world.changedRiskQuestions?.length, 'risk questions the claimant changed').toBeGreaterThan(0);
   const banner = activeTab(page).locator('.govuk-notification-banner');

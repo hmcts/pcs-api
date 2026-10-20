@@ -1,4 +1,3 @@
-// Notifications (GOV.UK Notify emails, dashboard notifications) and work allocation tasks (feature 18 and others).
 import { Given, Then, When, expect, test } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
@@ -15,10 +14,6 @@ import {
   expectNoClaimantEmail,
 } from '../support/notify-emails';
 
-// Nothing creates enforcement work allocation tasks yet (HDPI-8627). A step that only states a task exists
-// is recorded as an approximated precondition so the scenario carries on: the enforcement journeys are all
-// reachable from the next-steps drop down as well as from a task. Steps that *interact* with a task stay
-// pending, because there is nothing to click.
 const noTasksYet = (description: string) => approximatePrecondition('HDPI-8627', description);
 
 Given('an {string} task exists on the case', async ({ world }, task: string) => {
@@ -31,10 +26,6 @@ Given('a {string} task is assigned to me', async ({ world }, task: string) => {
   noTasksYet(`the "${task}" task is not created or assigned`);
 });
 
-/**
- * Where the scenario is about the journey rather than the task, the journey is started from the next-steps
- * drop down instead. A task with no event of the same name stays pending.
- */
 When('I select the {string} task from the {string} tab', async ({ page, world, $tags }, task: string, _tab: string) => {
   if (!xuiEvents[task]) {
     return markPending({ ticket: 'HDPI-8627', summary: `selecting the "${task}" task` }, $tags);
@@ -53,8 +44,6 @@ Given('{string} is the allocated bailiff with an open {string} task', async ({},
 Given('the enforcement has open {string} and {string} tasks', async ({}, first: string, second: string) =>
   noTasksYet(`the "${first}" and "${second}" tasks are not created`));
 
-// Closing a task is approximated the same way, so a scenario about the event submit is still filmed. In the work
-// allocation feature (18) the task is the point of the scenario, so there it stays pending.
 Then('the {string} task is completed', async ({ $tags }, task: string) => {
   if ($tags.includes('@work-allocation')) {
     return markPending({ ticket: 'HDPI-8627', summary: `completing the "${task}" task` }, $tags);
@@ -62,9 +51,6 @@ Then('the {string} task is completed', async ({ $tags }, task: string) => {
   noTasksYet(`the "${task}" task is not created, so it cannot be completed`);
 });
 
-// A scenario whose point is something else — the risk assessment tab appearing when the warrant is approved —
-// only states in passing that the task is created, so it is approximated like the steps above and the scenario
-// is still run and filmed. In the work allocation feature (18) the task is the point, so there it stays pending.
 Then('an {string} task is created', async ({ $tags }, task: string) => {
   if ($tags.includes('@work-allocation')) {
     return markPending({ ticket: 'HDPI-8627', summary: `creating the "${task}" task` }, $tags);
@@ -72,9 +58,6 @@ Then('an {string} task is created', async ({ $tags }, task: string) => {
   noTasksYet(`the "${task}" task is not created`);
 });
 
-// Nothing creates enforcement tasks, so the absence of one proves nothing. Approximated like the steps
-// above rather than pending, so the scenario it belongs to — the claimant going through "Confirm the
-// eviction date" without changing a risk answer — is still run and filmed.
 Then('no {string} task is created', async ({ $tags }, task: string) => {
   if ($tags.includes('@work-allocation')) {
     return markPending({ ticket: 'HDPI-8627', summary: `checking that no "${task}" task is created` }, $tags);
@@ -88,13 +71,8 @@ Then('open bailiff tasks for the enforcement are cancelled', async () =>
 Then('open bailiff tasks are cancelled', async () =>
   noTasksYet('no bailiff tasks are created, so none are cancelled'));
 
-// Enforcement emails (HDPI-7538). Locally pcs-api sends them to wiremock's Notify stub with the dev profile's
-// stand-in template ids, so each one is checked in the request journal (support/notify-emails.ts). Nowhere else
-// can the suite see what Notify was sent, so off the local stack the email is recorded as an approximated
-// precondition and the scenario carries on.
 const emailTicket = 'HDPI-7538';
 
-/** What else the scenario says the email does, which is the template's wording and so cannot be checked. */
 function noteTemplateContent(name: string, content: string): void {
   test.info().annotations.push({
     type: 'not checked',
@@ -102,7 +80,6 @@ function noteTemplateContent(name: string, content: string): void {
   });
 }
 
-/** "Thursday 25 June 2026 at 10:00am" for the eviction date the scenario scheduled, or any such date. */
 function expectedEvictionDateTime(world: EnforcementWorld): unknown {
   if (!world.evictionDate) {
     return expect.stringMatching(/^[A-Z][a-z]+day \d{1,2} [A-Z][a-z]+ \d{4} at \d{2}:\d{2}[ap]m$/);
@@ -115,7 +92,6 @@ function expectedEvictionDateTime(world: EnforcementWorld): unknown {
   return emailEvictionDateTime(Number(day), Number(month), Number(year), time);
 }
 
-/** The personalisation pcs-api's EnforcementEmail declares for the email, as this scenario should have set it. */
 async function expectedPersonalisation(name: string, world: EnforcementWorld): Promise<Record<string, unknown>> {
   const caseReference = requireCaseReference(world);
   switch (name) {
@@ -136,9 +112,6 @@ async function expectedPersonalisation(name: string, world: EnforcementWorld): P
   }
 }
 
-/**
- * Checks the named email was sent to the claimant, or says why it cannot be. Returns whether it was checked.
- */
 async function expectEmail(
   world: EnforcementWorld,
   tags: string[],
@@ -172,14 +145,12 @@ Then(
   }
 );
 
-// pcs-api has no XUI base URL to pass, so the link is meant to be written into the template (EnforcementEmail).
 Then('the claimant receives the {string} email with a link to confirm the date', async ({ world, $tags }, name: string) => {
   if (await expectEmail(world, $tags, name)) {
     noteTemplateContent(name, 'links to the case to confirm the date');
   }
 });
 
-// Every return name that notifies the claimant shares one template; the return name and body are personalisation.
 Then('the claimant {string} an email', async ({ world, $tags }, notified: string) => {
   const submitted = world.submittedReturn;
   expect(submitted, 'a return submitted by this scenario').toBeDefined();
@@ -210,11 +181,8 @@ Then('the claimant email says {string}', async ({ world, $tags }, text: string) 
 });
 
 pendingSteps({ ticket: 'HDPI-7538', summary: 'Enforcement notifications' }, [
-  // No enforcement email carries the notice of appointment: HDPI-7538's table has none for it.
   'it is sent to the claimant by email',
-  // pcs-api has no claimant dashboard notifications for enforcement.
   'the claimant sees a {string} notification on their dashboard',
-  // WarrantReturnNotificationService only emails the claimant (TODO HDPI-8424); the content is TBC.
   'each defendant is notified by their preferred method, email or post',
 ]);
 
