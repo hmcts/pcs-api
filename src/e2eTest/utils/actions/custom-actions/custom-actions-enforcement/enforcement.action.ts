@@ -33,7 +33,8 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer, defendantInBreathingSpace, missedPayments
+  confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo,
+  cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import Axios from "axios";
 
@@ -54,6 +55,7 @@ export class EnforcementAction implements IAction{
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
+      ['cannotApplyForWarrantInfo', () => this.validateCannotApplyForWarrant(fieldName as actionRecord)],
       ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord, page)],
       ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord, page)],
       ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord, page)],
@@ -135,9 +137,25 @@ export class EnforcementAction implements IAction{
   private async missedPayments(missedPaymentsData: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('expandSummary', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
+    await performValidation('text', { elementType: 'paragraph', text: missedPayments.thisWillSaveHiddenParagraph });
+    await performValidation('text', { elementType: 'listItem', text: missedPayments.cancelHiddenListItem });
+    await performValidation('text', { elementType: 'listItem', text: missedPayments.chooseHiddenListItem });
+    await performValidation('text', { elementType: 'containerText', text: missedPayments.ifYouWantToSaveHiddenText });
+    await performAction('expandSummary', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
     await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
     await performAction('reTryOnCallBackError', missedPayments.continueButton, missedPaymentsData.nextPage as string);
   }
+
+  private async validateCannotApplyForWarrant(cannotApplyForWarrantData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: cannotApplyForWarrantInfo.permissionExplanationParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: cannotApplyForWarrantInfo.differentTermHeader });
+    await performValidation('text', { elementType: 'paragraph', text: cannotApplyForWarrantInfo.differentTermParagraph });
+    await performValidation('text', { elementType: 'link', text: cannotApplyForWarrantInfo.askTheJudgeLink });
+  }
+
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
@@ -571,8 +589,19 @@ export class EnforcementAction implements IAction{
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
+              
+            case 'pageLevel':
+              await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('text', {
+                  elementType: 'subHeader',
+                  text: (validationArr.header ?? 'There is a problem') as string,
+                });
+              await performValidation('text', { elementType: 'paragraph', text: item.errMessage });
+              }).toPass({ timeout: VERY_LONG_TIMEOUT });
+              break;
 
-            case 'addDocument':
+             case 'addDocument':
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
