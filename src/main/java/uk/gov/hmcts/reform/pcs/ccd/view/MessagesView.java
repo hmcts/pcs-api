@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -28,6 +30,7 @@ public class MessagesView {
 
     private final PebbleEngine pebbleEngine;
     private final String frontendUrl;
+    private final FeatureToggleService featureToggleService;
 
     /** A message thread as the tab shows it; decideUrl is set for an open message about an open application. */
     public record Thread(String subject, String categories, String application, String decideUrl, String from,
@@ -38,12 +41,17 @@ public class MessagesView {
     public record Entry(String from, String to, boolean urgent, LocalDateTime sent, String body) {
     }
 
-    public MessagesView(PebbleEngine pebbleEngine, @Value("${frontend.url}") String frontendUrl) {
+    public MessagesView(PebbleEngine pebbleEngine, @Value("${frontend.url}") String frontendUrl,
+                        FeatureToggleService featureToggleService) {
         this.pebbleEngine = pebbleEngine;
         this.frontendUrl = frontendUrl;
+        this.featureToggleService = featureToggleService;
     }
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
+            return;
+        }
         Comparator<CaseMessageEntity> order = Comparator.comparing((CaseMessageEntity message) -> !message.isUrgent())
             .thenComparing(CaseMessageEntity::getCreatedAt);
         List<Thread> open = pcsCaseEntity.getMessages().stream().filter(CaseMessageEntity::isOpen)
