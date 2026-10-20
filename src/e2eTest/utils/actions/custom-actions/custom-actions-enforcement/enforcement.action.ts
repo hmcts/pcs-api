@@ -81,7 +81,8 @@ export class EnforcementAction implements IAction {
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
-      ['deleteDraftApplication', () => this.deleteDraftApplication()]
+      ['deleteDraftApplication', () => this.deleteDraftApplication()],
+      ['resumeDraftApplication', () => this.resumeDraftApplication(page)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -116,6 +117,13 @@ export class EnforcementAction implements IAction {
     await performValidation('mainHeader', draftApplicationDeleted.mainHeader);
     await performAction('clickButton', draftApplicationDeleted.closeAndReturnToCaseListButton);
     await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+  }
+
+  private async resumeDraftApplication(page: Page): Promise<void> {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await expect(page.getByText('Resume draft application', { exact: true })).toBeVisible();
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
   }
 
   private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord) {
