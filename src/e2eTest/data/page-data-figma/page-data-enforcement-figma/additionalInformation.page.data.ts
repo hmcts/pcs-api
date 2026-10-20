@@ -5,7 +5,7 @@ export const additionalInformation = {
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
   tellUsAnythingElseTextLabelHidden: `Tell us anything else that could help with the eviction`,
-  tellUsAnythingElseTextInput: 5000,
+  tellUsAnythingElseTextInput: 50,
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
