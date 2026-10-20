@@ -440,6 +440,7 @@ public class DocumentService {
             case NOTICE_OF_HEARING,
                 WITH_NOTICE_ORDER,
                 WITHOUT_NOTICE_ORDER,
+                ORDER,
                 NOTICE_OF_ALLOCATION_TO_TRACK ->
                 Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
             case GENERAL_APPLICATION ->
