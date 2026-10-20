@@ -36,8 +36,12 @@ public class ClaimFormDocumentGenerator {
             payload,
             TEMPLATE_ID,
             OutputType.PDF,
-            OUTPUT_FILENAME
+            expectedClaimFormFilename()
         );
+    }
+
+    public static String expectedClaimFormFilename() {
+        return OUTPUT_FILENAME;
     }
 
 }

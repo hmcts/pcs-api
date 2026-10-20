@@ -38,7 +38,7 @@ class UnderlesseeMortgageeValidatorTest {
         UnderlesseeMortgageeDetails underlesseeOrMortgagee1 = buildUnderlesseeMortgageeDetails(correspondenceAddress);
 
         List<String> expectedValidationErrors = List.of("some error 1", "some error 2");
-        when(addressValidator.validateAddressFields(correspondenceAddress, ""))
+        when(addressValidator.validateCorrespondenceAddress(correspondenceAddress, ""))
             .thenReturn(expectedValidationErrors);
 
         // When
@@ -57,7 +57,7 @@ class UnderlesseeMortgageeValidatorTest {
         UnderlesseeMortgageeDetails underlesseeOrMortgagee1 = buildUnderlesseeMortgageeDetails(correspondenceAddress);
 
         List<String> expectedValidationErrors = List.of("some error 1", "some error 2");
-        when(addressValidator.validateAddressFields(correspondenceAddress, "Underlessee or mortgagee 1"))
+        when(addressValidator.validateCorrespondenceAddress(correspondenceAddress, "Underlessee or mortgagee 1"))
             .thenReturn(expectedValidationErrors);
 
         // When
@@ -88,11 +88,11 @@ class UnderlesseeMortgageeValidatorTest {
         String errorMessage2 = "some error 2";
         String errorMessage3 = "some error 3";
 
-        when(addressValidator.validateAddressFields(additionalUnderlesseeAddress,
+        when(addressValidator.validateCorrespondenceAddress(additionalUnderlesseeAddress,
                                                     "additional underlessee or mortgagee 1"))
             .thenReturn(List.of(errorMessage1));
 
-        when(addressValidator.validateAddressFields(additionalMortgageeAddress,
+        when(addressValidator.validateCorrespondenceAddress(additionalMortgageeAddress,
                                                     "additional underlessee or mortgagee 2"))
             .thenReturn(List.of(errorMessage2, errorMessage3));
 
