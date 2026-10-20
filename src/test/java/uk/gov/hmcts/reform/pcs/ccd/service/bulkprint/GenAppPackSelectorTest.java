@@ -102,6 +102,19 @@ class GenAppPackSelectorTest {
     }
 
     @Test
+    @DisplayName("Excludes removed parties from gen app pack recipients")
+    void shouldExcludeRemovedPartiesFromGenAppPackRecipients() {
+        coDefendant.setRemoved(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
+            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant, coDefendant));
+
+        assertThat(result).extracting(candidate -> candidate.recipient().getId())
+            .containsExactly(claimant.getId(), defendant.getId());
+    }
+
+    @Test
     @DisplayName("Includes the defendant applicant among the postal parties")
     void shouldIncludeTheApplicant() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());

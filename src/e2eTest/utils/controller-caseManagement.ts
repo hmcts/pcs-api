@@ -7,17 +7,16 @@ import { logToBrowser } from './test-logger';
 import { ActionCMRegistry } from './registry/registry-caseManagement/action-caseManagement.registry';
 import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
 import { axe_Exclusions } from '@config/axe_exclusions.config';
+import { CYA_CAPTURE_ACTIONS, CYA_EXCLUDED_ACTIONS, CYA_FLOW_EXCLUDED_ACTIONS } from './validations/custom-validations/CYA/cya-actions-constants';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
-let captureDataForCYAPage = false;
-let disableCYACapture = false;
+let errorValidationDepth = 0;
+
 
 export function initializeCMExecutor(page: Page): void {
   testExecutor = { page };
   previousUrl = page.url();
-  captureDataForCYAPage = false;
-  disableCYACapture = false;
 }
 
 function getExecutor(): { page: Page } {
@@ -75,34 +74,14 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'changeCaseState'
-    || action === 'enterApplicationDetails'
-    || action === 'uploadADocument'
-    || action === 'selectDocumentToAmend'
-    || action === 'selectManageParty'
-    || action === 'addAHearing'
-    || action === 'selectManageHearing'
-    || action === 'editHearing'
-    || action === 'cancelHearing'
-    || action === 'selectParty'
-    || action === 'updatePartyDetails'
-    || action === 'selectManageHearing'
-    || action === 'addReviewDates'
-    || action === 'addCourtPermissionDetails') {
-    captureDataForCYAPage = true;
-  }
 
-  if (action.includes('errorValidation')) {
-    captureDataForCYAPage = false;
-    disableCYACapture = true;
-    return
-  }
-  
-  if (disableCYACapture) {
+  const isExcluded = errorValidationDepth > 0 || action.includes('errorValidation') || CYA_EXCLUDED_ACTIONS.has(action);
+
+  if (isExcluded) {
     return;
   }
 
-  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {
+  if (CYA_CAPTURE_ACTIONS.has(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
   }
 }
@@ -110,6 +89,12 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionCMRegistry.getAction(action);
+  const isExcludedFlowAction = CYA_FLOW_EXCLUDED_ACTIONS.has(action) || action.includes('errorValidation');
+
+  if (isExcludedFlowAction) {
+
+    errorValidationDepth++;
+  }
 
   captureDataForCYA(action, fieldName, value);
 
@@ -145,13 +130,22 @@ export async function performAction(action: string, fieldName?: actionData | act
     ).includes("validationReq: NO");
   }
 
-  if (!errorValidationRequired) {
-    const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
-    await test.step(stepText, async () => {
-      await actionInstance.execute(executor.page, action, fieldName, value);
-      await logToBrowser(executor.page, stepText);
-    });
-    await validatePageIfNavigated(action);
+  try {
+    if (!errorValidationRequired) {
+      const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
+
+      await test.step(stepText, async () => {
+        await actionInstance.execute(executor.page, action, fieldName, value);
+        await logToBrowser(executor.page, stepText);
+      });
+
+      await validatePageIfNavigated(action);
+    }
+  } finally {
+    if (isExcludedFlowAction) {
+      //isErrorValidationFlow = false;
+      errorValidationDepth--;
+    }
   }
 }
 

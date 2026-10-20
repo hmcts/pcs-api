@@ -3,7 +3,7 @@ export const whereShouldThisFlagBeAdded = {
     mainHeader: `Create case flags`,
     whereShouldThisFlagBeAddedQuestion: `Where should this flag be added?`,
     caseLevelRadioOption: `Case level`,
-    respondentRadioOption: `Peter Parker (defendant)`,
+    respondentHiddenRadioOption: `(defendant)`,
     continueButton: `Continue`,
     cancelButton: `Cancel`,
 };

@@ -7,15 +7,19 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.UpdatePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -31,6 +35,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final AddressFormatter addressFormatter;
     private final AddPartyService addPartyService;
     private final UpdatePartyService updatePartyService;
+    private final RemovePartyService removePartyService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -55,10 +60,25 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return SubmitResponse.<State>builder()
                 .confirmationBody(buildAddConfirmationMarkdown(caseData, eventPayload.caseReference()))
                 .build();
+        } else if (isRemovePartyJourneyEnabled(caseData)) {
+            RemovePartyService.RemovedParty removedParty = removePartyService.removeParty(
+                caseData.getRemovePartyDetails(), eventPayload.caseReference());
+
+            return SubmitResponse.<State>builder()
+                .confirmationBody(buildRemoveConfirmationMarkdown(
+                    caseData, eventPayload.caseReference(), removedParty))
+                .build();
         }
 
         return SubmitResponse.<State>builder()
             .build();
+    }
+
+    private boolean isRemovePartyJourneyEnabled(PCSCase caseData) {
+        FeatureFlags featureFlags = caseData.getFeatureFlags();
+        return caseData.getAddPartyDetails().getManagePartyOptions() == ManagePartyOptions.REMOVE_PARTY
+            && featureFlags != null
+            && featureFlags.getRelease1dot4Enabled() == VerticalYesNo.YES;
     }
 
     private String buildAddConfirmationMarkdown(PCSCase pcsCase, long caseReference) {
@@ -89,6 +109,17 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         return buildConfirmationMarkdown(
             partyDescription + " details updated", caseReference,
+            pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
+    }
+
+    private String buildRemoveConfirmationMarkdown(PCSCase pcsCase, long caseReference,
+                                                   RemovePartyService.RemovedParty removedParty) {
+        String partyDescription = removedParty.partyRole() == PartyRole.CLAIMANT
+            ? "Claimant %s".formatted(removedParty.partyName())
+            : "Defendant %s".formatted(removedParty.partyName());
+
+        return buildConfirmationMarkdown(
+            partyDescription + " removed", caseReference,
             pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
     }
 

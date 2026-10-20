@@ -49,7 +49,7 @@ class ContactPreferencesTest extends BasePageTest {
             .build();
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
-        when(addressValidator.validateAddressFields(contactAddress)).thenReturn(expectedValidationErrors);
+        when(addressValidator.validateCorrespondenceAddress(contactAddress)).thenReturn(expectedValidationErrors);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -71,14 +71,14 @@ class ContactPreferencesTest extends BasePageTest {
             .build();
 
         String expectedError = "addressLine1 missing";
-        when(addressValidator.validateAddressFields(null)).thenReturn(List.of(expectedError));
+        when(addressValidator.validateCorrespondenceAddress(null)).thenReturn(List.of(expectedError));
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
-        verify(addressValidator).validateAddressFields(null);
+        verify(addressValidator).validateCorrespondenceAddress(null);
     }
 
     @Test

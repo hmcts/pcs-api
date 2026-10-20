@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 public class AddressValidator {
 
     private final PostcodeValidator postcodeValidator;
+    private final FeatureToggleService featureToggleService;
 
     public List<String> validateAddressFields(AddressUK address) {
         return validateAddressFields(address, null);
@@ -29,6 +32,26 @@ public class AddressValidator {
             validationErrors.add(withSectionHint("Postcode is required", sectionHint));
         } else if (!postcodeValidator.isValidPostcode(address.getPostCode())) {
             validationErrors.add(withSectionHint("Enter a valid postcode", sectionHint));
+        }
+
+        return validationErrors;
+    }
+
+    public List<String> validateCorrespondenceAddress(AddressUK address) {
+        return validateCorrespondenceAddress(address, null);
+    }
+
+    public List<String> validateCorrespondenceAddress(AddressUK address, String sectionHint) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            return validateAddressFields(address, sectionHint);
+        }
+
+        List<String> validationErrors = new ArrayList<>();
+        if (StringUtils.isBlank(address.getPostTown())) {
+            validationErrors.add(withSectionHint("Town or City is required", sectionHint));
+        }
+        if (StringUtils.isBlank(address.getPostCode())) {
+            validationErrors.add(withSectionHint("Postcode is required", sectionHint));
         }
 
         return validationErrors;
