@@ -143,7 +143,6 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         }
         return switch (type) {
             case ADJOURN -> DocumentUploadCategory.ADJOURN_HEARING_APPLICATION;
-            case SUSPEND -> DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION;
             case SET_ASIDE -> DocumentUploadCategory.SET_ASIDE_ORDER_APPLICATION;
             case SOMETHING_ELSE -> DocumentUploadCategory.GENERAL_APPLICATION;
         };

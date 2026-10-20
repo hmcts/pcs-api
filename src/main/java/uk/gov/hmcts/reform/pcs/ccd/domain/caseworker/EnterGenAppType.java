@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 @AllArgsConstructor
 public enum EnterGenAppType implements HasLabel {
 
-    SUSPEND("Suspend"),
     ADJOURN("Adjourn"),
     SET_ASIDE("Set aside"),
     SOMETHING_ELSE("Something else");

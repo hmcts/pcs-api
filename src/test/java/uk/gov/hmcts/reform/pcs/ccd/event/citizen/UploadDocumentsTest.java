@@ -509,16 +509,19 @@ class UploadDocumentsTest extends BaseEventTest {
         }
 
         @Test
-        void shouldSurfaceSuspendCategoryWhenSuspendGenAppExists() {
-            GenAppEntity suspend = stubGenApp(GenAppType.SUSPEND, LocalDateTime.now());
-            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(suspend));
+        void shouldNotSurfaceSuspendCategoryWhileGenAppTypeSuspendIsAbsent() {
+            // SUSPEND was removed from GenAppType by PR #1804. Until it is restored, the
+            // SUSPEND_EVICTION_APPLICATION category must be filtered out so we don't render
+            // a radio backed by no data.
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
                 .isNotEmpty()
                 .extracting(option -> option.getValue().getCategory())
-                .containsExactly(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
+                .doesNotContain(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
         }
 
         @Test

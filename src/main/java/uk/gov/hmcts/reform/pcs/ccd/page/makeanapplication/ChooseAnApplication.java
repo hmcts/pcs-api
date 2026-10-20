@@ -2,12 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -41,7 +38,7 @@ public class ChooseAnApplication implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("chooseAnApplication", this::midEvent)
+            .page("chooseAnApplication")
             .pageLabel("Choose an application")
             .label("chooseAnApplication-lineSeparator", "---")
             .label("chooseAnApplication-info", INFO_MARKDOWN)
@@ -51,20 +48,8 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getShowHwfScreens, NEVER_SHOW, true)
-            .readonly(XuiGenAppRequest::getApplicationType, NEVER_SHOW, true)
-            .mandatory(XuiGenAppRequest::getDefendantGenAppType)
+            .mandatory(XuiGenAppRequest::getApplicationType)
             .done();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-
-        PCSCase caseData = details.getData();
-        XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
-        xuiGenAppRequest.setApplicationType(xuiGenAppRequest.getDefendantGenAppType().toGenAppType());
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
-    }
 }

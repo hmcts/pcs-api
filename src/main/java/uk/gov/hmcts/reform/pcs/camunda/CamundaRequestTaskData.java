@@ -26,7 +26,4 @@ public class CamundaRequestTaskData {
 
     private final UUID idempotencyKey;
 
-    /** Whom the task is for, which the configuration DMN makes its assignee. */
-    private final String assignee;
-
 }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,33 +10,31 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-/**
- * An order on a case. Its content is on its steps ({@link OrderStepEntity}), the latest of which is the
- * order as it stands; that step's id is the order's version, so there is no {@code @Version} here.
- */
+/** A judge's draft of an order, until it is issued; its history is in the case event audit, not timestamps. */
 @Entity
-@Table(name = "orders")
+@Table(name = "draft_orders")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderEntity {
+public class DraftOrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -48,24 +47,22 @@ public class OrderEntity {
     @Column(nullable = false, updatable = false)
     private String authorIdamUserId;
 
-    /** The judge's name as IDAM had it when they started the order, for the order's document. */
-    @Column(updatable = false)
-    private String authorName;
-
-    // The latest step's state, kept here for lookups and audit; only OrderSteps.append moves it.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Setter(AccessLevel.NONE)
-    private OrderState state;
+    private DraftOrderState state;
 
-    @Enumerated(EnumType.STRING)
-    private OrderSeal seal;
+    @Version
+    private long version;
 
-    @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "document_id")
-    private DocumentEntity document;
+    @Column(nullable = false)
+    private String orderType;
 
-    public void moveTo(OrderState state) {
-        this.state = state;
-    }
+    /** The make order form as the judge last submitted it. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = false)
+    private Map<String, Object> formData;
+
+    /** The order document as the judge last edited it in the frontend's docweave editor. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    private JsonNode docweaveSnapshot;
 }

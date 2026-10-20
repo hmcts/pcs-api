@@ -22,6 +22,5 @@ export const cyaIgnoreQuestions = [
   'Do you know the underlessee or mortgagee’s address for service?',
   'Add document',
   'Review date',
-  'Select an address',
-  'Next step'
+  'Select an address'
 ];

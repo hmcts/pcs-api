@@ -122,7 +122,6 @@ class TaskDescriptionServiceTest {
             return Stream.of(
                 Arguments.arguments(GenAppType.ADJOURN, "review-adjourn-gen-app"),
                 Arguments.arguments(GenAppType.SET_ASIDE, "review-set-aside-gen-app"),
-                Arguments.arguments(GenAppType.SUSPEND, "review-gen-app"),
                 Arguments.arguments(GenAppType.SOMETHING_ELSE, "review-gen-app")
             );
         }
@@ -616,7 +615,7 @@ class TaskDescriptionServiceTest {
             );
 
             // When
-            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE, 1);
+            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -624,8 +623,7 @@ class TaskDescriptionServiceTest {
             verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
-                .containsEntry("caseReference", CASE_REFERENCE)
-                .containsEntry("reviewDateNumber", 1);
+                .containsEntry("caseReference", CASE_REFERENCE);
         }
 
         @Test
@@ -641,7 +639,7 @@ class TaskDescriptionServiceTest {
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE, 1));
+            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE));
 
             // Then
             assertThat(throwable)

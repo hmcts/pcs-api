@@ -98,7 +98,6 @@ public class PartiesView {
         Party party = shouldRedact
             ? toPartialParty(partyEntity)
             : toParty(partyEntity);
-        party.setRank(claimPartyEntity.getRank());
 
         //Only populated for litigation friends
         PartyEntity actingForParty = claimPartyEntity.getActingForParty();

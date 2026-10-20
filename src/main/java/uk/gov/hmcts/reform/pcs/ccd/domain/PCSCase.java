@@ -396,9 +396,6 @@ public class PCSCase {
     @CCD(searchable = false, access = DefendantSolicitorAccess.class)
     private String summaryLegalRepresentativeMarkdown;
 
-    @CCD(searchable = false, access = InternalTabAccess.class)
-    private String ordersMarkdown;
-
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
     private RentArrearsSection rentArrears;
@@ -793,8 +790,12 @@ public class PCSCase {
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
 
-    @CCD(searchable = false, access = {InternalTabAccess.class})
-    private String caseReviewDatesMarkdown;
+    @CCD (
+        label = "Review date",
+        access = {InternalTabAccess.class},
+        typeOverride = Collection,
+        typeParameterOverride = "CaseReviewDate")
+    private List<ListValue<CaseReviewDate>> caseReviewDates;
 
     @CCD(
         label = "Review date",
@@ -880,6 +881,7 @@ public class PCSCase {
 
     @JsonUnwrapped
     private RemovePartyDetails removePartyDetails;
+
 
     @CCD(
         label = "Do you want to add, edit or cancel a hearing?",
