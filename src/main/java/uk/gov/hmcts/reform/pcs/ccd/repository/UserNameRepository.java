@@ -7,12 +7,11 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UserNameEntity;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public interface UserNameRepository extends JpaRepository<UserNameEntity, Integer> {
 
     @Query("SELECT u FROM UserNameEntity u WHERE u.idamId = :idamId")
-    Optional<UserNameEntity> findByIdamId(@Param("idamId") UUID idamId);
+    Optional<UserNameEntity> findByIdamId(@Param("idamId") String idamId);
 
 }

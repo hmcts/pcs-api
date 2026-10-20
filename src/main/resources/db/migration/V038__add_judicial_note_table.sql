@@ -1,7 +1,7 @@
 CREATE TABLE public.user_name (
   id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
   name varchar(50) NOT NULL,
-  idam_id uuid NOT NULL
+  idam_id text NOT NULL
 );
 
 CREATE UNIQUE INDEX ux_user_name_idam_id ON public.user_name (idam_id);
