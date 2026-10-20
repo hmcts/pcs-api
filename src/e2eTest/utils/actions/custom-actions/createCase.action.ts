@@ -59,7 +59,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -75,6 +75,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+export let allPartyDetails: string[] = [];
 
 export const addressInfoCaseTab = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -156,6 +157,7 @@ export class CreateCaseAction implements IAction {
       ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
       ['resumePartialClaim', () => this.resumePartialClaim()],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -1620,75 +1622,66 @@ export class CreateCaseAction implements IAction {
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
 
-    const folderName = caseFile.folder as string;
+   const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
-    const file =
-      caseFile.caseWorkerUpload ??
-      caseFile.caseWorkerAmend ??
-      caseFile.genApp;    
+    const file = (caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload)?.toString();    
 
     switch (folderName) {
       case 'Property documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.notice_Documents);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.rentArrears_StatementDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_EnergyPerformance);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
-        if (caseFile.caseWorkerUpload) {
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
+        if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
-         } else if (caseFile.claimantLRUpload) {
-          userInputFiles.push(caseFile.claimantLRUpload as string);
-          //userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
-        } else if (caseFile.defendantLRUpload) {
-          userInputFiles.push(caseFile.defendantLRUpload as string);
-          //userInputFiles = userInputFiles.filter(file => file === caseFile.defendantLRUpload as string);
+        } else if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
       case 'Statements of case':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Notice for service out of the jurisdiction');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Notice for service out of the jurisdiction');
         break;
 
       case 'Evidence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
-        if (caseFile.caseWorkerUpload) {
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
-          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
-        } else if (caseFile.defendantLRUpload) {
-          userInputFiles.push(caseFile.defendantLRUpload as string);
-        } else if (caseFile.claimantLRUpload) {
-          userInputFiles.push(caseFile.claimantLRUpload as string);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
+        if (caseFile.caseWorkerAmend) {
+          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
+          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+        } else if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
       case 'Correspondence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Legal aid certificate');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Legal aid certificate');
         break;
 
       case 'Uncategorised documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
-        if (ccPayload) {
-          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
-        }
-        if (file) {
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
+        if (ccPayload)
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments)
+        if (caseFile.caseWorkerAmend) {
+          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
+          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+        } else if (file) {
           userInputFiles.push(file as string);
         }
         break;
 
       case 'Applications':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
+        if(submitPayLoad){
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        }
         if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1696,7 +1689,7 @@ export class CreateCaseAction implements IAction {
         break;
     }
 
-    const folder = page
+    let folder = page
       .locator('button.node')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
@@ -1719,9 +1712,13 @@ export class CreateCaseAction implements IAction {
         await this.checkFolderCount(page);
         const text = await folder.innerText();
         fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
-        expect(fileCount).toBeGreaterThan(0);
+        if (Array.isArray(file)) {
+          expect(fileCount).toEqual(file.length);
+        } else {
+          expect(fileCount).toBeGreaterThan(0);
+        }
       }).toPass({
-        timeout: VERY_LONG_TIMEOUT,
+        timeout: VERY_LONG_TIMEOUT + LONG_TIMEOUT,
       });
     }
 
@@ -2076,11 +2073,68 @@ export class CreateCaseAction implements IAction {
 
   }
   private async checkFolderCount(page:Page){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
       timeout: MEDIUM_TIMEOUT,
     });
   }
+
+  private async getAllPartyDetails(allPartiesDetails: actionRecord) {
+  
+      let originalDefendantDetails: string[] = [];
+      const payLoad = allPartiesDetails.payLoad as Record<string, any>;
+      if (allPartiesDetails.defendant1NameKnown === 'YES') {
+        originalDefendantDetails.push(
+          `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName} - Defendant 1`
+        );
+      } else {
+        originalDefendantDetails.push(
+          `null null`
+        );
+      }
+  
+      if (allPartiesDetails.additionalDefendants === 'YES') {
+  
+        for (const [index, defendant] of payLoad.additionalDefendants.entries()) {
+          if (defendant.value.nameKnown === 'YES') {
+            originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName} - Defendant ${index + 2}`);
+          } else {
+            originalDefendantDetails.push(
+              `null null`
+            );
+          }
+        }
+      }
+  
+      allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
+      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+      ];
+      allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
+    }
+
+  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string,): string[] {
+    if (oldFile && amendedFile) {
+      return files
+        .filter(file => file !== oldFile)
+        .concat(amendedFile);
+    }
+
+    if (uploadedFile) {
+      files.push(uploadedFile);
+    }
+
+    return files;
+  }
+
+  private getFileNameByType(documents: any[], documentType: string): string | undefined {
+    return documents.find(
+      doc => doc.value?.documentType?.valueLabel === documentType,
+    )?.value?.document?.document_filename
+      ?? documents.find(
+        doc => doc.value?.documentType?.valueLabel === documentType,
+      )?.value?.document_filename;
+  }
+
 }
