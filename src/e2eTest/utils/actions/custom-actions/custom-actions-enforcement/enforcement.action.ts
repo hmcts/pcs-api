@@ -31,6 +31,7 @@ import {
   statementOfTruth,
   confirmHCEOfficer
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import { checkYourAnswersEnforcement } from '@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -77,6 +78,8 @@ export class EnforcementAction implements IAction {
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
+      ['continueFromCYAPage', () => this.continueFromCYAPage(fieldName as actionRecord)],
+      ['selectPayClaimFee', () => this.selectPayClaimFee(fieldName as actionRecord, page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -607,5 +610,17 @@ export class EnforcementAction implements IAction {
     setIfKeyExists(fields.question as string, fields.option as string);
     setIfKeyExists(fields.label as string, fields.input as string);
     setIfKeyExists(fields.confirm as string, fields.peopleOption as string);
+  }
+  private async continueFromCYAPage(cyaPageData: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('reTryOnCallBackError', checkYourAnswersEnforcement.submitApplicationButton, cyaPageData.nextPage as string);
+  }
+
+  private async selectPayClaimFee(payClaimFeeDetails: actionRecord, page: Page) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: payClaimFeeDetails.payText });
+    await performValidation('text', { elementType: 'link', text: payClaimFeeDetails.link });
   }
 }
