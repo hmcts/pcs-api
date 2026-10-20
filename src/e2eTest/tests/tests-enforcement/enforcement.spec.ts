@@ -49,11 +49,11 @@ test.beforeEach(async ({ page }, testInfo) => {
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants()
     });
   } else if (testInfo.title.includes('@onlyMain')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -65,13 +65,14 @@ test.beforeEach(async ({ page }, testInfo) => {
     });
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayload()
     });
   }
+  await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -122,7 +123,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader
       });
       await performAction('errorValidationConfirmDefendantsDOBPage', confirmDefendantsDOB.errorValidation);
@@ -302,7 +303,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmDefendantsDOB.mainHeader
     });
     await performAction('confirmDefendantsDOB', {
@@ -418,7 +419,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmDefendantsDOB.mainHeader
     });
     await performAction('confirmDefendantsDOB', {
@@ -537,7 +538,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
       await performAction('clickButton', changeNameAddress.continueButton);
@@ -565,7 +566,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader
       });
       await performAction('confirmDefendantsDOB', {
@@ -700,7 +701,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader,
       });
       await performAction('confirmDefendantsDOB', {
@@ -794,4 +795,37 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
         nextPage: checkYourAnswers.mainHeader,
       });
     });
+});
+
+test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a warrant of possession @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('deleteDraftApplication');
+  });
+
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a writ of possession @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('deleteDraftApplication');
+  });
 });
