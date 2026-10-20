@@ -94,6 +94,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    private List<JudicialNoteEntity> judicialNotes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
     private List<CaseReviewDateEntity> reviewDates = new ArrayList<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
@@ -205,6 +210,11 @@ public class PcsCaseEntity {
     public void addMessage(CaseMessageEntity message) {
         messages.add(message);
         message.setPcsCase(this);
+    }
+
+    public void addJudicialNote(JudicialNoteEntity judicialNote) {
+        judicialNotes.add(judicialNote);
+        judicialNote.setPcsCase(this);
     }
 
     public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {

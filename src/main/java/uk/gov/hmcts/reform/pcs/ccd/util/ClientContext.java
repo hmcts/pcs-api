@@ -14,4 +14,7 @@ public class ClientContext {
 
     /** The general application a judge is to decide, named by the link in their task. */
     private String genAppId;
+
+    /** The hearing a judge is making an order for, named by the link they followed. */
+    private String hearingId;
 }

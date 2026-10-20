@@ -8,8 +8,12 @@ import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -19,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.function.Consumer;
 
 /**
@@ -75,6 +80,27 @@ public class IssuedCases {
     public void update(long reference, Consumer<PcsCaseEntity> change) {
         transaction.executeWithoutResult(status ->
             change.accept(pcsCases.findByCaseReference(reference).orElseThrow()));
+    }
+
+    /** Lists a hearing on an issued case, cancelled or not, as managing its hearings would, and gives its id. */
+    public int hearing(long reference, LocalDateTime date, boolean cancelled) {
+        return transaction.execute(status -> {
+            PcsCaseEntity pcsCase = pcsCases.findByCaseReference(reference).orElseThrow();
+            HearingEntity hearing = HearingEntity.builder()
+                .type(HearingType.POSSESSION)
+                .noticeWording(HearingNoticeWording.TPL)
+                .hearingDate(date)
+                .durationDays(0)
+                .durationHours(1)
+                .durationMinutes(0)
+                .issueNotice(VerticalYesNo.NO)
+                .cancelled(cancelled)
+                .build();
+            pcsCase.addHearing(hearing);
+            // The case is managed here, so flushing persists the hearing itself and gives it its id.
+            pcsCases.flush();
+            return hearing.getId();
+        });
     }
 
     private void storeClaim(long reference, PCSCase claim, PartyEntity defendant) {
