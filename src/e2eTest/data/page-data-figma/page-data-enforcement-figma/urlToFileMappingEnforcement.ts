@@ -64,4 +64,5 @@ export default {
     'confirmEvictionconfirmEvictionDetails': 'confirmEvictionDetails',
     'confirmEvictionevictionDate': 'evictionDate',
     'enforceTheOrder/submit': 'checkYourAnswersEnforcement',
+    'enforceTheOrder/confirm': 'payTheClaimFeeConfirm'
 };

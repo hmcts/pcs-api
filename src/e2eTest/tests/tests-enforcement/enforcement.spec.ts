@@ -41,6 +41,7 @@ import {
   statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import {checkYourAnswersEnforcement} from "@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data";
+import {payTheClaimFeeConfirm} from "@data/page-data-figma/page-data-enforcement-figma/payTheClaimFeeConfirm.page.data";
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -309,8 +310,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         label2: statementOfTruth.nameOfFirmHiddenTextLabel,
         input2: statementOfTruth.nameOfFirmHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader
+        nextPage: checkYourAnswersEnforcement.mainHeader
       });
+      await performAction('continueFromCYAPage', {
+        nextPage: payTheClaimFeeConfirm.mainHeader
+      });
+     await performAction('selectPayClaimFee', {
+       link: payTheClaimFeeConfirm.payYourApplicationFeeLink
+     });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @enforcement @regression', async () => {
@@ -425,6 +432,12 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
       input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswersEnforcement.mainHeader
+    });
+    await performAction('continueFromCYAPage', {
+      nextPage: payTheClaimFeeConfirm.mainHeader
+    });
+    await performAction('selectPayClaimFee', {
+      link: payTheClaimFeeConfirm.payYourApplicationFeeLink
     });
   });
 
@@ -546,6 +559,12 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       label2: statementOfTruth.nameOfFirmHiddenTextLabel,
       input2: statementOfTruth.nameOfFirmHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
+    });
+    await performAction('continueFromCYAPage', {
+      nextPage: payTheClaimFeeConfirm.mainHeader
+    });
+    await performAction('selectPayClaimFee', {
+      link: payTheClaimFeeConfirm.payYourApplicationFeeLink
     });
   });
 
@@ -706,6 +725,12 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
         input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
+      });
+      await performAction('continueFromCYAPage', {
+        nextPage: payTheClaimFeeConfirm.mainHeader
+      });
+      await performAction('selectPayClaimFee', {
+        link: payTheClaimFeeConfirm.payYourApplicationFeeLink
       });
     });
 
