@@ -94,6 +94,18 @@ class FeatureFlagViewTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
+    void shouldSetRelease1bFeatureFlagInCaseData(boolean flagEnabled) {
+        PCSCase pcsCase = PCSCase.builder().build();
+        when(featureToggleService.isEnabled(isA(FeatureFlag.class))).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(flagEnabled);
+
+        underTest.setCaseFields(pcsCase);
+
+        assertThat(pcsCase.getFeatureFlags().getRelease1bEnabled()).isEqualTo(VerticalYesNo.from(flagEnabled));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     void shouldSetWalesMakeAClaimFeatureFlagInCaseData(boolean flagEnabled) {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();

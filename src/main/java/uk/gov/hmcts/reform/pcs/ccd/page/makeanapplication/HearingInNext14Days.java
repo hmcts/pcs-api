@@ -12,7 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 
 @Slf4j
 @AllArgsConstructor
@@ -32,7 +34,7 @@ public class HearingInNext14Days implements CcdPageConfiguration {
             .pageLabel("Is the defendant’s court hearing in the next 14 days?")
             .showCondition(fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
             .label("hearingInNext14Days-lineSeparator", "---")
-            .label("hearingInNext14Days-info", INFO_MARKDOWN)
+            .label("hearingInNext14Days-info", INFO_MARKDOWN, featureFlagsEnabled(RELEASE_1B))
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWithin14Days)
             .done();
@@ -44,7 +46,9 @@ public class HearingInNext14Days implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
 
-        xuiGenAppRequest.setShowHwfScreens(VerticalYesNo.YES);
+        boolean release1bEnabled = caseData.getFeatureFlags() != null
+            && caseData.getFeatureFlags().getRelease1bEnabled() == VerticalYesNo.YES;
+        xuiGenAppRequest.setShowHwfScreens(release1bEnabled ? VerticalYesNo.YES : xuiGenAppRequest.getWithin14Days());
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
