@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -29,7 +29,6 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
-@AllArgsConstructor
 @Service
 public class CamundaService {
 
@@ -47,6 +46,25 @@ public class CamundaService {
     private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
     private static final String UNABLE_TO_FIND_LOCATION = "Unable to find location";
     private final Clock utcClock;
+    private final String pcsApiEnvironment;
+
+    public CamundaService(WorkAllocationWorkflowApi workAllocationWorkflowApi,
+                          AuthTokenGenerator authTokenGenerator,
+                          SchedulerClient schedulerClient,
+                          FeatureToggleService featureToggleService,
+                          LocationReferenceService locationReferenceService,
+                          PcsCaseRepository pcsCaseRepository,
+                          Clock utcClock,
+                          @Value("${camunda.pcs-api-env}") String pcsApiEnvironment) {
+        this.workAllocationWorkflowApi = workAllocationWorkflowApi;
+        this.authTokenGenerator = authTokenGenerator;
+        this.schedulerClient = schedulerClient;
+        this.featureToggleService = featureToggleService;
+        this.locationReferenceService = locationReferenceService;
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.utcClock = utcClock;
+        this.pcsApiEnvironment = pcsApiEnvironment;
+    }
 
     public void createTask(long caseId, TaskType taskType) {
         createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
@@ -61,12 +79,23 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
+        createTask(caseId, taskType, taskDescription, scheduledTo, null);
+    }
+
+    /** Creates a task assigned to one user. */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, String assignee) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee);
+    }
+
+    private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
+                            String assignee) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
+            .assignee(assignee)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
@@ -83,18 +112,17 @@ public class CamundaService {
 
     void handleRequest(CamundaRequestTaskData taskData) {
         switch (taskData.getAction()) {
-            case CREATE ->
-                requestTaskCreation(
-                    taskData.getCaseReference(),
-                    taskData.getTaskType(),
-                    taskData.getTaskDescription(),
-                    taskData.getIdempotencyKey()
-                );
-            case CANCEL ->
-                requestTaskCancellation(
-                    taskData.getCaseReference(),
-                    taskData.getTaskType()
-                );
+            case CREATE -> requestTaskCreation(
+                taskData.getCaseReference(),
+                taskData.getTaskType(),
+                taskData.getTaskDescription(),
+                taskData.getIdempotencyKey(),
+                taskData.getAssignee()
+            );
+            case CANCEL -> requestTaskCancellation(
+                taskData.getCaseReference(),
+                taskData.getTaskType()
+            );
         }
     }
 
@@ -111,7 +139,8 @@ public class CamundaService {
                 .scheduledTo(scheduledTo));
     }
 
-    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey) {
+    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
+                                     String assignee) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -139,10 +168,15 @@ public class CamundaService {
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
         processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processVariables.put("pcsApiEnv", dmnStringValue(pcsApiEnvironment));
         if (idempotencyKey != null) {
             processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
         } else {
             log.warn("No idempotency key provided for task of type {}", taskType);
+        }
+        // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
+        if (assignee != null) {
+            processVariables.put("assigneeId", dmnStringValue(assignee));
         }
 
         // Default values - WA task due date is configured in configuration dmn

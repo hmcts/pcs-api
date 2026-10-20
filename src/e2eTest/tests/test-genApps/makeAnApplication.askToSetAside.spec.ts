@@ -10,7 +10,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   askTheCourtToSetAsideTheOrder, checkYourAnswersGenApps, chooseAnApplication,
@@ -22,6 +22,7 @@ import {
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 import { home } from '@data/page-data';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 test.use({ storageState: undefined });
 
@@ -32,24 +33,15 @@ test.beforeEach(async ({ page, context }) => {
   defendantDetails.length = 0;
   FieldsStore.clear();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getDefendantDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayload
+    defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload()
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await page.evaluate(() => {
-  //   try {
-  //     localStorage.clear();
-  //     sessionStorage.clear();
-  //   } catch (e) {
-  //     // Ignore if storage is not accessible
-  //   }
-  // });
-
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.defendantSolicitor);
   await dismissCookieBanner(page, 'analytics');
@@ -74,6 +66,9 @@ test.afterEach(async () => {
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
   test('Select an Application - Ask to Set aside', async () => {
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let fileName = (chooseAnApplication.uploadDocHiddenOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '');
+    let uploadFile = (chooseAnApplication.uploadDocHiddenOption)[1]
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
@@ -109,7 +104,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', uploadDocumentsToSupportDefendantsApplication.mainHeader);
     await performAction('uploadFilesGenApps', {
       documents: [
-        {type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: 'genApps.docx'},
+        {type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: uploadFile},
       ]
     });
     await performAction('selectLanguageUsedToComplete', {
@@ -118,7 +113,6 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     });
     await performValidation('mainHeader', statementOfTruth.mainHeader);
     await performAction('selectStatementOfTruth', {
-      question: statementOfTruth.completedByTheDefendantsLegalParagraph,
       option: statementOfTruth.theDefendantBelievesCheckBox,
       label1: statementOfTruth.fullNameTextLabel,
       input1: statementOfTruth.fullNameTextInput,
@@ -144,6 +138,12 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       button: serviceRequestGenApps.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
-
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Applications',
+      genApp: [CaseManagementCommonUtils.renameDocument(fileName, '', appType), CaseManagementCommonUtils.renameDocument(uploadFile, '', appType)],
+      defendantIndex: 1
+    });
   });
 });

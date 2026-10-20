@@ -244,10 +244,18 @@ class TaskDescriptionServiceTest {
         @Test
         void shouldRenderTaskDescription() throws IOException {
             // Given
+            PartyEntity partyEntity = mock(PartyEntity.class);
+
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+
             List<DocumentEntity> documentEntityList = List.of(
                 DocumentEntity.builder().fileName("filename1.pdf").build(),
                 DocumentEntity.builder().fileName("filename2.csv").build()
             );
+
+            String expectedPartyLabel = "Claimant 1";
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
 
             String expectedRenderedContent = "some rendered content";
             PebbleTemplate pebbleTemplate = stubPebbleTemplate(
@@ -257,7 +265,7 @@ class TaskDescriptionServiceTest {
 
             // When
             String description = underTest.createTranslateClaimantDocumentDescription(
-                CASE_REFERENCE, documentEntityList);
+                CASE_REFERENCE, mainClaim, partyEntity, documentEntityList);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -266,12 +274,18 @@ class TaskDescriptionServiceTest {
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
                 .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("partyLabel", expectedPartyLabel)
                 .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
         }
 
         @Test
         void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
             // Given
+            PartyEntity partyEntity = mock(PartyEntity.class);
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("Claimant 1");
+
             PebbleTemplate pebbleTemplate = stubPebbleTemplate(
                 "translate-claimant-submitted-document",
                 "some content"
@@ -283,7 +297,7 @@ class TaskDescriptionServiceTest {
             // When
             Throwable throwable = catchThrowable(
                 () -> underTest.createTranslateClaimantDocumentDescription(
-                    CASE_REFERENCE, List.of()));
+                    CASE_REFERENCE, mainClaim, partyEntity, List.of()));
 
             // Then
             assertThat(throwable)
@@ -601,7 +615,7 @@ class TaskDescriptionServiceTest {
             );
 
             // When
-            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE);
+            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE, 1);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -609,7 +623,8 @@ class TaskDescriptionServiceTest {
             verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
-                .containsEntry("caseReference", CASE_REFERENCE);
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("reviewDateNumber", 1);
         }
 
         @Test
@@ -625,7 +640,7 @@ class TaskDescriptionServiceTest {
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE));
+            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE, 1));
 
             // Then
             assertThat(throwable)

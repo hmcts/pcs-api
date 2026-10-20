@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 public class GenAppDocumentGenerator {
 
     private static final String TEMPLATE_ID = "CV-PCS-GAP-ENG-Application-Summary.docx";
-    private static final String OUTPUT_FILENAME_PREFIX = "General Application";
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
@@ -114,8 +113,7 @@ public class GenAppDocumentGenerator {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         UUID applicantPartyId = applicantParty.getId();
-        String outputFilename = documentNameService
-            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, applicantPartyId);
+        String outputFilename = documentNameService.expectedGenAppFilename(genAppEntity, mainClaim);
 
         GenAppFormPayload genAppFormPayload = createGenAppFormPayload(caseReference,
                                                                       pcsCaseEntity,
@@ -213,6 +211,7 @@ public class GenAppDocumentGenerator {
 
     private Map<PartyRole, List<Party>> getPartyMap(ClaimEntity claim) {
         return claim.getClaimParties().stream()
+            .filter(claimParty -> !claimParty.getParty().isRemoved())
             .collect(Collectors.groupingBy(
                 ClaimPartyEntity::getRole,
                 Collectors.mapping(this::toParty, Collectors.toList())

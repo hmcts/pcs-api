@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -32,7 +33,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequ
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -65,7 +65,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Mock
     private UserInfo userInfo;
     @Mock
-    private SelectedPartyRetriever selectedPartyRetriever;
+    private LegalRepPartySelectionService legalRepPartySelectionService;
     @Mock
     private OrganisationService organisationService;
     @Captor
@@ -78,7 +78,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         setPageUnderTest(new RespondToPossessionDraftSavePage(
             draftCaseDataService,
             securityContextService,
-            selectedPartyRetriever,
+            legalRepPartySelectionService,
             organisationService
 
         ));
@@ -501,7 +501,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .build());
         String organisationId = "org";
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE, organisationId))
+        when(legalRepPartySelectionService.getRespondingPartyId(TEST_CASE_REFERENCE, organisationId))
             .thenReturn(Optional.of(representedPartyId));
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);

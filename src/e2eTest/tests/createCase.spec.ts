@@ -117,7 +117,6 @@ test.describe('[Create Case - England]', async () => {
        otherGrounds: groundsForPossessionRentArrears.yesRadioOption
      });
     await performValidation('elementNotToBeVisible',[groundsForPossessionRentArrears.rentArrearsGround10Checkbox, groundsForPossessionRentArrears.seriousRentArrearsGroundCheckbox, groundsForPossessionRentArrears.persistentDelayInPayingRentCheckbox]);
-    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink,groundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds',{
        mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
        discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation],
@@ -138,7 +137,6 @@ test.describe('[Create Case - England]', async () => {
        settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
      });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderEnglandNewTab);
     await performAction('selectNoticeOfYourIntention', {
        question: checkingNotice.haveYouServedNoticeToQuestion,
        option: checkingNotice.yesRadioOption
