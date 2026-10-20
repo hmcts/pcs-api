@@ -23,6 +23,7 @@ public class FeatureFlagView {
                                     .walesMakeAClaimEnabled(getFlag(FeatureFlag.WALES_MAKE_A_CLAIM))
                                     .cuiRespondToClaimLrEnabled(getFlag(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR))
                                     .makeOrderEnabled(getFlag(FeatureFlag.MAKE_ORDER))
+                                    .enforcementEnabled(getFlag(FeatureFlag.ENFORCEMENT))
                                     .build());
     }
 
