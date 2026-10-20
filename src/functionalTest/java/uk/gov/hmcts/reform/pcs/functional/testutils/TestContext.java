@@ -35,7 +35,6 @@ public class TestContext {
 
     public TestContext asUser(String userIdentifier) {
         setTestUser(userIdentifier);
-//        apiSteps.withUser(userIdentifier);
         ccdDataStoreApiSteps.withUser(userIdentifier);
         pcsBaseApiSteps.withUser(userIdentifier);
         testingSupportApiSteps.withUser(userIdentifier);
