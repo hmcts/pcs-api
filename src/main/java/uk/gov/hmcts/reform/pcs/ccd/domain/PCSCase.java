@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -396,7 +397,8 @@ public class PCSCase {
     @CCD(searchable = false, access = DefendantSolicitorAccess.class)
     private String summaryLegalRepresentativeMarkdown;
 
-    @CCD(searchable = false, access = InternalTabAccess.class)
+    @CCD(ignore = true)
+    @JsonIgnore
     private String ordersMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
