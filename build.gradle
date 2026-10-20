@@ -22,7 +22,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '7.7.0'
+  id 'hmcts.ccd.sdk' version '7.16.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2419'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
@@ -207,6 +207,7 @@ serenity {
 tasks.register('integration', Test) {
   description = "Runs integration tests"
   group = "Verification"
+  systemProperty 'feature.make-order-enabled', 'true'
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   maxHeapSize = '1g'
@@ -317,6 +318,7 @@ jacoco {
 jacocoTestReport {
   // Tolerates missing exec files: jacoco skips execution data that is not present.
   executionData(test, integration, cftlibTest)
+  mustRunAfter integration
   reports {
     xml.required = true
     csv.required = false
@@ -325,7 +327,8 @@ jacocoTestReport {
 }
 
 tasks.named('sonarqube') {
-  dependsOn jacocoTestReport
+  // PR checks skip integration, but Sonar needs its coverage before generating the report.
+  dependsOn integration, jacocoTestReport
 }
 
 if (integrationTestsEnabled) {
@@ -619,7 +622,6 @@ tasks.withType(CftlibExec).configureEach {
   // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
   environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
-  environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'PCS_API_ENV', 'local'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
@@ -670,6 +672,8 @@ tasks.withType(CftlibExec).configureEach {
     environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:4506/documents/[A-Za-z0-9-]+.*'
   }
 
+  // The default feature flag gradle properties are set in gradle.properties and mapped to system properties here
+  systemProperties providers.gradlePropertiesPrefixedBy("feature.").get();
 }
 
 cftlibTest {

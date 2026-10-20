@@ -59,7 +59,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -1626,10 +1626,7 @@ export class CreateCaseAction implements IAction {
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
-    const file =
-      caseFile.caseWorkerUpload ??
-      caseFile.caseWorkerAmend ??
-      caseFile.genApp;    
+    const file = (caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload)?.toString();    
 
     switch (folderName) {
       case 'Property documents':
@@ -1640,17 +1637,11 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
-        if (caseFile.caseWorkerUpload) {
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
+        if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
-         } else if (caseFile.claimantLRUpload) {
-          userInputFiles.push(caseFile.claimantLRUpload as string);
-          //userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
-        } else if (caseFile.defendantLRUpload) {
-          userInputFiles.push(caseFile.defendantLRUpload as string);
-          //userInputFiles = userInputFiles.filter(file => file === caseFile.defendantLRUpload as string);
+        } else if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
@@ -1660,15 +1651,11 @@ export class CreateCaseAction implements IAction {
 
       case 'Evidence':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
-        if (caseFile.caseWorkerUpload) {
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
-          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
-        } else if (caseFile.defendantLRUpload) {
-          userInputFiles.push(caseFile.defendantLRUpload as string);
-        } else if (caseFile.claimantLRUpload) {
-          userInputFiles.push(caseFile.claimantLRUpload as string);
+        if (caseFile.caseWorkerAmend) {
+          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
+          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+        } else if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
@@ -1678,10 +1665,12 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
-        if (ccPayload) {
-          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
-        }
-        if (file) {
+        if (ccPayload)
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments)
+        if (caseFile.caseWorkerAmend) {
+          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
+          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+        } else if (file) {
           userInputFiles.push(file as string);
         }
         break;
@@ -1729,7 +1718,7 @@ export class CreateCaseAction implements IAction {
           expect(fileCount).toBeGreaterThan(0);
         }
       }).toPass({
-        timeout: VERY_LONG_TIMEOUT,
+        timeout: VERY_LONG_TIMEOUT + LONG_TIMEOUT,
       });
     }
 
@@ -2124,4 +2113,28 @@ export class CreateCaseAction implements IAction {
       ];
       allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
     }
+
+  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string,): string[] {
+    if (oldFile && amendedFile) {
+      return files
+        .filter(file => file !== oldFile)
+        .concat(amendedFile);
+    }
+
+    if (uploadedFile) {
+      files.push(uploadedFile);
+    }
+
+    return files;
+  }
+
+  private getFileNameByType(documents: any[], documentType: string): string | undefined {
+    return documents.find(
+      doc => doc.value?.documentType?.valueLabel === documentType,
+    )?.value?.document?.document_filename
+      ?? documents.find(
+        doc => doc.value?.documentType?.valueLabel === documentType,
+      )?.value?.document_filename;
+  }
+
 }

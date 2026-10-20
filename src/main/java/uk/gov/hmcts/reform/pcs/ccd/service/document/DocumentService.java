@@ -441,6 +441,7 @@ public class DocumentService {
                 WITH_NOTICE_ORDER,
                 POSSESSION_ORDER,
                 WITHOUT_NOTICE_ORDER,
+                ORDER,
                 NOTICE_OF_ALLOCATION_TO_TRACK ->
                 Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
             case GENERAL_APPLICATION ->

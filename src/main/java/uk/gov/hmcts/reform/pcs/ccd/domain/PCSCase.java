@@ -23,8 +23,8 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
@@ -66,6 +66,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.maintenance.ReindexCasesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
@@ -119,6 +120,10 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
+
+    @CCD(searchable = false)
+    @JsonUnwrapped(prefix = "reindexCases_")
+    private ReindexCasesDetails reindexCases;
 
     @CCD(
         searchable = false
@@ -391,6 +396,9 @@ public class PCSCase {
 
     @CCD(searchable = false, access = DefendantSolicitorAccess.class)
     private String summaryLegalRepresentativeMarkdown;
+
+    @CCD(searchable = false, access = InternalTabAccess.class)
+    private String ordersMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -790,12 +798,8 @@ public class PCSCase {
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
 
-    @CCD (
-        label = "Review date",
-        access = {InternalTabAccess.class},
-        typeOverride = Collection,
-        typeParameterOverride = "CaseReviewDate")
-    private List<ListValue<CaseReviewDate>> caseReviewDates;
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String caseReviewDatesMarkdown;
 
     @CCD(
         label = "Review date",
@@ -881,7 +885,6 @@ public class PCSCase {
 
     @JsonUnwrapped
     private RemovePartyDetails removePartyDetails;
-
 
     @CCD(
         label = "Do you want to add, edit or cancel a hearing?",
