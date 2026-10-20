@@ -32,11 +32,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Global search indexes a decentralised case from the case data the SDK records with each event, which it takes
- * from the case view straight after the submit handler. So the event that approves a warrant has to be the one
- * whose recorded data carries the new number, or the warrant cannot be found by it (HDPI-7677).
- */
 @PcsCcdEventTest
 @DisplayName("Warrant numbers reach the case data global search indexes")
 class EnforcementNumberGlobalSearchIT extends AbstractPostgresContainerIT {

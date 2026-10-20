@@ -48,10 +48,6 @@ public class WritOfRestitutionStrategyTest {
         verify(enforcementStatementOfTruthService).processStatementOfTruth(null, enforcementOrderEntity);
     }
 
-    /**
-     * The journey answers the writ journey's language and statement of truth pages, so both arrive on the writ
-     * details of a writ of restitution application.
-     */
     @Test
     void shouldStoreTheLanguageAndStatementOfTruthGivenOnTheWritPages() {
         // Given

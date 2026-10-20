@@ -99,10 +99,6 @@ class BatchPrintControllerTest {
         BatchPrintTempDirectory.delete(directory);
     }
 
-    /**
-     * Whether or not Spring goes on to write the body, the request is left holding the temp directory for
-     * {@link BatchPrintFileCleanupFilter} to delete.
-     */
     @Test
     void shouldHaveTheTempDirectoryDeletedWhenTheRequestFinishes() throws Exception {
         Path directory = Files.createTempDirectory("batch-print-controller-test-");

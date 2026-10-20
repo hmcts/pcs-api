@@ -43,17 +43,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-/**
- * Every bailiff event that can be refused on submit, driven through the SDK's real submit path against
- * Postgres: the case event coordinator opens the transaction, the event's submit handler runs inside it and
- * the coordinator then commits or rolls back.
- *
- * <p>The refusal cases prove the event's own message reaches the caseworker, which no unit test of a submit
- * handler can: a unit test has no transaction, so it cannot see what the commit makes of one that a
- * {@code @Transactional} service has marked rollback-only. The success cases prove the same path commits, so
- * the refusal cases are not passing merely because nothing ever reaches a commit, and that the warrant number
- * a caseworker's approval gave the warrant reaches the confirmation screen.</p>
- */
 @PcsCcdEventTest
 @DisplayName("Enforcement submits through the SDK's event transaction")
 class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
@@ -179,19 +168,12 @@ class EnforcementSubmitRefusalIT extends AbstractPostgresContainerIT {
         assertThat(accepted.confirmationBody()).endsWith("Warrant number: " + warrantNumber);
     }
 
-    /**
-     * The event's own error reaches the caseworker, rather than the 500 an unhandled exception out of the
-     * submit handler's transaction would give them.
-     */
     private void assertRefused(EventId eventId, PCSCase caseData) {
         var rejected = events.event(caseReference, eventId.name(), caseData).as(bailiff).submitExpectingErrors();
 
         assertThat(rejected.errors()).containsExactly(NoEnforcementException.MESSAGE);
     }
 
-    /**
-     * An approved, numbered warrant on the claim, committed as a caseworker's decision would leave it.
-     */
     private void givenWarrant(EnforcementStatus status, java.util.function.Consumer<EnforcementOrderEntity> detail) {
         new TransactionTemplate(transactionManager).executeWithoutResult(ignored -> {
             ClaimEntity claim = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow()

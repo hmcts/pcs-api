@@ -79,10 +79,6 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
         verify(enforcementDeclarationPageConfigurer).configurePages(savingPageBuilder);
     }
 
-    /**
-     * Resume reuses the pages of "Enforce the order", so it has to drop the same hidden value carriers
-     * from check your answers — field placements belong to one event, not to the page configurer.
-     */
     @SuppressWarnings("unchecked")
     @Test
     void shouldKeepNeverShownFieldsOffCheckYourAnswers() {

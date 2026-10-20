@@ -56,10 +56,7 @@ class WarrantReturnNotificationServiceTest {
         verifyNoInteractions(sender);
     }
 
-    /**
-     * No warrant return template exists in Notify yet, so the sender schedules nothing and the service has to
-     * report that rather than claim the claimant was told.
-     */
+    /** No warrant return template exists in Notify yet, so the sender schedules nothing. */
     @Test
     void shouldReportNothingSentWhenTheTemplateIsNotConfigured() {
         when(sender.send(anyLong(), any(), any())).thenReturn(false);

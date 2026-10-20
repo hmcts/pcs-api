@@ -80,16 +80,6 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.endpoint.PaymentCallBackControl
 import static uk.gov.hmcts.reform.pcs.feesandpay.endpoint.PaymentCallBackController.SERVICE_AUTHORIZATION;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
-/**
- * An enforcement fee taken through PCS's standard payments pattern, against Postgres: the claimant submits
- * "Enforce the order" through the SDK's real submit path, the fees-and-pay task raises the Payments service
- * request, and Payments' callback to {@code PaymentCallBackController} moves the enforcement on. The Fees
- * Register and Payments are mocked.
- *
- * <p>This context polls for db-scheduler tasks hourly, so the test runs the fees-and-pay task's work itself from
- * the task data the submit scheduled, then removes the task so that another test context's scheduler does not
- * run it against a real Payments.</p>
- */
 @PcsCcdEventTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = "db-scheduler.polling-interval-seconds=3600")
@@ -147,9 +137,6 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
     private IdamTokenProvider systemUpdateUserTokenProvider;
     @MockitoBean
     private EnforcementNotificationSender sender;
-    /**
-     * Deleting the claimant's draft keys it on their organisation, which comes from PRD.
-     */
     @MockitoBean
     private OrganisationService organisationService;
 
@@ -167,9 +154,7 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("Bearer system-user");
     }
 
-    /**
-     * These cases commit, so remove the tasks they scheduled before another test context's scheduler runs them.
-     */
+    /** These cases commit, so their tasks go before another test context's scheduler runs them. */
     @AfterEach
     void removeScheduledTasks() {
         enforcementIds.forEach(id -> {
@@ -330,9 +315,6 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
         return accepted;
     }
 
-    /**
-     * Reads the fees-and-pay task the submit scheduled and removes it, so the test can do its work instead.
-     */
     private FeesAndPayTaskData takeScheduledServiceRequest(UUID enforcementId) throws IOException {
         // The row holds the serialised JSON, as the client does not know the task's data class.
         byte[] data = removeScheduledServiceRequest(enforcementId)
@@ -341,10 +323,9 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
     }
 
     /**
-     * Reads the enforcement's fees-and-pay row and deletes it in one statement. Another test context's
-     * scheduler polling this shared database can pick the row up at any point after the submit commits, and
-     * db-scheduler refuses to cancel an execution that is being run, so the row is taken in SQL rather than
-     * through {@link SchedulerClient#cancel}.
+     * db-scheduler refuses to cancel an execution that is being run, and a scheduler on the shared database
+     * may already have picked this one up, so the row is taken in SQL rather than through
+     * {@link SchedulerClient#cancel}.
      */
     private Optional<byte[]> removeScheduledServiceRequest(UUID enforcementId) {
         return jdbcTemplate.queryForList(
@@ -355,9 +336,6 @@ class EnforcementPaymentIT extends AbstractPostgresContainerIT {
             .findFirst();
     }
 
-    /**
-     * What the fees-and-pay task does, against the mocked Payments.
-     */
     private String raiseServiceRequest(FeesAndPayTaskData taskData) {
         String serviceRequest = "2026-" + UUID.randomUUID();
         when(paymentsClient.createServiceRequest(anyString(), any(CreateServiceRequestDTO.class)))

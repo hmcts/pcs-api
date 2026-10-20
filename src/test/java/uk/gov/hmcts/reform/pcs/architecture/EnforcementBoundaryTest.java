@@ -13,21 +13,11 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyP
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
-/**
- * Keeps the enforcement module encapsulated. Core code reaches enforcement through
- * extension points it owns (CaseViewContributor, TestCaseGenerator, DocumentService)
- * and through a small allowlist of entry-point types. Shared registries such as
- * EventId, State, FeatureFlag and FeeType may name enforcement, but must not import it.
- */
 @AnalyzeClasses(packages = "uk.gov.hmcts.reform.pcs", importOptions = ImportOption.DoNotIncludeTests.class)
 class EnforcementBoundaryTest {
 
     private static final String ENFORCEMENT = "uk.gov.hmcts.reform.pcs.enforcement..";
 
-    /**
-     * The only enforcement types core code may refer to. PCSCase holds the
-     * {@code @JsonUnwrapped EnforcementOrder enforcementOrder} field.
-     */
     private static final Class<?>[] ENTRY_POINTS = {
         EnforcementOrder.class
     };

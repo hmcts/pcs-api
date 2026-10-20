@@ -20,15 +20,8 @@ import static uk.gov.hmcts.reform.pcs.camunda.TaskType.REVIEW_CLAIMANT_WARRANT_A
 import static uk.gov.hmcts.reform.pcs.camunda.TaskType.REVIEW_RISKS_AND_SET_LEVEL;
 import static uk.gov.hmcts.reform.pcs.camunda.TaskType.REVIEW_UPDATED_RISK_INFORMATION;
 
-/**
- * The enforcement rows of the PCS work allocation decision tables, against the triggers, completions and
- * cancellations in 18-work-allocation-tasks.feature.
- */
 class EnforcementWaDmnTest {
 
-    /**
-     * The task types an enforcement raises for the bailiff the warrant is allocated to.
-     */
     private static final List<TaskType> ALLOCATED_BAILIFF_TASKS = List.of(
         REVIEW_RISKS_AND_SET_LEVEL, MARK_NOTICE_OF_EVICTION_SERVED, RESCHEDULE_EVICTION,
         REVIEW_UPDATED_RISK_INFORMATION, RECORD_WARRANT_RETURN);
@@ -112,8 +105,8 @@ class EnforcementWaDmnTest {
         }
 
         /**
-         * There is no case data field saying the claimant changed a risk assessment answer (HDPI-7552), so the
-         * updated risk task has no initiation rule at all rather than one that fires on every confirmation.
+         * No case data field says the claimant changed a risk answer, so the updated risk task deliberately
+         * has no initiation rule rather than one that fires on every confirmation.
          */
         @Test
         void shouldHaveNoRuleForTheUpdatedRiskTask() {
@@ -186,10 +179,6 @@ class EnforcementWaDmnTest {
                     RECORD_WARRANT_RETURN.getId());
         }
 
-        /**
-         * A return that sends the warrant back for scheduling, or pauses it for breathing space, voids the
-         * eviction date without ending the allocation, so the allocated bailiff keeps their risk tasks.
-         */
         @ParameterizedTest
         @CsvSource({"AWAITING_SCHEDULING", "BREATHING_SPACE"})
         void shouldCancelOnlyTheEvictionDateTasksForAReturnThatKeepsTheBailiff(String enforcementStatus) {
@@ -200,10 +189,6 @@ class EnforcementWaDmnTest {
                     RECORD_WARRANT_RETURN.getId());
         }
 
-        /**
-         * A reopened warrant has no bailiff, so the allocated bailiff's tasks go as well. The allocation task
-         * itself is not cancelled: the reopen is what raises it.
-         */
         @Test
         void shouldCancelTheAllocatedBailiffsTasksWhenAReturnReopensTheWarrant() {
             assertThat(cancelledBy("AWAITING_BAILIFF_ALLOCATION"))
@@ -216,10 +201,6 @@ class EnforcementWaDmnTest {
                     RECORD_WARRANT_RETURN.getId());
         }
 
-        /**
-         * A new eviction date needs a new return task due on it, so the one due on the old date is cancelled
-         * rather than left behind.
-         */
         @Test
         void shouldCancelTheReturnTaskWhenTheEvictionIsRescheduled() {
             Map<String, String> reschedule = Map.of("event", "rescheduleEviction");
@@ -307,10 +288,6 @@ class EnforcementWaDmnTest {
                 .containsExactly("bailiff", "bailiff-admin", "bailiff-manager");
         }
 
-        /**
-         * A bailiff who can access the case can act on its warrants, so the tasks are granted to the bailiff
-         * role as well as to the allocated-bailiff case role, with the same permissions.
-         */
         @Test
         void shouldGiveTheRemainingTasksToAnyBailiffAndTheirManager() {
             assertThat(ALLOCATED_BAILIFF_TASKS).allSatisfy(taskType -> {

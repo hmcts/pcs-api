@@ -55,25 +55,11 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
-/**
- * The work allocation requests an enforcement change writes, driven through the SDK's real submit path and
- * the Payments callback path against Postgres.
- *
- * <p>pcs-api asks Work Allocation for a task by writing a db-scheduler row in the change's own transaction,
- * so each request is identified by the instance id the change derived from the row it wrote: the action, the
- * task type and the reference. The requests are read from the real {@link SchedulerClient}, which a spy only
- * records, because a scheduler sharing this database may already have executed a committed row. Rolling a
- * change back is asserted on the row itself, inside the transaction that wrote it.</p>
- *
- * <p>{@link WorkAllocationWorkflowApi} is a mock and the polling interval is an hour, so no test needs a
- * Camunda.</p>
- */
 @SpringBootTest(properties = {
     // LaunchDarkly reads the flags these tests need from a file rather than the service. CamundaService
     // short-circuits on caseworker-wa-enabled, which the shared event-test flags leave off.
     "launchdarkly.offline-mode=true",
     "launchdarkly.files=src/integrationTest/resources/launchdarkly/enforcement-wa-task-test-flags.json",
-    // Nothing should execute the requests these tests write.
     "db-scheduler.polling-interval-seconds=3600"
 })
 @ActiveProfiles("integration")
@@ -103,10 +89,7 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /**
-     * The real client, so the rows are really written in the change's transaction; the spy only records what
-     * it was asked to schedule.
-     */
+    /** The real client, so the rows are written in the change's transaction; the spy only records. */
     @MockitoSpyBean(name = "schedulerClient")
     private SchedulerClient schedulerClient;
 
@@ -128,8 +111,8 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
     }
 
     /**
-     * The cases here commit, and the warrant return request is due on the eviction date, so remove the
-     * requests before a scheduler polling the shared database sends them to a Camunda that is not there.
+     * These cases commit, so their requests go before a scheduler polling the shared database sends them to a
+     * Camunda that is not there.
      */
     @AfterEach
     void removeRequests() {
@@ -156,7 +139,6 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
 
         new TransactionTemplate(transactionManager).executeWithoutResult(transaction -> {
             assertThat(enforcementFeePaidSimulator.recordFeePaid(caseReference)).isTrue();
-            // Written in this transaction, so it is already there before the commit it never gets.
             assertThat(storedRequests()).hasSize(1);
             transaction.setRollbackOnly();
         });
@@ -319,8 +301,6 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
             .as(bailiff)
             .submitExpectingSuccess();
 
-        // The request is on its way to Camunda, so it is left for the node sending it to finish with, and
-        // the task it creates is terminated by the cancellation this return asked for instead.
         assertThat(storedRequests()).contains(pendingRequest);
         assertThat(requests()).filteredOn(instanceId -> instanceId.startsWith("CANCEL-RecordWarrantReturn-"))
             .hasSize(1);
@@ -355,9 +335,6 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
         assertThat(storedRequests()).isEmpty();
     }
 
-    /**
-     * The instance ids of the case's work allocation requests, as the change asked for them.
-     */
     private List<String> requests() {
         ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.captor();
         verify(schedulerClient, atLeast(0)).scheduleIfNotExists(captor.capture());
@@ -368,9 +345,6 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
             .toList();
     }
 
-    /**
-     * The instance ids db-scheduler is holding for the case, which is what a rollback has to take away.
-     */
     private List<String> storedRequests() {
         return jdbcTemplate.queryForList(
             "SELECT task_instance FROM scheduled_tasks WHERE task_name = ? "
@@ -388,10 +362,6 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
         return "%\"caseReference\":" + caseReference + "%";
     }
 
-    /**
-     * The warrant return request the scheduled eviction leaves behind, due on the eviction date, committed
-     * as scheduling the eviction would have left it.
-     */
     private void givenScheduledEviction(UUID enforcementId) {
         new TransactionTemplate(transactionManager).executeWithoutResult(ignored ->
             enforcementWaTaskService.evictionScheduled(
@@ -399,10 +369,6 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
                 new EnforcementWaTaskService.Eviction(EVICTION, true, false)));
     }
 
-    /**
-     * Picks the request as a scheduler on another node does when it comes due, which is what this case
-     * cannot be allowed to fail over: the request is already on its way to Camunda.
-     */
     private void givenRequestIsBeingSent(String instanceId) {
         int picked = jdbcTemplate.update(
             "UPDATE scheduled_tasks SET picked = true, picked_by = 'another-node', last_heartbeat = now(), "
@@ -411,9 +377,6 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
         assertThat(picked).as("the request to pick").isEqualTo(1);
     }
 
-    /**
-     * An enforcement on the claim, committed as the earlier events would have left it.
-     */
     private UUID givenEnforcement(SelectEnforcementType type, EnforcementStatus status,
                                   Consumer<EnforcementOrderEntity> detail) {
         return new TransactionTemplate(transactionManager).execute(ignored -> {

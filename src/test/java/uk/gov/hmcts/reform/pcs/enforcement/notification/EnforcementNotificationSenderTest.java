@@ -53,9 +53,6 @@ class EnforcementNotificationSenderTest {
         pcsCase.addClaim(claim);
     }
 
-    /**
-     * A case whose claimant can be emailed.
-     */
     private void givenAnEmailableClaimant() {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
         when(partyService.getPrimaryClaimantPartyEntity(pcsCase)).thenReturn(claimant);
@@ -89,8 +86,8 @@ class EnforcementNotificationSenderTest {
     }
 
     /**
-     * The state every environment is in today: no enforcement template exists in Notify, so every one of
-     * these emails has to be skipped without touching Notify and without throwing into the case event.
+     * No enforcement template exists in Notify, so these emails are skipped without touching Notify and
+     * without throwing into the case event.
      */
     @ParameterizedTest
     @EnumSource(EnforcementEmail.class)

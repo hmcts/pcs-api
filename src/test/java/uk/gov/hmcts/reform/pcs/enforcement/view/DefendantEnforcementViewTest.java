@@ -218,10 +218,6 @@ class DefendantEnforcementViewTest {
         assertThat(pcsCase.getAllDocuments()).containsExactly(claimForm, evidence);
     }
 
-    /**
-     * A defendant's legal representative holds {@code caseworker-pcs-solicitor} too, so a user with no case
-     * role on either side - for instance because the case roles could not be looked up - gets the defendant view.
-     */
     @ParameterizedTest
     @EnumSource(value = UserRole.class, names = {"PCS_SOLICITOR", "PCS_CASE_WORKER", "CITIZEN"})
     void shouldRestrictAUserWhoseSideOfTheCaseCannotBeEstablished(UserRole role) {
@@ -374,9 +370,6 @@ class DefendantEnforcementViewTest {
             .thenReturn(new UserRoles("user-id", List.of(roles)));
     }
 
-    /**
-     * The case view as the other enforcement views leave it: one {@code enforcements} item per enforcement.
-     */
     @SafeVarargs
     private static PCSCase caseView(List<EnforcementOrderEntity> enforcements, ListValue<Document>... documents) {
         EnforcementOrder enforcementOrder = new EnforcementOrder();

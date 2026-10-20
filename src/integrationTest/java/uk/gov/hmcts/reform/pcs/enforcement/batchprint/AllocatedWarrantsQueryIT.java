@@ -35,10 +35,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * The bailiff's warrant list loads in one query however many warrants are allocated, rather than loading each
- * allocation's enforcement, claim, case and warrant details one by one.
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional

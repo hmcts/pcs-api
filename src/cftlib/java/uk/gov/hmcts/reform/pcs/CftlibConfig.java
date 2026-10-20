@@ -39,9 +39,6 @@ public class CftlibConfig implements CFTLibConfigurer {
     private static final String BAILIFF_ADMIN = "pcs-bailiff-admin@localhost";
     private static final String BAILIFF_MANAGER = "pcs-bailiff-manager@localhost";
 
-    /**
-     * Forename and surname of the staff users that staff reference data lists, keyed by email.
-     */
     private static final Map<String, String[]> STAFF_NAMES = Map.of(
         BAILIFF, new String[] {"Sam", "Jones"},
         BAILIFF_ADMIN, new String[] {"Ada", "BailiffAdmin"},
@@ -64,8 +61,7 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
         users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
                                                               "caseworker-pcs-solicitor",  "caseworker-pcs"));
-        // The e2e suite's defendant solicitor. createCaseAPI.action.ts hardcodes this address when it links
-        // a defendant solicitor to a party, so the local stack has to know it by the same name as AAT.
+        // createCaseAPI.action.ts hardcodes this address, so it has to match AAT.
         users.put("pcs-org1-solicitor2@test.com", List.of("pui-case-manager", "caseworker",
                                                           "caseworker-pcs-solicitor", "caseworker-pcs"));
         users.put("citizen@pcs.com", List.of("citizen"));
@@ -78,11 +74,8 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("exui-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import"));
         users.put("prd-admin-user@localhost", List.of());
         users.put("master.caa@gmail.com", List.of("caseworker-caa"));
-        // Bailiff staff for the enforcement journeys. The bailiff roles are RAS organisation roles
-        // (UserRole.BAILIFF, BAILIFF_ADMIN, BAILIFF_MANAGER), granted in cftlib-am-role-assignments.json;
-        // the IDAM roles here only get them into XUI. The bailiff's hmcts-admin assignment there is scoped to
-        // PCS so that XUI's StaffUser type-ahead can list them: XUI reads staff role categories only from a
-        // fixed list of role names (which has hmcts-admin but not bailiff) in the staff-supported jurisdictions.
+        // The bailiff roles themselves are RAS organisation roles, granted in cftlib-am-role-assignments.json.
+        // hmcts-admin is needed as well because XUI's StaffUser type-ahead reads a fixed list of role names.
         users.put(BAILIFF, List.of("caseworker", "caseworker-pcs"));
         users.put(BAILIFF_ADMIN, List.of("caseworker", "caseworker-pcs"));
         users.put(BAILIFF_MANAGER, List.of("caseworker", "caseworker-pcs"));
@@ -105,11 +98,8 @@ public class CftlibConfig implements CFTLibConfigurer {
     }
 
     /**
-     * Gives the bailiff staff the names wiremock's staff reference data stub
-     * (wiremock/mappings/rd-professional/get-users-by-service-name.json) lists them under. XUI's StaffUser
-     * type-ahead shows the staff reference data name, while "Allocate case to bailiff" reads the name from
-     * IDAM, so the two have to agree. CFTLib's createIdamUser names everyone "A User"; the simulator
-     * replaces an account that is added again.
+     * CFTLib's createIdamUser names everyone "A User", which has to agree with the name wiremock's staff
+     * reference data stub returns, so the accounts are added again under their real names.
      */
     private void nameStaffUsers(Map<String, List<String>> users) throws IOException, InterruptedException {
         if (!"localAuth".equals(System.getenv("RSE_LIB_AUTH-MODE"))) {

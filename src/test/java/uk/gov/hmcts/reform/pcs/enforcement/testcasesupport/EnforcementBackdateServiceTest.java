@@ -92,9 +92,7 @@ class EnforcementBackdateServiceTest {
             .setParameter("secs", 73 * 3600 + 0.5);
     }
 
-    /**
-     * The loaded entities must not be flushed over the shifted values by the native updates' auto-flush.
-     */
+    /** The loaded entities must not be flushed over the shifted values by the updates' auto-flush. */
     @Test
     void shouldFlushAndClearBeforeTheUpdates() {
         underTest.backdate(CASE_REFERENCE, null, Period.ofDays(1), null);

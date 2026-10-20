@@ -217,11 +217,6 @@ class EnforcementDocumentPersistenceServiceTest {
         assertThat(payload.getLanguage()).isEqualTo("Welsh");
     }
 
-    /**
-     * The restitution journeys answer the language page of their type's family, so the payload reads the
-     * warrant answers for a warrant of restitution and the writ answers for a writ of restitution
-     * (HDPI-7555).
-     */
     @Test
     void shouldTakeTheLanguageFromTheWarrantAnswersForAWarrantOfRestitution() {
         enforcement.setEnforcementOrder(

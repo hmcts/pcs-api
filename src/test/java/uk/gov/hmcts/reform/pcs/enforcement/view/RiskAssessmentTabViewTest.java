@@ -216,10 +216,6 @@ class RiskAssessmentTabViewTest {
         assertThat(pcsCase.getEnforcementOrder()).isNull();
     }
 
-    /**
-     * The claimant's risk answers are granted on caseworker-pcs-solicitor, which both sides' legal
-     * representatives hold, so a user with no case role on either side gets nothing.
-     */
     @ParameterizedTest
     @ValueSource(strings = {"caseworker-pcs-solicitor", "caseworker-pcs", "citizen"})
     void shouldHideTheTabFromAUserWhoseSideOfTheCaseCannotBeEstablished(String role) {

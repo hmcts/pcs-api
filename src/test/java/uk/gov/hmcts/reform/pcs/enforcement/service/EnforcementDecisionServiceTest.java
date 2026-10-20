@@ -207,10 +207,6 @@ class EnforcementDecisionServiceTest {
         verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
-    /**
-     * The caseworker is asked to try again rather than given an unexplained 500, and the approval is rolled
-     * back with the warrant it could not generate: the number it was given is not kept either.
-     */
     @Test
     void shouldRefuseTheApprovalWhenTheWarrantCannotBeQueued() {
         givenAwaitingReview(SelectEnforcementType.WARRANT);

@@ -194,9 +194,6 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
             "SELECT count(*) FROM enf_risk_assessment_update WHERE enf_case_id = ?", Integer.class, id)).isZero();
     }
 
-    /**
-     * The Risk assessment tab as a bailiff sees it.
-     */
     private EnforcementOrder caseView(long caseReference) {
         when(userRoleService.getCurrentUserCaseRoles(eq(caseReference), anyCollection()))
             .thenReturn(new UserRoles("user", List.of("bailiff")));

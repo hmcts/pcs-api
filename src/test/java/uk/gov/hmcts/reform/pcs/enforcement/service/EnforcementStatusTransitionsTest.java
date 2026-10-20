@@ -37,10 +37,7 @@ class EnforcementStatusTransitionsTest {
 
     private static final Instant NOW = Instant.parse("2026-10-16T10:15:30Z");
 
-    /**
-     * The transition table from 19-enforcement-status-model.feature, plus the additions noted below.
-     * A null "from" is the feature's "(none)".
-     */
+    /** A null "from" is a brand new application. */
     private static final List<Transition> TABLE = List.of(
         new Transition(null, "the claimant submits an application", AWAITING_PAYMENT),
         // 01-claimant-applies-for-enforcement.feature: a repeat warrant with no fee goes straight to review
@@ -64,8 +61,7 @@ class EnforcementStatusTransitionsTest {
         new Transition(CLAIMANT_CONFIRMED, "the bailiff reschedules a confirmed eviction",
                        AWAITING_CLAIMANT_CONFIRMATION),
         new Transition(CLOSED, "the bailiff records \"Reopen warrant\"", AWAITING_BAILIFF_ALLOCATION),
-        // 11-record-warrant-return.feature (HDPI-8424): a return can be recorded at any point once the warrant
-        // has been generated, and from breathing space
+        // A return can be recorded at any point once the warrant has been generated, and from breathing space
         new Transition(AWAITING_BAILIFF_ALLOCATION, "the bailiff records a closing final return", CLOSED),
         new Transition(AWAITING_BAILIFF_ALLOCATION, "the bailiff records a breathing space return", BREATHING_SPACE),
         new Transition(AWAITING_SCHEDULING, "the bailiff records a closing final return", CLOSED),

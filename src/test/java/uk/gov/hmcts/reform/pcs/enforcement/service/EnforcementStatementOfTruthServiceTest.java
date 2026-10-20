@@ -69,10 +69,6 @@ class EnforcementStatementOfTruthServiceTest {
         verifyNoInteractions(statementOfTruthRepository);
     }
 
-    /**
-     * The answers are unwrapped into the application's own fields, so an application submitted before the
-     * statement of truth page carries an instance with nothing in it rather than no instance.
-     */
     @Test
     void shouldPersistNothingWhenNobodySignedTheStatementOfTruth() {
         // Given the real mapper, which is what dereferences the statement of truth

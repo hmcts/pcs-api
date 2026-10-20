@@ -149,10 +149,6 @@ class WarrantReturnServiceTest {
         assertThatThrownBy(() -> underTest.findWarrant(CASE_REFERENCE)).isInstanceOf(NoEnforcementException.class);
     }
 
-    /**
-     * HDPI-7347 asks only for the warrant to have been generated, so a warrant still waiting for a bailiff
-     * can take a return.
-     */
     @Test
     void shouldFindAWarrantStillWaitingForABailiff() {
         EnforcementOrderEntity warrant = enforcement(SelectEnforcementType.WARRANT, AWAITING_BAILIFF_ALLOCATION);
@@ -335,10 +331,6 @@ class WarrantReturnServiceTest {
         verifyNoInteractions(bailiffAllocationRepository);
     }
 
-    /**
-     * The bailiff is asked to try again rather than given an unexplained 500, and the return is rolled back
-     * with the task changes it asked for.
-     */
     @Test
     void shouldRefuseTheReturnWhenItsTaskChangesCannotBeRequested() {
         givenWarrant(CLAIMANT_CONFIRMED);

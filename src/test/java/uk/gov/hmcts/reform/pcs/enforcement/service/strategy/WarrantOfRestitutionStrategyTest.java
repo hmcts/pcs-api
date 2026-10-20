@@ -127,10 +127,6 @@ class WarrantOfRestitutionStrategyTest {
         verify(enforcementOrderRepository).save(enforcementOrderEntity);
     }
 
-    /**
-     * The journey signs the warrant journey's statement of truth page, so the answers arrive on the warrant
-     * details of a warrant of restitution application (HDPI-7555).
-     */
     @Test
     void shouldStoreTheStatementOfTruthSignedOnTheWarrantPage() {
         // Given

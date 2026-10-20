@@ -11,10 +11,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * The warrant return fields are unwrapped into the case data with a prefix, so their JSON names have to match
- * the CCD field ids the SDK generates: prefix + UpperCamelCase field name.
- */
 class WarrantReturnJsonTest {
 
     private final ObjectMapper mapper = new JacksonConfiguration().getMapper();

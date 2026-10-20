@@ -147,8 +147,7 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
         givenAmRoles("BOB-ID", "bailiff");
 
         // enf_case.enforcement_number is unique across the database these tests share, so these are
-        // namespaced on the ticket like the case references above rather than taken from the low end of the
-        // sequence EnforcementNumberGenerator issues.
+        // namespaced on the ticket rather than taken from the low end of the generator's sequence.
         EnforcementOrderEntity first = warrant(FIRST, "WP-80120001", LocalDateTime.of(2026, 10, 15, 10, 0), BAILIFF);
         document(first, DocumentType.WARRANT_OF_POSSESSION, "Warrant 1", 1);
         document(first, DocumentType.RISK_ASSESSMENT, "Risk assessment 1", 2);
@@ -187,11 +186,6 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
         assertThat(batchPrintTempFiles()).isEqualTo(tempFilesBefore);
     }
 
-    /**
-     * The batch print is streamed from a temp file in a directory of its own, so neither may be left in the
-     * filesystem once the request is over: {@link BatchPrintFileCleanupFilter} runs in the real filter chain
-     * to see to that.
-     */
     private static Set<Path> batchPrintTempFiles() throws IOException {
         try (Stream<Path> tempFiles = Files.list(Path.of(System.getProperty("java.io.tmpdir")))) {
             return tempFiles.filter(file -> file.getFileName().toString().startsWith("batch-print-"))
@@ -378,10 +372,6 @@ class BatchPrintIT extends AbstractPostgresContainerIT {
         return saved;
     }
 
-    /**
-     * Files a one-page PDF reading {@code title} in the Enforcement folder, served by the mocked CDAM, with a
-     * submitted date {@code minutes} after Monday so the order between documents is fixed.
-     */
     private void document(EnforcementOrderEntity enforcement, DocumentType type, String title, int minutes) {
         UUID documentId = UUID.randomUUID();
         DocumentEntity document = DocumentEntity.builder()

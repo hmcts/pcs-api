@@ -633,11 +633,6 @@ public class CamundaServiceTest {
         verify(pendingCamundaRequests, never()).withdraw(any());
     }
 
-    /**
-     * A request db-scheduler no longer holds, or that a scheduler on another node has picked and is sending,
-     * cannot be withdrawn. The task it creates is cancelled through Camunda by the cancellation request the
-     * caller sends alongside this one, so the change this is part of still succeeds.
-     */
     @Test
     void shouldDropNothingWhenTheCreateRequestHasAlreadyGone() {
         stubWaFeatureFlag(true);

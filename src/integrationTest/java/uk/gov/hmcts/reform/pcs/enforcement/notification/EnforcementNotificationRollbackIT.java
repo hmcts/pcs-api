@@ -56,14 +56,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementEmail.EVICTION_DATE_TIME;
 
-/**
- * The claimant's email is queued in the enforcement change's own transaction: it is there once the change
- * commits and gone if it rolls back. Each case drives the change through the transaction it runs in for real:
- * the SDK's event transaction for a submit, or the service's own for the testing-support fee shortcut.
- *
- * <p>The sender is real, with every email given a template, so each queued email leaves a case notification
- * and a db-scheduler send-email task; the spy only records what the sender was asked to send.</p>
- */
 @PcsCcdEventTest
 @DisplayName("Enforcement emails are queued with the change, and rolled back with it")
 class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
@@ -71,8 +63,8 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     private static final LocalDateTime EVICTION = LocalDateTime.now().plusDays(14).withHour(10).withMinute(0)
         .withSecond(0).withNano(0);
     /**
-     * enf_case.enforcement_number is unique and these cases commit to the database the other event tests share,
-     * so the numbers come from a range none of them uses.
+     * enf_case.enforcement_number is unique across the database these tests share, so the numbers come from a
+     * range no other test uses.
      */
     private static final AtomicLong WARRANT_NUMBERS = new AtomicLong(90_000_000L);
     private static final String SEND_EMAIL_TASK = "send-email-task";
@@ -98,9 +90,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     @MockitoSpyBean
     private EnforcementNotificationSender sender;
 
-    /**
-     * No Notify template exists for the enforcement emails yet, so give every one an id.
-     */
+    /** No Notify template exists for the enforcement emails yet, so give every one an id. */
     @MockitoBean
     private EnforcementNotificationTemplates templates;
 
@@ -126,8 +116,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     }
 
     /**
-     * The cases here commit, so remove their emails before a scheduler polling the shared database tries to send
-     * them to Notify.
+     * These cases commit, so their emails go before a scheduler polling the shared database sends them.
      */
     @AfterEach
     void removeQueuedEmails() {
@@ -223,9 +212,6 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertOneEmailQueued();
     }
 
-    /**
-     * Each enforcement type has its own rejection template, so the one the type chooses is the one queued.
-     */
     @ParameterizedTest(name = "{0}")
     @CsvSource({
         "WRIT, WRIT_REJECTED",
@@ -245,10 +231,6 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertOneEmailQueued();
     }
 
-    /**
-     * HDPI-7538 leaves the writ-of-restitution wording TBC, so the decision is recorded and nothing is
-     * emailed (OPEN-QUESTIONS 55).
-     */
     @Test
     @DisplayName("Deciding a writ of restitution records the decision and emails no one")
     void writOfRestitutionDecisionEmailsNoOne() {
@@ -263,11 +245,6 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertNoEmailQueued();
     }
 
-    /**
-     * The decide-enforcement counterpart of the schedule-eviction case below: the rejection is recorded, its
-     * email cannot be queued, and the caseworker is asked to submit again rather than given a 500 with the
-     * enforcement left rejected and the claimant never told.
-     */
     @Test
     @DisplayName("Decide enforcement whose email cannot be queued is refused, and records nothing")
     void decisionWhoseEmailCannotBeQueuedIsRefused() {
@@ -345,10 +322,6 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertNoEmailQueued();
     }
 
-    /**
-     * The case a refusal check cannot reach: the change itself succeeds, and the email is queued, but the
-     * transaction it ran in then rolls back. The email must go with it.
-     */
     @Test
     @DisplayName("A scheduled eviction whose transaction rolls back leaves no email queued")
     void rolledBackScheduleQueuesNothing() {
@@ -365,11 +338,6 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertNoEmailQueued();
     }
 
-    /**
-     * The failure the refusal checks cannot see coming: the eviction date is saved, and its email cannot be
-     * queued. The bailiff has to be told to try again, not given a 500 at the end of a journey they completed,
-     * and nothing of the event may survive.
-     */
     @Test
     @DisplayName("Schedule eviction whose email cannot be queued is refused, and records nothing")
     void scheduleEvictionWhoseEmailCannotBeQueuedIsRefused() {
@@ -415,10 +383,6 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         assertNoEmailQueued();
     }
 
-    /**
-     * The case notification is written with its send-email task, so it is the lasting record of a queued email:
-     * a scheduler polling the shared database may already have picked the task up.
-     */
     private void assertOneEmailQueued() {
         assertThat(queuedNotifications()).isEqualTo(1);
     }
@@ -430,9 +394,6 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
             Integer.class, SEND_EMAIL_TASK, "%" + claimantEmail + "%")).isZero();
     }
 
-    /**
-     * The documents an event queues go back with its email, because both are written in the one transaction.
-     */
     private void assertNoDocumentQueued() {
         assertThat(jdbcTemplate.queryForObject(
             "SELECT count(*) FROM scheduled_tasks WHERE task_name = ? AND task_instance LIKE ?",
