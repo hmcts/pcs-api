@@ -55,8 +55,10 @@ public class TestContext {
     }
 
     public void setCaseReference(String caseReference) {
-        ccdDataStoreApiSteps.withCaseReference(caseReference);
         this.caseReference = caseReference;
+        pcsBaseApiSteps.setCaseReference(caseReference);
+        ccdDataStoreApiSteps.setCaseReference(caseReference);
+        testingSupportApiSteps.setCaseReference(caseReference);
     }
 
     public ApiSteps withApiSteps() {
