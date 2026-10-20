@@ -118,6 +118,20 @@ class DefencePackSelectorTest {
     }
 
     @Test
+    @DisplayName("Excludes removed parties from defence pack recipients")
+    void shouldExcludeRemovedPartiesFromDefencePackRecipients() {
+        coDefendant.setRemoved(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm), claimant, defendant, coDefendant));
+
+        assertThat(result).extracting(candidate -> candidate.recipient().getId())
+            .containsExactly(claimant.getId(), defendant.getId());
+    }
+
+    @Test
     @DisplayName("When the rollout flag is off, bundles defence and counter-claim for defendant and claimant")
     void shouldBundleDefenceAndCounterClaimForAllPartiesWhenRolloutFlagOff() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);

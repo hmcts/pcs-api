@@ -914,11 +914,22 @@ public class HearingServiceTest {
             .firstName("Claimant")
             .lastName("One")
             .build();
+        PartyEntity removedParty = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Removed")
+            .lastName("Defendant")
+            .removed(true)
+            .build();
         ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(List.of(ClaimPartyEntity.builder()
-                .role(PartyRole.CLAIMANT)
-                .party(selectedParty)
-                .build()))
+            .claimParties(List.of(
+                ClaimPartyEntity.builder()
+                    .role(PartyRole.CLAIMANT)
+                    .party(selectedParty)
+                    .build(),
+                ClaimPartyEntity.builder()
+                    .role(PartyRole.DEFENDANT)
+                    .party(removedParty)
+                    .build()))
             .build();
         HearingEntity selectedHearing = HearingEntity.builder()
             .id(1)
@@ -1012,6 +1023,56 @@ public class HearingServiceTest {
         assertThat(
             pcsCaseEntityCaptor.getValue().getHearings().getFirst().getHearingNoticeParties().getFirst().getParty()
         ).isEqualTo(partyEntity);
+    }
+
+    @Test
+    void shouldNotUpdateHearingNoticePartiesWithRemovedSelectedParty() {
+        UUID activePartyId = UUID.randomUUID();
+        UUID removedPartyId = UUID.randomUUID();
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .date(LocalDateTime.of(2026, 4, 5, 11, 30, 0))
+            .durationDays(0)
+            .durationHours(1f)
+            .durationMinutes(0f)
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.YES)
+            .build();
+
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(10)
+            .hearingNoticeParties(new ArrayList<>())
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(selectedHearing))
+            .build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PartyEntity activeParty = PartyEntity.builder().id(activePartyId).build();
+        PartyEntity removedParty = PartyEntity.builder().id(removedPartyId).removed(true).build();
+        when(partyRepository.findAllById(Set.of(activePartyId, removedPartyId)))
+            .thenReturn(List.of(activeParty, removedParty));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("10")
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                .value(List.of(
+                    DynamicStringListElement.builder().code(activePartyId.toString()).build(),
+                    DynamicStringListElement.builder().code(removedPartyId.toString()).build()))
+                .build())
+            .hearing(hearing)
+            .build();
+
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        assertThat(pcsCaseEntityCaptor.getValue().getHearings().getFirst().getHearingNoticeParties())
+            .extracting(HearingNoticePartyEntity::getParty)
+            .containsExactly(activeParty);
     }
 
     @Test
