@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,4 +36,18 @@ class UserNameRepositoryIT extends AbstractPostgresContainerIT {
             assertThat(found.getIdamId()).isEqualTo(idamId);
         });
     }
+
+    @Test
+    void storesTheFullJudicialNameBeyondFiftyCharacters() {
+        String name = "Deputy District Judge " + "Alexandra ".repeat(20) + "McAusland";
+        UserNameEntity saved = userNameRepository.saveAndFlush(UserNameEntity.builder()
+            .idamId("judge-with-long-name")
+            .name(name)
+            .build());
+        entityManager.clear();
+
+        assertThat(userNameRepository.findById(saved.getId())).hasValueSatisfying(found ->
+            assertThat(found.getName()).isEqualTo(name));
+    }
+
 }
