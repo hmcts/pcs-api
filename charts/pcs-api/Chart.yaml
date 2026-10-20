@@ -3,7 +3,7 @@ appVersion: "1.0"
 description: A Helm chart for pcs-api App
 name: pcs-api
 home: https://github.com/hmcts/pcs-api
-version: 0.0.110
+version: 0.0.113
 maintainers:
   - name: HMCTS pcs team
 dependencies:
@@ -46,6 +46,10 @@ dependencies:
     version: 0.0.80
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: am-org-role-mapping-service.enabled
+  - name: pcs-frontend
+    version: 0.0.95
+    repository: 'oci://hmctsprod.azurecr.io/helm'
+    condition: pcs-frontend.enabled
 #    Work Allocation
   - name: wa
     version: ~1.1.0
