@@ -94,9 +94,6 @@ public class PcsIdamTokenClient {
         assertThat(SerenityRest.lastResponse().getStatusCode()).isEqualTo(200);
 
         String accessToken = SerenityRest.lastResponse().jsonPath().getString("access_token");
-//        String userId = SerenityRest.lastResponse().jsonPath().getString("idam");
-//        System.out.println(SerenityRest.lastResponse().getBody().prettyPrint());
-//        System.out.println("Generated token for user: " + username + ", userId: " + userId);
         usersDetails.put(username, Map.of("access_token", accessToken));
 
         return accessToken;

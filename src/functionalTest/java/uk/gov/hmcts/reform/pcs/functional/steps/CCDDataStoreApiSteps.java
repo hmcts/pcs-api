@@ -44,13 +44,13 @@ public class CCDDataStoreApiSteps {
     private String internalCaseId;
     private String currentEventId;
     private ObjectNode caseData;
-    public String event_token;
+    public String eventToken;
 
     @Step("initialise CCD data store request")
     public CCDDataStoreApiSteps init() {
         response = null;
         currentUserId = null;
-        event_token = null;
+        eventToken = null;
         currentEventId = null;
         this.serviceAuthorisationToken = new ServiceAuthenticationGenerator().generate(CCD_DATA);
         request = createRequest();
@@ -187,7 +187,7 @@ public class CCDDataStoreApiSteps {
             .then()
             .assertThat()
             .statusCode(200)
-            .body( "state", equalTo(expectedState));
+            .body("state", equalTo(expectedState));
         return this;
     }
 
@@ -202,7 +202,7 @@ public class CCDDataStoreApiSteps {
         .then()
             .statusCode(200)
             .extract().response();
-        event_token = response.jsonPath().getString("token");
+        eventToken = response.jsonPath().getString("token");
         return this;
     }
 
@@ -252,11 +252,11 @@ public class CCDDataStoreApiSteps {
 
     @Step("submit event {0} for case")
     public CCDDataStoreApiSteps submitEvent(String event, ObjectNode eventData) {
-        if (event_token == null || event_token.isBlank()) {
+        if (eventToken == null || eventToken.isBlank()) {
             throw new IllegalStateException("No event token available. Call triggerEvent before submitEvent.");
         }
 
-        ObjectNode requestBody = eventRequest(event, eventData, event_token);
+        ObjectNode requestBody = eventRequest(event, eventData, eventToken);
 
         response = createRequest()
             .pathParam("caseReference", this.caseReference)
@@ -293,6 +293,7 @@ public class CCDDataStoreApiSteps {
         internalCaseId = decodedJWT.getClaim("case-id").asString();
         return internalCaseId;
     }
+
     public String getClaimantPartyId() {
         fetchCaseDetails();
         if (caseData == null) {

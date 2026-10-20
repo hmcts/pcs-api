@@ -125,7 +125,8 @@ public class PCSBaseApiSteps {
     @Step("update payment")
     public PCSBaseApiSteps updatePayment(String serviceRequestRef) {
 
-        System.out.println("Updating payment for caseReference: " + this.caseReference + ", paymentReference: " + serviceRequestRef);
+        System.out.println("Updating payment for caseReference: " + this.caseReference + ", "
+                               + "paymentReference: " + serviceRequestRef);
         String paymentUpdateRequest = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
             Map.of(
