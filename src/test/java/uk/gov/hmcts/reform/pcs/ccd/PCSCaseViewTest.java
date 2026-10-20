@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
@@ -129,6 +130,8 @@ class PCSCaseViewTest {
     @Mock
     private CaseNoteView caseNoteView;
     @Mock
+    private OrdersView ordersView;
+    @Mock
     private CaseTabView caseTabView;
     @Mock
     private PartiesView partiesView;
@@ -163,7 +166,7 @@ class PCSCaseViewTest {
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
+                                    caseNoteView, ordersView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService
         );
