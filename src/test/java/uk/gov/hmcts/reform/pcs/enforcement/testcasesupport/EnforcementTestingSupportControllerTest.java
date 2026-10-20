@@ -123,10 +123,7 @@ class EnforcementTestingSupportControllerTest {
         verify(bailiffAllocationService).allocate(CASE_REFERENCE, EXPECTED_BAILIFF);
     }
 
-    /**
-     * BailiffAllocationService reads the current user, so the allocation must run with the caller on the
-     * security context. The context is cleared again afterwards.
-     */
+    /** BailiffAllocationService reads the current user, so the caller must be on the security context. */
     @Test
     void shouldRunTheAllocationAsTheCallerAndClearTheContextAfterwards() {
         User caller = givenTheCallerIsAuthenticated();
@@ -142,9 +139,6 @@ class EnforcementTestingSupportControllerTest {
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
-    /**
-     * The service refuses rather than throwing, so a refusal that came back as 204 would read as success.
-     */
     @Test
     void shouldReportTheRefusalWhenTheWarrantCannotBeAllocated() {
         givenTheCallerIsAuthenticated();

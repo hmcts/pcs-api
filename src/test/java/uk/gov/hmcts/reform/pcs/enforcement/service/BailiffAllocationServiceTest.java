@@ -111,11 +111,6 @@ class BailiffAllocationServiceTest {
         verify(enforcementOrderRepository, never()).save(any());
     }
 
-    /**
-     * The previous bailiff's "Review risks and set level" task is still open and still the one to do, and the
-     * allocated-bailiff role assignment is what moves it. A second request would leave the new bailiff looking
-     * at two identical tasks.
-     */
     @Test
     void shouldNotAskForASecondRiskTaskWhenReallocating() {
         EnforcementOrderEntity enforcement = givenCurrentEnforcement(CLAIMANT_CONFIRMED);
@@ -128,10 +123,6 @@ class BailiffAllocationServiceTest {
         verifyNoInteractions(enforcementWaTaskService);
     }
 
-    /**
-     * A warrant a return reopened for allocation has no bailiff, so the new one is asked for the risk level
-     * only if it is not recorded already.
-     */
     @Test
     void shouldNotAskForTheRiskTaskWhenTheRiskLevelIsAlreadyRecorded() {
         EnforcementOrderEntity enforcement = givenCurrentEnforcement(AWAITING_BAILIFF_ALLOCATION);
@@ -160,10 +151,6 @@ class BailiffAllocationServiceTest {
         verifyNoInteractions(enforcementWaTaskService);
     }
 
-    /**
-     * The caseworker is asked to try again rather than given an unexplained 500, and the allocation is rolled
-     * back with the task request.
-     */
     @Test
     void shouldRefuseTheAllocationWhenTheRiskTaskCannotBeRequested() {
         EnforcementOrderEntity enforcement = givenCurrentEnforcement(AWAITING_BAILIFF_ALLOCATION);
@@ -232,9 +219,7 @@ class BailiffAllocationServiceTest {
         return enforcement;
     }
 
-    /**
-     * The allocation's id keys the risk task, and the database assigns it on save.
-     */
+    /** The allocation's id keys the risk task, and the database assigns it on save. */
     private void givenSaveAssignsAnId() {
         when(bailiffAllocationRepository.save(any())).thenAnswer(invocation -> {
             BailiffAllocationEntity allocation = invocation.getArgument(0);

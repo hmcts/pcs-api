@@ -14,10 +14,6 @@ class StatementOfTruthPageTest extends BasePageTest {
         setPageUnderTest(new StatementOfTruthPage());
     }
 
-    /**
-     * Nothing in src/main sets statementOfTruthRepaymentSummaryMarkdown, so the table it fed was always
-     * empty for a real claimant.
-     */
     @Test
     void shouldNotRenderTheUnpopulatedPaymentsTable() {
         String markdownField = "warrantStatementOfTruthRepaymentSummaryMarkdown";

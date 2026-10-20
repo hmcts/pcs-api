@@ -52,11 +52,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 
-/**
- * Submits a real application of each enforcement type against Postgres. Three of the four strategies insert the
- * type's own row with a non-null enf_case_id of their own, so only a persistent enforcement will do; every
- * strategy unit test mocks the repositories and so cannot see that.
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
@@ -97,8 +92,6 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
 
     @BeforeEach
     void setUp() {
-        // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for, and
-        // the fee lookup and service request need the Fees Register and Payments.
         enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
             pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
@@ -139,10 +132,6 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             .isTrue();
     }
 
-    /**
-     * Every type asks which language the claimant used and takes a statement of truth, the restitution types on
-     * the pages of their possession type (HDPI-7555), so every type stores both.
-     */
     @ParameterizedTest
     @CsvSource({
         "WARRANT, 1000000000000006, enf_warrant",
@@ -170,10 +159,6 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             .isEqualTo("Sam Shah");
     }
 
-    /**
-     * An application that was never asked the questions, or was submitted as a draft before reaching them, has
-     * no language and no statement of truth to store.
-     */
     @ParameterizedTest
     @CsvSource({
         "WARRANT, 1000000000000011, enf_warrant",
@@ -208,11 +193,6 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         return jdbcTemplate.queryForObject("SELECT count(*) FROM statement_of_truth", Integer.class);
     }
 
-    /**
-     * The application is stored as it will read back, so the row is not dirty the moment it is inserted: a
-     * second write of the same JSON costs a statement and moves the version under the document generation and
-     * Payments callback that read the enforcement next.
-     */
     @Test
     @DisplayName("stores the application without a second write of the same enforcement order")
     void shouldStoreTheApplicationWithoutASecondWrite() {
@@ -229,11 +209,6 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             .isZero();
     }
 
-    /**
-     * CDAM serves a document that is on no case only until its TTL passes, a day after it was uploaded, so the
-     * evidence uploaded with a warrant of restitution must be attached to its case in CDAM (HDPI-9440, as
-     * HDPI-9435 does for the rest of the service).
-     */
     @Test
     @DisplayName("attaches the evidence uploaded with a warrant of restitution to its case in CDAM")
     void shouldAttachTheUploadedEvidenceToItsCaseInCdam() {
@@ -294,12 +269,6 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
             .build();
     }
 
-    /**
-     * An application of the type with no answer to either question, as it arrives from the data store: each
-     * application's answers are unwrapped into the case's own fields, so a submit that carries none of them
-     * still deserialises to an application holding an empty statement of truth rather than no statement of
-     * truth. Only reading the case data back gives the test that shape.
-     */
     private EnforcementOrder unansweredApplication(SelectEnforcementType enforcementType)
         throws JsonProcessingException {
 
@@ -308,11 +277,6 @@ class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
         return application;
     }
 
-    /**
-     * An application of the type with the language and statement of truth answered, on the pages the type's
-     * journey ends on: the warrant pages for a warrant and a warrant of restitution, the writ pages for a writ
-     * and a writ of restitution.
-     */
     private static EnforcementOrder signedApplication(SelectEnforcementType enforcementType) {
         StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
         statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);

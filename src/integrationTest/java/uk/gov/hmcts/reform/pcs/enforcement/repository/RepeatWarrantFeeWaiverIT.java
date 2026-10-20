@@ -61,19 +61,13 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLOSED;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER;
 
-/**
- * A further application submitted against Postgres, with the waiver's clock fixed, so the 12 calendar month
- * boundary is exact (HDPI-8424; 01 and 15 feature files).
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
 @DisplayName("Free repeat warrant (HDPI-8424)")
 class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
 
-    /**
-     * The day the further application is made in most cases, during British Summer Time.
-     */
+    /** The day the further application is made in most cases, during British Summer Time. */
     private static final LocalDate TODAY = LocalDate.of(2026, 7, 8);
 
     @Autowired
@@ -187,8 +181,6 @@ class RepeatWarrantFeeWaiverIT extends AbstractPostgresContainerIT {
         Clock ukClock = Clock.fixed(appliedOn.atTime(12, 0).atZone(UK_ZONE_ID).toInstant(), UK_ZONE_ID);
         RepeatWarrantFeeWaiver waiver =
             new RepeatWarrantFeeWaiver(enforcementOrderRepository, warrantReturnRepository, ukClock);
-        // Deleting the draft needs the caller's IDAM user and organisation, which this test has no use for, and
-        // the fee lookup and service request need the Fees Register and Payments.
         EnforcementOrderService enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
             pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,

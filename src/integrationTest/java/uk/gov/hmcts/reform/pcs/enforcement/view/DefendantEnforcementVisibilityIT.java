@@ -49,11 +49,6 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
-/**
- * The case view a defendant gets of enforcement, from the enforcement records and documents in Postgres
- * through the enforcement case view contributor, as the notice of eviction is served and a warrant of
- * restitution is applied for (14-defendant-visibility.feature).
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
@@ -152,7 +147,6 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
         assertThat(claimantView.getEnforcementOrder().getEnforcements()).hasSize(1);
         assertThat(claimantView.getEnforcementOrder().getEnforcementStatusTabMarkdown())
             .contains("Claimant eviction confirmation");
-        // Of the two sides, only defendants see the notice of eviction (05-schedule-eviction.feature).
         assertThat(filenames(claimantView))
             .containsExactlyInAnyOrder("claim.pdf", "evidence.pdf");
         assertThat(filenames(bailiffView))
@@ -238,10 +232,6 @@ class DefendantEnforcementVisibilityIT extends AbstractPostgresContainerIT {
             .toList();
     }
 
-    /**
-     * A warrant awaiting scheduling, with the claim form in Statements of case and, in the Enforcement folder,
-     * a notice of eviction and some claimant evidence.
-     */
     private EnforcementOrderEntity savedWarrantWithDocuments(long caseReference) {
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(caseReference).build();
         pcsCase.addClaim(new ClaimEntity());

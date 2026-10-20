@@ -18,25 +18,18 @@ import java.util.stream.Stream;
 import static java.util.Comparator.naturalOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Invariants that hold for every PCS work allocation decision table, whichever task types it covers.
- */
 class WaDmnTablesTest {
 
     private static final Path DMN_DIRECTORY = Path.of("src/main/resources/dmn");
 
     /**
-     * Every permission token wa-task-management-api recognises. An unrecognised one fails the whole task
-     * configuration at runtime with {@code IllegalArgumentException: Invalid Permission Type}.
+     * An unrecognised token fails the whole task configuration at runtime with
+     * {@code IllegalArgumentException: Invalid Permission Type}.
      */
     private static final Set<String> PERMISSIONS = Set.of(
         "Read", "Refer", "Own", "Manage", "Execute", "Cancel", "CancelOwn", "Complete", "CompleteOwn",
         "Claim", "Unclaim", "Assign", "Unassign", "UnassignClaim", "UnassignAssign", "UnclaimAssign");
 
-    /**
-     * The attributes wa-task-management-api requires on a configured task and that the PCS table is expected to
-     * set for every task type, rather than leaning on a platform default.
-     */
     private static final List<String> REQUIRED_CONFIGURATION_ATTRIBUTES = List.of(
         "workType", "roleCategory", "majorPriority", "minorPriority", "dueDateIntervalDays");
 
@@ -76,10 +69,9 @@ class WaDmnTablesTest {
     }
 
     /**
-     * Camunda evaluates every rule's cell for a column it reads, so a single cell that is not a FEEL unary test
-     * fails the whole decision for every input, not just for the rule holding it. The initiation table came with
-     * free text in place of a condition in 23 of its 24 rules, and a real engine does throw on it; nothing
-     * depends on that today because nothing publishes PCS case events, but no new rule may add to it.
+     * Camunda evaluates every rule's cell for a column it reads, so one cell that is not a FEEL unary test
+     * fails the whole decision for every input. The initiation table already has 23 such rules, so this is
+     * capped rather than required to be zero.
      */
     @ParameterizedTest
     @EnumSource(WaDmn.class)
@@ -122,9 +114,8 @@ class WaDmnTablesTest {
 
     /**
      * wa-task-management-api collects the configuration rows into a map keyed by attribute name, so two rules
-     * setting the same attribute for one task type fails the whole configuration with
-     * {@code IllegalStateException: Duplicate key}, on initiation and on reconfiguration alike. A catch-all rule
-     * therefore has to exclude the task types a later rule overrides rather than rely on rule order.
+     * setting the same attribute for one task type fail the whole configuration with
+     * {@code IllegalStateException: Duplicate key}. Rule order is no help.
      */
     @Test
     void shouldSetEveryConfigurationAttributeOncePerTaskType() {
@@ -153,9 +144,6 @@ class WaDmnTablesTest {
             Arrays.stream(TaskType.values()).map(TaskType::getId).distinct().toArray(String[]::new));
     }
 
-    /**
-     * The task type id to name catalogue XUI reads for its task type filters.
-     */
     static Map<String, String> taskTypeCatalogue() {
         Map<String, String> catalogue = new LinkedHashMap<>();
         for (Map<String, String> row : WaDmn.TYPES.table().evaluate(Map.of())) {
@@ -167,11 +155,6 @@ class WaDmnTablesTest {
         return catalogue;
     }
 
-    /**
-     * The configuration attributes of a task type: every matching rule contributes one. Two rules that set the
-     * same attribute for the same task type is a configuration error, not a last-one-wins override - see
-     * {@link #shouldSetEveryConfigurationAttributeOncePerTaskType}.
-     */
     static Map<String, String> configurationAttributes(DmnDecisionTable configuration, String taskType) {
         Map<String, String> attributes = new LinkedHashMap<>();
         for (Map<String, String> row : configuration.evaluate(Map.of("taskType", taskType))) {

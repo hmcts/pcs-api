@@ -48,9 +48,6 @@ class EnforcementSubmitEventTest {
         .version(5)
         .build();
 
-    /**
-     * An application that owes nothing: a change that was made with no fee to report.
-     */
     private static final FeeDetails NO_FEE = null;
 
     @Mock
@@ -99,7 +96,6 @@ class EnforcementSubmitEventTest {
         assertThat(response.getConfirmationBody()).isNull();
     }
 
-    // 01 "Repeat warrant within 12 months of a suspended warrant is free" (HDPI-8424).
     @Test
     void submit_doesNotAskForTheFeeForAFreeRepeatWarrant() {
         EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);
@@ -127,10 +123,6 @@ class EnforcementSubmitEventTest {
         assertThat(response.getConfirmationBody()).isNull();
     }
 
-    /**
-     * The claimant is told to submit again rather than given an unexplained 500 on an application the service
-     * could not queue the documents or the payment request for.
-     */
     @Test
     void submit_refusesAnApplicationWhoseSideEffectsCannotBeScheduled() {
         EnforcementOrder enforcementOrder = enforcementOrder(SelectEnforcementType.WARRANT);

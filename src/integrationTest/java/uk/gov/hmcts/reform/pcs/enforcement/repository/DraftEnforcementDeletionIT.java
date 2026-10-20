@@ -18,10 +18,6 @@ import java.sql.Timestamp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * The enforcement draft sweep against Postgres: a draft is discarded by when it was last saved, which Hibernate
- * keeps on draft_case_data.updated_at for every journey's drafts.
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
@@ -86,8 +82,7 @@ class DraftEnforcementDeletionIT extends AbstractPostgresContainerIT {
     }
 
     /**
-     * A draft created and last saved the given number of days ago, written straight to the table so that the
-     * dates are the test's rather than Hibernate's.
+     * Written straight to the table, so the dates are the test's rather than Hibernate's.
      */
     private int draft(long caseReference, EventId eventId, int createdDaysAgo, int savedDaysAgo) {
         DraftCaseDataEntity draft = new DraftCaseDataEntity();

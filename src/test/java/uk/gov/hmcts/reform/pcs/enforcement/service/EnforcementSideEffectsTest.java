@@ -20,10 +20,6 @@ class EnforcementSideEffectsTest {
         assertThat(scheduled.errors()).isEmpty();
     }
 
-    /**
-     * Thrown out of a submit handler this is a 500 at the end of a journey the user completed; returned as a
-     * refusal it is an error they can act on, and the SDK rolls the whole event back either way.
-     */
     @Test
     void shouldRefuseTheChangeWhenASideEffectCannotBeScheduled() {
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(

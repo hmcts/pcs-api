@@ -38,11 +38,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * A claim can have at most one live enforcement. The partial unique index (V154) makes the database guarantee
- * it, so the rule holds for the paths that take no case lock -- the Payments callback, the batch print and
- * testing-support endpoints -- as well as for two claimant-side users submitting their own drafts at once.
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
@@ -181,9 +176,7 @@ class OneLiveEnforcementPerClaimIT extends AbstractPostgresContainerIT {
         return jdbcTemplate.queryForObject("SELECT status FROM enf_case WHERE id = ?", String.class, id);
     }
 
-    /**
-     * The statement V154 reconciles the rows that pre-date the index with, taken from the migration itself.
-     */
+    /** Taken from V154 itself, which reconciles the rows that pre-date the index. */
     private static String migrationCleanUp() throws IOException {
         String sql = new ClassPathResource(MIGRATION).getContentAsString(StandardCharsets.UTF_8);
         return Arrays.stream(sql.split(";"))

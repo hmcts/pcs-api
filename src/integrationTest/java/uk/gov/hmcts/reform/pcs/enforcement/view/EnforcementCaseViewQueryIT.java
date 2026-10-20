@@ -63,11 +63,6 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
-/**
- * The enforcement part of a case view runs one statement per kind of row it reads, however many enforcements
- * the claim has, rather than loading the claim's enforcements once per view that needs them and each
- * enforcement's details and warrant return one query at a time.
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
@@ -78,10 +73,6 @@ class EnforcementCaseViewQueryIT extends AbstractPostgresContainerIT {
     private static final LocalDateTime SERVED = LocalDateTime.parse("2026-03-15T08:00");
     private static final String ENFORCEMENT_CATEGORY = FeatureCaseFileCategory.ENFORCEMENT.getId();
 
-    /**
-     * Every statement run while {@link #capturing}, in order, shared with the Hibernate session factory the
-     * Spring context builds.
-     */
     private static final List<String> CAPTURED = new ArrayList<>();
     private static volatile boolean capturing;
 
@@ -148,10 +139,6 @@ class EnforcementCaseViewQueryIT extends AbstractPostgresContainerIT {
         assertThat(threeEnforcements).containsExactlyInAnyOrderElementsOf(oneEnforcement);
     }
 
-    /**
-     * A defendant's view reads the enforcement documents as well, to keep from them every one but the notice
-     * of eviction of a warrant served on them.
-     */
     @Test
     @DisplayName("reads each table once for a defendant, who sees the warrants served on them")
     void readsEachTableOnceForADefendant() {
@@ -161,11 +148,6 @@ class EnforcementCaseViewQueryIT extends AbstractPostgresContainerIT {
             "claim", "enf_case", "enf_bailiff_note", "enf_warrant_return", "draft.draft_case_data", "document");
     }
 
-    /**
-     * The table each statement the enforcement case view contributor runs reads, for a claim with
-     * {@code enforcements} warrants, each with a bailiff note, a warrant return, a notice of eviction served
-     * on the defendants and some claimant evidence.
-     */
     private List<String> tablesReadByCaseView(long caseReference, int enforcements, UserRole role) {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(caseReference).build();
         pcsCaseEntity.addClaim(new ClaimEntity());
@@ -213,10 +195,7 @@ class EnforcementCaseViewQueryIT extends AbstractPostgresContainerIT {
         }
     }
 
-    /**
-     * The table a statement reads from, as the one readable name for it: its whole SQL runs to thousands of
-     * characters.
-     */
+    /** The table a statement reads from: its whole SQL runs to thousands of characters. */
     private static String firstTable(String sql) {
         Matcher matcher = FROM_TABLE.matcher(sql);
         return matcher.find() ? matcher.group(1) : sql;

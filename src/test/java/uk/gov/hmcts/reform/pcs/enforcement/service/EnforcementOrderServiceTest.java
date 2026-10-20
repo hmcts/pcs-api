@@ -225,7 +225,7 @@ class EnforcementOrderServiceTest {
         pcsCaseEntity.setCaseReference(CASE_REFERENCE);
         pcsCaseEntity.setClaims(List.of());
 
-        // When // Then
+        // When / Then
         assertThatThrownBy(() -> enforcementOrderService.retrieveClaimEntity(pcsCaseEntity))
             .isInstanceOf(ClaimNotFoundException.class)
             .hasMessage("No claim found for case reference " + CASE_REFERENCE);
@@ -279,7 +279,6 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getSubmittedAt()).isEqualTo(NOW);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
         verifyNoInteractions(enforcementDocumentScheduler);
-        // The application is not received, and no caseworker reviews it, until its fee is paid.
         verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
     }
 
@@ -372,10 +371,6 @@ class EnforcementOrderServiceTest {
         verifyNoInteractions(repeatWarrantFeeWaiver);
     }
 
-    /**
-     * The claimant is asked to submit again rather than given an unexplained 500, and the application is
-     * rolled back with the documents it could not queue, draft and all.
-     */
     @Test
     void shouldRefuseAFreeApplicationWhoseDocumentsCannotBeQueued() {
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION);
@@ -615,7 +610,6 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(awaitingPayment);
         verify(enforcementDocumentScheduler).scheduleApplicationDocuments(awaitingPayment.getId(), type);
         verify(enforcementNotificationService).notifyClaimantOfApplicationReceived(CASE_REFERENCE, type);
-        // The Payments callback path, which has no CCD event and so cannot be covered by the initiation DMN.
         verify(enforcementWaTaskService).applicationAwaitingReview(CASE_REFERENCE, awaitingPayment.getId());
     }
 

@@ -14,10 +14,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Driven by the tables in 11-record-warrant-return.feature and the Jira tickets they come from. The feature
- * writes return names with varying capitals, so they are matched ignoring case.
- */
+/** Return names are written with varying capitals, so they are matched ignoring case. */
 class WarrantReturnNameTest {
 
     private static final String FINAL_NOT_SUCCESSFUL_NAMES = "Warrant withdrawn, Warrant suspended by Order, "
@@ -42,7 +39,6 @@ class WarrantReturnNameTest {
         "Reopen warrant"
     );
 
-    // "Return name moves the enforcement status" (HDPI-8424).
     @ParameterizedTest(name = "{0} -> {1}")
     @CsvSource(delimiter = '|', textBlock = """
         Eviction successful                                            | Closed
@@ -81,8 +77,6 @@ class WarrantReturnNameTest {
         }
     }
 
-    // "Additional details are mandatory for some return names": the feature's examples plus the rest of the
-    // HDPI-7347 lists, so every return name is covered.
     @ParameterizedTest(name = "{0}: {1}")
     @CsvSource(delimiter = '|', textBlock = """
         Warrant withdrawn                                            | mandatory
@@ -123,7 +117,6 @@ class WarrantReturnNameTest {
             .hasSize(11);
     }
 
-    // "Final return names depend on the outcome".
     @Test
     void shouldOfferOnlyEvictionSuccessfulForASuccessfulEviction() {
         assertThat(labels(Arrays.stream(SuccessfulWarrantReturnName.values())
@@ -138,7 +131,6 @@ class WarrantReturnNameTest {
             .containsExactlyElementsOf(List.of(FINAL_NOT_SUCCESSFUL_NAMES.split(", ")));
     }
 
-    // "Interim return names".
     @Test
     void shouldOfferTheFeatureListForAnInterimReturn() {
         assertThat(labels(Arrays.stream(InterimWarrantReturnName.values()).map(InterimWarrantReturnName::getLabel)))

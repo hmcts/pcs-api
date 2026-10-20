@@ -6,10 +6,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Bailiffs read the case like a hearing centre admin, without the case notes and payment history, and
- * without any of the hearing centre admin's events.
- */
 class BailiffRoleAccessTest {
 
     @ParameterizedTest

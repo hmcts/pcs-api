@@ -130,7 +130,6 @@ class RecordWarrantReturnTest extends BaseEventTest {
         }
     }
 
-    // "Record warrant return needs a live warrant".
     @Test
     void shouldRefuseToStartWithoutAWarrant() {
         when(warrantReturnService.findWarrant(TEST_CASE_REFERENCE)).thenThrow(new NoEnforcementException());
@@ -165,7 +164,6 @@ class RecordWarrantReturnTest extends BaseEventTest {
         assertThat(result.getEnforcementOrder().getWarrantReturn().getEvictionDetailsMarkup()).isEqualTo("<table/>");
     }
 
-    // "Submitting records the return": "Outcome recorded as [return name]".
     @Test
     void shouldRecordTheReturnNotifyTheClaimantAndConfirm() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.OTHER_INTERIM_RETURN, "Court order shown");
@@ -193,10 +191,6 @@ class RecordWarrantReturnTest extends BaseEventTest {
         assertThat(response.getConfirmationBody()).isEqualTo("Case number: 0000-0000-0000-1234");
     }
 
-    /**
-     * A failure to queue the email is answered as an error, which rolls the return back rather than recording
-     * it without its email: the bailiff is asked to try again instead of being given an unexplained 500.
-     */
     @Test
     void shouldRefuseTheSubmitWhenTheEmailCannotBeQueued() {
         WarrantReturnDetails details = interim(InterimWarrantReturnName.CROWDS_OR_PROTESTS, null);

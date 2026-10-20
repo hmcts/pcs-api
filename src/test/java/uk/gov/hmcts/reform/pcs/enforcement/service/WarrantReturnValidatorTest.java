@@ -24,7 +24,7 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLOSE
 
 class WarrantReturnValidatorTest {
 
-    // "Given today is 08/07/2026 and the time is 10:00" (BST).
+    // 08/07/2026 10:00 in London (BST).
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 7, 8, 10, 0);
 
     private final WarrantReturnValidator underTest = new WarrantReturnValidator(
@@ -74,7 +74,6 @@ class WarrantReturnValidatorTest {
         assertThat(underTest.validate(successfulEviction(NOW.minusYears(1)), CLAIMANT_CONFIRMED)).isEmpty();
     }
 
-    // "Successful eviction needs the eviction date and time".
     @Test
     void shouldRejectASuccessfulEvictionLaterToday() {
         assertThat(underTest.validate(successfulEviction(LocalDateTime.of(2026, 7, 8, 16, 0)), CLAIMANT_CONFIRMED))

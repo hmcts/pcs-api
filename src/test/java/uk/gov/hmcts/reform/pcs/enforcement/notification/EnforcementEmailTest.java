@@ -34,10 +34,6 @@ class EnforcementEmailTest {
         assertThat(keys).hasSameSizeAs(EnforcementEmail.values());
     }
 
-    /**
-     * Every email needs a key in application.yaml, or its template id could never be configured and it would
-     * silently never send.
-     */
     @Test
     void shouldHaveAConfigurationKeyForEveryEmailInApplicationYaml() {
         assertThat(configuredTemplateKeys())
@@ -47,8 +43,8 @@ class EnforcementEmailTest {
     }
 
     /**
-     * No template id is set in any environment: none of these templates has been created in GOV.UK Notify,
-     * which has no API for creating one, so nothing can be emailed yet.
+     * None of these templates exists in GOV.UK Notify yet, which has no API for creating one, so no
+     * environment sets a template id.
      */
     @Test
     void shouldHaveNoTemplateIdConfiguredByDefault() {
@@ -90,9 +86,6 @@ class EnforcementEmailTest {
         assertThat(EnforcementEmail.forApplicationReceived(null)).isNull();
     }
 
-    /**
-     * The dev profile, which bootWithCCD and cftlibTest run with, sends every email to the local Notify stub.
-     */
     @Test
     void shouldHaveAStandInTemplateIdForEveryEmailInTheDevProfile() {
         Map<String, String> devTemplates = templatesIn("application-dev.yaml");
@@ -103,10 +96,7 @@ class EnforcementEmailTest {
         assertThat(Set.copyOf(devTemplates.values())).hasSameSizeAs(devTemplates.values());
     }
 
-    /**
-     * HDPI-7538 leaves only the writ-of-restitution approval TBC ("Remove bit about NICE and advise claimants
-     * to contact HCEO"), so that is the one type the claimant hears nothing about (OPEN-QUESTIONS 55).
-     */
+    /** The writ-of-restitution approval wording is still TBC, so that type has no approval email. */
     @Test
     void shouldHaveAnApprovalEmailForEveryTypeButAWritOfRestitution() {
         assertThat(EnforcementEmail.forApproval(SelectEnforcementType.WARRANT))
@@ -119,9 +109,7 @@ class EnforcementEmailTest {
         assertThat(EnforcementEmail.forApproval(null)).isNull();
     }
 
-    /**
-     * HDPI-7538's writ-of-restitution rejection content is a bare "TBC" (OPEN-QUESTIONS 55).
-     */
+    /** The writ-of-restitution rejection wording is still TBC. */
     @Test
     void shouldHaveARejectionEmailForEveryTypeButAWritOfRestitution() {
         assertThat(EnforcementEmail.forRejection(SelectEnforcementType.WARRANT))

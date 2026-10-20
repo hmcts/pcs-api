@@ -6,9 +6,6 @@ import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 
 import java.util.Optional;
 
-/**
- * Finds a field an event or page has placed, wherever it sits in the complex-type tree.
- */
 public final class PlacedFields {
 
     private PlacedFields() {

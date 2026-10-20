@@ -76,15 +76,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLOSE
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.REJECTED;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.TRANSFERRED_TO_HIGH_COURT;
 
-/**
- * The enforcement status model of 19-enforcement-status-model.feature against Postgres: every transition in
- * its "Status transitions" table, each one driven by the service that makes it in the real journey wherever
- * one can be driven without CCD, and every transition the model does not allow refused.
- *
- * <p>The transitions a return makes, and the reschedule from "Claimant confirmed", are additions from
- * 11-record-warrant-return.feature and HDPI-7549 rather than rows of that table; they are in
- * {@link #EXPECTED_TRANSITIONS} because the refusal check has to know about them.
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
@@ -92,9 +83,8 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.TRANS
 class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
 
     /**
-     * Every test here puts its enforcement on a case of its own. The Postgres container is shared by the
-     * whole integration suite, so the references are counted off a base no other test uses rather than
-     * written out per test.
+     * The Postgres container is shared by the whole integration suite, so case references are counted off a
+     * base no other test uses.
      */
     private static final AtomicLong CASE_REFERENCES = new AtomicLong(7342000000000001L);
 
@@ -103,12 +93,11 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
     private static final Instant SEEDED_AT = Instant.parse("2026-01-01T09:00:00Z");
 
     /**
-     * Every status change the features allow. An independent copy of the table the state machine is built
-     * from, so that widening or narrowing it has to be a deliberate change in both places.
+     * Deliberately an independent copy of the table the state machine is built from, so widening or narrowing
+     * it has to be a change in both places.
      */
     private static final Map<EnforcementStatus, Set<EnforcementStatus>> EXPECTED_TRANSITIONS = expectedTransitions();
 
-    /** The statuses a brand new application can start in. */
     private static final Set<EnforcementStatus> EXPECTED_INITIAL = EnumSet.of(AWAITING_PAYMENT, AWAITING_REVIEW);
 
     @Autowired
@@ -168,10 +157,6 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /**
-     * Allocating a bailiff and recording a return both record who did it, and nothing puts a user on the
-     * security context outside a CCD callback.
-     */
     @MockitoBean
     private SecurityContextService securityContextService;
 
@@ -180,9 +165,6 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
     @BeforeEach
     void setUp() {
         when(securityContextService.getCurrentUserId()).thenReturn(BAILIFF_USER_ID);
-        // Deleting the draft needs the caller's IDAM user and organisation, and the fee lookup and service
-        // request need the Fees Register and Payments; none of them has anything to do with the status, and
-        // nor do the work allocation tasks the application produces.
         enforcementOrderService = new EnforcementOrderService(
             enforcementOrderRepository, currentEnforcementService, pcsCaseService, mock(DraftCaseDataService.class),
             strategyFactory, enforcementStatusTransitions, repeatWarrantFeeWaiver,
@@ -265,8 +247,6 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         assertThatThrownBy(() -> enforcementStatusTransitions.transition(enforcement, null))
             .isInstanceOf(IllegalEnforcementStatusTransitionException.class);
     }
-
-    // Each transition below is made by the service that makes it in the real journey.
 
     @Test
     @DisplayName("the claimant submitting an application starts it awaiting payment")
@@ -431,9 +411,6 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         assertThat(statusOf(id)).isEqualTo(AWAITING_SCHEDULING.name());
     }
 
-    /**
-     * The "Status transitions" table of 19-enforcement-status-model.feature, in order.
-     */
     private static Stream<Arguments> statusTransitionTable() {
         return Stream.of(
             Arguments.of(null, "the claimant submits an application", AWAITING_PAYMENT),
@@ -458,9 +435,8 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         // 19-enforcement-status-model.feature "Status transitions", plus the writ's transfer to the High Court.
         expected.put(AWAITING_PAYMENT, EnumSet.of(AWAITING_REVIEW));
         expected.put(AWAITING_REVIEW, EnumSet.of(AWAITING_BAILIFF_ALLOCATION, REJECTED, TRANSFERRED_TO_HIGH_COURT));
-        // A return can be recorded at any point once the warrant has been generated (HDPI-7347,
-        // 11-record-warrant-return.feature), so every status from here on can also close, go into breathing
-        // space or go back for scheduling.
+        // A return can be recorded at any point once the warrant has been generated, so every status from
+        // here on can also close, go into breathing space or go back for scheduling.
         expected.put(AWAITING_BAILIFF_ALLOCATION, EnumSet.of(AWAITING_SCHEDULING, CLOSED, BREATHING_SPACE));
         expected.put(AWAITING_SCHEDULING, EnumSet.of(AWAITING_CLAIMANT_CONFIRMATION, CLOSED, BREATHING_SPACE));
         expected.put(AWAITING_CLAIMANT_CONFIRMATION, EnumSet.of(CLAIMANT_CONFIRMED, CLAIMANT_UNABLE_TO_ATTEND,
@@ -517,10 +493,6 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         return jdbcTemplate.queryForObject("SELECT status FROM enf_case WHERE id = ?", String.class, id);
     }
 
-    /**
-     * A warrant application on its own case, at {@code status}. It is a warrant of possession, with its
-     * {@code enf_warrant} row, because the bailiff events and the warrant returns only apply to a warrant.
-     */
     private EnforcementOrderEntity savedEnforcement(long caseReference, EnforcementStatus status) {
         final ClaimEntity claim = savedClaim(caseReference);
 

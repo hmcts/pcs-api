@@ -23,12 +23,9 @@ import javax.xml.parsers.ParserConfigurationException;
  * One decision table out of {@code src/main/resources/dmn}, parsed so that tests can assert on its shape and on
  * the rows a given set of inputs collects.
  *
- * <p>{@link #evaluate} is not a FEEL engine. It matches a cell when the cell is empty, is {@code -}, is a list
- * of string literals one of which equals the input value, or is {@code not(...)} around such a list and the input
- * value is not in it; any other cell (a number, a FEEL expression, or the free text several of the pre-existing
- * PCS rows carry in place of a condition) never matches and is counted by {@link #cellsThatAreNotLiterals}.
- * Adding the real Camunda DMN engine would not help here, because those free text cells are not parseable as
- * FEEL unary tests.</p>
+ * <p>{@link #evaluate} is not a FEEL engine: it understands empty cells, {@code -}, lists of string literals
+ * and {@code not(...)} around such a list, and counts anything else in {@link #cellsThatAreNotLiterals}. The
+ * real Camunda engine is no use here because some PCS cells hold free text that is not a valid unary test.</p>
  */
 final class DmnDecisionTable {
 
@@ -106,10 +103,6 @@ final class DmnDecisionTable {
         return rules;
     }
 
-    /**
-     * The rows the given inputs collect, each as output name to output value with any surrounding quotes removed.
-     * An input the table does not have a column for is ignored, so a query never matches more than it should.
-     */
     List<Map<String, String>> evaluate(Map<String, String> inputs) {
         List<Map<String, String>> matched = new ArrayList<>();
         for (Rule rule : rules) {
@@ -124,9 +117,6 @@ final class DmnDecisionTable {
         return matched;
     }
 
-    /**
-     * The output values a single named output collects, in rule order and with empty values dropped.
-     */
     List<String> collect(Map<String, String> inputs, String outputName) {
         return evaluate(inputs).stream()
             .map(row -> row.get(outputName))
@@ -134,10 +124,6 @@ final class DmnDecisionTable {
             .toList();
     }
 
-    /**
-     * The cells that {@link #evaluate} cannot interpret, as rule id to cell text. Every one of them is a rule that
-     * can never fire as written.
-     */
     Map<String, String> cellsThatAreNotLiterals() {
         Map<String, String> notLiterals = new LinkedHashMap<>();
         for (Rule rule : rules) {
@@ -164,10 +150,6 @@ final class DmnDecisionTable {
         return true;
     }
 
-    /**
-     * A list of string literals, which the input value must be one of, or must not be one of when the cell wraps
-     * the list in {@code not(...)}.
-     */
     private record Condition(boolean negated, List<String> literals) {
 
         boolean matches(String value) {
@@ -175,10 +157,6 @@ final class DmnDecisionTable {
         }
     }
 
-    /**
-     * The condition a cell holds, or null when the cell is anything other than a comma-separated list of string
-     * literals, optionally wrapped in {@code not(...)}.
-     */
     private static Condition condition(String entry) {
         Matcher negation = NEGATION.matcher(entry);
         boolean negated = negation.matches();
@@ -186,9 +164,6 @@ final class DmnDecisionTable {
         return literals == null ? null : new Condition(negated, literals);
     }
 
-    /**
-     * The string literals in a cell, or null when the cell is anything other than a comma-separated list of them.
-     */
     private static List<String> literals(String entry) {
         List<String> literals = new ArrayList<>();
         Matcher matcher = STRING_LITERAL.matcher(entry);

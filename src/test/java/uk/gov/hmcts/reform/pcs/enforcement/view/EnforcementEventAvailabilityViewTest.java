@@ -46,10 +46,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLOSED;
 import static uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
 
-/**
- * The flags must offer an event exactly when its start callback would let it start, so each case below runs the
- * view and the real start checks of the services against the same current enforcement.
- */
 @ExtendWith(MockitoExtension.class)
 class EnforcementEventAvailabilityViewTest {
 
@@ -224,10 +220,6 @@ class EnforcementEventAvailabilityViewTest {
             .thenReturn(Optional.ofNullable(current));
     }
 
-    /**
-     * Whether a start check lets the event start. Every refusal is a runtime exception the callback exception
-     * handler turns into an error.
-     */
     private static boolean starts(Runnable startCheck) {
         try {
             startCheck.run();

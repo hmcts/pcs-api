@@ -61,10 +61,7 @@ class EnforcementNotificationServiceTest {
             .containsExactly(Map.entry(EnforcementEmail.ENFORCEMENT_NUMBER, "P123456"));
     }
 
-    /**
-     * The agreed body tells the claimant the warrant has gone to the bailiff and names no warrant number, so
-     * the number it is sent is ignored by the template.
-     */
+    /** The agreed body names no warrant number, so the number it is sent is ignored. */
     @Test
     void shouldEmailTheClaimantOnApprovalOfAWarrantOfRestitution() {
         underTest.notifyClaimantOfApproval(CASE_REFERENCE, SelectEnforcementType.WARRANT_OF_RESTITUTION,
@@ -82,9 +79,6 @@ class EnforcementNotificationServiceTest {
             .containsExactly(Map.entry(EnforcementEmail.REJECTION_REASON, "No order was made"));
     }
 
-    /**
-     * Each decision email is its own template, so the enforcement type decides which one is sent.
-     */
     @ParameterizedTest
     @CsvSource({
         "WARRANT, WARRANT_REJECTED",
@@ -163,10 +157,7 @@ class EnforcementNotificationServiceTest {
         assertThat(personalisationSentFor(EnforcementEmail.CLAIMANT_DECLINED_ATTENDANCE)).isEmpty();
     }
 
-    /**
-     * HDPI-7538's writ-of-restitution approval content is "TBC Remove bit about NICE and advise claimants to
-     * contact HCEO", so nothing is sent rather than an email the service has not agreed (OPEN-QUESTIONS 55).
-     */
+    /** The writ-of-restitution approval wording is still TBC, so nothing is sent. */
     @Test
     void shouldNotEmailOnApprovalOfAWritOfRestitution() {
         underTest.notifyClaimantOfApproval(CASE_REFERENCE, SelectEnforcementType.WRIT_OF_RESTITUTION, "H123456");
@@ -174,9 +165,7 @@ class EnforcementNotificationServiceTest {
         verifyNoInteractions(sender);
     }
 
-    /**
-     * HDPI-7538's writ-of-restitution rejection content is a bare "TBC" (OPEN-QUESTIONS 55).
-     */
+    /** The writ-of-restitution rejection wording is still TBC. */
     @Test
     void shouldNotEmailOnRejectionOfAWritOfRestitution() {
         underTest.notifyClaimantOfRejection(CASE_REFERENCE, SelectEnforcementType.WRIT_OF_RESTITUTION,
@@ -203,10 +192,6 @@ class EnforcementNotificationServiceTest {
         assertThat(TransactionSynchronizationManager.getSynchronizations()).isEmpty();
     }
 
-    /**
-     * A failure to queue the email fails the event, so the decision is rolled back rather than recorded
-     * without its email.
-     */
     @Test
     void shouldFailTheEventWhenTheEmailCannotBeQueued() {
         when(sender.send(anyLong(), any(), any())).thenThrow(new IllegalStateException("database down"));
@@ -223,9 +208,6 @@ class EnforcementNotificationServiceTest {
             .containsExactly(Map.entry(EnforcementEmail.ENFORCEMENT_NUMBER, ""));
     }
 
-    /**
-     * The email has to say what the confirmation screen said, so the bailiff and the claimant see one date.
-     */
     @ParameterizedTest
     @ValueSource(strings = {"2026-06-25T10:00", "2026-07-01T09:30", "2026-12-31T13:05", "2026-01-05T00:00"})
     void shouldFormatTheEvictionDateAsTheConfirmationScreensDo(String evictionDateTime) {

@@ -12,10 +12,6 @@ import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Driven by the HDPI-8424 notification tables. "Claimant is notified of the return" in
- * 11-record-warrant-return.feature gives examples of both.
- */
 class WarrantReturnClaimantEmailsTest {
 
     private static final String REASON = "[reason from the additional details free textbox to be populated here]";
@@ -70,7 +66,6 @@ class WarrantReturnClaimantEmailsTest {
             .isEqualTo(body.replace(REASON, WarrantReturnClaimantEmails.REASON));
     }
 
-    // "Free text is included in the claimant email".
     @Test
     void shouldIncludeTheAdditionalDetailsInTheOtherInterimReturnEmail() {
         assertThat(WarrantReturnClaimantEmails.body(WarrantReturnName.OTHER_INTERIM_RETURN,

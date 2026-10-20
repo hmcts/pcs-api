@@ -17,14 +17,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Runs the enforcement data migrations against Postgres with rows written at the schema version each kind of row
- * was written at in a real environment: rows that existed before V142 added enf_case.status, rows submitted
- * between V142 and the fix, and drafts saved before V152 added draft_case_data.updated_at.
- *
- * <p>It migrates its own database step by step, so it cannot share the database the Spring contexts migrate in
- * one go.</p>
- */
 @DisplayName("Enforcement data migrations")
 class EnforcementDataMigrationIT {
 
@@ -50,8 +42,6 @@ class EnforcementDataMigrationIT {
             POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
         jdbc = new JdbcTemplate(dataSource);
 
-        // pcs-api's migrations call the CCD SDK's auditing procedures, which the SDK's own migrations create in
-        // the ccd schema before pcs-api's run (DecentralisedFlywayAutoConfiguration).
         Flyway.configure()
             .dataSource(dataSource)
             .defaultSchema("ccd")
@@ -174,9 +164,6 @@ class EnforcementDataMigrationIT {
                     id, claimId, enforcementOrderJson);
     }
 
-    /**
-     * The order as pcs-api stores it, with the type chosen on the dynamic radio list.
-     */
     private static String chosen(String type) {
         return """
             {"chooseEnforcementType": {"value": {"code": "%1$s", "label": "%1$s"}, "valueCode": "%1$s",

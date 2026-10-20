@@ -139,10 +139,6 @@ class ClaimantRiskAssessmentServiceTest {
         verifyNoInteractions(currentEnforcementService, riskAssessmentUpdateRepository, enforcementWaTaskService);
     }
 
-    /**
-     * The claimant is asked to try again rather than given an unexplained 500, and the answers they changed
-     * are rolled back with the task request.
-     */
     @Test
     void shouldRefuseTheAnswersWhenTheBailiffsTaskCannotBeRequested() {
         givenCurrentEnforcement(warrant);
@@ -180,9 +176,7 @@ class ClaimantRiskAssessmentServiceTest {
         assertThat(eventData.getWarrantDetails()).isNull();
     }
 
-    /**
-     * The update row's id keys the task, and the database assigns it on save.
-     */
+    /** The update row's id keys the task, and the database assigns it on save. */
     private UUID givenSaveAssignsAnId() {
         UUID id = UUID.randomUUID();
         when(riskAssessmentUpdateRepository.save(any())).thenAnswer(invocation -> {

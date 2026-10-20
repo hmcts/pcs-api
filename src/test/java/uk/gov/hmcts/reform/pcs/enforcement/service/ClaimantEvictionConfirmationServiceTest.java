@@ -102,10 +102,6 @@ class ClaimantEvictionConfirmationServiceTest {
         verify(enforcementWaTaskService).claimantCannotAttend(CASE_REFERENCE, enforcement.getId(), EVICTION);
     }
 
-    /**
-     * The claimant is asked to try again rather than given an unexplained 500, and their answer is rolled
-     * back with the email.
-     */
     @Test
     void shouldRefuseTheAnswerWhenTheClaimantsEmailCannotBeQueued() {
         givenEnforcements(enforcementWithStatus(AWAITING_CLAIMANT_CONFIRMATION));
@@ -144,10 +140,6 @@ class ClaimantEvictionConfirmationServiceTest {
         assertThat(enforcement.getStatus()).isEqualTo(CLAIMANT_CONFIRMED);
     }
 
-    /**
-     * A refusal from the risk answers stops the attendance answer being recorded on top of answers that are
-     * about to be rolled back.
-     */
     @Test
     void shouldRefuseTheConfirmationWhenTheRiskAnswersAreRefused() {
         EnforcementOrder submitted = EnforcementOrder.builder().claimantCanAttendEviction(YesOrNo.YES).build();

@@ -34,11 +34,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
 
-/**
- * The bailiff schedules the eviction, which sets the bailiff date and moves the warrant to "Awaiting claimant
- * confirmation". The claimant's Confirm eviction journey lights up from that date, and the claimant's answer
- * moves the warrant on. Every service is real; only the case and repository are mocked.
- */
 @ExtendWith(MockitoExtension.class)
 class ScheduledEvictionConfirmEvictionJourneyTest {
 

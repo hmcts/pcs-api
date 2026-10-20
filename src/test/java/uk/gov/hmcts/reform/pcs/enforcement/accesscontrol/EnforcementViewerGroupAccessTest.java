@@ -30,10 +30,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-/**
- * A firm's group-access roles are held for every claim the firm is on, on either side, so the side of the case
- * comes from the role whose case access group is this case's.
- */
 @ExtendWith(MockitoExtension.class)
 class EnforcementViewerGroupAccessTest {
 

@@ -137,11 +137,6 @@ class EnforcementWaTaskServiceTest {
                                           TaskReference.of(ENFORCEMENT_ID, newDate));
     }
 
-    /**
-     * The task for the previous appointment was closed when the bailiff served that notice, and the new date
-     * has taken the service record and defendant visibility away again, so the new notice has to be served by
-     * someone.
-     */
     @Test
     void shouldCreateTheNoticeTaskWhenThePreviousNoticeHadAlreadyBeenServed() {
         LocalDateTime newDate = EVICTION_DATE.plusDays(7);

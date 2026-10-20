@@ -29,10 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
-/**
- * The clock the end to end tests set (`support/test-clock.ts`), over HTTP: the request bodies the suite sends
- * and the effect on the {@code ukClock} bean every business rule reads.
- */
 @SpringBootTest(properties = "testing-support.clock.enabled=true")
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")

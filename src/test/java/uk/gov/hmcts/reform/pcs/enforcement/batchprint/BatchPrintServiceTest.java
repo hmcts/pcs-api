@@ -58,10 +58,6 @@ class BatchPrintServiceTest {
         underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger);
     }
 
-    /**
-     * The batch print file and the directory holding it outlive print(): in the service it is the request that
-     * deletes them.
-     */
     @AfterEach
     void deleteTempFiles() {
         pdfMerger.directories.forEach(BatchPrintTempDirectory::delete);
@@ -174,9 +170,8 @@ class BatchPrintServiceTest {
     }
 
     /**
-     * The file holds several cases' warrants, risk assessments and notices of eviction, and the system temp
-     * directory is writable by every user on the host, so a batch print is built in a directory of its own
-     * that only the user pcs-api runs as can read.
+     * The system temp directory is writable by every user on the host, so a batch print is built in a
+     * directory of its own that only the user pcs-api runs as can read.
      */
     @Test
     void shouldBuildTheBatchPrintInADirectoryOnlyItsOwnerCanRead() throws IOException {
@@ -195,10 +190,6 @@ class BatchPrintServiceTest {
             .isEqualTo(PosixFilePermissions.fromString("rw-------"));
     }
 
-    /**
-     * A case that cannot get a slot is not left out of the file: the bailiff is refused, because a batch print
-     * that silently omits cases would be printed and acted on as if it were complete.
-     */
     @Test
     void shouldRefuseTheWholeRequestAndLeaveNoFileWhenNoSlotComesFree() throws IOException {
         underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger, 1,
@@ -223,9 +214,8 @@ class BatchPrintServiceTest {
     }
 
     /**
-     * The slot budget is there to refuse a bailiff whose documents cannot be fetched because the instance is
-     * busy with other bailiffs' batch prints. A full batch queues behind its own cases for several times the
-     * budget, and must not refuse itself for doing so.
+     * A full batch queues behind its own cases for several times the slot budget, which is there to refuse a
+     * bailiff held up by other bailiffs' prints, and must not refuse itself for doing so.
      */
     @Test
     void shouldPrintAFullBatchThatTakesLongerThanOneWavesWaitToFetch() throws IOException {
@@ -250,10 +240,6 @@ class BatchPrintServiceTest {
         assertThat(pageTexts(batchPrint)).hasSize(BatchPrintController.MAX_CASES);
     }
 
-    /**
-     * The refusal is still what a bailiff gets when the instance is genuinely busy: another request is holding
-     * the slots for longer than this one will wait for them.
-     */
     @Test
     void shouldRefuseTheRequestWhenAnotherRequestHoldsTheSlotsForLongerThanTheBudget() throws Exception {
         underTest = new BatchPrintService(batchPrintPlanner, letterDocumentFetcher, pdfMerger, 1,
@@ -321,10 +307,6 @@ class BatchPrintServiceTest {
         return new PrintableDocument(kind, kind + ".pdf", Instant.EPOCH, UUID.randomUUID());
     }
 
-    /**
-     * The real merger, noting every directory it is asked for and every temp file it creates: case files
-     * first, in completion order, then the batch print file.
-     */
     private static final class RecordingMerger extends BatchPrintPdfMerger {
 
         private final List<Path> created = Collections.synchronizedList(new ArrayList<>());

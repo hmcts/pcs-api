@@ -30,12 +30,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-/**
- * The enforcement application pages that only declare content and fields, with no mid-event callback of their
- * own. The pages that validate or rewrite answers have their own tests; these are checked for the two things
- * that can still be got wrong declaratively: a field placed outside the page it belongs to, which XUI then
- * shows on the previous page, and a label showing a field placed after it, which renders blank.
- */
 class DeclarativeEnforcementPagesTest extends BasePageTest {
 
     private static Stream<Arguments> pages() {

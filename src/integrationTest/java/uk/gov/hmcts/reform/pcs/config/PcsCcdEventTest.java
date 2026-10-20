@@ -17,10 +17,8 @@ import java.lang.annotation.Target;
  * {@link AbstractPostgresContainerIT}, for the database. The SDK test support answers IDAM, S2S and
  * role assignment, so a test registers actors rather than stubbing clients.
  *
- * <p>It does not answer CCD's case-users API, which the case view asks for the viewer's case roles to decide
- * what of enforcement they see and which enforcement events they are offered (DefendantEnforcementView). So
- * {@link CaseAssignmentApi} is a mock, which gives every viewer no case roles; a test can autowire it to stub
- * some.
+ * <p>CCD's case-users API is not answered: {@link CaseAssignmentApi} is a mock, so every viewer has no case
+ * roles unless a test autowires it and stubs some.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

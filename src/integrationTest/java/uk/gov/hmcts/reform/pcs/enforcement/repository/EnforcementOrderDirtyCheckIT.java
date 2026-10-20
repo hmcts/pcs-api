@@ -39,11 +39,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Hibernate dirty-checks the enforcement_order JSON column by comparing the loaded value with a JSON round-trip
- * copy of it, so a value graph that is not equal to its own round trip would make every loaded enf_case row
- * issue an UPDATE on flush and overwrite concurrent writes.
- */
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
@@ -115,12 +110,6 @@ class EnforcementOrderDirtyCheckIT extends AbstractPostgresContainerIT {
         assertNoUpdateOnLoad(id);
     }
 
-    /**
-     * Reading an order materialises every {@code @JsonUnwrapped} nested object the application left null, so an
-     * order as the journey builds it is never equal to its own round trip and would be dirty the moment it was
-     * inserted. {@code EnforcementOrderService} stores the round trip for that reason; this is the assumption
-     * that makes it work, namely that Hibernate's snapshot agrees with the service's ObjectMapper.
-     */
     @Test
     @DisplayName("does not update a freshly inserted enforcement order stored in its round-trip form")
     void doesNotUpdateFreshlyInsertedEnforcementOrder() {

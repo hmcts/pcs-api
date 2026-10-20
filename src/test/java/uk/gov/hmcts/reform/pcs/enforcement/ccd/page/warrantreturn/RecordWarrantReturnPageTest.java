@@ -46,8 +46,6 @@ class RecordWarrantReturnPageTest extends BasePageTest {
         assertThat(event.getFields().getPageLabels()).containsEntry("recordWarrantReturn", "Record warrant return");
     }
 
-    // "Final return asks for outcome and return name" / "Final return names depend on the outcome" /
-    // "Interim return names".
     @Test
     void shouldShowTheOutcomeAndTheReturnNamesForTheChosenReturnAndOutcome() {
         assertMandatoryWhen("warrantReturnOutcome", "warrantReturnType=\"FINAL\"");
@@ -59,7 +57,6 @@ class RecordWarrantReturnPageTest extends BasePageTest {
         assertMandatoryWhen("warrantReturnInterimReturnName", "warrantReturnType=\"INTERIM\"");
     }
 
-    // "Successful eviction needs the eviction date and time".
     @Test
     void shouldAskForTheEvictionDateAndTimeForASuccessfulEviction() {
         assertMandatoryWhen("warrantReturnEvictionDateTime",

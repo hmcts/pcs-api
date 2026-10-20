@@ -16,10 +16,6 @@ class StatementOfTruthWritPageTest extends BasePageTest {
         setPageUnderTest(new StatementOfTruthWritPage());
     }
 
-    /**
-     * The certification tick is restated by the bullet list underneath it, so showing it again on check
-     * your answers adds nothing. The warrant twin already leaves it off.
-     */
     @Test
     void shouldKeepTheCertificationOffCheckYourAnswers() {
         Field<?, ?, ?, ?> certification = PlacedFields.find(event.getFields(), "writCertification");
@@ -27,10 +23,6 @@ class StatementOfTruthWritPageTest extends BasePageTest {
         assertThat(certification.isShowSummary()).isFalse();
     }
 
-    /**
-     * Nothing in src/main sets statementOfTruthRepaymentSummaryMarkdown, so the table it fed was always
-     * empty for a real claimant.
-     */
     @Test
     void shouldNotRenderTheUnpopulatedPaymentsTable() {
         String markdownField = "writStatementOfTruthRepaymentSummaryMarkdown";

@@ -313,9 +313,6 @@ class WarrantOfRestitutionMapperTest {
         assertThat(result.getClarificationOnAccessDifficultyText()).isEqualTo("Hard to access");
     }
 
-    /**
-     * The journey asks which language the claimant used on the warrant journey's page (HDPI-7555).
-     */
     @Test
     void shouldMapTheLanguageAnsweredOnTheWarrantPage() {
         // Given
