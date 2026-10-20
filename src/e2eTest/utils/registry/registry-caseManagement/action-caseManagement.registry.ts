@@ -36,6 +36,8 @@ export class ActionCMRegistry {
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
     ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateDefendantDetails', new CaseManagementAction()],
@@ -96,6 +98,8 @@ export class ActionCMRegistry {
     ['confirmAddJudicialNotes', new CaseManagementAction()],
     ['validateJudgeNotesTab', new CaseManagementAction()],
     ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
+    ['validateFullPartyDetails', new CaseManagementAction()],
+    ['confirmRemoveParty', new CaseManagementAction()],
 
   ]);
 

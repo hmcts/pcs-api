@@ -43,7 +43,7 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await clearBrowserSession(page, context);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.claimantSolicitor);
+  await performAction('login', user.localAuthorityOrg1Usr1);
   await dismissCookieBanner(page, 'analytics');
   const url = `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Service%20Request`;
   await performAction('navigateToUrl', url );
@@ -208,7 +208,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await clearBrowserSession(page, context);
+    await performAction('signOut');
     //The Refund button is enabled only when the payment is at least 6 days old.
     //Therefore, the following API is used to backdate a payment made today.
     await performAction('backDateTheCasePaymentAPI');
@@ -238,7 +238,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await clearBrowserSession(page, context);
+    await performAction('signOut');
     //The Refund button is enabled only when the payment is at least 6 days old.
     //Therefore, the following API is used to backdate a payment made today.
     await performAction('backDateTheCasePaymentAPI');
@@ -268,7 +268,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await clearBrowserSession(page, context);
+    await performAction('signOut');
     //The Refund button is enabled only when the payment is at least 6 days old.
     //Therefore, the following API is used to backdate a payment made today.
     await performAction('backDateTheCasePaymentAPI');

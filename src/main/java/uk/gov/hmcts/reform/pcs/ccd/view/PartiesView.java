@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @AllArgsConstructor
@@ -44,7 +43,7 @@ public class PartiesView {
 
         boolean isCitizen = securityContextService.getCurrentUserDetails().getRoles()
             .contains(UserRole.CITIZEN.getRole());
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String currentUserId = securityContextService.getCurrentUserId();
         List<ClaimPartyEntity> claimParties = claims.getFirst().getClaimParties();
 
         pcsCase.setAllClaimants(mapPartiesByRole(claimParties, PartyRole.CLAIMANT, isCitizen, currentUserId));
@@ -76,15 +75,20 @@ public class PartiesView {
     }
 
     private List<ListValue<Party>> mapPartiesByRole(List<ClaimPartyEntity> claimParties, PartyRole role,
-                                                    boolean isCitizen, UUID currentUserId) {
+                                                    boolean isCitizen, String currentUserId) {
         List<ListValue<Party>> result = claimParties.stream()
             .filter(cp -> cp.getRole() == role)
+            .filter(cp -> isActive(cp.getParty()))
             .map(cp -> toListValue(cp, isCitizen, currentUserId))
             .toList();
         return result.isEmpty() ? null : result;
     }
 
-    private ListValue<Party> toListValue(ClaimPartyEntity claimPartyEntity, boolean isCitizen, UUID currentUserId) {
+    private boolean isActive(PartyEntity partyEntity) {
+        return !partyEntity.isRemoved();
+    }
+
+    private ListValue<Party> toListValue(ClaimPartyEntity claimPartyEntity, boolean isCitizen, String currentUserId) {
         PartyEntity partyEntity = claimPartyEntity.getParty();
         boolean isCurrentUser = partyEntity.getIdamId() != null
             && partyEntity.getIdamId().equals(currentUserId);

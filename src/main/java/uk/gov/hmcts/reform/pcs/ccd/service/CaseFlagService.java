@@ -432,13 +432,13 @@ public class CaseFlagService {
 
     public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
                                        Set<PartyEntity> existingParties,
-                                       UUID authenticatedUserId) {
+                                       String authenticatedUserId) {
         mergePartySupportFlags(incomingPartySupport, existingParties, authenticatedUserId, null);
     }
 
     public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
                                        Set<PartyEntity> existingParties,
-                                       UUID authenticatedUserId,
+                                       String authenticatedUserId,
                                        Set<UUID> eligiblePartyIds) {
         Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
 
@@ -498,7 +498,7 @@ public class CaseFlagService {
     }
 
     private boolean isSupportChangeAllowed(PartyEntity partyEntity,
-                                           UUID authenticatedUserId,
+                                           String authenticatedUserId,
                                            Set<UUID> eligiblePartyIds) {
         if (!partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId)) {
             return false;
