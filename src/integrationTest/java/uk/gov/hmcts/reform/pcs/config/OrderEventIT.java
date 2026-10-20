@@ -20,9 +20,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 /**
  * The order events' tests share one application context, stubbing the same services outside pcs-api.
  * No scheduler runs the jobs an event schedules; a test runs them itself, so it knows when they ran.
+ * Testing support is off too, as its scheduled tasks service needs the scheduler.
  */
 @PcsCcdEventTest
-@TestPropertySource(properties = "db-scheduler.executor-enabled=false")
+@TestPropertySource(properties = {"db-scheduler.executor-enabled=false", "testing-support.enabled=false"})
 public abstract class OrderEventIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
