@@ -45,7 +45,7 @@ class UpdatePartyDetailsPageTest extends BasePageTest {
         lenient().when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         lenient().when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
-        AddressValidator addressValidator = new AddressValidator(new PostcodeValidator());
+        AddressValidator addressValidator = new AddressValidator(new PostcodeValidator(), null);
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
         setPageUnderTest(new UpdatePartyDetailsPage(addressValidator, textAreaValidationService, ukClock));
     }

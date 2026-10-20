@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
@@ -171,9 +170,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
         PCSCase view = events.view(caseReference, caseworker);
         assertThat(view.getOrdersMarkdown()).contains("Suspended possession", "Issued");
-        assertThat(view.getCaseReviewDates()).extracting(ListValue::getValue)
-            .extracting(CaseReviewDate::getDate, CaseReviewDate::getReason, CaseReviewDate::getDescription)
-            .containsExactly(tuple(reviewDate.date(), GENERAL_ORDER, "Check the rent is paid"));
+        assertThat(view.getCaseReviewDatesMarkdown())
+            .contains("Review date 1", "15 Jan 2027", GENERAL_ORDER.getLabel(), "Check the rent is paid");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
         // Issued is final: neither the caseworker nor the judge can open the order again.
         assertThat(asCaseworker.startExpectingRejection())

@@ -67,6 +67,8 @@ test.afterEach(async () => {
 test.describe('Make an Application - e2e Journey @nightly', async () => {
   test('Select an Application - Ask to Set aside', async () => {
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let fileName = (chooseAnApplication.uploadDocHiddenOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '');
+    let uploadFile = (chooseAnApplication.uploadDocHiddenOption)[1]
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
@@ -102,7 +104,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', uploadDocumentsToSupportDefendantsApplication.mainHeader);
     await performAction('uploadFilesGenApps', {
       documents: [
-        {type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: 'genApps.docx'},
+        {type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: uploadFile},
       ]
     });
     await performAction('selectLanguageUsedToComplete', {
@@ -140,8 +142,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiData.submitCasePayload(),
-      genApp: CaseManagementCommonUtils.renameDocument('genApps.docx', '', appType),
+      genApp: [CaseManagementCommonUtils.renameDocument(fileName, '', appType), CaseManagementCommonUtils.renameDocument(uploadFile, '', appType)],
       defendantIndex: 1
     });
   });
