@@ -8,11 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
@@ -28,33 +25,23 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_HANDED;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_REVIEW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 /**
  * Judges make orders through the make order event as the frontend drives it. The form is opaque to
@@ -84,32 +71,15 @@ class MakeOrderIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("shows the judge the property, parties and facts of the claim")
-    void showsThePropertyPartiesAndFactsOfTheClaim() {
+    @DisplayName("shows the judge the property and parties of the claim")
+    void showsThePropertyAndPartiesOfTheClaim() {
         PCSCase claim = cases.claim(ENGLAND);
-        claim.getTenancyLicenceDetails().setTypeOfTenancyLicence(SECURE_TENANCY);
-        claim.getTenancyLicenceDetails().setTenancyLicenceDate(LocalDate.of(2020, 2, 3));
-        claim.setNoticeServed(YesOrNo.YES);
-        claim.setNoticeServedDetails(NoticeServedDetails.builder()
-            .serviceMethod(FIRST_CLASS_POST)
-            .postedDate(LocalDate.of(2026, 8, 10))
-            .build());
-        claim.setRentDetails(RentDetails.builder().currentRent(new BigDecimal("750.00")).frequency(MONTHLY).build());
-        claim.getSecureOrFlexiblePossessionGrounds()
-            .setSecureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY));
 
         var context = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext();
 
         assertThat(context.propertyAddress().getPostCode()).isEqualTo(claim.getPropertyAddress().getPostCode());
         assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedCases.CLAIMANT);
         assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
-        var facts = context.caseFacts();
-        assertThat(facts.tenancyType()).isEqualTo("SECURE_TENANCY");
-        assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2020, 2, 3));
-        assertThat(facts.noticeDate()).isEqualTo(LocalDate.of(2026, 8, 10));
-        assertThat(facts.currentRent()).isEqualByComparingTo("750.00");
-        assertThat(facts.rentFrequency()).isEqualTo("MONTHLY");
-        assertThat(facts.groundsPleaded()).contains("Rent arrears");
     }
 
     @Test
@@ -143,34 +113,6 @@ class MakeOrderIT extends OrderEventIT {
         var context = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().caseContext();
 
         assertThat(context.defendants()).extracting(Party::name).containsExactly("Person unknown");
-    }
-
-    @Test
-    @DisplayName("shows the day a notice handed over in person was served")
-    void showsTheDayANoticeWasHandedOver() {
-        PCSCase claim = cases.claim(ENGLAND);
-        claim.setNoticeServed(YesOrNo.YES);
-        claim.setNoticeServedDetails(NoticeServedDetails.builder()
-            .serviceMethod(PERSONALLY_HANDED)
-            .handedOverDateTime(LocalDateTime.of(2026, 8, 11, 16, 30))
-            .build());
-
-        var facts = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext().caseFacts();
-
-        assertThat(facts.noticeDate()).isEqualTo(LocalDate.of(2026, 8, 11));
-    }
-
-    @Test
-    @DisplayName("shows a Welsh claim's occupation contract as the tenancy")
-    void showsTheWelshOccupationContractAsTheTenancy() {
-        PCSCase claim = cases.claim(WALES);
-        claim.getOccupationLicenceDetailsWales().setOccupationLicenceTypeWales(STANDARD_CONTRACT);
-        claim.getOccupationLicenceDetailsWales().setLicenceStartDate(LocalDate.of(2024, 4, 5));
-
-        var facts = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext().caseFacts();
-
-        assertThat(facts.tenancyType()).isEqualTo("STANDARD_CONTRACT");
-        assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2024, 4, 5));
     }
 
     @Test

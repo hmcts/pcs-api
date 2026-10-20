@@ -3,35 +3,27 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseFacts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
-import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 
 /**
- * The case as the order journeys show it: its property, its main claim's parties and facts, and the
+ * The case as the order journeys show it: its property, its main claim's parties, and the
  * application an order on one decides.
  */
 @Component
@@ -48,7 +40,6 @@ class OrderCaseContext {
             addressMapper.toAddressUK(pcsCase.getPropertyAddress()),
             claim.map(c -> parties(c, PartyRole.CLAIMANT)).orElse(List.of()),
             claim.map(c -> parties(c, PartyRole.DEFENDANT)).orElse(List.of()),
-            caseFacts(pcsCase.getTenancyLicence(), claim.orElse(null)),
             pcsCase.getCounterClaims().stream()
                 .map(CounterClaimEntity::getStatus).anyMatch(COUNTER_CLAIM_ISSUED::equals),
             pcsCase.getGenApps().stream().anyMatch(GenAppEntity::isOpen),
@@ -99,40 +90,6 @@ class OrderCaseContext {
             .forEach(document -> documents.putIfAbsent(document.getDocumentId(),
                 new OrderStart.ApplicationDocument(document.getDocumentId(), document.getFileName())));
         return List.copyOf(documents.values());
-    }
-
-    private static CaseFacts caseFacts(TenancyLicenceEntity tenancy, ClaimEntity claim) {
-        NoticeOfPossessionEntity notice = claim == null ? null : claim.getNoticeOfPossession();
-        return new CaseFacts(
-            tenancy == null ? null : tenancy.getStartDate(),
-            tenancy == null || tenancy.getType() == null ? null : tenancy.getType().name(),
-            noticeDate(notice),
-            tenancy == null ? null : tenancy.getRentAmount(),
-            tenancy == null || tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().name(),
-            claim == null ? null : groundsPleaded(claim)
-        );
-    }
-
-    /** The day the notice was served, whether the claimant recorded a date or a moment. */
-    private static LocalDate noticeDate(NoticeOfPossessionEntity notice) {
-        if (notice == null) {
-            return null;
-        }
-        if (notice.getNoticeDate() != null) {
-            return notice.getNoticeDate();
-        }
-        return notice.getNoticeDateTime() == null ? null : notice.getNoticeDateTime().toLocalDate();
-    }
-
-    private static String groundsPleaded(ClaimEntity claim) {
-        String grounds = claim.getClaimGrounds().stream()
-            .map(ground -> ClaimGroundSummary.resolveGround(ground.getCategory(), ground.getCode()))
-            .filter(Objects::nonNull)
-            .map(PossessionGroundEnum::getLabel)
-            .distinct()
-            .sorted()
-            .collect(Collectors.joining(", "));
-        return grounds.isEmpty() ? null : grounds;
     }
 
     private List<OrderStart.Party> parties(ClaimEntity claim, PartyRole role) {
