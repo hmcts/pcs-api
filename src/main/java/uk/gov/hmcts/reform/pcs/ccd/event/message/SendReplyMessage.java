@@ -29,9 +29,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -62,6 +64,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     static final int MESSAGE_LIMIT = 750;
     static final int CLOSURE_NOTE_LIMIT = 250;
     static final String NO_MESSAGES = "There are no open messages for you to reply to on this case";
+    static final String NOT_AVAILABLE = "Messages are not available";
     private static final String JUDICIARY_IDAM_ROLE = "judiciary";
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("d MMM yyyy, h:mma");
 
@@ -69,6 +72,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private final MessageService messageService;
     private final SecurityContextService securityContextService;
     private final TextAreaValidationService textAreaValidationService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -126,6 +130,9 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
+            throw new CaseAccessException(NOT_AVAILABLE);
+        }
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(eventPayload.caseReference());
         caseData.setMessageGenAppList(DynamicList.builder().listItems(pcsCase.getGenApps().stream()
@@ -181,6 +188,9 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
+            return rejected(NOT_AVAILABLE);
+        }
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(eventPayload.caseReference());
         String name = securityContextService.getCurrentUserDetails().getName();

@@ -131,7 +131,8 @@ class CaseTypeTest {
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
-        when(builder.tab("Messages", "Messages")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        final TabBuilder<PCSCase, AccessProfile> messagesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        when(builder.tab("Messages", "Messages")).thenReturn(messagesTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
         lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
@@ -154,6 +155,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> messagesTab = messagesTabBuilder.build();
 
 
         // Then
@@ -170,6 +172,8 @@ class CaseTypeTest {
             .containsExactlyInAnyOrder(CaseType.PAYMENT_HISTORY_TAB_ROLES);
         assertThat(paymentHistoryTab.getShowCondition())
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
+        assertThat(messagesTab.getShowCondition())
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\" AND featureFlags.makeOrderEnabled=\"YES\"");
         assertThat(caseLinksTab.getFields()).extracting(TabField::getShowCondition)
             .contains("LinkedCasesComponentLauncher!=\"\"");
         assertThat(caseFileViewTab.getFields()).hasSize(1);
