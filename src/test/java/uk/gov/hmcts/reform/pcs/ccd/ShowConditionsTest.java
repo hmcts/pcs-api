@@ -22,6 +22,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 
 class ShowConditionsTest {
@@ -29,6 +30,7 @@ class ShowConditionsTest {
     private static final Map<FeatureFlag, String> CCD_FIELDS_BY_FLAG = Map.of(
         RELEASE_1_DOT_2, "featureFlags.release1dot2Enabled",
         RELEASE_1_DOT_3, "featureFlags.release1dot3Enabled",
+        RELEASE_1B, "featureFlags.release1bEnabled",
         RELEASE_1_DOT_4, "featureFlags.release1dot4Enabled",
         CASEWORKER_EVENTS, "featureFlags.caseWorkerEventsEnabled",
         WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled",
