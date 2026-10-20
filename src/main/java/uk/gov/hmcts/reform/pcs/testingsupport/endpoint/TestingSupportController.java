@@ -355,7 +355,7 @@ public class TestingSupportController {
 
     @PostMapping("/cases/{caseReference}/possession-order-doc")
     @Transactional
-    public ResponseEntity<?> addPossessionOrderDocument(
+    public ResponseEntity<UploadResponse> addPossessionOrderDocument(
         @PathVariable long caseReference,
         @RequestParam("file") MultipartFile file,
         @RequestHeader(AUTHORIZATION) String authorization,
@@ -390,7 +390,7 @@ public class TestingSupportController {
         } catch (Exception exception) {
             log.error(exception.getMessage(),exception);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", exception.getMessage()));
+                .build();
         }
     }
 
