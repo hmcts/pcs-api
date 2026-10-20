@@ -39,6 +39,45 @@ class SnapshotMapperTest {
     }
 
     @Test
+    void shouldMapTrespassClaimType() {
+        SnapshotDimensions result = claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD",
+            "YES",
+            "ENGLISH",
+            "ASSURED_TENANCY",
+            "45"
+        );
+
+        assertThat(result.getClaimType()).isEqualTo("AAA3-TCM");
+    }
+
+    @Test
+    void shouldMapDefaultClaimType() {
+        SnapshotDimensions result = claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD",
+            "NO",
+            "ENGLISH",
+            "ASSURED_TENANCY",
+            "45"
+        );
+
+        assertThat(result.getClaimType()).isEqualTo("AAA3-PLD");
+    }
+
+    @Test
+    void shouldDefaultLocationCodeWhenMissing() {
+        SnapshotDimensions result = claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD",
+            "NO",
+            "ENGLISH",
+            "ASSURED_TENANCY",
+            null
+        );
+
+        assertThat(result.getCaseManagementLocationCode()).isEqualTo("MRD-CRT-0000");
+    }
+
+    @Test
     void shouldMapMilestonesWithPostalNoticeAndDateOnlySubmitted() {
         SnapshotMilestones result = claimSnapshotMapper.mapMilestones(
             "FIRST_CLASS_POST",

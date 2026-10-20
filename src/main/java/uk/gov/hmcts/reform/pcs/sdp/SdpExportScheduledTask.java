@@ -6,6 +6,8 @@ import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 @Component
 public class SdpExportScheduledTask {
@@ -13,13 +15,16 @@ public class SdpExportScheduledTask {
     private static final String TASK_NAME = "sdp-claim-snapshot-export";
 
     private final ExportService exportService;
+    private final FeatureToggleService featureToggleService;
     private final String schedule;
     private final boolean enabled;
 
     public SdpExportScheduledTask(ExportService exportService,
+                                  FeatureToggleService featureToggleService,
                                   @Value("${sdp.export.schedule}") String schedule,
                                   @Value("${sdp.export.enabled}") boolean enabled) {
         this.exportService = exportService;
+        this.featureToggleService = featureToggleService;
         this.schedule = schedule;
         this.enabled = enabled;
     }
@@ -31,7 +36,7 @@ public class SdpExportScheduledTask {
     }
 
     private void runExport() {
-        if (!enabled) {
+        if (!enabled || !featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
             return;
         }
         exportService.exportClaims();

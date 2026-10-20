@@ -93,30 +93,45 @@ public class ExportService {
 
         List<ClaimSnapshotRecord> records = new ArrayList<>();
         List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
-        for (ClaimEntity claim : claims) { 
-            ClaimSnapshotRecord snapshotRecord = mapClaim(claim, extractDate, publishedDates);
-            String hash = snapshotHasher.hash(snapshotRecord.getClaim());
-            SdpClaimSnapshotEntity snapshot = stored.get(claim.getId());
-            if (snapshot == null) {
-                snapshot = SdpClaimSnapshotEntity.builder()
-                    .claimId(claim.getId())
-                    .snapshotVersion(1)
-                    .snapshotHash(hash)
-                    .exportedAt(now)
-                    .build();
-                changed.add(snapshot);
-            } else if (!snapshot.getSnapshotHash().equals(hash)) {
-                snapshot.setSnapshotVersion(snapshot.getSnapshotVersion() + 1);
-                snapshot.setSnapshotHash(hash);
-                snapshot.setExportedAt(now);
-                changed.add(snapshot);
-            } else {
-                continue;
-            }
-            snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
-            records.add(snapshotRecord);
+        for (ClaimEntity claim : claims) {
+            addIfChanged(claim, extractDate, publishedDates, stored, now, records, changed);
         }
+        return writeAndUpload(extractDate, records, changed);
+    }
 
+    private void addIfChanged(ClaimEntity claim,
+                              String extractDate,
+                              Map<UUID, LocalDateTime> publishedDates,
+                              Map<UUID, SdpClaimSnapshotEntity> stored,
+                              LocalDateTime now,
+                              List<ClaimSnapshotRecord> records,
+                              List<SdpClaimSnapshotEntity> changed) {
+        ClaimSnapshotRecord snapshotRecord = mapClaim(claim, extractDate, publishedDates);
+        String hash = snapshotHasher.hash(snapshotRecord.getClaim());
+        SdpClaimSnapshotEntity snapshot = stored.get(claim.getId());
+        if (snapshot == null) {
+            snapshot = SdpClaimSnapshotEntity.builder()
+                .claimId(claim.getId())
+                .snapshotVersion(1)
+                .snapshotHash(hash)
+                .exportedAt(now)
+                .build();
+            changed.add(snapshot);
+        } else if (!snapshot.getSnapshotHash().equals(hash)) {
+            snapshot.setSnapshotVersion(snapshot.getSnapshotVersion() + 1);
+            snapshot.setSnapshotHash(hash);
+            snapshot.setExportedAt(now);
+            changed.add(snapshot);
+        } else {
+            return;
+        }
+        snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
+        records.add(snapshotRecord);
+    }
+
+    private ExportResult writeAndUpload(String extractDate,
+                                        List<ClaimSnapshotRecord> records,
+                                        List<SdpClaimSnapshotEntity> changed) {
         String filename = "claim_snapshot_" + extractDate + ".json";
         Path outputPath = outputDirectory.resolve(filename);
         byte[] json = claimSnapshotFileWriter.write(records, outputPath);
