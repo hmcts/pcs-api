@@ -8,8 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.JudicialNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UserNameEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.JudicialNoteRenderer;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -22,12 +20,8 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 public class JudicialNoteView {
 
     private final JudicialNoteRenderer judicialNoteRenderer;
-    private final FeatureToggleService featureToggleService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
-            return;
-        }
         setJudicialNoteFields(pcsCase, pcsCaseEntity.getJudicialNotes());
     }
 

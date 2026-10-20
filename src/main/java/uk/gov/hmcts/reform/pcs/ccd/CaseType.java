@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -387,7 +386,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("judicialNotes", "Judicial notes")
             .forRoles(JUDICIAL_NOTE_TAB_ROLES)
-            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .label("judicialNotesMarkdownLabel", null, "${judicialNotesMarkdown}")
             .field("judicialNotesMarkdown", NEVER_SHOW);
     }

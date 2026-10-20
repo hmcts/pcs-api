@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,8 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.JudicialNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UserNameEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.JudicialNoteRenderer;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -25,9 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -36,9 +31,6 @@ public class JudicialNoteViewTest {
 
     @Mock
     private JudicialNoteRenderer judicialNoteRenderer;
-
-    @Mock
-    private FeatureToggleService featureToggleService;
 
     @InjectMocks
     private JudicialNoteView judicialNoteView;
@@ -49,28 +41,6 @@ public class JudicialNoteViewTest {
     private static final Instant SUMMER_INSTANT = Instant.parse("2026-04-22T21:00:00Z");
 
     private static final Instant WINTER_INSTANT = Instant.parse("2026-01-15T12:00:00Z");
-
-    @BeforeEach
-    void setUp() {
-        lenient().when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
-    }
-
-    @Test
-    void shouldNotRenderJudicialNotesWhenMakeOrderIsDisabled() {
-        // Given
-        when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(false);
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .judicialNotes(List.of(JudicialNoteEntity.builder().note("A note").build()))
-            .build();
-        PCSCase pcsCase = PCSCase.builder().build();
-
-        // When
-        judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getJudicialNotesMarkdown()).isNull();
-        verifyNoInteractions(judicialNoteRenderer);
-    }
 
     @Test
     void shouldMapJudicialNoteEntityToJudicialNoteDuringSummer() {

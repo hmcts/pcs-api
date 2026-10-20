@@ -8,17 +8,12 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addjudicialnote.AddJudicialNotePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.JudicialNoteService;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
-
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialNoteRoles.JUDICIAL_NOTES_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addJudicialNote;
@@ -29,7 +24,6 @@ public class AddJudicialNote implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddJudicialNotePage addJudicialNotePage;
     private final JudicialNoteService judicialNoteService;
-    private final FeatureToggleService featureToggleService;
 
     private static final String CONFIRMATION_BODY = """
             ---
@@ -50,7 +44,6 @@ public class AddJudicialNote implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(addJudicialNote.name(), this::submit)
                 .forStates(EventStates.addJudicialNote())
                 .name("Add a judicial note")
-                .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
                 .grant(Permission.CRUD, JUDICIAL_NOTES_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -60,12 +53,6 @@ public class AddJudicialNote implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
-            return SubmitResponse.<State>builder()
-                .errors(List.of("Judicial notes are not available"))
-                .build();
-        }
-
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         judicialNoteService.addJudicialNote(caseReference, pcsCase);
