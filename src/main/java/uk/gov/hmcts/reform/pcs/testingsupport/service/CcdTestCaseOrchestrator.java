@@ -47,8 +47,8 @@ public class CcdTestCaseOrchestrator {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddressFor(legislativeCountry, payloadMerge))
-            .defendant1(withDefendant1Details(payloadMerge))
-            .additionalDefendants(withAdditionalDefendant1Details(payloadMerge))
+        //  .defendant1(withDefendant1Details(payloadMerge))
+        //  .additionalDefendants(withAdditionalDefendant1Details(payloadMerge))
             .legislativeCountry(legislativeCountry)
             .build();
 
