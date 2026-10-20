@@ -78,7 +78,7 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(
         label = "Explain what the defendant wants the court to do, and why",
-        typeOverride = FieldType.TextArea,
+        typeOverride = FieldType.RichTextArea,
         max = 6800
     )
     private String whatOrderWanted;
