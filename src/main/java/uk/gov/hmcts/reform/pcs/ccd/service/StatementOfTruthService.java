@@ -25,7 +25,6 @@ public class StatementOfTruthService {
     @Transactional
     public void processStatementOfTruth(StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement,
                                         EnforcementOrderEntity enforcementOrderEntity) {
-
         StatementOfTruthEntity statementOfTruthEntity =
                 statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement);
         enforcementOrderEntity.setStatementOfTruth(statementOfTruthRepository.save(statementOfTruthEntity));
@@ -39,29 +38,24 @@ public class StatementOfTruthService {
 
         StatementOfTruthDetails statementOfTruth = pcsCase.getStatementOfTruth();
         StatementOfTruthCompletedBy completedBy = statementOfTruth.getCompletedBy();
-        StatementOfTruthEntity statementOfTruthEntity = new StatementOfTruthEntity();
-
-        statementOfTruthEntity.setCompletedBy(completedBy);
+        StatementOfTruthEntity.StatementOfTruthEntityBuilder sotBuilder = StatementOfTruthEntity.builder();
+        sotBuilder.completedBy(completedBy);
 
         if (completedBy == StatementOfTruthCompletedBy.CLAIMANT) {
             if (claimantAgreed(statementOfTruth)) {
-                statementOfTruthEntity.setAccepted(YesOrNo.YES);
+                sotBuilder.accepted(YesOrNo.YES);
             }
-
-            statementOfTruthEntity.setFullName(statementOfTruth.getFullNameParty());
-            statementOfTruthEntity.setPositionHeld(statementOfTruth.getPositionParty());
-
+            sotBuilder.fullName(statementOfTruth.getFullNameParty());
+            sotBuilder.positionHeld(statementOfTruth.getPositionParty());
         } else if (completedBy == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
             if (legalRepAgreed(statementOfTruth)) {
-                statementOfTruthEntity.setAccepted(YesOrNo.YES);
+                sotBuilder.accepted(YesOrNo.YES);
             }
-
-            statementOfTruthEntity.setFullName(statementOfTruth.getFullNameLegalRep());
-            statementOfTruthEntity.setFirmName(statementOfTruth.getFirmNameLegalRep());
-            statementOfTruthEntity.setPositionHeld(statementOfTruth.getPositionLegalRep());
+            sotBuilder.fullName(statementOfTruth.getFullNameLegalRep());
+            sotBuilder.firmName(statementOfTruth.getFirmNameLegalRep());
+            sotBuilder.positionHeld(statementOfTruth.getPositionLegalRep());
         }
-
-        return statementOfTruthEntity;
+        return sotBuilder.build();
     }
 
     private static boolean claimantAgreed(StatementOfTruthDetails statementOfTruth) {
