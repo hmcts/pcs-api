@@ -1,0 +1,49 @@
+{
+  "propertyAddress": {
+    "AddressLine1": "1",
+    "AddressLine2": "Exton Gardens test support",
+    "AddressLine3": "1 Knyveton Road",
+    "PostTown": "Bournemouth",
+    "County": null,
+    "PostCode": "BH1 3BP",
+    "Country": "England"
+  },
+  "defendant1": {
+    "nameKnown": "YES",
+    "firstName": "Test1",
+    "lastName": "defendant",
+    "addressKnown": "NO",
+    "addressSameAsPossession": null,
+    "correspondenceAddress": {
+      "AddressLine1": null,
+      "AddressLine2": null,
+      "AddressLine3": null,
+      "PostTown": null,
+      "County": null,
+      "Country": null,
+      "PostCode": null
+    }
+  },
+  "addAnotherDefendant": "YES",
+  "additionalDefendants": [
+    {
+      "value": {
+        "nameKnown": "YES",
+        "firstName": "Test2",
+        "lastName": "defendant",
+        "addressKnown": "NO",
+        "addressSameAsPossession": null,
+        "correspondenceAddress": {
+          "AddressLine1": null,
+          "AddressLine2": null,
+          "AddressLine3": null,
+          "PostTown": null,
+          "County": null,
+          "Country": null,
+          "PostCode": null
+        }
+      },
+      "id": "d102b3d3-dc87-4260-818f-0c651e5f60ba"
+    }
+  ]
+}
