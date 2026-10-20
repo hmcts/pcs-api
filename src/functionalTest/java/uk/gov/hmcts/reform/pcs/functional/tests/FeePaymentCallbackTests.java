@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Disabled("Disabled until pickup within HDPI-2877 QA Automation task")
 public class FeePaymentCallbackTests extends BaseApi {
 
     @Steps
