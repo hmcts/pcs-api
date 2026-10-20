@@ -26,7 +26,7 @@ class OrdersViewTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    void onlyIncludesOrdersMarkdownWhenMakeOrderIsEnabled(boolean enabled) {
+    void neverReturnsExcludedOrdersMarkdown(boolean enabled) {
         when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(enabled);
         PCSCase pcsCase = PCSCase.builder().ordersMarkdown("Previously rendered orders").build();
 
@@ -34,10 +34,13 @@ class OrdersViewTest {
 
         var json = new JacksonConfiguration().getMapper().valueToTree(pcsCase);
         if (enabled) {
-            assertThat(json.path("ordersMarkdown").asText()).isEqualTo("There are no orders on this case.");
+            assertThat(pcsCase.getOrdersMarkdown()).isEqualTo("There are no orders on this case.");
         } else {
-            assertThat(json.has("ordersMarkdown")).isFalse();
+            assertThat(pcsCase.getOrdersMarkdown()).isNull();
             verifyNoInteractions(orderStepRepository);
         }
+        assertThat(json.has("ordersMarkdown")).isFalse();
+        var draftJson = new JacksonConfiguration().draftCaseDataObjectMapper().valueToTree(pcsCase);
+        assertThat(draftJson.has("ordersMarkdown")).isFalse();
     }
 }
