@@ -254,7 +254,7 @@ withPipeline(type, product, component) {
 
         withEnv([
           "NODE_CONFIG_ENV=test",
-          "TEST_URL=https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+          "TEST_URL=${env.PCS_FRONTEND_URL}",
           "PCS_API_URL=https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
           "CASE_TYPE_ID=PCS",
           "DATA_STORE_URL_BASE=https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
