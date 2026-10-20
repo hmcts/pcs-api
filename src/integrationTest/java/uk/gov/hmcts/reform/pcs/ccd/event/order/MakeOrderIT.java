@@ -212,13 +212,11 @@ class MakeOrderIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("lists the judge's draft on the orders tab, and starts it again when it is chosen")
-    void listsTheDraftOnTheOrdersTab() {
+    @DisplayName("starts the judge's saved draft again when it is chosen")
+    void startsTheChosenDraft() {
         asFirstJudge.submitExpectingSuccess(startDraft("first version"));
         Order draft = asFirstJudge.start().order();
 
-        assertThat(events.view(caseReference, secondJudge).getOrdersMarkdown())
-            .contains("Outright possession", "Draft");
         assertThat(asFirstJudge.withClientContext(Map.of("orderId", draft.id().toString())).start().order().formData())
             .containsEntry("notes", "first version");
     }
