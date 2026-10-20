@@ -75,4 +75,12 @@ public class OrganisationDetailsService {
         }
     }
 
+    /** The same lookup, but a failure is raised rather than reported as "no organisation". */
+    public String requireOrganisationIdentifier(String userId) {
+        OrganisationDetailsResponse details = fetchOrganisationDetails(userId);
+        if (nonNull(details)) {
+            return details.getOrganisationIdentifier();
+        }
+        return null;
+    }
 }

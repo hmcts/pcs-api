@@ -15,8 +15,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationUserRoles.belongsToOrganisation;
 
 /**
@@ -85,13 +85,13 @@ public class OrganisationService {
     /** Organisation identifier for the current user, or null if it cannot be resolved. */
     public String getOrganisationIdForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
+            String userId = resolveProfessionalUserId();
             if (userId == null) {
                 return null;
             }
 
             OrganisationDetailsResponse organisationDetails =
-                this.getCachedRequiredOrganisationDetails(userId.toString());
+                this.getCachedRequiredOrganisationDetails(userId);
             return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API", ex);
@@ -107,12 +107,12 @@ public class OrganisationService {
      * @return The organisation identifier, or null if the user genuinely has none
      */
     public String requireOrganisationIdForCurrentUser() {
-        UUID userId = resolveProfessionalUserId();
+        String userId = resolveProfessionalUserId();
         if (userId == null) {
             return null;
         }
 
-        OrganisationDetailsResponse organisationDetails = this.getCachedRequiredOrganisationDetails(userId.toString());
+        OrganisationDetailsResponse organisationDetails = this.getCachedRequiredOrganisationDetails(userId);
         return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
     }
 
@@ -124,12 +124,12 @@ public class OrganisationService {
      */
     public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
+            String userId = resolveProfessionalUserId();
             if (userId == null) {
                 return null;
             }
 
-            return this.getOrganisationDetails(userId.toString());
+            return this.getOrganisationDetails(userId);
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation details from rd-professional API", ex);
             return null;

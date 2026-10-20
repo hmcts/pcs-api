@@ -481,25 +481,13 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should skip the rd-professional lookup for a citizen user")
-    void shouldSkipOrganisationLookupForCitizen() {
-        when(securityContextService.getCurrentUserDetails())
-            .thenReturn(UserInfo.builder().roles(List.of(UserRole.CITIZEN.getRole())).build());
-
-        String result = organisationService.getOrganisationIdForCurrentUser();
-
-        assertThat(result).isNull();
-        verify(organisationDetailsService, never()).requireOrganisationDetails(anyString());
-    }
-
-    @Test
     @DisplayName("Should successfully get organisation name")
     void shouldSuccessfullyGetOrganisationName() {
         // Given
         stubPrd(OrganisationDetailsResponse.builder().name(ORGANISATION_NAME).build());
 
         // When
-        String result = organisationService.getOrganisationName(USER_ID.toString());
+        String result = organisationService.getOrganisationName(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(ORGANISATION_NAME);
@@ -515,7 +503,7 @@ class OrganisationServiceTest {
                     .build());
 
         // When
-        String result = organisationService.getOrganisationIdentifier(USER_ID.toString());
+        String result = organisationService.getOrganisationIdentifier(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
@@ -529,7 +517,7 @@ class OrganisationServiceTest {
         stubPrd(OrganisationDetailsResponse.builder().paymentAccount(paymentAccounts).build());
 
         // When
-        List<String> result = organisationService.getOrganisationPaymentAccount(USER_ID.toString());
+        List<String> result = organisationService.getOrganisationPaymentAccount(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(paymentAccounts);
@@ -542,7 +530,7 @@ class OrganisationServiceTest {
         stubPrd(OrganisationDetailsResponse.builder().build());
 
         // When
-        List<String> result = organisationService.getOrganisationPaymentAccount(USER_ID.toString());
+        List<String> result = organisationService.getOrganisationPaymentAccount(USER_ID);
 
         // Then
         assertThat(result).isNull();
@@ -559,7 +547,7 @@ class OrganisationServiceTest {
         OrganisationService service = serviceBackedBy(rdProfessionalApi);
 
         // When
-        String result = service.getOrganisationName(USER_ID.toString());
+        String result = service.getOrganisationName(USER_ID);
 
         // Then
         assertThat(result).isNull();
@@ -574,7 +562,7 @@ class OrganisationServiceTest {
 
         OrganisationService service = serviceBackedBy(rdProfessionalApi);
 
-        assertThat(service.getOrganisationIdentifier(USER_ID.toString())).isNull();
+        assertThat(service.getOrganisationIdentifier(USER_ID)).isNull();
     }
 
     private void stubCurrentUser() {
@@ -582,11 +570,11 @@ class OrganisationServiceTest {
     }
 
     private void stubPrd(OrganisationDetailsResponse response) {
-        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString())).thenReturn(response);
+        when(organisationDetailsService.getOrganisationDetails(USER_ID)).thenReturn(response);
     }
 
     private void stubRequiredPrd(OrganisationDetailsResponse response) {
-        when(organisationDetailsService.requireOrganisationDetails(USER_ID.toString())).thenReturn(response);
+        when(organisationDetailsService.requireOrganisationDetails(USER_ID)).thenReturn(response);
     }
 
     private OrganisationService serviceBackedBy(RdProfessionalApi rdProfessionalApi) {
@@ -636,7 +624,6 @@ class OrganisationServiceTest {
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isNull();
         assertThat(organisationService.getOrganisationNameForCurrentUser()).isNull();
         assertThat(organisationService.getOrganisationDetailsForCurrentUser()).isNull();
-        assertThat(organisationService.getOrganisationAddressForCurrentUser()).isNull();
         assertThat(organisationService.requireOrganisationIdForCurrentUser()).isNull();
 
         verifyNoInteractions(organisationDetailsService);
@@ -656,9 +643,10 @@ class OrganisationServiceTest {
     @ValueSource(strings = {"claimant", "claimant-solicitor", "defendant-solicitor"})
     void shouldLookUpOrganisationForGroupAccessRole(String organisationRole) {
         stubOrganisationalRoles("caseworker", organisationRole);
+        stubRequiredPrd(OrganisationDetailsResponse.builder()
+                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                    .build());
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.requireOrganisationIdentifier(USER_ID))
-            .thenReturn(ORGANISATION_IDENTIFIER);
 
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isEqualTo(ORGANISATION_IDENTIFIER);
     }
