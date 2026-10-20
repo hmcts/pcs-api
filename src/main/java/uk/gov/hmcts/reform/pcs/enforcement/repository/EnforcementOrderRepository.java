@@ -14,38 +14,24 @@ import java.util.UUID;
 
 public interface EnforcementOrderRepository extends JpaRepository<EnforcementOrderEntity, UUID> {
 
-    /**
-     * The claim's enforcements, with the risk profile, warrant and warrant of restitution rows each one maps
-     * eagerly joined in rather than fetched a query at a time per enforcement.
-     */
     @EntityGraph(attributePaths = {"riskProfileDetails", "warrantDetails", "warrantOfRestitutionDetails"})
     List<EnforcementOrderEntity> findByClaimId(UUID claimId);
 
     /**
-     * Whether the claim has an enforcement in any status other than {@code statuses}. Rows with no status
-     * never match.
+     * Rows with no status never match.
      */
     boolean existsByClaimIdAndStatusNotIn(UUID claimId, Collection<EnforcementStatus> statuses);
 
     List<EnforcementOrderEntity> findByClaimIdAndStatus(UUID claimId, EnforcementStatus status);
 
-    /**
-     * Every warrant and writ number given on the case, oldest approval first.
-     */
     @Query("SELECT e.enforcementNumber FROM EnforcementOrderEntity e "
         + "WHERE e.claim.pcsCase.caseReference = :caseReference AND e.enforcementNumber IS NOT NULL "
         + "ORDER BY e.approvedAt, e.enforcementNumber")
     List<String> findEnforcementNumbersByCaseReference(@Param("caseReference") long caseReference);
 
-    /**
-     * The reference of the case the enforcement is on.
-     */
     @Query("SELECT e.claim.pcsCase.caseReference FROM EnforcementOrderEntity e WHERE e.id = :id")
     Optional<Long> findCaseReferenceById(@Param("id") UUID id);
 
-    /**
-     * The next value of enf_case_number_seq, from which warrant and writ numbers are built.
-     */
     @Query(value = "SELECT nextval('enf_case_number_seq')", nativeQuery = true)
     long nextEnforcementNumberSequenceValue();
 }

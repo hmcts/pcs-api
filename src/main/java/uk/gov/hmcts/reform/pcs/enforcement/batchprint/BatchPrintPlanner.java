@@ -29,14 +29,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * Decides what a bailiff's batch print contains (HDPI-8012), without fetching any document.
- *
- * <p>A case is printed only when the bailiff is the active allocated bailiff on its current warrant, and that
- * warrant is approved and still live. For each case the latest warrant, risk assessment and notice of eviction
- * in the Enforcement folder are printed, in that order. Documents filed against an earlier enforcement on the
- * same claim are ignored, so a repeat warrant never prints the previous warrant's papers.
- */
 @Service
 @RequiredArgsConstructor
 public class BatchPrintPlanner {
@@ -53,8 +45,7 @@ public class BatchPrintPlanner {
     private final BailiffAllocationRepository bailiffAllocationRepository;
 
     /**
-     * Plans a batch print of {@code caseReferences} for the bailiff, keeping the order they were chosen in.
-     * A reference given twice is printed once. References may contain dashes or spaces.
+     * References may contain dashes or spaces, and one given twice is printed once, in the order given.
      */
     @Transactional(readOnly = true)
     public BatchPrintPlan plan(String bailiffUserId, List<String> caseReferences) {
@@ -77,10 +68,6 @@ public class BatchPrintPlanner {
         return new BatchPrintPlan(List.copyOf(included), List.copyOf(excluded));
     }
 
-    /**
-     * The approved, live warrants allocated to the bailiff, soonest eviction first. With a date range, only
-     * warrants whose eviction is scheduled in it (inclusive) are listed.
-     */
     @Transactional(readOnly = true)
     public List<AllocatedWarrant> allocatedWarrants(String bailiffUserId, LocalDate from, LocalDate to) {
         return bailiffAllocationRepository.findAllocatedWarrants(IdamUserIds.normalise(bailiffUserId),

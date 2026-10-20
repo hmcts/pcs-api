@@ -5,12 +5,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 
-/**
- * The warrant's risk assessment pages: the risks posed to the bailiff, vulnerable people, access to the property
- * and anything else that could help with the eviction. The warrant application asks them, and "Confirm the
- * eviction details" asks them again so the claimant can change their answers (HDPI-7552). They only show in the
- * warrant flow.
- */
 @Component
 @AllArgsConstructor
 public class WarrantRiskPagesConfigurer implements PageConfigurer {

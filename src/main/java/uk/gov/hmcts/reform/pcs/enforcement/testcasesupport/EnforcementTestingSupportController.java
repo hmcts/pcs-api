@@ -36,20 +36,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-/**
- * Test-only shortcuts for enforcement, for the points where the end to end tests cannot drive the real
- * journey or cannot wait for it.
- *
- * <p>A local stack has no Payments service, so an application's fee is never paid and it never reaches
- * "Awaiting review" on its own; {@code fee-paid} pays it through the real payment callback handler (see
- * {@link EnforcementFeePaidSimulator}). And {@code allocateBailiff} cannot be driven without staff reference
- * data, so without a shortcut no warrant can get past "Awaiting bailiff allocation" and the schedule, reschedule,
- * notice-of-eviction and warrant-return journeys are all untestable. The 72 hour and 12 month rules are
- * measured from when things happened, so {@code backdate} moves those times into the past. Viewing a case as
- * a defendant needs a defendant case role, which locally only this can give. Batch print takes the latest of
- * each document, and a second notice of eviction needs a reschedule the suite cannot drive yet, so
- * {@code documents} files placeholders.
- */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -80,25 +66,6 @@ public class EnforcementTestingSupportController {
             : ResponseEntity.notFound().build();
     }
 
-    /**
-     * Allocates the case's current warrant to a bailiff, with the same outcome as the {@code allocateBailiff}
-     * event: an {@code enf_bailiff_allocation} row and, from "Awaiting bailiff allocation", a move to
-     * "Awaiting scheduling".
-     *
-     * <p>The event itself cannot be driven on a CFTLib stack. Its one field is a StaffUser type-ahead
-     * ({@code FindBailiffPage}) backed by staff reference data, which CFTLib does not run, so XUI degrades
-     * the component to a raw {@code IdamId} input and CCD's "IdamId is required" fires before the page's own
-     * "Choose a bailiff" mid-event. Whether a preview environment has staff reference data is unconfirmed.
-     * Without this shortcut every status after "Awaiting bailiff allocation" is unreachable, which blocks
-     * the schedule, reschedule, notice-of-eviction and warrant-return journeys.
-     *
-     * <p>Unlike {@code fee-paid} this needs a user bearer token as well as the S2S one, because
-     * {@link uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService#allocate} records who made
-     * the allocation and {@code SecurityContextService.getCurrentUserId()} throws when there is no user
-     * principal. {@code IdamAuthenticationFilter} only populates the security context for {@code /ccd} and
-     * {@code /callbacks}, so this resolves the caller itself and runs the allocation as them, in the same
-     * way {@code SecurityContextSystemEventExecutor} runs system events as the system user.
-     */
     @Operation(summary = "Allocate the case's current warrant to a bailiff, as the allocateBailiff event would")
     @PostMapping("/{caseReference}/allocate-bailiff")
     public ResponseEntity<List<String>> allocateBailiff(
@@ -113,21 +80,11 @@ public class EnforcementTestingSupportController {
         EnforcementChange<String> allocated =
             runAsCaller(authorization, () -> bailiffAllocationService.allocate(caseReference, bailiff));
 
-        // The service refuses rather than throwing, so the refusal has to be turned into a failure here or
-        // a caller would read "no enforcement" or "not an approved live warrant" as success.
         return allocated.refused()
             ? ResponseEntity.unprocessableEntity().body(allocated.errors())
             : ResponseEntity.noContent().build();
     }
 
-    /**
-     * Gives a user the {@code [DEFENDANT]} or {@code [DEFENDANTSOLICITOR]} case role through CCD's case-users
-     * API, so that the end to end tests can view a case as a defendant (14-defendant-visibility.feature).
-     *
-     * <p>It stands in for the access code a citizen defendant enters and for Notice of Change. The testing-support
-     * {@code link-defendant-solicitor-to-party} endpoint does not work on a CFTLib stack, and an access code
-     * needs pcs-frontend.
-     */
     @Operation(summary = "Give a user a defendant case role on the case")
     @PostMapping("/{caseReference}/defendant-case-role")
     public ResponseEntity<Void> assignDefendantCaseRole(
@@ -147,11 +104,6 @@ public class EnforcementTestingSupportController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Moves the timestamps of one of the case's enforcements into the past, for the rules measured from them:
-     * the claimant's 72 hours to confirm an eviction and the free repeat warrant within 12 months of the first
-     * being generated. See {@link EnforcementBackdateService}.
-     */
     @Operation(summary = "Move an enforcement's eviction, generated, return and other timestamps into the past")
     @PostMapping("/{caseReference}/backdate")
     public ResponseEntity<Void> backdate(
@@ -171,12 +123,6 @@ public class EnforcementTestingSupportController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Files a placeholder warrant, risk assessment or notice of eviction in the case's Enforcement folder, against
-     * its current enforcement, as a later copy of one pcs-api generated. Batch print (HDPI-8012) prints only the
-     * latest of each, and the suite cannot reschedule an eviction to generate a second notice of eviction yet.
-     * See {@link EnforcementTestDocumentSeeder}.
-     */
     @Operation(summary = "File a placeholder enforcement document in the case's Enforcement folder")
     @PostMapping("/{caseReference}/documents")
     public ResponseEntity<SeededDocument> seedDocument(
@@ -190,9 +136,6 @@ public class EnforcementTestingSupportController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Runs {@code action} with the bearer token's user on the security context, restoring it afterwards.
-     */
     private <T> T runAsCaller(String authorization, Supplier<T> action) {
         Authentication previous = SecurityContextHolder.getContext().getAuthentication();
         try {
@@ -205,33 +148,20 @@ public class EnforcementTestingSupportController {
         }
     }
 
-    /**
-     * The bailiff to allocate. The caller supplies the IDAM id so that no staff reference data is needed.
-     */
     public record AllocateBailiffRequest(
         @NotBlank String userId,
         @NotBlank String name,
         @NotBlank String email) {
     }
 
-    /**
-     * The user to give a defendant case role, and the role: {@code [DEFENDANT]} or {@code [DEFENDANTSOLICITOR]}.
-     */
     public record DefendantCaseRoleRequest(
         @NotBlank String userId,
         @NotBlank String caseRole) {
     }
 
-    /**
-     * How far back to move the enforcement, as an ISO-8601 period ({@code P12M}), duration ({@code PT73H}) or
-     * both, and which enforcement: its warrant or writ number, or the case's current enforcement when omitted.
-     */
     public record BackdateRequest(Period period, Duration duration, String enforcementNumber) {
     }
 
-    /**
-     * The placeholder to file: which document it stands in for, and the title printed on it.
-     */
     public record SeedDocumentRequest(
         @NotNull BatchPrintDocumentKind kind,
         @NotBlank String title) {

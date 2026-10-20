@@ -23,12 +23,6 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
 
-/**
- * Submits the enforcement application for "Enforce the order" and "Resume draft application": it writes the
- * application to enf_case, deletes the draft and moves the claim to pending enforcement issued. When the
- * application owes a fee, a Payments service request is raised for it and the confirmation screen sends the
- * claimant to the case's Service Request tab to pay, as the claim issue and general application fees do.
- */
 @Component("enforcementSubmitEventHandler")
 @Slf4j
 @RequiredArgsConstructor
@@ -52,8 +46,6 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         if (enforcementType == null) {
             return errorResponse(NO_ENFORCEMENT_TYPE_ERROR);
         }
-        // Drafts are per user and organisation, so another claimant-side user may have submitted their own
-        // draft since this one was started. A claim can only have one live enforcement.
         if (enforcementOrderService.hasLiveEnforcement(caseReference)) {
             return errorResponse(LiveEnforcementExistsException.MESSAGE);
         }
@@ -77,7 +69,6 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             return SubmitResponse.<State>builder().errors(submitted.errors()).build();
         }
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
-        // An application that owes nothing (restitution, or a free repeat warrant) gets no payment panel.
         Optional<String> formattedFee = Optional.ofNullable(submitted.change())
             .map(fee -> moneyFormatter.formatFee(fee.getFeeAmount()));
         return SubmitResponse.<State>builder()

@@ -21,9 +21,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.REJECTED;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.TRANSFERRED_TO_HIGH_COURT;
 
-/**
- * Records a caseworker's decision on the claim's enforcement application that is awaiting review.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,16 +41,6 @@ public class EnforcementDecisionService {
         return findAwaitingReview(caseReference).isPresent();
     }
 
-    /**
-     * Approves the application: a warrant goes on to bailiff allocation, a writ is transferred to the High Court.
-     * Gives it a warrant or writ number and records when it was approved.
-     *
-     * <p>Refuses, rather than throwing, whatever stops the decision being recorded: the submit handler runs
-     * inside the transaction the SDK opens for the event, so an exception out of this method would mark that
-     * transaction rollback-only and the caller could not turn it into an error for the caseworker.</p>
-     *
-     * @return the outcome, or the errors to show the caseworker instead
-     */
     @Transactional
     public EnforcementChange<EnforcementDecisionOutcome> accept(long caseReference) {
         Optional<EnforcementOrderEntity> awaitingReview = findAwaitingReview(caseReference);
@@ -77,8 +64,7 @@ public class EnforcementDecisionService {
                 enforcementNotificationService.notifyClaimantOfApproval(caseReference, enforcementType,
                                                                         enforcementNumber);
                 if (enforcement.getStatus() == AWAITING_BAILIFF_ALLOCATION) {
-                    // An approved writ goes to a High Court Enforcement Officer, so it gets no bailiff and no
-                    // task.
+                    // An approved writ goes to a High Court Enforcement Officer, so gets no bailiff task.
                     enforcementWaTaskService.warrantAwaitingBailiff(caseReference, enforcement.getId());
                 }
             });
@@ -90,12 +76,6 @@ public class EnforcementDecisionService {
             new EnforcementDecisionOutcome(enforcementType, EnforcementDecision.ACCEPT, enforcementNumber));
     }
 
-    /**
-     * Rejects the application. No number is given, and the claimant can apply again because a rejected
-     * enforcement is not live.
-     *
-     * @return the outcome, or the errors to show the caseworker instead
-     */
     @Transactional
     public EnforcementChange<EnforcementDecisionOutcome> reject(long caseReference, String rejectionReason) {
         if (StringUtils.isBlank(rejectionReason)) {
@@ -131,13 +111,6 @@ public class EnforcementDecisionService {
         };
     }
 
-    /**
-     * Whether a caseworker can decide the claim's application: the current enforcement is awaiting review. A
-     * claim has at most one live enforcement, so at most one awaiting review, and the current one is the live
-     * one if there is one. "Decide enforcement" is offered on this, and its start and submit refuse on it.
-     *
-     * @param currentEnforcement the claim's current enforcement, or null if it has none
-     */
     public static boolean canDecideEnforcement(EnforcementOrderEntity currentEnforcement) {
         return currentEnforcement != null && currentEnforcement.getStatus() == AWAITING_REVIEW;
     }

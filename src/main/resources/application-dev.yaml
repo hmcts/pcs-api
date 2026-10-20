@@ -7,9 +7,8 @@ ccd:
     noc:
       enabled: true
 
-# bootWithCCD and cftlibTest run with the dev profile and send email to a WireMock Notify stub (NOTIFY_URL), which
-# accepts any template id. These stand-in ids let the enforcement emails reach that stub locally; no
-# such template exists in GOV.UK Notify, and application.yaml leaves every key blank for real environments.
+# Stand-in ids for the local WireMock Notify stub, which accepts any template id. No such template exists in
+# GOV.UK Notify.
 enforcement-notify:
   templates:
     warrant-application-received: 00000000-0000-4000-8000-000000000101

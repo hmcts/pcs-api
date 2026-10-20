@@ -30,18 +30,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK
 import static uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffStaffRoles.BAILIFF_STAFF_ROLES;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-/**
- * Bailiff staff add a note to the claim's current enforcement (HDPI-7593). The note goes to the live
- * enforcement, or to the most recent one when none is live, so notes can still be added after closure.
- */
 @Component
 @AllArgsConstructor
 public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * Offered once the claim has an enforcement (EnforcementEventAvailabilityView). The start callback still
-     * refuses otherwise.
-     */
     static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canAddBailiffNote=\"Yes\"");
 
     static final int MAX_NOTE_LENGTH = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
@@ -49,10 +41,6 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
     static final String NOTE_REQUIRED_ERROR = "Enter a note";
     static final String NOTE_TOO_LONG_ERROR = "The note must be 6,800 characters or fewer";
 
-    /**
-     * Enforcement is held apart from the case state, so the event is available in every state a case can be
-     * in once it has been issued. Before that there can be no enforcement.
-     */
     public static final State[] STATES = EnumSet.complementOf(EnumSet.of(
         State.AWAITING_SUBMISSION_TO_HMCTS,
         State.AWAITING_RESUBMISSION_TO_HMCTS,
@@ -87,7 +75,6 @@ public class AddBailiffNote implements CCDConfig<PCSCase, State, UserRole> {
         }
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
         enforcementOrder.setBailiffNoteText(null);
-        // For the page's "claimant vs defendants" line, as on decideEnforcement.
         enforcementOrder.setFormattedCaseName(pcsCase.getCaseNameHmctsInternal());
         return pcsCase;
     }

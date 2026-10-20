@@ -21,23 +21,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Cuts the case view down to what defendants and their legal representatives may see of enforcement
- * ({@link DefendantEnforcementRules}). Internal users, judiciary and the claimant side see everything.
- *
- * <p>CCD field access cannot do this on its own: it is fixed per role, whereas what a defendant may see depends
- * on each warrant's notice of eviction, and a defendant's legal representative holds the same
- * {@code caseworker-pcs-solicitor} access profile as the claimant's. So this runs last of the enforcement
- * views, for defendants and for anyone whose side of the case cannot be established
- * ({@link EnforcementViewerService}), and replaces the enforcement fields with a copy holding just the visible
- * warrants: their items on {@code enforcements}, and the "Enforcement status" tab rendered from them without
- * the claimant's sections. Every other enforcement field, including both "Risk assessment" tabs and any field
- * added later, is left unset for defendants. The "Enforcement status" tab's show condition then hides the tab
- * until a warrant is visible. The event flags ({@code eventAvailability}) are left unset too, so defendants are
- * offered no enforcement event.
- *
- * <p>The enforcement documents are taken out of {@code allDocuments}, the only case field that carries them,
- * except a visible warrant's notice of eviction. CCD categories cannot be restricted by role, so the
- * Enforcement folder itself is still shown to defendants, empty until a notice is served.
+ * Cuts the case view down to what defendants may see of enforcement ({@link DefendantEnforcementRules}).
+ * Runs last of the enforcement views, and replaces the enforcement fields rather than filtering them, so any
+ * field added later is left unset for defendants.
  */
 @Component
 @RequiredArgsConstructor
@@ -49,12 +35,6 @@ public class DefendantEnforcementView {
     private final CurrentEnforcementService currentEnforcementService;
     private final EnforcementStatusTabView enforcementStatusTabView;
 
-    /**
-     * Restricts the enforcement fields and documents when the current user is a defendant on the case, or their
-     * side of the case cannot be established ({@link EnforcementViewerService}).
-     * Expects {@code enforcements} to hold one item per enforcement, with the enforcement's id as its id, as
-     * {@link EnforcementOrderView} sets it.
-     */
     public void restrictForDefendants(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference) {
         if (pcsCase == null) {
             return;
@@ -65,9 +45,6 @@ public class DefendantEnforcementView {
         }
         List<EnforcementOrderEntity> enforcements = currentEnforcementService.findEnforcementsCurrentFirst(
             pcsCaseEntity);
-        // With no enforcement on the claim the fields hold the viewer's own draft, if any, and the event flags.
-        // "Enforce the order" is offered to the claimant side then, so its flag is taken away from restricted
-        // viewers. Internal users keep the flags without a lookup of their case roles on every case view.
         if (enforcements.isEmpty() && !hasEnforcementDocuments) {
             EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
             if (enforcementOrder.getEventAvailability() != null
@@ -94,10 +71,6 @@ public class DefendantEnforcementView {
         }
     }
 
-    /**
-     * The visible warrants' items on {@code enforcements} and the "Enforcement status" tab rendered from them
-     * for a defendant, and nothing else; null when no warrant is visible.
-     */
     private EnforcementOrder defendantView(EnforcementOrder enforcementOrder,
                                            List<EnforcementOrderEntity> enforcements) {
         List<EnforcementOrderEntity> visibleEnforcements = DefendantEnforcementRules.visibleToDefendants(enforcements);

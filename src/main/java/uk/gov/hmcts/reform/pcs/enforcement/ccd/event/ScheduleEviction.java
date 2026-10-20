@@ -15,9 +15,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-/**
- * The bailiff schedules the eviction on a warrant awaiting scheduling (HDPI-7344, HDPI-7546, HDPI-7547).
- */
 @Component
 public class ScheduleEviction extends EvictionDateEvent {
 

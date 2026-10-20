@@ -10,10 +10,6 @@ import java.time.temporal.ChronoField;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * The eviction date and time as the claimant and bailiff screens and the emails show it: "Thursday 25 June 2026
- * at 10:00am". The enforcement tabs show the date and time separately, in their own format.
- */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EvictionDateFormat {
 

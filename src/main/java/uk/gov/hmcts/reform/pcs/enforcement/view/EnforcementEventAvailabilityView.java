@@ -21,15 +21,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Sets the flags the enforcement events' show conditions read ({@link EnforcementEventAvailability}), from the
- * rules their start callbacks check on the claim's current enforcement. An event its start callback would refuse
- * is then not offered in the next step drop down.
- *
- * <p>The flags are only set once the case is issued, which is when the enforcement events apply. It runs after
- * {@link EnforcementOrderView#setCaseFields}, which can replace the enforcement order with the user's draft, and
- * before {@link DefendantEnforcementView}, which takes the flags away from defendants.</p>
- */
 @Component
 @RequiredArgsConstructor
 public class EnforcementEventAvailabilityView {

@@ -15,19 +15,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * The one place that decides which of a claim's enforcements is the current one: the live enforcement if
- * there is one (a claim has at most one), otherwise the one whose status changed most recently, so a closed
- * enforcement can still be worked on. The case view's "Enforcement status" tab and the bailiff events all use
- * it, so they always agree on which enforcement they mean.
+ * The current enforcement is the claim's live one, or else the one that changed status most recently.
  */
 @Service
 @RequiredArgsConstructor
 public class CurrentEnforcementService {
 
-    /**
-     * The live enforcement first, then the rest by when their status last changed, most recent first. Rows
-     * with no status change time come last: they predate the status model.
-     */
     static final Comparator<EnforcementOrderEntity> CURRENT_FIRST =
         Comparator.comparing((EnforcementOrderEntity enforcement) -> enforcement.getStatus().isLive())
             .thenComparing(EnforcementOrderEntity::getStatusUpdatedAt,
@@ -38,9 +31,7 @@ public class CurrentEnforcementService {
     private final EnforcementOrderRepository enforcementOrderRepository;
 
     /**
-     * Runs {@code action} with each claim's enforcements, and their warrant returns, loaded at most once
-     * however many times it asks for them. Only for work that reads enforcements and never changes them, such
-     * as building the case view: a change made inside would not be seen by later reads.
+     * Caches each claim's enforcements for the duration of {@code action}, so a change made inside is not seen.
      */
     public static void withEnforcementsLoadedOnce(Runnable action) {
         EnforcementCaseViewLoads.with(action);
@@ -54,15 +45,10 @@ public class CurrentEnforcementService {
         return findEnforcementsCurrentFirst(pcsCaseEntity).stream().findFirst();
     }
 
-    /**
-     * Every enforcement on the case's claim that has a status, the current one first. Empty when the case has
-     * no claim or no enforcement.
-     */
     public List<EnforcementOrderEntity> findEnforcementsCurrentFirst(PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity == null) {
             return List.of();
         }
-        // One claim per case, as elsewhere in enforcement.
         List<ClaimEntity> claims = pcsCaseEntity.getClaims();
         if (claims == null || claims.isEmpty()) {
             return List.of();

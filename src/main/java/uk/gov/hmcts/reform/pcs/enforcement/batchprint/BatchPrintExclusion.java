@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * Why a case the bailiff chose is left out of a batch print.
- *
- * <p>A case that does not exist gets {@link #NOT_ALLOCATED} too, so that the answer does not tell a bailiff
- * which case references exist.
+ * A case that does not exist gets {@link #NOT_ALLOCATED} too, so as not to reveal which cases exist.
  */
 @AllArgsConstructor
 @Getter

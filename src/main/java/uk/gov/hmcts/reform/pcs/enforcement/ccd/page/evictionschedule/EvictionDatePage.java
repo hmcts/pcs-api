@@ -13,16 +13,8 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-/**
- * The one question page of "Schedule eviction" and "Reschedule eviction": the read only eviction details, then
- * the eviction date and time and whether the court has dispensed with service. Continue checks the answers
- * before "Check your answers".
- */
 public class EvictionDatePage implements CcdPageConfiguration {
 
-    /**
-     * The parties line under the case number and property address the case title shows.
-     */
     static final String PARTIES = """
         <p class="govuk-!-font-size-24 govuk-!-margin-top-0">Parties: ${formattedCaseName}</p>""";
 
@@ -42,12 +34,10 @@ public class EvictionDatePage implements CcdPageConfiguration {
             .page(pageId, this::midEvent)
             .pageLabel(pageLabel)
             .complex(PCSCase::getEnforcementOrder)
-                // Placed before the label that shows it, which XUI otherwise renders blank.
                 .readonly(EnforcementOrder::getFormattedCaseName, NEVER_SHOW, true)
                 .label(pageId + "-parties", PARTIES)
                 .label(pageId + "-line-separator", "---")
                 .complex(EnforcementOrder::getEvictionSchedule)
-                    // Before the label, which XUI otherwise renders blank (see DecideEnforcementPage).
                     .readonly(EvictionSchedule::getEvictionDetailsMarkup, NEVER_SHOW, true)
                     .label(pageId + "-eviction-details", "${evictionDetailsMarkup}")
                     .mandatory(EvictionSchedule::getEvictionDateTime)

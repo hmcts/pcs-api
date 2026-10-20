@@ -35,12 +35,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.view.TabMarkup.heading;
 import static uk.gov.hmcts.reform.pcs.enforcement.view.TabMarkup.paragraph;
 import static uk.gov.hmcts.reform.pcs.enforcement.view.TabMarkup.summaryList;
 
-/**
- * Renders the "Risk assessment" tab (13-risk-assessment-tab.feature, HDPI-7350) in three parts: the print
- * button, the bailiff notes and risk level (internal only), and the claimant's risk answers from their
- * application, with any they changed while confirming the eviction (internal users and the claimant side).
- * While a change waits for the bailiff's review, the internal part starts with a banner listing what changed.
- */
 final class RiskAssessmentTabMarkdown {
 
     static final String BAILIFF_NOTE = "Bailiff note";
@@ -89,10 +83,6 @@ final class RiskAssessmentTabMarkdown {
     static final String ANYTHING_ELSE = "Do you want to tell us anything else that could help with the eviction?";
     static final String ANYTHING_ELSE_DETAILS = "Tell us anything else that could help with the eviction";
 
-    /**
-     * Shown whatever the claimant chose, because the bailiffs always look for them (13-risk-assessment-tab
-     * .feature). The other risks are shown only when the claimant selected them.
-     */
     private static final Set<RiskCategory> ALWAYS_SHOWN_RISKS = EnumSet.of(
         RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.CRIMINAL_OR_ANTISOCIAL, RiskCategory.AGGRESSIVE_ANIMALS);
 
@@ -106,9 +96,6 @@ final class RiskAssessmentTabMarkdown {
         RiskCategory.AGGRESSIVE_ANIMALS, RiskDetails::getAnimalsDetails
     );
 
-    /**
-     * The claimant's risk answers, gathered from either warrant journey.
-     */
     record ClaimantAnswers(
         boolean warrantOfPossession,
         HasLabel evictEveryone,
@@ -129,8 +116,8 @@ final class RiskAssessmentTabMarkdown {
     }
 
     /**
-     * A GOV.UK button that opens the case on this tab in a new browser tab. XUI sanitises case markdown, so a
-     * tab cannot open the print dialogue itself; the new tab is printed with the browser's own print.
+     * XUI sanitises case markdown, so a tab cannot open the print dialogue itself. This opens the case in a
+     * new browser tab for the browser's own print instead.
      */
     static String printButton(String jurisdiction, String caseType, long caseReference) {
         return ("<a class=\"govuk-button\" href=\"/cases/case-details/%s/%s/%d#Risk%%20assessment\" "
@@ -164,21 +151,10 @@ final class RiskAssessmentTabMarkdown {
         return TabMarkup.lines(blocks);
     }
 
-    /**
-     * The claimant's answers, introduced in the third person for internal users and the second person for the
-     * claimant side (OPEN-QUESTIONS 38).
-     */
     static String claimantSection(ClaimantAnswers answers, Instant submittedAt, boolean forClaimant) {
         return claimantSection(answers, submittedAt, null, null, forClaimant);
     }
 
-    /**
-     * The claimant's answers, as above. Once they have changed any in "Confirm the eviction details"
-     * (HDPI-7552), every question is shown with its original answer and, where it changed, the updated one.
-     *
-     * @param updated the claimant's current answers, or null if they have never changed them
-     * @param updatedAt when they last changed them
-     */
     static String claimantSection(ClaimantAnswers original, Instant submittedAt, ClaimantAnswers updated,
                                   Instant updatedAt, boolean forClaimant) {
         String submittedOn = ukDate(submittedAt);
@@ -208,10 +184,6 @@ final class RiskAssessmentTabMarkdown {
         ));
     }
 
-    /**
-     * Tells bailiff staff that the claimant has changed their answers since the risk level was last set, and
-     * which questions changed. Internal only.
-     */
     static String updateBanner(ClaimantAnswers original, ClaimantAnswers updated) {
         String changed = comparedAnswers(original, updated).stream()
             .filter(ComparedAnswer::changed)
@@ -230,10 +202,6 @@ final class RiskAssessmentTabMarkdown {
         ));
     }
 
-    /**
-     * The claimant's application answers with their risk answers replaced, so that answers changed in "Confirm
-     * the eviction details" are shown and compared the same way as the application's.
-     */
     static ClaimantAnswers withRiskAnswers(ClaimantAnswers application, ClaimantRiskAnswers risk) {
         return new ClaimantAnswers(
             application.warrantOfPossession(),
@@ -260,9 +228,6 @@ final class RiskAssessmentTabMarkdown {
         );
     }
 
-    /**
-     * Every question either set of answers shows, in order, with both answers.
-     */
     static List<ComparedAnswer> comparedAnswers(ClaimantAnswers original, ClaimantAnswers updated) {
         List<ComparedAnswer> compared = new ArrayList<>();
         for (Question question : QUESTIONS) {
@@ -282,10 +247,6 @@ final class RiskAssessmentTabMarkdown {
         }
     }
 
-    /**
-     * A row of the claimant's answers: the question, and the answer to show, or empty when the row is left out
-     * for these answers.
-     */
     private record Question(String key, Function<ClaimantAnswers, Optional<String>> answer) {
     }
 
@@ -367,11 +328,6 @@ final class RiskAssessmentTabMarkdown {
         return instant == null ? null : TabMarkup.formatDate(instant.atZone(UK_ZONE_ID).toLocalDate());
     }
 
-    /**
-     * The answers on the claimant's application, for a warrant of possession or a warrant of restitution. An
-     * enforcement that stored no application is rendered from an empty one the caller substitutes, so an
-     * application is required here.
-     */
     @SuppressWarnings("deprecation")
     static ClaimantAnswers answersOf(EnforcementOrder order, boolean warrantOfRestitution) {
         Objects.requireNonNull(order, "The enforcement application is missing");

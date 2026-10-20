@@ -11,10 +11,6 @@ import java.util.Optional;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-/**
- * The Docmosis template ids for the enforcement documents, keyed by {@link EnforcementOutput#getTemplateKey()}
- * under {@code enforcement.documents.templates}.
- */
 @Getter
 @Setter
 @Component
@@ -23,9 +19,6 @@ public class EnforcementDocumentTemplates {
 
     private Map<String, String> templates = new LinkedHashMap<>();
 
-    /**
-     * The template id configured for the document, or empty when the key is absent or blank.
-     */
     public Optional<String> templateId(EnforcementOutput output) {
         if (output == null || templates == null) {
             return Optional.empty();

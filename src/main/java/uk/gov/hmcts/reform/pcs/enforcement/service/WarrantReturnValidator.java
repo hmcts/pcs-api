@@ -17,9 +17,8 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 /**
- * Checks the "Record warrant return" answers (HDPI-7347) against the warrant's current status. XUI already
- * enforces the mandatory drop downs and date, but they are checked again here because hidden fields are not
- * validated by XUI and the status can change while the event is open.
+ * XUI already enforces the mandatory drop downs and date, but they are checked again here because XUI does
+ * not validate hidden fields and the status can change while the event is open.
  */
 @Component
 public class WarrantReturnValidator {
@@ -43,9 +42,6 @@ public class WarrantReturnValidator {
         this.ukClock = ukClock;
     }
 
-    /**
-     * The errors to show the user, in page order. Empty if the return can be recorded.
-     */
     public List<String> validate(WarrantReturnDetails details, EnforcementStatus currentStatus) {
         List<String> errors = new ArrayList<>();
         WarrantReturnType type = details == null ? null : details.getType();
@@ -93,8 +89,6 @@ public class WarrantReturnValidator {
         }
     }
 
-    // 19-enforcement-status-model.feature: a closed warrant only takes "Reopen warrant", and only a closed
-    // warrant can be reopened.
     private static void validateAgainstStatus(WarrantReturnName returnName, EnforcementStatus currentStatus,
                                               List<String> errors) {
         boolean closed = currentStatus == EnforcementStatus.CLOSED;

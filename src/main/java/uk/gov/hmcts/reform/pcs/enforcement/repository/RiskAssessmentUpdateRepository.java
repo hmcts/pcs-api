@@ -8,8 +8,5 @@ import java.util.UUID;
 
 public interface RiskAssessmentUpdateRepository extends JpaRepository<RiskAssessmentUpdateEntity, UUID> {
 
-    /**
-     * The enforcement's most recent risk assessment update, which holds its current answers.
-     */
     Optional<RiskAssessmentUpdateEntity> findFirstByEnforcementOrderIdOrderByUpdatedAtDesc(UUID enforcementOrderId);
 }

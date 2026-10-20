@@ -10,10 +10,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.event.EnforceTheOrder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 
-/**
- * Generates enforcement test cases from the Create-Enforcement-* test-case-generation fixtures: creates
- * a basic claim case, then submits the enforcement order from the selected fixture against it.
- */
 @Component
 @RequiredArgsConstructor
 public class EnforcementTestCaseGenerator implements TestCaseGenerator {

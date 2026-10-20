@@ -23,15 +23,12 @@ import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
-/**
- * Shows the current enforcement's bailiff notes on the case, newest first.
- */
 @Component
 @RequiredArgsConstructor
 public class BailiffNoteView {
 
     /**
-     * "1 Feb 2026 16:20pm": a 24 hour time followed by a lower case am / pm marker, as in the designs.
+     * "1 Feb 2026 16:20pm": 24 hour time with a lower case am / pm marker, as in the designs.
      */
     static final DateTimeFormatter ADDED_ON_FORMAT = new DateTimeFormatterBuilder()
         .appendPattern("d MMM yyyy HH:mm")
@@ -41,11 +38,6 @@ public class BailiffNoteView {
 
     private final BailiffNoteService bailiffNoteService;
 
-    /**
-     * Leaves the field empty when the current enforcement has no notes, or the claim has no enforcement. It
-     * is cleared rather than left alone, because a draft "Enforce the order" may have replaced the enforcement
-     * order on the case view with one carrying an old copy of the notes.
-     */
     public void setBailiffNotes(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity == null || pcsCase == null) {
             return;

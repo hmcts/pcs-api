@@ -14,9 +14,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * The claimant's answers to the warrant's risk assessment questions: the risks posed to the bailiff, vulnerable
- * people at the property, access to the property and anything else that could help with the eviction. Stored as
- * JSON on each risk assessment update, so a field name change needs a data migration.
+ * Stored as JSON on each risk assessment update, so renaming a field needs a data migration.
  */
 @Data
 @Builder(toBuilder = true)
@@ -43,9 +41,8 @@ public class ClaimantRiskAnswers {
     private String additionalInformationDetails;
 
     /**
-     * A copy without the answers to follow-up questions the claimant was not asked, such as the details of a risk
-     * category they did not choose, and with blank text removed. The journey can leave these behind when an answer
-     * is changed, and they would otherwise count as changes.
+     * A copy with blank text and the answers to follow-up questions the claimant was not asked removed, so that
+     * answers the journey left behind do not count as changes.
      */
     public ClaimantRiskAnswers normalised() {
         boolean anyRisk = anyRiskToBailiff == YesNoNotSure.YES;

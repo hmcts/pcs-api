@@ -12,9 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
-/**
- * Encapsulates free-text details for selected enforcement risk categories.
- */
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

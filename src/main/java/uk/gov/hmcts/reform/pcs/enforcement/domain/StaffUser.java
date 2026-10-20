@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 
 /**
- * CCD's predefined {@code StaffUser} complex type (CCD-8066). XUI renders it as a type-ahead over staff
- * reference data and stores only the chosen user's IDAM id. The type is defined by CCD, so the SDK refers
- * to it by name and does not generate it.
+ * CCD's predefined {@code StaffUser} complex type. CCD defines it, so the SDK refers to it by name rather
+ * than generating it.
  */
 @Data
 @Builder

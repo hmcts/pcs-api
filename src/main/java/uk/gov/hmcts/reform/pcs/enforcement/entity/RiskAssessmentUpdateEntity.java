@@ -22,10 +22,6 @@ import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-/**
- * The claimant's risk assessment answers after they changed them in "Confirm the eviction details"
- * (HDPI-7552). Each row holds every answer, not just the changed ones. Rows are never edited.
- */
 @Entity
 @Table(name = "enf_risk_assessment_update")
 @Getter

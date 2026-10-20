@@ -11,21 +11,9 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.BREATHING_SPACE;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLOSED;
 
-/**
- * Every return name a bailiff can record, in the order of the HDPI-8424 confirmation table. Each carries:
- * <ul>
- *   <li>the enforcement status it moves the warrant to, or none when the status is unchanged (HDPI-8424,
- *   "Return name moves the enforcement status" in 11-record-warrant-return.feature)</li>
- *   <li>whether "Additional details" is mandatory (HDPI-7347, "Additional details are mandatory for some
- *   return names")</li>
- * </ul>
- * The drop downs offer subsets of these: see {@link SuccessfulWarrantReturnName},
- * {@link UnsuccessfulWarrantReturnName} and {@link InterimWarrantReturnName}.
- */
 @Getter
 public enum WarrantReturnName implements HasLabel {
 
-    // Final returns
     EVICTION_SUCCESSFUL("Eviction successful", CLOSED, false),
     WARRANT_WITHDRAWN("Warrant withdrawn", CLOSED, true),
     WARRANT_SUSPENDED_BY_ORDER("Warrant suspended by Order", CLOSED, false),
@@ -41,7 +29,6 @@ public enum WarrantReturnName implements HasLabel {
     WARRANT_EXPIRED("Warrant expired", CLOSED, false),
     WARRANT_ISSUED_IN_ERROR("Warrant issued in error", CLOSED, true),
 
-    // Interim returns
     APPLICATION_UNSUCCESSFUL_WARRANT_RETURNED("Application unsuccessful & warrant returned to bailiff", null, false),
     REQUEST_FOR_ADDITIONAL_INFORMATION("Request for additional information", null, true),
     NO_ANIMAL_HANDLER_PARTIES_UNAWARE("No animal handler in attendance (Parties unaware of animal)",
@@ -67,9 +54,6 @@ public enum WarrantReturnName implements HasLabel {
         this.additionalDetailsRequired = additionalDetailsRequired;
     }
 
-    /**
-     * The status this return moves the warrant to, or empty when the warrant stays where it is.
-     */
     public Optional<EnforcementStatus> statusAfterReturn() {
         return Optional.ofNullable(targetStatus);
     }

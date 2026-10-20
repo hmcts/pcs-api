@@ -18,19 +18,10 @@ import java.util.stream.Collectors;
  */
 final class TabMarkup {
 
-    /**
-     * "15 March 2026".
-     */
     static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
 
-    /**
-     * "12/05/2026".
-     */
     static final DateTimeFormatter SHORT_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.UK);
 
-    /**
-     * "08:00 AM". Locale.UK gives a lower case marker, so it is spelled out.
-     */
     static final DateTimeFormatter TIME = new DateTimeFormatterBuilder()
         .appendPattern("hh:mm ")
         .appendText(ChronoField.AMPM_OF_DAY, Map.of(0L, "AM", 1L, "PM"))
@@ -59,9 +50,6 @@ final class TabMarkup {
             .collect(Collectors.joining("\n", "<dl class=\"govuk-summary-list\">\n", "\n</dl>"));
     }
 
-    /**
-     * A GOV.UK table with a header row. The first cell of each row is its row header.
-     */
     static String table(List<String> headers, List<List<String>> rows) {
         String head = headers.stream()
             .map(header -> "<th scope=\"col\" class=\"govuk-table__header\">" + escape(header) + "</th>")
@@ -104,8 +92,8 @@ final class TabMarkup {
     }
 
     /**
-     * Escapes text for the markup. Line breaks become {@code <br>} so that free text cannot end the HTML block,
-     * and {@code $} is escaped so that CCD does not read {@code ${...}} in user text as a field placeholder.
+     * Line breaks become {@code <br>} so that free text cannot end the HTML block, and {@code $} is escaped so
+     * that CCD does not read {@code ${...}} in user text as a field placeholder.
      */
     static String escape(String text) {
         if (text == null) {

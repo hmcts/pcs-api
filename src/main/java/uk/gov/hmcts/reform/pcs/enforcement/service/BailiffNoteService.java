@@ -24,12 +24,6 @@ public class BailiffNoteService {
     private final SecurityContextService securityContextService;
     private final Clock utcClock;
 
-    /**
-     * Whether bailiff staff can add a note: the claim has an enforcement, live or not. "Add a bailiff note" is
-     * offered on this, and its start and submit refuse on it.
-     *
-     * @param currentEnforcement the claim's current enforcement, or null if it has none
-     */
     public static boolean canAddBailiffNote(EnforcementOrderEntity currentEnforcement) {
         return currentEnforcement != null;
     }
@@ -38,12 +32,6 @@ public class BailiffNoteService {
         return canAddBailiffNote(currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null));
     }
 
-    /**
-     * Saves the note against the claim's current enforcement, with the signed-in user's IDAM name.
-     *
-     * @return the enforcement's warrant or writ number, or null if it has none
-     * @throws NoEnforcementException if the claim has no enforcement
-     */
     @Transactional
     public String addNote(long caseReference, String note) {
         EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
@@ -60,18 +48,12 @@ public class BailiffNoteService {
         return enforcement.getEnforcementNumber();
     }
 
-    /**
-     * The notes on the claim's current enforcement, newest first. Empty if the claim has no enforcement.
-     */
     public List<BailiffNoteEntity> getCurrentEnforcementNotes(PcsCaseEntity pcsCaseEntity) {
         return currentEnforcementService.findCurrentEnforcement(pcsCaseEntity)
             .map(enforcement -> bailiffNoteRepository.findByEnforcementOrderIdOrderByCreatedAtDesc(enforcement.getId()))
             .orElse(List.of());
     }
 
-    /**
-     * The notes on one enforcement, newest first.
-     */
     public List<BailiffNoteEntity> getNotes(EnforcementOrderEntity enforcement) {
         return bailiffNoteRepository.findByEnforcementOrderIdOrderByCreatedAtDesc(enforcement.getId());
     }

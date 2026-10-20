@@ -10,12 +10,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
-/**
- * Read only access for the claimant side to a field that gates a claimant enforcement event. A defendant's legal
- * representative holds {@code caseworker-pcs-solicitor} as well, so
- * {@link uk.gov.hmcts.reform.pcs.enforcement.view.DefendantEnforcementView} leaves these fields unset whenever the
- * user is a defendant on the case.
- */
 public class ClaimantEventFlagAccess implements HasAccessControl {
 
     @Override

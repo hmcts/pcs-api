@@ -13,12 +13,6 @@ import java.time.LocalDateTime;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
-/**
- * The fields of the bailiff's "Schedule eviction", "Reschedule eviction" and "Mark notice of eviction as
- * served" events (HDPI-7344, HDPI-7549, HDPI-7346). Every value is saved to the enforcement on submit, not to
- * the case. The eviction date is saved as the enforcement's bailiff date, which drives the claimant's Confirm
- * eviction journey.
- */
 @Builder
 @Data
 @NoArgsConstructor
@@ -28,10 +22,6 @@ public class EvictionSchedule {
 
     public static final int NOTICE_SERVED_HOW_MAX_LENGTH = 500;
 
-    /**
-     * The read only "Eviction details" table: claimant type, claimant name and defendant names. Set when the
-     * event starts.
-     */
     @CCD(searchable = false)
     private String evictionDetailsMarkup;
 
@@ -63,24 +53,12 @@ public class EvictionSchedule {
     @CCD(label = "Do you want to add a bailiff note?", searchable = false)
     private YesOrNo noticeOfEvictionAddBailiffNote;
 
-    /**
-     * Set for the case view: whether the bailiff can schedule the eviction on the current enforcement. It gates
-     * the "Schedule eviction" event.
-     */
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private YesOrNo canScheduleEviction;
 
-    /**
-     * Set for the case view: whether the bailiff can reschedule the current enforcement's eviction. It gates
-     * the "Reschedule eviction" event.
-     */
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private YesOrNo canRescheduleEviction;
 
-    /**
-     * Set for the case view: whether the notice of eviction on the current enforcement is still to be marked
-     * as served. It gates the "Mark notice of eviction as served" event.
-     */
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private YesOrNo canMarkNoticeOfEvictionServed;
 }

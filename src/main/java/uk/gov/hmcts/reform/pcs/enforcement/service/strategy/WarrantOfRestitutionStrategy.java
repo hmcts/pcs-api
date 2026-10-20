@@ -33,10 +33,6 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
         processDocuments(enforcementOrder, enforcementOrderEntity);
     }
 
-    /**
-     * The journey signs the warrant journey's statement of truth page, so the answers are on
-     * {@link WarrantDetails} (HDPI-7555).
-     */
     private void processStatementOfTruth(EnforcementOrder enforcementOrder,
                                          EnforcementOrderEntity enforcementOrderEntity) {
         WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();

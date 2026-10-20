@@ -32,10 +32,6 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * Offered to a user with a draft while the claim has no live enforcement: the submit refuses a draft once
-     * another application is live, as "Enforce the order" does. "Delete draft application" stays offered.
-     */
     static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT),
                                              "hasUnsubmittedEnforcementData=\"Yes\"",
                                              "canApplyForEnforcement=\"Yes\"");

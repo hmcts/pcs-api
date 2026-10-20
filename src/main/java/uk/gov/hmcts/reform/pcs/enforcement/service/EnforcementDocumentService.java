@@ -23,17 +23,10 @@ import java.util.List;
 @AllArgsConstructor
 public class EnforcementDocumentService {
 
-    /**
-     * Every enforcement document, generated or uploaded, is filed in the Enforcement folder of Case File View.
-     */
     public static final String ENFORCEMENT_CATEGORY_ID = FeatureCaseFileCategory.ENFORCEMENT.getId();
 
     private final DocumentService documentService;
 
-    /**
-     * Saves the documents uploaded with the enforcement application in the Enforcement folder, attached to
-     * the case, so that they are in Case File View, and to the enforcement order.
-     */
     public List<DocumentEntity> createAllDocuments(EnforcementOrderEntity enforcementOrderEntity,
                                                    EnforcementOrder enforcementOrder) {
         List<DocumentEntity> documents =

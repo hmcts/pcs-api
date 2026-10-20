@@ -13,21 +13,12 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
-/**
- * Shows the current enforcement's most recent warrant return on the case, for the "Enforcement status" tab
- * (HDPI-8424). The tab itself is configured elsewhere.
- */
 @Component
 @RequiredArgsConstructor
 public class WarrantReturnView {
 
     private final WarrantReturnService warrantReturnService;
 
-    /**
-     * Leaves the field empty when the current enforcement has no return, or the claim has no enforcement. It
-     * is cleared rather than left alone, because a draft "Enforce the order" may have replaced the enforcement
-     * order on the case view with one carrying an old copy.
-     */
     public void setLatestWarrantReturn(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity == null || pcsCase == null) {
             return;

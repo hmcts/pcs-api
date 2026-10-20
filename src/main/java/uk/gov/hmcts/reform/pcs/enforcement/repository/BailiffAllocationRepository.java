@@ -13,29 +13,19 @@ import java.util.UUID;
 public interface BailiffAllocationRepository extends JpaRepository<BailiffAllocationEntity, UUID> {
 
     /**
-     * The enforcement's active allocations: at most one, as the database enforces.
+     * Returns at most one row: a unique constraint allows only one active allocation per enforcement.
      */
     List<BailiffAllocationEntity> findByEnforcementOrderIdAndEndedAtIsNull(UUID enforcementOrderId);
 
-    /**
-     * Every allocation of the enforcement, oldest first.
-     */
     List<BailiffAllocationEntity> findByEnforcementOrderIdOrderByStartedAtAsc(UUID enforcementOrderId);
 
     /**
-     * Every active allocation to the bailiff, across all cases. {@code bailiffUserId} must already be lower case:
-     * IDAM ids are compared case-insensitively, as {@link uk.gov.hmcts.reform.pcs.idam.IdamUserIds} normalises them.
+     * {@code bailiffUserId} must already be lower case.
      */
     @Query("select allocation from BailiffAllocationEntity allocation "
         + "where lower(allocation.bailiffUserId) = :bailiffUserId and allocation.endedAt is null")
     List<BailiffAllocationEntity> findActiveByBailiffUserId(@Param("bailiffUserId") String bailiffUserId);
 
-    /**
-     * The warrants actively allocated to the bailiff whose status is one of {@code statuses}, in one query. A
-     * warrant is an enforcement with warrant of possession or warrant of restitution details, as
-     * {@link uk.gov.hmcts.reform.pcs.enforcement.service.BailiffEnforcementRules#isWarrant} decides.
-     * {@code bailiffUserId} must already be lower case, as for {@link #findActiveByBailiffUserId}.
-     */
     @Query("select new uk.gov.hmcts.reform.pcs.enforcement.repository.AllocatedWarrantRow("
         + "pcsCase.caseReference, enforcement.enforcementNumber, enforcement.status, "
         + "enforcement.bailiffDate) "

@@ -13,10 +13,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementTyp
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-/**
- * Error page shown when user indicates the name or address for eviction is incorrect.
- * This page blocks progression and requires the user to make a general application.
- */
 public class ChangeNameAddressPage implements CcdPageConfiguration {
 
     private static final String ERROR_MESSAGE =
@@ -78,7 +74,6 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
         CaseDetails<PCSCase, State> details,
         CaseDetails<PCSCase, State> before) {
 
-        // Always return an error to block progression
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(ERROR_MESSAGE)
             .build();

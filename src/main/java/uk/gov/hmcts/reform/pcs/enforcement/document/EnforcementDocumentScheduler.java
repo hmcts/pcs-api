@@ -11,19 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Schedules the enforcement documents an event has to produce, one db-scheduler task per document.
- *
- * <p>The tasks are written in the caller's transaction, which db-scheduler joins
- * ({@code DataSourceConfiguration}), so a rollback drops them with the data they describe and a commit keeps
- * both: an event can never commit without queueing its documents. Nothing here talks to Docmosis, so a
- * Docmosis outage cannot fail the event: the task retries on its own.</p>
- *
- * <p>A failure to write a task is thrown, so a submit handler has to call these through
- * {@code EnforcementSideEffects} to answer it as an error rather than a 500.</p>
- *
- * <p>A document an enforcement has only one of is scheduled under an instance id made from the enforcement
- * and the document, so scheduling it twice is a no-op. The notices are generated again on every schedule and
- * reschedule, so each of those gets a new instance id.</p>
+ * The tasks are written in the caller's transaction, so an event cannot commit without queueing its documents.
  */
 @Slf4j
 @Component
@@ -32,10 +20,6 @@ public class EnforcementDocumentScheduler {
 
     private final SchedulerClient schedulerClient;
 
-    /**
-     * The application, and for a warrant the risk assessment, once the application has been submitted and paid
-     * for.
-     */
     public void scheduleApplicationDocuments(UUID enforcementId, SelectEnforcementType enforcementType) {
         if (enforcementType == null) {
             log.warn("Enforcement {} has no enforcement type, so no application documents were generated",
@@ -45,9 +29,6 @@ public class EnforcementDocumentScheduler {
         scheduleAll(enforcementId, EnforcementOutput.forApplication(enforcementType));
     }
 
-    /**
-     * The sealed warrant or writ, once the caseworker has approved the application.
-     */
     public void scheduleApprovalDocument(UUID enforcementId, SelectEnforcementType enforcementType) {
         if (enforcementType == null) {
             log.warn("Enforcement {} has no enforcement type, so no warrant or writ was generated",
@@ -57,9 +38,6 @@ public class EnforcementDocumentScheduler {
         scheduleAll(enforcementId, List.of(EnforcementOutput.forApproval(enforcementType)));
     }
 
-    /**
-     * The notice of eviction and notice of appointment, each time the eviction is scheduled or rescheduled.
-     */
     public void scheduleEvictionNotices(UUID enforcementId) {
         scheduleAll(enforcementId, EnforcementOutput.forEvictionSchedule());
     }
@@ -69,9 +47,7 @@ public class EnforcementDocumentScheduler {
     }
 
     /**
-     * Queues the document to be generated straight away. The time is the real one, not the injected clock's:
-     * db-scheduler decides when a task is due against the real system clock, so a task scheduled from a clock
-     * the end to end tests have moved forwards would wait for the real time to catch up.
+     * Uses the real clock, not the injected one: db-scheduler judges due time against the system clock.
      */
     private void schedule(UUID enforcementId, EnforcementOutput output) {
         schedulerClient.scheduleIfNotExists(

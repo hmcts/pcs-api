@@ -20,11 +20,6 @@ public class DecideEnforcementStartHandler implements Start<PCSCase, State> {
     private final EnforcementDecisionService enforcementDecisionService;
     private final AddressFormatter addressFormatter;
 
-    /**
-     * Sets the header fields and clears any earlier decision.
-     *
-     * @throws NoEnforcementAwaitingReviewException if no application is awaiting review, which CCD shows as an error
-     */
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         if (!enforcementDecisionService.hasEnforcementAwaitingReview(eventPayload.caseReference())) {

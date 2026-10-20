@@ -32,19 +32,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK
 import static uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffStaffRoles.BAILIFF_STAFF_ROLES;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-/**
- * Bailiff staff set the eviction risk level of the claim's current warrant (HDPI-7343). The allocated
- * bailiff's allocated-bailiff case role maps to the bailiff access profile, so it is covered by the bailiff
- * grant. The current level is pre-selected when the level is reset.
- */
 @Component
 @AllArgsConstructor
 public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * Offered while the current enforcement is an approved, live warrant (EnforcementEventAvailabilityView). The
-     * start callback still refuses otherwise.
-     */
     static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canSetRiskLevel=\"Yes\"");
 
     static final int MAX_REASON_LENGTH = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;

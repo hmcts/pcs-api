@@ -53,14 +53,6 @@ public class EnforcementOrderEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /**
-     * The enforcement's columns are written from the case event, the Payments callback and the scheduled tasks,
-     * which take no common lock, so they are written under optimistic locking: a write from a copy loaded before
-     * someone else's write fails with an ObjectOptimisticLockingFailureException instead of overwriting it.
-     *
-     * <p>Filing a document is excluded, see {@link #documents}: it writes no column of the enforcement, and
-     * several documents are generated at once.</p>
-     */
     @Version
     @Column(name = "version")
     private Integer version;
@@ -83,9 +75,7 @@ public class EnforcementOrderEntity {
     @Column(name = "bailiff_date")
     private LocalDateTime bailiffDate;
 
-    /**
-     * Change this only through EnforcementStatusTransitions, which enforces the allowed transitions.
-     */
+    // Changed only through EnforcementStatusTransitions.
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private EnforcementStatus status;
@@ -93,17 +83,9 @@ public class EnforcementOrderEntity {
     @Column(name = "status_updated_at")
     private Instant statusUpdatedAt;
 
-    /**
-     * The warrant or writ number, given when the caseworker approves the application.
-     */
     @Column(name = "enforcement_number")
     private String enforcementNumber;
 
-    /**
-     * When the caseworker approved the application. For a warrant this is when it was generated, which the free
-     * repeat warrant period is measured from (RepeatWarrantFeeWaiver); for a writ it is the date of transfer to
-     * the High Court.
-     */
     @Column(name = "approved_at")
     private Instant approvedAt;
 
@@ -113,10 +95,6 @@ public class EnforcementOrderEntity {
     @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
-    /**
-     * The statement of truth the claimant signed. Null when the application captured none: a draft submitted
-     * before reaching the page has none.
-     */
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "sot_id")
     @JsonBackReference
@@ -128,12 +106,8 @@ public class EnforcementOrderEntity {
     private List<SelectedDefendantEntity> selectedDefendants = new ArrayList<>();
 
     /**
-     * Filing a document changes no column of the enforcement, only the document's enf_case_id, so it is left
-     * out of the optimistic locking: without this, an event that schedules two documents has db-scheduler
-     * generate them on two threads, and the second to commit is refused as a stale write.
-     *
-     * <p>Batched, because the case view and batch print both read the documents of every enforcement on a claim,
-     * which without it is a query per enforcement.
+     * Excluded from optimistic locking so that documents generated concurrently for one enforcement are not
+     * refused as stale writes.
      */
     @OneToMany(fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "enf_case_id")
@@ -142,9 +116,6 @@ public class EnforcementOrderEntity {
     @Builder.Default
     private List<DocumentEntity> documents = new ArrayList<>();
 
-    /**
-     * The eviction risk level the bailiff set (HDPI-7343). A high level always has a reason.
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "risk_level")
     private RiskLevel riskLevel;
@@ -155,39 +126,22 @@ public class EnforcementOrderEntity {
     @Column(name = "risk_level_set_at")
     private Instant riskLevelSetAt;
 
-    /**
-     * Whether the court has given permission to dispense with service of the notice of eviction. Set when the
-     * eviction is scheduled or rescheduled; null before that.
-     */
     @Column(name = "dispense_with_service")
     private Boolean dispenseWithService;
 
-    /**
-     * When the bailiff served the notice of eviction, as a UK wall-clock time like {@link #bailiffDate}.
-     */
     @Column(name = "notice_served_at")
     private LocalDateTime noticeServedAt;
 
     @Column(name = "notice_served_how")
     private String noticeServedHow;
 
-    /**
-     * Derived from the notice of eviction: true once it is served, false when service is dispensed with.
-     * Change it only through EvictionScheduleService, which keeps it in step with the fields it derives from.
-     */
+    // Set only by EvictionScheduleService.
     @Column(name = "defendants_can_see_enforcement")
     private boolean defendantsCanSeeEnforcement;
 
-    /**
-     * When the claimant submitted the application. Null for applications submitted before it was recorded.
-     */
     @Column(name = "submitted_at")
     private Instant submittedAt;
 
-    /**
-     * The claimant's answer to whether they can attend the eviction on the current eviction date. Null until
-     * they answer, and cleared when the eviction is rescheduled.
-     */
     @Column(name = "claimant_can_attend")
     private Boolean claimantCanAttend;
 

@@ -9,9 +9,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
-/**
- * Payload for the enforcement-document-generation db-scheduler task: one document for one enforcement.
- */
 @Data
 @Builder
 @NoArgsConstructor

@@ -19,25 +19,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.decideEnforcement;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-/**
- * A caseworker approves or rejects the claimant's warrant or writ application (02-caseworker-decides-enforcement).
- * The start callback refuses the event unless the claim has an application awaiting review.
- */
 @Component
 @RequiredArgsConstructor
 public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * Offered while an application is awaiting review (EnforcementEventAvailabilityView). The start callback still
-     * refuses otherwise.
-     */
     static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canDecideEnforcement=\"Yes\"");
 
-    /**
-     * enforceTheOrder moves the case to PENDING_ENFORCEMENT_ISSUED when it is submitted through XUI, while the
-     * enforcement test cases stay in CASE_ISSUED. Which case states should allow enforcement events is still open
-     * (OPEN-QUESTIONS 1); the start callback is what gates the event.
-     */
     static final State[] STATES = {State.CASE_ISSUED, State.PENDING_ENFORCEMENT_ISSUED};
 
     private final DecideEnforcementStartHandler startHandler;

@@ -19,9 +19,6 @@ import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-/**
- * A bailiff an enforcement is, or was, allocated to (HDPI-8189). The active allocation has no end time.
- */
 @Entity
 @Table(name = "enf_bailiff_allocation")
 @Getter

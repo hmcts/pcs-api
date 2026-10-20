@@ -22,14 +22,6 @@ public class DraftEnforcementDeletionService {
     private final DraftCaseDataRepository draftCaseDataRepository;
     private final Clock utcClock;
 
-    /**
-     * Deletes every enforcement draft last saved more than {@code discardDays} days ago.
-     *
-     * @param discardDays the draft age, in days, at which a draft is discarded; at least 1
-     * @throws IllegalArgumentException if {@code discardDays} is less than 1, which would put the cutoff at
-     *                                  or after the current time and so delete every enforcement draft
-     *                                  regardless of age
-     */
     @Transactional
     public void deleteEnforcementDraftsBatch(long discardDays) {
         if (discardDays < 1) {

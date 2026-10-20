@@ -20,11 +20,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * The "Eviction details" the bailiff sees when scheduling or rescheduling the eviction (HDPI-7344): the claimant
- * type, claimant names and defendant names of the claim. Defendants whose names are not known are shown once,
- * as "Person(s) unknown", however many there are.
- */
 @Service
 @RequiredArgsConstructor
 public class EvictionDetailsService {
@@ -70,12 +65,6 @@ public class EvictionDetailsService {
         return party.getOrgName() != null ? party.getOrgName() : fullName(party);
     }
 
-    /**
-     * Every defendant's name, with "Person(s) unknown" shown once however many defendants have no known name.
-     * Only that placeholder is deduplicated: two defendants can share a name, such as joint tenants or a
-     * father and son, and each is a person the bailiff has to evict. The "Record warrant return" screen's
-     * table applies the same rule.
-     */
     private static List<String> defendantNames(Stream<PartyEntity> defendants) {
         List<String> names = new ArrayList<>();
         boolean anyUnknown = false;

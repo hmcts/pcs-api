@@ -59,7 +59,6 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        // Set navigation flags based on user selection
         NameAndAddressForEviction nameAndAddress =
                 caseData.getEnforcementOrder().getWritDetails().getNameAndAddressForEviction();
 
@@ -68,7 +67,6 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
         WritDetails writDetails = caseData.getEnforcementOrder().getWritDetails();
 
         if (correctNameAndAddress == VerticalYesNo.NO) {
-            // Navigate to ChangeNameAddressPage
             writDetails.setShowChangeNameAddressPage(YesOrNo.YES);
         } else if (correctNameAndAddress == VerticalYesNo.YES) {
             writDetails.setShowChangeNameAddressPage(YesOrNo.NO);

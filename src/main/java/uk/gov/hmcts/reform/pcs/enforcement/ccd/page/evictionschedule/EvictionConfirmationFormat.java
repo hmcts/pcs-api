@@ -7,9 +7,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.util.EvictionDateFormat;
 
 import java.time.LocalDateTime;
 
-/**
- * Formats a date and time for the eviction confirmation screens, as in "Thursday 25 June 2026 at 10:00am".
- */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EvictionConfirmationFormat {
 
@@ -17,12 +14,6 @@ public final class EvictionConfirmationFormat {
         return EvictionDateFormat.format(dateTime);
     }
 
-    /**
-     * The body of the schedule and reschedule confirmation screens: the case and warrant numbers, the notice
-     * the bailiff needs to print and a link to case file view.
-     *
-     * @param warrantNumber the warrant's number, or null for a warrant that has none
-     */
     public static String scheduledBody(String formattedCaseReference, long caseReference, String warrantNumber) {
         return """
             %s

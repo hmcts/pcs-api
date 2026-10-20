@@ -10,11 +10,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionScheduleService;
 
-/**
- * Sets the fields that gate "Schedule eviction", "Reschedule eviction" and "Mark notice of eviction as served" on
- * the claim's current enforcement, and whether defendants may see it. Leaves them unset when the claim has no
- * enforcement, which hides the events.
- */
 @Component
 @RequiredArgsConstructor
 public class EvictionScheduleView {

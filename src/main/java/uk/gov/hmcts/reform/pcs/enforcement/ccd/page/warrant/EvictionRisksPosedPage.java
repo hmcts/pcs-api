@@ -35,7 +35,6 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         WarrantDetails warrantDetails = data.getEnforcementOrder().getWarrantDetails();
 
-        // Initialize risk details if null
         if (warrantDetails.getRiskDetails() == null) {
             warrantDetails.setRiskDetails(RiskDetails.builder().build());
         }

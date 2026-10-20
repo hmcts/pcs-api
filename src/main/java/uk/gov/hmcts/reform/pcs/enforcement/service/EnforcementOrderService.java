@@ -56,11 +56,6 @@ public class EnforcementOrderService {
                 .orElse(null);
     }
 
-    /**
-     * Every type the claim has applied for, whatever became of the application. "Enforce the order" offers a
-     * restitution type on this: it is what the claimant has already applied for that decides whether they can
-     * apply to restore possession.
-     */
     public Set<SelectEnforcementType> retrieveEnforcementTypes(long caseReference) {
         return claimApplications(caseReference)
                 .map(SelectEnforcementType::from)
@@ -76,44 +71,24 @@ public class EnforcementOrderService {
                 .map(EnforcementOrderEntity::getEnforcementOrder);
     }
 
-    /**
-     * The case's claim. Enforcement assumes one claim per case, as the rest of the service does.
-     *
-     * @throws ClaimNotFoundException if the case has no claim
-     */
     ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
         return Optional.ofNullable(pcsCaseEntity.getMainClaim())
                 .orElseThrow(() -> new ClaimNotFoundException(pcsCaseEntity.getCaseReference()));
     }
 
     /**
-     * Whether the claimant can apply for a new enforcement: the claim's current enforcement, if it has one, is
-     * not live (closed, rejected or transferred to the High Court). A claim can have at most one live
-     * enforcement, and the current one is the live one if there is one. "Enforce the order" and "Resume draft
-     * application" are offered on this, and their start and submit refuse on it.
-     *
-     * @param currentEnforcement the claim's current enforcement, or null if it has none
+     * Whether the claimant can apply for a new enforcement, given the claim's current one or null for none.
      */
     public static boolean canApplyForEnforcement(EnforcementOrderEntity currentEnforcement) {
         return currentEnforcement == null || !currentEnforcement.getStatus().isLive();
     }
 
-    /**
-     * Whether the case's claim has a live enforcement, i.e. one that is not closed, rejected or transferred
-     * to the High Court. A claim can have at most one.
-     */
     public boolean hasLiveEnforcement(long caseReference) {
         return !canApplyForEnforcement(currentEnforcementService.findCurrentEnforcement(caseReference).orElse(null));
     }
 
     /**
-     * Saves the submitted application and deletes the draft. An application that owes a fee is saved awaiting
-     * payment, and a Payments service request is raised for the fee once the transaction commits.
-     *
-     * @return a change that was made, carrying the fee the application owes or null when it owes nothing, or
-     *     the errors to show the claimant instead
-     * @throws FeeNotFoundException if the application owes a fee that the Fees Register cannot give, before
-     *     anything is saved
+     * Throws {@link FeeNotFoundException}, before anything is saved, if the fee owed cannot be looked up.
      */
     @Transactional
     public EnforcementChange<FeeDetails> saveAndClearDraftData(long caseReference,
@@ -131,8 +106,6 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        // EnforcementSubmitEvent refuses an application that records no type before it gets here, so the fee,
-        // the initial status and the type's strategy below all have a type to work from.
         SelectEnforcementType enforcementType = Objects.requireNonNull(
             SelectEnforcementType.from(enforcementOrder), "The enforcement application records no type");
         // Decided before the new application is saved, so it only sees the claim's earlier enforcements.
@@ -145,11 +118,8 @@ public class EnforcementOrderService {
         enforcementStatusTransitions.transition(enforcementOrderEntity,
             EnforcementStatusTransitions.initialStatus(paymentOutstanding));
         enforcementOrderEntity.setSubmittedAt(enforcementOrderEntity.getStatusUpdatedAt());
-        // The writ, writ of restitution and warrant of restitution strategies each save a child row whose
-        // enf_case_id is not nullable, and EnforcementOrderEntity has no association to cascade through, so the
-        // enforcement has to be persistent before a strategy runs. The insert is flushed here so that the
-        // one-live-enforcement index refuses a second application where the submit can turn it into a refusal,
-        // rather than at commit.
+        // Flushed so the strategies below have a persistent row to hang their child rows off, and so the
+        // one-live-enforcement index refuses a second application here rather than at commit.
         EnforcementOrderEntity savedEntity = enforcementOrderRepository.saveAndFlush(enforcementOrderEntity);
         strategyFactory.getStrategy(enforcementType).process(savedEntity, enforcementOrder);
         if (!paymentOutstanding && EnforcementApplicationFee.isPayable(enforcementType)) {
@@ -171,11 +141,6 @@ public class EnforcementOrderService {
         return EnforcementChange.made(feeOwed.orElse(null));
     }
 
-    /**
-     * What an application reaching awaiting review does, whichever path took it there: the claimant is told it
-     * has been received, the application documents are generated, and a caseworker gets a task to review it.
-     * Both callers run in a transaction, so all three go with the application or not at all.
-     */
     private void applicationAwaitingReview(long caseReference, UUID enforcementId,
                                            SelectEnforcementType enforcementType) {
         enforcementNotificationService.notifyClaimantOfApplicationReceived(caseReference, enforcementType);
@@ -183,26 +148,13 @@ public class EnforcementOrderService {
         enforcementWaTaskService.applicationAwaitingReview(caseReference, enforcementId);
     }
 
-    /**
-     * An application for a type with a fee owes it when it is submitted, because the fee is not taken during
-     * submit, unless it is a free repeat warrant ({@link RepeatWarrantFeeWaiver}, HDPI-8424). An application for
-     * a type with no fee, which is either restitution type, owes nothing. Either way an application that owes
-     * nothing goes straight to review. The fee amounts on the submitted case data come from the client, so they
-     * are not used to decide this.
-     */
     private boolean isPaymentOutstanding(ClaimEntity claimEntity, SelectEnforcementType enforcementType) {
         return EnforcementApplicationFee.isPayable(enforcementType)
             && !repeatWarrantFeeWaiver.isFeeWaived(claimEntity.getId(), enforcementType);
     }
 
     /**
-     * Moves a paid application on to awaiting review, tells the claimant it has been received and generates the
-     * application documents, which the features describe as produced once the claimant has submitted and paid.
-     * {@link EnforcementPaymentCallbackHandler} calls this when Payments reports the fee paid.
-     *
-     * <p>A failure to queue the email or the documents is thrown here, unlike in the submit handlers, and
-     * rolls the whole callback back: there is no user waiting on a screen to refuse, and the right answer to
-     * Payments is a failure it will send again rather than a success for work that was not queued.</p>
+     * A failure to queue the email or the documents is thrown rather than refused, so Payments retries.
      */
     void moveToAwaitingReview(long caseReference, EnforcementOrderEntity enforcement) {
         enforcementStatusTransitions.transition(enforcement, EnforcementStatus.AWAITING_REVIEW);
@@ -212,18 +164,13 @@ public class EnforcementOrderService {
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
-        // The status is held on the enf_case.status column and only copied onto the case view, and the list of
-        // enforcements is built from the enf_case rows for the case view, so do not store a copy of either in the
-        // enforcement order JSON.
+        // Each of these is held on its own table or rendered for the case view, not in this JSON column.
         enforcementOrder.setEnforcementStatus(null);
         enforcementOrder.setEnforcements(null);
-        // Bailiff notes are held on enf_bailiff_note, so do not copy the case view's notes into the JSON either.
         enforcementOrder.setBailiffNotes(null);
         enforcementOrder.setBailiffNoteText(null);
-        // Warrant returns are held on enf_warrant_return.
         enforcementOrder.setWarrantReturn(null);
         enforcementOrder.setLatestWarrantReturn(null);
-        // The tab markdown is rendered for the case view from the enforcement records.
         enforcementOrder.setEnforcementStatusTabMarkdown(null);
         enforcementOrder.setRiskAssessmentPrintMarkdown(null);
         enforcementOrder.setRiskAssessmentInternalMarkdown(null);
@@ -235,10 +182,7 @@ public class EnforcementOrderService {
     }
 
     /**
-     * The application as it will read back out of the enforcement_order JSON column. Hibernate dirty-checks that
-     * column against a JSON round trip of the value it holds, and reading an order materialises every
-     * {@link com.fasterxml.jackson.annotation.JsonUnwrapped} nested object the application left null, so storing
-     * the submitted order as built would make the row dirty the moment it was inserted and cost a second write.
+     * The order as it reads back out of the JSON column; storing it as built dirties the row on insert.
      */
     private EnforcementOrder storedForm(EnforcementOrder enforcementOrder) {
         return objectMapper.convertValue(enforcementOrder, EnforcementOrder.class);

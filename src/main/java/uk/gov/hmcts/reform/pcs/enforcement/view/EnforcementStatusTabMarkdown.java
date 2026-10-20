@@ -17,12 +17,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.view.TabMarkup.heading;
 import static uk.gov.hmcts.reform.pcs.enforcement.view.TabMarkup.paragraph;
 import static uk.gov.hmcts.reform.pcs.enforcement.view.TabMarkup.summaryList;
 
-/**
- * Renders the "Enforcement status" tab (12-enforcement-status-tab.feature, HDPI-7351): a section for each
- * generated warrant and writ, headed with its number. A warrant has the "Eviction notice", "Scheduled
- * eviction", "Claimant eviction confirmation" and "Eviction outcome" sections; a writ goes to a High Court
- * Enforcement Officer, so it shows the date of transfer to the High Court instead.
- */
 final class EnforcementStatusTabMarkdown {
 
     static final String EVICTION_NOTICE = "Eviction notice";
@@ -55,26 +49,16 @@ final class EnforcementStatusTabMarkdown {
     private static final Set<SelectEnforcementType> WRITS =
         EnumSet.of(SelectEnforcementType.WRIT, SelectEnforcementType.WRIT_OF_RESTITUTION);
 
-    /**
-     * One warrant or writ on the tab, with its most recent warrant return, if any.
-     */
     record Entry(EnforcementOrderEntity enforcement, WarrantReturnEntity latestReturn) {
     }
 
     private EnforcementStatusTabMarkdown() {
     }
 
-    /**
-     * Renders the entries in the order given, for internal users and the claimant side.
-     */
     static String render(List<Entry> entries) {
         return renderSections(entries, false);
     }
 
-    /**
-     * Renders the entries in the order given for a defendant: without the "Claimant eviction confirmation"
-     * section, which is the claimant's own answer (12-enforcement-status-tab.feature).
-     */
     static String renderForDefendants(List<Entry> entries) {
         return renderSections(entries, true);
     }
@@ -102,9 +86,6 @@ final class EnforcementStatusTabMarkdown {
         }
         summary.add(new Row(STATUS, enforcement.getStatus().getLabel()));
         if (WRITS.contains(type)) {
-            // HDPI-7351 asks for the date of the Judge's order, which no field records, so the date the
-            // caseworker approved the writ stands in. Nothing in production checks that the claim was
-            // transferred to the High Court at all (EnforcementApplicationPage).
             if (enforcement.getApprovedAt() != null) {
                 summary.add(new Row(HIGH_COURT_TRANSFER_DATE, TabMarkup.SHORT_DATE.format(
                     enforcement.getApprovedAt().atZone(UK_ZONE_ID).toLocalDate())));
@@ -167,10 +148,6 @@ final class EnforcementStatusTabMarkdown {
         ));
     }
 
-    /**
-     * "Confirm the eviction details" only asks whether the claimant can attend (OPEN-QUESTIONS 29), so that is
-     * the only answer shown.
-     */
     private static String claimantConfirmation(EnforcementOrderEntity enforcement) {
         LocalDateTime evictionAt = enforcement.getBailiffDate();
         Boolean canAttend = enforcement.getClaimantCanAttend();

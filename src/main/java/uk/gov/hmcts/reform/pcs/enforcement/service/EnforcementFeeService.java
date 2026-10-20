@@ -20,12 +20,6 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
-/**
- * Takes an enforcement application's fee through PCS's standard payments pattern, as claim issue, counterclaims
- * and general applications do: the fees-and-pay task raises a Payments service request for the fee, which the
- * claimant pays from the case's Service Request tab, and the Payments callback for it is handled by
- * {@link EnforcementPaymentCallbackHandler}.
- */
 @Service
 @RequiredArgsConstructor
 public class EnforcementFeeService {
@@ -35,10 +29,9 @@ public class EnforcementFeeService {
     private final SchedulerClient schedulerClient;
 
     /**
-     * The current fee for applying for a type that has one.
+     * The current fee for the enforcement type.
      *
      * @throws FeeNotFoundException if the Fees Register cannot be reached or has no such fee
-     * @throws IllegalArgumentException if the type has no fee
      */
     public FeeDetails lookUpFee(SelectEnforcementType enforcementType) {
         FeeType feeType = EnforcementApplicationFee.findFeeType(enforcementType)
@@ -47,13 +40,7 @@ public class EnforcementFeeService {
     }
 
     /**
-     * Raises a Payments service request for the enforcement's fee, with the claim's claimant as the party paying.
-     *
-     * <p>The fees-and-pay task is written in the event's transaction, which db-scheduler joins, so no service
-     * request is raised for an application that is rolled back and a committed application always has one
-     * queued. Nothing here talks to Payments, so a Payments outage cannot fail the event: the task retries on its
-     * own. A failure to write the task is thrown, so a submit handler has to call this through
-     * {@link EnforcementSideEffects} to answer it as an error rather than a 500.</p>
+     * A failure to queue the fees-and-pay task is thrown; call this through {@link EnforcementSideEffects}.
      */
     public void requestPayment(PcsCaseEntity pcsCase, UUID enforcementId, FeeDetails feeDetails) {
         long caseReference = pcsCase.getCaseReference();
@@ -68,9 +55,8 @@ public class EnforcementFeeService {
             .relatedEntityId(enforcementId)
             .build();
 
-        // The real time, not the injected clock's: db-scheduler decides when a task is due against the real
-        // system clock, so a task scheduled from a clock the end to end tests have moved forwards would wait
-        // for the real time to catch up.
+        // The real time, not the injected clock's: db-scheduler decides when a task is due against the
+        // system clock, so a task scheduled from a clock the tests have moved forwards would never be due.
         schedulerClient.scheduleIfNotExists(
             FEES_AND_PAY_TASK_DESCRIPTOR
                 .instance(instanceId(enforcementId))
@@ -79,9 +65,6 @@ public class EnforcementFeeService {
         );
     }
 
-    /**
-     * One service request per enforcement, so scheduling it twice is a no-op.
-     */
     static String instanceId(UUID enforcementId) {
         return "enforcement-" + enforcementId;
     }

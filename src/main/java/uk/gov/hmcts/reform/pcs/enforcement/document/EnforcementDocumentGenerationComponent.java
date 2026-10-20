@@ -18,16 +18,6 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Generates one enforcement document, retrying with exponential backoff when Docmosis or CDAM fails, as the
- * other PCS document generation tasks do.
- *
- * <p>Failures are recorded the way claim form generation records them: a {@code DOCUMENTS_CREATED} FAILURE
- * row in {@code claim_activity_log} on the first failure (retrying) and on the last (terminal), because
- * db-scheduler deletes the task once it gives up. The terminal failure is also logged once at ERROR with
- * {@code terminalFailure=true}, the task name, case reference and output in the MDC, which App Insights copies
- * into customDimensions for alerting.</p>
- */
 @Slf4j
 @Component
 public class EnforcementDocumentGenerationComponent {
@@ -83,7 +73,8 @@ public class EnforcementDocumentGenerationComponent {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
-                    // MaxRetriesFailureHandler runs the task maxRetries + 1 times in all.
+                    // MaxRetriesFailureHandler runs the task maxRetries + 1 times in all. Only the first and
+                    // last failure are recorded, as db-scheduler deletes the task once it gives up.
                     boolean terminal = attempt > maxRetries;
                     if (attempt == 1 || terminal) {
                         Optional<Long> caseReference = caseReference(enforcementId);

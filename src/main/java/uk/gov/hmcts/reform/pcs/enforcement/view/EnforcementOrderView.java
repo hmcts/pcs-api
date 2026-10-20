@@ -41,11 +41,6 @@ public class EnforcementOrderView {
         setHasEnforcementDraftData(caseReference, state, pcsCase);
     }
 
-    /**
-     * Sets the status of the claim's current enforcement (the live one if there is one, otherwise the one
-     * whose status changed most recently) and the list of every enforcement on the claim, newest first.
-     * Leaves both unset when the claim has no enforcement.
-     */
     public void setEnforcementStatusFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCase == null) {
             return;
@@ -98,16 +93,6 @@ public class EnforcementOrderView {
         }
     }
 
-    /**
-     * The draft replaces the case's enforcement order, but the fields below are derived for the case view
-     * rather than taken from the draft, so keep the current values. A draft with no enforcement order keeps
-     * the current order.
-     *
-     * <p>The formatted property address and defendant names are the other way round: only enforceTheOrder's
-     * start callback and the first page's mid event write them, so the draft holds the real values and the
-     * case view has none. Keeping the draft's values is what makes them survive into
-     * resumeEnforcementOrder, which has no start callback to work them out again.</p>
-     */
     private static EnforcementOrder keepViewFields(EnforcementOrder draftOrder, EnforcementOrder currentOrder) {
         if (draftOrder == null) {
             return currentOrder;

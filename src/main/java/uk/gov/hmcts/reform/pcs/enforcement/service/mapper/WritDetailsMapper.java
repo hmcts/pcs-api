@@ -17,10 +17,8 @@ public class WritDetailsMapper {
     public WritEntity toEntity(WritDetails writDetails) {
         WritEntity entity = new WritEntity();
 
-        // Map NameAndAddressForEviction fields
         mapNameAndAddressForEviction(writDetails.getNameAndAddressForEviction(), entity);
 
-        // Map direct fields
         entity.setHasHiredHighCourtEnforcementOfficer(
             convertToVerticalYesNo(writDetails.getHasHiredHighCourtEnforcementOfficer()));
         entity.setHceoDetails(writDetails.getHceoDetails());

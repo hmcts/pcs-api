@@ -25,14 +25,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIMANT_CONFIRMED;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIMANT_UNABLE_TO_ATTEND;
 
-/**
- * The bailiff schedules and reschedules the eviction on the claim's live warrant, and marks the notice of
- * eviction as served (HDPI-7344, HDPI-7549, HDPI-7346).
- *
- * <p>The eviction date is the enforcement's bailiff date, which also drives the claimant's Confirm eviction
- * journey. Scheduling and rescheduling move the warrant to awaiting claimant confirmation. Marking the notice as
- * served does not change the status.</p>
- */
 @Service
 @RequiredArgsConstructor
 public class EvictionScheduleService {
@@ -44,16 +36,9 @@ public class EvictionScheduleService {
     public static final String CANNOT_MARK_NOTICE_SERVED_ERROR = "There is no 'notice of eviction' to mark as "
         + "served on this warrant";
 
-    /**
-     * The statuses an eviction can be rescheduled from: the claimant cannot attend, or has confirmed. Claimant
-     * confirmed comes from the event availability rules (HDPI-7549, OPEN-QUESTIONS 7).
-     */
     static final Set<EnforcementStatus> RESCHEDULABLE = Collections.unmodifiableSet(
         EnumSet.of(CLAIMANT_UNABLE_TO_ATTEND, CLAIMANT_CONFIRMED));
 
-    /**
-     * The statuses of a warrant with a scheduled eviction that has not happened yet.
-     */
     static final Set<EnforcementStatus> SCHEDULED = Collections.unmodifiableSet(
         EnumSet.of(AWAITING_CLAIMANT_CONFIRMATION, CLAIMANT_CONFIRMED, CLAIMANT_UNABLE_TO_ATTEND));
 
@@ -65,12 +50,6 @@ public class EvictionScheduleService {
     private final EnforcementDocumentScheduler enforcementDocumentScheduler;
     private final EnforcementWaTaskService enforcementWaTaskService;
 
-    /*
-     * The rules below are what the start and submit callbacks check on the claim's live enforcement, and what
-     * EvictionScheduleView offers the events on. Each only holds for a live status, so on the claim's current
-     * enforcement (null when it has none) it holds exactly when the callbacks would not refuse.
-     */
-
     public static boolean canSchedule(EnforcementOrderEntity enforcement) {
         return enforcement != null && enforcement.getStatus() == AWAITING_SCHEDULING;
     }
@@ -80,10 +59,6 @@ public class EvictionScheduleService {
             && RESCHEDULABLE.contains(enforcement.getStatus());
     }
 
-    /**
-     * The notice of eviction is to be served when the eviction is scheduled, the court has not dispensed with
-     * service, and the notice has not been served yet.
-     */
     public static boolean canMarkNoticeServed(EnforcementOrderEntity enforcement) {
         return enforcement != null
             && enforcement.getStatus() != null
@@ -93,10 +68,6 @@ public class EvictionScheduleService {
             && enforcement.getNoticeServedAt() == null;
     }
 
-    /**
-     * Defendants may see the enforcement once the notice of eviction is served, and never when the court has
-     * dispensed with service (a without notice eviction).
-     */
     public static boolean defendantsCanSeeEnforcement(EnforcementOrderEntity enforcement) {
         return !Boolean.TRUE.equals(enforcement.getDispenseWithService()) && enforcement.getNoticeServedAt() != null;
     }
@@ -105,12 +76,6 @@ public class EvictionScheduleService {
         return currentEnforcementService.findCurrentEnforcement(pcsCaseEntity);
     }
 
-    /**
-     * Checks the eviction can be scheduled on the claim's live warrant.
-     *
-     * @throws NoEnforcementException if the claim has no live enforcement
-     * @throws EnforcementEventNotAvailableException if the warrant is not awaiting scheduling
-     */
     public void checkCanSchedule(long caseReference) {
         requireLiveEnforcement(caseReference, EvictionScheduleService::canSchedule, CANNOT_SCHEDULE_ERROR);
     }
@@ -124,11 +89,6 @@ public class EvictionScheduleService {
                                CANNOT_MARK_NOTICE_SERVED_ERROR);
     }
 
-    /**
-     * Saves the eviction date on the claim's live warrant.
-     *
-     * @return the warrant's number for the confirmation screen, or the errors to show instead
-     */
     @Transactional
     public EnforcementChange<String> schedule(long caseReference, LocalDateTime evictionDateTime,
                                               boolean dispenseWithService) {
@@ -154,11 +114,6 @@ public class EvictionScheduleService {
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
-    /**
-     * Saves a new eviction date on the claim's live warrant.
-     *
-     * @return the warrant's number for the confirmation screen, or the errors to show instead
-     */
     @Transactional
     public EnforcementChange<String> reschedule(long caseReference, LocalDateTime evictionDateTime,
                                                 boolean dispenseWithService) {
@@ -168,17 +123,13 @@ public class EvictionScheduleService {
             return EnforcementChange.refused(live.errors());
         }
         EnforcementOrderEntity enforcement = live.change();
-        // Read before the new date overwrites them, so the previous appointment's tasks can be cancelled and
-        // the notice it had served can be served again.
+        // Read before the new date overwrites it, so the previous appointment's tasks can be cancelled.
         final Eviction previous = appointmentOf(enforcement);
         setEvictionDate(enforcement, evictionDateTime, dispenseWithService);
         final Eviction appointment = appointmentOf(enforcement);
         // TODO HDPI-7538: show the claimant the "Confirm the eviction date" dashboard notification.
-        // "Reschedule eviction" is closed by XUI through the task-completion DMN.
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
             caseReference, "the new eviction notices, the claimant's email and the eviction tasks", () -> {
-                // A new notice of eviction and notice of appointment, keeping the originals in the Enforcement
-                // folder.
                 enforcementDocumentScheduler.scheduleEvictionNotices(enforcement.getId());
                 enforcementNotificationService.notifyClaimantOfRescheduledEviction(caseReference, evictionDateTime);
                 enforcementWaTaskService.evictionRescheduled(caseReference, enforcement.getId(), previous,
@@ -190,12 +141,6 @@ public class EvictionScheduleService {
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
-    /**
-     * Records when and how the notice of eviction was served, and adds the bailiff note if there is one.
-     *
-     * @param bailiffNote the note to add, or null for none
-     * @return the warrant's number for the confirmation screen, or the errors to show instead
-     */
     @Transactional
     public EnforcementChange<String> markNoticeServed(long caseReference, LocalDateTime servedAt, String servedHow,
                                                       String bailiffNote) {
@@ -212,17 +157,9 @@ public class EvictionScheduleService {
         if (bailiffNote != null) {
             bailiffNoteService.addNote(caseReference, bailiffNote);
         }
-        // "Mark notice of eviction as served" is closed by XUI through the task-completion DMN.
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
-    /**
-     * A new eviction date comes with a fresh notice of eviction (HDPI-7354), so the service record of the
-     * previous notice no longer applies: clearing it makes "Mark eviction notice served" available again, and
-     * takes defendant visibility away until the new notice is served. Defendant visibility is derived from the
-     * notice fields, so it is recomputed after they are cleared. The claimant's answer was about the previous date, so
-     * it is cleared too.
-     */
     private void setEvictionDate(EnforcementOrderEntity enforcement, LocalDateTime evictionDateTime,
                                  boolean dispenseWithService) {
         enforcement.setBailiffDate(evictionDateTime);
@@ -235,9 +172,6 @@ public class EvictionScheduleService {
         enforcementOrderRepository.save(enforcement);
     }
 
-    /**
-     * The eviction appointment the warrant holds now, as the work allocation tasks see it.
-     */
     private static Eviction appointmentOf(EnforcementOrderEntity enforcement) {
         return new Eviction(enforcement.getBailiffDate(),
                             Boolean.TRUE.equals(enforcement.getDispenseWithService()),
@@ -245,9 +179,7 @@ public class EvictionScheduleService {
     }
 
     /**
-     * The claim's live enforcement, for a start callback: it refuses by throwing, which
-     * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
-     * error on the start response. A submit handler must go through {@link #findLiveEnforcement} instead.
+     * Refuses by throwing, for a start callback. A submit handler must use {@link #findLiveEnforcement}.
      */
     private EnforcementOrderEntity requireLiveEnforcement(long caseReference,
                                                           Predicate<EnforcementOrderEntity> available,
@@ -260,9 +192,6 @@ public class EvictionScheduleService {
         return enforcement;
     }
 
-    /**
-     * The claim's live enforcement if the event applies to it, or why it does not.
-     */
     private EnforcementChange<EnforcementOrderEntity> findLiveEnforcement(
         long caseReference, Predicate<EnforcementOrderEntity> available, String notAvailableError) {
         Optional<EnforcementOrderEntity> live = findLive(caseReference);

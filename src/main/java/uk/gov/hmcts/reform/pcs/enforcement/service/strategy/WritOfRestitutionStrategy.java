@@ -16,10 +16,6 @@ public class WritOfRestitutionStrategy implements EnforcementTypeStrategy {
     private final WritOfRestitutionRepository writOfRestitutionRepository;
     private final EnforcementStatementOfTruthService enforcementStatementOfTruthService;
 
-    /**
-     * The journey asks which language the claimant used and takes the statement of truth on the writ journey's
-     * pages, so both answers are on {@link WritDetails}.
-     */
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         WritDetails writDetails = enforcementOrder.getWritDetails();

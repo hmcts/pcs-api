@@ -8,13 +8,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementType;
 
-/**
- * CCD page configuration for the enforcement Language used screen.
- * Allows users to indicate whether any part of their enforcement application was completed in Welsh.
- *
- * <p>Shown in the warrant of possession and warrant of restitution journeys, which record the answer in the
- * same field (HDPI-7555).</p>
- */
 public class LanguageUsedPage implements CcdPageConfiguration {
 
     @Override
@@ -31,5 +24,4 @@ public class LanguageUsedPage implements CcdPageConfiguration {
             .label("languageUsed-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
-
 

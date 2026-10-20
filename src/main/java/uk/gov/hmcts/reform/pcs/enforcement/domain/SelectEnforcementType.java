@@ -27,9 +27,7 @@ public enum SelectEnforcementType implements HasLabel {
     }
 
     /**
-     * The type recorded on an enforcement order, or null when it records no known type. Applications stored
-     * before {@link EnforcementOrder#getChooseEnforcementType()} replaced it only carry the redundant
-     * {@link EnforcementOrder#getSelectEnforcementType()}, so fall back to that.
+     * The type recorded on an enforcement order, or null when it records no known type.
      */
     public static SelectEnforcementType from(EnforcementOrder enforcementOrder) {
         if (enforcementOrder == null) {

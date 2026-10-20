@@ -7,11 +7,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 
 import java.util.Objects;
 
-/**
- * The decideEnforcement confirmation screen: "Warrant of possession approved", "Writ of restitution rejected"
- * and so on. The title is the confirmation header, which XUI renders as the page heading, like the other
- * enforcement confirmations.
- */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class DecideEnforcementConfirmation {
 
@@ -45,11 +40,6 @@ final class DecideEnforcementConfirmation {
         return outcome.decision() == EnforcementDecision.ACCEPT;
     }
 
-    /**
-     * Nothing in production checks that the claim was transferred to the High Court before a writ was applied
-     * for (EnforcementApplicationPage), so the writ copy says only what approving the application did and what
-     * the claimant has to do next, and never that the claim has been transferred.
-     */
     private static String whatHappensNext(EnforcementDecisionOutcome outcome) {
         if (!approved(outcome)) {
             return "The claimant can apply again.";

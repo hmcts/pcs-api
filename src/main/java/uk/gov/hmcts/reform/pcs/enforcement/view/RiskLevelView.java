@@ -9,21 +9,12 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevelDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
 
-/**
- * Sets the current enforcement's risk level and the reason for a high level on the case view. The "Risk
- * assessment" tab itself is set by {@link RiskAssessmentTabView}.
- */
 @Component
 @RequiredArgsConstructor
 public class RiskLevelView {
 
     private final RiskLevelService riskLevelService;
 
-    /**
-     * Leaves the risk level fields empty when the current enforcement has no risk level, or the claim has no
-     * enforcement. Every field is set either way rather than left alone, because a draft "Enforce the order"
-     * may have replaced the enforcement order on the case view with an old copy.
-     */
     public void setRiskAssessmentFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity == null || pcsCase == null) {
             return;

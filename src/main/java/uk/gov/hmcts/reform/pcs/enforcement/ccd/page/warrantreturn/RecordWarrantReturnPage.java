@@ -18,13 +18,6 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-/**
- * The one page of "Record warrant return" (HDPI-7347). The return names offered depend on the return and the
- * outcome, so there is one drop down per list, each shown by show condition. Whether "Additional details" is
- * needed depends on the return name, which XUI cannot express, so the mid-event callback checks it, along
- * with the eviction time and the warrant's status. The page is the first of the event, so "Previous" is
- * disabled.
- */
 @Component
 @RequiredArgsConstructor
 public class RecordWarrantReturnPage implements CcdPageConfiguration, CcdPage {
@@ -34,7 +27,7 @@ public class RecordWarrantReturnPage implements CcdPageConfiguration, CcdPage {
     static final String FINAL = "warrantReturnType=\"FINAL\"";
     static final String INTERIM = "warrantReturnType=\"INTERIM\"";
     static final String SUCCESSFUL = FINAL + " AND warrantReturnOutcome=\"EVICTION_SUCCESSFUL\"";
-    // Unsuccessful or cancelled. Written with AND only, because XUI does not support mixing AND and OR.
+    // Written with AND only, because XUI does not support mixing AND and OR
     static final String NOT_SUCCESSFUL = FINAL + " AND warrantReturnOutcome=\"*\""
         + " AND warrantReturnOutcome!=\"EVICTION_SUCCESSFUL\"";
 
@@ -49,14 +42,10 @@ public class RecordWarrantReturnPage implements CcdPageConfiguration, CcdPage {
             .label(pageKey + "-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantReturn)
-            // Before the label, which XUI otherwise renders blank (see DecideEnforcementPage).
-            // RetainHiddenValue, or the markup is dropped on the way to check your answers and the whole
-            // eviction-details table is blank when the bailiff presses Previous. The event drops
-            // NEVER_SHOW fields from the summary, so this does not reach check your answers itself.
+            // RetainHiddenValue, or the markup is dropped and the eviction-details table is blank on Previous
             .readonly(WarrantReturnDetails::getEvictionDetailsMarkup, NEVER_SHOW, true)
             .done()
             .done()
-            // Outside the warrantReturn scope, which would prefix the label's id.
             .label(pageKey + "-eviction-details", "${warrantReturnEvictionDetailsMarkup}")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantReturn)
