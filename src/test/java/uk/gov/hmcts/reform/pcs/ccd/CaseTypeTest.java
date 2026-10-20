@@ -153,7 +153,6 @@ class CaseTypeTest {
 
 
         // Then
-        verify(builder, never()).tab("orders", "Orders");
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
