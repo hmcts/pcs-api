@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.eventdata.ResumePossessionCl
 
 import java.util.Map;
 
-@Tag("Functional")
+@Tag("Functional1")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
@@ -41,7 +41,7 @@ class CaseEventFlowSampleTest extends BaseApi {
         ObjectNode createCaseTestSupportPayload = EventDataUtil.forEvent(CaseTypeEvents.CREATE_CASE_TEST_SUPPORT)
                                                                 .getData();
         testContext.withPCSTestingSupportApiSteps()
-            .createCaseForLegislativeCountry("england", createCaseTestSupportPayload, true);
+            .createCaseForLegislativeCountry("england", createCaseTestSupportPayload, false);
         testContext.setCaseReference(
             testContext.withPCSTestingSupportApiSteps().getTestingSupportCaseReference().toString()
         );
