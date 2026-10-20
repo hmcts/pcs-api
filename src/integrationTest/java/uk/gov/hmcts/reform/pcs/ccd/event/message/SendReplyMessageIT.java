@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.UnexpectedResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
@@ -22,6 +24,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Map;
@@ -29,10 +33,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
@@ -52,6 +58,8 @@ class SendReplyMessageIT extends OrderEventIT {
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
     private IssuedCases cases;
+    @MockitoSpyBean
+    private FeatureToggleService featureToggleService;
 
     private long caseReference;
     private Actor caseworker;
@@ -59,6 +67,7 @@ class SendReplyMessageIT extends OrderEventIT {
 
     @BeforeEach
     void setUp() {
+        doReturn(true).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
         caseReference = cases.issue();
         cases.update(caseReference, pcsCase -> {
             PartyEntity defendant = pcsCase.getParties().stream()
@@ -139,6 +148,24 @@ class SendReplyMessageIT extends OrderEventIT {
 
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
             .contains("Message with free form order", "Serve this by post.", "Court staff");
+    }
+
+    @Test
+    @DisplayName("with the make order flag off, refuses to start or submit the event and leaves the Messages tab "
+        + "empty")
+    void refusedWhenMakeOrderIsOff() {
+        send();
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+
+        UnexpectedResponse refused = catchThrowableOfType(UnexpectedResponse.class,
+            () -> events.start(caseReference, sendReplyMessage.name()).as(caseworker).start());
+        assertThat(refused.status()).isEqualTo(403);
+        PCSCase message = PCSCase.builder().messageAction(MessageAction.SEND)
+            .messageCategories(Set.of(MessageCategory.OTHER)).messageRecipient(MessageRecipient.DISTRICT_JUDGE)
+            .messageSubject("Another").messageUrgent(VerticalYesNo.NO).messageBody("Body").build();
+        assertThat(events.event(caseReference, sendReplyMessage.name(), message).as(caseworker)
+            .submitExpectingErrors().errors()).containsExactly(SendReplyMessage.NOT_AVAILABLE);
+        assertThat(events.view(caseReference, caseworker).getMessagesMarkdown()).isNull();
     }
 
     /** Court staff send the judges an urgent message about the case's application, and return it. */
