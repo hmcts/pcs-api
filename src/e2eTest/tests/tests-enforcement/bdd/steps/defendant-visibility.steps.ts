@@ -1,9 +1,3 @@
-// What defendants can see of enforcement (feature 14).
-//
-// Runs on a local stack, where the scenario can give a defendant solicitor and a citizen their case roles
-// through pcs-api testing support. The citizen stands in for the feature's second defendant: the fixture
-// claim has one defendant, and pcs-frontend is not part of the local stack, so the citizen's view is the case
-// data CCD gives them, which is what pcs-frontend renders.
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
 import { BrowserContext, Page } from '@playwright/test';
@@ -85,8 +79,6 @@ When('the bailiff marks the notice of eviction as served', async ({ page, world 
   caseChangedForDefendants(world);
 });
 
-// Nothing records the eviction itself until the bailiff records the warrant return (HDPI-7347), and defendant
-// visibility does not change at the eviction, so the checks are made against the scheduled eviction.
 When('the eviction takes place', async ({ world }) => {
   expect(world.evictionScheduled, 'a scheduled eviction').toBe(true);
   approximatePrecondition('HDPI-7347', 'the eviction is not recorded; the checks are made against the scheduled eviction');
@@ -120,8 +112,6 @@ Then('defendants do not see the {string} folder', async ({ page, context, world 
   expectNoEnforcementDocuments(await defendantViews(page, context, world));
 });
 
-// History is an internal tab, so a defendant's legal representative sees no events at all, and pcs-frontend
-// shows citizens no case history.
 Then('they do not see any enforcement events in the case {string} tab', async ({ page, context, world }, tabName: string) => {
   expect(tabName).toBe('History');
   const views = await defendantViews(page, context, world);
@@ -129,8 +119,6 @@ Then('they do not see any enforcement events in the case {string} tab', async ({
   await expectCaseTab(page, tabName, false);
 });
 
-// The only enforcement document a defendant can get is a served warrant's notice of eviction, which pcs-api
-// generates after the schedule commits, so whether or not it has arrived yet, nothing else may be there.
 Then('they do not see the risk assessment document', async ({ page, context, world }) => {
   expectOnlyNoticesOfEviction(await defendantViews(page, context, world));
 });
@@ -156,7 +144,6 @@ pendingSteps({ ticket: 'HDPI-7354', summary: 'Polling each defendant view for th
   'the citizen defendant sees the {string} under {string} in pcs-frontend',
 ]);
 
-// Feature 12: what a defendant sees on the "Enforcement status" tab once the notice is served.
 When('a defendant opens the {string} tab', async ({ page, context, world }, tabName: string) => {
   expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
   world.openedAs = DEFENDANT_LEGAL_REPRESENTATIVE;
@@ -180,7 +167,6 @@ Then('they do not see {string}', async ({ page }, section: string) => {
   }
 });
 
-/** Links both defendants to the scenario's current case, which a later set-up step may have replaced. */
 async function linkBothDefendants(world: EnforcementWorld, $tags: string[]): Promise<boolean> {
   if (!canLinkCitizenDefendant()) {
     markPending(noCitizenUser, $tags);
@@ -206,12 +192,6 @@ When('a defendant views case file view', async ({ page, context, world, $tags })
   await viewAsEachDefendant(page, context, world);
 });
 
-/**
- * Feature 14: the sealed warrant or writ is generated on approval. A warrant of possession has its notice of
- * eviction served as well, so that the defendants can see the warrant's enforcement and the check that the
- * warrant itself is still withheld means something; a writ and a live warrant of restitution are never
- * visible to defendants. Waits until an internal user can see the document.
- */
 Given('a {string} has been generated', async ({ world, $tags }, type: string) => {
   if (type === 'warrant of possession') {
     expect(world.warrantApproved, 'the Background\'s approved warrant').toBe(true);
@@ -243,10 +223,6 @@ Then('they do not see the {string} document', async ({ page, context, world }, t
   }
 });
 
-/**
- * The warrant's notice of eviction is served before it closes, because a closed warrant only stays visible to
- * defendants if they could see it while it was live.
- */
 Given('the previous warrant ended with {string}', async ({ world }, returnName: string) => {
   await scheduleEvictionOnApprovedWarrant(world);
   await markNoticeServedAsBailiff(world);
@@ -280,8 +256,6 @@ Then('defendants cannot see any enforcement information', async ({ page, context
   await expectNoEnforcementInformation(page, context, world);
 });
 
-// Approving the restitution keeps it live and the enforcement hidden; its final return ends it, and the earlier
-// warrant, whose notice was served, shows again (OPEN-QUESTIONS 53).
 Then(
   'they stay unable to see it until the bailiff records a return on the warrant of restitution',
   async ({ page, context, world }) => {

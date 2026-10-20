@@ -9,8 +9,8 @@ export class RetryOnCallBackError implements IAction {
     let attempt = 0;
     await expect(async () => {
       attempt++;
-      // A slow page can arrive after the previous attempt stopped waiting for it. Clicking again would press
-      // the next page's button (or wait for one it does not have), so a retry first checks whether it is there.
+      // A slow page can arrive after the previous attempt stopped waiting for it, so clicking again would
+      // press the next page's button.
       if (attempt > 1 && await nextPage.waitFor({ timeout: SHORT_TIMEOUT }).then(() => true, () => false)) {
         return;
       }

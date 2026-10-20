@@ -102,11 +102,11 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         label2: enforcementApplication.writFeeValidationLabelHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
-     /* await performAction('validateGetQuoteFromBailiffLink', {
+      await performAction('validateGetQuoteFromBailiffLink', {
         type: enforcementApplication.summaryWritOrWarrantLink,
         link: enforcementApplication.quoteFromBailiffLinkHidden,
         newPage: enforcementApplication.hceoPageTitleHidden
-      }); */
+      });
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,

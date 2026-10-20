@@ -1,24 +1,8 @@
 import { ElementHandle, Locator, Page } from '@playwright/test';
 
 /**
- * Human-speed actions for the demo videos. Playwright's videos show no mouse pointer and `fill()` puts a
- * whole value in at once, so a recording at `slowMo` alone shows pages changing with nothing visibly done to
- * them. While the demo pacing is on (utils/page-pacing.ts, `enforcement-bdd-demo` project only), every
- * `Locator` action on the paced page is wrapped, so that every helper, step and sign-in gets it without
- * calling anything:
- *
- * - a pointer is drawn and glides to the element (scrolling it into view first) before a click, check,
- *   select or upload, and ripples as it clicks;
- * - `fill()` into a free-text field types the value a character at a time;
- * - `selectOption()` outlines the drop down and shows the chosen option before carrying on.
- *
- * A date or date-time field is the exception: XUI validates the whole field on every keystroke, so a value
- * typed into it shows "The data entered is not valid" until the last digit is in. Those inputs are filled in
- * one go, and {@link fillDateParts} sets all the parts of one field in a single page call so that a
- * half-filled date is never on screen.
- *
- * With pacing off the wrappers call straight through, and nothing is wrapped until the demo turns pacing
- * on. The visual parts never fail a test: their errors are swallowed and the real action still runs.
+ * Human-speed actions for the demo videos: while the demo pacing is on (utils/page-pacing.ts) every `Locator`
+ * action on the paced page is wrapped. The visual parts never fail a test: their errors are swallowed.
  */
 type Point = { x: number; y: number };
 type LocatorMethod = (this: Locator, ...args: unknown[]) => Promise<unknown>;
@@ -42,10 +26,6 @@ const PATCHED = Symbol.for('pcs.demoHumanActions');
 let activeFor: (() => Page | undefined) | undefined;
 let pointer: Point = { x: 960, y: 540 };
 
-/**
- * Wraps the `Locator` actions, once per worker. `pacedPage` says which page, if any, actions are currently
- * slowed down on; it returns undefined whenever pacing is off.
- */
 export function installHumanActions(page: Page, pacedPage: () => Page | undefined): void {
   activeFor = pacedPage;
   const viewport = page.viewportSize();
@@ -105,7 +85,6 @@ async function typeVisibly(locator: Locator, original: LocatorMethod, args: unkn
     const delay = Math.max(TYPING_MIN_DELAY_MS, Math.min(TYPING_MAX_DELAY_MS, Math.floor(TYPING_BUDGET_MS / value.length)));
     await locator.pressSequentially(value, { delay, timeout: options?.timeout });
   } catch {
-    // Fall through to the check below, which leaves the field as fill() would.
   }
   // A field that masks, formats or limits what is typed ends up different from the value: fill it for real.
   if ((await locator.inputValue({ timeout: 1_000 }).catch(() => undefined)) !== value) {
@@ -114,12 +93,7 @@ async function typeVisibly(locator: Locator, original: LocatorMethod, args: unkn
   return undefined;
 }
 
-/**
- * Runs in the page. Self-contained: Playwright serialises it. Whether the element is a field a value should
- * be typed into: a text area or a text-like input, but not one part of a date or date-time field, which XUI
- * gives an id of the field's id and the part ("evictionDateTime-day") and validates as a whole on every
- * keystroke, so it shows an error until the last part is in.
- */
+/** Runs in the page. Not one part of a date or date-time field, which XUI validates as a whole on every keystroke, so typing into it shows an error until the last part is in. */
 function isFreeText(element: SVGElement | HTMLElement): boolean {
   if (element instanceof HTMLTextAreaElement) {
     return true;
@@ -133,15 +107,7 @@ function isFreeText(element: SVGElement | HTMLElement): boolean {
   );
 }
 
-/**
- * Fills the parts of one date or date-time field — day, month, year and any time parts — in the order given.
- *
- * XUI holds the parts in a single form control and revalidates it on every keystroke, so filling them one
- * after another leaves "The data entered is not valid" on screen from the first part until the last. In the
- * demo the pointer is shown moving to the field and then every part is set in a single page call, which the
- * browser paints once, so the half-filled state is never seen. With pacing off each part is filled in turn,
- * exactly as calling `fill` on it would.
- */
+/** XUI revalidates the whole field on every keystroke, so in the demo every part is set in a single page call and the half-filled state is never seen. */
 export async function fillDateParts(parts: { input: Locator; value: string }[]): Promise<void> {
   const fillInTurn = async (): Promise<void> => {
     for (const { input, value } of parts) {
@@ -173,10 +139,7 @@ export async function fillDateParts(parts: { input: Locator; value: string }[]):
   }
 }
 
-/**
- * Runs in the page. Self-contained: Playwright serialises it. One task, so the browser paints the field once,
- * with every part in it.
- */
+/** Runs in the page. One task, so the browser paints the field once, with every part in it. */
 function setPartsTogether(parts: { element: HTMLInputElement; value: string }[]): void {
   const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
   for (const { element, value } of parts) {
@@ -217,7 +180,6 @@ async function selectVisibly(locator: Locator, original: LocatorMethod, args: un
   return result;
 }
 
-/** Scrolls the element into view if it is not clear of the edges and the caption, glides the pointer to it and clicks. */
 async function pointAt(locator: Locator): Promise<void> {
   const page = locator.page();
   try {
@@ -261,8 +223,7 @@ function drawPointer({ from, to, ms, ripple, label }: { from: Point; to: Point; 
     host.setAttribute('aria-hidden', 'true');
     host.style.cssText = 'all: initial; position: fixed; inset: 0; z-index: 2147483647; pointer-events: none;';
     const root = host.attachShadow({ mode: 'closed' });
-    // Styled through the CSSOM rather than a <style> element: XUI's Content Security Policy blocks inline
-    // style sheets, which left the pointer at the SVG default size.
+    // Styled through the CSSOM rather than a <style> element: XUI's Content Security Policy blocks inline style sheets.
     const ripple = document.createElement('div');
     ripple.className = 'ripple';
     ripple.style.cssText = 'position: fixed; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%; '

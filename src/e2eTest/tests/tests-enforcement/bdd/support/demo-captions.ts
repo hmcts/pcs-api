@@ -1,38 +1,15 @@
-/**
- * Step captions for the demo videos: a bar along the bottom of the screen showing the Gherkin step being run,
- * with the scenario title above it, so the recording can be followed against the feature file. Set-up steps
- * (Given and the Background) get their own "Setting up" style. Installed by the step hooks in
- * fixtures/demo-hold.ts in the `enforcement-bdd-demo` project only.
- *
- * Two things stop the viewer having to take the Gherkin on trust:
- *
- * - `resolved` names the real value behind a value the feature file only quotes illustratively — a generated
- *   warrant number, the scenario's own case reference — so the caption agrees with the screen.
- * - `setUpCard` fills the screen while the set-up steps run. They go through the APIs rather than the
- *   browser, which can take a minute on a case that has to be created, paid for and approved, and the
- *   browser has nothing loaded in it until the first step that opens XUI: without the card that minute is
- *   a blank white page.
- *
- * The bar lives in a closed shadow root attached to <html>, so selectors, `innerText`, the page content
- * checks and the axe audit cannot see it, and it ignores the pointer, so it never takes a click. Every new
- * document in the context (a sign-in redirect, a full page load) asks for the current caption through an
- * exposed binding, so the bar survives navigation. Nothing here may fail a test: errors are swallowed.
- */
+// The caption bar lives in a closed shadow root attached to <html>, so selectors, `innerText`, the page content
+// checks and the axe audit cannot see it, and it ignores the pointer, so it never takes a click.
 import { BrowserContext, Page } from '@playwright/test';
 
-/** One set-up step, as the card lists it. */
 export type DemoSetUpStep = { text: string; done: boolean };
 
 export type DemoCaption = {
   scenario: string;
-  /** The step with its keyword, e.g. `When I start the "Enforce the order" event`. */
   step: string;
   setUp: boolean;
-  /** A note under the step, e.g. who is signing in. */
   status?: string;
-  /** What the step's illustrative values are in this run, e.g. `"WP-0001" is HP-00000013`. */
   resolved?: string[];
-  /** Shown over the whole page while set-up runs with nothing loaded in the browser. */
   setUpCard?: DemoSetUpStep[];
 };
 
@@ -48,7 +25,6 @@ export async function showDemoCaption(page: Page, caption: DemoCaption): Promise
   await render(page);
 }
 
-/** Adds or clears the note under the current step. Does nothing unless a caption is showing (the demo project). */
 export async function showDemoCaptionStatus(page: Page, status: string | undefined): Promise<void> {
   if (!current) {
     return;
@@ -57,11 +33,6 @@ export async function showDemoCaptionStatus(page: Page, status: string | undefin
   await render(page);
 }
 
-/**
- * Re-captions the current step with the real values behind the illustrative ones it quotes, for the step that
- * produced them itself: a step's caption is drawn before it runs, when the number it is about to generate is
- * not known yet.
- */
 export async function showDemoCaptionResolved(page: Page, resolved: string[]): Promise<void> {
   if (!current || resolved.length === 0 || sameValues(current.resolved, resolved)) {
     return;
@@ -70,10 +41,6 @@ export async function showDemoCaptionResolved(page: Page, resolved: string[]): P
   await render(page);
 }
 
-/**
- * How the caption names the real value behind each illustrative value in `step`, in the order the step
- * quotes them. A value this run resolved to itself needs no note.
- */
 export function resolvedValuesIn(step: string, values: Record<string, string>): string[] {
   return Object.entries(values)
     .map(([quoted, actual]) => ({ quoted, actual, at: step.indexOf(`"${quoted}"`) }))
@@ -85,12 +52,7 @@ export function resolvedValuesIn(step: string, values: Record<string, string>): 
 const sameValues = (one: string[] | undefined, other: string[]): boolean =>
   one?.length === other.length && other.every((value, index) => one?.[index] === value);
 
-/**
- * Draws the current caption on the page. A page mid-navigation rejects the evaluate, and one whose document
- * has not run the init script yet has no render function, either of which would leave the previous step's
- * caption on screen; both are retried once the document has loaded. After that the next document picks the
- * caption up through the binding.
- */
+/** Retried once the document has loaded: a page mid-navigation rejects the evaluate, and a new document has no render function yet. */
 async function render(page: Page): Promise<void> {
   for (let attempt = 1; attempt <= 2; attempt++) {
     if (page.isClosed()) {
@@ -226,8 +188,6 @@ function captionScript({ binding, render }: { binding: string; render: string })
         bar.append(status);
       }
     }
-    // Only ever over a document with nothing in it: a step that navigates while the card is up must not
-    // have it drawn over the page it opens.
     const tasks = window.location.protocol === 'about:' ? caption.setUpCard ?? [] : [];
     if (tasks.length === 0) {
       shadow.replaceChildren(style, bar);

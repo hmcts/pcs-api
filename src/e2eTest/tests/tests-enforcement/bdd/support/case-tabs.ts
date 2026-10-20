@@ -1,11 +1,5 @@
-/**
- * Reading simple field rows off a CCD case tab.
- *
- * A tab of CCD fields renders one `<tr>` per populated field, with the field label in the `<th>` and the
- * rendered value in the `<td>`. The enforcement tabs are pcs-api markup instead, with GOV.UK summary list rows
- * (`dt` / `dd`); both are read. A missing key means "not set" rather than "empty string": CCD omits an empty
- * field, and the markup shows a placeholder paragraph instead of a row.
- */
+// A tab of CCD fields renders one row per field; the enforcement tabs are pcs-api markup with GOV.UK summary
+// list rows instead, so both are read.
 import { Page, expect } from '@playwright/test';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { activeTab, openCaseTab } from './enforcement-status-tab';
@@ -13,7 +7,6 @@ import { ensureSignedIn } from './session';
 
 export const RISK_ASSESSMENT_TAB = 'Risk assessment';
 
-/** The label/value pairs on the tab that is currently selected. */
 export async function tabFields(page: Page): Promise<Record<string, string>> {
   const panel = activeTab(page);
   const tableRows = panel.locator('tr').filter({ has: page.locator('th') });
@@ -39,13 +32,11 @@ export async function tabFields(page: Page): Promise<Record<string, string>> {
   return fields;
 }
 
-/** Opens a tab on the case and returns its field rows. */
 export async function openTabFields(page: Page, caseReference: string, tabName: string): Promise<Record<string, string>> {
   await openCaseTab(page, caseReference, tabName);
   return tabFields(page);
 }
 
-/** Asserts one field's value on a tab, polling so a value written by a just-submitted event is picked up. */
 export async function expectTabField(
   page: Page,
   caseReference: string,
@@ -57,7 +48,6 @@ export async function expectTabField(
   await expect.poll(async () => (await tabFields(page))[label], { timeout: VERY_LONG_TIMEOUT }).toBe(value);
 }
 
-/** Whether the signed-in user can see a tab at all. Waits for the tab strip before concluding "no". */
 export async function isTabVisible(page: Page, caseReference: string, tabName: string): Promise<boolean> {
   await ensureSignedIn(page);
   await page.goto(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS/${caseReference}#Summary`, {

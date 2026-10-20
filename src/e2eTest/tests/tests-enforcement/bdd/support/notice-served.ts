@@ -1,13 +1,4 @@
-/**
- * The `markNoticeOfEvictionServed` event (feature 08).
- *
- * One page, reachable once an eviction has been scheduled without dispensing with service. The served
- * date-time is a CCD DateTime, so XUI renders six inputs; the validation messages come from
- * `EvictionScheduleValidator` as mid-event errors rather than CCD field errors.
- *
- * `MARK_NOTICE_SERVED` is the name the feature files and `xuiEvents` use. CCD caps event names at 30
- * characters, so the event itself is called "Mark eviction notice served".
- */
+// CCD caps event names at 30 characters, so `MARK_NOTICE_SERVED` is the event "Mark eviction notice served".
 export const MARK_NOTICE_SERVED = 'Mark notice of eviction as served';
 
 import { Page, expect } from '@playwright/test';
@@ -19,7 +10,6 @@ import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
 
 export const noticeServed = {
   eventName: MARK_NOTICE_SERVED,
-  /** What XUI shows in the next-step drop down. */
   dropDownLabel: 'Mark eviction notice served',
   pageLabel: "Mark 'notice of eviction' as served",
   servedDateQuestion: "When did you serve the 'notice of eviction'?",
@@ -27,7 +17,6 @@ export const noticeServed = {
   addNoteQuestion: 'Do you want to add a bailiff note?',
   noteLabel: 'Add note',
   confirmationHeader: "'Notice of eviction' marked as served",
-  /** EvictionScheduleValidator's messages. */
   errors: {
     dateNeeded: "Enter when you served the 'notice of eviction'",
     howNeeded: "Enter how you served the 'notice of eviction'",
@@ -46,10 +35,6 @@ export const noticeServed = {
   },
 };
 
-/**
- * Opens the event if the page is not already showing it. Some of feature 08's scenarios go straight to an
- * answer step without a navigation step of their own.
- */
 export async function ensureOnNoticeServedPage(page: Page): Promise<void> {
   if (await page.locator(noticeServed.fields.servedHow).isVisible().catch(() => false)) {
     return;
@@ -60,10 +45,7 @@ export async function ensureOnNoticeServedPage(page: Page): Promise<void> {
   await expect(page.locator(noticeServed.fields.servedHow)).toBeVisible({ timeout: LONG_TIMEOUT });
 }
 
-/**
- * Fills the served date-time with yesterday at 09:00: the validator refuses a time in the future, and nothing
- * can control the app's clock.
- */
+/** Yesterday at 09:00: the validator refuses a served time in the future. */
 export async function enterServedYesterday(page: Page): Promise<void> {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -76,11 +58,6 @@ export async function enterServedYesterday(page: Page): Promise<void> {
   });
 }
 
-/**
- * Has the bailiff mark the notice of eviction as served through CCD's data store API, with the XUI journey's
- * answers: served yesterday at 09:00, by hand, with a bailiff note if one is given. Needs an eviction scheduled
- * without dispensing with service. Expects the claimant's legal representative next.
- */
 export async function markNoticeServedAsBailiff(world: EnforcementWorld, bailiffNote?: string): Promise<void> {
   const confirmation = await submitEventAs(requireEmailFor('bailiff'), 'markNoticeOfEvictionServed', {
     noticeOfEvictionServedAt: ccdDateTime(-1, '09:00'),
@@ -93,11 +70,6 @@ export async function markNoticeServedAsBailiff(world: EnforcementWorld, bailiff
   expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
 }
 
-/**
- * The bailiff's journey in XUI, for a scenario whose When is marking the notice served: the same answers as
- * `markNoticeServedAsBailiff`, then check your answers and the confirmation. Expects the claimant's legal
- * representative next, without signing them in.
- */
 export async function markNoticeServedInXui(page: Page, world: EnforcementWorld, bailiffNote?: string): Promise<void> {
   await signInAs('bailiff', page);
   await ensureOnNoticeServedPage(page);
@@ -122,10 +94,8 @@ function recordNoticeServed(world: EnforcementWorld, bailiffNote: string | undef
   }
 }
 
-/** What the suite answers to "How did you serve the 'notice of eviction'?" when the scenario does not say. */
 export const DEFAULT_SERVED_HOW = 'By hand to the occupant';
 
-/** Fills the served date-time's inputs from a "dd/MM/yyyy" date and an "HH:mm" time. */
 export async function enterServedAt(page: Page, date: string, time: string): Promise<void> {
   const { resolveEvictionDate, resolveEvictionTime } = await import('./schedule-eviction');
   await fillDateTimeField(page, noticeServed.fields.servedAt, {
@@ -134,10 +104,6 @@ export async function enterServedAt(page: Page, date: string, time: string): Pro
   });
 }
 
-/**
- * Answers whichever of the page's mandatory questions the scenario left blank, so that a scenario about one
- * answer can get past the page: served yesterday at 09:00, by hand, and no bailiff note.
- */
 export async function answerRemainingNoticeServedQuestions(page: Page): Promise<void> {
   if (!(await page.locator(`${noticeServed.fields.servedAt}-year`).inputValue())) {
     await enterServedYesterday(page);
@@ -152,10 +118,6 @@ export async function answerRemainingNoticeServedQuestions(page: Page): Promise<
   }
 }
 
-/**
- * Submits the event from wherever the scenario left it: the question page, whose blank answers are filled
- * first, or CCD's check-your-answers. Waits for the confirmation.
- */
 export async function submitNoticeServed(page: Page, world: EnforcementWorld): Promise<void> {
   if (await page.locator(noticeServed.fields.servedHow).isVisible().catch(() => false)) {
     await answerRemainingNoticeServedQuestions(page);

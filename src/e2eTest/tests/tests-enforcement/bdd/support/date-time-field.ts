@@ -1,11 +1,5 @@
-/**
- * The inputs XUI renders for a CCD Date or DateTime field: one per part, each with the field's id followed by
- * the part's name, e.g. `#evictionDateTime-day` through `#evictionDateTime-second`.
- *
- * All the parts belong to one form control, which XUI revalidates on every keystroke, so a field filled part
- * by part shows "The data entered is not valid" from the first part until the last. `fillDateParts` keeps that
- * off the demo videos by setting the parts together; outside the demo each part is filled in turn as before.
- */
+// XUI holds every part of a Date or DateTime field in one form control and revalidates it on each keystroke, so
+// a field filled part by part shows "The data entered is not valid" until the last part is in.
 import { Locator, Page, expect } from '@playwright/test';
 import { fillDateParts } from '@utils/demo-actions';
 import { LONG_TIMEOUT } from 'playwright.config';
@@ -15,10 +9,6 @@ export const DATE_TIME_PARTS = ['day', 'month', 'year', 'hour', 'minute'] as con
 
 export const datePartInput = (page: Page, field: string, part: string): Locator => page.locator(`${field}-${part}`);
 
-/**
- * Fills the date or date-time field with id `field` from `values`, keyed by part. A part `values` does not
- * give is left blank, so that the scenarios about a missing date and time still reach the app without one.
- */
 export async function fillDateTimeField(
   page: Page,
   field: string,

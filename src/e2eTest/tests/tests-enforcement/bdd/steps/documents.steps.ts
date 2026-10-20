@@ -1,4 +1,3 @@
-// Generated enforcement documents in the Enforcement folder of case file view (features 01, 02 and 05).
 import { Then, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld } from '../fixtures/enforcement.fixtures';
 import { markPending } from '../fixtures/pending';
@@ -15,17 +14,11 @@ import {
 } from '../support/case-documents';
 import { docmosisRender, noteCheckedOnRenderData } from '../support/docmosis-renders';
 
-/**
- * Locally Docmosis is wiremock, whose request journal keeps what pcs-api asked it to render. Preview and AAT render
- * with the real Docmosis, which keeps nothing the suite can read, so the checks made on the render data (seal,
- * date stamp, answers) only run locally. Case file view itself is checked everywhere.
- */
 const docmosisJournalOnly: PendingScope = {
   summary: 'the seal, date stamp and answers are checked in the request journal of the local stack\'s wiremock '
     + 'Docmosis stub; preview and AAT render with the real Docmosis, which keeps no journal',
 };
 
-/** Marks the scenario pending outside a local stack, where there is no Docmosis request journal to read. */
 function requireDocmosisJournal(tags: string[]): void {
   if (!isLocalStack()) {
     markPending(docmosisJournalOnly, tags);
@@ -43,7 +36,6 @@ function requireCurrentDocument(world: EnforcementWorld): string {
   return world.currentDocument;
 }
 
-/** Waits for the named document and makes it the one "the document" and "it" refer to. */
 async function expectGenerated(world: EnforcementWorld, name: string): Promise<string> {
   const title = documentTitle(name, world);
   await expectEnforcementDocument(requireCaseReference(world), title);
@@ -52,10 +44,6 @@ async function expectGenerated(world: EnforcementWorld, name: string): Promise<s
   return title;
 }
 
-/**
- * The seal pcs-api asked Docmosis to put on the document: "County Court", "High Court", or none. The stub's
- * placeholder PDF carries no seal, so the request is what can be checked.
- */
 async function expectSeal(world: EnforcementWorld, title: string, seal: string | undefined, tags: string[]): Promise<void> {
   requireDocmosisJournal(tags);
   const render = await docmosisRender(requireCaseReference(world), title);
@@ -100,7 +88,6 @@ Then('both documents are visible to the claimant and internal users', async ({ w
 });
 
 Then('no {string} document is generated', async ({ world }, name: string) => {
-  // Every application output is scheduled together, so once the application is filed the others would be too.
   const caseReference = requireCaseReference(world);
   await expectEnforcementDocument(caseReference, documentTitle('enforcement application', world));
   expect(await countEnforcementDocuments(caseReference, documentTitle(name, world)), `no ${name}`).toBe(0);
@@ -109,8 +96,6 @@ Then('no {string} document is generated', async ({ world }, name: string) => {
 /** How long pcs-api could take to schedule and file a warrant after the decision: two db-scheduler polls. */
 const DECISION_SETTLE_MS = 25_000;
 
-// A rejected application gets no warrant. The application documents were generated when the fee was paid, so
-// once they are in the folder and the decision has had time to schedule one, there is no warrant beside them.
 Then('no warrant is generated', async ({ world }) => {
   const caseReference = requireCaseReference(world);
   await expectEnforcementDocument(caseReference, documentTitle('enforcement application', world));
@@ -161,8 +146,6 @@ Then('it is visible to {string}', async ({ world }, viewers: string) => {
   throw new Error(`Unknown viewers "${viewers}". Expected "internal users" or "claimant and internal users"`);
 });
 
-// The answers the "Enforce the order" journeys in support/enforcement-journeys.ts give, by the question the
-// feature names and the field of the enforcement order pcs-api renders the application from.
 type ExpectedAnswers = Record<string, Record<string, unknown>>;
 
 const statementOfTruth = (prefix: string) => ({
@@ -187,7 +170,6 @@ const applicationAnswers: Partial<Record<EnforcementType, ExpectedAnswers>> = {
     'breathing space': { writDefendantInBreathingSpace: 'NO' },
     'missed payments': { writDefendantMissedPayments: 'YES' },
     'High Court Enforcement Officer hired': { writHasHiredHighCourtEnforcementOfficer: 'NO' },
-    // Only asked when an officer was hired; the journey answers that none was.
     'who you hired': { writHceoDetails: undefined },
     'language used': { writEnforcementLanguageUsed: 'ENGLISH' },
     'statement of truth': statementOfTruth('writ'),

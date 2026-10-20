@@ -1,8 +1,3 @@
-// Feature 17: batch print enforcement documents across cases (HDPI-8012).
-//
-// Batch print is a pcs-api API rather than a CCD event (see support/batch-print.ts), so these steps call it
-// as the bailiff. Choosing the cases from "My work" stays pending: XUI's task list cannot act on several
-// tasks at once, and nothing creates the bailiff's tasks yet (HDPI-8627).
 import { BrowserContext, Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
@@ -34,14 +29,8 @@ import { expectEnforcementDocument } from '../support/case-documents';
 
 const NOT_ALLOCATED_REASON = 'You are not the allocated bailiff on this case';
 
-/**
- * The file name prefixes of the documents pcs-api generates for a warrant of possession by the time its eviction
- * is scheduled, in print order: the warrant on approval, the risk assessment once the application is paid for,
- * and the notice of eviction on scheduling.
- */
 const GENERATED_DOCUMENTS = ['Warrant of possession - ', 'Risk assessment - ', 'Notice of eviction - '];
 
-/** Points the journeys, which work on one case at a time, at `caseReference`. */
 function switchToCase(world: EnforcementWorld, caseReference: string): void {
   world.caseReference = caseReference;
   process.env.CASE_NUMBER = caseReference;
@@ -49,7 +38,6 @@ function switchToCase(world: EnforcementWorld, caseReference: string): void {
   caseInfo.fid = caseReference.replace(/(.{4})(?=.)/g, '$1-');
 }
 
-/** The real case standing in for a reference quoted in the feature file. */
 function realCase(world: EnforcementWorld, featureReference: string): string {
   const caseReference = world.batchPrintCaseFor[featureReference];
   if (!caseReference) {
@@ -71,7 +59,6 @@ async function requireDocumentStore(tags: string[]): Promise<void> {
   }
 }
 
-/** Allocates the case's warrant to another bailiff user, as `allocateBailiff` does for the default one. */
 async function allocateTo(caseReference: string, email: string): Promise<void> {
   await allocateBailiffViaTestingSupport(caseReference, {
     userId: await idamUserId(email),
@@ -104,8 +91,7 @@ Given('each case has an eviction scheduled this week', async ({ world }) => {
     switchToCase(world, caseReference);
     await scheduleEvictionAsBailiff(world, 1);
   }
-  // pcs-api generates each document on a db-scheduler task after its event commits, so wait for all of them
-  // before printing. Locally each is the wiremock Docmosis stub's placeholder PDF (OPEN-QUESTIONS 42).
+  // pcs-api generates each document on a db-scheduler task after its event commits, so wait for all of them.
   for (const caseReference of world.batchPrintCases) {
     for (const title of GENERATED_DOCUMENTS) {
       await expectEnforcementDocument(caseReference, title);

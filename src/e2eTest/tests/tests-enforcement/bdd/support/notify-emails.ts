@@ -1,14 +1,5 @@
-/**
- * The GOV.UK Notify emails pcs-api sent for a case, read from wiremock's request journal.
- *
- * Locally Notify is wiremock's `gov-notify/send-email.json` stub, which accepts any template id. The dev profile
- * (src/main/resources/application-dev.yaml) gives each enforcement email a made-up template id so that pcs-api
- * sends it there; no such template exists in Notify, so the body text of an email cannot be checked, only the
- * template it was sent with, who it went to and the personalisation the template would be filled from.
- *
- * pcs-api sends each email on a db-scheduler task after the event commits, so an email arrives some seconds
- * after the event; every check here polls.
- */
+// Locally Notify is a wiremock stub and the dev profile gives each enforcement email a made-up template id, so
+// only the template, the recipient and the personalisation can be checked. Each is sent on a task, so polls.
 import fs from 'fs';
 import path from 'path';
 import Axios from 'axios';
@@ -26,10 +17,6 @@ interface JournalEntry {
   body?: string;
 }
 
-/**
- * The template key under `enforcement-notify.templates` for each email, by the name the feature files (and the
- * HDPI-7538 notification table) give it: pcs-api's `EnforcementEmail`.
- */
 const TEMPLATE_KEYS: Record<string, string> = {
   'Request for a warrant received': 'warrant-application-received',
   'Request for a writ received': 'writ-application-received',
@@ -45,21 +32,15 @@ const TEMPLATE_KEYS: Record<string, string> = {
   'Bailiff reschedules the eviction date': 'eviction-rescheduled',
   'Claimant confirms attendance at the eviction date': 'claimant-confirmed-attendance',
   'Claimant declines attendance at the eviction date': 'claimant-declined-attendance',
-  // One template covers every return name that notifies the claimant; the body is passed as personalisation.
   'Claimant is notified of the return': 'warrant-return',
 };
 
 export const WARRANT_RETURN_EMAIL = 'Claimant is notified of the return';
 
-/**
- * The claimant's email address on every test-case-generation fixture
- * (`Create-Case-Make-A-Claim-Basic-Case.json`, `claimantContactEmail`), which is the claimant solicitor's.
- */
 export const FIXTURE_CLAIMANT_EMAIL = localUsers.claimantSolicitor;
 
 const DEV_PROFILE = path.resolve(__dirname, '../../../../../main/resources/application-dev.yaml');
 
-/** The stand-in template ids the dev profile gives the enforcement emails, by template key. */
 function devTemplateIds(): Record<string, string> {
   const yaml = fs.readFileSync(DEV_PROFILE, 'utf8');
   const section = yaml.match(/^enforcement-notify:\n {2}templates:\n((?: {4}.*\n?)*)/m)?.[1] ?? '';
@@ -68,10 +49,6 @@ function devTemplateIds(): Record<string, string> {
   );
 }
 
-/**
- * The dev template id of the named email, or undefined when the dev profile leaves it blank because the
- * service has not written the email yet.
- */
 export function devTemplateId(name: string): string | undefined {
   const key = TEMPLATE_KEYS[name];
   if (!key) {
@@ -113,10 +90,6 @@ async function caseEmails(caseReference: string, templateId: string): Promise<No
   );
 }
 
-/**
- * Waits for the named email on the case and returns it, having checked it was sent once, to the claimant, with
- * the given personalisation (on top of the case number every PCS email carries).
- */
 export async function expectClaimantEmail(
   caseReference: string,
   name: string,
@@ -146,10 +119,7 @@ export async function expectClaimantEmail(
   return email;
 }
 
-/**
- * Asserts the case gets no email from the named template. An email is sent on a db-scheduler task polled every
- * ten seconds, so this waits long enough for one to have been sent before checking.
- */
+/** An email is sent on a db-scheduler task polled every ten seconds, so this waits that long before concluding none was. */
 export async function expectNoClaimantEmail(caseReference: string, name: string): Promise<void> {
   const templateId = devTemplateId(name);
   if (!templateId) {
@@ -159,7 +129,6 @@ export async function expectNoClaimantEmail(caseReference: string, name: string)
   expect(await caseEmails(caseReference, templateId), `no "${name}" email for case ${caseReference}`).toHaveLength(0);
 }
 
-/** "Thursday 25 June 2026 at 10:00am", as pcs-api puts an eviction date into an email. */
 export function emailEvictionDateTime(day: number, month: number, year: number, time: string): string {
   const [hour, minute = 0] = time.split(':').map(Number);
   const when = new Date(year, month - 1, day);
@@ -170,7 +139,6 @@ export function emailEvictionDateTime(day: number, month: number, year: number, 
   return `${weekday} ${day} ${monthName} ${year} at ${pad(twelveHour)}:${pad(minute)}${hour < 12 ? 'am' : 'pm'}`;
 }
 
-/** Records that the email was checked in the request pcs-api sent Notify, not as the claimant would read it. */
 function noteCheckedOnNotifyRequest(name: string): void {
   test.info().annotations.push({
     type: 'checked on the Notify request',

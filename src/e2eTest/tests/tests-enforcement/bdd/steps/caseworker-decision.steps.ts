@@ -1,4 +1,3 @@
-// Caseworker decides an enforcement application (feature 02), through the pcs-api "Decide enforcement" event.
 import { Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
@@ -30,7 +29,6 @@ import {
 
 const SEEDED_STATUSES = ['Awaiting payment', 'Awaiting review'];
 
-// Only a warrant of possession can be seeded through the API today (enforceWarrantApiData).
 Given('a PCS case {string} with an enforcement of type {string} with status {string}', async ({ world, $tags }, _reference: string, type: string, status: string) => {
   if (type !== 'warrant of possession' || !SEEDED_STATUSES.includes(status)) {
     return markPending({ ticket: 'HDPI-7419', summary: `seeding a ${type} with status "${status}"` }, $tags);
@@ -43,16 +41,10 @@ Given('a PCS case {string} with an enforcement of type {string} with status {str
   }
 });
 
-// The task is not created yet (WA DMNs). Scenarios that use it stop at the task step, which stays pending.
 Given('a {string} task exists on the case', async ({}, task: string) => {
   approximatePrecondition('HDPI-8627', `the "${task}" task is not created yet`);
 });
 
-/**
- * The Background seeds a warrant of possession. A writ of possession can only be seeded from the
- * Create-Enforcement-Writ fixture, so the scenario carries on with a new case that has a writ awaiting review
- * instead.
- */
 Given('the enforcement is of type {string}', async ({ world, $tags }, type: string) => {
   if (type === world.applicationType) {
     return;
@@ -125,14 +117,11 @@ Then('I see the {string} confirmation screen', async ({ page }, title: string) =
   await expectConfirmation(page, title);
 });
 
-// The number format is a placeholder until HDPI-7352 agrees it (pcs-api EnforcementNumberGenerator).
 Then('a warrant number is assigned to the enforcement', async ({ page, world }) => {
   await expect(confirmationPanel(page).getByText(/^Warrant number: W[PR]-\d{8,}$/)).toBeVisible();
-  // The same number is the one the "Enforcement status" tab records against the enforcement.
   await expect.poll(() => enforcementNumber(page, requireCaseReference(world))).toMatch(/^W[PR]-\d{8,}$/);
 });
 
-// The number format is a placeholder until HDPI-7353 agrees it (pcs-api EnforcementNumberGenerator).
 Then('a writ number is assigned to the enforcement', async ({ page, world }) => {
   await expect(confirmationPanel(page).getByText(/^Writ number: H[PR]-\d{8,}$/)).toBeVisible();
   await expect.poll(() => enforcementNumber(page, requireCaseReference(world))).toMatch(/^H[PR]-\d{8,}$/);
@@ -155,7 +144,6 @@ pendingSteps({ summary: 'Checking the case history after the decision' }, [
   'the case {string} tab shows the {string} event',
 ]);
 
-// The caseworker who submitted the decision is internal; the claimant side then signs in to check its own view.
 Then('the {string} tab is shown on the case to internal users and the claimant', async ({ page, context }, tabName: string) => {
   await openCaseSummary(page);
   await expectCaseTab(page, tabName, true);

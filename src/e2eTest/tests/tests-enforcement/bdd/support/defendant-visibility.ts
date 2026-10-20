@@ -1,16 +1,3 @@
-/**
- * What defendants can see of enforcement (feature 14).
- *
- * pcs-api decides it per case view (`DefendantEnforcementView`): until a warrant's notice of eviction is
- * served, and while a warrant of restitution is live, a defendant gets no enforcement field and no
- * enforcement document. The checks therefore look at two things: the XUI case tabs for the defendant's legal
- * representative, and the case data CCD returns to each defendant, which is what pcs-frontend renders for a
- * citizen and what XUI's Case File View lists.
- *
- * Both defendants are given their case role through pcs-api testing support, which preview and AAT have too.
- * The legal representative is the permanent defendant solicitor everywhere; only a local stack has a citizen
- * user (the IDAM simulator's), so outside it the steps that need the citizen stay pending (HDPI-7539).
- */
 import { BrowserContext, Page } from '@playwright/test';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { expect } from '../fixtures/enforcement.fixtures';
@@ -24,13 +11,8 @@ import { backgroundSetUp } from './demo-continuity';
 export const DEFENDANT_LEGAL_REPRESENTATIVE = 'defendant legal representative';
 export const CITIZEN_DEFENDANT = 'citizen defendant';
 
-/** The Case File View folder enforcement documents are filed in (`FeatureCaseFileCategory.ENFORCEMENT`). */
 export const ENFORCEMENT_CATEGORY_ID = 'enforcement';
 
-/**
- * The case fields behind each enforcement tab. A citizen has no XUI tabs, so for them "does not see the tab"
- * means CCD gives them none of these fields.
- */
 const TAB_FIELDS: Record<string, string[]> = {
   'Enforcement status': ['enforcementStatusTabMarkdown', 'enforcements', 'enforcementStatus'],
   'Risk assessment': [
@@ -44,10 +26,6 @@ const TAB_FIELDS: Record<string, string[]> = {
   ],
 };
 
-/**
- * Every enforcement field a case view can carry that is not specific to one tab. None of them may reach a
- * defendant; `enforcements` only may once a warrant is visible to them.
- */
 const OTHER_ENFORCEMENT_FIELDS = [
   'defendantsCanSeeEnforcement',
   'canRescheduleEviction',
@@ -58,12 +36,10 @@ const OTHER_ENFORCEMENT_FIELDS = [
   'hasUnsubmittedEnforcementData',
 ];
 
-/** Whether there is a citizen user to link as a defendant: only the local stack's IDAM simulator has one. */
 export function canLinkCitizenDefendant(): boolean {
   return isLocalStack();
 }
 
-/** Gives the defendant solicitor the [DEFENDANTSOLICITOR] case role on the scenario's case. */
 export async function linkDefendantLegalRepresentative(world: EnforcementWorld): Promise<void> {
   await backgroundSetUp(async () => {
     const email = isLocalStack() ? localUsers.defendantSolicitor : user.defendantSolicitor.email;
@@ -72,7 +48,6 @@ export async function linkDefendantLegalRepresentative(world: EnforcementWorld):
   });
 }
 
-/** Gives the local citizen the [DEFENDANT] case role on the scenario's case, as their access code would. */
 export async function linkCitizenDefendant(world: EnforcementWorld): Promise<void> {
   await backgroundSetUp(async () => {
     await assignDefendantCaseRole(requireCaseReference(world), localUsers.citizenDefendant, '[DEFENDANT]');
@@ -80,10 +55,6 @@ export async function linkCitizenDefendant(world: EnforcementWorld): Promise<voi
   });
 }
 
-/**
- * Has each linked defendant view the case: the legal representative opens it in XUI and stays signed in, so
- * the tab checks that follow see their page; the citizen's view is the case data CCD gives them.
- */
 export async function viewAsEachDefendant(page: Page, context: BrowserContext, world: EnforcementWorld): Promise<DefendantView[]> {
   const caseReference = requireCaseReference(world);
   const views: DefendantView[] = [];
@@ -106,11 +77,7 @@ export async function viewAsEachDefendant(page: Page, context: BrowserContext, w
   return views;
 }
 
-/**
- * Has each linked defendant view the case once the enforcement is theirs to see. The event that opens it up is
- * submitted through the API, so the case data can still be the one from before it: the first defendant's view
- * is re-read until it carries the "Enforcement status" tab.
- */
+/** The event is submitted through the API, so the first defendant's view is re-read until it carries the "Enforcement status" tab. */
 export async function viewAsEachDefendantOnceEnforcementVisible(
   page: Page,
   context: BrowserContext,
@@ -129,12 +96,10 @@ export async function viewAsEachDefendantOnceEnforcementVisible(
   return viewAsEachDefendant(page, context, world);
 }
 
-/** The views the last "defendant views the case" step captured, or fresh ones if there are none. */
 export async function defendantViews(page: Page, context: BrowserContext, world: EnforcementWorld): Promise<DefendantView[]> {
   return world.defendantViews ?? viewAsEachDefendant(page, context, world);
 }
 
-/** Forgets the captured views, so the next check looks again after the case has changed. */
 export function caseChangedForDefendants(world: EnforcementWorld): void {
   world.defendantViews = undefined;
 }
@@ -159,7 +124,6 @@ export async function expectEnforcementTab(page: Page, views: DefendantView[], t
   }
 }
 
-/** No enforcement field reaches any defendant, whichever tab it belongs to. */
 export function expectNoEnforcementFields(views: DefendantView[]): void {
   const every = [...Object.values(TAB_FIELDS).flat(), ...OTHER_ENFORCEMENT_FIELDS];
   for (const view of views) {
@@ -176,20 +140,13 @@ export function enforcementDocuments(view: DefendantView): CaseDocument[] {
   return all.filter(document => document.value?.category_id === ENFORCEMENT_CATEGORY_ID);
 }
 
-/**
- * No defendant gets an enforcement document. CCD categories cannot be restricted by role, so XUI still draws
- * the Enforcement folder, empty (OPEN-QUESTIONS 50); what pcs-api controls is that nothing is in it.
- */
+/** CCD categories cannot be restricted by role, so XUI draws the Enforcement folder for everyone; what pcs-api controls is that it is empty. */
 export function expectNoEnforcementDocuments(views: DefendantView[]): void {
   for (const view of views) {
     expect(enforcementDocuments(view), `enforcement documents the ${view.who} gets`).toEqual([]);
   }
 }
 
-/**
- * Every enforcement document a defendant gets is a notice of eviction, the only one pcs-api lets them see. pcs-api
- * names each generated document "<title> - <number>" (`EnforcementOutput.title`).
- */
 export function expectOnlyNoticesOfEviction(views: DefendantView[]): void {
   for (const view of views) {
     const filenames = enforcementDocuments(view).map(document => document.value?.document_filename ?? '');
@@ -198,10 +155,6 @@ export function expectOnlyNoticesOfEviction(views: DefendantView[]): void {
   }
 }
 
-/**
- * Links both defendants if the scenario has not: a defendant legal representative and a citizen, given their
- * case roles through testing support. Feature 08 talks about "defendants" without setting any up.
- */
 export async function ensureDefendantsLinked(world: EnforcementWorld): Promise<void> {
   if (world.defendantLegalRepresentative || world.citizenDefendant) {
     return;
@@ -219,7 +172,6 @@ export async function ensureDefendantsLinked(world: EnforcementWorld): Promise<v
   caseChangedForDefendants(world);
 }
 
-/** The linked defendants, by who they are and their email. */
 function linkedDefendants(world: EnforcementWorld): { who: string; email: string }[] {
   return [
     ...(world.defendantLegalRepresentative ? [{ who: DEFENDANT_LEGAL_REPRESENTATIVE, email: world.defendantLegalRepresentative }] : []),
@@ -227,10 +179,7 @@ function linkedDefendants(world: EnforcementWorld): { who: string; email: string
   ];
 }
 
-/**
- * Waits until the case data CCD gives the defendant carries a notice of eviction in the Enforcement folder.
- * pcs-api generates the notice after the schedule commits, so it can arrive after the notice is served.
- */
+/** pcs-api generates the notice after the schedule commits, so it can arrive after the notice is served. */
 export async function expectNoticeOfEvictionVisibleTo(world: EnforcementWorld, who?: string): Promise<void> {
   const caseReference = requireCaseReference(world);
   const defendants = linkedDefendants(world).filter(defendant => !who || defendant.who === who);

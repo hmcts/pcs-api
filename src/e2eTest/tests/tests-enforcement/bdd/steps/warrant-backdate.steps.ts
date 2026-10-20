@@ -1,7 +1,3 @@
-// "that warrant was generated less than / more than 12 calendar months ago" (features 01 and 15, HDPI-8424).
-//
-// Kept in its own file because it depends on the testing-support backdate endpoint, which is delivered
-// separately; see support/warrant-backdate.ts for the request it assumes.
 import { Given } from '../fixtures/enforcement.fixtures';
 import { backdateWarrantGeneration } from '../support/warrant-backdate';
 

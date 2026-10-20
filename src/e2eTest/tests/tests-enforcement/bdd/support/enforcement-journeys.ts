@@ -1,7 +1,3 @@
-/**
- * Thin wrappers that compose the existing enforcement actions (utils/registry/registry-enforcement) into the
- * journeys the feature files describe. The action arguments follow tests-enforcement/*.spec.ts.
- */
 import { BrowserContext, Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementType, EnforcementWorld, SubmitCasePayload } from '../fixtures/enforcement.fixtures';
@@ -53,23 +49,14 @@ import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-en
 import { decideEnforcement } from './decide-enforcement';
 import { demoEmphasise, demoPause } from '@utils/page-pacing';
 
-
-/** XUI events the steps can drive today, keyed by the name the feature files use. */
 export const xuiEvents: Record<string, { label: string; firstPageHeader: string }> = {
   'Enforce the order': { label: caseSummary.enforceTheOrderEvent, firstPageHeader: enforcementApplication.mainHeader },
-  // The requirements and the case summary markup call it "Confirm the eviction date";
-  // pcs-api names the event "Confirm the eviction details".
+  // The case summary markup calls it "Confirm the eviction date"; pcs-api names the event "Confirm the eviction details".
   'Confirm the eviction date': { label: caseSummary.confirmEvictionEvent, firstPageHeader: confirmEvictionDetails.mainHeader },
-  // A caseworker event: sign in as a hearing centre admin first.
   [decideEnforcement.eventName]: { label: decideEnforcement.eventName, firstPageHeader: decideEnforcement.mainHeader },
-  // pcs-api AddBailiffNote: the event name and its one page's label.
   'Add a bailiff note': { label: 'Add a bailiff note', firstPageHeader: 'Add bailiff note' },
-  // pcs-api AllocateBailiff and SetRiskLevel: the event names and their first page labels.
   'Allocate case to bailiff': { label: 'Allocate case to bailiff', firstPageHeader: 'Find the bailiff\'s name' },
   'Set risk level': { label: 'Set risk level', firstPageHeader: 'Set risk level' },
-  // pcs-api ScheduleEviction, RescheduleEviction and MarkNoticeOfEvictionServed: event names and first page labels.
-  // They are offered to bailiff staff only once the warrant reaches the right status (HDPI-7419), which the
-  // suite cannot set up yet, and there are no bailiff test users (HDPI-7539), so features 05, 07 and 08 stay @pending.
   'Schedule eviction': { label: 'Schedule eviction', firstPageHeader: 'Schedule eviction' },
   'Reschedule eviction': { label: 'Reschedule eviction', firstPageHeader: 'Reschedule eviction' },
   // CCD caps event names at 30 characters, so pcs-api names this event "Mark eviction notice served".
@@ -77,11 +64,9 @@ export const xuiEvents: Record<string, { label: string; firstPageHeader: string 
     label: 'Mark eviction notice served',
     firstPageHeader: "Mark 'notice of eviction' as served",
   },
-  // pcs-api RecordWarrantReturn: the event name and its one page's label.
   'Record warrant return': { label: 'Record warrant return', firstPageHeader: 'Record warrant return' },
 };
 
-/** Creates and submits a claim through the API, pays the issue fee if needed, and records the case on the world. */
 export async function createIssuedCase(world: EnforcementWorld): Promise<void> {
   await backgroundSetUp(async () => {
     const submitPayload = isLocalStack() ? await createIssuedCaseLocally() : await createIssuedCaseFromClaimPayload();
@@ -105,11 +90,6 @@ async function createIssuedCaseFromClaimPayload(): Promise<SubmitCasePayload> {
   return submitPayload;
 }
 
-/**
- * The claim payloads reference uploaded documents, and cftlib has no dm-store for CDAM to store them in,
- * so a local run builds the case from the `Create Case Make A Claim Basic Case` fixture and pays its issue
- * fee. The fixture's claim is simpler than `submitCasePayload()` — one defendant whose name is known.
- */
 async function createIssuedCaseLocally(): Promise<SubmitCasePayload> {
   const created = await createCaseFromFixture(testCaseFixtures.basicClaim);
   process.env.CASE_NUMBER = created.id;
@@ -125,11 +105,6 @@ async function createIssuedCaseLocally(): Promise<SubmitCasePayload> {
   return basicClaimFixtureClaim as unknown as SubmitCasePayload;
 }
 
-/**
- * Gives the scenario a warrant of possession application, as the warrant of restitution spec does: on preview
- * and AAT by submitting `enforceTheOrder` through the API on the scenario's case. A local run creates a new case
- * from the Create-Enforcement-Warrant fixture instead, which is the route the local suite has been run with.
- */
 export async function seedWarrantApplication(world: EnforcementWorld): Promise<void> {
   if (isLocalStack()) {
     await createCaseWithWarrant(world);
@@ -139,11 +114,6 @@ export async function seedWarrantApplication(world: EnforcementWorld): Promise<v
   world.enforcementSeeded = true;
 }
 
-/**
- * A case issued with a warrant of possession application already submitted, i.e. an enforcement in
- * "Awaiting payment". On a local stack this is one `createTestCase` submit; on AAT it is a claim followed
- * by an `enforceTheOrder` API call.
- */
 export async function createCaseWithWarrant(world: EnforcementWorld): Promise<void> {
   await backgroundSetUp(async () => {
     if (isLocalStack()) {
@@ -155,12 +125,6 @@ export async function createCaseWithWarrant(world: EnforcementWorld): Promise<vo
   });
 }
 
-/**
- * A case issued with a writ of possession application already submitted, awaiting payment, created from the
- * Create-Enforcement-Writ fixture through the `createTestCase` event. The event exists wherever testing support
- * is on (a local stack booted with ENABLE_TESTING_SUPPORT=true, preview and AAT); there is no API payload for a
- * writ application.
- */
 export async function createCaseWithWrit(world: EnforcementWorld): Promise<void> {
   await backgroundSetUp(async () => createCaseFromEnforcementFixture(world, testCaseFixtures.enforcementWrit));
 }
@@ -202,13 +166,7 @@ function isOnCaseSummary(page: Page): boolean {
   return url.includes('/cases/case-details/') && url.includes(String(process.env.CASE_NUMBER)) && url.endsWith('#Summary');
 }
 
-/**
- * Asserts whether a case tab is on the open case. Waits for the Summary tab first, so "not shown" is only
- * checked once XUI has rendered the tabs.
- *
- * A tab the case gains is waited for across reloads: set-up goes through the APIs, so the case can be opened
- * in the same moment the event that adds the tab is recorded, and the page already rendered never gains it.
- */
+/** Waits for the Summary tab first, so "not shown" is only checked once XUI has rendered the tabs, and reloads between tries. */
 export async function expectCaseTab(page: Page, tabName: string, shown: boolean): Promise<void> {
   await expect(page.getByRole('tab', { name: caseSummary.mainHeader, exact: true })).toBeVisible({ timeout: VERY_LONG_TIMEOUT });
   const tab = page.getByRole('tab', { name: tabName, exact: true });
@@ -232,21 +190,17 @@ export async function expectCaseTab(page: Page, tabName: string, shown: boolean)
     .toBeGreaterThan(0);
 }
 
-/** The case summary "Next step" drop down (same locator as the select action). */
 function nextStepSelect(page: Page): Locator {
   const field = caseSummary.nextStepEventList;
   return page.locator(`:has-text("${field}") + select, :has-text("${field}") ~ select`).first();
 }
 
-/** Option labels in the case summary "Next step" drop down. */
 export async function nextStepOptions(page: Page): Promise<string[]> {
   return (await nextStepSelect(page).locator('option').allTextContents()).map(option => option.trim());
 }
 
-/** How long the demo videos show the chosen event before Go is clicked. */
 const DEMO_NEXT_STEP_PAUSE_MS = 800;
 
-/** Chooses an event in the "Next step" drop down. The demo videos show the drop down being chosen from. */
 async function selectNextStep(label: string): Promise<void> {
   await demoEmphasise(nextStepSelect);
   await performAction('select', caseSummary.nextStepEventList, label);
@@ -260,13 +214,6 @@ export async function startEvent(eventName: string): Promise<void> {
   await performValidation('mainHeader', event.firstPageHeader);
 }
 
-/**
- * Selects an event and clicks Go without requiring its first page to open.
- *
- * The enforcement events are gated by start callbacks, not by hiding the event, so an event that is not
- * available is still offered in the drop down and refused once Go is clicked. Returns the callback error
- * if there was one.
- */
 export async function startEventAllowingRefusal(page: Page, eventName: string): Promise<string | undefined> {
   const event = xuiEvents[eventName];
   await selectNextStep(event.label);
@@ -281,15 +228,13 @@ export async function startEventAllowingRefusal(page: Page, eventName: string): 
   if (!(await errors.count())) {
     return undefined;
   }
-  // CCD puts a generic message in the error summary and the callback's own message in a separate list, so
-  // the whole page text is returned and the caller matches against it.
+  // CCD puts a generic message in the error summary and the callback's own in a separate list, so the whole page text is returned.
   return (await page.locator('body').innerText()).replace(/\s+/g, ' ').trim();
 }
 
 export async function chooseApplicationType(type: EnforcementType, world: EnforcementWorld, page: Page): Promise<void> {
   world.applicationType = type;
-  // The check your answers validation compares the page with every answer recorded in the test, so a second
-  // application in the same scenario would be checked against the first one's answers too.
+  // Check your answers is validated against every answer recorded in the test, so a second application would be checked against the first's.
   CYAStore.getInstance().clearAll();
   switch (type) {
     case 'warrant of possession':
@@ -342,7 +287,6 @@ export async function answerApplicationQuestions(type: EnforcementType, world: E
   }
 }
 
-/** Warrant of possession, no risk to the bailiff (enforcement.spec.ts "risk to Bailiff [No]"). */
 async function answerWarrantQuestions(world: EnforcementWorld): Promise<void> {
   await performAction('selectNameAndAddressForEviction', {
     question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
@@ -386,7 +330,6 @@ async function answerWarrantQuestions(world: EnforcementWorld): Promise<void> {
   });
 }
 
-/** Writ of possession, no HCEO hired, nothing repaid (enforcement.writJourney.spec.ts). */
 async function answerWritQuestions(world: EnforcementWorld): Promise<void> {
   await performAction('selectNameAndAddressForEviction', {
     question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
@@ -409,12 +352,7 @@ async function answerWritQuestions(world: EnforcementWorld): Promise<void> {
   });
 }
 
-/**
- * "Is the defendant currently in a breathing space?" then "Missed payments": two pages both the warrant and
- * the writ journeys pass through. Answering yes to missed payments is what matters — answering no is the
- * only thing that gates the "you need permission from a judge" information page
- * (CannotApplyForWarrantInfoPage). The breathing-space answer has no show condition.
- */
+/** Answering "yes" to missed payments is what matters: "no" gates the "you need permission from a judge" page. */
 async function answerBreathingSpaceAndMissedPayments(nextPage: string): Promise<void> {
   await performAction('isDefendantInBreathingSpace', {
     option: defendantInBreathingSpace.noRadioOption,
@@ -423,23 +361,11 @@ async function answerBreathingSpaceAndMissedPayments(nextPage: string): Promise<
   await performAction('missedPayments', { option: missedPayments.yesRadioOption, nextPage });
 }
 
-/**
- * What the claimant writes about the defendants' return, and the description of the evidence they file.
- * The character-limit checks that fill these fields with a string one over the limit live in
- * enforcement.warrantOfRestitution.spec.ts; the journey the demo videos film answers them as a claimant
- * would.
- */
 const HOW_THE_DEFENDANTS_RETURNED =
   'The defendants broke the lock on the back door and moved back in on 3 February 2026. '
   + 'A neighbour saw them carrying furniture into the property and has given a witness statement.';
 const WITNESS_STATEMENT_DESCRIPTION = "Neighbour's witness statement";
 
-/**
- * Warrant of restitution with the seeded warrant's answers left as they are
- * (enforcement.warrantOfRestitution.spec.ts "all NO selection"). The "Anything else that could help with the
- * eviction" placeholder has no fields, so it is passed with a Continue, and the language question is the
- * warrant journey's own page (pcs-api EnforcementDeclarationPageConfigurer). Ends on the statement of truth.
- */
 async function answerWarrantOfRestitutionQuestions(): Promise<void> {
   const seeded = enforceWarrantApiData.enforceCasePayloadNoJourney;
   await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
@@ -485,18 +411,7 @@ async function answerWarrantOfRestitutionQuestions(): Promise<void> {
   });
 }
 
-/**
- * Statement of truth signed by the claimant's legal representative; lands on check your answers.
- *
- * The warrant and writ pages (pcs-api StatementOfTruthPage, StatementOfTruthWritPage) have the same fields:
- * the "I certify that:" box, "Completed by", the legal representative's agreement box, then full name, firm
- * and position. The two actions take those under different keys: `selectStatementOfTruth` reads the
- * certification from `selectCheckbox` and the agreement from `option2`, `selectStatementOfTruthWrit` reads
- * them from `option1` and `claimantBelieveCheckBox`.
- *
- * A restitution application signs its family's page: the warrant one for a warrant of restitution, the writ
- * one for a writ of restitution.
- */
+/** The warrant and writ statement-of-truth pages have the same fields, but the two actions take them under different keys. */
 export async function signStatementOfTruth(type: EnforcementType): Promise<void> {
   await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
   const signedByLegalRepresentative = {
@@ -525,14 +440,8 @@ export async function signStatementOfTruth(type: EnforcementType): Promise<void>
   }
 }
 
-/** The heading pcs-api's submit confirmation shows when the application still owes its fee. */
 export const PAY_PANEL_TITLE = /Pay .+ for HM Courts and Tribunals Service/;
 
-/**
- * Submits from check your answers and returns to the case. pcs-api shows a confirmation page asking for the
- * fee when the application owes one, and none for a free application, which goes straight back to the case.
- * Returns whether the confirmation asked for the fee.
- */
 export async function submitApplication(page: Page): Promise<boolean> {
   await performAction('clickButton', checkYourAnswers.submitApplicationButton);
   const closeConfirmation = page.getByRole('button', { name: 'Close and Return to case details' });
@@ -547,10 +456,6 @@ export async function submitApplication(page: Page): Promise<boolean> {
   return askedToPayFee;
 }
 
-/**
- * The whole "Enforce the order" journey for `type` in XUI, from the case summary to the submitted banner.
- * Returns whether pcs-api's confirmation asked for the fee.
- */
 export async function applyForEnforcement(type: EnforcementType, world: EnforcementWorld, page: Page): Promise<boolean> {
   await openCaseSummary(page);
   await startEvent('Enforce the order');
@@ -560,7 +465,6 @@ export async function applyForEnforcement(type: EnforcementType, world: Enforcem
   return submitApplication(page);
 }
 
-/** The case this scenario created. Fails with a clear message if no "Given a PCS case ..." step ran. */
 export function requireCaseReference(world: EnforcementWorld): string {
   if (!world.caseReference) {
     throw new Error('No case has been created in this scenario: start with "Given a PCS case ..."');
@@ -577,10 +481,6 @@ function requireSubmitPayload(world: EnforcementWorld): SubmitCasePayload {
 
 export { CLAIMANT_LEGAL_REPRESENTATIVE, canSignInAs, signInRoleFor } from './session';
 
-/**
- * Signs in to XUI as `user`, a sign-in role or the feature files' name for one, unless the browser already is
- * that user, and expects them for the steps that follow (see session.ts).
- */
 export async function signInAs(user: string, page: Page, _context?: BrowserContext): Promise<void> {
   await signInAsUser(user, page);
 }

@@ -1,19 +1,3 @@
-// Bailiff journeys (features 03-05, 07-11). Batch print (17) is in batch-print.steps.ts.
-//
-// What is drivable today: `allocateBailiff` (feature 03), `setRiskLevel` (feature 04) and `addBailiffNote`
-// (feature 10). All three are built, and the cftlib bailiff users (CftlibConfig + cftlib-am-role-assignments.json)
-// can reach them, so their steps are implemented. `allocateBailiff`'s StaffUser type-ahead reads staff
-// reference data from wiremock's stub, which lists the cftlib bailiff users.
-//
-// What is not, and why:
-//   * the type-ahead's court location filter (OPEN-QUESTIONS 24) and a second named bailiff to reallocate to.
-//     HDPI-7356, HDPI-7539.
-//   * every status after "Awaiting bailiff allocation" — reaching one needs a bailiff allocated, so
-//     `scheduleEviction` (05), `rescheduleEviction` (07), `markNoticeOfEvictionServed` (08) and
-//     `recordWarrantReturn` (11) cannot be started. HDPI-7419.
-//   * the `allocated-bailiff` case role — `BailiffAllocationService.allocate()` writes only to
-//     `enf_bailiff_allocation`; the AM case role is a TODO. HDPI-8189.
-//   * WA tasks — nothing creates them. HDPI-8627.
 import { BrowserContext, Page } from '@playwright/test';
 import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
 import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
@@ -53,13 +37,6 @@ import { localUserName, localUsers } from '@config/local-stack.config';
 import { expectSingleErrorMessage } from '../support/error-summary';
 import { expectEvictionResult, isEvictionResult } from './schedule-eviction.steps';
 
-
-// ---------------------------------------------------------------------------
-// Feature 04: the bailiff sets the eviction risk level
-// ---------------------------------------------------------------------------
-
-// The allocation itself cannot be made (HDPI-7356 / HDPI-8189), but a bailiff reaches the warrant through
-// their `bailiff` organisation role regardless, which is what the rest of the scenario needs.
 Given('a PCS case {string} with a warrant of possession allocated to me', async ({ world }, _reference: string) => {
   const { setUpWarrantAtStatus, AWAITING_BAILIFF_ALLOCATION } = await import('../support/approve-warrant');
   await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
@@ -145,11 +122,6 @@ Then('I can change it to {string}', async ({ page }, level: string) => {
   await expect(page.getByRole('radio', { name: level, exact: true })).toBeChecked();
 });
 
-/**
- * The built `confirmEviction` only asks "Can you attend the eviction on this date?" — it does not collect
- * the dates the claimant is not available. Recorded as approximated so the rest of the scenario can run;
- * the scenario that actually lists those dates stays pending.
- */
 Given('the claimant said they are not available on {string} and {string}', async ({}, first: string, second: string) => {
   approximatePrecondition(
     'HDPI-7547',
@@ -158,10 +130,6 @@ Given('the claimant said they are not available on {string} and {string}', async
   );
 });
 
-/**
- * The confirmation screens that name both numbers: schedule and reschedule eviction, mark notice served,
- * record warrant return (#3016), set risk level and add a bailiff note. The feature files word it both ways.
- */
 async function expectConfirmationWithBothNumbers(page: Page, world: EnforcementWorld, header: string): Promise<void> {
   expect(world.warrantNumber, 'a warrant number generated when the application was approved').toBeDefined();
   await expectBailiffConfirmationWithWarrantNumber(
@@ -198,12 +166,6 @@ When('I select {string} and provide any required reason', async ({ page, world }
   world.riskLevel = level;
 });
 
-/**
- * The risk level, its reason and the bailiff notes are internal. The claimant side sees the "Risk assessment"
- * tab too, with only the claimant's own risk answers (13-risk-assessment-tab.feature), so "internal users
- * only" is checked by finding the internal sections as the signed-in bailiff, then signing in as the
- * claimant's legal representative and finding the tab without them.
- */
 async function expectRiskAssessmentTabInternalOnly(page: Page, context: BrowserContext, caseReference: string): Promise<void> {
   await openCaseTab(page, caseReference, RISK_ASSESSMENT_TAB);
   expect(Object.keys(await tabSections(page))).toEqual(expect.arrayContaining(['Bailiff note', 'Risk assessment level']));
@@ -223,14 +185,9 @@ Then('the reason is visible to internal users only', async ({ page, context, wor
   await expectRiskAssessmentTabInternalOnly(page, context, requireCaseReference(world));
 });
 
-// ---------------------------------------------------------------------------
-// Feature 10: add a bailiff note
-// ---------------------------------------------------------------------------
-
 /** "1 Feb 2026 16:20pm": a day, a short month, a year, a 24-hour time and a lower case am / pm marker. */
 const NOTE_DATE_TIME = /^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/;
 
-// The local bailiff user stands in for the bailiff the feature names, whose name the steps then expect.
 Given('I am signed in to XUI as bailiff {string}', async ({ world, $tags }, name: string) => {
   const email = requireStandIn(name, $tags);
   expectSignedInAs('bailiff');
@@ -284,10 +241,6 @@ Then('I see {string}', async ({ page, world, $tags }, result: string) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// Still pending: the events and plumbing that do not exist
-// ---------------------------------------------------------------------------
-
 pendingSteps({ ticket: 'HDPI-8627', summary: 'Opening an enforcement journey from a work allocation task' }, [
   'the {string} screen opens with heading {string}',
 ]);
@@ -296,11 +249,6 @@ pendingSteps({ ticket: 'HDPI-7593', summary: 'The bailiff note confirmation does
   '{string} takes me to the {string} tab',
 ]);
 
-/**
- * The newest note under the section, with its author and a time in the layout of the quoted example: "1 Feb
- * 2026 16:20pm" is a day, a short month, a year, a 24-hour time and a lower case am / pm marker. A feature's
- * named bailiff is checked as the local user standing in for them.
- */
 Then(
   'the note {string} is shown under {string} with {string} and the date and time in {string} format',
   async ({ page, world }, note: string, section: string, author: string, example: string) => {
@@ -317,10 +265,6 @@ Then('the note is visible to internal users only', async ({ page, context, world
   await expectRiskAssessmentTabInternalOnly(page, context, requireCaseReference(world));
 });
 
-/**
- * The note is markup on the "Risk assessment" tab, with nothing to type into, and no event edits or removes a
- * bailiff note: "Add a bailiff note" is the only one the next step drop down offers.
- */
 Then('the note cannot be edited', async ({ page, world }) => {
   await openCaseTab(page, requireCaseReference(world), RISK_ASSESSMENT_TAB);
   await expect(activeTab(page).locator('input, textarea, select, [contenteditable="true"]')).toHaveCount(0);
@@ -329,11 +273,6 @@ Then('the note cannot be edited', async ({ page, world }) => {
   expect((await nextStepOptions(page)).filter(option => /bailiff note/i.test(option))).toEqual([ADD_BAILIFF_NOTE]);
 });
 
-/**
- * Has the bailiff add a note through the API, moves the enforcement's timestamps back by the days between the
- * two dates, and adds the second. The notes are dated relative to today rather than on the feature's dates.
- * Expects the bailiff next.
- */
 Given('the case has bailiff notes added on {string} and {string}', async ({ world }, first: string, second: string) => {
   const daysBetween = Math.round((Date.parse(second) - Date.parse(first)) / 86_400_000);
   expect(daysBetween, `"${second}" to be after "${first}"`).toBeGreaterThan(0);
@@ -352,23 +291,13 @@ Then('the note from {string} is shown first', async ({ page }, date: string) => 
     `Note from ${date}`,
     expect.stringMatching(/^Note from /),
   ]);
-  // The newest is today's: the earlier note was moved back.
   expect(notes[0][riskAssessmentFields.noteDateTime]).toMatch(new RegExp(`^${noteDate(new Date())} `));
 });
 
-/** A note's date as the tab shows it, e.g. "1 Feb 2026". */
 function noteDate(date: Date): string {
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ---------------------------------------------------------------------------
-// Feature 03: allocate case to bailiff
-// ---------------------------------------------------------------------------
-
-/**
- * The local user standing in for a bailiff the feature names. Marks the scenario pending when there is none:
- * the local stack has one user with the `bailiff` role, so a second, named bailiff cannot be chosen.
- */
 function requireStandIn(name: string, tags: string[]): string {
   const email = standInBailiff(name);
   if (!email) {
@@ -391,8 +320,6 @@ pendingSteps({ ticket: 'HDPI-7356', summary: 'The bailiff type-ahead is not filt
   'I see matching bailiff users for the case\'s court location',
 ]);
 
-// The type-ahead lists every PCS admin in staff reference data. A user without the bailiff role is refused
-// when the page is continued ("Choose a user who has the bailiff role"), not hidden (OPEN-QUESTIONS 62).
 pendingSteps({ ticket: 'HDPI-7356', summary: 'The type-ahead lists all admin staff, not only bailiffs (OPEN-QUESTIONS 62)' }, [
   'users without a bailiff role are not listed',
 ]);
@@ -403,8 +330,6 @@ When('I select {string} without choosing a bailiff', async ({ page, world }, but
   await continueButton(page).click();
 });
 
-// XUI's own "is required" check on the StaffUser field fires before pcs-api's "Choose a bailiff"; both name
-// the bailiff.
 Then('I see an error asking me to choose a bailiff', async ({ page }) => {
   await expectSingleErrorMessage(page, /bailiff/i);
   await expect(page.getByRole('heading', { name: findBailiff.pageLabel })).toBeVisible();
@@ -417,7 +342,6 @@ Given('I have chosen bailiff {string} {string}', async ({ page, world, $tags }, 
   world.chosenBailiff = email;
 });
 
-// The email shown is the one pcs-api looked up in IDAM for the chosen bailiff, not the feature's illustrative one.
 Then('the {string} screen shows {string} and {string}', async ({ page, $tags }, screen: string, name: string, _email: string) => {
   expect(screen).toBe(findBailiff.checkYourAnswers);
   await expectAllocationCheckYourAnswers(page, requireStandIn(name, $tags));
@@ -480,8 +404,6 @@ pendingSteps({ ticket: 'HDPI-7549', summary: 'Reschedule eviction cannot be reac
   'the original notices are still in the {string} folder',
 ]);
 
-// The review banner lists the changed questions but does not link to them: XUI routes the tab by the URL
-// fragment, so an in-page link would change tab (HDPI-7350, OPEN-QUESTIONS 34).
 pendingSteps({ ticket: 'HDPI-7350', summary: 'Links from the review banner to the changed questions' }, [
   'I select the banner link for {string}',
   'I am taken to that question in the {string} section',

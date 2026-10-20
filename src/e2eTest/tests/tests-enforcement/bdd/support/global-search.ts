@@ -1,20 +1,10 @@
-/**
- * XUI global search ("Search cases", `/search`) by "Other reference" (feature 16).
- *
- * pcs-api indexes every warrant and writ number as one of the case's `SearchCriteria.OtherCaseReferences`
- * (`EnforcementNumberSearchReferences`), and XUI's "Other reference" field searches exactly those. The case
- * is indexed by the decentralised Elasticsearch indexer after the event that gave the number, so a search
- * straight after approval can miss it: `expectSearchFindsCase` searches again until it shows up.
- *
- * The page is opened by URL rather than through the header's "Search" link, because which header links a
- * user gets depends on XUI's LaunchDarkly menu configuration, not on anything pcs-api controls.
- */
+// The case is indexed after the event that gave it the number, so a search straight after approval can miss it.
+// The page is opened by URL: which header links a user gets is XUI's LaunchDarkly menu configuration.
 import { Page, expect } from '@playwright/test';
 import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { globalSearch, noResultFound, searchResults } from '@data/page-data-figma';
 import { ensureSignedIn } from './session';
 
-/** What a global search came back with. `unavailable` means XUI did not show the user the search page. */
 export type GlobalSearchOutcome =
   | { kind: 'results'; caseReferences: string[] }
   | { kind: 'no-results' }
@@ -22,10 +12,7 @@ export type GlobalSearchOutcome =
 
 const digitsOnly = (value: string): string => value.replace(/\D/g, '');
 
-/**
- * Runs one global search with only "Other reference" filled in, across all services, and reads the outcome.
- * Fails on XUI's "Something went wrong" page, so a broken search is never read as "no results".
- */
+/** Fails on XUI's "Something went wrong" page, so a broken search is never read as "no results". */
 export async function searchByOtherReference(page: Page, reference: string): Promise<GlobalSearchOutcome> {
   await ensureSignedIn(page);
   await page.goto(`${process.env.MANAGE_CASE_BASE_URL}/search`);
@@ -60,7 +47,6 @@ export async function searchByOtherReference(page: Page, reference: string): Pro
   return { kind: 'results', caseReferences };
 }
 
-/** Searches by `reference` until the results include `caseReference`, allowing for indexing lag. */
 export async function expectSearchFindsCase(page: Page, reference: string, caseReference: string): Promise<void> {
   const wanted = digitsOnly(caseReference);
   let last: GlobalSearchOutcome | undefined;

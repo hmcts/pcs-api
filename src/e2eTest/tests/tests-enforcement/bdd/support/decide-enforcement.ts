@@ -1,6 +1,3 @@
-/**
- * The caseworker "Decide enforcement" event (feature 02). pcs-api: uk.gov.hmcts.reform.pcs.enforcement.ccd.event.DecideEnforcement.
- */
 import Axios from 'axios';
 import { Locator, Page } from '@playwright/test';
 import { expect } from '../fixtures/enforcement.fixtures';
@@ -30,11 +27,6 @@ export const decideEnforcement = {
   checkYourAnswersHeader: 'Check your answers',
 };
 
-/**
- * A local stack has no Payments service to take an enforcement fee (HDPI-2877), so this pays the fee for the case's
- * application through pcs-api testing support, which sends a paid callback through the enforcement payment
- * handler. The application moves from "Awaiting payment" to "Awaiting review".
- */
 export async function recordEnforcementFeePaid(): Promise<void> {
   await backgroundSetUp(async () => {
     const api = Axios.create({
@@ -46,7 +38,6 @@ export async function recordEnforcementFeePaid(): Promise<void> {
   });
 }
 
-/** Signs in as a hearing centre admin, unless the browser already is one. */
 export async function signInAsHearingCentreAdmin(page: Page): Promise<void> {
   await signInAs('hearing-centre-admin', page);
 }
@@ -55,16 +46,8 @@ function caseDetails(page: Page) {
   return page.locator('dl.govuk-summary-list').filter({ hasText: decideEnforcement.propertyAddressKey });
 }
 
-/** The 16-digit reference as XUI renders it in a case-details summary list: four dash-separated groups. */
 export const withDashes = (caseReference: string): string => caseReference.replace(/(.{4})(?=.)/g, '$1-');
 
-/**
- * The read-only case details at the top of an enforcement event page.
- *
- * `decideEnforcement` renders them as a GOV.UK summary list with `Case number` / `Property address` /
- * `Parties` keys. The bailiff events (`setRiskLevel`, `addBailiffNote`, …) render the same three facts from
- * a markdown page label instead, so they come out as paragraphs. Both are checked.
- */
 export async function expectCaseDetailsHeader(page: Page, world: EnforcementWorld, partyNames: string): Promise<void> {
   const dashedReference = withDashes(String(world.caseReference));
   const summaryList = caseDetails(page).first();
@@ -83,7 +66,6 @@ export async function expectCaseDetailsHeader(page: Page, world: EnforcementWorl
     // XUI renders these paragraphs with surrounding whitespace, so the text is not anchored.
     await expect(page.getByRole('paragraph').filter({ hasText: 'Property address:' }).first()).toBeVisible();
   }
-  // "claimant name vs defendant name": the case name pcs-api builds for the case.
   if (/ vs /.test(partyNames)) {
     const partiesOn = (await summaryList.count())
       ? summaryValue(summaryList, decideEnforcement.partiesKey)
@@ -124,18 +106,11 @@ export function decisionRow(page: Page) {
   return page.locator('tr, .govuk-summary-list__row').filter({ hasText: decideEnforcement.decisionQuestion }).first();
 }
 
-/**
- * The confirmation body XUI renders from `DecideEnforcementConfirmation`. Scoped to `#confirmation-body`
- * because the case number and property address also appear in the case header above it.
- */
+/** Scoped to `#confirmation-body`: the case number and property address also appear in the case header above it. */
 export function confirmationPanel(page: Page) {
   return page.locator('#confirmation-body');
 }
 
-/**
- * The confirmation heading from DecideEnforcementConfirmation, e.g. "Warrant of possession approved" or
- * "Writ of restitution rejected". XUI renders the confirmation header as the page heading.
- */
 export async function expectConfirmation(page: Page, title: string | RegExp): Promise<void> {
   await expect(page.getByRole('heading', { name: title, exact: typeof title === 'string' })).toBeVisible({ timeout: LONG_TIMEOUT });
 }

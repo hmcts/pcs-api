@@ -1,22 +1,3 @@
-/**
- * Local-stack (cftlib) mode for the e2e suite, selected with `ENVIRONMENT=local`.
- *
- * `./gradlew bootWithCCD` runs the whole CFT stack in-process. It differs from AAT in four ways that
- * the suite has to know about:
- *
- * 1. Service URLs are all on localhost (see {@link applyLocalServiceUrls}).
- * 2. IDAM is the RSE IDAM simulator, whose sign-in page is a single form (`#username`, `#password`,
- *    "Sign in") rather than AAT's two-step email-then-password journey, and which accepts any password.
- * 3. The permanent AAT test users do not exist. The cftlib users seeded by `CftlibConfig` stand in for
- *    them (see {@link localUsers}).
- * 4. dm-store is not started by cftlib, so CDAM cannot store anything and the suite's document uploads
- *    fail. Local runs therefore create cases from the `createTestCase` fixtures, which reference no
- *    documents, instead of the document-bearing `createPossessionClaim` / `submitPossessionClaim` payloads.
- *
- * The local-only parts run only when `ENVIRONMENT=local`. The test-case fixtures, the testing-support calls and
- * the per-user IDAM token and case data helpers also serve the enforcement suite on preview and AAT, where they use
- * the permanent test users.
- */
 import Axios from 'axios';
 import { IdamUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
@@ -28,11 +9,7 @@ export function isLocalStack(): boolean {
   return (process.env.ENVIRONMENT || '').toLowerCase() === LOCAL_ENVIRONMENT;
 }
 
-/**
- * cftlib ports, as exposed by `./gradlew bootWithCCD`. `IDAM_TESTING_SUPPORT_URL` is only read by
- * `IdamUtils`' constructor, which rejects a blank value; the suite never calls an IDAM testing-support
- * endpoint on a local run, so pointing it at the simulator is enough.
- */
+/** cftlib ports. IDAM_TESTING_SUPPORT_URL is never called, but IdamUtils' constructor rejects a blank value. */
 export function applyLocalServiceUrls(): void {
   process.env.MANAGE_CASE_BASE_URL ||= 'http://localhost:3000';
   process.env.DATA_STORE_URL_BASE ||= 'http://localhost:4452';
@@ -41,23 +18,16 @@ export function applyLocalServiceUrls(): void {
   process.env.IDAM_TESTING_SUPPORT_URL ||= 'http://localhost:5062';
   process.env.S2S_URL ||= 'http://localhost:8489/testing-support/lease';
   process.env.ROLE_ASSIGNMENT_URL ||= 'http://localhost:4096';
-  // CDAM is part of the cftlib stack; dm-store behind it only runs with LOCAL_DOC_SERVICES=true
-  // (docker-compose-documents.yml). Both must point at localhost, never the AAT defaults.
+  // CDAM is part of the cftlib stack; dm-store behind it only runs with LOCAL_DOC_SERVICES=true.
   process.env.CDAM_URL ||= 'http://localhost:4455';
   process.env.DM_STORE ||= 'http://localhost:4506';
-  // wiremock-local stands in for Docmosis, among others; its request journal keeps what each document was
-  // rendered from.
   process.env.WIREMOCK_URL ||= 'http://localhost:8083';
   // The simulator ignores the password; the suite only checks that one is set.
   process.env.IDAM_PCS_USER_PASSWORD ||= 'local';
   process.env.PCS_API_IDAM_SECRET ||= 'local';
 }
 
-/**
- * Whether dm-store is behind CDAM on this stack. cftlib always starts CDAM, but it only starts dm-store
- * when `bootWithCCD` ran with `LOCAL_DOC_SERVICES=true`, and CDAM answers 500 ("Connection refused") on
- * upload without it. Probed rather than assumed so a local run works either way.
- */
+/** cftlib only starts dm-store behind CDAM with `LOCAL_DOC_SERVICES=true`, and CDAM answers 500 on upload without it. */
 export async function localDocumentStoreIsUp(): Promise<boolean> {
   try {
     const response = await Axios.get(`${process.env.DM_STORE}/health`, {
@@ -70,15 +40,9 @@ export async function localDocumentStoreIsUp(): Promise<boolean> {
   }
 }
 
-/**
- * The cftlib users that stand in for the permanent AAT users, keyed by the role the feature files use.
- * Seeded by `src/cftlib/java/uk/gov/hmcts/reform/pcs/CftlibConfig.java`; the bailiff users' RAS
- * organisation roles come from `src/cftlib/resources/cftlib-am-role-assignments.json`.
- */
 export const localUsers = {
   claimantSolicitor: 'pcs-solicitor1@test.com',
-  // Must match user.defendantSolicitor.email: createCaseAPI.action.ts hardcodes that address when
-  // linking a defendant solicitor to a party, so an override here alone would not be enough.
+  // Must match user.defendantSolicitor.email: createCaseAPI.action.ts hardcodes that address.
   defendantSolicitor: 'pcs-org1-solicitor2@test.com',
   hearingCentreAdmin: 'caseworker@pcs.com',
   hearingCentreTeamLeader: 'pcs-hearing-centre-team-leader-01@localhost',
@@ -86,17 +50,11 @@ export const localUsers = {
   bailiffAdmin: 'pcs-bailiff-admin@localhost',
   bailiffManager: 'pcs-bailiff-manager@localhost',
   judge: 'judge@pcs.com',
-  // Has only the IDAM citizen role; a scenario gives it the [DEFENDANT] case role on its case.
   citizenDefendant: 'citizen@pcs.com',
 } as const;
 
 export type LocalUserKey = keyof typeof localUsers;
 
-/**
- * Display names for the local users, as the IDAM simulator holds them (`CftlibConfig.nameStaffUsers`) and
- * wiremock's staff reference data stub lists them. `BailiffAllocationService` stores the bailiff's name
- * alongside the allocation, so the allocation shortcut needs a real one.
- */
 export const localUserNames: Record<string, string> = {
   [localUsers.bailiff]: 'Sam Jones',
   [localUsers.bailiffAdmin]: 'Ada BailiffAdmin',
@@ -105,7 +63,6 @@ export const localUserNames: Record<string, string> = {
 
 export const localUserName = (email: string): string => localUserNames[email] ?? email;
 
-/** The RAS organisation role each local bailiff user carries, for the assertions that name a role. */
 export const localUserRoles: Record<string, string> = {
   [localUsers.bailiff]: 'bailiff',
   [localUsers.bailiffAdmin]: 'bailiff-admin',
@@ -116,10 +73,6 @@ export const localUserRoles: Record<string, string> = {
 
 export const localPassword = (): string => process.env.IDAM_PCS_USER_PASSWORD ?? 'local';
 
-/**
- * Signs in through the IDAM simulator's single-page form. XUI redirects to it on any unauthenticated
- * page load, so callers navigate to a manage-case URL first.
- */
 export async function signInToIdamSimulator(page: Page, email: string): Promise<void> {
   await page.waitForSelector('#username', { timeout: 30_000 });
   await page.locator('#username').fill(email);
@@ -128,7 +81,6 @@ export async function signInToIdamSimulator(page: Page, email: string): Promise<
   await page.waitForURL(url => !url.href.includes('localhost:5062'), { timeout: 60_000 });
 }
 
-/** The `createTestCase` fixtures `TestCaseSupportHelper` offers, by the label it derives from the filename. */
 export const testCaseFixtures = {
   basicClaim: 'Create Case Make A Claim Basic Case',
   enforcementWarrant: 'Create Enforcement Warrant Basic Case',
@@ -155,15 +107,6 @@ function dataStoreApi(bearerToken = process.env.BEARER_TOKEN) {
   });
 }
 
-/**
- * Creates a case through the `createTestCase` event ("Test Support Case Creation") from one of the
- * test-case-generation fixtures. `TestCaseGeneration` only configures the event when `ENVIRONMENT=preview`
- * or `ENABLE_TESTING_SUPPORT=true` at definition generation: Jenkins sets it for preview and AAT, and the local
- * stack must be booted with it. Runs as the suite's default user (BEARER_TOKEN) in every environment.
- *
- * The enforcement fixtures create the claim and submit the enforcement application in one submit, leaving
- * the case in `CASE_ISSUED` with an enforcement in `Awaiting payment`.
- */
 export async function createCaseFromFixture(fixture: TestCaseFixture): Promise<{ id: string; state: string }> {
   const api = dataStoreApi();
   const caseType = getCaseTypeId();
@@ -189,10 +132,6 @@ export async function createCaseFromFixture(fixture: TestCaseFixture): Promise<{
   return { id: created.data.id, state: created.data.state };
 }
 
-/**
- * Records the enforcement fee as paid, moving the case's application from "Awaiting payment" to
- * "Awaiting review" through pcs-api's enforcement payment handler. A local stack has no Payments service to take it.
- */
 export async function recordFeePaid(caseReference: string): Promise<void> {
   const response = await Axios.post(
     `${process.env.CASE_API_URL}/testing-support/enforcement/${caseReference}/fee-paid`,
@@ -204,19 +143,6 @@ export async function recordFeePaid(caseReference: string): Promise<void> {
   }
 }
 
-/**
- * The defendant every fixture puts on the claim, in the shape the enforcement actions expect of a
- * `submitPossessionClaim` payload.
- *
- * `EnforcementTestCaseGenerator` always builds the claim from `Create-Case-Make-A-Claim-Basic-Case` and
- * then applies only the enforcement fields from the Create-Enforcement-* fixture, so the parties on the
- * case come from the base claim — one defendant, John Doe — whatever the enforcement fixture's own
- * `parties` / `allDefendants` say.
- */
-/**
- * The property address every test-case-generation fixture uses. The enforcement actions assert the address
- * shown on each page, and locally the case comes from a fixture rather than `createCasePayload`.
- */
 export const fixturePropertyAddress = {
   AddressLine1: '1 Rse Way',
   AddressLine2: '',
@@ -230,13 +156,7 @@ export const basicClaimFixtureClaim = {
   additionalDefendants: [],
 } as const;
 
-/**
- * Waits for the claim's service request to exist before the suite tries to pay it.
- *
- * pcs-api creates it on a db-scheduler task rather than in the submit, so it appears some seconds after
- * the case does. `updatePaymentAPI` only retries for ten seconds, which is not always enough on a loaded
- * local stack, and it then fails with "No payment information found".
- */
+/** The service request is created on a db-scheduler task, so it appears seconds after the case; `updatePaymentAPI` only retries for ten. */
 export async function waitForServiceRequest(caseReference: string, timeoutMs = 90_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -254,7 +174,6 @@ export async function waitForServiceRequest(caseReference: string, timeoutMs = 9
   );
 }
 
-/** The IDAM id of a user, read from this environment's IDAM userinfo endpoint rather than derived. */
 export async function idamUserId(email: string): Promise<string> {
   const token = await idamToken(email);
   const response = await Axios.get(`${process.env.IDAM_WEB_URL}/o/userinfo`, {
@@ -263,17 +182,6 @@ export async function idamUserId(email: string): Promise<string> {
   return response.data.uid ?? response.data.sub;
 }
 
-/**
- * Allocates the case's current warrant to a bailiff through pcs-api testing support, moving it from
- * "Awaiting bailiff allocation" to "Awaiting scheduling".
- *
- * A shortcut for scenarios that only need the warrant allocated, like `fee-paid`: it goes through
- * `BailiffAllocationService`, so the outcome matches the `allocateBailiff` event. Locally that event can be
- * driven too, because wiremock stubs the staff reference data its StaffUser type-ahead reads; a preview
- * environment has no such stub.
- *
- * Needs a user bearer token as well as the S2S one, because the service records who made the allocation.
- */
 export async function allocateBailiffViaTestingSupport(
   caseReference: string,
   bailiff: { userId: string; name: string; email: string }
@@ -297,7 +205,6 @@ export async function allocateBailiffViaTestingSupport(
   }
 }
 
-/** An IDAM token for one of the local users, for API calls made as somebody other than the suite's default user. */
 export async function localIdamToken(email: string): Promise<string> {
   const form = new URLSearchParams({
     grant_type: 'password',
@@ -313,10 +220,6 @@ export async function localIdamToken(email: string): Promise<string> {
   return response.data.access_token;
 }
 
-/**
- * An IDAM token for a user other than the suite's default one: a cftlib user from the IDAM simulator on a local
- * stack, otherwise one of the permanent test users, who all share IDAM_PCS_USER_PASSWORD.
- */
 export async function idamToken(email: string): Promise<string> {
   if (isLocalStack()) {
     return localIdamToken(email);
@@ -331,15 +234,8 @@ export async function idamToken(email: string): Promise<string> {
   });
 }
 
-/** The defendant case roles `POST /testing-support/enforcement/{caseReference}/defendant-case-role` gives. */
 export type DefendantCaseRole = '[DEFENDANT]' | '[DEFENDANTSOLICITOR]';
 
-/**
- * Gives a local user a defendant case role on the case through pcs-api testing support, which calls CCD's
- * case-users API as pcs-api does for a citizen's access code. It stands in for Notice of Change, whose
- * testing-support route (`link-defendant-solicitor-to-party`) answers 500 on a local stack, and for the access
- * code a citizen defendant enters in pcs-frontend.
- */
 export async function assignDefendantCaseRole(
   caseReference: string,
   email: string,
@@ -364,11 +260,6 @@ export async function assignDefendantCaseRole(
   }
 }
 
-/**
- * The case data CCD returns to a user, as pcs-frontend and XUI read it. Used to check what a defendant
- * can see where there is no UI to look at: pcs-frontend is not part of the local stack, and a Case File View
- * folder is shown even when it is empty.
- */
 export async function caseDataAs(caseReference: string, email: string): Promise<Record<string, unknown>> {
   const response = await dataStoreApi(await idamToken(email)).get(`/cases/${caseReference}`);
   return (response.data?.data ?? {}) as Record<string, unknown>;
