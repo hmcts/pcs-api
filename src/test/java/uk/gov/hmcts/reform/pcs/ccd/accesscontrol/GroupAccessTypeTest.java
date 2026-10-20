@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.Arrays;
@@ -70,22 +72,16 @@ class GroupAccessTypeTest {
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
     }
 
-    @Test
-    void shouldResolveClaimantAccessForStampedSpecificOrganisationProfiles() {
-        assertThat(GroupAccessType.caseAccessGroupIdFor(
-            OrganisationProfile.LOCALAUTH_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
-            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor(
-            OrganisationProfile.OTHER_REALT_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
-            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor(
-            OrganisationProfile.OTHER_PROP_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
-            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor(
-            OrganisationProfile.OTHER_NFP_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
-            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor(
-            OrganisationProfile.OTHER_CHARITY_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
+    /**
+     * PRD profiles PCS has no access type of its own for: their claimants still get the generic
+     * organisation claimant access.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "LOCALAUTH_PROFILE", "OTHER_REALT_PROFILE", "OTHER_PROP_PROFILE", "OTHER_NFP_PROFILE", "OTHER_CHARITY_PROFILE"
+    })
+    void shouldResolveClaimantAccessForStampedSpecificOrganisationProfiles(String orgProfileId) {
+        assertThat(GroupAccessType.caseAccessGroupIdFor(orgProfileId, PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
     }
 

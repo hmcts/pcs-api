@@ -62,11 +62,6 @@ public class CftlibOrganisationConfig {
             }
 
             @Override
-            public String getOrgProfileIdForCurrentUser() {
-                return SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId();
-            }
-
-            @Override
             public String getOrganisationNameForCurrentUser() {
                 return "Test Organisation";
             }

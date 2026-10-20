@@ -26,8 +26,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationUserRoles.be
 @Slf4j
 public class OrganisationService {
 
-    private static final String GENERIC_ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
-
     /**
      * The draft journey resolves the org on every operation; cached so each page isn't an
      * rd-professional round trip. TTL short enough to pick up an org move within a minute.
@@ -168,31 +166,6 @@ public class OrganisationService {
     public AddressUK getOrganisationAddress(OrganisationDetailsResponse organisationDetails) {
         AddressUK address = organisationDetailsService.getOrganisationAddress(organisationDetails);
         return keyAddressFieldsEmpty(address) ? null : address;
-    }
-
-    /**
-     * Fetches the record and resolves the profile from it in one call.
-     *
-     * @return The organisation profile for the current user, or null if it cannot be resolved
-     */
-    public String getOrgProfileIdForCurrentUser() {
-        return getOrgProfileId(getOrganisationDetailsForCurrentUser());
-    }
-
-    /**
-     * The organisation profile PRM keys the group access catalogue on. Every organisation also
-     * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
-     * single profile that identifies an access type.
-     *
-     * @return The organisation profile, or null if there is none
-     */
-    public String getOrgProfileId(OrganisationDetailsResponse organisationDetails) {
-        if (organisationDetails == null || organisationDetails.getOrganisationProfileIds() == null) {
-            return null;
-        }
-        return organisationDetails.getOrganisationProfileIds().stream()
-            .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
-            .findFirst().orElse(null);
     }
 
     /**
