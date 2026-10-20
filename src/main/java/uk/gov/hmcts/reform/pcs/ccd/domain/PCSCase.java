@@ -804,13 +804,6 @@ public class PCSCase {
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private String judicialNotesMarkdown;
 
-    @CCD (
-        label = "Review date",
-        access = {InternalTabAccess.class},
-        typeOverride = Collection,
-        typeParameterOverride = "CaseReviewDate")
-    private List<ListValue<CaseReviewDate>> caseReviewDates;
-
     @CCD(
         label = "Review date",
         min = 1
