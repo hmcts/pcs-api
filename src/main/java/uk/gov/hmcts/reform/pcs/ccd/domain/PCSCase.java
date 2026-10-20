@@ -69,6 +69,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.maintenance.ReindexCasesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
@@ -121,6 +122,10 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
+
+    @CCD(searchable = false)
+    @JsonUnwrapped(prefix = "reindexCases_")
+    private ReindexCasesDetails reindexCases;
 
     @CCD(
         searchable = false
