@@ -9,6 +9,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.util.Optional;
+import lombok.Builder;
 import lombok.Getter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -21,37 +22,57 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     PROFESSIONAL_ORG_CLAIMANT_ACCESS(
         ORGANISATION_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        new DisplaySettings(
-            "Claims made by your organisation",
-            "View and manage all possession claims your organisation has made.",
-            1, true, true, true, true)
+        DisplaySettings.builder()
+            .description("Claims made by your organisation")
+            .hintText("View and manage all possession claims your organisation has made.")
+            .displayOrder(1)
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(true)
+            .groupAccessEnabled(true)
+            .build()
     ),
 
     SOLICITOR_ORG_CLAIMANT_ACCESS(
         SOLICITOR_PROFILE, CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
-        new DisplaySettings(
-            "Claims you have made for a claimant",
-            "View and manage all possession claims your organisation has made as the legal representative "
-                + "for the claimant.",
-            2, true, true, true, true)
+        DisplaySettings.builder()
+            .description("Claims you have made for a claimant")
+            .hintText("View and manage all possession claims your organisation has made as the legal representative "
+                + "for the claimant.")
+            .displayOrder(2)
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(true)
+            .groupAccessEnabled(true)
+            .build()
     ),
 
     SOLICITOR_ORG_DEFENDANT_ACCESS(
         SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
-        new DisplaySettings(
-            "Cases where you represent a defendant",
-            "View and manage all possession cases where your organisation is the legal representative "
-                + "for a defendant.",
-            3, true, true, true, true)
+        DisplaySettings.builder()
+            .description("Cases where you represent a defendant")
+            .hintText("View and manage all possession cases where your organisation is the legal representative "
+                + "for a defendant.")
+            .displayOrder(3)
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(true)
+            .groupAccessEnabled(true)
+            .build()
     ),
 
     DUTY_ADVISOR_ACCESS(
         SOLICITOR_PROFILE, null, "duty-advisor-access", "duty-advisor-request",
-        new DisplaySettings(
-            "In court duty advisor access",
-            "Where the organisation is the provider of the Housing Loss Prevention Advice Service (HLPAS) "
-                + "In Court Duty Scheme, this grants users temporary access to possession cases.",
-            4, false, false, false, true)
+        DisplaySettings.builder()
+            .description("In court duty advisor access")
+            .hintText("Where the organisation is the provider of the Housing Loss Prevention Advice Service (HLPAS) "
+                + "In Court Duty Scheme, this grants users temporary access to possession cases.")
+            .displayOrder(4)
+            .accessMandatory(false)
+            .accessDefault(false)
+            .display(false)
+            .groupAccessEnabled(true)
+            .build()
     );
 
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
@@ -86,6 +107,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.groupAccessEnabled = displaySettings.groupAccessEnabled();
     }
 
+    @Builder
     private record DisplaySettings(
         String description,
         String hintText,
