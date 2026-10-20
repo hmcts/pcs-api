@@ -819,10 +819,7 @@ export class CaseManagementAction implements IAction {
   }
 
   private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
-  private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
-    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
-    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -911,7 +908,11 @@ export class CaseManagementAction implements IAction {
     console.log(
       `✅ ${judicialNotes.table} validation passed`
     );
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+  }
+    private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
+      let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
+      const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
+      await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -1110,7 +1111,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, index)).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, index)).toEqual(`${defendantsDetails.lastName}`);
       }
-    });    
+    });
 
     await this.caseTabTableData(page, defendantsDetails.mainTable as string, defendantsDetails.subTable as string);
 
@@ -1274,8 +1275,8 @@ export class CaseManagementAction implements IAction {
     expect(await this.getCaseFieldValue(page, 'Name')).toEqual(partyDetails.defName);
     expect(await this.getCaseFieldValue(page, 'Date of birth')).toEqual(partyDetails.defDOB);
     expect(await this.getCaseFieldValue(page, 'Address for service')).toEqual(partyDetails.defAddress);
-    
-    if (partyDetails.dobVal) return;    
+
+    if (partyDetails.dobVal) return;
 
     await performAction('clickRadioButton', {
       question: partyDetails.question,
