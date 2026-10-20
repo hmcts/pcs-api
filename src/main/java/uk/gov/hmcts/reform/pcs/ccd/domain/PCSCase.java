@@ -396,7 +396,7 @@ public class PCSCase {
     @CCD(searchable = false, access = DefendantSolicitorAccess.class)
     private String summaryLegalRepresentativeMarkdown;
 
-    @CCD(searchable = false, access = InternalTabAccess.class)
+    @CCD(access = InternalTabAccess.class)
     private String ordersMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
