@@ -16,11 +16,6 @@ import java.util.stream.Stream;
 import static org.springframework.web.util.HtmlUtils.htmlEscape;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 
-/**
- * The read only part of the "Record warrant return" screen (HDPI-7347): "claimant name vs defendant name",
- * then the "Eviction details" table with the claimant type, claimant name and defendant names. The case
- * number and property address come from the case header; the warrant number is deliberately not shown.
- */
 @Component
 @RequiredArgsConstructor
 public class EvictionDetailsMarkup {
@@ -71,9 +66,6 @@ public class EvictionDetailsMarkup {
         return claimant.getOrgName() != null ? claimant.getOrgName() : fullName(claimant);
     }
 
-    /**
-     * Each named defendant, then "Person(s) unknown" once if any defendant's name is not known.
-     */
     static List<String> defendantNames(List<Party> defendants) {
         List<String> names = new ArrayList<>();
         boolean anyUnknown = defendants == null || defendants.isEmpty();

@@ -40,11 +40,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * The transactional reads and writes of enforcement document generation, separated from the orchestration in
- * {@link EnforcementDocumentGenerator} so the Docmosis render runs outside any transaction. The payload is
- * built in a read-only transaction, so it can read the enforcement's lazy relations, and the rendered document
- * is filed in a short write transaction. Both phases check whether the document has already been generated, so
- * a retry never files a second copy.
+ * Split from {@link EnforcementDocumentGenerator} so the Docmosis render runs outside any transaction.
  */
 @Slf4j
 @Service
@@ -88,10 +84,6 @@ public class EnforcementDocumentPersistenceService {
         this.bailiffAllocationRepository = bailiffAllocationRepository;
     }
 
-    /**
-     * The payload for the document, unless the enforcement already has the one document of this kind it can
-     * have.
-     */
     @Transactional(readOnly = true)
     public Optional<EnforcementDocumentPayload> buildPayloadIfNotGenerated(UUID enforcementId,
                                                                           EnforcementOutput output) {
@@ -103,12 +95,6 @@ public class EnforcementDocumentPersistenceService {
         return Optional.of(buildPayload(enforcement, output, enforcement.getClaim().getPcsCase()));
     }
 
-    /**
-     * Files the rendered document in the Enforcement folder of Case File View, on both the case and the
-     * enforcement.
-     *
-     * @return the filed document, or empty if another attempt filed it first
-     */
     @Transactional
     public Optional<DocumentEntity> attach(UUID enforcementId, EnforcementOutput output, String documentUrl) {
         EnforcementOrderEntity enforcement = loadEnforcement(enforcementId);
@@ -164,8 +150,7 @@ public class EnforcementDocumentPersistenceService {
     }
 
     /**
-     * The court the case is managed by, as the access code form names it. A Location Reference failure is let
-     * through so the generation task retries.
+     * A Location Reference failure is let through so the generation task retries.
      */
     private Optional<CourtVenue> caseManagementCourt(PcsCaseEntity pcsCase) {
         Integer epimsId = pcsCase.getCaseManagementLocation();
@@ -206,8 +191,7 @@ public class EnforcementDocumentPersistenceService {
     }
 
     /**
-     * Every journey asks which language the claimant used, on the page of the type's family: a warrant of
-     * restitution answers the warrant journey's page and a writ of restitution the writ journey's (HDPI-7555).
+     * A restitution type answers the language page of its own family: warrant, or writ.
      */
     private static String language(EnforcementOrder enforcementOrder, SelectEnforcementType enforcementType) {
         if (enforcementOrder == null || enforcementType == null) {
@@ -222,10 +206,6 @@ public class EnforcementDocumentPersistenceService {
         return languageUsed.map(LanguageUsed::getLabel).orElse(null);
     }
 
-    /**
-     * Whether the enforcement already has the one document of this kind it can have. A notice of eviction is
-     * generated again for a rescheduled eviction, so it is never already generated.
-     */
     private static boolean alreadyGenerated(EnforcementOrderEntity enforcement, EnforcementOutput output) {
         return !output.isRepeatable()
             && enforcement.getDocuments().stream()

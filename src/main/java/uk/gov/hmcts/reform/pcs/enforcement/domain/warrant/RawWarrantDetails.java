@@ -12,11 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 
-/**
- * Not needed in R1.4
- *
- * @deprecated This field is retained only for backwards compatibility.
- */
 @Deprecated
 @SuppressWarnings({"java:S1133", "java:S6355"})
 @Builder

@@ -21,19 +21,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Sets the "Risk assessment" tab for the case view (13-risk-assessment-tab.feature, HDPI-7350).
- *
- * <p>The tab is for the claim's most recent warrant or warrant of restitution that a caseworker has approved:
- * the current enforcement when it is one, as for the bailiff events. It stays once the warrant closes, so that
- * its notes and risk level can still be read (OPEN-QUESTIONS 40). It is never shown for a writ, or before a
- * warrant has been approved.
- *
- * <p>Defendants never see it (HDPI-7539). A defendant's legal representative holds the same
- * caseworker-pcs-solicitor IDAM role as the claimant's, which the claimant side's tab is granted on, so for a
- * user on the defendant side, or whose side of the case cannot be established ({@link EnforcementViewerService}),
- * the tab is hidden and left empty.
- */
 @Component
 @RequiredArgsConstructor
 public class RiskAssessmentTabView {
@@ -43,11 +30,6 @@ public class RiskAssessmentTabView {
     private final EnforcementViewerService enforcementViewerService;
     private final ClaimantRiskAssessmentService claimantRiskAssessmentService;
 
-    /**
-     * Every field is set either way rather than left alone, because a draft "Enforce the order" may have
-     * replaced the enforcement order on the case view with an old copy. A claim with no generated warrant is
-     * left without an enforcement order if it has none, rather than given one that only says "no".
-     */
     public void setRiskAssessmentTab(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference) {
         if (pcsCaseEntity == null || pcsCase == null) {
             return;
@@ -96,9 +78,6 @@ public class RiskAssessmentTabView {
         );
     }
 
-    /**
-     * The claimant's change waits for the bailiff's review until the risk level is set after it (HDPI-7552).
-     */
     private static boolean isAfterRiskLevelSet(Instant updatedAt, Instant riskLevelSetAt) {
         return riskLevelSetAt == null || riskLevelSetAt.isBefore(updatedAt);
     }

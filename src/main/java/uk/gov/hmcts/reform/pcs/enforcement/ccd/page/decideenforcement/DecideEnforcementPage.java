@@ -9,10 +9,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
-/**
- * The only page of decideEnforcement: a read only header (also on check your answers) and the accept or
- * reject decision, with a reason when rejecting.
- */
 public class DecideEnforcementPage implements CcdPageConfiguration {
 
     public static final String PAGE_ID = "decideEnforcement";
@@ -41,12 +37,9 @@ public class DecideEnforcementPage implements CcdPageConfiguration {
             .page(PAGE_ID)
             .pageLabel("Decide enforcement")
             .complex(PCSCase::getEnforcementOrder)
-            // Placed before the label because XUI fills a label's ${...} only from the case view and from the
-            // fields placed before it on the form. Only the start callback sets these, so a label placed ahead
-            // of them renders blank.
+            // XUI fills a label's ${...} only from fields placed before it, so these must precede the label
             .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getFormattedCaseName, NEVER_SHOW, true)
-            // Shown on check your answers too, so the caseworker sees the case they are deciding on.
             .label(PAGE_ID + "-caseDetails", CASE_DETAILS, null, true)
             .mandatory(EnforcementOrder::getEnforcementDecision)
             .mandatory(EnforcementOrder::getEnforcementRejectionReason, REJECTED)

@@ -23,21 +23,11 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
-/**
- * HDPI-8424: whether a further warrant of possession is free. It is free when the claim's most recent final
- * warrant return closed the warrant as one of {@link #FREE_REPEAT_WARRANT_RETURN_NAMES}, and the application
- * is made within {@value #FREE_REPEAT_WARRANT_MONTHS} calendar months of the claim's first warrant of
- * possession being generated. A warrant is generated when a caseworker approves the application, which is what
- * enf_case.approved_at records.
- */
 @Component
 public class RepeatWarrantFeeWaiver {
 
     static final int FREE_REPEAT_WARRANT_MONTHS = 12;
 
-    /**
-     * Other reasons are "TBC from service" on HDPI-8424 (OPEN-QUESTIONS 8).
-     */
     static final Set<WarrantReturnName> FREE_REPEAT_WARRANT_RETURN_NAMES = Collections.unmodifiableSet(
         EnumSet.of(WarrantReturnName.WARRANT_SUSPENDED_BY_ORDER));
 
@@ -53,9 +43,6 @@ public class RepeatWarrantFeeWaiver {
         this.ukClock = ukClock;
     }
 
-    /**
-     * Whether an application for {@code enforcementType} made today on the claim owes no fee.
-     */
     @Transactional(readOnly = true)
     public boolean isFeeWaived(UUID claimId, SelectEnforcementType enforcementType) {
         if (claimId == null || enforcementType != SelectEnforcementType.WARRANT) {
@@ -86,11 +73,6 @@ public class RepeatWarrantFeeWaiver {
             .min(Instant::compareTo);
     }
 
-    /**
-     * Calendar months in UK dates, up to and including the day the period ends: a warrant generated on
-     * 31 August 2025 makes a further warrant free up to 31 August 2026, and one generated on 29 February
-     * 2024 up to 28 February 2025.
-     */
     static boolean isWithinFreePeriod(Instant warrantGeneratedAt, LocalDate applicationDate) {
         LocalDate generated = warrantGeneratedAt.atZone(UK_ZONE_ID).toLocalDate();
         return !applicationDate.isAfter(generated.plusMonths(FREE_REPEAT_WARRANT_MONTHS));

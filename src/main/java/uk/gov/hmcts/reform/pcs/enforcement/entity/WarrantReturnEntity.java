@@ -24,10 +24,6 @@ import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-/**
- * A warrant return a bailiff recorded against an enforcement (HDPI-7347). An enforcement keeps every
- * return it has had, so it can be interim, interim, final, then reopened. Returns are never edited.
- */
 @Entity
 @Table(name = "enf_warrant_return")
 @Getter
@@ -60,9 +56,6 @@ public class WarrantReturnEntity {
     @Column(name = "return_name", nullable = false, updatable = false)
     private WarrantReturnName returnName;
 
-    /**
-     * When the eviction took place. Set for a successful eviction only.
-     */
     @Column(name = "eviction_at", updatable = false)
     private Instant evictionAt;
 
@@ -72,9 +65,6 @@ public class WarrantReturnEntity {
     @Column(name = "recorded_at", nullable = false, updatable = false)
     private Instant recordedAt;
 
-    /**
-     * The IDAM user id of the bailiff who recorded the return.
-     */
     @Column(name = "recorded_by", updatable = false)
     private String recordedBy;
 }

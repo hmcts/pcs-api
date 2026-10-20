@@ -14,13 +14,9 @@ final class SummaryFields {
     }
 
     /**
-     * Drops every {@code NEVER_SHOW} field of the event from its check-your-answers summary.
-     *
-     * <p>A field placed to carry a value or to feed a {@code ${...}} label is hidden with
-     * {@code NEVER_SHOW}, but the SDK overloads that take a {@code retainHiddenValue} flag also set
-     * {@code ShowSummary=Y}, which puts the raw value on check your answers. Field placements belong to one
-     * event, so every event that reuses a page configurer and calls {@code showSummary()} has to call this
-     * for itself.</p>
+     * Drops the event's {@code NEVER_SHOW} fields from check your answers, which the SDK overloads taking a
+     * {@code retainHiddenValue} flag otherwise put there. Field placements belong to one event, so every
+     * event that reuses a page configurer and calls {@code showSummary()} has to call this for itself.
      */
     static void excludeNeverShownFields(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
         excludeNeverShownFields(eventBuilder.fields().build());

@@ -8,9 +8,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EvictionDetailsService.Evicti
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Renders the read only "Eviction details" table shown on the schedule and reschedule eviction screens.
- */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EvictionDetailsMarkup {
 

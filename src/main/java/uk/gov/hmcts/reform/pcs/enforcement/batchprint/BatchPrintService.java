@@ -21,21 +21,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Produces a bailiff's batch print (HDPI-8012): one PDF holding, for each case in turn, its warrant, risk
- * assessment and notice of eviction.
- *
- * <p>The bailiff downloads the file and prints it themselves. Nothing is posted, so Send Letter is not used,
- * and nothing is stored: the file is built on request from the documents already in each case's Enforcement
- * folder. Documents are fetched from CDAM as the system user, the same way bulk print fetches them; the
- * bailiff's right to each case is checked by {@link BatchPrintPlanner} first.
- *
- * <p>Cases are fetched and merged in parallel, at most {@value #MAX_CONCURRENT_CASES} at a time across every
- * batch print the instance is building, and each case is merged into a file of its own in the request's
- * {@link BatchPrintTempDirectory} ({@link BatchPrintPdfMerger}). That bounds both the load on CDAM and the
- * documents held in memory, whatever the number of cases or of bailiffs printing at once. A document that
- * cannot be fetched or read leaves only its case out, and the bailiff is told which; a request whose cases
- * cannot get their turn at those slots within {@link #MAX_WAIT_FOR_A_SLOT} per wave of
- * {@value #MAX_CONCURRENT_CASES} is refused whole with {@link BatchPrintBusyException}.
+ * At most {@value #MAX_CONCURRENT_CASES} cases are fetched at a time across every batch print being built.
  */
 @Slf4j
 @Service
@@ -43,12 +29,6 @@ public class BatchPrintService {
 
     static final int MAX_CONCURRENT_CASES = 6;
 
-    /**
-     * How long a request will wait for its turn at the case slots, for each wave of
-     * {@value #MAX_CONCURRENT_CASES} cases it has to get through. {@link #print} runs on the request thread, so
-     * an unbounded wait holds that thread for as long as every other batch print being built takes, which
-     * outlives the gateway's own timeout and leaves the bailiff nothing to read.
-     */
     static final Duration MAX_WAIT_FOR_A_SLOT = Duration.ofSeconds(30);
 
     private final BatchPrintPlanner batchPrintPlanner;
@@ -79,15 +59,10 @@ public class BatchPrintService {
     }
 
     /**
-     * Builds the batch print, in a temp directory the caller owns and has to delete. A request that is refused
-     * or that has nothing to print leaves no directory behind.
-     *
-     * @throws BatchPrintBusyException if the instance is too busy to fetch this request's documents
+     * The temp directory is the caller's to delete; a refused or empty print leaves none behind.
      */
     public BatchPrint print(String bailiffUserId, List<String> caseReferences) {
         Path directory = createMergeDirectory();
-        // The caller only takes the directory on with the file it has to stream, so a refusal and a print with
-        // nothing in it both leave it here to delete.
         boolean handedOver = false;
         try {
             BatchPrint batchPrint = buildBatchPrint(bailiffUserId, caseReferences, directory);
@@ -138,20 +113,10 @@ public class BatchPrintService {
         }
     }
 
-    /**
-     * How long the request as a whole will wait at the case slots: {@link #MAX_WAIT_FOR_A_SLOT} for each wave of
-     * {@value #MAX_CONCURRENT_CASES} cases, because only that many of its own cases can be fetched at a time.
-     * A single budget for the whole request would be spent queueing behind its own cases, so the largest
-     * batches would refuse themselves however idle the instance was; a budget per wave is spent only on the
-     * batch prints other bailiffs are having built.
-     */
     private Duration slotBudget(int caseCount) {
         return maxWaitForASlot.multipliedBy(Math.max(1, Math.ceilDiv(caseCount, maxConcurrentCases)));
     }
 
-    /**
-     * Each case's merged file, in the order given, with no file for a case that could not be fetched or merged.
-     */
     private List<CaseFile> mergeEachCase(Path directory, List<PrintableCase> printableCases, Instant waitUntil) {
         List<Future<CaseFile>> futures = new ArrayList<>();
         // Closing the executor waits for every case, so none is still being written once this returns.
@@ -204,10 +169,6 @@ public class BatchPrintService {
         }
     }
 
-    /**
-     * One case's merged documents; no file when they could not be fetched or merged, and too busy when the
-     * case never got a slot to fetch them in.
-     */
     private record CaseFile(String caseReference, Path file, boolean tooBusy) {
 
         static CaseFile merged(String caseReference, Path file) {

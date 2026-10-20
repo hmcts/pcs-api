@@ -20,16 +20,6 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_SCHEDULING;
 
-/**
- * Allocates the claim's current warrant to a bailiff (HDPI-7356, HDPI-8189). The first allocation moves the
- * warrant from awaiting bailiff allocation to awaiting scheduling. A later one reallocates it: the previous
- * allocation is ended, so only the new bailiff is active.
- *
- * <p>The allocation is held in enf_bailiff_allocation rather than as an AM role assignment, because pcs-api
- * cannot create the {@code allocated-bailiff} CASE role yet. Its RoleAssignmentApi only reads, and CCD's
- * case-users API, which pcs-api uses for [DEFENDANT] and the other bracketed case roles, rejects a role
- * name without brackets.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,25 +36,10 @@ public class BailiffAllocationService {
     private final EnforcementWaTaskService enforcementWaTaskService;
     private final Clock utcClock;
 
-    /**
-     * Whether bailiff staff can allocate the claim's current enforcement to a bailiff: it is an approved, live
-     * warrant. "Allocate case to bailiff" is offered on this, and its start and submit refuse on it.
-     *
-     * @param currentEnforcement the claim's current enforcement, or null if it has none
-     */
     public static boolean canAllocateBailiff(EnforcementOrderEntity currentEnforcement) {
         return currentEnforcement != null && BailiffEnforcementRules.isApprovedLiveWarrant(currentEnforcement);
     }
 
-    /**
-     * The claim's current enforcement, if it is a warrant bailiffs can be allocated to. For a start callback:
-     * it refuses by throwing, which
-     * {@link uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementCallbackExceptionHandler} turns into an
-     * error on the start response.
-     *
-     * @throws NoEnforcementException if the claim has no enforcement
-     * @throws EnforcementEventNotAvailableException if the enforcement is not an approved, live warrant
-     */
     public EnforcementOrderEntity getAllocatableEnforcement(long caseReference) {
         EnforcementOrderEntity enforcement = currentEnforcementService.findCurrentEnforcement(caseReference)
             .orElseThrow(NoEnforcementException::new);
@@ -74,9 +49,6 @@ public class BailiffAllocationService {
         return enforcement;
     }
 
-    /**
-     * The claim's current enforcement if it is a warrant bailiffs can be allocated to, or why it is not.
-     */
     private EnforcementChange<EnforcementOrderEntity> findAllocatableEnforcement(long caseReference) {
         Optional<EnforcementOrderEntity> current = currentEnforcementService.findCurrentEnforcement(caseReference);
         if (current.isEmpty()) {
@@ -88,18 +60,14 @@ public class BailiffAllocationService {
         return EnforcementChange.made(current.get());
     }
 
-    /**
-     * The bailiff the enforcement is allocated to now, if any.
-     */
     public Optional<BailiffAllocationEntity> findActiveAllocation(EnforcementOrderEntity enforcement) {
         return bailiffAllocationRepository.findByEnforcementOrderIdAndEndedAtIsNull(enforcement.getId()).stream()
             .findFirst();
     }
 
     /**
-     * Ends the enforcement's active allocation, leaving it with no bailiff. The warrant closing or being
-     * reopened ends the allocation this way: the partial unique index on enf_bailiff_allocation allows only
-     * one active row per enforcement, so a stale one would block the next allocation.
+     * The partial unique index on enf_bailiff_allocation allows one active row per enforcement, so a stale
+     * allocation has to be ended before the next one can be made.
      */
     @Transactional
     public void endActiveAllocations(EnforcementOrderEntity enforcement) {
@@ -112,13 +80,6 @@ public class BailiffAllocationService {
         }
     }
 
-    /**
-     * Allocates the claim's current warrant to the bailiff. Allocating it again to its current bailiff
-     * changes nothing.
-     *
-     * @return made, with the warrant's number (null for a warrant that has none), or the errors to show when
-     *     the claim has no approved, live warrant
-     */
     @Transactional
     public EnforcementChange<String> allocate(long caseReference, BailiffUser bailiff) {
         EnforcementChange<EnforcementOrderEntity> allocatable = findAllocatableEnforcement(caseReference);
@@ -145,16 +106,8 @@ public class BailiffAllocationService {
                                                      .allocatedByUserId(securityContextService.getCurrentUserId())
                                                      .startedAt(now)
                                                      .build());
-            // TODO(HDPI-8189): create the allocated-bailiff CASE role assignment for the bailiff in AM, and
-            //  delete the previous bailiff's, so the "Roles and access" tab and case access follow the
-            //  allocation. This needs a RAS write client (POST /am/role-assignments with
-            //  replaceExisting=true and a per-case process and reference), an AM approval rule for
-            //  allocated-bailiff, and RAS in the environments PCS deploys to. Until then the allocation
-            //  lives only in enf_bailiff_allocation.
-            //  Reallocation needs nothing beyond that role assignment: the warrant's open bailiff tasks are
-            //  granted to the allocated-bailiff role rather than to a user, so rewriting the assignment is
-            //  what moves them. Assigning each task through wa-task-management-api would need a user token
-            //  and pcs_api on its authorised-services list.
+            // TODO(HDPI-8189): write the allocated-bailiff CASE role assignment in AM, which is what moves
+            //  the warrant's open bailiff tasks on a reallocation.
             if (needsRiskAssessmentTask(enforcement, replacingABailiff)) {
                 EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(
                     caseReference, "the allocated bailiff's risk assessment task",
@@ -169,21 +122,10 @@ public class BailiffAllocationService {
             enforcementStatusTransitions.transition(enforcement, AWAITING_SCHEDULING);
             enforcementOrderRepository.save(enforcement);
         }
-        // "Allocate case to bailiff" is closed by XUI through the task-completion DMN when the caseworker
-        // opens the event from the task.
         log.info("Enforcement {} allocated to bailiff {}", enforcement.getId(), bailiff.userId());
         return EnforcementChange.made(enforcement.getEnforcementNumber());
     }
 
-    /**
-     * Whether the allocation needs its own "Review risks and set level" task. The risk level is set once per
-     * warrant, so a warrant that has one recorded asks for nothing. Nor does a reallocation: the previous
-     * bailiff's task for the same warrant is still open, and the role assignment the TODO in {@link #allocate}
-     * describes is what moves it to the new bailiff. Asking again would leave the new bailiff with two
-     * identical tasks and nothing to do with the second.
-     *
-     * @param replacingABailiff whether this allocation replaces one that was still active
-     */
     private static boolean needsRiskAssessmentTask(EnforcementOrderEntity enforcement, boolean replacingABailiff) {
         return enforcement.getRiskLevelSetAt() == null && !replacingABailiff;
     }

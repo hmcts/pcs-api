@@ -45,15 +45,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Files a one-page placeholder PDF in a case's Enforcement folder, against its current enforcement, for the
- * end to end tests (batch print, HDPI-8012). pcs-api generates the warrant, risk assessment and notice of
- * eviction itself ({@link uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentGenerator}); this
- * files a later copy of one, which batch print then takes as the latest, for set-ups the suite cannot drive
- * yet, such as a rescheduled notice of eviction.
- *
- * <p>The PDF is uploaded through CDAM and attached to the case, as generated documents are, so it can be
- * fetched like a real one. CDAM needs dm-store behind it, which a CFTLib stack only runs with
- * {@code LOCAL_DOC_SERVICES=true}.
+ * Uploads through CDAM, which a CFTLib stack only runs with {@code LOCAL_DOC_SERVICES=true}.
  */
 @Slf4j
 @Service
@@ -84,11 +76,6 @@ public class EnforcementTestDocumentSeeder {
         this.documentIdExtractor = documentIdExtractor;
     }
 
-    /**
-     * Files the placeholder, titled {@code title}, and returns its file name.
-     *
-     * @return empty when the case has no enforcement to file it against
-     */
     @Transactional
     public Optional<String> seed(long caseReference, BatchPrintDocumentKind kind, String title) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
@@ -118,10 +105,6 @@ public class EnforcementTestDocumentSeeder {
         return Optional.of(fileName);
     }
 
-    /**
-     * The type the enforcement document generator files this kind of document as on this enforcement, so the
-     * placeholder is found, and shown or hidden, exactly as a generated one would be.
-     */
     static DocumentType documentType(BatchPrintDocumentKind kind, EnforcementOrderEntity enforcement) {
         return switch (kind) {
             case WARRANT -> Optional.ofNullable(SelectEnforcementType.from(enforcement.getEnforcementOrder()))
@@ -180,10 +163,6 @@ public class EnforcementTestDocumentSeeder {
         }
     }
 
-    /**
-     * {@link MultipartFile} hands its content out as a byte array, so the content is held as one; equality is
-     * on the content itself rather than on the array's identity.
-     */
     private record InMemoryPdf(String fileName, byte[] content) implements MultipartFile {
 
         @Override

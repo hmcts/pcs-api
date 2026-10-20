@@ -23,17 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Moves the claimant's risk assessment answers between {@link ClaimantRiskAnswers} and the fields of the
- * warrant application's risk pages, which "Confirm the eviction details" reuses.
- */
 @Component
 public class ClaimantRiskAnswersMapper {
 
-    /**
-     * The risk answers the claimant gave when they applied, or empty for a writ or an application that records
-     * no enforcement type.
-     */
     @SuppressWarnings("deprecation")
     public Optional<ClaimantRiskAnswers> fromApplication(EnforcementOrder application) {
         SelectEnforcementType type = SelectEnforcementType.from(application);
@@ -46,9 +38,6 @@ public class ClaimantRiskAnswersMapper {
         return Optional.empty();
     }
 
-    /**
-     * The answers on the warrant risk pages, as "Confirm the eviction details" submits them.
-     */
     @SuppressWarnings("deprecation")
     public ClaimantRiskAnswers fromWarrantFields(EnforcementOrder enforcementOrder) {
         ClaimantRiskAnswers.ClaimantRiskAnswersBuilder answers = ClaimantRiskAnswers.builder();
@@ -65,10 +54,6 @@ public class ClaimantRiskAnswersMapper {
         return answers.build().normalised();
     }
 
-    /**
-     * Puts the answers on the warrant risk pages and selects the warrant flow, so the reused pages show. Any other
-     * warrant answers on the enforcement order are replaced: they belong to the application, not this journey.
-     */
     @SuppressWarnings("deprecation")
     public void applyToWarrantFields(ClaimantRiskAnswers answers, EnforcementOrder enforcementOrder) {
         enforcementOrder.setChooseEnforcementType(warrantFlow());
@@ -104,9 +89,6 @@ public class ClaimantRiskAnswersMapper {
             .build());
     }
 
-    /**
-     * Hides the warrant risk pages, for a claim with no warrant whose answers can be changed.
-     */
     @SuppressWarnings("deprecation")
     public void clearWarrantFields(EnforcementOrder enforcementOrder) {
         enforcementOrder.setChooseEnforcementType(null);

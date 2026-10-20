@@ -8,8 +8,5 @@ import java.util.UUID;
 
 public interface BailiffNoteRepository extends JpaRepository<BailiffNoteEntity, UUID> {
 
-    /**
-     * The enforcement's notes, newest first.
-     */
     List<BailiffNoteEntity> findByEnforcementOrderIdOrderByCreatedAtDesc(UUID enforcementOrderId);
 }

@@ -23,11 +23,6 @@ public class RiskDetailsMapper {
         this.modelMapper = modelMapper;
     }
 
-    /**
-     * The risk answers on a submitted application. A missing application would be saved as an empty risk
-     * profile rather than refused, so it is required here; EnforcementSubmitEvent refuses an application that
-     * records no enforcement type, which is what a missing one looks like.
-     */
     public RiskProfileEntity toEntity(EnforcementOrderEntity enforcementOrderEntity,
                                       EnforcementOrder enforcementOrder) {
         Objects.requireNonNull(enforcementOrder, "The enforcement application is missing");

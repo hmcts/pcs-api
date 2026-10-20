@@ -31,11 +31,6 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @Slf4j
 public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * EnforcementOrderMediator sets this for the case view only while the claim's current enforcement is
-     * awaiting the claimant's confirmation, which is the only time ClaimantEvictionConfirmationService records
-     * an answer. Without it the journey is offered on every issued case and silently records nothing.
-     */
     static final String SHOW_CONFIRM_EVICTION_JOURNEY = "showConfirmEvictionJourney=\"Yes\"";
 
     private final ConfirmEvictionConfigurer confirmEvictionConfigurer;
@@ -59,10 +54,6 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
-    /**
-     * Pre-fills the warrant risk pages with the claimant's current answers, so they only change what is different
-     * (HDPI-7552).
-     */
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         if (pcsCase.getEnforcementOrder() == null) {
@@ -72,10 +63,6 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
         return pcsCase;
     }
 
-    /**
-     * Records the answers, or tells the claimant nothing was recorded because the eviction moved on while the
-     * journey was open. Answering with errors rolls back the risk answers as well.
-     */
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         EnforcementOrder submitted = eventPayload.caseData().getEnforcementOrder();
         EnforcementChange<Void> recorded = claimantEvictionConfirmationService.recordConfirmation(

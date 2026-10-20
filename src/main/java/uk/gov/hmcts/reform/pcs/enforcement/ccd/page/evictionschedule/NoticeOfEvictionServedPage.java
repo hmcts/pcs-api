@@ -11,10 +11,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
 
 import java.util.List;
 
-/**
- * The one question page of "Mark notice of eviction as served" (HDPI-7346): when and how the notice was served,
- * and an optional bailiff note. It does not ask about permission to dispense with service.
- */
 public class NoticeOfEvictionServedPage implements CcdPageConfiguration {
 
     public static final String PAGE_ID = "markNoticeOfEvictionServed";

@@ -11,16 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Renders an enforcement document through Docmosis and files it in the Enforcement folder of Case File View,
- * on both the case and the enforcement.
- *
- * <p>Orchestration only: the Docmosis call runs outside any transaction, between a read-only payload build and
- * a short write transaction that files the document — see {@link EnforcementDocumentPersistenceService}. It
- * skips an enforcement that already has the document, so a retry never files a second copy.</p>
- *
- * <p>This calls Docmosis, so it must not run inside a case event's transaction either: it is the work of
- * {@link EnforcementDocumentGenerationComponent}, which {@link EnforcementDocumentScheduler} schedules once the
- * event has committed.</p>
+ * The Docmosis call must run outside any transaction, so this is only driven from the db-scheduler task.
  */
 @Slf4j
 @Service
@@ -41,12 +32,6 @@ public class EnforcementDocumentGenerator {
         this.documentImportService = documentImportService;
     }
 
-    /**
-     * Generates the document and files it, unless the enforcement already has the one document of this kind it
-     * can have, or no template is configured for it.
-     *
-     * @return the filed document, or empty if none was generated
-     */
     public Optional<DocumentEntity> generate(UUID enforcementId, EnforcementOutput output) {
         Optional<String> templateId = templates.templateId(output);
         if (templateId.isEmpty()) {

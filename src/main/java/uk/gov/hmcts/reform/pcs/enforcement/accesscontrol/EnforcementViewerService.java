@@ -24,19 +24,6 @@ import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil.deriveCaseAccessGroups;
 
-/**
- * Decides which side of a case the current user views enforcement from.
- *
- * <p>CCD field access cannot do this on its own. A legal representative on either side holds
- * {@code caseworker-pcs-solicitor}, which the claimant-only enforcement fields are granted on, and group-access
- * roles are held firm-wide, so a firm acting for the defendant on this claim may act for the claimant on
- * another. So the side comes from the user's case roles on this case, counting a group-access role only when
- * it is for one of this case's access groups.
- *
- * <p>It fails closed: a user who holds neither an internal role nor a claimant-side role on this case - for
- * instance because their case roles could not be looked up - is {@link EnforcementViewer#RESTRICTED}, as is
- * anyone holding a defendant-side role.
- */
 @Service
 @RequiredArgsConstructor
 public class EnforcementViewerService {
@@ -54,17 +41,14 @@ public class EnforcementViewerService {
         UserRole.CLAIMANT
     );
 
-    /**
-     * The access profiles the internal enforcement fields are granted on.
-     */
     private static final Set<String> INTERNAL_ACCESS_PROFILES = new InternalTabAccess().getGrants().keySet()
         .stream()
         .map(HasRole::getRole)
         .collect(Collectors.toUnmodifiableSet());
 
     /**
-     * PCS's and Work Allocation's system users read the whole case: bulk and batch print fetch enforcement
-     * documents through CDAM as PCS's system user, and CDAM only serves a document the user can see on the case.
+     * System users read the whole case: batch print fetches documents through CDAM as the system user, and
+     * CDAM only serves a document that user can see on the case.
      */
     private static final Set<String> SYSTEM_ROLES = roles(UserRole.SYSTEM_USER, UserRole.WA_SYSTEM_USER);
 
@@ -85,9 +69,8 @@ public class EnforcementViewerService {
     }
 
     /**
-     * Whether the current user is internal on their IDAM and AM organisational roles alone, holding an internal
-     * role and no group-access role for either side. Unlike {@link #currentViewer} it needs no lookup of the
-     * user's case roles, which CCD answers per case, so it suits deciding what to offer rather than what to show.
+     * Decides from the user's organisational roles alone, with no per-case role lookup, so it suits deciding
+     * what to offer rather than what to show.
      */
     public boolean isInternalWithoutCaseRoles() {
         if (securityContextService.isSystemUser() || securityContextService.isIdamSystemUser()) {
@@ -119,10 +102,6 @@ public class EnforcementViewerService {
             && Arrays.stream(userRole.getAccessProfiles()).anyMatch(INTERNAL_ACCESS_PROFILES::contains);
     }
 
-    /**
-     * The access groups the case view gives CCD, derived the same way, since PCSCaseView sets them only after
-     * the case view contributors have run.
-     */
     private static Set<String> caseAccessGroupIds(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity == null || pcsCaseEntity.getParties() == null) {
             return Set.of();

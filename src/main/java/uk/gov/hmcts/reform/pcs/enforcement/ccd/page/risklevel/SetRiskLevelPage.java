@@ -7,11 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevelDetails;
 
-/**
- * The one page of "Set risk level". The level is mandatory, and so is the reason when the level is high. The
- * reason is limited to 6,800 characters on the field, so XUI shows its standard errors. The page is the first
- * of the event, so "Previous" is disabled.
- */
 public class SetRiskLevelPage implements CcdPageConfiguration, CcdPage {
 
     public static final String PAGE_LABEL = "Set risk level";

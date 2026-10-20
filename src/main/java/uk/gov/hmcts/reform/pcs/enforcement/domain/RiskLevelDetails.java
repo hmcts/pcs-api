@@ -11,10 +11,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
-/**
- * The eviction risk level (HDPI-7343). The first two fields are answered in the "Set risk level" event; the
- * last two show the saved level on the case. The level itself is held on the enforcement record.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -38,9 +34,6 @@ public class RiskLevelDetails {
     )
     private String riskLevelReason;
 
-    /**
-     * The current enforcement's saved risk level, set for the case view. Read only and internal.
-     */
     @CCD(
         label = "Risk level",
         typeOverride = FixedRadioList,
@@ -50,9 +43,6 @@ public class RiskLevelDetails {
     )
     private RiskLevel currentRiskLevel;
 
-    /**
-     * Why the saved risk level is high, set for the case view. Read only and internal.
-     */
     @CCD(
         label = "Why the risk level is high",
         typeOverride = TextArea,

@@ -16,11 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Keeps the internal-only enforcement documents (the warrants and the notice of eviction, see
- * {@link EnforcementOutput#isVisibleToClaimant()}) from the claimant side. Internal users and judiciary see every
- * enforcement document; what defendants see is {@link DefendantEnforcementView}'s job.
- *
- * <p>The documents are taken out of {@code allDocuments}, the only case field that carries them.
+ * Hides internal-only enforcement documents from the claimant side only. Internal users and judiciary see
+ * every enforcement document; defendants are handled by {@link DefendantEnforcementView}.
  */
 @Component
 @RequiredArgsConstructor
@@ -30,11 +27,6 @@ public class ClaimantEnforcementDocumentView {
 
     private final EnforcementViewerService enforcementViewerService;
 
-    /**
-     * Removes the internal-only enforcement documents from the case file when the current user is on the
-     * claimant side of the case. Everyone else who is not an internal user is left to
-     * {@link DefendantEnforcementView}, which shows them a served warrant's notice of eviction.
-     */
     public void restrictForClaimants(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference) {
         if (pcsCase == null) {
             return;

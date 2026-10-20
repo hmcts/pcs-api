@@ -9,14 +9,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * The body of the email the claimant is sent when a bailiff records a return, per return name, from the
- * HDPI-8424 notification table. A return name with no body here (eviction successful, warrant suspended by
- * order, possession order set aside) does not send an email.
- *
- * <p>{@value #REASON} stands for the bailiff's "Additional details", which is mandatory for the two return
- * names that use it.</p>
- */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class WarrantReturnClaimantEmails {
 
@@ -25,8 +17,7 @@ public final class WarrantReturnClaimantEmails {
     private static final Map<WarrantReturnName, String> BODIES = bodies();
 
     /**
-     * The email body for the return, with the bailiff's additional details in place of {@value #REASON}, or
-     * empty when the return name does not notify the claimant.
+     * The email body for the return, or empty when the return name does not notify the claimant.
      */
     public static Optional<String> body(WarrantReturnName returnName, String additionalDetails) {
         return Optional.ofNullable(returnName)
@@ -38,14 +29,11 @@ public final class WarrantReturnClaimantEmails {
         return returnName != null && BODIES.containsKey(returnName);
     }
 
-    /**
-     * The bodies as given, with {@value #REASON} still in place.
-     */
     static Map<WarrantReturnName, String> templates() {
         return BODIES;
     }
 
-    // The reason is followed by a full stop in every body, so drop one the bailiff typed.
+    // Every body puts a full stop after the reason, so drop one the bailiff typed.
     private static String reason(String additionalDetails) {
         if (additionalDetails == null) {
             return "";

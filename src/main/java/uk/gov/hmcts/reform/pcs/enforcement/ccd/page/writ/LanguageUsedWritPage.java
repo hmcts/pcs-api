@@ -8,13 +8,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementType;
 
-/**
- * CCD page configuration for the writ journey Language used screen.
- * Allows users to indicate whether any part of their enforcement application was completed in Welsh.
- *
- * <p>Shown in the writ of possession and writ of restitution journeys, which record the answer in the same
- * field.</p>
- */
 public class LanguageUsedWritPage implements CcdPageConfiguration {
 
     @Override

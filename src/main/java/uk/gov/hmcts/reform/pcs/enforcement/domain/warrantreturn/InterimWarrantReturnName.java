@@ -4,11 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
-/**
- * The "Return name" options for an interim return (HDPI-7347).
- * Each option is a {@link WarrantReturnName} with the same constant name, so the list's codes and labels
- * cannot drift from it.
- */
 @AllArgsConstructor
 @Getter
 public enum InterimWarrantReturnName implements HasLabel {

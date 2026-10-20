@@ -19,9 +19,6 @@ import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-/**
- * A note that bailiff staff added about an enforcement. Notes are never edited.
- */
 @Entity
 @Table(name = "enf_bailiff_note")
 @Getter

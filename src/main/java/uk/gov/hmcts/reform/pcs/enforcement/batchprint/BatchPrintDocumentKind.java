@@ -9,9 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The documents a bailiff prints for each case (HDPI-8012), in the order they are printed, and the types the
- * enforcement document generator files each one as. Bailiffs work warrants of possession and of restitution
- * ({@link uk.gov.hmcts.reform.pcs.enforcement.service.BailiffEnforcementRules}), so either is the warrant.
+ * Declared in the order a batch print prints them.
  */
 @AllArgsConstructor
 @Getter

@@ -32,12 +32,6 @@ public class EnforcementDraftDeletionScheduledTask {
     private final DraftEnforcementDeletionService draftEnforcementDeletionService;
     private final FeatureToggleService featureToggleService;
 
-    /**
-     * Fails startup when {@code discardAfterDays} is less than 1, rather than leaving the sweep to fail on every
-     * run: a smaller value puts the cutoff at or after now, so the sweep would delete every enforcement draft.
-     *
-     * @throws IllegalArgumentException if {@code discardAfterDays} is less than 1
-     */
     public EnforcementDraftDeletionScheduledTask(
             @Value("${enforcement-draft-deletion.schedule}") String schedule,
             @Value("${enforcement-draft-deletion.discard-after-days}") int discardAfterDays,
@@ -67,10 +61,8 @@ public class EnforcementDraftDeletionScheduledTask {
     public RecurringTask<Void> enforcementDraftDeletionTask() {
         Schedule parsedSchedule = Schedules.parseSchedule(schedule);
         return Tasks.recurring(ENFORCEMENT_DRAFT_DELETION_TASK, parsedSchedule)
-                // Once the retries are used up, fall back to the recurring schedule rather than
-                // ExecutionOperations.stop(): stop() deletes the execution row, and a RecurringTask only
-                // recreates it when the scheduler starts, so a run of failures would stop draft deletion
-                // until the pod restarted.
+                // Reschedule rather than stop() once the retries are used up: stop() deletes the execution
+                // row, which a RecurringTask only recreates on scheduler startup.
                 .onFailure(FailureHandler.<Void>maxRetries(maxRetries)
                         .withBackoff(backoffDelay)
                         .then(new FailureHandler.OnFailureReschedule<>(parsedSchedule)))

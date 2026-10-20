@@ -21,11 +21,6 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
-/**
- * Records the caseworker's decision. Everything that stops the decision being recorded is returned as an error
- * on the response: EnforcementCallbackExceptionHandler cannot be scoped to a decentralised submit, and an
- * exception out of a transactional service would also mark the SDK's event transaction rollback-only.
- */
 @Component
 @RequiredArgsConstructor
 public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
@@ -52,8 +47,6 @@ public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
             return errorResponse(List.of(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE));
         }
 
-        // A refusal here is another caseworker having decided the same application while this event was open,
-        // or the decision's documents and email not being queued.
         EnforcementChange<EnforcementDecisionOutcome> decided = switch (decision) {
             case ACCEPT -> enforcementDecisionService.accept(caseReference);
             case REJECT -> enforcementDecisionService.reject(caseReference, rejectionReason);
@@ -64,9 +57,6 @@ public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
         EnforcementDecisionOutcome outcome = decided.change();
 
         String propertyAddress = addressFormatter.formatMediumAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER);
-        // Either decision returns the case to CASE_ISSUED. PENDING_ENFORCEMENT_ISSUED, which enforceTheOrder
-        // moves the case to, offers no events of its own, so a case left there after an approval can neither
-        // confirm the eviction nor use any core event; the enforcement's own status tracks its progress.
         return SubmitResponse.<State>builder()
             .confirmationHeader(DecideEnforcementConfirmation.header(outcome))
             .confirmationBody(DecideEnforcementConfirmation.body(

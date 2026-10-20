@@ -42,17 +42,14 @@ public class WarrantOfRestitutionEntity {
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
 
-    // Defendants Returned
     private String howDefendantsReturned;
 
-    // Additional Information
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo additionalInformationSelect;
 
     private String additionalInformationDetails;
 
-    // PropertyAccessDetails
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isDifficultToAccessProperty;

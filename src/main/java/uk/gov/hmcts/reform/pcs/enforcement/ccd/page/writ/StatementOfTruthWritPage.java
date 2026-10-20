@@ -12,10 +12,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetails
 import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementType;
 
-/**
- * Shown in the writ of possession and writ of restitution journeys, which record the statement of truth in the
- * same fields. Only the document the claimant asks the High Court to enforce by differs.
- */
 public class StatementOfTruthWritPage implements CcdPageConfiguration {
 
     private static final String WRIT_COMPLETED_BY_CLAIMANT = "writCompletedBy=\"CLAIMANT\"";

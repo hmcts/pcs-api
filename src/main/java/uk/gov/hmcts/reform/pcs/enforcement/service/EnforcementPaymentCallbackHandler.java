@@ -16,14 +16,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentCallbackStrategy;
 
 import java.util.UUID;
 
-/**
- * Handles the Payments callback for an enforcement application's fee. The fee payment's related entity is the
- * enforcement (enf_case) the fee is for. Paying moves the enforcement from awaiting payment to awaiting review;
- * the CCD case state is not changed.
- *
- * <p>The fee payment's party is deliberately left unset, as for a general application: a claimant party on a
- * paid fee payment makes {@code FeePaymentEntityListener} send the claim issued email.</p>
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

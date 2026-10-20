@@ -14,10 +14,6 @@ import java.util.List;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule.NOTICE_SERVED_HOW_MAX_LENGTH;
 
-/**
- * Validates the answers to the schedule, reschedule and notice of eviction events. XUI already rejects a date or
- * time that does not exist, such as 31/02 or 25:00. Times are UK wall-clock times.
- */
 @Component
 public class EvictionScheduleValidator {
 
@@ -42,10 +38,6 @@ public class EvictionScheduleValidator {
         this.ukClock = ukClock;
     }
 
-    /**
-     * The eviction can be later today, to the minute, or on a later day. A time that has already passed is
-     * rejected: the claimant cannot be given an eviction, or a confirmation deadline, in the past.
-     */
     public List<String> validateEvictionDate(EvictionSchedule schedule) {
         List<String> errors = new ArrayList<>();
         LocalDateTime evictionDateTime = schedule == null ? null : schedule.getEvictionDateTime();
@@ -64,9 +56,6 @@ public class EvictionScheduleValidator {
         return errors;
     }
 
-    /**
-     * The notice can have been served now or earlier, to the minute, but not later.
-     */
     public List<String> validateNoticeServed(EvictionSchedule schedule, String bailiffNote) {
         List<String> errors = new ArrayList<>();
         LocalDateTime servedAt = schedule == null ? null : schedule.getNoticeOfEvictionServedAt();

@@ -15,14 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Moves one enforcement's timestamps into the past, so that the rules measured from them (the claimant's 72
- * hours to confirm an eviction, the free repeat warrant within 12 months of the first being generated) can be
- * exercised without waiting.
- *
- * <p>Every timestamp the enforcement owns moves by the same amount, so their order relative to each other is
- * kept. Several of the columns are {@code updatable = false} in the entities, which is why this is plain SQL.
- */
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
@@ -30,10 +22,6 @@ public class EnforcementBackdateService {
 
     private static final String SHIFT = "%1$s = %1$s - make_interval(months => :months, days => :days, secs => :secs)";
 
-    /**
-     * Each table holding the enforcement's timestamps, its timestamp columns, and the column naming the
-     * enforcement.
-     */
     static final List<TimestampColumns> TIMESTAMP_COLUMNS = List.of(
         new TimestampColumns("enf_case", "id",
                              List.of("bailiff_date", "status_updated_at", "approved_at", "risk_level_set_at",
@@ -52,12 +40,6 @@ public class EnforcementBackdateService {
     private final CurrentEnforcementService currentEnforcementService;
     private final EntityManager entityManager;
 
-    /**
-     * Moves the timestamps of the enforcement numbered {@code enforcementNumber} on the case, or of the case's
-     * current enforcement when no number is given, back by {@code period} plus {@code duration}.
-     *
-     * @return the id of the enforcement that was moved, or empty when the case has no such enforcement
-     */
     @Transactional
     public Optional<UUID> backdate(long caseReference, String enforcementNumber, Period period, Duration duration) {
         Optional<UUID> enforcementId = findEnforcement(caseReference, enforcementNumber)
@@ -79,8 +61,7 @@ public class EnforcementBackdateService {
     }
 
     private void shift(UUID enforcementId, Period period, Duration duration) {
-        // Write anything pending, then drop the loaded entities before shifting: the native updates bypass the
-        // persistence context, so an entity left in it would be stale for the rest of the transaction.
+        // The native updates bypass the persistence context, so loaded entities have to be written and dropped.
         entityManager.flush();
         entityManager.clear();
         for (TimestampColumns table : TIMESTAMP_COLUMNS) {

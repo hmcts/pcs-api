@@ -53,10 +53,6 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * Offered while the claim has no live enforcement (EnforcementEventAvailabilityView), unless the user has a draft,
-     * which "Resume draft application" picks up instead. The start callback still refuses a live enforcement.
-     */
     static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT),
                                              "hasUnsubmittedEnforcementData=\"No\"",
                                              "canApplyForEnforcement=\"Yes\"");
@@ -139,13 +135,6 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         );
     }
 
-    /**
-     * The types the claimant may apply for. A restitution type restores possession after an eviction the
-     * claimant has already been granted, so each is only offered once the claim has an application of the
-     * matching possession type: a warrant of restitution needs a warrant, as
-     * {@link EnforcementPageContent#WARRANT_OF_RESTITUTION_INFO_TEXT} tells the claimant, and a writ of
-     * restitution needs a writ by the same reasoning, which no ticket states (OPEN-QUESTIONS #11).
-     */
     private void setEnforcementTypes(long caseReference, EnforcementOrder enforcementOrder) {
         List<SelectEnforcementType> enforcementTypes = new ArrayList<>(List.of(WARRANT, WRIT));
 

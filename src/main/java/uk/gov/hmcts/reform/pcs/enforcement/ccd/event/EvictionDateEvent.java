@@ -30,14 +30,6 @@ import java.util.Objects;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffStaffRoles.BAILIFF_STAFF_ROLES;
 
-/**
- * "Schedule eviction" and "Reschedule eviction" ask the same questions: the eviction date and time, and whether
- * the court has dispensed with service. Both save the date as the enforcement's bailiff date, which the
- * claimant's Confirm eviction journey reads, and move the warrant to awaiting claimant confirmation.
- *
- * <p>Bailiff staff, the allocated bailiff included (its case role has the bailiff access profile), can use
- * them. CCD cannot tell the allocated bailiff from other bailiffs, so the event does not try to.</p>
- */
 abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PageConfigurer pageConfigurer;
@@ -57,26 +49,13 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
 
     abstract String eventName();
 
-    /**
-     * The event's enabling condition, feature flag included.
-     */
     abstract String showCondition();
 
-    /**
-     * Throws when the event cannot start on the claim's enforcement.
-     */
     abstract void checkCanStart(long caseReference);
 
-    /**
-     * Saves the eviction date, giving back the warrant number for the confirmation screen or the errors to
-     * show instead.
-     */
     abstract EnforcementChange<String> save(long caseReference, LocalDateTime evictionDateTime,
                                             boolean dispenseWithService);
 
-    /**
-     * "scheduled" or "rescheduled", for the confirmation header.
-     */
     abstract String confirmationVerb();
 
     @Override

@@ -11,10 +11,8 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * The enforcement rows one case view reads, each loaded at most once however many of the view's parts ask for
- * it. Open for the duration of {@link CurrentEnforcementService#withEnforcementsLoadedOnce} and held on the
- * thread running it, so only for work that reads enforcements and never changes them: a change made while one
- * is open would not be seen by later reads.
+ * Caches the enforcement rows one case view reads. Only safe for work that never changes an enforcement: a
+ * change made while one is open would not be seen by later reads.
  */
 final class EnforcementCaseViewLoads {
 
@@ -39,20 +37,12 @@ final class EnforcementCaseViewLoads {
         }
     }
 
-    /**
-     * The claim's enforcements, from {@code load} the first time they are asked for.
-     */
     static List<EnforcementOrderEntity> enforcements(UUID claimId,
                                                      Function<UUID, List<EnforcementOrderEntity>> load) {
         EnforcementCaseViewLoads open = OPEN.get();
         return open == null ? load.apply(claimId) : open.enforcementsByClaim.computeIfAbsent(claimId, load);
     }
 
-    /**
-     * Every enforcement of the claim's most recent warrant return, by enforcement id, from {@code load} the
-     * first time they are asked for. Empty when no case view is open, so that work on a single enforcement
-     * loads that enforcement's return on its own rather than the whole claim's.
-     */
     static Optional<Map<UUID, WarrantReturnEntity>> latestReturns(
         UUID claimId, Function<UUID, Map<UUID, WarrantReturnEntity>> load) {
         EnforcementCaseViewLoads open = OPEN.get();

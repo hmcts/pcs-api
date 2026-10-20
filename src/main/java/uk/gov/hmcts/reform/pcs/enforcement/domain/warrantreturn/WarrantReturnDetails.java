@@ -17,25 +17,17 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 /**
- * The answers to "Record warrant return" (HDPI-7347). They are saved to the enforcement's return history on
- * submit, not to the case.
- *
- * <p>The return names offered depend on the return and the outcome. They are three fixed lists shown by show
- * condition rather than one dynamic list, because the outcome is chosen on the same screen: a dynamic list
- * can only be refilled by a mid-event callback, which runs when the user leaves the page.</p>
+ * The return name is three fixed lists picked by show condition rather than one dynamic list: the outcome
+ * that narrows it is chosen on the same page, and a dynamic list can only be refilled by a mid-event callback.
  */
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-// Unwrapped with a prefix, which Jackson prepends as is: the CCD field ids are prefix + UpperCamelCase.
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class WarrantReturnDetails {
 
-    /**
-     * The claimant type, claimant name and defendant names, set when the event starts.
-     */
     @CCD(searchable = false)
     private String evictionDetailsMarkup;
 
@@ -66,10 +58,6 @@ public class WarrantReturnDetails {
         searchable = false)
     private String additionalDetails;
 
-    /**
-     * The return name from the drop down that the chosen return and outcome show. Answers left in the other
-     * drop downs, from before the user changed the return or outcome, are ignored.
-     */
     public static Optional<WarrantReturnName> selectedReturnName(WarrantReturnDetails details) {
         if (details == null || details.getType() == null) {
             return Optional.empty();

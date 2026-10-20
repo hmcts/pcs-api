@@ -9,9 +9,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.ShowConditionsEnforcementTyp
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
-/**
- * Page for confirming defendants date of birth.
- */
 public class ConfirmIfDOBKnownPage implements CcdPageConfiguration {
 
     @Override

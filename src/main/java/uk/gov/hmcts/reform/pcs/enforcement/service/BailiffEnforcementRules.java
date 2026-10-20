@@ -13,15 +13,11 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_REVIEW;
 
 /**
- * Which enforcements bailiffs work on. Bailiffs take a warrant once a caseworker has approved it, and keep it
- * until it stops being live. A warrant of restitution is a warrant too (18-work-allocation-tasks.feature); a
- * writ goes to a High Court Enforcement Officer instead.
+ * Which enforcements bailiffs work on. A warrant of restitution counts as a warrant; a writ goes to a High
+ * Court Enforcement Officer instead.
  */
 public final class BailiffEnforcementRules {
 
-    /**
-     * Every live status after approval. New statuses are included unless they come before approval.
-     */
     public static final Set<EnforcementStatus> APPROVED_LIVE_STATUSES = Collections.unmodifiableSet(
         Arrays.stream(EnforcementStatus.values())
             .filter(EnforcementStatus::isLive)
@@ -35,16 +31,10 @@ public final class BailiffEnforcementRules {
         return enforcement.getWarrantDetails() != null || enforcement.getWarrantOfRestitutionDetails() != null;
     }
 
-    /**
-     * Whether the enforcement is a warrant that has been approved and is still live.
-     */
     public static boolean isApprovedLiveWarrant(EnforcementOrderEntity enforcement) {
         return isWarrant(enforcement) && APPROVED_LIVE_STATUSES.contains(enforcement.getStatus());
     }
 
-    /**
-     * Whether the enforcement is a warrant that has been approved, live or not.
-     */
     public static boolean isGeneratedWarrant(EnforcementOrderEntity enforcement) {
         return isWarrant(enforcement) && enforcement.getStatus() != null && enforcement.getStatus().isGenerated();
     }

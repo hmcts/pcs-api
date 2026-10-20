@@ -6,18 +6,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MarkupContent {
 
-    /**
-     * The confirmation deadline sentence of {@link #CONFIRM_EVICTION_SUMMARY_WITH_DATES}, for an eviction
-     * more than 72 hours away.
-     */
     public static final String CONFIRM_EVICTION_DEADLINE =
         "You must confirm the eviction details before %s. If you try to confirm the eviction after this "
             + "date, the bailiff will cancel your eviction.";
 
-    /**
-     * The deadline sentence when the eviction is less than 72 hours away, so the 72 hour deadline has
-     * already passed and naming a date would name one in the past.
-     */
     public static final String CONFIRM_EVICTION_DEADLINE_IMMEDIATE =
         "You must confirm the eviction details as soon as possible. The eviction is less than 72 hours away, "
             + "so the bailiff may cancel it if you do not confirm now.";

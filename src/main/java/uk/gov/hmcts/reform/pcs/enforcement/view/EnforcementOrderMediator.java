@@ -28,9 +28,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 @AllArgsConstructor
 public class EnforcementOrderMediator {
 
-    /**
-     * How long before the eviction the claimant has to confirm the details by.
-     */
     private static final int CONFIRMATION_HOURS_BEFORE_EVICTION = 72;
 
     private final CurrentEnforcementService currentEnforcementService;
@@ -47,11 +44,6 @@ public class EnforcementOrderMediator {
         }
     }
 
-    /**
-     * The eviction date the claimant still has to confirm. A warrant keeps its bailiff date once it is closed,
-     * so the status decides whether the journey is offered: ClaimantEvictionConfirmationService only records
-     * an answer while the warrant is awaiting the claimant's confirmation.
-     */
     private static Optional<LocalDateTime> dateToConfirm(EnforcementOrderEntity enforcementOrderEntity) {
         if (enforcementOrderEntity.getStatus() != AWAITING_CLAIMANT_CONFIRMATION) {
             return Optional.empty();
@@ -59,10 +51,6 @@ public class EnforcementOrderMediator {
         return Optional.ofNullable(enforcementOrderEntity.getBailiffDate());
     }
 
-    /**
-     * The enforcement the claimant confirms the eviction for: the claim's current one, which is the one the
-     * bailiff schedules (HDPI-7344).
-     */
     Optional<EnforcementOrderEntity> getEnforcementOrder(PcsCaseEntity pcsCaseEntity) {
         return currentEnforcementService.findCurrentEnforcement(pcsCaseEntity);
     }
@@ -91,19 +79,10 @@ public class EnforcementOrderMediator {
         return pcsCase.getEnforcementOrder();
     }
 
-    /**
-     * The eviction date as the eviction confirmation screens and emails show it.
-     */
     public String formatDate(LocalDateTime localDateTime) {
         return EvictionDateFormat.format(localDateTime);
     }
 
-    /**
-     * The sentence telling the claimant when they have to confirm by: 72 hours before the eviction, or, when
-     * the eviction is closer than that, to confirm straight away. The bailiff can schedule an eviction less
-     * than 72 hours out, and naming the 72 hour deadline then names a date in the past, which reads as if the
-     * claimant has already missed it.
-     */
     public String confirmationDeadlineSentence(LocalDateTime evictionDateTime) {
         LocalDateTime deadline = evictionDateTime.minusHours(CONFIRMATION_HOURS_BEFORE_EVICTION);
         if (!deadline.isAfter(LocalDateTime.now(ukClock))) {

@@ -20,9 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Schedules an enforcement email to the claimant through the same db-scheduler Notify task as the rest of
- * pcs-api. It joins the caller's transaction, as db-scheduler does, so the email and its case notification
- * are committed or rolled back with the case data the email describes.
+ * Queues the email in the caller's transaction, so it is committed or rolled back with the case data.
  */
 @Slf4j
 @Service
@@ -36,13 +34,7 @@ public class EnforcementNotificationSender {
     private final EnforcementNotificationTemplates templates;
 
     /**
-     * Schedules the email to the claim's primary claimant, and says whether it was scheduled. It is not
-     * scheduled, and nothing is thrown, when the email has no Notify template configured or the claimant has
-     * no email address: an email the service has not yet written must not stop an enforcement event.
-     *
-     * @param email the email to send, or null to send nothing
-     * @param personalisation the personalisation on top of the claimant's base personalisation; the keys
-     *                        {@link EnforcementEmail#getPersonalisation()} declares
+     * Returns false, without throwing, when there is no template configured or no claimant email address.
      */
     @Transactional
     public boolean send(long caseReference, EnforcementEmail email, Map<String, Object> personalisation) {
@@ -51,8 +43,6 @@ public class EnforcementNotificationSender {
         }
         Optional<String> templateId = templates.templateId(email);
         if (templateId.isEmpty()) {
-            // Notify has no API for creating templates, so these ids only appear once someone has written the
-            // template by hand in the Notify UI. Name the email and the key an operator has to set.
             log.warn("No Notify template is configured for the enforcement email \"{}\", so case {} was not "
                          + "emailed. Set enforcement-notify.templates.{} to the template id once the template "
                          + "has been created in GOV.UK Notify.",

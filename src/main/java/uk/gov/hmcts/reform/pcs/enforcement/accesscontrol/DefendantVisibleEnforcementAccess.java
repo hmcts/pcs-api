@@ -9,13 +9,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 
-/**
- * Read only access to the enforcement fields defendants may see once a warrant's notice of eviction is served:
- * everyone with {@link EnforcementStatusReadAccess}, plus defendants and their legal representatives. Which
- * warrants a defendant actually gets is decided per case view by
- * {@link uk.gov.hmcts.reform.pcs.enforcement.view.DefendantEnforcementView}, which leaves the field unset for
- * them until one is visible.
- */
 public class DefendantVisibleEnforcementAccess implements HasAccessControl {
 
     @Override

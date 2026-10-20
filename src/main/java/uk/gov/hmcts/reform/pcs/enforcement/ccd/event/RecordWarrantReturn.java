@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrantreturn.RecordWarrantR
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnDetails;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantreturn.WarrantReturnName;
-import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementException;
 import uk.gov.hmcts.reform.pcs.enforcement.notification.WarrantReturnNotificationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementSideEffects;
@@ -32,25 +31,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.recordWarrantReturn;
 import static uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffStaffRoles.BAILIFF_STAFF_ROLES;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-/**
- * The allocated bailiff, or other bailiff staff, record a return on the claim's warrant (HDPI-7347, HDPI-8423,
- * HDPI-8424). It is available once a warrant of possession or restitution has been generated on the claim,
- * including while it waits for a bailiff, and on a closed warrant to reopen it. The return is kept as the
- * warrant's history, moves its status as the return name requires, and emails the claimant.
- *
- * <p>The "Record warrant return" task is created when the eviction is scheduled, due on the eviction date
- * ({@link uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService}), and closed by XUI through
- * the task-completion DMN when this event is submitted from it. Recording a return also cancels the
- * warrant's other open tasks, and asks for a new bailiff allocation when the return reopens it.</p>
- */
 @Component
 @AllArgsConstructor
 public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * Always offered: HDPI-7347 asks for the event to be refused when it starts, with "There is no warrant on
-     * this case", rather than taken out of the next step drop down.
-     */
     static final String SHOW_CONDITION = featureFlagsEnabled(ENFORCEMENT);
 
     static final String EVENT_NAME = "Record warrant return";
@@ -67,7 +51,6 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(recordWarrantReturn.name(), this::submit, this::start)
-                // Enforcement is held apart from the case state, as for "Add a bailiff note".
                 .forStates(AddBailiffNote.STATES)
                 .name(EVENT_NAME)
                 .grant(Permission.CRUD, BAILIFF_STAFF_ROLES)
@@ -79,11 +62,6 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         SummaryFields.excludeNeverShownFields(eventBuilder);
     }
 
-    /**
-     * Refuses to start without a warrant that can take a return, and starts with empty answers.
-     *
-     * @throws NoEnforcementException if no warrant has been generated on the claim
-     */
     PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         warrantReturnService.findWarrant(eventPayload.caseReference());
         PCSCase pcsCase = eventPayload.caseData();
@@ -108,8 +86,6 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         }
         WarrantReturnName returnName = recorded.change().returnName();
 
-        // Queued in the submit transaction, so the email is committed or rolled back with the return. A
-        // failure to queue it is answered as an error, which rolls the return back too.
         EnforcementChange<Void> notified = EnforcementSideEffects.schedule(
             caseReference, "the claimant's warrant return email",
             () -> warrantReturnNotificationService.notifyClaimant(caseReference, returnName,

@@ -36,42 +36,17 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Batch print for bailiffs (HDPI-8012): print the warrant, risk assessment and notice of eviction for several
- * cases in one action.
- *
- * <p>CCD has no screen that acts on more than one case, and XUI's "My work" cannot act on several tasks at
- * once, so batch print is offered as an API for a selection screen to call rather than as a CCD event. The
- * caller must have the bailiff organisational role in AM, checked on every request, and every case is checked
- * against their own allocation. With the {@code enforcement-enabled} flag off every endpoint answers 404.
- *
- * <p>A selection screen lists the bailiff's warrants with {@code GET /cases}, shows what would be printed and
- * why any case is left out with {@code POST /check}, and downloads the file with {@code POST}. The file
- * endpoint names the printed and left-out cases in the {@value #INCLUDED_HEADER} and {@value #EXCLUDED_HEADER}
- * headers too, because a case can drop out between the check and the download.
- *
- * <p>The file endpoint answers 503 with a {@code Retry-After} when the instance is already producing as many
- * batch prints as it will fetch documents for, rather than holding the request thread until the gateway gives
- * up on it.
- */
 @RestController
 @RequestMapping("/enforcement/batch-print")
 @RequiredArgsConstructor
 @Tag(name = "Enforcement batch print", description = "Print enforcement documents across a bailiff's cases")
 public class BatchPrintController {
 
-    /**
-     * The most cases one request may name, to bound the size of the file and the time taken to build it.
-     */
     public static final int MAX_CASES = 50;
 
     static final String INCLUDED_HEADER = "Batch-Print-Included-Cases";
     static final String EXCLUDED_HEADER = "Batch-Print-Excluded-Cases";
     private static final String FILE_NAME = "enforcement-documents.pdf";
-    /**
-     * How long to ask a bailiff to wait after a refusal: long enough for the batch prints ahead of theirs to
-     * finish, rather than coming straight back and being refused again.
-     */
     private static final String RETRY_AFTER_SECONDS = "60";
 
     private final IdamAuthenticator idamAuthenticator;
@@ -180,7 +155,6 @@ public class BatchPrintController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(batchPrint.plan());
         }
-        // The file is streamed after this method returns, and may never be streamed at all.
         BatchPrintFileCleanupFilter.deleteWhenRequestFinishes(httpRequest, batchPrint.directory());
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_PDF)
@@ -195,9 +169,6 @@ public class BatchPrintController {
         return featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT);
     }
 
-    /**
-     * The signed-in user's IDAM id, once AM confirms they are a bailiff now: an allocation outlives the role.
-     */
     private String bailiffUserId(String authorization) {
         String userId = idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid();
         if (!bailiffDirectoryService.isBailiff(userId)) {
@@ -211,8 +182,7 @@ public class BatchPrintController {
     }
 
     /**
-     * Each left-out case as {@code reference=CODE}. A reference the bailiff mistyped is not echoed back, because
-     * it could hold characters a header cannot carry.
+     * A mistyped reference is not echoed back: it could hold characters a header cannot carry.
      */
     private static String excludedHeader(BatchPrintPlan plan) {
         return plan.excluded().stream()
@@ -221,9 +191,6 @@ public class BatchPrintController {
             .collect(Collectors.joining(","));
     }
 
-    /**
-     * The cases to print, in print order. References may be written with or without dashes.
-     */
     public record BatchPrintRequest(
         @NotEmpty @Size(max = MAX_CASES) List<String> caseReferences) {
     }

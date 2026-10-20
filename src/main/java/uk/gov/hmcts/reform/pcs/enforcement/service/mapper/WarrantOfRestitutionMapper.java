@@ -22,18 +22,6 @@ import java.util.Set;
 @Component
 public class WarrantOfRestitutionMapper {
 
-    /**
-     * Seeds the warrant of restitution's risk, vulnerability, property access and additional information
-     * answers from the claimant's earlier warrant, so they do not have to give them again.
-     *
-     * <p>The "Your application" page runs this on every Continue, which includes continuing again after ExUI
-     * "Previous" and after "Resume draft application", so it only seeds while the claimant has answered nothing
-     * in the restitution journey. Once they have answered something, their answers stand: a claimant who
-     * changed a seeded answer, or cleared it, keeps the change, and the explanation and evidence that only the
-     * restitution journey collects are never dropped. Merging field by field would instead undo a cleared
-     * answer, and could reinstate risk categories the claimant had abandoned by answering "no" to
-     * {@code anyRiskToBailiff}.</p>
-     */
     public void prePopulateFieldsFromWarrantDetails(EnforcementOrder warrantEnforcementOrder,
                                                     EnforcementOrder currentEnfOrder) {
         if (hasRestitutionAnswers(currentEnfOrder)) {
@@ -107,9 +95,6 @@ public class WarrantOfRestitutionMapper {
             : new RawWarrantRestDetails();
     }
 
-    /**
-     * Whether the claimant has given any warrant of restitution answer.
-     */
     private static boolean hasRestitutionAnswers(EnforcementOrder enforcementOrder) {
         return hasAnswers(enforcementOrder.getWarrantOfRestitutionDetails())
             || hasAnswers(enforcementOrder.getRawWarrantRestDetails());
@@ -182,10 +167,6 @@ public class WarrantOfRestitutionMapper {
         return warrantOfRestitutionEntity;
     }
 
-    /**
-     * The journey asks which language the claimant used on the warrant journey's page, so the answer is on
-     * {@link WarrantDetails} (HDPI-7555).
-     */
     private void mapLanguageUsed(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
                                  WarrantDetails warrantDetails) {
         if (warrantDetails != null) {

@@ -60,11 +60,6 @@ public class WritDetails {
     )
     private String hceoDetails;
 
-    /**
-     * This field is retained only for backwards compatibility.
-     *
-     * @deprecated As of release 1.4
-     */
     @Deprecated
     @JsonUnwrapped
     @CCD

@@ -17,9 +17,6 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAIT
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIMANT_CONFIRMED;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.CLAIMANT_UNABLE_TO_ATTEND;
 
-/**
- * Records the claimant's answers to "Confirm the eviction details" against the claim's live enforcement.
- */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -40,9 +37,7 @@ public class ClaimantEvictionConfirmationService {
     private final EnforcementWaTaskService enforcementWaTaskService;
 
     /**
-     * Saves any change to the claimant's risk assessment answers (HDPI-7552), then records whether they can
-     * attend, in one transaction. A refusal from either is passed back for the submit handler to answer with,
-     * which rolls the whole confirmation back with it.
+     * A refusal is returned for the submit handler to answer with, which rolls the whole confirmation back.
      */
     @Transactional
     public EnforcementChange<Void> recordConfirmation(long caseReference, YesOrNo canAttend,
@@ -54,14 +49,6 @@ public class ClaimantEvictionConfirmationService {
         return recordAttendance(caseReference, canAttend);
     }
 
-    /**
-     * Moves the live enforcement to "Claimant confirmed" or "Claimant unable to attend". This only happens
-     * when it is awaiting the claimant's confirmation, which "Schedule eviction" and "Reschedule eviction" move it
-     * to (HDPI-7344, HDPI-7549). Otherwise another user has moved the warrant on while the journey was open, so
-     * the answer is refused and the claimant told to refresh the case, rather than appearing to be recorded.
-     *
-     * <p>The 72-hour confirmation deadline the start page states is not enforced here.</p>
-     */
     @Transactional
     public EnforcementChange<Void> recordAttendance(long caseReference, YesOrNo canAttend) {
         if (canAttend == null) {
@@ -83,8 +70,7 @@ public class ClaimantEvictionConfirmationService {
         enforcementStatusTransitions.transition(enforcement, target);
         enforcement.setClaimantCanAttend(canAttend.toBoolean());
         enforcementOrderRepository.save(enforcement);
-        // TODO HDPI-7549: store the dates the claimant is not available, which the journey does not ask for yet,
-        // so the bailiff rescheduling the eviction can avoid them.
+        // TODO HDPI-7549: store the dates the claimant is not available for the bailiff to avoid.
         return EnforcementSideEffects.schedule(
             caseReference, "the claimant's attendance email and the reschedule task", () -> {
                 if (target == CLAIMANT_CONFIRMED) {
@@ -99,7 +85,6 @@ public class ClaimantEvictionConfirmationService {
     }
 
     private Optional<EnforcementOrderEntity> findLiveEnforcement(long caseReference) {
-        // A claim can have at most one live enforcement, and it is always the current one.
         return currentEnforcementService.findCurrentEnforcement(caseReference)
             .filter(enforcement -> enforcement.getStatus().isLive());
     }

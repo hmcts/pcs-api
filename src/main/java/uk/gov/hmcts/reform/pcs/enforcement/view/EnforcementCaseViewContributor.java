@@ -27,12 +27,6 @@ public class EnforcementCaseViewContributor implements CaseViewContributor {
     private final ClaimantEnforcementDocumentView claimantEnforcementDocumentView;
     private final DefendantEnforcementView defendantEnforcementView;
 
-    /**
-     * Every view below reads the claim's enforcements, so they are loaded once for all of them.
-     *
-     * <p>With the {@code enforcement-enabled} flag off no enforcement field is set. Enforcement documents already
-     * in the case file are still restricted as usual, so turning the flag off never shows them to anyone new.
-     */
     @Override
     public void contribute(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference, State state) {
         CurrentEnforcementService.withEnforcementsLoadedOnce(() -> setFields(pcsCaseEntity, pcsCase, caseReference,

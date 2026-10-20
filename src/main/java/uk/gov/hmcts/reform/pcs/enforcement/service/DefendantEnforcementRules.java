@@ -15,22 +15,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * What defendants, and their legal representatives, may see of a claim's enforcements (HDPI-7539, HDPI-7658,
- * HDPI-8442), so that enforcement is not put at risk and a without notice eviction stays hidden.
- *
- * <ul>
- *     <li>A warrant is visible once its notice of eviction has been served, which is never when the court has
- *     dispensed with service ({@link EvictionScheduleService#defendantsCanSeeEnforcement}). It stays visible
- *     after it is closed.</li>
- *     <li>A writ never is: it is enforced by a High Court Enforcement Officer and no notice is served
- *     through PCS.</li>
- *     <li>While a warrant or writ of restitution is live, nothing is: restitution is enforced without notice,
- *     so defendants lose sight of earlier warrants too until it stops being live, such as when the bailiff
- *     records its final return.</li>
- * </ul>
- *
- * <p>Of the enforcement documents, defendants only ever see the notice of eviction of a visible warrant: never
- * the warrant or writ itself (HDPI-9566), the risk assessment (HDPI-7350) or the claimant's evidence.</p>
+ * What defendants may see of a claim's enforcements: a warrant once its notice of eviction has been served, and
+ * never a writ. While a restitution is live nothing is visible, including earlier warrants.
  */
 public final class DefendantEnforcementRules {
 
@@ -43,9 +29,6 @@ public final class DefendantEnforcementRules {
     private DefendantEnforcementRules() {
     }
 
-    /**
-     * The enforcements defendants may see, in the order given.
-     */
     public static List<EnforcementOrderEntity> visibleToDefendants(Collection<EnforcementOrderEntity> enforcements) {
         if (enforcements == null || enforcements.stream().anyMatch(DefendantEnforcementRules::isLiveRestitution)) {
             return List.of();
@@ -56,9 +39,6 @@ public final class DefendantEnforcementRules {
             .toList();
     }
 
-    /**
-     * The ids of the enforcement documents defendants may see: the notices of eviction of the visible warrants.
-     */
     public static Set<UUID> documentIdsVisibleToDefendants(Collection<EnforcementOrderEntity> enforcements) {
         return visibleToDefendants(enforcements).stream()
             .map(EnforcementOrderEntity::getDocuments)

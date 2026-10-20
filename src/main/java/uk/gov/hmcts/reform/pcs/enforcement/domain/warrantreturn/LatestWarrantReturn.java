@@ -14,17 +14,11 @@ import java.time.LocalDateTime;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
-/**
- * The current enforcement's most recent warrant return, set for the case view so that the "Enforcement
- * status" tab can show it under "Eviction outcome" (HDPI-8424). Read only: the returns are held on
- * enf_warrant_return and no event edits these fields.
- */
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-// Unwrapped with a prefix, which Jackson prepends as is: the CCD field ids are prefix + UpperCamelCase.
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class LatestWarrantReturn {
 

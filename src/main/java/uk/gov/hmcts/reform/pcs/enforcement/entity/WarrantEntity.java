@@ -53,62 +53,41 @@ public class WarrantEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo defendantMissedPayments;
 
-    // UI Control Flags
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated This field is retained only for backwards compatibility.
-     */
     @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated This field is retained only for backwards compatibility.
-     */
     @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
-    /**
-     * Indicates whether the order is suspended.
-     *
-     * @deprecated As of release 1.4
-     */
     @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isSuspendedOrder;
 
-    // Additional Information
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo additionalInformationSelect;
 
     private String additionalInformationDetails;
 
-    // NameAndAddressForEviction
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correctNameAndAddress;
 
-    // PeopleToEvict
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo evictEveryone;
 
-    // PropertyAccessDetails
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isDifficultToAccessProperty;
 
     private String clarificationOnAccessDifficultyText;
 
-    // Legal Costs & Finances
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo areLegalCostsToBeClaimed;
@@ -117,21 +96,18 @@ public class WarrantEntity {
 
     private BigDecimal amountOwed;
 
-    // Land Registry
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo haveLandRegistryFeesBeenPaid;
 
     private BigDecimal amountOfLandRegistryFees;
 
-    // Repayment
     private String repaymentChoice;
 
     private BigDecimal amountOfRepaymentCosts;
 
     private String repaymentSummaryMarkdown;
 
-    // Defendants DOB
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "defendants_dob_known")

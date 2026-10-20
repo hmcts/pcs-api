@@ -6,10 +6,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffDirectoryService;
 
-/**
- * "Allocate case to bailiff" has one page, then check your answers. There is no "Choose a role type" or
- * "Confirm length of assignment" page: the role is always allocated-bailiff and it has no end date.
- */
 @Component
 @RequiredArgsConstructor
 public class AllocateBailiffConfigurer implements PageConfigurer {

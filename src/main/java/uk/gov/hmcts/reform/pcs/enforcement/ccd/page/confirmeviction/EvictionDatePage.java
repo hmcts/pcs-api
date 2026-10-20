@@ -24,7 +24,7 @@ public class EvictionDatePage implements CcdPageConfiguration, CcdPage {
             .label(pageKey + "-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getFormattedEvictionDate, NEVER_SHOW, true)
-            // Set by the start callback: the warrant risk pages that follow only show in the warrant flow.
+            // Placed only so the show conditions on the warrant risk pages that follow can read it
             .readonly(EnforcementOrder::getChooseEnforcementType, NEVER_SHOW, true)
             .label(pageKey + "-eviction-date", EVICTION_DATE_CONTENT)
             .mandatory(EnforcementOrder::getClaimantCanAttendEviction)

@@ -34,21 +34,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.allocateBailiff;
 import static uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffAllocationRoles.BAILIFF_ALLOCATION_ROLES;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-/**
- * Bailiff staff allocate the claim's current warrant to a bailiff (HDPI-7356, HDPI-8183, HDPI-8189). It is
- * offered for a warrant awaiting bailiff allocation, and to reallocate a warrant while it is live.
- *
- * <p>The enforcement status is held on the enforcement record rather than on the case, so the case view sets a
- * flag from it that the show condition reads, and the start callback checks the status again.
- */
 @Component
 @AllArgsConstructor
 public class AllocateBailiff implements CCDConfig<PCSCase, State, UserRole> {
 
-    /**
-     * Offered while the current enforcement is an approved, live warrant (EnforcementEventAvailabilityView). The
-     * start callback still refuses otherwise.
-     */
     static final String SHOW_CONDITION = and(featureFlagsEnabled(ENFORCEMENT), "canAllocateBailiff=\"Yes\"");
 
     private final AllocateBailiffConfigurer allocateBailiffConfigurer;

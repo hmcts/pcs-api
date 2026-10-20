@@ -33,11 +33,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.markNoticeOfEvictionServ
 import static uk.gov.hmcts.reform.pcs.enforcement.accesscontrol.BailiffStaffRoles.BAILIFF_STAFF_ROLES;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-/**
- * The bailiff records when and how they served the notice of eviction, with an optional bailiff note
- * (HDPI-7346, HDPI-7657, HDPI-7658). Available once the eviction is scheduled, when the court has not dispensed
- * with service and the notice is not yet marked as served.
- */
 @Component
 @AllArgsConstructor
 public class MarkNoticeOfEvictionServed implements CCDConfig<PCSCase, State, UserRole> {

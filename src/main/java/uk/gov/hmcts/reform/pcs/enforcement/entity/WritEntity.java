@@ -48,46 +48,26 @@ public class WritEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo defendantMissedPayments;
 
-    // NameAndAddressForEviction
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correctNameAndAddress;
 
-    // Land Registry fees
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated This field is retained only for backwards compatibility.
-     */
     @SuppressWarnings("java:S1133")
     @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo haveLandRegistryFeesBeenPaid;
 
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated This field is retained only for backwards compatibility.
-     */
     @SuppressWarnings("java:S1133")
     @Deprecated
     private BigDecimal amountOfLandRegistryFees;
 
-
-    // Direct fields
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo hasHiredHighCourtEnforcementOfficer;
 
     private String hceoDetails;
 
-    // LegalCosts
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated This field is retained only for backwards compatibility.
-     */
     @SuppressWarnings("java:S1133")
     @Deprecated
     @Enumerated(EnumType.STRING)
@@ -96,10 +76,8 @@ public class WritEntity {
 
     private BigDecimal amountOfLegalCosts;
 
-    // MoneyOwedByDefendants
     private BigDecimal amountOwed;
 
-    // Direct fields
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo hasClaimTransferredToHighCourt;
@@ -111,28 +89,14 @@ public class WritEntity {
     @Column(updatable = false, nullable = false)
     private Instant created;
 
-    //Payment fields
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated These fields are retained only for backwards compatibility.
-     */
     @SuppressWarnings("java:S1133")
     @Deprecated
     private String repaymentChoice;
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated This field is retained only for backwards compatibility.
-     */
+
     @SuppressWarnings("java:S1133")
     @Deprecated
     private BigDecimal amountOfRepaymentCosts;
-    /**
-     * Not needed in R1.4
-     *
-     * @deprecated This field is retained only for backwards compatibility.
-     */
+
     @SuppressWarnings("java:S1133")
     @Deprecated
     private String repaymentSummaryMarkdown;

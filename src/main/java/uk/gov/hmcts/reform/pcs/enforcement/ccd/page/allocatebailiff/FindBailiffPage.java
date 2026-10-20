@@ -19,25 +19,16 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-/**
- * "Find the bailiff's name", the first page of "Allocate case to bailiff". The bailiff is chosen with XUI's
- * StaffUser type-ahead, which searches staff reference data for the service's admin staff. Its choice is
- * checked here against AM, and the bailiff's email address is looked up for check your answers.
- */
 @RequiredArgsConstructor
 public class FindBailiffPage implements CcdPageConfiguration, CcdPage {
 
     public static final String PAGE_LABEL = "Find the bailiff's name";
 
-    /**
-     * The StaffUser type-ahead filter. Bailiffs are assumed to be in the ADMIN role category
-     * (OPEN-QUESTIONS 62). XUI ignores REGION- filters, so there is no location filter yet.
-     */
     static final String STAFF_USER_SEARCH = "#ARGUMENT(CATEGORY-ADMIN)";
 
     /**
-     * Shows the email once a bailiff is chosen. CCD rejects a show condition that refers to the field it is on,
-     * so this keys off the chosen bailiff rather than the email itself.
+     * CCD rejects a show condition that refers to the field it is on, so this keys off the chosen bailiff
+     * rather than the email it shows.
      */
     static final String EMAIL_SHOW_CONDITION = "allocatedBailiff.idamId!=\"\"";
 
@@ -86,9 +77,6 @@ public class FindBailiffPage implements CcdPageConfiguration, CcdPage {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).build();
     }
 
-    /**
-     * The IDAM id of the user chosen in the type-ahead, or null if none has been chosen.
-     */
     public static String chosenUserId(BailiffAllocationDetails allocation) {
         StaffUser chosen = allocation == null ? null : allocation.getAllocatedBailiff();
         String userId = chosen == null ? null : chosen.getIdamId();

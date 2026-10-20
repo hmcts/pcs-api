@@ -74,7 +74,6 @@ public class ChangeNameAddressWritPage implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> details,
             CaseDetails<PCSCase, State> before) {
 
-        // Always return an error to block progression
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride(ERROR_MESSAGE)
                 .build();

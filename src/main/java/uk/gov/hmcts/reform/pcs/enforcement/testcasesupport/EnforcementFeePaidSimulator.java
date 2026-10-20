@@ -21,21 +21,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.util.Optional;
 
-/**
- * Pays an enforcement application's fee the way a Payments callback does, for local stacks, which have no
- * Payments service to take it.
- *
- * <p>When the fees-and-pay task has raised the service request (locally against the wiremock stub), this sends
- * a "Paid" callback for it through {@link PaymentService#processPaymentResponse}, the same path
- * {@code PaymentCallBackController} takes. When there is no fee payment yet, because the task has not run or
- * could not reach Payments, or because the application was seeded by test case generation rather than
- * submitted, it hands {@link EnforcementPaymentCallbackHandler} an unsaved paid fee payment for the enforcement
- * instead. Either way the enforcement moves on through the real callback handler.</p>
- *
- * <p>The local wiremock stub for an enforcement fee's service request
- * ({@code wiremock/mappings/payment-api/enforcement-service-request.json}) deliberately sends no "Paid" webhook,
- * unlike the claim fee's, so an application stays awaiting payment until this is called.</p>
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -48,11 +33,6 @@ public class EnforcementFeePaidSimulator {
     private final PaymentService paymentService;
     private final EnforcementPaymentCallbackHandler enforcementPaymentCallbackHandler;
 
-    /**
-     * Pays the fee for the case's application that is awaiting payment.
-     *
-     * @return whether an application was awaiting payment
-     */
     @Transactional
     public boolean recordFeePaid(long caseReference) {
         ClaimEntity claim = Optional.ofNullable(pcsCaseService.loadCase(caseReference).getMainClaim())
