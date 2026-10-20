@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
 
 import java.util.List;
@@ -40,6 +41,9 @@ class DefendantResponseNotificationServiceTest {
     @Mock
     private CounterClaimFeeCalculator counterClaimFeeCalculator;
 
+    @Mock
+    private OrganisationRepository organisationRepository;
+
     private DefendantResponseNotificationService underTest;
 
     @BeforeEach
@@ -48,7 +52,8 @@ class DefendantResponseNotificationServiceTest {
             notificationService,
             defendantResponseRepository,
             counterClaimRepository,
-            counterClaimFeeCalculator
+            counterClaimFeeCalculator,
+            organisationRepository
         );
     }
 
