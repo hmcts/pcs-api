@@ -48,6 +48,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -389,7 +390,7 @@ public class TestingSupportController {
             return ResponseEntity.ok(uploadResponse);
         } catch (Exception exception) {
             log.error(exception.getMessage(),exception);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .build();
         }
     }

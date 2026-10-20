@@ -26,6 +26,10 @@ public class OrdersTableRenderer {
     private final PebbleEngine pebbleEngine;
 
     public String render(DocumentEntity documentEntity, LocalDateTime uploadedDate) {
+        if (documentEntity == null) {
+            return "";
+        }
+
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("ordersTable");
         Writer writer = new StringWriter();
 
@@ -36,8 +40,7 @@ public class OrdersTableRenderer {
                 : UPLOADED_DATE_FORMAT.format(uploadedDate)
         );
         context.put("documentUrl", documentLink(documentEntity));
-        context.put("documentName",
-                    documentEntity == null ? null : documentEntity.getFileName());
+        context.put("documentName", documentEntity.getFileName());
 
         try {
             compiledTemplate.evaluate(writer, context);

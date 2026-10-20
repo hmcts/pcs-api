@@ -73,6 +73,11 @@ class OrdersTableRendererTest {
             .hasCause(cause);
     }
 
+    @Test
+    void shouldReturnEmptyMarkupWhenDocumentIsNull() {
+        assertThat(underTest.render(null, UPLOADED_DATE)).isEmpty();
+    }
+
 
     private static DocumentEntity document(String fileName, String binaryUrl) {
         return DocumentEntity.builder()
