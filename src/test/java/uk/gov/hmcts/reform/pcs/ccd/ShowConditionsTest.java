@@ -96,6 +96,13 @@ class ShowConditionsTest {
         assertThat(ShowConditions.featureFlagsEnabled()).isEmpty();
     }
 
+    @Test
+    void shouldCreateShowConditionForDisabledFeatureFlag() {
+        String actualShowCondition = ShowConditions.featureFlagsDisabled(RELEASE_1_DOT_4);
+
+        assertThat(actualShowCondition).isEqualTo("featureFlags.release1dot4Enabled=\"NO\"");
+    }
+
     @ParameterizedTest
     @MethodSource("supportedFeatureFlags")
     void shouldCreateShowConditionForSupportedFeatureFlag(FeatureFlag featureFlag) {

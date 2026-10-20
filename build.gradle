@@ -619,7 +619,6 @@ tasks.withType(CftlibExec).configureEach {
   // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
   environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
-  environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'PCS_API_ENV', 'local'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
@@ -670,6 +669,8 @@ tasks.withType(CftlibExec).configureEach {
     environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:4506/documents/[A-Za-z0-9-]+.*'
   }
 
+  // The default feature flag gradle properties are set in gradle.properties and mapped to system properties here
+  systemProperties providers.gradlePropertiesPrefixedBy("feature.").get();
 }
 
 cftlibTest {
