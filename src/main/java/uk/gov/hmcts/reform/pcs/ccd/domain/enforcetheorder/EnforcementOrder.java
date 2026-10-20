@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDeta
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.RawWritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
@@ -52,6 +53,10 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private RawWarrantDetails rawWarrantDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private RawWritDetails rawWritDetails;
 
     @JsonUnwrapped(prefix = "warrant_rest")
     @CCD

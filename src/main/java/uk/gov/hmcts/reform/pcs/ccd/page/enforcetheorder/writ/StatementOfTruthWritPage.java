@@ -10,14 +10,16 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.RawWritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 public class StatementOfTruthWritPage implements CcdPageConfiguration {
 
-    private static final String WRIT_COMPLETED_BY_CLAIMANT = "writCompletedBy=\"CLAIMANT\"";
-    private static final String WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE = "writCompletedBy=\"LEGAL_REPRESENTATIVE\"";
+    private static final String WRIT_COMPLETED_BY_CLAIMANT = "writStatementOfTruth.completedBy=\"CLAIMANT\"";
+    private static final String WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE =
+        "writStatementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -44,27 +46,29 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .label("statementOfTruthWrit-payments-table",
                    "${writStatementOfTruthRepaymentSummaryMarkdown}")
             .done()
-            .complex(WritDetails::getStatementOfTruth)
-            .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
-            .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
-                       WRIT_COMPLETED_BY_CLAIMANT, null
-            )
-            .mandatory(StatementOfTruthDetailsEnforcement::getFullNameParty,
+            .done()
+            .complex(EnforcementOrder::getRawWritDetails)
+            .complex(RawWritDetails::getWritStatementOfTruth)
+            .mandatory(StatementOfTruthDetails::getCompletedBy)
+            .mandatory(StatementOfTruthDetails::getAgreementClaimant,
                        WRIT_COMPLETED_BY_CLAIMANT
             )
-            .mandatory(StatementOfTruthDetailsEnforcement::getPositionParty,
+            .mandatory(StatementOfTruthDetails::getFullNameParty,
                        WRIT_COMPLETED_BY_CLAIMANT
             )
-            .mandatoryNoSummary(StatementOfTruthDetailsEnforcement::getAgreementClaimantLegalRep,
-                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE, null
+            .mandatory(StatementOfTruthDetails::getPositionParty,
+                       WRIT_COMPLETED_BY_CLAIMANT
             )
-            .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
+            .mandatory(StatementOfTruthDetails::getAgreementClaimantLegalRep,
                        WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
             )
-            .mandatory(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
+            .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
                        WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
             )
-            .mandatory(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
+            .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
+                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
+            )
+            .mandatory(StatementOfTruthDetails::getPositionLegalRep,
                        WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
             )
             .done()
