@@ -19,21 +19,21 @@ public class StatementOfTruthMapper {
     }
 
     public StatementOfTruthEntity toEntity(StatementOfTruthDetailsEnforcement data) {
-        StatementOfTruthEntity statementOfTruthEntity = new StatementOfTruthEntity();
+        StatementOfTruthEntity.StatementOfTruthEntityBuilder sotBuilder = StatementOfTruthEntity.builder();
 
         if (data.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
-            statementOfTruthEntity.setFullName(data.getFullNameParty());
-            statementOfTruthEntity.setPositionHeld(data.getPositionParty());
+            sotBuilder.fullName(data.getFullNameParty());
+            sotBuilder.positionHeld(data.getPositionParty());
         } else if (data.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            statementOfTruthEntity.setFullName(data.getFullNameLegalRep());
-            statementOfTruthEntity.setFirmName(data.getFirmNameLegalRep());
-            statementOfTruthEntity.setPositionHeld(data.getPositionLegalRep());
+            sotBuilder.fullName(data.getFullNameLegalRep());
+            sotBuilder.firmName(data.getFirmNameLegalRep());
+            sotBuilder.positionHeld(data.getPositionLegalRep());
         }
 
-        statementOfTruthEntity.setAccepted(YesOrNo.YES);
-        statementOfTruthEntity.setCompletedDate(LocalDateTime.now(utcClock));
-        statementOfTruthEntity.setCompletedBy(data.getCompletedBy());
+        sotBuilder.accepted(YesOrNo.YES);
+        sotBuilder.completedDate(LocalDateTime.now(utcClock));
+        sotBuilder.completedBy(data.getCompletedBy());
 
-        return statementOfTruthEntity;
+        return sotBuilder.build();
     }
 }
