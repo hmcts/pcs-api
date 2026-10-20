@@ -494,13 +494,6 @@ public class PCSCase {
     )
     private VerticalYesNo wantToUploadDocuments;
 
-    /**
-     * Additional documents uploaded for the case.
-     *
-     * @deprecated Replaced by {@link #additionalDocumentsEngland} or {@link #additionalDocumentsWales}
-     *     depending on LegislativeCountry.
-     */
-    @Deprecated
     @CCD(
         label = "Which documents have you uploaded as part of your claim?",
         hint = "Select all that apply",
@@ -509,6 +502,13 @@ public class PCSCase {
     )
     private Set<UploadedDocumentChecklistType> documentsYouveUploaded;
 
+    /**
+     * Additional documents uploaded for the case.
+     *
+     * @deprecated Replaced by {@link #additionalDocumentsEngland} or {@link #additionalDocumentsWales}
+     *     depending on LegislativeCountry.
+     */
+    @Deprecated
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system"
