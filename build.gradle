@@ -207,7 +207,6 @@ serenity {
 tasks.register('integration', Test) {
   description = "Runs integration tests"
   group = "Verification"
-  systemProperty 'feature.make-order-enabled', 'true'
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   maxHeapSize = '1g'
