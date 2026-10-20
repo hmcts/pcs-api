@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.page.caseworkeruploaddocument.UploadADocument;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.uploaddocument.UploadADocument;
 
 import java.time.Clock;
 

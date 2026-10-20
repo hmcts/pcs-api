@@ -34,6 +34,7 @@ public class ReviewSupportRequest implements CCDConfig<PCSCase, State, UserRole>
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.reviewSupportRequest.name(), this::submit, this::start)
                             .forStates(reviewSupportRequest())
+                            .nonConcurrent()
                             .name("Review support request")
                             .description("To review requested support")
                             .showSummary()

@@ -8,6 +8,9 @@
     "security_classification": "PUBLIC",
     "version": "${caseVersion}",
     "case_data": {
+      "possessionClaimResponse": {
+        "draftVersion": ${draftVersion}
+      }
     }
   },
   "event_details": {

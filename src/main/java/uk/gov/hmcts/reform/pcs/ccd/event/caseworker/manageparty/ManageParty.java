@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddLitigationParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddPartyDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.ManagePartyOptionsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.RemovePartyDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.UpdatePartyDetailsPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
@@ -30,17 +31,20 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
     private final SubmitEventHandler submitEventHandler;
     private final AddPartyDetailsPage addPartyDetailsPage;
     private final ManagePartyOptionsPage managePartyOptionsPage;
+    private final RemovePartyDetailsPage removePartyDetailsPage;
     private final UpdatePartyDetailsPage updatePartyDetailsPage;
 
     public ManageParty(@Qualifier("managePartyStartEventHandler") StartEventHandler startEventHandler,
                         @Qualifier("managePartySubmitEventHandler") SubmitEventHandler submitEventHandler,
                         AddPartyDetailsPage addPartyDetailsPage,
                         ManagePartyOptionsPage managePartyOptionsPage,
+                        RemovePartyDetailsPage removePartyDetailsPage,
                         UpdatePartyDetailsPage updatePartyDetailsPage) {
         this.startEventHandler = startEventHandler;
         this.submitEventHandler = submitEventHandler;
         this.addPartyDetailsPage = addPartyDetailsPage;
         this.managePartyOptionsPage = managePartyOptionsPage;
+        this.removePartyDetailsPage = removePartyDetailsPage;
         this.updatePartyDetailsPage = updatePartyDetailsPage;
     }
 
@@ -49,6 +53,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(manageParties.name(), submitEventHandler, startEventHandler)
             .forStates(ManagePartyStates.ALLOWED_STATES)
+            .nonConcurrent()
             .name("Manage parties")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
@@ -60,6 +65,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
             .add(managePartyOptionsPage)
             .add(new AddLitigationParty())
             .add(addPartyDetailsPage)
+            .add(removePartyDetailsPage)
             .add(updatePartyDetailsPage);
     }
 

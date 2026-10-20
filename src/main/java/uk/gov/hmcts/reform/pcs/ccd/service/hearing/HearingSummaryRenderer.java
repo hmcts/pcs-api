@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
@@ -42,15 +43,17 @@ public class HearingSummaryRenderer {
 
         String hearingTypeLabel = getHearingTypeLabel(hearingEntity);
         String formattedDate = DATE_TIME_FORMATTER.format(hearingEntity.getHearingDate());
-        String formattedDuration = durationFormatter.format(hearingEntity.getDurationHours(),
+        String formattedDuration = durationFormatter.format(hearingEntity.getDurationDays(),
+                                                            hearingEntity.getDurationHours(),
                                                             hearingEntity.getDurationMinutes());
+        String hearingNotes = StringUtils.isBlank(hearingEntity.getNotes()) ? "Not provided" : hearingEntity.getNotes();
 
         return TEMPLATE.formatted(
             hearingLocation,
             hearingTypeLabel,
             formattedDate,
             formattedDuration,
-            hearingEntity.getNotes()
+            hearingNotes
         );
     }
 

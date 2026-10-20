@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
@@ -33,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
-import java.util.UUID;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -64,7 +64,7 @@ public class PaymentController {
                     value = """
                     {
                         "amount": 300.99,
-                        "language": "English",
+                        "language": "en",
                         "returnUrl": "https://some-frontend/payment-return-url"
                     }
                     """
@@ -130,7 +130,7 @@ public class PaymentController {
             return ResponseEntity.notFound().build();
         }
 
-        UUID idamUserId = UUID.fromString(
+        String idamUserId = IdamUserIds.normalise(
             idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid()
         );
         OutstandingCounterClaimPayment outstandingPayment =

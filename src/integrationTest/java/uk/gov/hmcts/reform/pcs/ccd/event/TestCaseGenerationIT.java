@@ -62,7 +62,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_C
 public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
     private static final String SYSTEM_USER_ID_STUB = "system-user-id-token";
-    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
+    private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174001";
     private static final long CASE_REFERENCE = 1234567890123456L;
     private static final String ORGANISATION_ID = "TEST-123";
 

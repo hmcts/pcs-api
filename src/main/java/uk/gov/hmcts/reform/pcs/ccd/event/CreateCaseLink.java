@@ -30,6 +30,7 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.createCaseLink.name(), this::submit)
                             .forStates(EventStates.createCaseLink())
+                            .nonConcurrent()
                             .name("Link cases")
                             .description("To link related cases")
                             .grant(Permission.CRU, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER)

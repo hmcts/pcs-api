@@ -23,6 +23,7 @@
       },
       "legislativeCountry": "England",
         "possessionClaimResponse": {
+          "draftVersion": ${draftVersion},
           "claimantOrganisations": [
             {
               "id": "6ec6b2f2-926f-4756-8250-9726b2d03f8f",

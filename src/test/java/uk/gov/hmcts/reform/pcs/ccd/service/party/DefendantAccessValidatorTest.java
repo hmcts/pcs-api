@@ -33,7 +33,7 @@ class DefendantAccessValidatorTest {
     @Test
     void shouldReturnDefendantWhenUserHasAccess() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -57,8 +57,8 @@ class DefendantAccessValidatorTest {
     @Test
     void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
-        UUID differentUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
+        String differentUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
