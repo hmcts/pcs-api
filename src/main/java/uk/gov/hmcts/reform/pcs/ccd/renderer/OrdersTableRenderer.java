@@ -5,8 +5,8 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload.ExistingApplicationDocumentLinkBuilder;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
-import static uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload.ExistingApplicationDocumentLinkBuilder.documentLink;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -24,6 +24,7 @@ public class OrdersTableRenderer {
         DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.UK);
 
     private final PebbleEngine pebbleEngine;
+    private final ExistingApplicationDocumentLinkBuilder documentLinkBuilder;
 
     public String render(DocumentEntity documentEntity, LocalDateTime uploadedDate) {
         if (documentEntity == null) {
@@ -39,7 +40,7 @@ public class OrdersTableRenderer {
                 ? "Not available"
                 : UPLOADED_DATE_FORMAT.format(uploadedDate)
         );
-        context.put("documentUrl", documentLink(documentEntity));
+        context.put("documentUrl", documentLinkBuilder.documentLink(documentEntity));
         context.put("documentName", documentEntity.getFileName());
 
         try {

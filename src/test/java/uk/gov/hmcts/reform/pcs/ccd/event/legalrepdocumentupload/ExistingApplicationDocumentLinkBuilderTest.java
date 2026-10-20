@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.time.LocalDateTime;
@@ -38,7 +39,10 @@ class ExistingApplicationDocumentLinkBuilderTest {
     @ParameterizedTest
     @MethodSource("supportedDocumentTypes")
     void shouldUseXuiDocumentRouteForSupportedDocumentTypes(String fileName, String contentType) {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
         String binaryUrl = "http://dm-store/documents/%s/binary".formatted(DM_STORE_DOCUMENT_ID);
 
         DocumentEntity document = DocumentEntity.builder()
@@ -60,7 +64,10 @@ class ExistingApplicationDocumentLinkBuilderTest {
 
     @Test
     void shouldExtractDocumentIdFromUrlForLegacyRecords() {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest =  new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
 
         DocumentEntity document = DocumentEntity.builder()
             .id(PCS_DOCUMENT_ID)
@@ -74,7 +81,10 @@ class ExistingApplicationDocumentLinkBuilderTest {
 
     @Test
     void shouldExtractDocumentIdFromBinaryUrlForLegacyRecords() {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
 
         DocumentEntity document = DocumentEntity.builder()
             .id(PCS_DOCUMENT_ID)
@@ -88,7 +98,10 @@ class ExistingApplicationDocumentLinkBuilderTest {
 
     @Test
     void shouldReturnEmptyStringWhenNoApplicationHasDownloadableDocument() {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
 
         DocumentEntity documentWithoutId = DocumentEntity.builder()
             .url("http://dm-store/documents/not-a-uuid")
@@ -108,7 +121,10 @@ class ExistingApplicationDocumentLinkBuilderTest {
 
     @Test
     void shouldUseRankFallbackWhenApplicationHasNoRank() {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest =  new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
 
         GenAppEntity genApp = GenAppEntity.builder().build();
 
@@ -117,7 +133,10 @@ class ExistingApplicationDocumentLinkBuilderTest {
 
     @Test
     void shouldOmitPartyLabelWhenApplicationPartyHasNoId() {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest =  new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
 
         GenAppEntity genApp = GenAppEntity.builder()
             .rank(1)
@@ -129,7 +148,10 @@ class ExistingApplicationDocumentLinkBuilderTest {
 
     @Test
     void shouldAppendPartyLabelWhenApplicationHasParty() {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest =  new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
         UUID partyId = UUID.fromString("77777777-7777-7777-7777-777777777777");
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
@@ -148,7 +170,11 @@ class ExistingApplicationDocumentLinkBuilderTest {
 
     @Test
     void shouldOmitPartyLabelWhenPartyServiceReturnsNull() {
-        ExistingApplicationDocumentLinkBuilder underTest = new ExistingApplicationDocumentLinkBuilder(partyService);
+        ExistingApplicationDocumentLinkBuilder underTest =  new ExistingApplicationDocumentLinkBuilder(
+            partyService,
+            new DocumentIdExtractor()
+        );
+
         UUID partyId = UUID.fromString("77777777-7777-7777-7777-777777777777");
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()

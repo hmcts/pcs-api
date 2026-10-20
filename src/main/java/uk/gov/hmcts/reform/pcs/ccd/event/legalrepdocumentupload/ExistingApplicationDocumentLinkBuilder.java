@@ -6,6 +6,7 @@ import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.List;
@@ -16,7 +17,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExistingApplicationDocumentLinkBuilder {
 
+    public static final String DOCUMENTS = "/documents/";
     private final PartyService partyService;
+    private final DocumentIdExtractor documentIdExtractor;
 
     public String build(PcsCaseEntity pcsCaseEntity, List<GenAppEntity> genApps) {
         List<String> links = genApps.stream()
@@ -61,7 +64,7 @@ public class ExistingApplicationDocumentLinkBuilder {
             );
     }
 
-    public static String documentLink(DocumentEntity documentEntity) {
+    public String documentLink(DocumentEntity documentEntity) {
         if (documentEntity == null) {
             return null;
         }
@@ -78,20 +81,21 @@ public class ExistingApplicationDocumentLinkBuilder {
         return "/documents/%s/binary".formatted(documentId);
     }
 
-    private static UUID extractDocumentId(String documentUrl) {
+    private UUID extractDocumentId(String documentUrl) {
         if (documentUrl == null) {
             return null;
         }
 
-        int documentPathStart = documentUrl.indexOf("/documents/");
+        int documentPathStart = documentUrl.indexOf(DOCUMENTS);
         if (documentPathStart < 0) {
             return null;
         }
 
-        String documentPath = documentUrl.substring(documentPathStart + "/documents/".length());
-        String documentId = documentPath.split("/")[0];
+        String documentPath = documentUrl.substring(documentPathStart + DOCUMENTS.length());
+        String documentId = documentPath.split("/", 2)[0];
+
         try {
-            return UUID.fromString(documentId);
+            return documentIdExtractor.extractDocumentId(DOCUMENTS + documentId);
         } catch (IllegalArgumentException exception) {
             return null;
         }

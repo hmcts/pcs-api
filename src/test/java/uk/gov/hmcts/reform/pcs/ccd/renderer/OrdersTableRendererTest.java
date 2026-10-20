@@ -4,6 +4,9 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload.ExistingApplicationDocumentLinkBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.PebbleConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
@@ -30,8 +33,17 @@ class OrdersTableRendererTest {
     private static final LocalDateTime UPLOADED_DATE =
         LocalDateTime.of(2026, 10, 6, 12, 30);
 
+    private final ExistingApplicationDocumentLinkBuilder documentLinkBuilder =
+        new ExistingApplicationDocumentLinkBuilder(
+            mock(PartyService.class),
+            new DocumentIdExtractor()
+        );
+
     private final OrdersTableRenderer underTest =
-        new OrdersTableRenderer(new PebbleConfiguration().pebbleEngine());
+        new OrdersTableRenderer(
+            new PebbleConfiguration().pebbleEngine(),
+            documentLinkBuilder
+        );
 
     @Test
     void shouldRenderPossessionOrderWithFormattedDateAndDocumentLink() {
@@ -64,7 +76,7 @@ class OrdersTableRendererTest {
         IOException cause = new IOException("Unable to write rendered template");
         when(pebbleEngine.getTemplate("ordersTable")).thenReturn(template);
         doThrow(cause).when(template).evaluate(any(Writer.class), anyMap());
-        OrdersTableRenderer failingRenderer = new OrdersTableRenderer(pebbleEngine);
+        OrdersTableRenderer failingRenderer = new OrdersTableRenderer(pebbleEngine, documentLinkBuilder);
         DocumentEntity document = document("Possession order.pdf", BINARY_URL);
 
         assertThatThrownBy(() -> failingRenderer.render(document, UPLOADED_DATE))
