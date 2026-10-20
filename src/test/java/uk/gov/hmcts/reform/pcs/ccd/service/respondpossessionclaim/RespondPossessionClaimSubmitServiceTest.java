@@ -143,7 +143,8 @@ class RespondPossessionClaimSubmitServiceTest {
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, partyEntity, CASE_REFERENCE);
+        verify(claimResponseService)
+            .saveDraftDataForParty(possessionClaimResponse, partyEntity, CASE_REFERENCE, journeyType);
         verify(defendantResponseService)
             .saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
         verify(documentService, never()).createCounterClaimUploadedDocuments(any(), any(), any(), any());

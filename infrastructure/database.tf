@@ -27,6 +27,7 @@ module "postgresql" {
     {
       name : var.product
       schemas_for_reader_access : ["public", "draft", "ccd"]
+      schemas_for_writer_access : ["public", "draft", "ccd"]
     }
   ]
   pgsql_server_configuration = [
@@ -43,7 +44,9 @@ module "postgresql" {
   pgsql_version        = var.pgsql_version
   admin_user_object_id = var.jenkins_AAD_objectId
 
-  # Setup access for JiT DB reader group (DTS JIT Access pcs DB Reader SC).
+  # Setup access for JiT DB reader group (DTS JIT Access pcs DB Reader SC)
+  # and JiT DB writer group (DTS JIT Access pcs DB Writer SC).
+  enable_write_group_access      = true
   force_user_permissions_trigger = "1"
 
 }

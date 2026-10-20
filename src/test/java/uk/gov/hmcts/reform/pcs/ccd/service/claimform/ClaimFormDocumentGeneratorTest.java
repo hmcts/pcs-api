@@ -43,6 +43,12 @@ class ClaimFormDocumentGeneratorTest {
     }
 
     @Test
+    void expectedClaimFormFilenameMatchesGeneratedFilename() {
+        assertThat(ClaimFormDocumentGenerator.expectedClaimFormFilename())
+            .isEqualTo(ClaimFormDocumentGenerator.OUTPUT_FILENAME);
+    }
+
+    @Test
     void templateIdMatchesRdoDocmosisNamingConvention() {
         // Sanity-check the template name format: CV-PCS-CLM-ENG-Claim-Pack.docx
         // (jurisdiction CV, service PCS, doc-type CLM, language ENG — per

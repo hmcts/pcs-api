@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Validates that the authenticated user has defendant access to a case.
@@ -33,7 +32,7 @@ public class DefendantAccessValidator {
      * @return The matched PartyEntity representing the defendant
      * @throws CaseAccessException if the user doesn't have defendant access
      */
-    public PartyEntity validateAndGetDefendant(PcsCaseEntity caseEntity, UUID authenticatedUserId) {
+    public PartyEntity validateAndGetDefendant(PcsCaseEntity caseEntity, String authenticatedUserId) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
         return findMatchingDefendant(defendants, authenticatedUserId, caseReference);
@@ -41,7 +40,7 @@ public class DefendantAccessValidator {
 
     private PartyEntity findMatchingDefendant(
         List<PartyEntity> defendants,
-        UUID authenticatedUserId,
+        String authenticatedUserId,
         long caseReference
     ) {
         return defendants.stream()

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.model.counterclaimform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
@@ -25,6 +26,8 @@ public class CounterClaimFormPayload implements FormPayload {
     private String otherOrderRequestDetails;
     private String otherOrderRequestFacts;
     private String statementOfTruthName;
+    private String sotFirmName;
+    private String sotPositionHeld;
 
     private Boolean showCounterClaimDetailsSection;
     private Boolean showClaimingFor;
@@ -39,4 +42,7 @@ public class CounterClaimFormPayload implements FormPayload {
     private Boolean showCounterClaimReasons;
     private Boolean showOtherOrderSection;
     private Boolean showStatementOfTruthName;
+
+    @JsonIgnore
+    private boolean completedByLegalRepresentative;
 }
