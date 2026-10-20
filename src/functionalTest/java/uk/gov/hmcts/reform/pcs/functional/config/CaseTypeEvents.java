@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.config;
 
 public enum CaseTypeEvents {
+    CREATE_CASE_TEST_SUPPORT("createCaseTestSupport"),
     CREATE_POSSESSION_CLAIM("createPossessionClaim"),
     RESUME_POSSESSION_CLAIM("resumePossessionClaim"),
     RESPOND_POSSESSION_CLAIM("respondPossessionClaim");
