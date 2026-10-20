@@ -93,8 +93,7 @@ test.afterEach(async () => {
   }
   PageContentValidation.finaliseTest();
 });
-// Skipping this test case as the feature is not part of Release 1 to save execution time.
-// It will be enabled once the feature is included in the execution scope.
+
 test.describe('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - As a Claimant I complete "Warrant of Possession Application" with Eviction Details, Defendant Information, Vulnerable People, Property Access, Financial Details, Suspended Order and Statement of Truth',
     {
