@@ -51,6 +51,7 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .readonly(PCSCase::getCurrentRepresentedPartyName, NEVER_SHOW, true)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getApplicationTypeOptionList)
+            .readonly(XuiGenAppRequest::getApplicationType, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getSuspendFee, NEVER_SHOW, true)
