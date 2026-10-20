@@ -208,6 +208,9 @@ tasks.register('integration', Test) {
   description = "Runs integration tests"
   group = "Verification"
   systemProperty 'feature.make-order-enabled', 'true'
+  // This suite uses PostgreSQL containers; background integrations run in cftlibTest.
+  systemProperty 'ccd.sdk.decentralised.es-indexer.enabled', 'false'
+  environment 'LAUNCHDARKLY_OFFLINE', 'true'
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   maxHeapSize = '1g'
