@@ -14,6 +14,7 @@ src/e2eTest @hmcts/possession-claim-service-qa-admins @hmcts/possession-claim-se
 
 src/functionalTest @hmcts/possession-claim-dev-assurance @hmcts/possession-claim-service-admins
 src/contractTest @hmcts/possession-claim-dev-assurance @hmcts/possession-claim-service-admins
+src/cftlibTest/java/uk/gov/hmcts/reform/pcs/DataTest.java @hmcts/possession-claim-dev-assurance
 
 # Infrastructure paths: prod-affecting terraform and pipeline config require
 # review from the DevOps owners before merge (HDPI-8146 near-miss, 5 Aug:
