@@ -1,11 +1,9 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -44,8 +42,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ResponseCreationService {
 
-    private static final String CITIZEN_EMAIL_ADDRESS = "test@test.com";
-
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${core_case_data.api.url}")
@@ -54,18 +50,7 @@ public class ResponseCreationService {
     @Autowired
     private CcdClient ccdClient;
     @Autowired
-    private IdamClient idamClient;
-    @Autowired
     private CoreCaseDataApi ccdApi;
-
-    private String solicitorToken;
-    private String citizenToken;
-
-    @BeforeAll
-    void setup() {
-        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
-        citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
-    }
 
     private void validateEventData(long caseReference, String eventId, String pageId,
                                    PCSCase caseData, String authorisation) {

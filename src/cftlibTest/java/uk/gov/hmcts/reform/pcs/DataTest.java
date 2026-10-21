@@ -13,7 +13,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
@@ -37,9 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DataTest extends CftlibTest {
-
-    @Autowired
-    private CcdClient ccdClient;
 
     @Autowired
     private IdamClient idamClient;
@@ -372,9 +368,9 @@ public class DataTest extends CftlibTest {
             "SELECT COUNT(*) FROM public.document d "
                 + "JOIN public.pcs_case c ON d.case_id = c.id "
                 + "WHERE c.case_reference = '" + caseReference + "'"
-                + "AND d.url = 'https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000' "
+                + "AND d.url = 'http://localhost:8083/documents/00000000-AA00-0000-A000-A0AA000A0000' "
                 + "AND d.file_name = 'rent-statement - Claimant 1.pdf' "
-                + "AND d.binary_url = 'https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000/binary' "
+                + "AND d.binary_url = 'http://localhost:8083/documents/00000000-AA00-0000-A000-A0AA000A0000/binary' "
                 + "AND d.category_id = 'propertyDocuments' "
                 + "AND d.type = 'RENT_STATEMENT' "
                 + "AND d.document_id = '00000000-aa00-0000-a000-a0aa000a0000' "

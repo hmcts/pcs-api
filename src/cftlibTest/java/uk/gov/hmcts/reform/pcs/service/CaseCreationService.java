@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGr
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import java.util.List;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -37,6 +36,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
@@ -165,8 +165,8 @@ public class CaseCreationService {
                                  ListValue.<Document>builder()
                                      .id("00000000-AA00-0000-A000-A0AA000A0000")
                                      .value(Document.builder()
-                                                .url("https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000")
-                                                .binaryUrl("https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000/binary")
+                                                .url("http://localhost:8083/documents/00000000-AA00-0000-A000-A0AA000A0000")
+                                                .binaryUrl("http://localhost:8083/documents/00000000-AA00-0000-A000-A0AA000A0000/binary")
                                                 .filename("rent-statement.pdf")
                                                 .build())
                                      .build()
@@ -189,8 +189,6 @@ public class CaseCreationService {
 
             .applicationWithClaim(VerticalYesNo.NO)
 
-
-
             .languageUsed(LanguageUsed.ENGLISH)
 
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
@@ -207,5 +205,4 @@ public class CaseCreationService {
         ccdClient.updateCase(resumePossessionClaim, caseReference, resumeData, authorisation);
         return caseReference;
     }
-
 }
