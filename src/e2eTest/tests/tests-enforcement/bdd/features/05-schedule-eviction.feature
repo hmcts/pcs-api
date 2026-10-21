@@ -102,7 +102,7 @@ Feature: Bailiff schedules the eviction
     When I submit the "Schedule eviction" event
     Then a "notice of eviction" document is generated with the county court seal
     And it is stored in the "Enforcement" folder in case file view
-    And it is visible to internal users only
+    And it is visible to the claimant and internal users
 
   @HDPI-7355 @HDPI-8442
   Scenario: Scheduling generates and issues an unsealed notice of appointment

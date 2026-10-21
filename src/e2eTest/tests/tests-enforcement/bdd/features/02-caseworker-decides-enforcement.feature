@@ -52,7 +52,7 @@ Feature: Caseworker decides an enforcement application
     And a "warrant of possession" document is generated with the county court seal
     And the document is date and time stamped in "DD/MM/YYYY HH:MM AM/PM" format
     And the document is stored in the "Enforcement" folder in case file view
-    And the document is visible to internal users only
+    And the document is visible to the claimant and internal users
     And the enforcement status changes to "Awaiting bailiff allocation"
     And the claimant receives the "Caseworker generates the warrant of possession" email
     And the "Review claimant warrant application" task is completed
@@ -97,7 +97,7 @@ Feature: Caseworker decides an enforcement application
 
     Examples:
       | type                   | seal         | visible to                     |
-      | warrant of possession  | county court | internal users                 |
+      | warrant of possession  | county court | claimant and internal users    |
       | writ of possession     | High Court   | claimant and internal users    |
 
     # Both restitution applications wait on the helpers driving their journeys, not on pcs-api: the sealing and
