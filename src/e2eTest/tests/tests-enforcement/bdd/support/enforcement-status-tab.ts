@@ -6,7 +6,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { ensureSignedIn } from './session';
 
-export const ENFORCEMENT_STATUS_TAB = 'Enforcement status';
+export const ENFORCEMENT_STATUS_TAB = 'Eviction status';
 
 export type TabBlock = {
   level: number;
@@ -105,7 +105,7 @@ export async function enforcementSections(page: Page): Promise<EnforcementSectio
 export async function soleEnforcementSection(page: Page, caseReference: string): Promise<EnforcementSection> {
   await openCaseTab(page, caseReference, ENFORCEMENT_STATUS_TAB);
   const sections = await enforcementSections(page);
-  expect(sections, 'exactly one warrant or writ on the "Enforcement status" tab').toHaveLength(1);
+  expect(sections, 'exactly one warrant or writ on the "Eviction status" tab').toHaveLength(1);
   return sections[0];
 }
 

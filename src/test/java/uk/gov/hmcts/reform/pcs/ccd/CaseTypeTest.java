@@ -135,7 +135,7 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
-        when(builder.tab("enforcementStatus", "Enforcement status")).thenReturn(enforcementStatusTabBuilder);
+        when(builder.tab("enforcementStatus", "Eviction status")).thenReturn(enforcementStatusTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
         when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(riskAssessmentTabBuilder);
         when(builder.tab("riskAssessmentClaimant", "Risk assessment")).thenReturn(claimantRiskAssessmentTabBuilder);
@@ -339,7 +339,7 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("enforcementStatus", "Enforcement status"))
+        when(builder.tab("enforcementStatus", "Eviction status"))
             .thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(TabBuilder.builder(PCSCase.class, utils));

@@ -107,8 +107,7 @@ Then(
   'the {string} tab shows {string} at {string} and {string} under {string}',
   async ({ page, world }, _tabName: string, date: string, time: string, how: string, section: string) => {
     await expectEnforcementSection(page, requireCaseReference(world), section, block => {
-      expect(block?.rows['Date served']).toBe(date);
-      expect(block?.rows['Time served']).toBe(time);
+      expect(block?.rows['Date of eviction notice served']).toBe(`${date} at ${time}`);
       expect(block?.rows['How it was served']).toBe(how);
     });
   }

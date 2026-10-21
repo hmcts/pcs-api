@@ -375,6 +375,6 @@ pendingSteps({ ticket: 'HDPI-7350', summary: 'XUI sanitises case markdown, so th
   'the browser print dialogue opens with the risk assessment details',
 ]);
 
-pendingSteps({ ticket: 'HDPI-7351', summary: 'Enforcement status tab' }, [
+pendingSteps({ ticket: 'HDPI-7351', summary: 'Eviction status tab' }, [
   'the case {string} tab shows the event that changed it, who submitted it and when',
 ]);

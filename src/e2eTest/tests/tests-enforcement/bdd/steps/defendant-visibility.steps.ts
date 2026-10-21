@@ -133,7 +133,7 @@ Then('they do not see bailiff notes', async ({ page, context, world }) => {
 });
 
 Then('the defendant legal representative sees the {string} tab', async ({ page, context, world }, tabName: string) => {
-  expect(tabName).toBe('Enforcement status');
+  expect(tabName).toBe(ENFORCEMENT_STATUS_TAB);
   const views = await viewAsEachDefendant(page, context, world);
   const legalRepresentative = views.filter(view => view.who === DEFENDANT_LEGAL_REPRESENTATIVE);
   await expectEnforcementTab(page, legalRepresentative, tabName, true);

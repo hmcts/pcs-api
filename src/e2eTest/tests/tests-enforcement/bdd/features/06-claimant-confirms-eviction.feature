@@ -21,7 +21,7 @@ Feature: Claimant confirms the eviction appointment
     And I confirm I will arrange for someone to gain access to, and secure, the property
     And I submit the event
     Then the enforcement status changes to "Claimant confirmed"
-    And the "Enforcement status" tab shows my answers under "Claimant eviction confirmation"
+    And the "Eviction status" tab shows my answers under "Claimant eviction confirmation"
     And I receive the "Claimant confirms attendance at the eviction date" email
 
   @HDPI-7549 @HDPI-7551 @HDPI-7538
