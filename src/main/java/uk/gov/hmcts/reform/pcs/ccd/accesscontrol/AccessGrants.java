@@ -56,6 +56,7 @@ final class AccessGrants {
         CIRCUIT_JUDGE,
         LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
+        HEARING_CENTRE_TEAM_LEADER,
         CTSC_ADMIN,
         WLU_ADMIN,
         BAILIFF,
