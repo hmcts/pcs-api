@@ -22,7 +22,7 @@ public class DocumentUpdated implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder.decentralisedEvent(EventId.documentUpdated.name(), this::submit)
+        configBuilder.decentralisedEvent(EventId.DocumentUpdated.name(), this::submit)
             .forAllStates()
             .name("Document updated")
             .grantHistoryOnly(DOCUMENT_MOVE_ROLES);

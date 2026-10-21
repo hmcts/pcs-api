@@ -36,5 +36,5 @@ public enum EventId {
     defendantPaperResponse,
     legalRepresentativeContactDetails,
     addJudicialNote,
-    documentUpdated
+    DocumentUpdated
 }
