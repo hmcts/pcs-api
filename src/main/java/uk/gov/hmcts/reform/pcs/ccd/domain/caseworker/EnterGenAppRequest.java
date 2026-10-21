@@ -34,7 +34,6 @@ public class EnterGenAppRequest {
     @CCD(label = "Which type of application has the applicant made?", typeOverride = DynamicRadioList)
     private DynamicStringList applicationTypeOptionList;
 
-    @CCD(searchable = false)
     private EnterGenAppType applicationTypeOption;
 
     @CCD(

@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -63,6 +62,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
+    };
+
+    static final AccessProfile[] JUDICIAL_NOTE_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE
     };
 
     static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
@@ -188,7 +194,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("waysToPay");
 
         buildCaseNotesTab(builder);
-        buildOrdersTab(builder);
 
         builder.tab("caseLinks", "Linked Cases")
             .forRoles(INTERNAL_TAB_ROLES)
@@ -203,6 +208,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSupportTab(builder);
 
+        buildJudicialNotesTab(builder);
+      
         builder.tab("paymentHistory", "Payment History")
             .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -231,14 +238,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getFlagLauncherExternal, null, "#ARGUMENT(READ,EXTERNAL)")
             .field(PCSCase::getPartySupport, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");
-    }
-
-    private void buildOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        builder.tab("orders", "Orders")
-            .forRoles(INTERNAL_TAB_ROLES)
-            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
-            .label("ordersMarkdownLabel", null, "${ordersMarkdown}")
-            .field("ordersMarkdown", NEVER_SHOW);
     }
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -382,5 +381,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("judicialNotes", "Judicial notes")
+            .forRoles(JUDICIAL_NOTE_TAB_ROLES)
+            .label("judicialNotesMarkdownLabel", null, "${judicialNotesMarkdown}")
+            .field("judicialNotesMarkdown", NEVER_SHOW);
     }
 }
