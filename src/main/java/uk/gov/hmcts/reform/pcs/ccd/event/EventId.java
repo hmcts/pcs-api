@@ -35,5 +35,6 @@ public enum EventId {
     reindexCases,
     defendantPaperResponse,
     legalRepresentativeContactDetails,
-    deleteDraftResponse
+    deleteDraftResponse,
+    addJudicialNote
 }
