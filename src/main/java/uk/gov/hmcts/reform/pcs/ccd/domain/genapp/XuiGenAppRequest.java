@@ -35,6 +35,9 @@ public class XuiGenAppRequest implements GenAppRequest {
     private GenAppType applicationType;
 
     @CCD(label = "What do you want to apply for?")
+    private DefendantGenAppType defendantGenAppType;
+
+    @CCD(label = "What do you want to apply for?")
     private ClaimantGenAppType claimantGenAppType;
 
     @CCD(
