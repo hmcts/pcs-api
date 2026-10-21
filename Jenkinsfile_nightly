@@ -101,7 +101,7 @@ withNightlyPipeline(type, product, component) {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
 
   }
-
+}
 
 def validateInputs() {
   if (!getE2eMatrix().any { params[it.flag] }) {
