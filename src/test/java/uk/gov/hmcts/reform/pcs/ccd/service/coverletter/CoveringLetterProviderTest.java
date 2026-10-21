@@ -88,9 +88,10 @@ class CoveringLetterProviderTest {
     @Test
     void shouldThrowWhenCaseHasNoCourt() {
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(123L).build();
+        PartyEntity recipient = PartyEntity.builder().build();
+        AddressUK address = AddressUK.builder().build();
 
-        assertThatThrownBy(() -> underTest.render(
-            pcsCase, PartyEntity.builder().build(), "Jane Doe", AddressUK.builder().build(), "123"))
+        assertThatThrownBy(() -> underTest.render(pcsCase, recipient, "Jane Doe", address, "123"))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("case management location");
     }
