@@ -88,8 +88,8 @@ public class CounterClaimDetailsHydrator {
                 && currentUserOrganisationId.equals(cc.getParty().getOrganisationId());
 
             String radioLabel = isCurrentUsersCounterclaim
-                ? String.format("Yes, the documents I'm uploading relate to the counterclaim I made%s", formattedDate)
-                : String.format("Yes, the documents I'm uploading relate to the counterclaim made by %s%s",
+                ? String.format("Yes, the documents I’m uploading relate to the counterclaim I made%s", formattedDate)
+                : String.format("Yes, the documents I’m uploading relate to the counterclaim made by %s%s",
                                 escapedDefName, formattedDate);
 
             ccRadioItems.add(
@@ -103,7 +103,7 @@ public class CounterClaimDetailsHydrator {
         ccRadioItems.add(
             DynamicStringListElement.builder()
                 .code("MAIN_CLAIM")
-                .label("No, the documents I'm uploading do not relate to a counterclaim")
+                .label("No, the documents I’m uploading do not relate to a counterclaim")
                 .build()
         );
 
