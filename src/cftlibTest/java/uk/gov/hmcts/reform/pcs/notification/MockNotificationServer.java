@@ -1,15 +1,14 @@
 package uk.gov.hmcts.reform.pcs.notification;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import wiremock.com.fasterxml.jackson.databind.node.IntNode;
 import wiremock.com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import wiremock.com.fasterxml.jackson.databind.node.ObjectNode;
@@ -19,57 +18,58 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.matching.RequestPatternBuilder.newRequestPattern;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
+@Component
+@RequiredArgsConstructor
 public class MockNotificationServer {
 
     private static final String NOTIFICATION_URL = "/v2/notifications/email";
 
-    private final ObjectMapper objectMapper;
     private final WireMockServer wireMockServer;
+    private final ObjectMapper objectMapper;
+    private final CaseReferenceFormatter caseReferenceFormatter;
 
-    public MockNotificationServer() {
-        objectMapper = createObjectMapper();
-        wireMockServer = new WireMockServer(WireMockConfiguration.options().port(9400));
-    }
-
-    public void startServer() {
-        wireMockServer.start();
-    }
-
-    public void resetServer() {
-        wireMockServer.resetAll();
+    @PostConstruct
+    public void stubEndpoints() {
         stubSendNotification();
     }
 
-    public void stopServer() {
-        wireMockServer.stop();
-    }
+    public List<CapturedNotification> getSentNotifications(long caseReference, int minNotificationCount) {
+        waitForMinNotificationCount(caseReference, minNotificationCount);
 
-    public List<CapturedNotification> getSentNotifications(int minNotificationCount) {
-        waitForMinNotificationCount(minNotificationCount);
-
-        return getLoggedRequests().stream()
+        return getLoggedRequests(caseReference).stream()
             .map(this::toCapturedNotification)
             .toList();
     }
 
-    private void waitForMinNotificationCount(int minNotificationCount) {
+    private void waitForMinNotificationCount(long caseReference, int minNotificationCount) {
         await("At least %d notification(s) sent".formatted(minNotificationCount))
             .atMost(Duration.ofSeconds(10))
             .pollInterval(Duration.ofMillis(500))
             .ignoreExceptions()
-            .until(this::getSentNotificationCount, greaterThanOrEqualTo(minNotificationCount));
+            .until(() -> getSentNotificationCount(caseReference), greaterThanOrEqualTo(minNotificationCount));
     }
 
-    private int getSentNotificationCount() {
-        List<LoggedRequest> loggedRequests = getLoggedRequests();
+    private int getSentNotificationCount(long caseReference) {
+        List<LoggedRequest> loggedRequests = getLoggedRequests(caseReference);
         return loggedRequests.size();
     }
 
-    private List<LoggedRequest> getLoggedRequests() {
-        return wireMockServer.findAll(RequestPatternBuilder.newRequestPattern().withUrl(NOTIFICATION_URL));
+    private List<LoggedRequest> getLoggedRequests(long caseReference) {
+        String caseReferenceWithDashes = caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference);
+
+        return wireMockServer.findAll(newRequestPattern()
+                                          .withUrl(NOTIFICATION_URL)
+                                          .withRequestBody(
+                                              matchingJsonPath("$.personalisation.caseNumber",
+                                                               equalTo(caseReferenceWithDashes))
+                                          )
+        );
     }
 
     private CapturedNotification toCapturedNotification(LoggedRequest loggedRequest) {
@@ -103,13 +103,6 @@ public class MockNotificationServer {
         jsonBody.set("content", contentNode);
         jsonBody.set("template", templateNode);
         return jsonBody;
-    }
-
-    public ObjectMapper createObjectMapper() {
-        return JsonMapper.builder()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .addModules(new ParameterNamesModule())
-            .build();
     }
 
 }

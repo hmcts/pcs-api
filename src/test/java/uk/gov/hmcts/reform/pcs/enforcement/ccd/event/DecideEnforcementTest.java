@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -18,6 +17,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.C;
@@ -85,7 +85,8 @@ class DecideEnforcementTest extends BaseEventTest {
         when(submitHandler.submit(any())).thenReturn(response);
 
         assertThat(callSubmitHandler(caseData)).isSameAs(response);
-        verify(submitHandler).submit(new EventPayload<>(TEST_CASE_REFERENCE, caseData, null));
+        verify(submitHandler).submit(argThat(payload ->
+            payload.caseReference() == TEST_CASE_REFERENCE && payload.caseData() == caseData));
     }
 
     private java.util.Map<UserRole, ?> configuredEventGrants() {

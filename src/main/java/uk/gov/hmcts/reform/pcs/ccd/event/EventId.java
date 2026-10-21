@@ -32,6 +32,7 @@ public enum EventId {
     removeDocument,
     legalRepDocumentUpload,
     manageParties,
+    reindexCases,
     defendantPaperResponse,
     legalRepresentativeContactDetails,
     resumeEnforcementOrder,
@@ -43,5 +44,6 @@ public enum EventId {
     scheduleEviction,
     rescheduleEviction,
     markNoticeOfEvictionServed,
-    recordWarrantReturn
+    recordWarrantReturn,
+    addJudicialNote
 }

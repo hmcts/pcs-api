@@ -83,12 +83,23 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
+        createTask(caseId, taskType, taskDescription, scheduledTo, null);
+    }
+
+    /** Creates a task assigned to one user. */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, String assignee) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee);
+    }
+
+    private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
+                            String assignee) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
+            .assignee(assignee)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo, UUID.randomUUID().toString());
@@ -175,7 +186,8 @@ public class CamundaService {
                 taskData.getCaseReference(),
                 taskData.getTaskType(),
                 taskData.getTaskDescription(),
-                taskData.getIdempotencyKey()
+                taskData.getIdempotencyKey(),
+                taskData.getAssignee()
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
@@ -209,7 +221,8 @@ public class CamundaService {
         return UUID.nameUUIDFromBytes(instanceId.getBytes(StandardCharsets.UTF_8));
     }
 
-    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey) {
+    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
+                                     String assignee) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -242,6 +255,10 @@ public class CamundaService {
             processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
         } else {
             log.warn("No idempotency key provided for task of type {}", taskType);
+        }
+        // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
+        if (assignee != null) {
+            processVariables.put("assigneeId", dmnStringValue(assignee));
         }
 
         // Default values - WA task due date is configured in configuration dmn

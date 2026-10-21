@@ -23,5 +23,6 @@ export const cyaIgnoreQuestions = [
   'Add document',
   'Review date',
   'Select an address',
-  'I certify that:'
+  'I certify that:',
+  'Next step'
 ];

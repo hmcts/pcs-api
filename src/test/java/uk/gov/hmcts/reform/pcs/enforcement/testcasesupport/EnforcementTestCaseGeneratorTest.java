@@ -6,13 +6,13 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseGenerationContext;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.event.EnforceTheOrder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +54,8 @@ class EnforcementTestCaseGeneratorTest {
         assertThat(state).isEqualTo(State.CASE_ISSUED);
         InOrder inOrder = inOrder(context, enforceTheOrder);
         inOrder.verify(context).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
-        inOrder.verify(enforceTheOrder).submit(new EventPayload<>(caseReference, loadedCase, null));
+        inOrder.verify(enforceTheOrder).submit(argThat(payload ->
+            payload.caseReference() == caseReference && payload.caseData() == loadedCase));
     }
 
 }

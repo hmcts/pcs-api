@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -23,8 +24,8 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
@@ -36,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -66,6 +68,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.maintenance.ReindexCasesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
@@ -113,11 +116,16 @@ public class PCSCase {
     public static final String PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL =
         "Explain why you have not followed the pre-action protocol";
     public static final String NOTE_LABEL = "Note";
+    public static final String JUDICIAL_NOTE_LABEL = "Write a note about this case";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
+
+    @CCD(searchable = false)
+    @JsonUnwrapped(prefix = "reindexCases_")
+    private ReindexCasesDetails reindexCases;
 
     @CCD(
         searchable = false
@@ -390,6 +398,10 @@ public class PCSCase {
 
     @CCD(searchable = false, access = DefendantSolicitorAccess.class)
     private String summaryLegalRepresentativeMarkdown;
+
+    @CCD(ignore = true)
+    @JsonIgnore
+    private String ordersMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -775,12 +787,18 @@ public class PCSCase {
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
 
-    @CCD (
-        label = "Review date",
-        access = {InternalTabAccess.class},
-        typeOverride = Collection,
-        typeParameterOverride = "CaseReviewDate")
-    private List<ListValue<CaseReviewDate>> caseReviewDates;
+    @CCD(
+        label = JUDICIAL_NOTE_LABEL,
+        hint = "You can enter up to 30,000 characters",
+        typeOverride = TextArea
+    )
+    private String judicialNote;
+
+    @CCD(searchable = false, access = {JudicialReadAccess.class})
+    private String judicialNotesMarkdown;
+
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String caseReviewDatesMarkdown;
 
     @CCD(
         label = "Review date",
@@ -866,7 +884,6 @@ public class PCSCase {
 
     @JsonUnwrapped
     private RemovePartyDetails removePartyDetails;
-
 
     @CCD(
         label = "Do you want to add, edit or cancel a hearing?",
