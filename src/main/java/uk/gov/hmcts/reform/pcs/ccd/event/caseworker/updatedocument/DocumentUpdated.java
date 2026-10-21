@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
-import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -26,12 +25,11 @@ public class DocumentUpdated implements CCDConfig<PCSCase, State, UserRole> {
         configBuilder.decentralisedEvent(EventId.documentUpdated.name(), this::submit)
             .forAllStates()
             .name("Document updated")
-            .grant(Permission.U, DOCUMENT_MOVE_ROLES)
             .grantHistoryOnly(DOCUMENT_MOVE_ROLES);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {
-        documentCategoryUpdateService.updateCategories(payload.caseReference(), payload.caseData());
+        documentCategoryUpdateService.updateCategories(payload.caseReference(), payload.caseData().getAllDocuments());
         return SubmitResponse.defaultResponse();
     }
 }
