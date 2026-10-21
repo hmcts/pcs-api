@@ -169,7 +169,7 @@ class PCSCaseViewTest {
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
+                                    caseNoteView, ordersView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
