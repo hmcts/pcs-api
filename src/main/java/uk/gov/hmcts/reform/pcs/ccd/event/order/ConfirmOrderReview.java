@@ -27,8 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
@@ -72,7 +72,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final SecurityContextService securityContextService;
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
-    private final CaseNoteService caseNoteService;
+    private final MessageService messageService;
     private final OrderDocumentService orderDocumentService;
 
     @Override
@@ -115,7 +115,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             : issue(order, request.issue(), caseworker);
     }
 
-    /** The order goes back as the judge submitted it, with the query the judge will read. */
+    /** The order goes back as the judge submitted it, with the query in its message thread for the judge to read. */
     private ExternalSubmitResponse<State> returnToJudge(OrderEntity order, OrderStepEntity submitted, String query,
                                                         UserInfo caseworker) {
         OrderStepEntity returned = orderSteps.append(
@@ -123,9 +123,10 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             OrderStepEntity.builder()
                 .orderType(submitted.getOrderType())
                 .formData(submitted.getFormData())
-                .docweaveSnapshot(submitted.getDocweaveSnapshot())
-                .note(caseNoteService.addCaseNote(order.getPcsCase(), query)));
-        orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned, query);
+                .docweaveSnapshot(submitted.getDocweaveSnapshot()));
+        messageService.recordOrderQuery(order, caseworker.getName(), OrderTasks.inWords(submitted.getOrderType()),
+            query);
+        orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned);
         return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
     }
 

@@ -19,13 +19,14 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Messages between court staff and judges on a case. Sending or replying gives the recipient role's pool a task to
  * review the message; closing one without a reply gives the pool of whoever wrote its latest message a task to see
- * that it is closed. A judge's message to court staff with an order is a message
- * too, which the order's review task already carries, so it gives no task of its own.
+ * that it is closed. An order has a thread of its own, holding the judge's messages to court staff with it and court
+ * staff's queries when they return it; the order's tasks already ask for those to be read, so they give no task here.
  */
 @Service
 @RequiredArgsConstructor
@@ -93,10 +94,32 @@ public class MessageService {
         return told;
     }
 
-    /** A judge's message for court staff with their order, kept with the case's other messages. */
+    /** A judge's message for court staff with their order. */
     public void recordOrderMessage(OrderEntity order, String judgeName, String orderType, String body) {
         Instant now = Instant.now(utcClock);
-        CaseMessageEntity message = order.getPcsCase().getMessages().stream()
+        orderThread(order, orderType, now).addEntry(entry(new Writing(judgeName, MessageRecipient.DISTRICT_JUDGE,
+            MessageRecipient.COURT_STAFF, false, body), now));
+    }
+
+    /** Court staff's query on an order they return to its judge. */
+    public void recordOrderQuery(OrderEntity order, String staffName, String orderType, String query) {
+        Instant now = Instant.now(utcClock);
+        orderThread(order, orderType, now).addEntry(entry(new Writing(staffName, MessageRecipient.COURT_STAFF,
+            MessageRecipient.DISTRICT_JUDGE, false, query), now));
+    }
+
+    /** The query court staff last returned the order with. */
+    public Optional<String> orderQuery(OrderEntity order) {
+        return order.getPcsCase().getMessages().stream()
+            .filter(message -> order.getId().equals(message.getOrderId()))
+            .flatMap(message -> message.getEntries().stream())
+            .filter(entry -> !entry.getSenderRole().isJudicial())
+            .max(Comparator.comparing(CaseMessageEntryEntity::getCreatedAt))
+            .map(CaseMessageEntryEntity::getBody);
+    }
+
+    private CaseMessageEntity orderThread(OrderEntity order, String orderType, Instant now) {
+        return order.getPcsCase().getMessages().stream()
             .filter(existing -> order.getId().equals(existing.getOrderId()) && existing.isOpen())
             .findFirst()
             .orElseGet(() -> {
@@ -112,8 +135,6 @@ public class MessageService {
                 order.getPcsCase().addMessage(started);
                 return started;
             });
-        message.addEntry(entry(new Writing(judgeName, MessageRecipient.DISTRICT_JUDGE, MessageRecipient.COURT_STAFF,
-            false, body), now));
     }
 
     private void askToReview(PcsCaseEntity pcsCase, CaseMessageEntity message, GenAppEntity genApp) {

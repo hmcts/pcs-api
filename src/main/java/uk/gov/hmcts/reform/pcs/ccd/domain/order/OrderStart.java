@@ -66,8 +66,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
 
     /**
      * The general application an order decides, as the judge deciding it reads it: what was applied for,
-     * by whom, the applicant's answers, the order they asked for, their documents, and what court staff
-     * said when they referred it.
+     * by whom, the applicant's answers, the order they asked for, and their documents.
      */
     public record Application(String reference,
                               String type,
@@ -79,9 +78,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
                               VerticalYesNo withoutNotice,
                               String withoutNoticeReason,
                               String whatOrderWanted,
-                              List<ApplicationDocument> documents,
-                              LocalDate referredOn,
-                              String referralNote) {
+                              List<ApplicationDocument> documents) {
     }
 
     /** A document filed with an application; the id is the document's id in the document store. */

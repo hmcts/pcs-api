@@ -15,9 +15,9 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.Locale;
 
 /**
- * The Work Allocation tasks an order passes between court staff and its judge, and the task asking the
- * judges to decide a general application with an order on it. XUI fills in each task
- * link: {@code ${[EXPECTED_SUB]}} with the user's IDAM id, which the frontend's handover checks, and
+ * The Work Allocation tasks an order passes between court staff and its judge, and the link that starts a judge's
+ * order deciding a general application. What either side writes about the order is in its messages. XUI fills in
+ * each task link: {@code ${[EXPECTED_SUB]}} with the user's IDAM id, which the frontend's handover checks, and
  * {@code ${[id]}} with the task's id, which the next step sends back so the task can be completed.
  */
 @Service
@@ -49,21 +49,13 @@ public class OrderTasks {
         camundaService.createTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, description);
     }
 
-    public void askJudgeToChange(long caseReference, OrderStepEntity returned, String query) {
+    public void askJudgeToChange(long caseReference, OrderStepEntity returned) {
         OrderEntity order = returned.getOrder();
         String description = taskDescriptionService.createReviewOrderQueryDescription(
-            currentUserName(COURT_STAFF), inWords(returned.getOrderType()), query,
+            currentUserName(COURT_STAFF), inWords(returned.getOrderType()), caseReference,
             eventUrl(caseReference, "ext:makeOrder", order));
         camundaService.createTask(caseReference, TaskType.REVIEW_ORDER_QUERY, description,
             order.getAuthorIdamUserId());
-    }
-
-    /** Asks the judges to decide an application court staff referred, starting an order on it from the task. */
-    public void askJudgeToDecide(long caseReference, GenAppEntity genApp, String applicant, String note) {
-        String description = taskDescriptionService.createDecideGenAppDescription(currentUserName(COURT_STAFF),
-            applicant, "GA" + genApp.getRank(), genApp.getType().getShortName(), note,
-            decideUrl(caseReference, genApp));
-        camundaService.createTask(caseReference, TaskType.DECIDE_GEN_APP, description);
     }
 
     /** The task link that starts the judge's order deciding the application. */
