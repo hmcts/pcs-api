@@ -92,7 +92,7 @@ public class DataTest extends CftlibTest {
                 .build();
             testingSupportClient.setPartyEmail(partyEmail, citizenToken);
 
-            responseCreationService.createDefendantResponse(caseReference, citizenToken);
+            responseCreationService.createDefendantResponse(caseReference, citizenToken, 1L);
 
             log.info("CASE + RESPONSE CREATED - CASE REF: {}", caseReference);
 

@@ -103,7 +103,7 @@ public class ResponseCreationService {
         restTemplate.exchange(url, HttpMethod.POST, request, String.class);
     }
 
-    public long createDefendantResponse(long caseReference, String userToken) {
+    public long createDefendantResponse(long caseReference, String userToken, Long draftVersion) {
 
         String bearerToken = userToken.startsWith("Bearer ") ? userToken : "Bearer " + userToken;
 
@@ -167,6 +167,7 @@ public class ResponseCreationService {
         validateEventData(caseReference, "respondPossessionClaim",
                           "respondToPossessionDraftSavePage", caseData, bearerToken);
 
+        response.setDraftVersion(draftVersion);
         ccdClient.updateCase(respondPossessionClaim, caseReference, caseData, bearerToken);
 
         return caseReference;
