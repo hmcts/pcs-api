@@ -38,14 +38,12 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
@@ -69,9 +67,6 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     static final String NOT_AVAILABLE = "Messages are not available";
     private static final UserRole[] JUDGE_ROLES = {
         UserRole.JUDGE, UserRole.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE};
-    /** Judges as IDAM names them, besides the role assignments the event is granted to. */
-    private static final Set<String> JUDGE_ROLE_NAMES = Stream.concat(Stream.of("judiciary"),
-        Arrays.stream(JUDGE_ROLES).map(UserRole::getRole)).collect(Collectors.toUnmodifiableSet());
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("d MMM yyyy, h:mma");
 
     private final PcsCaseService pcsCaseService;
@@ -144,8 +139,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .map(genApp -> DynamicListElement.builder().code(genApp.getId())
                 .label("GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName())).build())
             .toList()).build());
-        caseData.setMessageReplyList(DynamicList.builder().listItems(messageService.awaiting(pcsCase, isJudge())
-            .stream()
+        caseData.setMessageReplyList(DynamicList.builder().listItems(messageService
+            .awaiting(pcsCase, userRoleService.isJudge()).stream()
             .map(message -> DynamicListElement.builder().code(message.getId())
                 .label("%s, from %s, %s".formatted(message.getSubject(), message.latest().getSenderName(),
                     when(message.latest()))).build())
@@ -207,7 +202,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(eventPayload.caseReference());
         String name = securityContextService.getCurrentUserDetails().getName();
-        MessageRecipient senderRole = MessageRecipient.of(isJudge());
+        MessageRecipient senderRole = MessageRecipient.of(userRoleService.isJudge());
 
         // The pages check these as the user goes; an event submitted without them is checked here.
         boolean sending = caseData.getMessageAction() == MessageAction.SEND;
@@ -253,7 +248,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     /** The open message chosen, if it is still waiting for the user's side. */
     private Optional<CaseMessageEntity> chosen(PcsCaseEntity pcsCase, PCSCase caseData) {
         UUID id = caseData.getMessageReplyList() == null ? null : caseData.getMessageReplyList().getValueCode();
-        return messageService.awaiting(pcsCase, isJudge()).stream()
+        return messageService.awaiting(pcsCase, userRoleService.isJudge()).stream()
             .filter(message -> message.getId().equals(id))
             .findFirst();
     }
@@ -279,11 +274,6 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private static String when(CaseMessageEntryEntity entry) {
         return LocalDateTime.ofInstant(entry.getCreatedAt(), UK_ZONE_ID).format(WHEN)
             .replace("AM", "am").replace("PM", "pm");
-    }
-
-    private boolean isJudge() {
-        return userRoleService.getCurrentUserOrganisationalRoles().roles().stream()
-            .anyMatch(JUDGE_ROLE_NAMES::contains);
     }
 
     private static SubmitResponse<State> rejected(List<String> errors) {
