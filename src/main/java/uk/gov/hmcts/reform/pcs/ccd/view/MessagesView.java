@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -31,6 +32,7 @@ public class MessagesView {
     private final PebbleEngine pebbleEngine;
     private final String frontendUrl;
     private final FeatureToggleService featureToggleService;
+    private final OrderTasks orderTasks;
 
     /** A message thread as the tab shows it; decideUrl is set for an open message about an open application. */
     public record Thread(String subject, String categories, String application, String decideUrl, String from,
@@ -42,10 +44,11 @@ public class MessagesView {
     }
 
     public MessagesView(PebbleEngine pebbleEngine, @Value("${frontend.url}") String frontendUrl,
-                        FeatureToggleService featureToggleService) {
+                        FeatureToggleService featureToggleService, OrderTasks orderTasks) {
         this.pebbleEngine = pebbleEngine;
         this.frontendUrl = frontendUrl;
         this.featureToggleService = featureToggleService;
+        this.orderTasks = orderTasks;
     }
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -53,11 +56,11 @@ public class MessagesView {
             return;
         }
         Comparator<CaseMessageEntity> order = Comparator.comparing((CaseMessageEntity message) -> !message.isUrgent())
-            .thenComparing(CaseMessageEntity::getCreatedAt);
+            .thenComparing(CaseMessageEntity::createdAt);
         List<Thread> open = pcsCaseEntity.getMessages().stream().filter(CaseMessageEntity::isOpen)
             .sorted(order).map(message -> thread(message, pcsCaseEntity)).toList();
         List<Thread> closed = pcsCaseEntity.getMessages().stream().filter(message -> !message.isOpen())
-            .sorted(Comparator.comparing(CaseMessageEntity::getUpdatedAt).reversed())
+            .sorted(Comparator.comparing(CaseMessageEntity::getClosedAt).reversed())
             .map(message -> thread(message, pcsCaseEntity)).toList();
         StringWriter writer = new StringWriter();
         try {
@@ -71,14 +74,12 @@ public class MessagesView {
     private Thread thread(CaseMessageEntity message, PcsCaseEntity pcsCase) {
         CaseMessageEntryEntity first = message.getEntries().getFirst();
         CaseMessageEntryEntity latest = message.latest();
-        GenAppEntity genApp = message.getGenAppId() == null ? null
-            : pcsCase.findGenApp(message.getGenAppId()).orElse(null);
+        GenAppEntity genApp = message.getGenApp();
         return new Thread(
             message.getSubject(),
-            message.getCategories(),
+            message.categoryLabels(),
             genApp == null ? null : "GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName()),
-            // An order's thread is resumed from the order's own task, not by starting another order.
-            genApp == null || !genApp.isOpen() || !message.isOpen() || message.getOrderId() != null ? null
+            genApp == null || !message.isOpen() || !orderTasks.canDecide(genApp) ? null
                 : "%s/case/%d/make-order?genAppId=%s".formatted(frontendUrl, pcsCase.getCaseReference(),
                     genApp.getId()),
             first.getSenderName(),
@@ -86,7 +87,7 @@ public class MessagesView {
             message.isUrgent(),
             message.isOpen() ? "Open, waiting for " + latest.getRecipientRole().getLabel() : "Closed",
             LocalDateTime.ofInstant(first.getCreatedAt(), UK_ZONE_ID),
-            LocalDateTime.ofInstant(message.getUpdatedAt(), UK_ZONE_ID),
+            LocalDateTime.ofInstant(message.updatedAt(), UK_ZONE_ID),
             message.getEntries().stream().map(entry -> new Entry(entry.getSenderName(),
                 entry.getRecipientRole().getLabel(), entry.isUrgent(),
                 LocalDateTime.ofInstant(entry.getCreatedAt(), UK_ZONE_ID), entry.getBody())).toList(),

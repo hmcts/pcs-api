@@ -71,4 +71,9 @@ public class OrderStepEntity {
 
     /** On the issuing step, the order's wording as issued. */
     private String orderHtml;
+
+    /** The message sent with this step: the judge's to court staff on submitting it, or court staff's query. */
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "message_entry_id")
+    private CaseMessageEntryEntity messageEntry;
 }

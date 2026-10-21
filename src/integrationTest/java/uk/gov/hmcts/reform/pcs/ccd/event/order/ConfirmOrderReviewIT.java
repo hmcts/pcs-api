@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
@@ -118,10 +119,11 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(outcome.changed("orders", Order.class).state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
         assertThat(events.view(caseReference, caseworker).getCaseNotes()).isNullOrEmpty();
-        assertThat(jdbcTemplate.queryForList("SELECT entry.sender_name, entry.body FROM case_message_entry entry "
-            + "JOIN case_message message ON message.id = entry.message_id WHERE message.order_id = ?", order.id()))
-            .extracting(row -> row.get("sender_name"), row -> row.get("body"))
-            .containsExactly(tuple("A Caseworker", QUERY));
+        // The step that returned the order carries the query.
+        assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.sender_name, entry.body FROM order_steps step "
+            + "JOIN case_message_entry entry ON entry.id = step.message_entry_id WHERE step.order_id = ?", order.id()))
+            .extracting(row -> row.get("state"), row -> row.get("sender_name"), row -> row.get("body"))
+            .containsExactly(tuple("RETURNED_TO_JUDGE", "A Caseworker", QUERY));
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
@@ -153,9 +155,12 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, review.id(), review.version(),
             "staff-review", null, new Issue(new IssuedOrder(review.orderType(), review.formData(), null, "the order"),
                 List.of(), HIGH_COURT)));
-        assertThat(jdbcTemplate.queryForList("SELECT status, closure_note FROM case_message WHERE order_id = ?",
-            order.id())).extracting(row -> row.get("status"), row -> row.get("closure_note"))
-            .containsExactly(tuple("CLOSED", "Order issued"));
+        assertThat(jdbcTemplate.queryForList("SELECT DISTINCT message.closed_at IS NOT NULL AS closed, "
+            + "message.closure_note "
+            + "FROM order_steps step JOIN case_message_entry entry ON entry.id = step.message_entry_id "
+            + "JOIN case_message message ON message.id = entry.message_id WHERE step.order_id = ?",
+            order.id())).extracting(row -> row.get("closed"), row -> row.get("closure_note"))
+            .containsExactly(tuple(true, "Order issued"));
     }
 
     @Test
@@ -195,6 +200,41 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         assertThat(asCaseworker.submitExpectingRejection(returnToJudge(staleCopy)).errors())
             .containsExactly("The order has been updated by another user. Reload it and try again");
+    }
+
+    @Test
+    @DisplayName("keeps the judge's messages and the caseworker's query in one thread, each on the step it came with")
+    void keepsEachStepsMessageInTheOrdersThread() {
+        asJudge.submitExpectingSuccess(startDraft("the judge's order"));
+        Order draft = asJudge.start().order();
+        asJudge.submitExpectingSuccess(withStaffMessage(draft, "Serve this by post."));
+        choose(draft.id());
+        Order order = asCaseworker.start().order();
+
+        asCaseworker.submitExpectingSuccess(returnToJudge(order));
+        var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
+        Order returned = asAuthor.start().order();
+        assertThat(returned.queryFromCaseworker()).isEqualTo(QUERY);
+        asAuthor.submitExpectingSuccess(withStaffMessage(returned, "Paragraph 2 means the first defendant."));
+
+        assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.body, entry.message_id FROM order_steps step "
+            + "JOIN case_message_entry entry ON entry.id = step.message_entry_id WHERE step.order_id = ? "
+            + "ORDER BY step.id", order.id()))
+            .extracting(row -> row.get("state"), row -> row.get("body"))
+            .containsExactly(
+                tuple("SUBMITTED_FOR_REVIEW", "Serve this by post."),
+                tuple("RETURNED_TO_JUDGE", QUERY),
+                tuple("SUBMITTED_FOR_REVIEW", "Paragraph 2 means the first defendant."));
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM case_message_entry entry "
+            + "JOIN order_steps step ON step.message_entry_id = entry.id WHERE step.order_id = ? "
+            + "GROUP BY entry.message_id", Long.class, order.id())).isEqualTo(3L);
+    }
+
+    /** The judge submits the order for review with a message for court staff. */
+    private static MakeOrderRequest withStaffMessage(Order order, String message) {
+        return new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(order.id(), order.version(), order.orderType(),
+            Map.of("notes", "the judge's order", "staff-message", List.of("yes"), "staff-message-text", message),
+            order.docweaveSnapshot(), null), null);
     }
 
     /** The judge submits an order for review, which the caseworker then chooses to review. */

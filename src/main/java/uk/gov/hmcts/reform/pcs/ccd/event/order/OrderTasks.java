@@ -4,14 +4,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 /**
@@ -29,15 +32,18 @@ public class OrderTasks {
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
     private final SecurityContextService securityContextService;
+    private final OrderRepository orderRepository;
     private final String frontendUrl;
 
     public OrderTasks(CamundaService camundaService,
                       TaskDescriptionService taskDescriptionService,
                       SecurityContextService securityContextService,
+                      OrderRepository orderRepository,
                       @Value("${frontend.url}") String frontendUrl) {
         this.camundaService = camundaService;
         this.taskDescriptionService = taskDescriptionService;
         this.securityContextService = securityContextService;
+        this.orderRepository = orderRepository;
         this.frontendUrl = frontendUrl;
     }
 
@@ -58,6 +64,15 @@ public class OrderTasks {
             order.getAuthorIdamUserId());
     }
 
+    /**
+     * Whether a judge can be offered to decide the application: it is open, and no order on it is with court staff
+     * or back with its judge, whose own tasks lead to it.
+     */
+    public boolean canDecide(GenAppEntity genApp) {
+        return genApp.isOpen() && !orderRepository.existsByGenAppIdAndStateIn(genApp.getId(),
+            EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE));
+    }
+
     /** The task link that starts the judge's order deciding the application. */
     public String decideUrl(long caseReference, GenAppEntity genApp) {
         return "%s/cases/%d/event/ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=%s&taskId=${[id]}"
@@ -73,7 +88,7 @@ public class OrderTasks {
         return orderType.getLabel().toLowerCase(Locale.UK);
     }
 
-    private String currentUserName(String otherwise) {
+    String currentUserName(String otherwise) {
         UserInfo user = securityContextService.getCurrentUserDetails();
         return user == null || user.getName() == null || user.getName().isBlank() ? otherwise : user.getName();
     }

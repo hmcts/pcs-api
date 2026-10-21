@@ -260,7 +260,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     private static MakeOrderRequest submission(MakeOrderRequest.Action action, int hearingId, Long version,
                                                CaseFacts facts, String note) {
         return new MakeOrderRequest(action,
-            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), null), null,
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), null, null), null,
             new HearingChange(hearingId, version, facts, note));
     }
 
@@ -269,7 +269,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         Hearing hearing = forHearing(firstJudge, draftsHearing).start().hearing();
         OrderStart.Order draft = forHearing(firstJudge, draftsHearing).start().order();
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(draft.id(), draft.version(), draft.orderType(), Map.of(), null), null,
+            new OrderChange(draft.id(), draft.version(), draft.orderType(), Map.of(), null, null), null,
             hearingId == null ? null : new HearingChange(hearingId, hearing.version(), facts("900.00"), null));
     }
 

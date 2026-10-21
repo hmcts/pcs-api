@@ -153,10 +153,15 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private AboutToStartOrSubmitResponse<PCSCase, State> checkMessage(CaseDetails<PCSCase, State> details,
                                                                       CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(messageErrors(caseData))
+            .build();
+    }
+
+    private List<String> messageErrors(PCSCase caseData) {
         List<String> errors = new ArrayList<>();
         textAreaValidationService.validateTextArea(caseData.getMessageSubject(), "Subject", SUBJECT_LIMIT, errors);
         textAreaValidationService.validateTextArea(caseData.getMessageBody(), "Message", MESSAGE_LIMIT, errors);
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
+        return errors;
     }
 
     /** The message chosen to reply to, as the next page shows it, with the reply addressed to whoever sent it. */
@@ -177,6 +182,11 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private AboutToStartOrSubmitResponse<PCSCase, State> checkReply(CaseDetails<PCSCase, State> details,
                                                                     CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(replyErrors(caseData))
+            .build();
+    }
+
+    private List<String> replyErrors(PCSCase caseData) {
         List<String> errors = new ArrayList<>();
         if (caseData.getMessageNeedReply() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(caseData.getMessageReply(), "Reply", MESSAGE_LIMIT, errors);
@@ -184,24 +194,31 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             textAreaValidationService.validateTextArea(caseData.getMessageClosureNote(),
                 "Note for closing the message", CLOSURE_NOTE_LIMIT, errors);
         }
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
+        return errors;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
-            return rejected(NOT_AVAILABLE);
+            return rejected(List.of(NOT_AVAILABLE));
         }
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(eventPayload.caseReference());
         String name = securityContextService.getCurrentUserDetails().getName();
         MessageRecipient senderRole = MessageRecipient.of(isJudge());
 
-        if (caseData.getMessageAction() == MessageAction.SEND) {
+        // The pages check these as the user goes; an event submitted without them is checked here.
+        boolean sending = caseData.getMessageAction() == MessageAction.SEND;
+        List<String> errors = sending ? messageErrors(caseData) : replyErrors(caseData);
+        if (!errors.isEmpty()) {
+            return rejected(errors);
+        }
+
+        if (sending) {
             Set<MessageCategory> categories = caseData.getMessageCategories();
-            GenAppEntity genApp = categories.contains(MessageCategory.APPLICATION)
-                ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
-            if (categories.contains(MessageCategory.APPLICATION) && genApp == null) {
-                return rejected("Choose the open application the message is about");
+            boolean aboutApplication = categories.contains(MessageCategory.APPLICATION);
+            GenAppEntity genApp = aboutApplication ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
+            if (aboutApplication && genApp == null) {
+                return rejected(List.of("Choose the open application the message is about"));
             }
             messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
                 new Writing(name, senderRole, caseData.getMessageRecipient(),
@@ -213,10 +230,10 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
         Optional<CaseMessageEntity> message = chosen(pcsCase, caseData);
         if (message.isEmpty()) {
-            return rejected(NO_MESSAGES);
+            return rejected(List.of(NO_MESSAGES));
         }
         if (caseData.getMessageNeedReply() == VerticalYesNo.YES) {
-            messageService.reply(pcsCase, message.get(), new Writing(name, senderRole,
+            messageService.reply(message.get(), new Writing(name, senderRole,
                 caseData.getMessageReplyRecipient(), caseData.getMessageReplyUrgent() == VerticalYesNo.YES,
                 caseData.getMessageReply().trim()));
             return confirmed("Reply sent",
@@ -225,7 +242,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         }
         String note = caseData.getMessageClosureNote() == null || caseData.getMessageClosureNote().isBlank()
             ? null : caseData.getMessageClosureNote().trim();
-        MessageRecipient told = messageService.closeWithoutReply(pcsCase, message.get(), name, note);
+        MessageRecipient told = messageService.closeWithoutReply(message.get(), name, note);
         return confirmed("Message closed",
             "A task has been created for " + told.getLabel() + " to review.");
     }
@@ -245,7 +262,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
     /** The message's subject and what it is about, heading the reply page. */
     private static String summary(CaseMessageEntity message) {
-        return "### " + message.getSubject() + "\n\n**What it relates to:** " + message.getCategories();
+        return "### " + message.getSubject() + "\n\n**What it relates to:** " + message.categoryLabels();
     }
 
     /** Every message so far, which the reply page and check your answers play back. */
@@ -266,8 +283,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return user != null && user.getRoles() != null && user.getRoles().contains(JUDICIARY_IDAM_ROLE);
     }
 
-    private static SubmitResponse<State> rejected(String error) {
-        return SubmitResponse.<State>builder().errors(List.of(error)).build();
+    private static SubmitResponse<State> rejected(List<String> errors) {
+        return SubmitResponse.<State>builder().errors(errors).build();
     }
 
     private static SubmitResponse<State> confirmed(String header, String next) {
