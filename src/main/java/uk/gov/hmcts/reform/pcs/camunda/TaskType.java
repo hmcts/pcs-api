@@ -138,14 +138,6 @@ public enum TaskType {
             The task will close when you submit it.
             """
     ),
-    MAKE_ORDER(
-        "MakeOrder",
-        "Make an order",
-        """
-            Read the case file, then make an order on the case.
-            The task will close when you send the order to court staff for review.
-            """
-    ),
     REVIEW_MESSAGE_JUDGE(
         "ReviewMessageJudge",
         "Review message",

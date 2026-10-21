@@ -20,4 +20,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndState(UUID id, long caseReference, OrderState state);
 
     boolean existsByIdAndDocumentIsNotNull(UUID id);
+
+    boolean existsByGenAppIdAndStateIn(UUID genAppId, Collection<OrderState> states);
 }

@@ -30,11 +30,6 @@ public record MakeOrderRequest(Action action, OrderChange order, String taskId, 
                               Map<String, Object> formData,
                               JsonNode docweaveSnapshot,
                               UUID genAppId) {
-
-        public OrderChange(UUID id, long version, OrderType orderType,
-                           Map<String, Object> formData, JsonNode docweaveSnapshot) {
-            this(id, version, orderType, formData, docweaveSnapshot, null);
-        }
     }
 
     /**

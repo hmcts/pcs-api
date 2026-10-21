@@ -113,7 +113,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
                 caseReference, judge, DRAFT, genAppId);
         OrderStart.Order workingOrder = order
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
-                chosenOrderId.isPresent() ? messageService.orderQuery(o).orElse(null) : null))
+                chosenOrderId.isPresent() ? messageService.lastOrderMessage(o, false).orElse(null) : null))
             .orElseGet(() -> OrderStart.Order.none(genAppId));
         // An order already under way stays with the hearing it was started for.
         HearingEntity hearing = order.map(OrderEntity::getHearing)
@@ -155,15 +155,19 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         final OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
             .orderType(change.orderType())
             .formData(change.formData())
-            .docweaveSnapshot(change.docweaveSnapshot()));
+            .docweaveSnapshot(change.docweaveSnapshot())
+            .messageEntry(request.action() != SUBMIT_FOR_REVIEW ? null : staffMessage(change)
+                // The frontend fills in the judge's last message again, which is not sent twice.
+                .filter(message -> !messageService.lastOrderMessage(order, true).equals(Optional.of(message)))
+                .map(message -> messageService.recordOrderMessage(order, OrderTasks.inWords(change.orderType()),
+                    order.getAuthorName(), true, message))
+                .orElse(null)));
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
         // The task the judge opened the order from: its return, or the application it decides.
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
-        staffMessage(change).ifPresent(message -> messageService.recordOrderMessage(order,
-            OrderTasks.inWords(change.orderType()), order.getAuthorName(), true, message));
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
     }

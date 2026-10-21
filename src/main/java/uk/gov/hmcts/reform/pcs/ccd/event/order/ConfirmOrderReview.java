@@ -120,9 +120,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             OrderStepEntity.builder()
                 .orderType(submitted.getOrderType())
                 .formData(submitted.getFormData())
-                .docweaveSnapshot(submitted.getDocweaveSnapshot()));
-        messageService.recordOrderMessage(order, OrderTasks.inWords(submitted.getOrderType()), name(caseworker), false,
-            query);
+                .docweaveSnapshot(submitted.getDocweaveSnapshot())
+                .messageEntry(messageService.recordOrderMessage(order, OrderTasks.inWords(submitted.getOrderType()),
+                    orderTasks.currentUserName("Court staff"), false, query)));
         orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned, query);
         return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
     }
@@ -141,7 +141,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 caseworker.getUid(), caseworker.getGivenName(), caseworker.getFamilyName(),
                 orderDocumentService.payload(order, issued)))
             .scheduledTo(Instant.now()));
-        messageService.closeOrderThread(order, name(caseworker));
+        messageService.closeOrderThread(order, orderTasks.currentUserName("Court staff"));
         if (!issue.reviewDates().isEmpty()) {
             caseReviewDateService.addCaseReviewDates(order.getPcsCase().getCaseReference(),
                 issue.reviewDates().stream().map(ConfirmOrderReview::toReviewDate).toList());
@@ -153,10 +153,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         return orderRepository
             .findByIdAndPcsCaseCaseReferenceAndState(orderId, caseReference, SUBMITTED_FOR_REVIEW)
             .orElseThrow(() -> ExternalRejection.because("The order is no longer waiting for review"));
-    }
-
-    private static String name(UserInfo user) {
-        return user.getName() == null || user.getName().isBlank() ? "Court staff" : user.getName();
     }
 
     private static String validQuery(String query) {

@@ -11,22 +11,26 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Messages between court staff and judges on a case. Sending or replying gives the recipient role's pool a task to
  * review the message; closing one without a reply gives the pool of whoever wrote its latest message a task to see
  * that it is closed. An order has a thread of its own, holding the judge's messages to court staff with it and court
- * staff's queries when they return it; the order's tasks already ask for those to be read, so they give no task here.
+ * staff's queries when they return it, each pointed at by the order step it was sent with; the order's tasks already
+ * ask for those to be read, so they give no task here.
  */
 @Service
 @RequiredArgsConstructor
@@ -35,6 +39,7 @@ public class MessageService {
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
     private final OrderTasks orderTasks;
+    private final OrderStepRepository orderStepRepository;
     private final Clock utcClock;
 
     /** What someone writes in a message: who, as what, to whom, whether it is urgent, and what it says. */
@@ -47,46 +52,38 @@ public class MessageService {
         return pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
             .filter(message -> message.latest().getRecipientRole().isJudicial() == judge)
-            .sorted(Comparator.comparing(CaseMessageEntity::getCreatedAt))
+            .sorted(Comparator.comparing(CaseMessageEntity::createdAt))
             .toList();
     }
 
     public void send(PcsCaseEntity pcsCase, String subject, Collection<MessageCategory> categories,
                      GenAppEntity genApp, Writing writing) {
-        Instant now = Instant.now(utcClock);
         CaseMessageEntity message = CaseMessageEntity.builder()
             .subject(subject)
-            .categories(categories.stream().sorted().map(MessageCategory::getLabel)
-                .collect(Collectors.joining(", ")))
-            .genAppId(genApp == null ? null : genApp.getId())
-            .status(CaseMessageEntity.Status.OPEN)
-            .createdAt(now)
+            .categories(EnumSet.copyOf(categories))
+            .genApp(genApp)
             .build();
-        message.addEntry(entry(writing, now));
-        pcsCase.addMessage(message);
-        askToReview(pcsCase, message, genApp);
-    }
-
-    public void reply(PcsCaseEntity pcsCase, CaseMessageEntity message, Writing writing) {
         message.addEntry(entry(writing, Instant.now(utcClock)));
-        GenAppEntity genApp = message.getGenAppId() == null ? null
-            : pcsCase.findGenApp(message.getGenAppId()).orElse(null);
-        askToReview(pcsCase, message, genApp);
+        pcsCase.addMessage(message);
+        askToReview(message);
     }
 
-    public void close(CaseMessageEntity message, String closedBy, String note) {
-        message.setStatus(CaseMessageEntity.Status.CLOSED);
+    public void reply(CaseMessageEntity message, Writing writing) {
+        message.addEntry(entry(writing, Instant.now(utcClock)));
+        askToReview(message);
+    }
+
+    private void close(CaseMessageEntity message, String closedBy, String note) {
+        message.setClosedAt(Instant.now(utcClock));
         message.setClosedByName(closedBy);
         message.setClosureNote(note);
-        message.setUpdatedAt(Instant.now(utcClock));
     }
 
     /** Closes the message without a reply, telling the side that wrote its latest message, whose side it returns. */
-    public MessageRecipient closeWithoutReply(PcsCaseEntity pcsCase, CaseMessageEntity message, String closedBy,
-                                              String note) {
+    public MessageRecipient closeWithoutReply(CaseMessageEntity message, String closedBy, String note) {
         close(message, closedBy, note);
         MessageRecipient told = message.latest().getSenderRole();
-        long caseReference = pcsCase.getCaseReference();
+        long caseReference = message.getPcsCase().getCaseReference();
         String description = taskDescriptionService.createReviewClosedMessageDescription(closedBy,
             message.getSubject(), note, caseReference);
         camundaService.createTask(caseReference,
@@ -94,56 +91,64 @@ public class MessageService {
         return told;
     }
 
-    /** A judge's message for court staff with their order, or court staff's query when they return it. */
-    public void recordOrderMessage(OrderEntity order, String orderType, String senderName, boolean fromJudge,
-                                   String body) {
-        Instant now = Instant.now(utcClock);
-        orderThread(order, orderType, now).addEntry(entry(new Writing(senderName, MessageRecipient.of(fromJudge),
-            MessageRecipient.of(!fromJudge), false, body), now));
+    /**
+     * A judge's message for court staff with their order, or court staff's query when they return it, saved so the
+     * step it is sent with can point at it.
+     */
+    public CaseMessageEntryEntity recordOrderMessage(OrderEntity order, String orderType, String senderName,
+                                                     boolean fromJudge, String body) {
+        CaseMessageEntryEntity entry = entry(new Writing(senderName, MessageRecipient.of(fromJudge),
+            MessageRecipient.of(!fromJudge), false, body), Instant.now(utcClock));
+        orderThread(order, orderType).addEntry(entry);
+        // The case cascades to its messages, so flushing inserts the entry the step is about to point at.
+        orderStepRepository.flush();
+        return entry;
     }
 
     /** Closes the order's open thread once the order is issued, as nothing more is waited for on it. */
     public void closeOrderThread(OrderEntity order, String closedBy) {
-        order.getPcsCase().getMessages().stream()
-            .filter(message -> order.getId().equals(message.getOrderId()) && message.isOpen())
+        orderEntries(order).map(CaseMessageEntryEntity::getMessage).distinct()
+            .filter(CaseMessageEntity::isOpen)
             .forEach(message -> close(message, closedBy, "Order issued"));
     }
 
-    /** The query court staff last returned the order with. */
-    public Optional<String> orderQuery(OrderEntity order) {
-        return order.getPcsCase().getMessages().stream()
-            .filter(message -> order.getId().equals(message.getOrderId()))
-            .flatMap(message -> message.getEntries().stream())
-            .filter(entry -> !entry.getSenderRole().isJudicial())
-            .max(Comparator.comparing(CaseMessageEntryEntity::getCreatedAt))
+    /** What the judge, or court staff, last wrote with the order: the judge's message, or court staff's query. */
+    public Optional<String> lastOrderMessage(OrderEntity order, boolean fromJudge) {
+        return orderEntries(order)
+            .filter(entry -> entry.getSenderRole().isJudicial() == fromJudge)
+            .findFirst()
             .map(CaseMessageEntryEntity::getBody);
     }
 
-    private CaseMessageEntity orderThread(OrderEntity order, String orderType, Instant now) {
-        return order.getPcsCase().getMessages().stream()
-            .filter(existing -> order.getId().equals(existing.getOrderId()) && existing.isOpen())
+    /** The messages sent with the order's steps, the latest first. */
+    private Stream<CaseMessageEntryEntity> orderEntries(OrderEntity order) {
+        return orderStepRepository.findByOrderIdAndMessageEntryIsNotNullOrderByIdDesc(order.getId()).stream()
+            .map(OrderStepEntity::getMessageEntry);
+    }
+
+    private CaseMessageEntity orderThread(OrderEntity order, String orderType) {
+        return orderEntries(order).map(CaseMessageEntryEntity::getMessage)
+            .filter(CaseMessageEntity::isOpen)
             .findFirst()
             .orElseGet(() -> {
+                GenAppEntity genApp = order.getGenAppId() == null ? null
+                    : order.getPcsCase().findGenApp(order.getGenAppId()).orElse(null);
                 CaseMessageEntity started = CaseMessageEntity.builder()
-                    .subject(truncate(Character.toUpperCase(orderType.charAt(0)) + orderType.substring(1) + " order",
-                        60))
-                    .categories(order.getGenAppId() == null ? MessageCategory.OTHER.getLabel()
-                        : MessageCategory.APPLICATION.getLabel())
-                    .genAppId(order.getGenAppId())
-                    .orderId(order.getId())
-                    .status(CaseMessageEntity.Status.OPEN)
-                    .createdAt(now)
+                    .subject(Character.toUpperCase(orderType.charAt(0)) + orderType.substring(1) + " order")
+                    .categories(EnumSet.of(genApp == null ? MessageCategory.OTHER : MessageCategory.APPLICATION))
+                    .genApp(genApp)
                     .build();
                 order.getPcsCase().addMessage(started);
                 return started;
             });
     }
 
-    private void askToReview(PcsCaseEntity pcsCase, CaseMessageEntity message, GenAppEntity genApp) {
+    private void askToReview(CaseMessageEntity message) {
         CaseMessageEntryEntity latest = message.latest();
-        long caseReference = pcsCase.getCaseReference();
+        GenAppEntity genApp = message.getGenApp();
+        long caseReference = message.getPcsCase().getCaseReference();
         boolean toJudge = latest.getRecipientRole().isJudicial();
-        String decideUrl = genApp == null || !toJudge || !genApp.isOpen() ? null
+        String decideUrl = genApp == null || !toJudge || !orderTasks.canDecide(genApp) ? null
             : orderTasks.decideUrl(caseReference, genApp);
         String description = taskDescriptionService.createReviewMessageDescription(
             latest.getSenderName(), message.getSubject(), latest.isUrgent(), caseReference,
@@ -161,9 +166,5 @@ public class MessageService {
             .urgent(writing.urgent())
             .body(writing.body())
             .build();
-    }
-
-    private static String truncate(String text, int length) {
-        return text.length() <= length ? text : text.substring(0, length);
     }
 }
