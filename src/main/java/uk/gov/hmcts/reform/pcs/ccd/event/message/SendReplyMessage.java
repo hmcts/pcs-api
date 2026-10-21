@@ -27,10 +27,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -38,12 +38,14 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
@@ -65,7 +67,11 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     static final int CLOSURE_NOTE_LIMIT = 250;
     static final String NO_MESSAGES = "There are no open messages for you to reply to on this case";
     static final String NOT_AVAILABLE = "Messages are not available";
-    private static final String JUDICIARY_IDAM_ROLE = "judiciary";
+    private static final UserRole[] JUDGE_ROLES = {
+        UserRole.JUDGE, UserRole.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE};
+    /** Judges as IDAM names them, besides the role assignments the event is granted to. */
+    private static final Set<String> JUDGE_ROLE_NAMES = Stream.concat(Stream.of("judiciary"),
+        Arrays.stream(JUDGE_ROLES).map(UserRole::getRole)).collect(Collectors.toUnmodifiableSet());
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("d MMM yyyy, h:mma");
 
     private final PcsCaseService pcsCaseService;
@@ -73,6 +79,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private final SecurityContextService securityContextService;
     private final TextAreaValidationService textAreaValidationService;
     private final FeatureToggleService featureToggleService;
+    private final UserRoleService userRoleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -89,11 +96,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .name("Send and reply to messages")
             .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .grant(Permission.CRU, CASEWORKER_ROLES)
-            .grant(Permission.CRU,
-                UserRole.JUDGE,
-                UserRole.FEE_PAID_JUDGE,
-                UserRole.CIRCUIT_JUDGE,
-                UserRole.LEADERSHIP_JUDGE)
+            .grant(Permission.CRU, JUDGE_ROLES)
             .showSummary();
 
         String sending = fieldEquals("messageAction", MessageAction.SEND);
@@ -279,8 +282,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private boolean isJudge() {
-        UserInfo user = securityContextService.getCurrentUserDetails();
-        return user != null && user.getRoles() != null && user.getRoles().contains(JUDICIARY_IDAM_ROLE);
+        return userRoleService.getCurrentUserOrganisationalRoles().roles().stream()
+            .anyMatch(JUDGE_ROLE_NAMES::contains);
     }
 
     private static SubmitResponse<State> rejected(List<String> errors) {
