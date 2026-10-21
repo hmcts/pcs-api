@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.ccd.util.RichTextFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
@@ -157,7 +156,7 @@ public class GenAppDocumentGenerator {
                            .build())
             .applicationType(genAppEntity.getType())
             .within14Days(genAppEntity.getWithin14Days())
-            .whatOrderWanted(RichTextFormatter.toPlainText(genAppEntity.getWhatOrderWanted()))
+            .whatOrderWanted(genAppEntity.getWhatOrderWanted())
             .otherPartiesAgreed(genAppEntity.getOtherPartiesAgreed())
             .withoutNotice(genAppEntity.getWithoutNotice())
             .withoutNoticeReason(genAppEntity.getWithoutNoticeReason())
