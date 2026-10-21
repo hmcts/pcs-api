@@ -16,9 +16,11 @@ import {
   SCHEDULE_EVICTION,
   answerRow,
   dispenseWithServiceRadio,
+  evictionDetailsList,
   evictionDetailsRows,
   enterEvictionDateTime,
   evictionDateErrors,
+  evictionDateQuestion,
   expectCheckYourAnswers,
   expectEvictionDateNeeded,
   expectEvictionError,
@@ -68,8 +70,8 @@ Then('the answer defaults to {string}', async ({ page }, answer: string) => {
   await expect(dispenseWithServiceRadio(page, answer)).toBeChecked();
 });
 
-When('I select {string} next to the eviction date', async ({ page }, link: string) => {
-  await answerRow(page, scheduleEviction.dateQuestion).getByText(link, { exact: true }).click();
+When('I select {string} next to the eviction date', async ({ page, world }, link: string) => {
+  await answerRow(page, evictionDateQuestion(world.currentEvent)).getByText(link, { exact: true }).click();
 });
 
 Then('I return to the {string} screen with my previous answer', async ({ page }, screen: string) => {
@@ -157,8 +159,9 @@ Then('the screen is titled {string}', async ({ page }, title: string) => {
   await expect(page.getByRole('heading', { name: title })).toBeVisible();
 });
 
-Then('I can {string} my answers', async ({ page }, link: string) => {
-  await expect(answerRow(page, scheduleEviction.dateQuestion).getByText(link, { exact: true })).toBeVisible();
+Then('I can {string} my answers', async ({ page, world }, link: string) => {
+  await expect(answerRow(page, evictionDateQuestion(world.currentEvent)).getByText(link, { exact: true }))
+    .toBeVisible();
 });
 
 Then('I see {string} under {string}', async ({ page }, item: string, heading: string) => {
@@ -219,15 +222,25 @@ Then('the {string} tab {string} shows only the new date and time', async ({ page
   await expectEvictionShown(page, requireCaseReference(world), section, world.evictionDate as string);
 });
 
-Then('I see an {string} table with claimant type, claimant name and defendant names', async ({ page, world }, table: string) => {
+Then('I see an {string} table with claimant type, claimants and defendants', async ({ page, world }, table: string) => {
   expect(table).toBe('Eviction details');
-  expect(world.currentEvent).toBe(SCHEDULE_EVICTION);
   const rows = await evictionDetailsRows(page);
-  expect(Object.keys(rows)).toEqual(['Claimant type', 'Claimant name', 'Defendant names']);
+  expect(Object.keys(rows)).toEqual(scheduleEviction.evictionDetailsRows);
   expect(rows['Claimant type'], 'the claimant type').toMatch(/\S/);
-  expect(rows['Claimant name'], 'the claimant name').toMatch(/\S/);
-  const { firstName, lastName } = basicClaimFixtureClaim.defendant1;
-  expect(rows['Defendant names']).toBe(`${firstName} ${lastName}`);
-  await expect(page.locator('dl.govuk-summary-list').filter({ hasText: 'Defendant names' }).locator('input, select, textarea'))
-    .toHaveCount(0);
+  expect(rows['Claimants'], 'the claimants').toMatch(/\S/);
+  if (world.currentEvent === SCHEDULE_EVICTION) {
+    const { firstName, lastName } = basicClaimFixtureClaim.defendant1;
+    expect(rows['Defendants']).toBe(`${firstName} ${lastName}`);
+  } else {
+    expect(rows['Defendants'], 'the defendants').toMatch(/\S/);
+  }
+  await expect(evictionDetailsList(page).locator('input, select, textarea')).toHaveCount(0);
+});
+
+Then('the date question is {string}', async ({ page }, question: string) => {
+  await expect(page.getByText(question, { exact: false }).first()).toBeVisible();
+});
+
+Then('the confirmation says {string}', async ({ page }, sentence: string) => {
+  await expect(page.locator('#confirmation-body').getByText(sentence, { exact: false }).first()).toBeVisible();
 });

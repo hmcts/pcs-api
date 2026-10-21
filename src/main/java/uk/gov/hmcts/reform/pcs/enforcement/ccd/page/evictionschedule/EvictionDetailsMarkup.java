@@ -27,8 +27,8 @@ public final class EvictionDetailsMarkup {
             %s%s%s</dl>
             """.formatted(
             row("Claimant type", claimantType),
-            row("Claimant name", lines(details.claimantNames())),
-            row("Defendant names", lines(details.defendantNames()))
+            row("Claimants", lines(details.claimantNames())),
+            row("Defendants", lines(details.defendantNames()))
         );
     }
 

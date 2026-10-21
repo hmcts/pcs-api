@@ -22,12 +22,15 @@ public class EvictionSchedule {
 
     public static final int NOTICE_SERVED_HOW_MAX_LENGTH = 500;
 
+    static final String CLOCK_HINT = "Use the 24-hour clock. For example, use 17:30 instead of 5:30pm.";
+
     @CCD(searchable = false)
     private String evictionDetailsMarkup;
 
+    // The scheduling and rescheduling pages each override this label with their own question.
     @CCD(
         label = "Eviction date and time",
-        hint = "Use the 24-hour clock. For example, 25 6 2026, 10 00",
+        hint = CLOCK_HINT,
         searchable = false
     )
     private LocalDateTime evictionDateTime;
@@ -37,13 +40,14 @@ public class EvictionSchedule {
 
     @CCD(
         label = "When did you serve the 'notice of eviction'?",
-        hint = "Use the 24-hour clock. For example, 7 7 2026, 16 00",
+        hint = CLOCK_HINT,
         searchable = false
     )
     private LocalDateTime noticeOfEvictionServedAt;
 
     @CCD(
         label = "How did you serve the 'notice of eviction'?",
+        hint = "For example, posted through the letterbox",
         typeOverride = TextArea,
         max = NOTICE_SERVED_HOW_MAX_LENGTH,
         searchable = false

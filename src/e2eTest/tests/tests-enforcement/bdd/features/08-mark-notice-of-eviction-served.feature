@@ -18,6 +18,8 @@ Feature: Bailiff marks the notice of eviction as served
     Then the "Mark 'notice of eviction' as served" journey opens
     And I see the case number, the possession property address and "claimant name vs defendant name"
     And I am not asked about permission to dispense with service
+    And the hint "Use the 24-hour clock. For example, use 17:30 instead of 5:30pm."
+    And the hint "For example, posted through the letterbox"
 
   # Submitting empty reports "When did you serve the 'notice of eviction'? is required" and "Do you want to
   # add a bailiff note? is required". "How did you serve the 'notice of eviction'?" is not mandatory at

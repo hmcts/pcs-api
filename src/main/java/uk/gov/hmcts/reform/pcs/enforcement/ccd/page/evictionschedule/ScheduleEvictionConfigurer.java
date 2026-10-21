@@ -11,11 +11,12 @@ public class ScheduleEvictionConfigurer implements PageConfigurer {
 
     public static final String PAGE_ID = "scheduleEviction";
     public static final String PAGE_LABEL = "Schedule eviction";
+    public static final String DATE_QUESTION = "When do you want to schedule the eviction for?";
 
     private final EvictionScheduleValidator validator;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        pageBuilder.add(new EvictionDatePage(PAGE_ID, PAGE_LABEL, validator));
+        pageBuilder.add(new EvictionDatePage(PAGE_ID, PAGE_LABEL, DATE_QUESTION, validator));
     }
 }

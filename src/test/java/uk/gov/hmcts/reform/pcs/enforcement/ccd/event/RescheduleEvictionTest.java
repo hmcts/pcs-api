@@ -105,7 +105,10 @@ class RescheduleEvictionTest extends BaseEventTest {
                                                    false);
         assertThat(response.getConfirmationHeader())
             .isEqualTo("# Eviction date rescheduled for Wednesday 1 July 2026 at 09:30am");
-        assertThat(response.getConfirmationBody()).contains("Warrant number: WP-00000042");
+        assertThat(response.getConfirmationBody())
+            .contains("Warrant number: WP-00000042",
+                      "We've sent an email to the claimant with the rescheduled eviction date.",
+                      "return to Case File View (same service, opens in a new tab)");
     }
 
     @Test

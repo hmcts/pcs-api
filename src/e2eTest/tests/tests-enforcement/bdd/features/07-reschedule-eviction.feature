@@ -17,7 +17,9 @@ Feature: Bailiff reschedules the eviction
     When I select the "Reschedule eviction" task from the "Tasks" tab
     Then the "Reschedule eviction" journey opens
     And I see the case number, the possession property address and "claimant name vs defendant name"
-    And I see the "Eviction details" table with claimant type, claimant name and defendant names
+    And I see an "Eviction details" table with claimant type, claimants and defendants
+    And the date question is "When do you want to reschedule the eviction for?"
+    And the hint "Use the 24-hour clock. For example, use 17:30 instead of 5:30pm."
 
   # confirmEviction does not capture the claimant's unavailable dates, so the reschedule page has none to
   # show.
@@ -54,6 +56,9 @@ Feature: Bailiff reschedules the eviction
     Given I have entered a new eviction date of "Wednesday 30 June 2027" at "09:30"
     When I submit the "Reschedule eviction" event
     Then I see the confirmation "Eviction date rescheduled for Wednesday 30 June 2027 at 09:30am" with the case number and warrant number
+    And the confirmation says "We've sent an email to the claimant with the rescheduled eviction date."
+    And I see "find and print the 'notice of eviction' (form N54)" under "What you need to do next"
+    And I see a link "return to Case File View (same service, opens in a new tab)"
     And the "Enforcement status" tab "Scheduled eviction" shows only the new date and time
     And the enforcement status changes to "Awaiting claimant confirmation"
     And the "Reschedule eviction" task is completed
