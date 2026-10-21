@@ -355,7 +355,7 @@ export const submitCaseApiDataWales = {
           description: 'legal aid',
           document:  testDocument(`legalAidCertificate.pdf`)
         },
-        
+
       },
       {
         value: {
