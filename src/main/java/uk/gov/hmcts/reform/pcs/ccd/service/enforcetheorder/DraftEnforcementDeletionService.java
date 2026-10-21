@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.enforcement.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,10 @@ public class DraftEnforcementDeletionService {
     private final DraftCaseDataRepository draftCaseDataRepository;
     private final Clock utcClock;
 
+    /**
+     * Fewer than one day puts the cutoff at or after now, which deletes every enforcement draft on the
+     * environment rather than the expired ones.
+     */
     @Transactional
     public void deleteEnforcementDraftsBatch(long discardDays) {
         if (discardDays < 1) {
@@ -31,6 +35,6 @@ public class DraftEnforcementDeletionService {
         log.info("Running deletion of Enforcement Drafts at a cut off of {}", cutoff);
         int numberRemoved = draftCaseDataRepository
                 .deleteByEventIdAndCutoff(EventId.enforceTheOrder, cutoff);
-        log.info("Removed {} enforcement drafts last saved before {}", numberRemoved, cutoff);
+        log.info("Removed: {} cases.", numberRemoved);
     }
 }

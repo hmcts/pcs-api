@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationPersonalisationFactory;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,9 +58,13 @@ class EnforcementNotificationSenderTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
         when(partyService.getPrimaryClaimantPartyEntity(pcsCase)).thenReturn(claimant);
         when(partyService.canSendEmailNotification(claimant, PartyRole.CLAIMANT)).thenReturn(true);
-        when(personalisationFactory.forClaimant(claim)).thenReturn(BasePersonalisation.builder()
-            .firstName("Pat").lastName("Lee").caseNumber("1234-5678-1234-5678")
-            .claimantName("PAT LEE").primaryDefendantName("SAM JONES").build());
+        when(personalisationFactory.forClaimant(claim)).thenReturn(ClaimBasePersonalisation.builder()
+            .base(BasePersonalisation.builder()
+                      .firstName("Pat").lastName("Lee").caseNumber("1234-5678-1234-5678")
+                      .caseName("PAT LEE vs SAM JONES")
+                      .claimantName("PAT LEE").primaryDefendantName("SAM JONES").build())
+            .nextStepUrl("manageCaseUrl/cases/case-details/1234567812345678#Case%20Parties")
+            .build());
     }
 
     @Test

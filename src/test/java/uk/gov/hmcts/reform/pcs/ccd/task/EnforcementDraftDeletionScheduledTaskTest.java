@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.enforcement.task;
+package uk.gov.hmcts.reform.pcs.ccd.task;
 
 import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionComplete;
@@ -6,20 +6,14 @@ import com.github.kagkarlsson.scheduler.task.ExecutionOperations;
 import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
-import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.boot.convert.ApplicationConversionService;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import uk.gov.hmcts.reform.pcs.enforcement.service.DraftEnforcementDeletionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.DraftEnforcementDeletionService;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Duration;
@@ -30,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -142,73 +135,16 @@ class EnforcementDraftDeletionScheduledTaskTest {
     }
 
     @Test
-    void shouldReturnToTheRecurringScheduleWhenMaxRetriesExceeded() {
+    void shouldStopWhenMaxRetriesExceeded() {
         // Given
         FailureHandler<Void> failureHandler = underTest.enforcementDraftDeletionTask().getFailureHandler();
-        ExecutionComplete execution = failedExecution(MAX_RETRIES);
 
         // When
-        failureHandler.onFailure(execution, executionOperations);
+        failureHandler.onFailure(failedExecution(MAX_RETRIES), executionOperations);
 
         // Then
-        verify(executionOperations).reschedule(eq(execution),
-                eq(Schedules.parseSchedule("DAILY|02:00").getNextExecutionTime(execution)));
-        verify(executionOperations, never()).stop();
-    }
-
-    @Test
-    void shouldBindABackoffDelayWithoutAUnitAsSeconds() {
-        new ApplicationContextRunner()
-                .withInitializer(context -> context.getBeanFactory()
-                        .setConversionService(ApplicationConversionService.getSharedInstance()))
-                .withBean(DraftEnforcementDeletionService.class, () -> draftEnforcementDeletionService)
-                .withBean(FeatureToggleService.class, () -> featureToggleService)
-                .withBean(EnforcementDraftDeletionScheduledTask.class)
-                .withPropertyValues(
-                        "enforcement-draft-deletion.schedule=DAILY|02:00",
-                        "enforcement-draft-deletion.discard-after-days=" + DISCARD_AFTER_DAYS,
-                        "enforcement-draft-deletion.request.backoff-delay-seconds=30")
-                .run(context -> assertThat(context.getBean(EnforcementDraftDeletionScheduledTask.class)
-                        .backoffDelay()).isEqualTo(Duration.ofSeconds(30)));
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {0, -1})
-    void shouldRefuseADiscardPeriodBelowOneDay(int discardAfterDays) {
-        assertThatThrownBy(() -> new EnforcementDraftDeletionScheduledTask(
-                "DAILY|02:00", discardAfterDays, MAX_RETRIES, Duration.ofSeconds(10),
-                draftEnforcementDeletionService, featureToggleService))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("ENFORCEMENT_DRAFT_DELETION_DISCARD_AFTER_DAYS")
-                .hasMessageContaining("was " + discardAfterDays);
-    }
-
-    @ParameterizedTest
-    @CsvSource({"0, false", "1, true", "30, true"})
-    void shouldOnlyStartWithADiscardPeriodOfAtLeastOneDay(int discardAfterDays, boolean starts) {
-        contextRunner()
-                .withPropertyValues("enforcement-draft-deletion.discard-after-days=" + discardAfterDays)
-                .run(context -> {
-                    if (starts) {
-                        assertThat(context).hasNotFailed();
-                    } else {
-                        assertThat(context).hasFailed();
-                        assertThat(context.getStartupFailure())
-                                .rootCause()
-                                .isInstanceOf(IllegalArgumentException.class)
-                                .hasMessageContaining("ENFORCEMENT_DRAFT_DELETION_DISCARD_AFTER_DAYS");
-                    }
-                });
-    }
-
-    private ApplicationContextRunner contextRunner() {
-        return new ApplicationContextRunner()
-                .withInitializer(context -> context.getBeanFactory()
-                        .setConversionService(ApplicationConversionService.getSharedInstance()))
-                .withBean(DraftEnforcementDeletionService.class, () -> draftEnforcementDeletionService)
-                .withBean(FeatureToggleService.class, () -> featureToggleService)
-                .withBean(EnforcementDraftDeletionScheduledTask.class)
-                .withPropertyValues("enforcement-draft-deletion.schedule=DAILY|02:00");
+        verify(executionOperations).stop();
+        verify(executionOperations, never()).reschedule(any(ExecutionComplete.class), any(Instant.class));
     }
 
     private EnforcementDraftDeletionScheduledTask newScheduledTask(String schedule) {

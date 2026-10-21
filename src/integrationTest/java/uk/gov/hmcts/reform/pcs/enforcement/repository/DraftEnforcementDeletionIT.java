@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
-import uk.gov.hmcts.reform.pcs.enforcement.service.DraftEnforcementDeletionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.DraftEnforcementDeletionService;
 
 import java.sql.Timestamp;
 

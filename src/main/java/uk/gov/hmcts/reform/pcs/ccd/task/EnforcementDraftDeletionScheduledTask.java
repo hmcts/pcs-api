@@ -1,20 +1,17 @@
-package uk.gov.hmcts.reform.pcs.enforcement.task;
+package uk.gov.hmcts.reform.pcs.ccd.task;
 
 import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
-import com.github.kagkarlsson.scheduler.task.schedule.Schedule;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.convert.DurationUnit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.enforcement.service.DraftEnforcementDeletionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.DraftEnforcementDeletionService;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
@@ -36,15 +33,9 @@ public class EnforcementDraftDeletionScheduledTask {
             @Value("${enforcement-draft-deletion.schedule}") String schedule,
             @Value("${enforcement-draft-deletion.discard-after-days}") int discardAfterDays,
             @Value("${enforcement-draft-deletion.request.max-retries:3}") int maxRetries,
-            @Value("${enforcement-draft-deletion.request.backoff-delay-seconds:10s}")
-            @DurationUnit(ChronoUnit.SECONDS) Duration backoffDelay,
+            @Value("${enforcement-draft-deletion.request.backoff-delay-seconds:10s}") Duration backoffDelay,
             DraftEnforcementDeletionService draftEnforcementDeletionService,
             FeatureToggleService featureToggleService) {
-        if (discardAfterDays < 1) {
-            throw new IllegalArgumentException(
-                "ENFORCEMENT_DRAFT_DELETION_DISCARD_AFTER_DAYS (enforcement-draft-deletion.discard-after-days) "
-                    + "must be at least 1, but was " + discardAfterDays);
-        }
         this.schedule = schedule;
         this.discardAfterDays = discardAfterDays;
         this.maxRetries = maxRetries;
@@ -53,19 +44,13 @@ public class EnforcementDraftDeletionScheduledTask {
         this.featureToggleService = featureToggleService;
     }
 
-    Duration backoffDelay() {
-        return backoffDelay;
-    }
-
     @Bean
     public RecurringTask<Void> enforcementDraftDeletionTask() {
-        Schedule parsedSchedule = Schedules.parseSchedule(schedule);
-        return Tasks.recurring(ENFORCEMENT_DRAFT_DELETION_TASK, parsedSchedule)
-                // Reschedule rather than stop() once the retries are used up: stop() deletes the execution
-                // row, which a RecurringTask only recreates on scheduler startup.
+        return Tasks.recurring(ENFORCEMENT_DRAFT_DELETION_TASK, Schedules.parseSchedule(schedule))
                 .onFailure(FailureHandler.<Void>maxRetries(maxRetries)
                         .withBackoff(backoffDelay)
-                        .then(new FailureHandler.OnFailureReschedule<>(parsedSchedule)))
+                        .then((executionComplete, executionOperations)
+                                -> executionOperations.stop()))
                 .execute((taskInstance, executionContext) -> runSweep());
     }
 
