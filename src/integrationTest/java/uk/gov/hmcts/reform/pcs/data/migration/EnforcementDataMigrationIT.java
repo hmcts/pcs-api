@@ -62,7 +62,7 @@ class EnforcementDataMigrationIT {
         legacyEnforcement(LEGACY_RESTITUTION_WITH_FEE_PAYMENT, chosen("WARRANT_OF_RESTITUTION"));
         legacyEnforcement(LEGACY_RESTITUTION_MOVED_ON, chosen("WRIT_OF_RESTITUTION"));
 
-        migrateTo(dataSource, "150");
+        migrateTo(dataSource, "149");
         jdbc.update("""
             INSERT INTO fee_payment (request_date, payment_callback_handler_type, possession_claim_id,
                                      related_entity_id)
