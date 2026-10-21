@@ -1,15 +1,18 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.model;
 
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
-public record FeePaymentInfo(
-    Integer id,
-    String serviceRequestReference,
-    LocalDateTime requestDate,
-    BigDecimal amount,
-    PaymentStatus paymentStatus
-) {
+@Getter
+@Setter
+public class FeePaymentInfo {
+
+    private Integer id;
+    private String serviceRequestReference;
+    private LocalDateTime requestDate;
+    private BigDecimal amount;
+    private PaymentStatus paymentStatus;
 }
