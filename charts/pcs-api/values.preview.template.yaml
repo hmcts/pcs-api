@@ -60,6 +60,7 @@ java:
     # The sending of WA requests is controlled by a feature flag as well, but the API url is overridden here as
     # a safety mechanism in case the feature flag config is incorrect for a preview environment.
     WA_WORKFLOW_API: http://localhost/should-not-be-called
+    TASK_MANAGEMENT_API_URL: http://localhost/should-not-be-called
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
