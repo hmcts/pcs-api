@@ -27,6 +27,10 @@ public class ShowConditions {
         return "%s=\"%s\"".formatted(fieldId, value.name());
     }
 
+    public static String fieldNotEquals(String fieldId, Enum<?> value) {
+        return "%s!=\"%s\"".formatted(fieldId, value.name());
+    }
+
     public static String fieldContains(String fieldId, Enum<?> value) {
         return "%sCONTAINS\"%s\"".formatted(fieldId, value.name());
     }

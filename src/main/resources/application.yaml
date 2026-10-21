@@ -302,7 +302,6 @@ launchdarkly:
   sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
   offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
   env: ${LAUNCHDARKLY_ENV:default}
-  files: ${LAUNCHDARKLY_FILES:}
 
 claim-form:
   request:
@@ -372,6 +371,8 @@ camunda:
 work-allocation:
   workflow-api:
     url: ${WA_WORKFLOW_API:http://localhost:8099}
+  task-management:
+    url: ${TASK_MANAGEMENT_API_URL:http://localhost:8087}
 
 role-assigment:
   url: ${ROLE_ASSIGNMENT_URL:http://localhost:4096}

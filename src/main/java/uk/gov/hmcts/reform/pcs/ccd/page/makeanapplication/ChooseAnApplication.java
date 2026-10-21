@@ -57,6 +57,7 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .readonly(XuiGenAppRequest::getSuspendFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getShowHwfScreens, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getShowNoticeScreens, NEVER_SHOW, true)
+            .readonly(XuiGenAppRequest::getApplicationType, NEVER_SHOW, true)
             .done();
     }
 

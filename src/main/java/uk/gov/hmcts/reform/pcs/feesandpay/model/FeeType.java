@@ -21,4 +21,3 @@ public enum FeeType {
         this.code = code;
     }
 }
-

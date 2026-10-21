@@ -57,7 +57,7 @@ public class TaskDescriptionService {
             case SUSPEND ->  "review-suspend-gen-app";
             case ADJOURN -> "review-adjourn-gen-app";
             case SET_ASIDE -> "review-set-aside-gen-app";
-            case SOMETHING_ELSE -> "review-gen-app";
+            case SUSPEND, SOMETHING_ELSE -> "review-gen-app";
         };
 
         return renderTemplate(templateName, context);
@@ -202,12 +202,43 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
-    public String createReviewDueDateDescription(long caseReference) {
+    public String createReviewDueDateDescription(long caseReference, int reviewDateNumber) {
         Map<String, Object> context = Map.of(
-            "caseReference", caseReference
+            "caseReference", caseReference,
+            "reviewDateNumber", reviewDateNumber
         );
 
         String templateName = "review-due-date";
+        return renderTemplate(templateName, context);
+    }
+
+    public String createConfirmOrderReviewDescription(String judgeName,
+                                                      String orderType,
+                                                      String reviewUrl,
+                                                      boolean resubmitted) {
+        Map<String, Object> context = Map.of(
+            "judgeName", judgeName,
+            "orderType", orderType,
+            "reviewUrl", reviewUrl,
+            "resubmitted", resubmitted
+        );
+
+        String templateName = "confirm-order-review";
+        return renderTemplate(templateName, context);
+    }
+
+    public String createReviewOrderQueryDescription(String caseworkerName,
+                                                    String orderType,
+                                                    String query,
+                                                    String changeUrl) {
+        Map<String, Object> context = Map.of(
+            "caseworkerName", caseworkerName,
+            "orderType", orderType,
+            "query", query,
+            "changeUrl", changeUrl
+        );
+
+        String templateName = "review-order-query";
         return renderTemplate(templateName, context);
     }
 
