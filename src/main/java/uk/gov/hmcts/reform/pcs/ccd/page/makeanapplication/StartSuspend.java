@@ -67,7 +67,7 @@ public class StartSuspend implements CcdPageConfiguration {
         We will ask you if they want to do this when you apply.
 
         <h2 class="govuk-heading-m">Apply by post</h2>
-        <p class="govuk-body govuk-!-margin-bottom-1">If you'd prefer to respond by post:</p>
+        <p class="govuk-body govuk-!-margin-bottom-1">If you’d prefer to respond by post:</p>
 
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">
