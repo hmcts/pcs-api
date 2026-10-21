@@ -419,7 +419,6 @@ Short name</description>
         </inputEntry>
         <inputEntry id="UnaryTests_055g5ba">
           <text>not("ReviewOrderQuery","AllocateCaseToBailiff","ReviewRisksAndSetLevel","MarkNoticeOfEvictionServed","RescheduleEviction","ReviewUpdatedRiskInformation","RecordWarrantReturn")</text>
-          <text>not("ReviewOrderQuery")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1ubz0s5">
           <text>"roleCategory"</text>

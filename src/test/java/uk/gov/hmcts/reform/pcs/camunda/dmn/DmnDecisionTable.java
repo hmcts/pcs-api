@@ -200,9 +200,18 @@ final class DmnDecisionTable {
             .toList();
     }
 
+    /**
+     * A second {@code <text>} in one cell is invalid DMN that Camunda refuses to deploy, so reject it here
+     * rather than reading the first and leaving the file to fail in the pipeline.
+     */
     private static String text(Element element) {
-        NodeList texts = element.getElementsByTagNameNS("*", "text");
-        return texts.getLength() == 0 ? "" : texts.item(0).getTextContent().trim();
+        List<Element> texts = children(element, "text");
+        if (texts.size() > 1) {
+            throw new IllegalStateException("Expected one <text> in <%s id=\"%s\"> but found %d"
+                                                .formatted(element.getLocalName(), element.getAttribute("id"),
+                                                           texts.size()));
+        }
+        return texts.isEmpty() ? "" : texts.getFirst().getTextContent().trim();
     }
 
     private static List<Element> children(Element parent, String localName) {
