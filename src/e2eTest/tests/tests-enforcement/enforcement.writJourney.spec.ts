@@ -71,7 +71,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement @writ',
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME]',
     {
       tag: ['@enforcement', '@regression','@writ'],
       annotation: [
@@ -84,6 +84,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
         await performAction('clickButton', caseSummary.go);
       });
+
       await test.step(`When the user validates the writ or warrant fee amount`, async () => {
         await performValidation('mainHeader', enforcementApplication.mainHeader);
         await performAction('validateWritOrWarrantFeeAmount', {
@@ -95,6 +96,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           text2: enforcementApplication.writFeeValidationTextHidden
         });
       });
+
       await test.step(`And the user validates the Get quote from Bailiff link`, async () => {
         await performAction('validateGetQuoteFromBailiffLink', {
           type: enforcementApplication.summaryWritOrWarrantLink,
@@ -102,6 +104,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           newPage: enforcementApplication.hceoPageTitleHidden
         });
       });
+
       await test.step(`And the user selects the application type`, async () => {
         await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
         await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
@@ -114,6 +117,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           nextPage: nameAndAddressForEviction.mainHeader
         });
       });
+
       await test.step(`Then the user selects the defendant name and address for eviction`, async () => {
         await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
         await performAction('selectNameAndAddressForEviction', {
@@ -123,6 +127,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           nextPage: confirmHCEOfficer.mainHeader
         });
       });
+
       await test.step(`Then the user selects HCEO`, async () => {
         await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
         await performAction('selectHaveHiredHCEO', {
@@ -131,6 +136,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           nextPage: yourHCEO.mainHeader
         });
       });
+
       await test.step(`Then the user provide name of HCEO`, async () => {
         await performValidation('mainHeader', yourHCEO.mainHeader);
         await performAction('errorValidationYourHCEOPage', yourHCEO.errorValidation);
@@ -140,12 +146,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           nextPage: moneyOwed.mainHeader
         });
       });
+
       await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
       await performAction('provideMoneyOwed', {
         label: moneyOwed.totalAmountOwedTextLabel,
         input: moneyOwed.totalAmountOwedTextInput,
         nextPage: legalCosts.mainHeader
       });
+
       await performAction('errorValidationLegalCostsPage', legalCosts.errorValidation);
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
@@ -154,6 +162,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
         nextPage: landRegistryFees.mainHeader
       });
+
       await performAction('errorValidationLandRegistryFeePage', landRegistryFees.errorValidation);
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
@@ -180,6 +189,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performAction('errorValidationSOTWritPage', statementOfTruth.errorValidation);
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+
       await test.step(`Then enter the details on the SOT page, verify the CYA page`, async () => {
         await performAction('selectStatementOfTruthWrit', {
           question: statementOfTruth.completedByLabel,
@@ -194,17 +204,20 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           nextPage: checkYourAnswersEnforcement.mainHeader
         });
       });
+
       await test.step(`And continue to the pay the claim fee page`, async () => {
         await performAction('continueFromCYAPage', {
           nextPage: payTheClaimFeeConfirm.mainHeader
         });
       });
+
       await test.step(`And verify the pay the claim fee page content`, async () => {
         await performAction('selectPayClaimFee', {
           payText: payTheClaimFeeConfirm.payWritHMCTSTextLabel,
           link: payTheClaimFeeConfirm.payYourApplicationFeeLink
         });
       });
+
     });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement @writ', async () => {
