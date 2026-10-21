@@ -11,10 +11,8 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -56,7 +54,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getAdditionalDocumentsEngland()).isNull();
+        assertThat(response.getData().getAdditionalDocuments()).isNull();
     }
 
     @Test
@@ -71,7 +69,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getAdditionalDocumentsWales()).isNull();
+        assertThat(response.getData().getAdditionalDocuments()).isNull();
     }
 
     @Test
@@ -117,14 +115,14 @@ class WantToUploadDocumentsTest extends BasePageTest {
 
         long caseReference = 1234;
         
-        AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
-            .documentType(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentType(dynamicDocumentType("Tenancy agreement"))
             .description("Tenancy agreement")
             .build();
 
         Optional<PCSCase> draftCaseData = Optional.of(PCSCase.builder()
-                .additionalDocumentsEngland(List.of(
-                    ListValue.<AdditionalDocumentEngland>builder()
+                .additionalDocuments(List.of(
+                    ListValue.<AdditionalDocument>builder()
                         .value(additionalDocument)
                         .build()))
                 .build());
@@ -136,9 +134,9 @@ class WantToUploadDocumentsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        AdditionalDocumentEngland addDoc = response.getData().getAdditionalDocumentsEngland().getFirst().getValue();
+        AdditionalDocument addDoc = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(addDoc.getDescription()).isEqualTo("Tenancy agreement");
-        assertThat(addDoc.getDocumentType()).isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT);
+        assertThat(addDoc.getDocumentTypeEngland()).isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT);
 
     }
 
@@ -152,14 +150,14 @@ class WantToUploadDocumentsTest extends BasePageTest {
 
         long caseReference = 1234;
         
-        AdditionalDocumentWales additionalDocument = AdditionalDocumentWales.builder()
-            .documentType(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentType(dynamicDocumentType("Occupation contract or licence"))
             .description("Occupation contract or licence")
             .build();
 
         Optional<PCSCase> draftCaseData = Optional.of(PCSCase.builder()
-                .additionalDocumentsWales(List.of(
-                    ListValue.<AdditionalDocumentWales>builder()
+                .additionalDocuments(List.of(
+                    ListValue.<AdditionalDocument>builder()
                         .value(additionalDocument)
                         .build()))
                 .build());
@@ -171,9 +169,9 @@ class WantToUploadDocumentsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        AdditionalDocumentWales addDoc = response.getData().getAdditionalDocumentsWales().getFirst().getValue();
+        AdditionalDocument addDoc = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(addDoc.getDescription()).isEqualTo("Occupation contract or licence");
-        assertThat(addDoc.getDocumentType()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
+        assertThat(addDoc.getDocumentTypeWales()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
 
     }
     
@@ -196,7 +194,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getAdditionalDocumentsEngland()).isNull();
+        assertThat(response.getData().getAdditionalDocuments()).isNull();
     }
 
     @Test
@@ -218,7 +216,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getAdditionalDocumentsWales()).isNull();
+        assertThat(response.getData().getAdditionalDocuments()).isNull();
     }
 
     @Test
@@ -250,10 +248,10 @@ class WantToUploadDocumentsTest extends BasePageTest {
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        AdditionalDocumentEngland addDoc = response.getData().getAdditionalDocumentsEngland().getFirst().getValue();
+        AdditionalDocument addDoc = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(addDoc.getDescription()).isEqualTo("Legacy tenancy agreement");
         assertThat(addDoc.getDocument().getFilename()).isEqualTo("tenancy-agreement.pdf");
-        assertThat(addDoc.getDocumentType()).isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT);
+        assertThat(addDoc.getDocumentTypeEngland()).isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT);
     }
 
     @Test
@@ -285,9 +283,15 @@ class WantToUploadDocumentsTest extends BasePageTest {
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        AdditionalDocumentWales addDoc = response.getData().getAdditionalDocumentsWales().getFirst().getValue();
+        AdditionalDocument addDoc = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(addDoc.getDescription()).isEqualTo("Legacy occupation contract");
         assertThat(addDoc.getDocument().getFilename()).isEqualTo("occupation-licence.pdf");
-        assertThat(addDoc.getDocumentType()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
+        assertThat(addDoc.getDocumentTypeWales()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
+    }
+
+    private DynamicList dynamicDocumentType(String label) {
+        return DynamicList.builder()
+            .value(DynamicListElement.builder().label(label).build())
+            .build();
     }
 }

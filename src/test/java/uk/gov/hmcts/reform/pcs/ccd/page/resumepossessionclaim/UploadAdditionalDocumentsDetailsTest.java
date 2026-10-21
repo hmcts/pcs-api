@@ -8,10 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -38,15 +36,16 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
     @Test
     void shouldNotReturnErrorsWhenEnglandDescriptionIsCorrectLength() {
-        AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
-            .documentType(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
             .description("Valid description")
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.ENGLAND)
-            .additionalDocumentsEngland(List.of(
-                ListValue.<AdditionalDocumentEngland>builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
                     .value(additionalDocument)
                     .build()))
             .build();
@@ -59,15 +58,16 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
     @Test
     void shouldReturnValidationErrorsWhenEnglandDescriptionTooLong() {
-        AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
-            .documentType(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
             .description("a".repeat(61))
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.ENGLAND)
-            .additionalDocumentsEngland(List.of(
-                ListValue.<AdditionalDocumentEngland>builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
                     .value(additionalDocument)
                     .build()))
             .build();
@@ -80,39 +80,40 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     }
 
     @Test
-
-    void shouldKeepEnglandDocumentTypeOnSubmit() {
-        AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
-            .documentType(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+    void shouldCopyEnglandDocumentTypeOnSubmit() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+            .document(Document.builder().filename("tenancy-agreement.pdf").build())
             .description("Valid description")
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.ENGLAND)
-            .additionalDocumentsEngland(List.of(
-                ListValue.<AdditionalDocumentEngland>builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
                     .value(additionalDocument)
                     .build()))
             .build();
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        AdditionalDocumentEngland returnedDocument =
-            response.getData().getAdditionalDocumentsEngland().getFirst().getValue();
-        assertThat(returnedDocument.getDocumentType()).isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT);
+        AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
+        assertThat(returnedDocument.getDocumentType().getValueLabel())
+            .isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT.getLabel());
     }
 
     @Test
     void shouldNotReturnErrorsWhenWalesDescriptionIsCorrectLength() {
-        AdditionalDocumentWales additionalDocument = AdditionalDocumentWales.builder()
-            .documentType(AdditionalDocumentTypeWales.WITNESS_STATEMENT)
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeWales(AdditionalDocumentTypeWales.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
             .description("Valid description")
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
-            .additionalDocumentsWales(List.of(
-                ListValue.<AdditionalDocumentWales>builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
                     .value(additionalDocument)
                     .build()))
             .build();
@@ -125,15 +126,16 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
     @Test
     void shouldReturnValidationErrorsWhenWalesDescriptionTooLong() {
-        AdditionalDocumentWales additionalDocument = AdditionalDocumentWales.builder()
-            .documentType(AdditionalDocumentTypeWales.WITNESS_STATEMENT)
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeWales(AdditionalDocumentTypeWales.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
             .description("a".repeat(61))
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
-            .additionalDocumentsWales(List.of(
-                ListValue.<AdditionalDocumentWales>builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
                     .value(additionalDocument)
                     .build()))
             .build();
@@ -146,27 +148,29 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     }
 
     @Test
-    void shouldKeepWalesDocumentTypeOnSubmit() {
-        AdditionalDocumentWales additionalDocument = AdditionalDocumentWales.builder()
-            .documentType(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+    void shouldCopyWalesDocumentTypeOnSubmit() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+            .document(Document.builder().filename("occupation-licence.pdf").build())
             .description("Valid description")
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
-            .additionalDocumentsWales(List.of(
-                ListValue.<AdditionalDocumentWales>builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
                     .value(additionalDocument)
                     .build()))
             .build();
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        AdditionalDocumentWales returnedDocument =
-            response.getData().getAdditionalDocumentsWales().getFirst().getValue();
-        assertThat(returnedDocument.getDocumentType()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
+        AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
+        assertThat(returnedDocument.getDocumentType().getValueLabel())
+            .isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE.getLabel());
     }
 
+    @Test
     void shouldReturnRequiredErrorWhenNoAdditionalDocumentUploaded() {
         // Given
         PCSCase caseData = PCSCase.builder().build();

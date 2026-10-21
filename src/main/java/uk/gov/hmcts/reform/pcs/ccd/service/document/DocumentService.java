@@ -13,11 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -170,97 +166,43 @@ public class DocumentService {
     }
 
     private List<DocumentHolder> mapAdditionalDocumentsWithType(PCSCase pcsCase) {
-        
-        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            
-            if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocumentsWales())) {
-                return mapAdditionalDocumentsWithType(
-                    pcsCase.getAdditionalDocumentsWales(),
-                    AdditionalDocumentWales::getDocumentType
-                );
-            } else if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
-                // fallback to additional documents
-                return mapLegacyAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments());
-            }
-            
-        } else {
-            if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocumentsEngland())) {
-                return mapAdditionalDocumentsWithType(
-                    pcsCase.getAdditionalDocumentsEngland(),
-                    AdditionalDocumentEngland::getDocumentType
-                );
-            } else if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
-                // fallback to additional documents
-                return mapLegacyAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments());
-            }
-        }
-
-        return Collections.emptyList();
-    }
-
-    private <T> List<DocumentHolder> mapAdditionalDocumentsWithType(
-        List<ListValue<T>> documents,
-        java.util.function.Function<T, ? extends Enum<?>> documentTypeExtractor
-    ) {
-        if (CollectionUtils.isEmpty(documents)) {
+        if (CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
             return Collections.emptyList();
         }
 
-        return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> {
-                DocumentHolder additionalDocument = getAdditionalDocument(doc);
-                additionalDocument.setType(getAdditionalDocumentType(documentTypeExtractor.apply(doc)));
-                return additionalDocument;
-            })
-            .toList();
-    }
-
-    private List<DocumentHolder> mapLegacyAdditionalDocumentsWithType(List<ListValue<AdditionalDocument>> documents) {
-        if (CollectionUtils.isEmpty(documents)) {
-            return Collections.emptyList();
-        }
-
-        return ListValueUtils.unwrapListItems(documents).stream()
+        return ListValueUtils.unwrapListItems(pcsCase.getAdditionalDocuments()).stream()
             .map(doc -> DocumentHolder.builder()
                 .document(doc.getDocument())
-                .type(documentTypeMapper.mapToDocumentType(
-                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
+                .type(getAdditionalDocumentType(doc, pcsCase.getLegislativeCountry()))
                 .description(doc.getDescription())
                 .build())
             .toList();
     }
 
-    private DocumentHolder getAdditionalDocument(Object document) {
-        if (document instanceof AdditionalDocumentEngland englandDocument) {
-            return DocumentHolder.builder()
-                .document(englandDocument.getDocument())
-                .description(englandDocument.getDescription())
-                .build();
+    private DocumentType getAdditionalDocumentType(AdditionalDocument document,
+                                                     LegislativeCountry legislativeCountry) {
+        Enum<?> documentType;
+
+        if (legislativeCountry == LegislativeCountry.WALES) {
+            documentType = document.getDocumentTypeWales();
+            document.setDocumentTypeWales(null);
+        } else {
+            documentType = document.getDocumentTypeEngland();
+            document.setDocumentTypeEngland(null);
         }
 
-        if (document instanceof AdditionalDocumentWales walesDocument) {
-            return DocumentHolder.builder()
-                .document(walesDocument.getDocument())
-                .description(walesDocument.getDescription())
-                .build();
-        }
-
-        throw new IllegalArgumentException("Unsupported additional document type: " + document.getClass().getName());
-    }
-
-    private DocumentType getAdditionalDocumentType(Enum<?> documentType) {
-        if (documentType == null) {
-            return null;
-        }
-
-        if (documentType instanceof AdditionalDocumentType
-            || documentType instanceof AdditionalDocumentTypeEngland
-            || documentType instanceof AdditionalDocumentTypeWales) {
+        if (documentType != null) {
             return DocumentType.valueOf(documentType.name());
         }
 
-        throw new IllegalArgumentException("Unsupported additional document type enum: " 
-            + documentType.getClass().getName());
+        if (document.getDocumentType() == null || document.getDocumentType().getValue() == null) {
+            return null;
+        }
+
+        AdditionalDocumentType legacyDocumentType = AdditionalDocumentType.getValueFromLabel(
+            document.getDocumentType().getValueLabel()
+        );
+        return documentTypeMapper.mapToDocumentType(legacyDocumentType);
     }
 
     private List<DocumentHolder> mapEvidenceOfDefendantsDocumentsWithType(

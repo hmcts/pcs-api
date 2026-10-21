@@ -22,6 +22,23 @@ public class AdditionalDocument {
     )
     private DynamicList documentType;
 
+    @CCD(
+        label = "Type of document",
+        typeOverride = FieldType.FixedList,
+        typeParameterOverride = "AdditionalDocumentTypeEngland",
+        access = {DefendantAccess.class}
+    )
+    private AdditionalDocumentTypeEngland documentTypeEngland;
+
+    @CCD(
+        label = "Type of document",
+        typeOverride = FieldType.FixedList,
+        typeParameterOverride = "AdditionalDocumentTypeWales",
+        access = {DefendantAccess.class}
+    )
+    private AdditionalDocumentTypeWales documentTypeWales;
+
+
     @CCD(label = "Document", access = {DefendantAccess.class})
     private Document document;
 
