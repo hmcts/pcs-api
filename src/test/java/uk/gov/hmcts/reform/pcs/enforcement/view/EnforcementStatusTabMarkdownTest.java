@@ -29,13 +29,13 @@ class EnforcementStatusTabMarkdownTest {
             .contains("<h2 class=\"govuk-heading-l\">WP-00000001</h2>")
             .contains(row("Type", "Warrant of possession"))
             .contains(row("Status", "Awaiting scheduling"));
-        assertThat(markdown.indexOf(">Eviction notice</h3>"))
+        assertThat(markdown.indexOf(">Eviction outcome</h3>"))
             .isPositive()
+            .isLessThan(markdown.indexOf(">Eviction notice</h3>"));
+        assertThat(markdown.indexOf(">Eviction notice</h3>"))
             .isLessThan(markdown.indexOf(">Scheduled eviction</h3>"));
         assertThat(markdown.indexOf(">Scheduled eviction</h3>"))
             .isLessThan(markdown.indexOf(">Claimant eviction confirmation</h3>"));
-        assertThat(markdown.indexOf(">Claimant eviction confirmation</h3>"))
-            .isLessThan(markdown.indexOf(">Eviction outcome</h3>"));
     }
 
     @Test
@@ -44,8 +44,8 @@ class EnforcementStatusTabMarkdownTest {
 
         assertThat(markdown)
             .contains("<p class=\"govuk-body\">Not yet served</p>")
-            .contains("<p class=\"govuk-body\">Not yet scheduled</p>")
-            .contains("<p class=\"govuk-body\">Not yet confirmed</p>")
+            .contains(row("Eviction date", "Not yet set"))
+            .contains("<p class=\"govuk-body\">The claimant has not confirmed the eviction yet.</p>")
             .contains("<p class=\"govuk-body\">No return recorded yet</p>");
     }
 
@@ -61,11 +61,9 @@ class EnforcementStatusTabMarkdownTest {
         String markdown = render(enforcement, null);
 
         assertThat(markdown)
-            .contains(row("Date served", "15 March 2026"))
-            .contains(row("Time served", "08:00 AM"))
+            .contains(row("Date of eviction notice served", "15 March 2026 at 08:00 AM"))
             .contains(row("How it was served", "by hand to the occupant"))
-            .contains(row("Eviction date", "30 June 2027"))
-            .contains(row("Eviction time", "09:30 AM"));
+            .contains(row("Eviction date", "30 June 2027 at 09:30 AM"));
     }
 
     @Test
@@ -82,7 +80,7 @@ class EnforcementStatusTabMarkdownTest {
             .contains(row("Date served", "Not applicable"))
             .contains(row("Time served", "Not applicable"))
             .contains(row("How it was served", "Not applicable"))
-            .contains(row("Eviction time", "02:00 PM"));
+            .contains(row("Eviction date", "30 June 2027 at 02:00 PM"));
     }
 
     @Test
@@ -114,8 +112,7 @@ class EnforcementStatusTabMarkdownTest {
             .contains(row("Return", "Final"))
             .contains(row("Return name", "Eviction successful"))
             .contains(row("Outcome", "Eviction successful"))
-            .contains(row("Eviction date", "8 July 2026"))
-            .contains(row("Eviction time", "09:15 AM"))
+            .contains(row("Eviction date", "8 July 2026 at 09:15 AM"))
             .contains(row("Additional details", "Keys handed over"));
     }
 

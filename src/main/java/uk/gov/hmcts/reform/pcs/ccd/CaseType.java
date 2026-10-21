@@ -104,7 +104,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     };
 
     /**
-     * Internal users, the claimant side and defendants, for the Enforcement status tab. Defendants only see the
+     * Internal users, the claimant side and defendants, for the Eviction status tab. Defendants only see the
      * tab once a warrant's notice of eviction has been served: until then the enforcement module leaves
      * {@code enforcementStatusTabMarkdown} unset for them, and the tab's show condition hides it. They never
      * see writs, and never see the Risk assessment tabs.
@@ -293,7 +293,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
      * they may see only, without the claimant's sections, and left unset until there is one.
      */
     private void buildEnforcementStatusTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        builder.tab("enforcementStatus", "Enforcement status")
+        builder.tab("enforcementStatus", "Eviction status")
             .forRoles(ENFORCEMENT_STATUS_TAB_ROLES)
             .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "enforcementStatusTabMarkdown!=\"\""))
             .label("enforcementStatusTabMarkdownLabel", null, "${enforcementStatusTabMarkdown}")

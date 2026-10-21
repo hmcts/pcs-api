@@ -30,18 +30,18 @@ final class EnforcementStatusTabMarkdown {
     static final String SERVICE = "Service";
     static final String DATE_SERVED = "Date served";
     static final String TIME_SERVED = "Time served";
+    static final String NOTICE_SERVED = "Date of eviction notice served";
     static final String HOW_SERVED = "How it was served";
     static final String EVICTION_DATE = "Eviction date";
-    static final String EVICTION_TIME = "Eviction time";
     static final String CAN_ATTEND = "Can you (or someone from your organisation) attend on %s at %s?";
     static final String RETURN = "Return";
     static final String RETURN_NAME = "Return name";
     static final String OUTCOME = "Outcome";
     static final String ADDITIONAL_DETAILS = "Additional details";
 
-    static final String NOT_YET_SCHEDULED = "Not yet scheduled";
+    static final String NOT_YET_SET = "Not yet set";
     static final String NOT_YET_SERVED = "Not yet served";
-    static final String NOT_YET_CONFIRMED = "Not yet confirmed";
+    static final String NOT_YET_CONFIRMED = "The claimant has not confirmed the eviction yet.";
     static final String NO_RETURN = "No return recorded yet";
     static final String NOT_APPLICABLE = "Not applicable";
     static final String WITHOUT_NOTICE = "Without notice: the court has given permission to dispense with service";
@@ -95,6 +95,8 @@ final class EnforcementStatusTabMarkdown {
         }
         blocks.add(summaryList(summary));
 
+        blocks.add(heading(3, EVICTION_OUTCOME));
+        blocks.add(evictionOutcome(entry.latestReturn()));
         blocks.add(heading(3, EVICTION_NOTICE));
         blocks.add(evictionNotice(enforcement));
         blocks.add(heading(3, SCHEDULED_EVICTION));
@@ -103,8 +105,6 @@ final class EnforcementStatusTabMarkdown {
             blocks.add(heading(3, CLAIMANT_EVICTION_CONFIRMATION));
             blocks.add(claimantConfirmation(enforcement));
         }
-        blocks.add(heading(3, EVICTION_OUTCOME));
-        blocks.add(evictionOutcome(entry.latestReturn()));
         return blocks;
     }
 
@@ -129,8 +129,7 @@ final class EnforcementStatusTabMarkdown {
             return paragraph(NOT_YET_SERVED);
         }
         List<Row> rows = new ArrayList<>();
-        rows.add(new Row(DATE_SERVED, TabMarkup.formatDate(servedAt)));
-        rows.add(new Row(TIME_SERVED, TabMarkup.formatTime(servedAt)));
+        rows.add(new Row(NOTICE_SERVED, dateAndTime(servedAt)));
         if (enforcement.getNoticeServedHow() != null) {
             rows.add(new Row(HOW_SERVED, enforcement.getNoticeServedHow()));
         }
@@ -140,12 +139,9 @@ final class EnforcementStatusTabMarkdown {
     private static String scheduledEviction(EnforcementOrderEntity enforcement) {
         LocalDateTime evictionAt = enforcement.getBailiffDate();
         if (evictionAt == null) {
-            return paragraph(NOT_YET_SCHEDULED);
+            return summaryList(List.of(new Row(EVICTION_DATE, NOT_YET_SET)));
         }
-        return summaryList(List.of(
-            new Row(EVICTION_DATE, TabMarkup.formatDate(evictionAt)),
-            new Row(EVICTION_TIME, TabMarkup.formatTime(evictionAt))
-        ));
+        return summaryList(List.of(new Row(EVICTION_DATE, dateAndTime(evictionAt))));
     }
 
     private static String claimantConfirmation(EnforcementOrderEntity enforcement) {
@@ -170,13 +166,16 @@ final class EnforcementStatusTabMarkdown {
         }
         if (latestReturn.getEvictionAt() != null) {
             LocalDateTime evictionAt = latestReturn.getEvictionAt().atZone(UK_ZONE_ID).toLocalDateTime();
-            rows.add(new Row(EVICTION_DATE, TabMarkup.formatDate(evictionAt)));
-            rows.add(new Row(EVICTION_TIME, TabMarkup.formatTime(evictionAt)));
+            rows.add(new Row(EVICTION_DATE, dateAndTime(evictionAt)));
         }
         if (latestReturn.getAdditionalDetails() != null) {
             rows.add(new Row(ADDITIONAL_DETAILS, latestReturn.getAdditionalDetails()));
         }
         return summaryList(rows);
+    }
+
+    private static String dateAndTime(LocalDateTime dateTime) {
+        return TabMarkup.formatDate(dateTime) + " at " + TabMarkup.formatTime(dateTime);
     }
 
     private static String label(HasLabel value) {

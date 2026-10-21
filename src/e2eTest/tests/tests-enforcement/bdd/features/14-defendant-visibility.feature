@@ -14,7 +14,7 @@ Feature: Defendant visibility of enforcement
     Given the eviction has been scheduled
     And the notice of eviction has not been served
     When each defendant views the case
-    Then they do not see the "Enforcement status" tab
+    Then they do not see the "Eviction status" tab
     And they do not see the "Risk assessment" tab
     And they do not see the "Enforcement" folder in case file view
     And they do not see any enforcement events in the case "History" tab
@@ -23,7 +23,7 @@ Feature: Defendant visibility of enforcement
   Scenario: After the notice is served, defendants see the enforcement status
     Given the court has not given permission to dispense with service
     When the bailiff marks the notice of eviction as served
-    Then the defendant legal representative sees the "Enforcement status" tab
+    Then the defendant legal representative sees the "Eviction status" tab
 
   @HDPI-8442 @HDPI-7354 @pending
   Scenario: After the notice is served, defendants see the notice of eviction
@@ -36,7 +36,7 @@ Feature: Defendant visibility of enforcement
   Scenario: Without notice eviction stays hidden from defendants
     Given the bailiff answered "Yes" to "Has the court given permission to dispense with service?"
     When the eviction takes place
-    Then defendants do not see the "Enforcement status" tab
+    Then defendants do not see the "Eviction status" tab
     And defendants do not see the "Enforcement" folder
 
   @HDPI-7350 @HDPI-7593

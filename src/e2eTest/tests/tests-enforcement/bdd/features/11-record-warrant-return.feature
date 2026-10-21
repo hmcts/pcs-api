@@ -144,7 +144,7 @@ Feature: Bailiff records the warrant return
     Given I recorded a "Final" return with outcome "Eviction successful" on "08/07/2026" at "09:15"
     When I submit the event
     Then I see the confirmation "Outcome recorded as Eviction successful" with the case number and warrant number
-    And the "Enforcement status" tab shows under "Eviction outcome" the return "Final", return name "Eviction successful", outcome and the eviction date and time
+    And the "Eviction status" tab shows under "Eviction outcome" the return "Final", return name "Eviction successful", outcome and the eviction date and time
     And the "Record warrant return" task is completed
 
   # "Reopen warrant" is only accepted on a closed warrant, so that example closes the warrant first.

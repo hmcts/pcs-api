@@ -14,7 +14,7 @@ export const CITIZEN_DEFENDANT = 'citizen defendant';
 export const ENFORCEMENT_CATEGORY_ID = 'enforcement';
 
 const TAB_FIELDS: Record<string, string[]> = {
-  'Enforcement status': ['enforcementStatusTabMarkdown', 'enforcements', 'enforcementStatus'],
+  'Eviction status': ['enforcementStatusTabMarkdown', 'enforcements', 'enforcementStatus'],
   'Risk assessment': [
     'showRiskAssessmentTab',
     'riskAssessmentPrintMarkdown',
@@ -77,7 +77,7 @@ export async function viewAsEachDefendant(page: Page, context: BrowserContext, w
   return views;
 }
 
-/** The event is submitted through the API, so the first defendant's view is re-read until it carries the "Enforcement status" tab. */
+/** The event is submitted through the API, so the first defendant's view is re-read until it carries the "Eviction status" tab. */
 export async function viewAsEachDefendantOnceEnforcementVisible(
   page: Page,
   context: BrowserContext,

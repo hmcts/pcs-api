@@ -89,8 +89,8 @@ Then('I see the case summary', async ({ page, world }) => {
 
 Then('no eviction date is saved', async ({ page, world }) => {
   const enforcement = await soleEnforcementSection(page, requireCaseReference(world));
-  expect(enforcement.sections['Scheduled eviction']?.text, 'no scheduled eviction on the warrant')
-    .toBe('Not yet scheduled');
+  expect(enforcement.sections['Scheduled eviction']?.rows['Eviction date'], 'no scheduled eviction on the warrant')
+    .toBe('Not yet set');
 });
 
 export const EVICTION_RESULTS: Record<string, string> = {
@@ -198,7 +198,7 @@ async function expectEvictionShown(page: Page, caseReference: string, section: s
   const time = entered.slice(entered.lastIndexOf(' ') + 1);
   const date = entered.slice(0, entered.lastIndexOf(' '));
   await expectEnforcementSection(page, caseReference, section, block => {
-    expect(block?.rows).toEqual({ 'Eviction date': tabDateOf(date), 'Eviction time': tabTime(time) });
+    expect(block?.rows).toEqual({ 'Eviction date': `${tabDateOf(date)} at ${tabTime(time)}` });
   });
 }
 

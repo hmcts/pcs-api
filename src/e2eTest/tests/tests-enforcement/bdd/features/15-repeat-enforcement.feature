@@ -15,7 +15,7 @@ Feature: Further enforcement on the same possession case
     And the caseworker approves it
     Then the case has two warrants, "WP-0001" closed and "WP-0002" live
     And the case reference is unchanged
-    And the "Enforcement status" tab lists "WP-0002" above "WP-0001"
+    And the "Eviction status" tab lists "WP-0002" above "WP-0001"
 
   @HDPI-8424 @open-question
   Scenario Outline: Fee for a further warrant

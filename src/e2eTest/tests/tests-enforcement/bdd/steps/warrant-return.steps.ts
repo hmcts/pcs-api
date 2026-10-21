@@ -143,8 +143,7 @@ Then(
         Return: type,
         'Return name': returnName,
         Outcome: recorded?.outcome,
-        'Eviction date': tabDateOf(recorded?.date as string),
-        'Eviction time': tabTime(recorded?.time as string),
+        'Eviction date': `${tabDateOf(recorded?.date as string)} at ${tabTime(recorded?.time as string)}`,
       });
     });
   }
