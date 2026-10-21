@@ -10,12 +10,22 @@ export const evictionDateTimeField = '#evictionDateTime';
 
 export const scheduleEviction = {
   pageLabel: 'Schedule eviction',
-  dateQuestion: 'Eviction date and time',
-  dateHint: 'Use the 24-hour clock. For example, 25 6 2026, 10 00',
+  dateQuestion: 'When do you want to schedule the eviction for?',
+  dateHint: 'Use the 24-hour clock. For example, use 17:30 instead of 5:30pm.',
   dispenseQuestion: 'Has the court given permission to dispense with service?',
   checkYourAnswers: 'Check your answers',
   saveAndContinue: 'Save and continue',
+  evictionDetailsRows: ['Claimant type', 'Claimants', 'Defendants'],
 };
+
+export const rescheduleEviction = {
+  pageLabel: 'Reschedule eviction',
+  dateQuestion: 'When do you want to reschedule the eviction for?',
+};
+
+/** The eviction date question differs per event, and XUI builds its required-field error out of it. */
+export const evictionDateQuestion = (event: string | undefined): string =>
+  event === RESCHEDULE_EVICTION ? rescheduleEviction.dateQuestion : scheduleEviction.dateQuestion;
 
 export const evictionDateErrors = {
   /** XUI says "is required" when the inputs were never filled and "is not valid" when they were cleared, so only the field name is asserted. */
@@ -120,10 +130,13 @@ export async function expectCheckYourAnswers(page: Page): Promise<void> {
 export const answerRow = (page: Page, question: string) =>
   page.locator('tr, .govuk-summary-list__row').filter({ hasText: question }).first();
 
+export const evictionDetailsList = (page: Page) =>
+  page.locator('dl.govuk-summary-list').filter({ hasText: 'Defendants' }).first();
+
 export async function evictionDetailsRows(page: Page): Promise<Record<string, string>> {
   const heading = page.getByRole('heading', { name: 'Eviction details', exact: true });
   await expect(heading).toBeVisible({ timeout: LONG_TIMEOUT });
-  const list = page.locator('dl.govuk-summary-list').filter({ hasText: 'Defendant names' }).first();
+  const list = evictionDetailsList(page);
   const rows: Record<string, string> = {};
   for (const row of await list.locator('.govuk-summary-list__row').all()) {
     const key = (await row.locator('.govuk-summary-list__key').innerText()).trim();

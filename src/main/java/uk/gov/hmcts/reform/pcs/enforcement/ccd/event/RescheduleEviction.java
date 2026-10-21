@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionConfirmationFormat;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.EvictionScheduleValidator;
 import uk.gov.hmcts.reform.pcs.enforcement.ccd.page.evictionschedule.RescheduleEvictionConfigurer;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
@@ -61,5 +62,10 @@ public class RescheduleEviction extends EvictionDateEvent {
     @Override
     String confirmationVerb() {
         return "rescheduled";
+    }
+
+    @Override
+    String confirmationBody(String formattedCaseReference, long caseReference, String warrantNumber) {
+        return EvictionConfirmationFormat.rescheduledBody(formattedCaseReference, caseReference, warrantNumber);
     }
 }

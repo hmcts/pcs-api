@@ -58,6 +58,8 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
 
     abstract String confirmationVerb();
 
+    abstract String confirmationBody(String formattedCaseReference, long caseReference, String warrantNumber);
+
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
@@ -110,7 +112,7 @@ abstract class EvictionDateEvent implements CCDConfig<PCSCase, State, UserRole> 
         return SubmitResponse.<State>builder()
             .confirmationHeader("# Eviction date %s for %s".formatted(
                 confirmationVerb(), EvictionConfirmationFormat.format(evictionDateTime)))
-            .confirmationBody(EvictionConfirmationFormat.scheduledBody(
+            .confirmationBody(confirmationBody(
                 caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), caseReference,
                 saved.change()))
             .build();

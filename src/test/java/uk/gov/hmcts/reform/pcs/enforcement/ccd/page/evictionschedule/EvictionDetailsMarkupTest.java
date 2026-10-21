@@ -19,8 +19,10 @@ class EvictionDetailsMarkupTest {
             .contains("Eviction details")
             .contains("<dt class=\"govuk-summary-list__key\">Claimant type</dt>"
                           + "<dd class=\"govuk-summary-list__value\">Private landlord</dd>")
-            .contains("<dd class=\"govuk-summary-list__value\">Acme Lettings</dd>")
-            .contains("<dd class=\"govuk-summary-list__value\">Jo Bloggs<br>Person(s) unknown</dd>");
+            .contains("<dt class=\"govuk-summary-list__key\">Claimants</dt>"
+                          + "<dd class=\"govuk-summary-list__value\">Acme Lettings</dd>")
+            .contains("<dt class=\"govuk-summary-list__key\">Defendants</dt>"
+                          + "<dd class=\"govuk-summary-list__value\">Jo Bloggs<br>Person(s) unknown</dd>");
     }
 
     @Test
@@ -45,17 +47,36 @@ class EvictionDetailsMarkupTest {
     }
 
     @Test
-    void shouldTellTheBailiffToPrintTheNoticeOfEviction() {
+    void shouldTellTheBailiffWhatHappensNextAndWhatToDo() {
         String body = EvictionConfirmationFormat.scheduledBody("1234-5678-9101-1121", 1234567891011121L,
                                                                "WP-00000042");
 
         assertThat(body)
             .startsWith("Case number: 1234-5678-9101-1121")
             .contains("Warrant number: WP-00000042")
-            .contains("You need to")
-            .contains("Print the 'notice of eviction' (form N54)")
+            .contains("We've sent an email to the claimant with the eviction date.")
+            .contains("We will send you a new work task when they either:")
+            .contains("<li>confirm the eviction date, or</li>")
+            .contains("<li>decline the eviction date, if they cannot attend</li>")
+            .contains("<h2 class=\"govuk-heading-m\">What you need to do next</h2>")
+            .contains("You need to:")
             .contains("href=\"/cases/case-details/1234567891011121#Case%20File%20View\"")
-            .contains("Go to case file view (same service, opens in a new tab)");
+            .contains("go to Case File View (same service, opens in a new tab)")
+            .contains("<li>find and print the 'notice of eviction' (form N54)</li>")
+            .contains("<li>deliver the completed form to the defendants</li>")
+            .contains("<li>return to this service and mark the 'notice of eviction' as served</li>");
+    }
+
+    @Test
+    void shouldSayTheRescheduledDateWasEmailedAndSendTheBailiffBackToCaseFileView() {
+        String body = EvictionConfirmationFormat.rescheduledBody("1234-5678-9101-1121", 1234567891011121L,
+                                                                 "WP-00000042");
+
+        assertThat(body)
+            .contains("We've sent an email to the claimant with the rescheduled eviction date.")
+            .contains("return to Case File View (same service, opens in a new tab)")
+            .contains("<li>find and print the 'notice of eviction' (form N54)</li>")
+            .doesNotContain("go to Case File View");
     }
 
     @Test

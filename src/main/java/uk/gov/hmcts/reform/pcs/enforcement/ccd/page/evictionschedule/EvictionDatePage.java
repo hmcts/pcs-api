@@ -20,11 +20,14 @@ public class EvictionDatePage implements CcdPageConfiguration {
 
     private final String pageId;
     private final String pageLabel;
+    private final String dateQuestion;
     private final EvictionScheduleValidator validator;
 
-    public EvictionDatePage(String pageId, String pageLabel, EvictionScheduleValidator validator) {
+    public EvictionDatePage(String pageId, String pageLabel, String dateQuestion,
+                            EvictionScheduleValidator validator) {
         this.pageId = pageId;
         this.pageLabel = pageLabel;
+        this.dateQuestion = dateQuestion;
         this.validator = validator;
     }
 
@@ -40,7 +43,7 @@ public class EvictionDatePage implements CcdPageConfiguration {
                 .complex(EnforcementOrder::getEvictionSchedule)
                     .readonly(EvictionSchedule::getEvictionDetailsMarkup, NEVER_SHOW, true)
                     .label(pageId + "-eviction-details", "${evictionDetailsMarkup}")
-                    .mandatory(EvictionSchedule::getEvictionDateTime)
+                    .mandatoryWithLabel(EvictionSchedule::getEvictionDateTime, dateQuestion)
                     .mandatory(EvictionSchedule::getEvictionDispenseWithService)
                 .done()
             .done();

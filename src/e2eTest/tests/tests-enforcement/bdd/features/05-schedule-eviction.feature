@@ -29,8 +29,10 @@ Feature: Bailiff schedules the eviction
     When I start the "Schedule eviction" event
     Then I see the case number, the possession property address and "claimant name vs defendant name"
     And the warrant number is not shown in the header
-    And I see an "Eviction details" table with claimant type, claimant name and defendant names
+    And I see an "Eviction details" table with claimant type, claimants and defendants
     And none of these are editable
+    And the date question is "When do you want to schedule the eviction for?"
+    And the hint "Use the 24-hour clock. For example, use 17:30 instead of 5:30pm."
 
   @HDPI-7344
   Scenario: Unnamed defendants are shown once as persons unknown
@@ -84,8 +86,14 @@ Feature: Bailiff schedules the eviction
     Given I have entered an eviction date of "Friday 25 June 2027" at "10:00"
     When I submit the "Schedule eviction" event
     Then I see the confirmation "Eviction date scheduled for Friday 25 June 2027 at 10:00am" with the case number and warrant number
-    And I see "Print the 'notice of eviction' (form N54)" under "You need to"
-    And I see a link "Go to case file view (same service, opens in a new tab)"
+    And the confirmation says "We've sent an email to the claimant with the eviction date."
+    And the confirmation says "We will send you a new work task when they either:"
+    And the confirmation says "confirm the eviction date, or"
+    And the confirmation says "decline the eviction date, if they cannot attend"
+    And I see "find and print the 'notice of eviction' (form N54)" under "What you need to do next"
+    And I see "deliver the completed form to the defendants" under "What you need to do next"
+    And I see "return to this service and mark the 'notice of eviction' as served" under "What you need to do next"
+    And I see a link "go to Case File View (same service, opens in a new tab)"
     And the "Enforcement status" tab shows the scheduled eviction date and time under "Scheduled eviction"
     And the enforcement status changes to "Awaiting claimant confirmation"
 

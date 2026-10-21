@@ -32,7 +32,7 @@ class EvictionDatePageTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         setPageUnderTest(new EvictionDatePage(
-            "scheduleEviction", "Schedule eviction",
+            "scheduleEviction", "Schedule eviction", "When do you want to schedule the eviction for?",
             new EvictionScheduleValidator(Clock.fixed(NOW, UK_ZONE_ID))));
     }
 
@@ -42,6 +42,8 @@ class EvictionDatePageTest extends BasePageTest {
             .collect(Collectors.toMap(Field::getId, Function.identity()));
 
         assertThat(fields.get("evictionDateTime").getContext()).isEqualTo(DisplayContext.Mandatory);
+        assertThat(fields.get("evictionDateTime").getCaseEventFieldLabel())
+            .isEqualTo("When do you want to schedule the eviction for?");
         assertThat(fields.get("evictionDispenseWithService").getContext()).isEqualTo(DisplayContext.Mandatory);
         assertThat(fields.get("evictionDetailsMarkup").getContext()).isEqualTo(DisplayContext.ReadOnly);
         assertThat(fields.get("scheduleEviction-eviction-details").getLabel()).isEqualTo("${evictionDetailsMarkup}");

@@ -159,7 +159,8 @@ class ScheduleEvictionTest extends BaseEventTest {
             .isEqualTo("# Eviction date scheduled for Thursday 25 June 2026 at 10:00am");
         assertThat(response.getConfirmationBody())
             .contains("Case number: 0000-0000-0000-1234", "Warrant number: WP-00000042",
-                      "Print the 'notice of eviction' (form N54)");
+                      "We've sent an email to the claimant with the eviction date.",
+                      "find and print the 'notice of eviction' (form N54)");
     }
 
     @Test

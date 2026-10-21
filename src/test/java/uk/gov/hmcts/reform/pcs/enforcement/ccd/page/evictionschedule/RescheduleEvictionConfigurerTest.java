@@ -16,6 +16,24 @@ class RescheduleEvictionConfigurerTest extends BasePageTest {
 
     @Test
     void shouldAddTheEvictionDatePageUnderTheRescheduleEvictionPageId() {
+        setPageUnderTest(configuredPage());
+
+        assertThat(placedFields()).isNotEmpty()
+            .allSatisfy(field -> assertThat(field.getPage()).isEqualTo(RescheduleEvictionConfigurer.PAGE_ID));
+    }
+
+    @Test
+    void shouldAskWhenTheEvictionIsToBeRescheduledFor() {
+        setPageUnderTest(configuredPage());
+
+        assertThat(placedFields())
+            .filteredOn(field -> "evictionDateTime".equals(field.getId()))
+            .singleElement()
+            .satisfies(field -> assertThat(field.getCaseEventFieldLabel())
+                .isEqualTo("When do you want to reschedule the eviction for?"));
+    }
+
+    private static CcdPageConfiguration configuredPage() {
         PageBuilder pageBuilder = mock(PageBuilder.class);
         when(pageBuilder.add(any())).thenReturn(pageBuilder);
         ArgumentCaptor<CcdPageConfiguration> added = ArgumentCaptor.forClass(CcdPageConfiguration.class);
@@ -24,9 +42,6 @@ class RescheduleEvictionConfigurerTest extends BasePageTest {
 
         verify(pageBuilder).add(added.capture());
         assertThat(added.getValue()).isInstanceOf(EvictionDatePage.class);
-
-        setPageUnderTest(added.getValue());
-        assertThat(placedFields()).isNotEmpty()
-            .allSatisfy(field -> assertThat(field.getPage()).isEqualTo(RescheduleEvictionConfigurer.PAGE_ID));
+        return added.getValue();
     }
 }
