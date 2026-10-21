@@ -9,7 +9,7 @@
       "Content-Type": "application/json"
     },
     "jsonBody": {
-      "renditionOutputLocation": "http://localhost:8083/documents/{{randomValue type='UUID'}}"
+      "renditionOutputLocation": "{{request.baseUrl}}/documents/{{randomValue type='UUID'}}"
     },
     "transformers": ["response-template"]
   }
