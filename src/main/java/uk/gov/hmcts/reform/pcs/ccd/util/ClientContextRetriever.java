@@ -8,12 +8,8 @@ import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import uk.gov.hmcts.ccd.sdk.api.external.ExternalRejection;
 
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Component
@@ -45,35 +41,6 @@ public class ClientContextRetriever {
             return objectMapper.readValue(clientContextAsStringJson, ClientContext.class);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to parse Client-context",e);
-        }
-    }
-
-    /** The order named in the Client-Context header, since CCD passes no parameters to an event's start. */
-    public Optional<UUID> getOrderId() {
-        return idFromClientContext(ClientContext::getOrderId, "The link to the order is not valid");
-    }
-
-    /** The general application named in the Client-Context header, as for an order. */
-    public Optional<UUID> getGenAppId() {
-        return idFromClientContext(ClientContext::getGenAppId, "The link to the application is not valid");
-    }
-
-    private Optional<UUID> idFromClientContext(Function<ClientContext, String> id, String invalid) {
-        try {
-            return Optional.ofNullable(getClientContext()).map(id).map(UUID::fromString);
-        } catch (IllegalArgumentException e) {
-            throw ExternalRejection.because(invalid);
-        }
-    }
-
-    /** The hearing named in the Client-Context header. */
-    public Optional<Integer> getHearingId() {
-        ClientContext clientContext = getClientContext();
-        try {
-            return Optional.ofNullable(clientContext == null ? null : clientContext.getHearingId())
-                .map(Integer::valueOf);
-        } catch (NumberFormatException e) {
-            throw ExternalRejection.because("The link to the hearing is not valid");
         }
     }
 

@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -30,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
-import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -69,7 +69,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final OrderSteps orderSteps;
     private final PcsCaseRepository pcsCaseRepository;
     private final OrderCaseContext orderCaseContext;
-    private final ClientContextRetriever clientContextRetriever;
     private final SecurityContextService securityContextService;
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
@@ -104,8 +103,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = start.caseReference();
         String judge = IdamUserIds.normalise(start.user().id());
         PcsCaseEntity pcsCase = findCase(caseReference);
-        Optional<UUID> chosenOrderId = clientContextRetriever.getOrderId();
-        UUID genAppId = chosenOrderId.isEmpty() ? clientContextRetriever.getGenAppId()
+        OrderLink link = start.clientContext().as(OrderLink.class).orElse(OrderLink.NONE);
+        Optional<UUID> chosenOrderId = Optional.ofNullable(link.orderId());
+        UUID genAppId = chosenOrderId.isEmpty() ? Optional.ofNullable(link.genAppId())
             .map(id -> openGenApp(pcsCase, id).getId()).orElse(null) : null;
         Optional<OrderEntity> order = chosenOrderId.isPresent()
             ? Optional.of(chosenOrder(chosenOrderId.get(), caseReference, judge))
@@ -117,7 +117,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElseGet(() -> OrderStart.Order.none(genAppId));
         // An order already under way stays with the hearing it was started for.
         HearingEntity hearing = order.map(OrderEntity::getHearing)
-            .or(() -> clientContextRetriever.getHearingId().map(id -> hearingRecords.hearing(pcsCase, id)))
+            .or(() -> Optional.ofNullable(link.hearingId()).map(id -> hearingRecords.hearing(pcsCase, id)))
             .orElse(null);
         return ExternalStartResponse.started(new OrderStart(workingOrder,
             orderCaseContext.of(pcsCase, workingOrder.genAppId()),
