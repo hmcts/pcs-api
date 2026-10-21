@@ -166,7 +166,7 @@ class CounterClaimDetailsHydratorTest {
             assertThat(validCCs.getListItems()).hasSize(2);
             assertThat(validCCs.getListItems().get(0).getCode()).isEqualTo(ccId.toString());
             assertThat(validCCs.getListItems().get(0).getLabel())
-                .contains("Yes, the documents I'm uploading relate to the counterclaim I made on "
+                .contains("Yes, the documents I’m uploading relate to the counterclaim I made on "
                     + "Tuesday 22 September 2026");
             assertThat(validCCs.getListItems().get(1).getCode()).isEqualTo("MAIN_CLAIM");
         }
@@ -206,7 +206,7 @@ class CounterClaimDetailsHydratorTest {
 
             DynamicStringList validCCs = details.getValidCounterclaims();
             assertThat(validCCs.getListItems().get(0).getLabel())
-                .contains("Yes, the documents I'm uploading relate to the counterclaim made by "
+                .contains("Yes, the documents I’m uploading relate to the counterclaim made by "
                     + "John &lt;Script&gt; Doe &amp; Co on Tuesday 22 September 2026");
         }
 
@@ -274,7 +274,7 @@ class CounterClaimDetailsHydratorTest {
 
             DynamicStringList validCCs = details.getValidCounterclaims();
             assertThat(validCCs.getListItems().get(0).getLabel())
-                .isEqualTo("Yes, the documents I'm uploading relate to the counterclaim I made");
+                .isEqualTo("Yes, the documents I’m uploading relate to the counterclaim I made");
         }
 
         @Test
