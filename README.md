@@ -1,4 +1,4 @@
-# pcs-api test pr
+# pcs-api
 
 ## Building and deploying the application
 
