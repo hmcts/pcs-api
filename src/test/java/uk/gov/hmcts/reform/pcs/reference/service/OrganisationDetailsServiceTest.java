@@ -9,14 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,87 +82,6 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
-    @DisplayName("Should successfully get organisation name")
-    void shouldSuccessfullyGetOrganisationName() {
-        // Given
-        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
-            .name(ORGANISATION_NAME)
-            .organisationIdentifier(ORGANISATION_IDENTIFIER)
-            .build();
-
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(response);
-
-        // When
-        String result = organisationDetailsService.getOrganisationName(USER_ID);
-
-        // Then
-        assertThat(result).isEqualTo(ORGANISATION_NAME);
-    }
-
-    @Test
-    @DisplayName("Should successfully get organisation identifier")
-    void shouldSuccessfullyGetOrganisationIdentifier() {
-        // Given
-        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
-            .name(ORGANISATION_NAME)
-            .organisationIdentifier(ORGANISATION_IDENTIFIER)
-            .build();
-
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(response);
-
-        // When
-        String result = organisationDetailsService.getOrganisationIdentifier(USER_ID);
-
-        // Then
-        assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
-    }
-
-    @Test
-    @DisplayName("Should successfully get organisation payment accounts")
-    void shouldSuccessfullyGetOrganisationPaymentAccounts() {
-        // Given
-        List<String> paymentAccounts = List.of("PBA1234567", "PBA7654321");
-        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
-            .paymentAccount(paymentAccounts)
-            .build();
-
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(response);
-
-        // When
-        List<String> result = organisationDetailsService.getOrganisationPaymentAccount(USER_ID);
-
-        // Then
-        assertThat(result).isEqualTo(paymentAccounts);
-    }
-
-    @Test
-    @DisplayName("Should return null when organisation payment accounts are null")
-    void shouldReturnNullWhenOrganisationPaymentAccountsAreNull() {
-        // Given
-        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder().build();
-
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(response);
-
-        // When
-        List<String> result = organisationDetailsService.getOrganisationPaymentAccount(USER_ID);
-
-        // Then
-        assertThat(result).isNull();
-    }
-
-    @Test
     @DisplayName("Should return null when Feign client throws exception")
     void shouldReturnNullWhenFeignClientThrowsException() {
         // Given
@@ -194,80 +111,6 @@ class OrganisationDetailsServiceTest {
 
         // Then
         assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("Should return null when organisation details is null")
-    void shouldReturnNullWhenOrganisationDetailsIsNull() {
-        // Given
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(null);
-
-        // When
-        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
-
-        // Then
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("Should return null when contact information is empty")
-    void shouldReturnNullWhenContactInformationIsEmpty() {
-        // Given
-        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
-            .contactInformation(List.of())
-            .organisationIdentifier(ORGANISATION_IDENTIFIER)
-            .build();
-
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(response);
-
-        // When
-        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
-
-        // Then
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("Should successfully get first organisation address")
-    void shouldSuccessfullyGetOrganisationAddress() {
-        // Given
-        OrganisationDetailsResponse.ContactInformation contactInfo1 =  OrganisationDetailsResponse.ContactInformation
-            .builder()
-            .addressLine1("27 Feather Street")
-            .townCity("London")
-            .postCode("B8 7FH")
-            .build();
-
-        OrganisationDetailsResponse.ContactInformation contactInfo2 =  OrganisationDetailsResponse.ContactInformation
-            .builder()
-            .addressLine1("1 Additional Street")
-            .townCity("London")
-            .postCode("AD1 5TR")
-            .build();
-
-        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
-            .contactInformation(List.of(contactInfo1, contactInfo2))
-            .organisationIdentifier(ORGANISATION_IDENTIFIER)
-            .build();
-
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(response);
-
-        // When
-        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
-
-        // Then
-        assertThat(result.getAddressLine1()).isEqualTo(contactInfo1.getAddressLine1());
-        assertThat(result.getPostTown()).isEqualTo(contactInfo1.getTownCity());
-        assertThat(result.getPostCode()).isEqualTo(contactInfo1.getPostCode());
     }
 
     @Test
@@ -306,25 +149,6 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
-    @DisplayName("getOrganisationName should return null when underlying call throws FeignException")
-    void getOrganisationNameShouldReturnNullOnFeignFailure() {
-        // Given
-        FeignException feignEx = mock(FeignException.class);
-        when(feignEx.status()).thenReturn(503);
-
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenThrow(feignEx);
-
-        // When
-        String result = organisationDetailsService.getOrganisationName(USER_ID);
-
-        // Then
-        assertThat(result).isNull();
-    }
-
-    @Test
     @DisplayName("A user with no organisation is not an error: 404 means not a professional user")
     void shouldReturnNullWithoutThrowingWhenTheUserHasNoOrganisation() {
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
@@ -334,19 +158,6 @@ class OrganisationDetailsServiceTest {
 
         assertThat(organisationDetailsService.getOrganisationDetails(USER_ID)).isNull();
     }
-
-
-    @Test
-    @DisplayName("A null response body must not blow up the identifier accessor")
-    void shouldReturnNullIdentifierWhenTheResponseBodyIsNull() {
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenReturn(null);
-
-        assertThat(organisationDetailsService.getOrganisationIdentifier(USER_ID)).isNull();
-    }
-
 
     private static FeignException feignError(int status) {
         Request request = Request.create(Request.HttpMethod.GET, "/orgDetails", Map.of(), null,

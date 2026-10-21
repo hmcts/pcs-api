@@ -10,6 +10,7 @@ import { amendDocumentDetails, checkYourAnswersAmendDocument, checkYourAnswersUp
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { midEventLRRespondPossessionClaimApiData } from '@data/api-data/respondPossessionClaimMidEventLR.api.data';
 
 test.use({ storageState: undefined })
 
@@ -19,30 +20,35 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
-  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
-  await performAction('updatePaymentAPI');
-  await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
-  });
-
-  genAppPayload =
-    testInfo.title.includes('WithOut_Notice')
-      ? makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload
-      : makeAnApplicationApiData.makeAnApplicationAdjournPayload
-
-  for (const defendant of defendantUserDetails) {
-    await performAction('makeAnApplicationAPI', {
-      data: genAppPayload(
-        defendant.id,
-        defendant.name
-      ),
+  await test.step('Create and submit case, update payment, submit defendant response, retrieve party details and create applications', async () => {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
+    await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
+    await performAction('updatePaymentAPI');
+    await performAction('getCaseAPI', 'Link Solicitor');
+    await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
+    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
+    await performAction('updatePaymentAPI', { amt: 3500, app: 'Counter Claim' });
+    await performAction('getAllPartyDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
     });
-  };
+
+    genAppPayload =
+      testInfo.title.includes('WithOut_Notice')
+        ? makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload
+        : makeAnApplicationApiData.makeAnApplicationAdjournPayload
+
+    for (const defendant of defendantUserDetails) {
+      await performAction('makeAnApplicationAPI', {
+        data: genAppPayload(
+          defendant.id,
+          defendant.name
+        ),
+      });
+    };
+  });
   
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
@@ -164,6 +170,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Uncategorised documents',
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      ccPayload : midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
       caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName)
     });
   });

@@ -15,9 +15,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationUserRoles.belongsToOrganisation;
 
 /**
@@ -42,7 +41,7 @@ public class OrganisationService {
      * {@link Optional#empty()} = genuinely no organisation (citizens stop re-asking). Failed
      * lookups throw and are not cached - a blip must not be remembered as "no organisation".
      */
-    private final Cache<String, Optional<String>> organisationIdCache;
+    private final Cache<String, Optional<OrganisationDetailsResponse>> organisationsCache;
 
     public OrganisationService(SecurityContextService securityContextService,
                                OrganisationDetailsService organisationDetailsService,
@@ -50,28 +49,26 @@ public class OrganisationService {
         this.securityContextService = securityContextService;
         this.organisationDetailsService = organisationDetailsService;
         this.userRoleService = userRoleService;
-        this.organisationIdCache = Caffeine.newBuilder()
+        this.organisationsCache = Caffeine.newBuilder()
             .expireAfterWrite(ORGANISATION_CACHE_TTL)
             .build();
+    }
+
+    /** Organisation name for a user (claimant name population). */
+    public String getOrganisationName(String userId) {
+        OrganisationDetailsResponse organisationDetails = this.getCachedOrganisationDetails(userId);
+        return organisationDetails != null ? organisationDetails.getName() : null;
     }
 
     /** Organisation name for the current user, or null if unable to retrieve. */
     public String getOrganisationNameForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
+            String userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
             }
-
-            String organisationName = organisationDetailsService.getOrganisationName(userId.toString());
-
-            if (organisationName == null || organisationName.isEmpty()) {
-                log.warn("Organisation name is null or empty");
-            }
-
-            return organisationName;
-
+            return this.getOrganisationName(userId.toString());
         } catch (Exception ex) {
             log.error("Error retrieving organisation name from rd-professional API", ex);
             // Return null instead of throwing to allow graceful degradation
@@ -79,20 +76,23 @@ public class OrganisationService {
         }
     }
 
+    /** Organisation identifier for a user. */
+    public String getOrganisationIdentifier(String userId) {
+        OrganisationDetailsResponse organisationDetails = this.getCachedOrganisationDetails(userId);
+        return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
+    }
+
     /** Organisation identifier for the current user, or null if it cannot be resolved. */
     public String getOrganisationIdForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
-
+            String userId = resolveProfessionalUserId();
             if (userId == null) {
                 return null;
             }
 
-            return organisationIdCache.get(
-                userId.toString(),
-                id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
-            ).orElse(null);
-
+            OrganisationDetailsResponse organisationDetails =
+                this.getCachedRequiredOrganisationDetails(userId);
+            return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API", ex);
             return null;
@@ -107,16 +107,13 @@ public class OrganisationService {
      * @return The organisation identifier, or null if the user genuinely has none
      */
     public String requireOrganisationIdForCurrentUser() {
-        UUID userId = resolveProfessionalUserId();
-
+        String userId = resolveProfessionalUserId();
         if (userId == null) {
             return null;
         }
 
-        return organisationIdCache.get(
-            userId.toString(),
-            id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
-        ).orElse(null);
+        OrganisationDetailsResponse organisationDetails = this.getCachedRequiredOrganisationDetails(userId);
+        return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
     }
 
     /**
@@ -127,14 +124,21 @@ public class OrganisationService {
      */
     public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
-
+            String userId = resolveProfessionalUserId();
             if (userId == null) {
                 return null;
             }
 
-            return organisationDetailsService.getOrganisationDetails(userId.toString());
+            return this.getOrganisationDetails(userId);
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            log.error("Error retrieving organisation details from rd-professional API", ex);
+            return null;
+        }
+    }
 
+    public OrganisationDetailsResponse getOrganisationDetails(String userId) {
+        try {
+            return this.getCachedOrganisationDetails(userId);
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation details from rd-professional API", ex);
             return null;
@@ -142,33 +146,36 @@ public class OrganisationService {
     }
 
     /**
-     * Reads the organisation identifier off an already-fetched record.
-     *
-     * @return The organisation identifier, or null if there is none
+     * Gets the organisation payment accounts for a given user ID.
+     * @param userId The user ID to get organisation payment accounts for
+     * @return Organisation payment accounts
      */
-    public String getOrganisationId(OrganisationDetailsResponse organisationDetails) {
-        return organisationDetails == null ? null : organisationDetails.getOrganisationIdentifier();
+    public List<String> getOrganisationPaymentAccount(String userId) {
+        OrganisationDetailsResponse details = getOrganisationDetails(userId);
+        return details.getPaymentAccount();
     }
 
-    /**
-     * Reads the organisation name off an already-fetched record, avoiding a second rd-professional
-     * round trip when the caller already holds a {@link OrganisationDetailsResponse}.
-     *
-     * @return The organisation name, or null if there is none
-     */
-    public String getOrganisationName(OrganisationDetailsResponse organisationDetails) {
-        return organisationDetails == null ? null : organisationDetails.getName();
-    }
-
-    /**
-     * Derives the organisation address from an already-fetched record, avoiding a second
-     * rd-professional round trip when the caller already holds a {@link OrganisationDetailsResponse}.
-     *
-     * @return The organisation address, or null if empty or unavailable
-     */
+    /** Organisation address from a details response, or null if none. */
     public AddressUK getOrganisationAddress(OrganisationDetailsResponse organisationDetails) {
-        AddressUK address = organisationDetailsService.getOrganisationAddress(organisationDetails);
-        return keyAddressFieldsEmpty(address) ? null : address;
+        if (organisationDetails == null || organisationDetails.getContactInformation() == null) {
+            return null;
+        }
+
+        OrganisationDetailsResponse.ContactInformation contactInfo = organisationDetails
+            .getContactInformation().getFirst();
+        if (contactInfo == null) {
+            return null;
+        }
+
+        return AddressUK.builder()
+            .addressLine1(contactInfo.getAddressLine1())
+            .addressLine2(contactInfo.getAddressLine2())
+            .addressLine3(contactInfo.getAddressLine3())
+            .postTown(contactInfo.getTownCity())
+            .county(contactInfo.getCounty())
+            .country(contactInfo.getCountry())
+            .postCode(contactInfo.getPostCode())
+            .build();
     }
 
     /**
@@ -197,38 +204,6 @@ public class OrganisationService {
     }
 
     /**
-     * Retrieves the organisation address for the current user.
-     * Gets the user ID from security context and fetches the organisation address
-     * from the rd-professional API using PRD admin token and S2S token.
-     *
-     * @return The organisation address, or null if the user ID is missing or the address cannot be retrieved
-     */
-    public AddressUK getOrganisationAddressForCurrentUser() {
-
-        try {
-            UUID userId = resolveProfessionalUserId();
-
-            if (userId == null) {
-                return null;
-            }
-
-            AddressUK organisationAddress = organisationDetailsService.getOrganisationAddress(userId.toString());
-
-            // Return null if address is null or all key address fields to be displayed are empty
-            if (keyAddressFieldsEmpty(organisationAddress)) {
-                log.warn("Organisation address is null or empty");
-                return null;
-            }
-
-            return organisationAddress;
-
-        } catch (Exception ex) {
-            log.error("Error retrieving organisation address from rd-professional API", ex);
-            return null;
-        }
-    }
-
-    /**
      * Only users who belong to a professional organisation have one to look up. Citizens, the system
      * identity, HMCTS staff and judiciary do not, and asking rd-professional on their behalf is a
      * round trip that can only 404 - which PRD logs as an error. Returning null here is the same
@@ -238,15 +213,11 @@ public class OrganisationService {
      * IDAM role is being retired under HDPI-7333, and it never distinguished the organisation types
      * anyway.
      */
-    private UUID resolveProfessionalUserId() {
+    private String resolveProfessionalUserId() {
         if (securityContextService.isSystemUser() || currentUserIsCitizen() || !currentUserBelongsToOrganisation()) {
             return null;
         }
-        UUID userId = securityContextService.getCurrentUserId();
-        if (userId == null) {
-            log.warn("User ID is null from security context, cannot fetch organisation details");
-        }
-        return userId;
+        return securityContextService.getCurrentUserId();
     }
 
     private boolean currentUserIsCitizen() {
@@ -259,10 +230,17 @@ public class OrganisationService {
         return belongsToOrganisation(userRoleService.getCurrentUserOrganisationalRoles().roles());
     }
 
-    private boolean keyAddressFieldsEmpty(AddressUK organisationAddress) {
-        return organisationAddress == null || (isBlank(organisationAddress.getAddressLine1())
-            && isBlank(organisationAddress.getPostTown())
-            && isBlank(organisationAddress.getPostCode()));
+    private OrganisationDetailsResponse getCachedOrganisationDetails(String userId) {
+        return organisationsCache.get(
+            userId,
+            id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
+        ).orElse(null);
     }
 
+    private OrganisationDetailsResponse getCachedRequiredOrganisationDetails(String userId) {
+        return organisationsCache.get(
+            userId,
+            id -> Optional.ofNullable(organisationDetailsService.requireOrganisationDetails(id))
+        ).orElse(null);
+    }
 }
