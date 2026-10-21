@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
@@ -29,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,17 +38,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.COUNTY_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.APPLICATION_DECISION;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 
 /**
  * A judge decides a general application with an order on it, from the link in a message about it: the order
- * starts from the application, and issuing it records what it decided.
+ * starts from the application.
  */
 @DisplayName("Decide an application")
 class DecideApplicationIT extends OrderEventIT {
@@ -158,34 +153,6 @@ class DecideApplicationIT extends OrderEventIT {
             contains("has submitted an order for review"));
     }
 
-    @Test
-    @DisplayName("records the decision when court staff issue the order, which closes a granted application")
-    void recordsTheDecisionOnIssue() {
-        Order submitted = judgeDecides(genAppId, "grant");
-        var asCaseworker = asCaseworkerReviewing(submitted.id());
-        assertThat(asCaseworker.start().caseContext().application().reference()).isEqualTo("GA1");
-
-        asCaseworker.submitExpectingSuccess(issue(submitted));
-
-        assertThat(outcome(genAppId)).isEqualTo("GRANTED");
-        assertThat(asJudgeDeciding(genAppId).startExpectingRejection())
-            .containsExactly("The application has already been decided");
-        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().caseContext().openApplication())
-            .isFalse();
-    }
-
-    @Test
-    @DisplayName("leaves an application listed for a hearing open, to decide again")
-    void leavesAListedApplicationOpen() {
-        Order submitted = judgeDecides(genAppId, "list");
-        asCaseworkerReviewing(submitted.id()).submitExpectingSuccess(issue(submitted));
-
-        assertThat(outcome(genAppId)).isEqualTo("LISTED");
-        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().caseContext().openApplication())
-            .isTrue();
-        assertThat(asJudgeDeciding(genAppId).start().order().id()).isNull();
-    }
-
     /** The judge following their task to decide the application, which names it. */
     private ExternalEvent<OrderStart, MakeOrderRequest> asJudgeDeciding(UUID genAppId) {
         return events.external(caseReference, MAKE_ORDER).as(judge)
@@ -213,20 +180,10 @@ class DecideApplicationIT extends OrderEventIT {
             Map.of("application-decision", decision), null, order.genAppId()), taskId);
     }
 
-    private static ConfirmOrderReviewRequest issue(Order submitted) {
-        return new ConfirmOrderReviewRequest(ISSUE, submitted.id(), submitted.version(), "staff-review", null,
-            new Issue(new IssuedOrder(APPLICATION_DECISION, submitted.formData(), null, "the order"), List.of(),
-                COUNTY_COURT));
-    }
-
     private static DocumentEntity document(PcsCaseEntity pcsCase, GenAppEntity genApp, UUID documentId,
                                            String fileName) {
         return DocumentEntity.builder().pcsCase(pcsCase).generalApplication(genApp).documentId(documentId)
             .url("http://dm-store/documents/" + documentId).fileName(fileName).build();
     }
 
-    private String outcome(UUID genAppId) {
-        return jdbcTemplate.queryForObject("SELECT outcome FROM general_application WHERE id = ?", String.class,
-            genAppId);
-    }
 }
