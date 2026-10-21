@@ -44,6 +44,13 @@ final class AccessGrants {
         WLU_ADMIN
     };
 
+    static final UserRole[] JUDICIAL_READ_ROLES = {
+        JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE
+    };
+
     static final UserRole[] INTERNAL_READ_ROLES = {
         JUDGE,
         FEE_PAID_JUDGE,
@@ -72,6 +79,10 @@ final class AccessGrants {
 
     static SetMultimap<HasRole, Permission> partyVisibleReadAccess() {
         return readAccess(PARTY_VISIBLE_ROLES);
+    }
+
+    static SetMultimap<HasRole, Permission> judicialReadAccess() {
+        return readAccess(JUDICIAL_READ_ROLES);
     }
 
     static SetMultimap<HasRole, Permission> internalReadAccess() {
