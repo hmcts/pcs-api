@@ -100,7 +100,7 @@ Feature: Add a bailiff note
     When I add the bailiff note "Rear gate is locked"
     Then I see the "Bailiff note added" confirmation with the case number and warrant number
     And "Close and return to case summary" takes me to the "Risk assessment" tab
-    And the note "Rear gate is locked" is shown under "Bailiff note" with "Sam Jones" and the date and time in "1 Feb 2026 16:20pm" format
+    And the note "Rear gate is locked" is shown under "Bailiff note" with "Sam Jones" and the date and time in "1 Feb 2026 at 16:20pm" format
     And the note cannot be edited
     And the note is visible to internal users only
 
@@ -111,4 +111,4 @@ Feature: Add a bailiff note
   Scenario: Multiple notes are shown newest first
     Given the case has bailiff notes added on "1 Feb 2026" and "3 Feb 2026"
     When I open the "Risk assessment" tab
-    Then the note from "3 Feb 2026" is shown first
+    Then the note from "3 Feb 2026" is shown first as "Bailiff Note 1"

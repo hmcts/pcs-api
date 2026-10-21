@@ -24,6 +24,7 @@ import {
   expectBailiffConfirmationWithWarrantNumber,
   findBailiff,
   goToAllocationCheckYourAnswers,
+  bailiffNotes,
   riskAssessmentFields,
   searchForBailiff,
   setRiskLevel,
@@ -83,7 +84,7 @@ Given('I set the risk level to {string} with reason {string}', async ({ page, wo
   world.currentEvent = SET_RISK_LEVEL;
   await chooseRiskLevel(page, level, reason);
   await continueButton(page).click();
-  await expectBailiffConfirmation(page, `Risk level set to ${level}`, requireCaseReference(world));
+  await expectBailiffConfirmation(page, `Risk level set to ${level.toLowerCase()}`, requireCaseReference(world));
   world.currentEvent = undefined;
 });
 
@@ -109,7 +110,7 @@ Given('the risk level is already {string}', async ({ page, world }, level: strin
   world.currentEvent = SET_RISK_LEVEL;
   await chooseRiskLevel(page, level);
   await continueButton(page).click();
-  await expectBailiffConfirmation(page, `Risk level set to ${level}`, requireCaseReference(world));
+  await expectBailiffConfirmation(page, `Risk level set to ${level.toLowerCase()}`, requireCaseReference(world));
   world.currentEvent = undefined;
 });
 
@@ -172,7 +173,7 @@ async function expectRiskAssessmentTabInternalOnly(page: Page, context: BrowserC
   await signInAs(CLAIMANT_LEGAL_REPRESENTATIVE, page, context);
   await openCaseTab(page, caseReference, RISK_ASSESSMENT_TAB);
   const claimantSections = Object.keys(await tabSections(page));
-  expect(claimantSections).toContain('Claimant risk level');
+  expect(claimantSections).toContain('Claimant risk assessment');
   expect(claimantSections).not.toContain('Bailiff note');
   expect(claimantSections).not.toContain('Risk assessment level');
 }
@@ -185,8 +186,8 @@ Then('the reason is visible to internal users only', async ({ page, context, wor
   await expectRiskAssessmentTabInternalOnly(page, context, requireCaseReference(world));
 });
 
-/** "1 Feb 2026 16:20pm": a day, a short month, a year, a 24-hour time and a lower case am / pm marker. */
-const NOTE_DATE_TIME = /^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/;
+/** "1 Feb 2026 at 16:20pm": a day, a short month, a year, a 24-hour time and a lower case am / pm marker. */
+const NOTE_DATE_TIME = /^\d{1,2} [A-Z][a-z]{2} \d{4} at \d{2}:\d{2}(am|pm)$/;
 
 Given('I am signed in to XUI as bailiff {string}', async ({ world, $tags }, name: string) => {
   const email = requireStandIn(name, $tags);
@@ -254,10 +255,11 @@ Then(
   async ({ page, world }, note: string, section: string, author: string, example: string) => {
     expect(example).toMatch(NOTE_DATE_TIME);
     await openCaseTab(page, requireCaseReference(world), RISK_ASSESSMENT_TAB);
-    const [newest] = (await tabSections(page))[section]?.lists ?? [];
-    expect(newest?.[riskAssessmentFields.note]).toBe(note);
-    expect(newest?.[riskAssessmentFields.noteAddedBy]).toBe(world.aliases[author] ?? author);
-    expect(newest?.[riskAssessmentFields.noteDateTime]).toMatch(NOTE_DATE_TIME);
+    expect(Object.keys(await tabSections(page)), `the "${section}" section`).toContain(section);
+    const [newest] = await bailiffNotes(page);
+    expect(newest?.rows[riskAssessmentFields.note]).toBe(note);
+    expect(newest?.rows[riskAssessmentFields.noteAddedBy]).toBe(world.aliases[author] ?? author);
+    expect(newest?.rows[riskAssessmentFields.noteDateTime]).toMatch(NOTE_DATE_TIME);
   }
 );
 
@@ -285,13 +287,14 @@ Given('the case has bailiff notes added on {string} and {string}', async ({ worl
   );
 });
 
-Then('the note from {string} is shown first', async ({ page }, date: string) => {
-  const notes = (await tabSections(page))['Bailiff note']?.lists ?? [];
-  expect(notes.map(note => note[riskAssessmentFields.note])).toEqual([
+Then('the note from {string} is shown first as {string}', async ({ page }, date: string, heading: string) => {
+  const notes = await bailiffNotes(page);
+  expect(notes.map(note => `Bailiff Note ${note.number}`)[0]).toBe(heading);
+  expect(notes.map(note => note.rows[riskAssessmentFields.note])).toEqual([
     `Note from ${date}`,
     expect.stringMatching(/^Note from /),
   ]);
-  expect(notes[0][riskAssessmentFields.noteDateTime]).toMatch(new RegExp(`^${noteDate(new Date())} `));
+  expect(notes[0].rows[riskAssessmentFields.noteDateTime]).toMatch(new RegExp(`^${noteDate(new Date())} at `));
 });
 
 function noteDate(date: Date): string {

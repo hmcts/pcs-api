@@ -33,7 +33,7 @@ class RiskAssessmentTabMarkdownTest {
         "Do you want to evict everyone at the property?",
         "Who do you want to evict?",
         "Do you know the defendants&#39; dates of birth?",
-        "Does anyone at the property pose a risk to the bailiff?",
+        "Does anyone living at the property pose a risk to the bailiff?",
         "What kind of risks do they pose to the bailiff?",
         "How have they been violent or aggressive?",
         "What is their history of criminal or antisocial behaviour?",
@@ -58,35 +58,44 @@ class RiskAssessmentTabMarkdownTest {
             .contains("<h2 class=\"govuk-heading-l\">Bailiff note</h2>")
             .contains("<p class=\"govuk-body\">Not added yet (click on the &#39;select action&#39; button above)</p>")
             .contains("<h2 class=\"govuk-heading-l\">Risk assessment level</h2>")
-            .contains("<p class=\"govuk-body\">Not set yet (click on the &#39;select action&#39; button above)</p>");
+            .contains("<p class=\"govuk-body\">Not set yet (Click on the &#39;Select action&#39; button above).</p>");
         assertThat(markdown.indexOf("Bailiff note")).isLessThan(markdown.indexOf("Risk assessment level"));
     }
 
     @Test
     void shouldShowEachNoteWithItsAuthorAndTimeAndTheRiskLevelWithItsReason() {
-        BailiffNoteEntity note = BailiffNoteEntity.builder()
-            .note("Rear gate is locked")
-            .authorFirstName("Sam")
-            .authorLastName("Jones")
-            .createdAt(Instant.parse("2026-02-01T16:20:00Z"))
-            .build();
+        BailiffNoteEntity note = note("Rear gate is locked", "Sam", "Jones", "2026-02-01T16:20:00Z");
 
         String markdown = RiskAssessmentTabMarkdown.internalSections(List.of(note), RiskLevel.HIGH, "Known violence");
 
         assertThat(markdown)
-            .contains(row("Note", "Rear gate is locked"))
+            .contains("<h3 class=\"govuk-heading-m\">Bailiff Note 1</h3>")
+            .contains(row("Note added", "Rear gate is locked"))
+            .contains(row("Date added", "1 Feb 2026 at 16:20pm"))
             .contains(row("Added by", "Sam Jones"))
-            .contains(row("Date and time", "1 Feb 2026 16:20pm"))
             .contains(row("Risk level", "High"))
-            .contains(row("Why the risk level is high", "Known violence"))
+            .contains(row("Why this is high risk", "Known violence"))
             .doesNotContain("Not added yet", "Not set yet");
+    }
+
+    @Test
+    void shouldNumberTheNotesWithTheNewestAsNoteOne() {
+        String markdown = RiskAssessmentTabMarkdown.internalSections(
+            List.of(note("Rear gate is locked", "Sam", "Jones", "2026-02-03T10:00:00Z"),
+                    note("Dog on site", "Alex", "Smith", "2026-02-01T16:20:00Z")),
+            null, null);
+
+        assertThat(markdown.indexOf("Bailiff Note 1")).isLessThan(markdown.indexOf("Bailiff Note 2"));
+        assertThat(markdown.indexOf("Rear gate is locked")).isBetween(
+            markdown.indexOf("Bailiff Note 1"), markdown.indexOf("Bailiff Note 2"));
+        assertThat(markdown.indexOf("Dog on site")).isGreaterThan(markdown.indexOf("Bailiff Note 2"));
     }
 
     @Test
     void shouldNotShowAReasonForAMediumRiskLevel() {
         String markdown = RiskAssessmentTabMarkdown.internalSections(List.of(), RiskLevel.MEDIUM, "old reason");
 
-        assertThat(markdown).contains(row("Risk level", "Medium")).doesNotContain("Why the risk level is high");
+        assertThat(markdown).contains(row("Risk level", "Medium")).doesNotContain("Why this is high risk");
     }
 
     @Test
@@ -95,7 +104,7 @@ class RiskAssessmentTabMarkdownTest {
             warrantAnswers(), Instant.parse("2026-10-10T09:00:00Z"), false);
 
         assertThat(markdown)
-            .contains("<h2 class=\"govuk-heading-l\">Claimant risk level</h2>")
+            .contains("<h2 class=\"govuk-heading-l\">Claimant risk assessment</h2>")
             .contains("Information provided by the claimant on 10 October 2026 when they were applying for "
                           + "enforcement");
     }
@@ -141,7 +150,7 @@ class RiskAssessmentTabMarkdownTest {
             .contains(row("Who do you want to evict?", "TVR HN<br>Test1 Testing1"))
             .contains(row("Do you know the defendants&#39; dates of birth?", "Yes"))
             .contains(row("What are the defendants&#39; dates of birth?", "TVR HN - 16 4 1991"))
-            .contains(row("Does anyone at the property pose a risk to the bailiff?", "Yes"))
+            .contains(row("Does anyone living at the property pose a risk to the bailiff?", "Yes"))
             .contains(row("What kind of risks do they pose to the bailiff?",
                           "Violent or aggressive behaviour<br>History of firearm possession"))
             .contains(row("How have they been violent or aggressive?", "Threw a chair"))
@@ -167,7 +176,7 @@ class RiskAssessmentTabMarkdownTest {
             RiskAssessmentTabMarkdown.answersOf(order, true), null, false);
 
         assertThat(markdown)
-            .contains(row("Does anyone at the property pose a risk to the bailiff?", "I&rsquo;m not sure"))
+            .contains(row("Does anyone living at the property pose a risk to the bailiff?", "I&rsquo;m not sure"))
             .doesNotContain("Do you want to evict everyone at the property?", "Who do you want to evict?",
                             "dates of birth");
     }
@@ -223,7 +232,7 @@ class RiskAssessmentTabMarkdownTest {
 
         assertThat(banner)
             .contains(RiskAssessmentTabMarkdown.UPDATE_BANNER)
-            .contains("<li>Does anyone at the property pose a risk to the bailiff?</li>")
+            .contains("<li>Does anyone living at the property pose a risk to the bailiff?</li>")
             .contains("<li>What kind of risks do they pose to the bailiff?</li>")
             .doesNotContain("<li>Is anyone living at the property vulnerable?</li>")
             .doesNotContain("<li>Who do you want to evict?</li>")
@@ -263,6 +272,15 @@ class RiskAssessmentTabMarkdownTest {
                                    .build())
             .build();
         return RiskAssessmentTabMarkdown.answersOf(order, false);
+    }
+
+    private static BailiffNoteEntity note(String text, String firstName, String lastName, String createdAt) {
+        return BailiffNoteEntity.builder()
+            .note(text)
+            .authorFirstName(firstName)
+            .authorLastName(lastName)
+            .createdAt(Instant.parse(createdAt))
+            .build();
     }
 
     private static DynamicStringListElement element(String code, String label) {

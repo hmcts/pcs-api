@@ -25,6 +25,8 @@ import uk.gov.hmcts.reform.pcs.enforcement.exception.EnforcementEventNotAvailabl
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
 
+import java.util.Locale;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -138,7 +140,8 @@ class SetRiskLevelTest extends BaseEventTest {
 
         verify(riskLevelService).setRiskLevel(TEST_CASE_REFERENCE, level, "Known history of violence");
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getConfirmationHeader()).isEqualTo("# Risk level set to " + level.getLabel());
+        assertThat(response.getConfirmationHeader())
+            .isEqualTo("# Risk level set to " + level.getLabel().toLowerCase(Locale.UK));
         assertThat(response.getConfirmationBody())
             .isEqualTo("Case number: 0000-0000-0000-1234\n\nWarrant number: " + WARRANT_NUMBER);
     }

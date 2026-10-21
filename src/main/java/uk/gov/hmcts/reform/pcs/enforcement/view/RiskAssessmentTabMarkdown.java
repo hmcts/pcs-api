@@ -38,17 +38,18 @@ import static uk.gov.hmcts.reform.pcs.enforcement.view.TabMarkup.summaryList;
 final class RiskAssessmentTabMarkdown {
 
     static final String BAILIFF_NOTE = "Bailiff note";
+    static final String NUMBERED_BAILIFF_NOTE = "Bailiff Note %d";
     static final String RISK_ASSESSMENT_LEVEL = "Risk assessment level";
-    static final String CLAIMANT_RISK_LEVEL = "Claimant risk level";
+    static final String CLAIMANT_RISK_ASSESSMENT = "Claimant risk assessment";
 
-    static final String NOTE = "Note";
+    static final String NOTE_ADDED = "Note added";
+    static final String DATE_ADDED = "Date added";
     static final String ADDED_BY = "Added by";
-    static final String DATE_AND_TIME = "Date and time";
     static final String RISK_LEVEL = "Risk level";
-    static final String RISK_LEVEL_REASON = "Why the risk level is high";
+    static final String RISK_LEVEL_REASON = "Why this is high risk";
 
     static final String NOTE_NOT_ADDED = "Not added yet (click on the 'select action' button above)";
-    static final String RISK_LEVEL_NOT_SET = "Not set yet (click on the 'select action' button above)";
+    static final String RISK_LEVEL_NOT_SET = "Not set yet (Click on the 'Select action' button above).";
     static final String NOT_ANSWERED = "Not answered";
     static final String PRINT = "Print (opens in a new tab)";
 
@@ -72,7 +73,7 @@ final class RiskAssessmentTabMarkdown {
     static final String WHO_TO_EVICT = "Who do you want to evict?";
     static final String DOB_KNOWN = "Do you know the defendants' dates of birth?";
     static final String DOB_DETAILS = "What are the defendants' dates of birth?";
-    static final String ANY_RISK = "Does anyone at the property pose a risk to the bailiff?";
+    static final String ANY_RISK = "Does anyone living at the property pose a risk to the bailiff?";
     static final String RISK_KINDS = "What kind of risks do they pose to the bailiff?";
     static final String VULNERABLE = "Is anyone living at the property vulnerable?";
     static final String VULNERABLE_WHO =
@@ -131,11 +132,16 @@ final class RiskAssessmentTabMarkdown {
         if (notes.isEmpty()) {
             blocks.add(paragraph(NOTE_NOT_ADDED));
         } else {
-            notes.forEach(note -> blocks.add(summaryList(List.of(
-                new Row(NOTE, note.getNote()),
-                new Row(ADDED_BY, BailiffNoteView.authorName(note)),
-                new Row(DATE_AND_TIME, BailiffNoteView.formatAddedOn(note.getCreatedAt()))
-            ))));
+            // The notes arrive newest first, so "Bailiff Note 1" is the most recent, as the designs number them.
+            for (int index = 0; index < notes.size(); index++) {
+                BailiffNoteEntity note = notes.get(index);
+                blocks.add(heading(3, NUMBERED_BAILIFF_NOTE.formatted(index + 1)));
+                blocks.add(summaryList(List.of(
+                    new Row(NOTE_ADDED, note.getNote()),
+                    new Row(DATE_ADDED, BailiffNoteView.formatAddedOn(note.getCreatedAt())),
+                    new Row(ADDED_BY, BailiffNoteView.authorName(note))
+                )));
+            }
         }
         blocks.add(heading(2, RISK_ASSESSMENT_LEVEL));
         if (riskLevel == null) {
@@ -166,7 +172,7 @@ final class RiskAssessmentTabMarkdown {
         }
         if (updated == null) {
             return TabMarkup.lines(List.of(
-                heading(2, CLAIMANT_RISK_LEVEL),
+                heading(2, CLAIMANT_RISK_ASSESSMENT),
                 paragraph(introduction),
                 summaryList(answerRows(original))
             ));
@@ -177,7 +183,7 @@ final class RiskAssessmentTabMarkdown {
             .map(answer -> List.of(answer.question(), answer.original(), answer.changed() ? answer.updated() : ""))
             .toList();
         return TabMarkup.lines(List.of(
-            heading(2, CLAIMANT_RISK_LEVEL),
+            heading(2, CLAIMANT_RISK_ASSESSMENT),
             paragraph(introduction),
             paragraph(update.formatted(updatedOn)),
             TabMarkup.table(List.of(QUESTION, ORIGINAL_ANSWER, UPDATED_ANSWER), rows)

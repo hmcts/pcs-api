@@ -26,7 +26,7 @@ import {
   viewAsEachDefendant,
 } from '../support/defendant-visibility';
 import { expectCheckYourAnswers } from '../support/schedule-eviction';
-import { expectBailiffConfirmationWithWarrantNumber } from '../support/bailiff-events';
+import { bailiffNotes, expectBailiffConfirmationWithWarrantNumber } from '../support/bailiff-events';
 import { RISK_ASSESSMENT_TAB } from '../support/case-tabs';
 import { expectEnforcementSection, openCaseTab, tabSections } from '../support/enforcement-status-tab';
 import { localUserName, localUsers } from '@config/local-stack.config';
@@ -143,10 +143,11 @@ Then(
     expect(tabName).toBe(RISK_ASSESSMENT_TAB);
     expect(world.enteredNote, 'a note added by this scenario').toBeDefined();
     await openCaseTab(page, requireCaseReference(world), tabName);
-    const [newest] = (await tabSections(page))[section]?.lists ?? [];
-    expect(newest?.['Note']).toBe(world.enteredNote);
-    expect(newest?.['Added by']).toBe(localUserName(localUsers.bailiff));
-    expect(newest?.['Date and time']).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}(am|pm)$/);
+    expect(Object.keys(await tabSections(page)), `the "${section}" section`).toContain(section);
+    const [newest] = await bailiffNotes(page);
+    expect(newest?.rows['Note added']).toBe(world.enteredNote);
+    expect(newest?.rows['Added by']).toBe(localUserName(localUsers.bailiff));
+    expect(newest?.rows['Date added']).toMatch(/^\d{1,2} [A-Z][a-z]{2} \d{4} at \d{2}:\d{2}(am|pm)$/);
   }
 );
 

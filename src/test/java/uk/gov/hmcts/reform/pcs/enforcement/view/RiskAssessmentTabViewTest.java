@@ -90,7 +90,7 @@ class RiskAssessmentTabViewTest {
         assertThat(enforcementOrder.getShowRiskAssessmentTab()).isEqualTo(YesOrNo.YES);
         assertThat(enforcementOrder.getRiskAssessmentPrintMarkdown()).contains("#Risk%20assessment");
         assertThat(enforcementOrder.getRiskAssessmentInternalMarkdown()).contains("Bailiff note");
-        assertThat(enforcementOrder.getRiskAssessmentClaimantMarkdown()).contains("Claimant risk level");
+        assertThat(enforcementOrder.getRiskAssessmentClaimantMarkdown()).contains("Claimant risk assessment");
     }
 
     @Test

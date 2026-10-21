@@ -42,15 +42,16 @@ Feature: Bailiff sets the eviction risk level
     Given I am on the "Set risk level" screen
     When I select "<level>" and provide any required reason
     And I submit the event
-    Then I see the "Risk level set to <level>" confirmation with the case number and warrant number
+    Then I see the "Risk level set to <confirmed level>" confirmation with the case number and warrant number
     And the "Risk assessment" tab shows the risk level "<level>"
     And the risk level is visible to internal users only
     And the "Review risks and set level" task is completed
 
+    # The confirmation lower-cases the level; the tab shows it capitalised.
     Examples:
-      | level  |
-      | High   |
-      | Medium |
+      | level  | confirmed level |
+      | High   | high            |
+      | Medium | medium          |
 
   @HDPI-7343 @HDPI-7350
   Scenario: High risk reason is shown on the risk assessment tab

@@ -7,6 +7,7 @@ import { errorSummaries } from './error-summary';
 import { answerRow } from './schedule-eviction';
 import { submitEventAs } from './event-api';
 import { expectSignedInAs, requireEmailFor } from './session';
+import { tabBlocks } from './enforcement-status-tab';
 
 export const ALLOCATE_BAILIFF = 'Allocate case to bailiff';
 export const SET_RISK_LEVEL = 'Set risk level';
@@ -77,11 +78,19 @@ export async function changeAllocatedBailiff(page: Page): Promise<void> {
 
 export const riskAssessmentFields = {
   riskLevel: 'Risk level',
-  riskLevelReason: 'Why the risk level is high',
-  note: 'Note',
+  riskLevelReason: 'Why this is high risk',
+  note: 'Note added',
   noteAddedBy: 'Added by',
-  noteDateTime: 'Date and time',
+  noteDateTime: 'Date added',
 };
+
+/** Each note on the risk assessment tab is its own numbered sub-section, "Bailiff Note 1" being the newest. */
+export async function bailiffNotes(page: Page): Promise<{ number: number; rows: Record<string, string> }[]> {
+  const blocks = await tabBlocks(page);
+  return blocks
+    .map(block => ({ number: Number(/^Bailiff Note (\d+)$/.exec(block.heading)?.[1]), rows: block.rows }))
+    .filter(note => !Number.isNaN(note.number));
+}
 
 export const continueButton = (page: Page) => page.getByRole('button', { name: 'Continue', exact: true });
 
@@ -144,7 +153,7 @@ export async function setRiskLevelAsBailiff(level: string, reason = 'Known histo
     riskLevel: level.toUpperCase(),
     ...(level === setRiskLevel.high ? { riskLevelReason: reason } : {}),
   });
-  expect(`${confirmation.header ?? ''} ${confirmation.body ?? ''}`).toContain(`Risk level set to ${level}`);
+  expect(`${confirmation.header ?? ''} ${confirmation.body ?? ''}`).toContain(`Risk level set to ${level.toLowerCase()}`);
   expectSignedInAs('bailiff');
 }
 

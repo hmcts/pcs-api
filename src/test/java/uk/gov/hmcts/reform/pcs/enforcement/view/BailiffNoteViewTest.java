@@ -37,13 +37,13 @@ class BailiffNoteViewTest {
     @ParameterizedTest
     @CsvSource({
         // GMT
-        "2026-02-01T16:20:00Z, 1 Feb 2026 16:20pm",
-        "2026-02-03T09:05:00Z, 3 Feb 2026 09:05am",
-        "2026-02-03T00:00:00Z, 3 Feb 2026 00:00am",
-        "2026-02-03T12:00:00Z, 3 Feb 2026 12:00pm",
+        "2026-02-01T16:20:00Z, 1 Feb 2026 at 16:20pm",
+        "2026-02-03T09:05:00Z, 3 Feb 2026 at 09:05am",
+        "2026-02-03T00:00:00Z, 3 Feb 2026 at 00:00am",
+        "2026-02-03T12:00:00Z, 3 Feb 2026 at 12:00pm",
         // BST: shown in UK time, an hour ahead of UTC
-        "2026-07-14T15:20:00Z, 14 Jul 2026 16:20pm",
-        "2026-07-14T23:30:00Z, 15 Jul 2026 00:30am"
+        "2026-07-14T15:20:00Z, 14 Jul 2026 at 16:20pm",
+        "2026-07-14T23:30:00Z, 15 Jul 2026 at 00:30am"
     })
     void shouldFormatTheTimeInUkTimeAsTheDesignsShow(String createdAt, String expected) {
         assertThat(BailiffNoteView.formatAddedOn(Instant.parse(createdAt))).isEqualTo(expected);
@@ -62,8 +62,8 @@ class BailiffNoteViewTest {
         assertThat(notes).extracting(ListValue::getId)
             .containsExactly(newer.getId().toString(), older.getId().toString());
         assertThat(notes).extracting(ListValue::getValue).containsExactly(
-            new BailiffNote("Rear gate is locked", "Sam Jones", "3 Feb 2026 10:00am"),
-            new BailiffNote("Dog on site", "Alex Smith", "1 Feb 2026 16:20pm"));
+            new BailiffNote("Rear gate is locked", "Sam Jones", "3 Feb 2026 at 10:00am"),
+            new BailiffNote("Dog on site", "Alex Smith", "1 Feb 2026 at 16:20pm"));
     }
 
     @Test

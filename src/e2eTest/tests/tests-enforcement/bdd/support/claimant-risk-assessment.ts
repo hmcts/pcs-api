@@ -24,7 +24,7 @@ export const claimantRiskAssessmentFields = {
   updatedAnswer: 'Updated answer',
 };
 
-export const CLAIMANT_RISK_SECTION = 'Claimant risk level';
+export const CLAIMANT_RISK_SECTION = 'Claimant risk assessment';
 export const UPDATE_BANNER = 'The claimant has updated their risk assessment.';
 
 export const answerDates = {
@@ -33,13 +33,9 @@ export const answerDates = {
   updatedForClaimant: (date: string) => `You updated this information on ${date}`,
 };
 
-const TAB_WORDINGS: Record<string, string> = {
-  [riskQuestions.anyRiskToBailiff]: 'Does anyone at the property pose a risk to the bailiff?',
-};
-
+/** The tab asks the claimant's questions in the same words as the pages that captured them. */
 export function tabQuestion(question: string): string {
-  const pageWording = riskQuestion(question);
-  return TAB_WORDINGS[pageWording] ?? pageWording;
+  return riskQuestion(question);
 }
 
 const followUps = {

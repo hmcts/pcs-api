@@ -50,7 +50,7 @@ const isDefendant = (user?: string): boolean => user === CITIZEN_DEFENDANT || us
 const ENFORCEMENT_TABS = [ENFORCEMENT_STATUS_TAB, RISK_ASSESSMENT_TAB];
 
 const RISK_INTERNAL_SECTIONS = ['Bailiff note', 'Risk assessment level'];
-const CLAIMANT_RISK_SECTION = 'Claimant risk level';
+const CLAIMANT_RISK_SECTION = 'Claimant risk assessment';
 
 function tabNotBuilt(tabName: string) {
   return { summary: `the "${tabName}" tab` };

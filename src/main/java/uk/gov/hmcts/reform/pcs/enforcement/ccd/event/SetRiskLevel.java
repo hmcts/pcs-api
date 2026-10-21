@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.RiskLevelService;
 
 import java.util.List;
+import java.util.Locale;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
@@ -92,8 +93,9 @@ public class SetRiskLevel implements CCDConfig<PCSCase, State, UserRole> {
         if (set.refused()) {
             return errorResponse(set.errors());
         }
+        // Lower cased here rather than on the enum: the risk assessment tab shows the same label capitalised.
         return SubmitResponse.<State>builder()
-            .confirmationHeader("# Risk level set to " + riskLevel.getLabel())
+            .confirmationHeader("# Risk level set to " + riskLevel.getLabel().toLowerCase(Locale.UK))
             .confirmationBody(ConfirmationNumbers.caseAndWarrant(
                 caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference), set.change()))
             .build();

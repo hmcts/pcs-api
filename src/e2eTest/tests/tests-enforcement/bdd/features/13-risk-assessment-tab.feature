@@ -42,8 +42,8 @@ Feature: Risk assessment tab
     When a bailiff opens the "Risk assessment" tab
     Then I see the green print button between the tabs and the "Bailiff note" section
     And "Bailiff note" shows "Not added yet (click on the 'select action' button above)"
-    And "Risk assessment level" shows "Not set yet (click on the 'select action' button above)"
-    And "Claimant risk level" shows "Information provided by the claimant on 10 October 2026 when they were applying for enforcement"
+    And "Risk assessment level" shows "Not set yet (Click on the 'Select action' button above)."
+    And "Claimant risk assessment" shows "Information provided by the claimant on 10 October 2026 when they were applying for enforcement"
 
   @HDPI-7350
   Scenario: Claimant risk answers shown to bailiffs
@@ -53,7 +53,7 @@ Feature: Risk assessment tab
       | Do you want to evict everyone at the property?          |
       | Who do you want to evict?                               |
       | Do you know the defendants' dates of birth?             |
-      | Does anyone at the property pose a risk to the bailiff? |
+      | Does anyone living at the property pose a risk to the bailiff? |
       | What kind of risks do they pose to the bailiff?         |
       | How have they been violent or aggressive?               |
       | What is their history of criminal or antisocial behaviour? |

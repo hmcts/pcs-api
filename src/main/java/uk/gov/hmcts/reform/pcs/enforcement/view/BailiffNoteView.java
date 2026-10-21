@@ -28,10 +28,10 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 public class BailiffNoteView {
 
     /**
-     * "1 Feb 2026 16:20pm": 24 hour time with a lower case am / pm marker, as in the designs.
+     * "1 Feb 2026 at 16:20pm": 24 hour time with a lower case am / pm marker, as in the designs.
      */
     static final DateTimeFormatter ADDED_ON_FORMAT = new DateTimeFormatterBuilder()
-        .appendPattern("d MMM yyyy HH:mm")
+        .appendPattern("d MMM yyyy 'at' HH:mm")
         .appendText(ChronoField.AMPM_OF_DAY, Map.of(0L, "am", 1L, "pm"))
         .toFormatter(Locale.UK)
         .withZone(UK_ZONE_ID);
