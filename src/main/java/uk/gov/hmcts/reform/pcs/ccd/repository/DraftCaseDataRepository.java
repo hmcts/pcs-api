@@ -33,9 +33,6 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, String idamUserId, UUID partyId);
-
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String idamUserId);
 
@@ -55,4 +52,5 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
           AND d.createdAt < :cutoff
         """)
     int deleteByEventIdAndCutoff(@Param("eventId") EventId eventId, @Param("cutoff") Instant cutoff);
+
 }
