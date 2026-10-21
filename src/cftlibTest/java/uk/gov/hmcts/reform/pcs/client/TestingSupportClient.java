@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 
+import java.time.Duration;
+
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static uk.gov.hmcts.reform.pcs.auth.ServiceAuthorizationGenerator.generateTestS2SToken;
 
@@ -28,6 +30,19 @@ public class TestingSupportClient {
             .header("Authorization", authorisation)
             .header("ServiceAuthorization", serviceAuthorisation)
             .body(partyEmail)
+            .retrieve()
+            .toBodilessEntity();
+    }
+
+    public void executeFutureDbSchedulerTasks(String taskName, Duration windowDuration) {
+        restClient
+            .post()
+            .uri(uriBuilder -> uriBuilder.path("/execute-future-db-scheduler-tasks")
+                .queryParam("taskName", taskName)
+                .queryParam("windowDuration", windowDuration.toString())
+                .build())
+            .contentType(APPLICATION_JSON)
+            .header("ServiceAuthorization", serviceAuthorisation)
             .retrieve()
             .toBodilessEntity();
     }
