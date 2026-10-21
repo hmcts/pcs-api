@@ -57,7 +57,7 @@ class ClaimantEnforcementDocumentViewTest {
     private final PcsCaseEntity pcsCaseEntity = caseWithDocuments(
         entity(CLAIM_FORM_ID, CaseFileCategory.STATEMENTS_OF_CASE.getId(), DocumentType.CLAIM),
         entity(EVIDENCE_ID, ENFORCEMENT, DocumentType.PHOTOGRAPHIC_EVIDENCE),
-        entity(WARRANT_ID, ENFORCEMENT, DocumentType.WARRANT_OF_POSSESSION),
+        entity(WARRANT_ID, ENFORCEMENT, DocumentType.WARRANT_OF_RESTITUTION),
         entity(NOTICE_OF_APPOINTMENT_ID, ENFORCEMENT, DocumentType.NOTICE_OF_APPOINTMENT)
     );
 

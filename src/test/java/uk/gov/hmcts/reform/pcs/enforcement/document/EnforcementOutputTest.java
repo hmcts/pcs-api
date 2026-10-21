@@ -41,10 +41,10 @@ class EnforcementOutputTest {
 
     @ParameterizedTest
     @EnumSource(SelectEnforcementType.class)
-    void shouldShowTheClaimantAWritButNotAWarrant(SelectEnforcementType type) {
-        boolean isWrit = type == SelectEnforcementType.WRIT || type == SelectEnforcementType.WRIT_OF_RESTITUTION;
+    void shouldShowTheClaimantEveryApprovedOutputExceptAWarrantOfRestitution(SelectEnforcementType type) {
+        boolean visible = type != SelectEnforcementType.WARRANT_OF_RESTITUTION;
 
-        assertThat(EnforcementOutput.forApproval(type).isVisibleToClaimant()).isEqualTo(isWrit);
+        assertThat(EnforcementOutput.forApproval(type).isVisibleToClaimant()).isEqualTo(visible);
     }
 
     @Test
@@ -54,15 +54,14 @@ class EnforcementOutputTest {
         assertThat(NOTICE_OF_APPOINTMENT.isRepeatable()).isTrue();
         assertThat(NOTICE_OF_EVICTION.getSeal()).isEqualTo(EnforcementOutput.Seal.COUNTY_COURT);
         assertThat(NOTICE_OF_APPOINTMENT.getSeal()).isEqualTo(EnforcementOutput.Seal.NONE);
-        assertThat(NOTICE_OF_EVICTION.isVisibleToClaimant()).isFalse();
+        assertThat(NOTICE_OF_EVICTION.isVisibleToClaimant()).isTrue();
         assertThat(NOTICE_OF_APPOINTMENT.isVisibleToClaimant()).isTrue();
     }
 
     @Test
-    void shouldTreatOnlyTheWarrantsAndTheNoticeOfEvictionAsInternalOnly() {
+    void shouldTreatOnlyTheWarrantOfRestitutionAsInternalOnly() {
         assertThat(Arrays.stream(DocumentType.values()).filter(EnforcementOutput::isInternalOnly))
-            .containsExactlyInAnyOrder(DocumentType.WARRANT_OF_POSSESSION, DocumentType.WARRANT_OF_RESTITUTION,
-                                       DocumentType.NOTICE_OF_EVICTION);
+            .containsExactly(DocumentType.WARRANT_OF_RESTITUTION);
         assertThat(EnforcementOutput.isInternalOnly(null)).isFalse();
     }
 

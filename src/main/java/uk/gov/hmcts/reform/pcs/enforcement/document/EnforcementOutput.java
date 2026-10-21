@@ -25,7 +25,7 @@ public enum EnforcementOutput {
     RISK_ASSESSMENT("Risk assessment", "risk-assessment", DocumentType.RISK_ASSESSMENT, Seal.NONE, true, false),
 
     WARRANT_OF_POSSESSION("Warrant of possession", "warrant-of-possession", DocumentType.WARRANT_OF_POSSESSION,
-                          Seal.COUNTY_COURT, false, false),
+                          Seal.COUNTY_COURT, true, false),
     WRIT_OF_POSSESSION("Writ of possession", "writ-of-possession", DocumentType.WRIT_OF_POSSESSION,
                        Seal.HIGH_COURT, true, false),
     WARRANT_OF_RESTITUTION("Warrant of restitution", "warrant-of-restitution", DocumentType.WARRANT_OF_RESTITUTION,
@@ -34,7 +34,7 @@ public enum EnforcementOutput {
                         Seal.HIGH_COURT, true, false),
 
     NOTICE_OF_EVICTION("Notice of eviction", "notice-of-eviction", DocumentType.NOTICE_OF_EVICTION,
-                       Seal.COUNTY_COURT, false, true),
+                       Seal.COUNTY_COURT, true, true),
     NOTICE_OF_APPOINTMENT("Notice of appointment", "notice-of-appointment", DocumentType.NOTICE_OF_APPOINTMENT,
                           Seal.NONE, true, true);
 
