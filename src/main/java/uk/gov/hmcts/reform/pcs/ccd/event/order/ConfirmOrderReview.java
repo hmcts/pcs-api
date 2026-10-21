@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
@@ -30,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
-import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -66,7 +66,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final OrderCaseContext orderCaseContext;
     private final CaseReviewDateService caseReviewDateService;
     private final SchedulerClient schedulerClient;
-    private final ClientContextRetriever clientContextRetriever;
     private final SecurityContextService securityContextService;
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
@@ -94,7 +93,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
-        UUID orderId = clientContextRetriever.getOrderId()
+        UUID orderId = start.clientContext().as(OrderLink.class).map(OrderLink::orderId)
             .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
