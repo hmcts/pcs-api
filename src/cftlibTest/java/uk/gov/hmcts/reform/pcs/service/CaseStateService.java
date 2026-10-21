@@ -24,8 +24,8 @@ public class CaseStateService {
             .until(() -> caseStateMatches(caseReference, state, authorisation));
     }
 
-    private boolean caseStateMatches(long caseReference, State state, String authorisaion) {
-        CaseDetails caseDetails = ccdClient.getCaseDetails(caseReference, authorisaion);
+    private boolean caseStateMatches(long caseReference, State state, String authorisation) {
+        CaseDetails caseDetails = ccdClient.getCaseDetails(caseReference, authorisation);
         return Objects.equals(caseDetails.getState(), state.name());
     }
 
