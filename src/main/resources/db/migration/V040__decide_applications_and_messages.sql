@@ -1,3 +1,13 @@
+-- A judge decides a general application with an order on it, and court staff and judges message each other on a case.
+
+-- An order deciding an application names it, and a judge can have a draft for each application beside their draft
+-- for the case.
+ALTER TABLE orders ADD COLUMN gen_app_id UUID REFERENCES general_application(id);
+
+DROP INDEX orders_one_draft_per_author_idx;
+CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id, gen_app_id)
+    NULLS NOT DISTINCT WHERE state = 'DRAFT';
+
 -- Messages between court staff and judges on a case: a thread with a subject, which a sender starts and either side
 -- replies to until someone closes it. A message can be about an application, and a judge's order can carry one.
 CREATE TABLE case_message (

@@ -217,7 +217,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         GenAppEntity genApp = pcsCase.findGenApp(genAppId)
             .orElseThrow(() -> ExternalRejection.because("The application is not on this case"));
         if (!genApp.isOpen()) {
-            throw ExternalRejection.because("The application has already been decided");
+            throw ExternalRejection.because("The application is not open");
         }
         return genApp;
     }

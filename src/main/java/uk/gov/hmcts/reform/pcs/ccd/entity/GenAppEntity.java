@@ -23,7 +23,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.ApplicationOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -132,13 +131,9 @@ public class GenAppEntity {
 
     private BigDecimal feeAmountReceived;
 
-    /** What the issued order deciding the application decided. */
-    @Enumerated(EnumType.STRING)
-    private ApplicationOutcome outcome;
-
-    /** An issued application is open until an order concludes it; listing it for a hearing leaves it open. */
+    /** An issued application is open; nothing records yet what an order decided about it. */
     public boolean isOpen() {
-        return state == GenAppState.GEN_APP_ISSUED && (outcome == null || outcome == ApplicationOutcome.LISTED);
+        return state == GenAppState.GEN_APP_ISSUED;
     }
 
 }

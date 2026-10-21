@@ -52,8 +52,8 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
     }
 
     /**
-     * Open means issued and, for an application, not concluded by an order: nothing yet closes a
-     * counterclaim. An order deciding an application has that application.
+     * Open means issued: nothing yet closes an application or a counterclaim. An order deciding an application
+     * has that application.
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
