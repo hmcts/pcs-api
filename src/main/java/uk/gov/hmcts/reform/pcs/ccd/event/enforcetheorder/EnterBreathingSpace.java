@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.BreathingSpacePageConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterBreathingSpace;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
@@ -26,7 +25,6 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
 
     private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
-    private CaseNameFormatter caseNameFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
