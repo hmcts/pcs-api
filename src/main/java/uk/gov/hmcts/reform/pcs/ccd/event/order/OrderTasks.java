@@ -49,10 +49,10 @@ public class OrderTasks {
         camundaService.createTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, description);
     }
 
-    public void askJudgeToChange(long caseReference, OrderStepEntity returned) {
+    public void askJudgeToChange(long caseReference, OrderStepEntity returned, String query) {
         OrderEntity order = returned.getOrder();
         String description = taskDescriptionService.createReviewOrderQueryDescription(
-            currentUserName(COURT_STAFF), inWords(returned.getOrderType()), caseReference,
+            currentUserName(COURT_STAFF), inWords(returned.getOrderType()), query,
             eventUrl(caseReference, "ext:makeOrder", order));
         camundaService.createTask(caseReference, TaskType.REVIEW_ORDER_QUERY, description,
             order.getAuthorIdamUserId());

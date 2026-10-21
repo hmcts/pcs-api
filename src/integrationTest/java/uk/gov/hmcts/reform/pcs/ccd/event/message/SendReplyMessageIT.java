@@ -147,7 +147,7 @@ class SendReplyMessageIT extends OrderEventIT {
             null));
 
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
-            .contains("Message with free form order", "Serve this by post.", "Court staff");
+            .contains("Free form order", "Serve this by post.", "Court staff");
     }
 
     @Test

@@ -29,3 +29,6 @@ CREATE TABLE case_message_entry (
 );
 
 CREATE INDEX case_message_entry_message_idx ON case_message_entry(message_id);
+
+-- Court staff's query on an order they return is in the order's message thread, not a case note.
+ALTER TABLE order_steps DROP COLUMN note_id;
