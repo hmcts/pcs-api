@@ -43,7 +43,7 @@ class EnforcementStatusTabMarkdownTest {
         String markdown = render(warrant("WP-00000001", EnforcementStatus.AWAITING_SCHEDULING).build(), null);
 
         assertThat(markdown)
-            .contains("<p class=\"govuk-body\">Not yet served</p>")
+            .contains(row("Date of eviction notice served", "Not yet served"))
             .contains(row("Eviction date", "Not yet set"))
             .contains("<p class=\"govuk-body\">The claimant has not confirmed the eviction yet.</p>")
             .contains("<p class=\"govuk-body\">No return recorded yet</p>");
@@ -77,8 +77,7 @@ class EnforcementStatusTabMarkdownTest {
 
         assertThat(markdown)
             .contains(row("Service", "Without notice: the court has given permission to dispense with service"))
-            .contains(row("Date served", "Not applicable"))
-            .contains(row("Time served", "Not applicable"))
+            .contains(row("Date of eviction notice served", "Not applicable"))
             .contains(row("How it was served", "Not applicable"))
             .contains(row("Eviction date", "30 June 2027 at 02:00 PM"));
     }

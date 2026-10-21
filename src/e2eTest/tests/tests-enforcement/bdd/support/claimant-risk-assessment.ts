@@ -11,7 +11,7 @@ export const riskQuestions = {
 };
 
 const FEATURE_WORDINGS: Record<string, string> = {
-  'Does anyone at the property pose a risk to the bailiff?': riskQuestions.anyRiskToBailiff,
+  'Does anyone living at the property pose a risk to the bailiff?': riskQuestions.anyRiskToBailiff,
 };
 
 export function riskQuestion(featureWording: string): string {

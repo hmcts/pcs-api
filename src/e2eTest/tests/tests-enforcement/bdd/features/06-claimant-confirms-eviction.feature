@@ -37,7 +37,7 @@ Feature: Claimant confirms the eviction appointment
   @HDPI-7552 @HDPI-7547 @open-question
   Scenario: Claimant updates the risk assessment while confirming
     When I start the "Confirm the eviction date" event
-    And I change my answer to "Does anyone at the property pose a risk to the bailiff?" to "Yes"
+    And I change my answer to "Does anyone living at the property pose a risk to the bailiff?" to "Yes"
     And I submit the event
     Then the updated answer is stored alongside my original answer with today's date
     And a "Review updated risk information" task is created for the allocated bailiff

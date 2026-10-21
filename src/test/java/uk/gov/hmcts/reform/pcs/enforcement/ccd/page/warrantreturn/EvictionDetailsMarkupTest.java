@@ -37,8 +37,8 @@ class EvictionDetailsMarkupTest {
             .contains("<h2 class=\"govuk-heading-m\">Eviction details</h2>")
             .contains("Claimant type</th>\n      <td class=\"govuk-table__cell\">"
                           + "Registered provider of social housing or local authority</td>")
-            .contains("Claimant name</th>\n      <td class=\"govuk-table__cell\">Treetops Housing &amp; Co</td>")
-            .contains("Defendant names</th>\n      <td class=\"govuk-table__cell\">Sam Jones<br>Alex Smith</td>")
+            .contains("Claimants</th>\n      <td class=\"govuk-table__cell\">Treetops Housing &amp; Co</td>")
+            .contains("Defendants</th>\n      <td class=\"govuk-table__cell\">Sam Jones<br>Alex Smith</td>")
             .doesNotContain("Warrant number");
     }
 
@@ -73,7 +73,7 @@ class EvictionDetailsMarkupTest {
             .build();
 
         assertThat(underTest.build(pcsCase)).contains("Pat Lee vs Sam Jones")
-            .contains("Claimant name</th>\n      <td class=\"govuk-table__cell\">Pat Lee</td>");
+            .contains("Claimants</th>\n      <td class=\"govuk-table__cell\">Pat Lee</td>");
     }
 
     private static Party named(String firstName, String lastName) {

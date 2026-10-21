@@ -42,11 +42,11 @@ public class EvictionDetailsMarkup {
                   <td class="govuk-table__cell">%s</td>
                 </tr>
                 <tr class="govuk-table__row">
-                  <th scope="row" class="govuk-table__header">Claimant name</th>
+                  <th scope="row" class="govuk-table__header">Claimants</th>
                   <td class="govuk-table__cell">%s</td>
                 </tr>
                 <tr class="govuk-table__row">
-                  <th scope="row" class="govuk-table__header">Defendant names</th>
+                  <th scope="row" class="govuk-table__header">Defendants</th>
                   <td class="govuk-table__cell">%s</td>
                 </tr>
               </tbody>

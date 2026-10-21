@@ -28,8 +28,6 @@ final class EnforcementStatusTabMarkdown {
     static final String STATUS = "Status";
     static final String HIGH_COURT_TRANSFER_DATE = "Date of transfer to the High Court";
     static final String SERVICE = "Service";
-    static final String DATE_SERVED = "Date served";
-    static final String TIME_SERVED = "Time served";
     static final String NOTICE_SERVED = "Date of eviction notice served";
     static final String HOW_SERVED = "How it was served";
     static final String EVICTION_DATE = "Eviction date";
@@ -119,14 +117,13 @@ final class EnforcementStatusTabMarkdown {
         if (Boolean.TRUE.equals(enforcement.getDispenseWithService())) {
             return summaryList(List.of(
                 new Row(SERVICE, WITHOUT_NOTICE),
-                new Row(DATE_SERVED, NOT_APPLICABLE),
-                new Row(TIME_SERVED, NOT_APPLICABLE),
+                new Row(NOTICE_SERVED, NOT_APPLICABLE),
                 new Row(HOW_SERVED, NOT_APPLICABLE)
             ));
         }
         LocalDateTime servedAt = enforcement.getNoticeServedAt();
         if (servedAt == null) {
-            return paragraph(NOT_YET_SERVED);
+            return summaryList(List.of(new Row(NOTICE_SERVED, NOT_YET_SERVED)));
         }
         List<Row> rows = new ArrayList<>();
         rows.add(new Row(NOTICE_SERVED, dateAndTime(servedAt)));

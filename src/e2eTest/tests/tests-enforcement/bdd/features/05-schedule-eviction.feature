@@ -94,7 +94,7 @@ Feature: Bailiff schedules the eviction
     And I see "deliver the completed form to the defendants" under "What you need to do next"
     And I see "return to this service and mark the 'notice of eviction' as served" under "What you need to do next"
     And I see a link "go to Case File View (same service, opens in a new tab)"
-    And the "Enforcement status" tab shows the scheduled eviction date and time under "Scheduled eviction"
+    And the "Eviction status" tab shows the scheduled eviction date and time under "Scheduled eviction"
     And the enforcement status changes to "Awaiting claimant confirmation"
 
   @HDPI-7354 @HDPI-8442

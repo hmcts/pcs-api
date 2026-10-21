@@ -76,13 +76,13 @@ Feature: Bailiff marks the notice of eviction as served
     Given I served the notice on "15 March 2026" at "08:00" "by hand to the occupant"
     When I submit the event
     Then I see the confirmation with the case number and warrant number
-    And the "Enforcement status" tab shows "15 March 2026" at "08:00 AM" and "by hand to the occupant" under "Eviction notice"
+    And the "Eviction status" tab shows "15 March 2026" at "08:00 AM" and "by hand to the occupant" under "Eviction notice"
     And the "Mark notice of eviction as served" task is completed
 
   @HDPI-7658 @HDPI-8442 @HDPI-7354 @HDPI-7539
   Scenario: Serving the notice makes the enforcement visible to defendants
     When I submit the event
-    Then defendants can see the "Enforcement status" tab
+    Then defendants can see the "Eviction status" tab
     And defendants can see the "Enforcement" folder in case file view
     And the "notice of eviction" is visible to defendants
     And citizen defendants see the "notice of eviction" under "Orders and notices from the court" in pcs-frontend
@@ -91,7 +91,7 @@ Feature: Bailiff marks the notice of eviction as served
   @HDPI-7658 @not-filmed
   Scenario: Without notice eviction
     Given the court has given permission to dispense with service
-    When I open the "Enforcement status" tab
+    When I open the "Eviction status" tab
     Then it shows that the eviction is without notice
     And the notice served date and time show as "Not applicable"
-    And defendants cannot see the "Enforcement status" tab
+    And defendants cannot see the "Eviction status" tab

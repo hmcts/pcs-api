@@ -17,7 +17,7 @@ export const warrantReturn = {
   evictionDateTimeField: '#warrantReturnEvictionDateTime',
   additionalDetailsLabel: 'Additional details',
   evictionDetailsHeading: 'Eviction details',
-  evictionDetailsRows: ['Claimant type', 'Claimant name', 'Defendant names'],
+  evictionDetailsRows: ['Claimant type', 'Claimants', 'Defendants'],
   checkYourAnswers: 'Check your answers',
   saveAndContinue: 'Save and continue',
   final: 'Final',

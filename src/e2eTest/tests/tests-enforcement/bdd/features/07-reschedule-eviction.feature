@@ -59,7 +59,7 @@ Feature: Bailiff reschedules the eviction
     And the confirmation says "We've sent an email to the claimant with the rescheduled eviction date."
     And I see "find and print the 'notice of eviction' (form N54)" under "What you need to do next"
     And I see a link "return to Case File View (same service, opens in a new tab)"
-    And the "Enforcement status" tab "Scheduled eviction" shows only the new date and time
+    And the "Eviction status" tab "Scheduled eviction" shows only the new date and time
     And the enforcement status changes to "Awaiting claimant confirmation"
     And the "Reschedule eviction" task is completed
 

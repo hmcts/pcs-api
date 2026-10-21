@@ -113,8 +113,8 @@ class ClaimantRiskAssessmentPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(shown.getRiskAssessmentClaimantMarkdown())
             .contains("Information provided by the claimant on")
             .contains("The claimant updated this information on")
-            .contains("<th scope=\"row\" class=\"govuk-table__header\">Does anyone at the property pose a risk to the "
-                          + "bailiff?</th><td class=\"govuk-table__cell\">No</td>"
+            .contains("<th scope=\"row\" class=\"govuk-table__header\">Does anyone living at the property pose a "
+                          + "risk to the bailiff?</th><td class=\"govuk-table__cell\">No</td>"
                           + "<td class=\"govuk-table__cell\">Yes</td>")
             .contains("<th scope=\"row\" class=\"govuk-table__header\">Is it difficult to access the property?</th>"
                           + "<td class=\"govuk-table__cell\">No</td><td class=\"govuk-table__cell\"></td>");

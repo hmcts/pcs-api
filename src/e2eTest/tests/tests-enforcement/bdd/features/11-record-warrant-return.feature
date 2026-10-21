@@ -67,7 +67,7 @@ Feature: Bailiff records the warrant return
     When I start the "Record warrant return" event
     Then I see the case number, the possession property address and "claimant name vs defendant name"
     And the warrant number is not shown in the header
-    And I see the "Eviction details" table with claimant type, claimant name and defendant names
+    And I see the "Eviction details" table with claimant type, claimants and defendants
     And I see a mandatory "Return" drop down with "Final" and "Interim"
 
   # Choosing "Final" reveals the Outcome drop down but not a Return name: the three Return name fields are

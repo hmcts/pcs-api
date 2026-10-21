@@ -149,7 +149,7 @@ Then(
   }
 );
 
-Then('I see the {string} table with claimant type, claimant name and defendant names', async ({ page }, heading: string) => {
+Then('I see the {string} table with claimant type, claimants and defendants', async ({ page }, heading: string) => {
   expect(heading).toBe(warrantReturn.evictionDetailsHeading);
   await expectEvictionDetailsTable(page);
 });
