@@ -38,7 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -88,7 +88,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
     private final OrganisationRepository organisationRepository;
@@ -131,7 +131,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         PartyEntity matchedParty = matches.getFirst();
-        OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
+        OrganisationDetailsResponse organisation = organisationService.getOrganisationDetails(context.userId());
         if (isNull(organisation)) {
             return NocAnswersResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
         }
@@ -152,7 +152,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         PartyEntity matchedParty = matchingDefendants(pcsCase, request).getFirst();
         String currentUserId = currentUserId(context);
         OrganisationDetailsResponse organisationDetails =
-            organisationDetailsService.getOrganisationDetails(currentUserId);
+            organisationService.getOrganisationDetails(currentUserId);
 
         if (isNull(organisationDetails)) {
             return NocSubmissionResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
