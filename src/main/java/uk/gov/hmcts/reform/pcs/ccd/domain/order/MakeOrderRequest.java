@@ -6,10 +6,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What the frontend sends when a judge acts on their order: the action, and the order as the judge
- * last saw it, naming the version the change is made from.
+ * What the frontend sends when a judge saves or submits their order; only a returned order has a task,
+ * and only an order made for a hearing has the hearing's facts and note.
  */
-public record MakeOrderRequest(Action action, OrderChange order) {
+public record MakeOrderRequest(Action action, OrderChange order, String taskId, HearingChange hearing) {
+
+    public MakeOrderRequest(Action action, OrderChange order, String taskId) {
+        this(action, order, taskId, null);
+    }
 
     public enum Action {
         SAVE_DRAFT,
@@ -22,8 +26,16 @@ public record MakeOrderRequest(Action action, OrderChange order) {
      */
     public record OrderChange(UUID id,
                               long version,
-                              String orderType,
+                              OrderType orderType,
                               Map<String, Object> formData,
                               JsonNode docweaveSnapshot) {
+    }
+
+    /**
+     * The hearing the order is for, with the case's facts and the hearing's note as the judge left them,
+     * and the version of the hearing's facts the judge started from (null if none were recorded).
+     */
+    /** The hearing the order is for, with its facts and note only if the judge changed them. */
+    public record HearingChange(int id, Long version, OrderStart.CaseFacts caseFacts, String note) {
     }
 }

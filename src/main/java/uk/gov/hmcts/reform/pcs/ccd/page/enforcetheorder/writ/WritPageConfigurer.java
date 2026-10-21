@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class WritPageConfigurer implements PageConfigurer {
 
-    private final LandRegistryFeesWritPage landRegistryFeesWritPage;
-
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
@@ -22,10 +20,6 @@ public class WritPageConfigurer implements PageConfigurer {
             .add(new ConfirmHCEOfficerPage())
             .add(new HCEOfficerDetailsPage())
             .add(new EnforcementOfficerSelectionPage())
-            .add(new MoneyOwedWritPage())
-            .add(new LegalCostsWritPage())
-            .add(landRegistryFeesWritPage)
-            .add(new RepaymentsWritPage())
             .add(new LanguageUsedWritPage())
             .add(new StatementOfTruthWritPage());
     }
