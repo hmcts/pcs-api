@@ -10,7 +10,6 @@ import { CLAIMANT_LEGAL_REPRESENTATIVE, answerCookieQuestion, requireEmailFor, r
 import { beginScenario, endScenario, recordBrowserRequest } from '../support/demo-continuity';
 import { demoHoldMs } from '../support/demo-pacing';
 import { disablePagePacing, enablePagePacing } from '@utils/page-pacing';
-import type { BatchPrintFile, BatchPrintPlan } from '../support/batch-print';
 
 export type EnforcementType =
   | 'warrant of possession'
@@ -58,13 +57,6 @@ export class EnforcementWorld {
   askedToPayFee?: boolean;
   checkedDocuments: string[] = [];
   currentDocument?: string;
-  batchPrintCases: string[] = [];
-  batchPrintCaseFor: Record<string, string> = {};
-  batchPrintSelection: string[] = [];
-  notAllocatedCase?: string;
-  latestNoticeOfEviction?: string;
-  batchPrintPlan?: BatchPrintPlan;
-  batchPrintFile?: BatchPrintFile;
 }
 
 type EnforcementFixtures = {

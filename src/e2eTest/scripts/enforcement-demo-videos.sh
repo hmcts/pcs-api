@@ -37,7 +37,7 @@ FEATURE_FILTERS=("$@")
 
 E2E_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FEATURES_DIR="$E2E_DIR/tests/tests-enforcement/bdd/features"
-EXCLUDED_FEATURES=("19-enforcement-status-model" "17-batch-print")
+EXCLUDED_FEATURES=("19-enforcement-status-model")
 
 XUI_URL="${MANAGE_CASE_BASE_URL:-http://localhost:3000}"
 XUI_CONTAINER="${XUI_CONTAINER:-cftlib-xui-manage-cases-1}"

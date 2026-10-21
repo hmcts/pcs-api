@@ -63,7 +63,6 @@ function illustrativeValues(world: EnforcementWorld, step: string): Record<strin
   const values: Record<string, string> = {
     ...world.enforcementNumbers,
     ...world.aliases,
-    ...world.batchPrintCaseFor,
   };
   for (const [reference, actual] of Object.entries(values)) {
     if (/^\d{16}$/.test(actual)) {

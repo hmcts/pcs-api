@@ -47,8 +47,8 @@ public class EnforcementViewerService {
         .collect(Collectors.toUnmodifiableSet());
 
     /**
-     * System users read the whole case: batch print fetches documents through CDAM as the system user, and
-     * CDAM only serves a document that user can see on the case.
+     * System users read the whole case: documents are fetched through CDAM as the system user, and CDAM
+     * only serves a document that user can see on the case.
      */
     private static final Set<String> SYSTEM_ROLES = roles(UserRole.SYSTEM_USER, UserRole.WA_SYSTEM_USER);
 

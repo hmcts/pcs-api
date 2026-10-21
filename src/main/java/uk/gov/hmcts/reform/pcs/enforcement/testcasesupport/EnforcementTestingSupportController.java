@@ -4,12 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
-import uk.gov.hmcts.reform.pcs.enforcement.batchprint.BatchPrintDocumentKind;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
 import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
@@ -52,7 +49,6 @@ public class EnforcementTestingSupportController {
     private final IdamAuthenticator idamAuthenticator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final EnforcementBackdateService enforcementBackdateService;
-    private final EnforcementTestDocumentSeeder enforcementTestDocumentSeeder;
 
     @Operation(summary = "Record the fee as paid for the case's enforcement application awaiting payment")
     @PostMapping("/{caseReference}/fee-paid")
@@ -123,19 +119,6 @@ public class EnforcementTestingSupportController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "File a placeholder enforcement document in the case's Enforcement folder")
-    @PostMapping("/{caseReference}/documents")
-    public ResponseEntity<SeededDocument> seedDocument(
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @PathVariable long caseReference,
-        @Valid @RequestBody SeedDocumentRequest request) {
-
-        log.info("Testing support: filing a placeholder {} on case {}", request.kind(), caseReference);
-        return enforcementTestDocumentSeeder.seed(caseReference, request.kind(), request.title())
-            .map(fileName -> ResponseEntity.status(HttpStatus.CREATED).body(new SeededDocument(fileName)))
-            .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     private <T> T runAsCaller(String authorization, Supplier<T> action) {
         Authentication previous = SecurityContextHolder.getContext().getAuthentication();
         try {
@@ -160,13 +143,5 @@ public class EnforcementTestingSupportController {
     }
 
     public record BackdateRequest(Period period, Duration duration, String enforcementNumber) {
-    }
-
-    public record SeedDocumentRequest(
-        @NotNull BatchPrintDocumentKind kind,
-        @NotBlank String title) {
-    }
-
-    public record SeededDocument(String fileName) {
     }
 }
