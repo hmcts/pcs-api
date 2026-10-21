@@ -163,7 +163,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         staffMessage(change).ifPresent(message -> messageService.recordOrderMessage(order,
-            order.getAuthorName(), OrderTasks.inWords(change.orderType()), message));
+            OrderTasks.inWords(change.orderType()), order.getAuthorName(), true, message));
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
     }

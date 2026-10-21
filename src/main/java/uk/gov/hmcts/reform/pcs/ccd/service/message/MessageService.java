@@ -94,18 +94,19 @@ public class MessageService {
         return told;
     }
 
-    /** A judge's message for court staff with their order. */
-    public void recordOrderMessage(OrderEntity order, String judgeName, String orderType, String body) {
+    /** A judge's message for court staff with their order, or court staff's query when they return it. */
+    public void recordOrderMessage(OrderEntity order, String orderType, String senderName, boolean fromJudge,
+                                   String body) {
         Instant now = Instant.now(utcClock);
-        orderThread(order, orderType, now).addEntry(entry(new Writing(judgeName, MessageRecipient.DISTRICT_JUDGE,
-            MessageRecipient.COURT_STAFF, false, body), now));
+        orderThread(order, orderType, now).addEntry(entry(new Writing(senderName, MessageRecipient.of(fromJudge),
+            MessageRecipient.of(!fromJudge), false, body), now));
     }
 
-    /** Court staff's query on an order they return to its judge. */
-    public void recordOrderQuery(OrderEntity order, String staffName, String orderType, String query) {
-        Instant now = Instant.now(utcClock);
-        orderThread(order, orderType, now).addEntry(entry(new Writing(staffName, MessageRecipient.COURT_STAFF,
-            MessageRecipient.DISTRICT_JUDGE, false, query), now));
+    /** Closes the order's open thread once the order is issued, as nothing more is waited for on it. */
+    public void closeOrderThread(OrderEntity order, String closedBy) {
+        order.getPcsCase().getMessages().stream()
+            .filter(message -> order.getId().equals(message.getOrderId()) && message.isOpen())
+            .forEach(message -> close(message, closedBy, "Order issued"));
     }
 
     /** The query court staff last returned the order with. */
@@ -124,7 +125,8 @@ public class MessageService {
             .findFirst()
             .orElseGet(() -> {
                 CaseMessageEntity started = CaseMessageEntity.builder()
-                    .subject(truncate("Message with " + orderType + " order", 60))
+                    .subject(truncate(Character.toUpperCase(orderType.charAt(0)) + orderType.substring(1) + " order",
+                        60))
                     .categories(order.getGenAppId() == null ? MessageCategory.OTHER.getLabel()
                         : MessageCategory.APPLICATION.getLabel())
                     .genAppId(order.getGenAppId())

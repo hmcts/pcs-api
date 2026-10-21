@@ -125,8 +125,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
-            contains("/cases/case-details/%d#Messages".formatted(caseReference)),
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY), contains(QUERY),
             eq(judge.uid()));
 
         // The judge opens the order from their task, seeing the query, and can save changes to it.
@@ -148,6 +147,15 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         verify(taskManagementApi).completeTask(any(), any(), eq("judge-query"), any());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has changed an order that was returned to them"));
+
+        // Issuing the order closes its message thread, which nothing is waiting on any more.
+        Order review = asCaseworker.start().order();
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, review.id(), review.version(),
+            "staff-review", null, new Issue(new IssuedOrder(review.orderType(), review.formData(), null, "the order"),
+                List.of(), HIGH_COURT)));
+        assertThat(jdbcTemplate.queryForList("SELECT status, closure_note FROM case_message WHERE order_id = ?",
+            order.id())).extracting(row -> row.get("status"), row -> row.get("closure_note"))
+            .containsExactly(tuple("CLOSED", "Order issued"));
     }
 
     @Test

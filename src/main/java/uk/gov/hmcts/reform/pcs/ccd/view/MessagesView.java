@@ -77,7 +77,8 @@ public class MessagesView {
             message.getSubject(),
             message.getCategories(),
             genApp == null ? null : "GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName()),
-            genApp == null || !genApp.isOpen() || !message.isOpen() ? null
+            // An order's thread is resumed from the order's own task, not by starting another order.
+            genApp == null || !genApp.isOpen() || !message.isOpen() || message.getOrderId() != null ? null
                 : "%s/case/%d/make-order?genAppId=%s".formatted(frontendUrl, pcsCase.getCaseReference(),
                     genApp.getId()),
             first.getSenderName(),
