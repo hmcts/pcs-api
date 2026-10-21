@@ -132,11 +132,6 @@ public class GenAppEntity {
 
     private BigDecimal feeAmountReceived;
 
-    /** What court staff told the judge when they last referred the application to one. */
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "referral_note_id")
-    private CaseNoteEntity referralNote;
-
     /** What the issued order deciding the application decided. */
     @Enumerated(EnumType.STRING)
     private ApplicationOutcome outcome;

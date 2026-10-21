@@ -113,7 +113,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
                 caseReference, judge, DRAFT, genAppId);
         OrderStart.Order workingOrder = order
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
-                chosenOrderId.isPresent() ? orderSteps.query(o).orElse(null) : null))
+                chosenOrderId.isPresent() ? messageService.orderQuery(o).orElse(null) : null))
             .orElseGet(() -> OrderStart.Order.none(genAppId));
         // An order already under way stays with the hearing it was started for.
         HearingEntity hearing = order.map(OrderEntity::getHearing)

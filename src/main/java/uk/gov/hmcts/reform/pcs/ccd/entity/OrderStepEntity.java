@@ -71,8 +71,4 @@ public class OrderStepEntity {
 
     /** On the issuing step, the order's wording as issued. */
     private String orderHtml;
-
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "note_id")
-    private CaseNoteEntity note;
 }

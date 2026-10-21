@@ -207,17 +207,6 @@
           <text>"Make an order"</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_5ujno82">
-        <inputEntry id="UnaryTests_psjwsn5">
-          <text></text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_f5vomq9">
-          <text>"DecideGenApp"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_389b5a6">
-          <text>"Decide application"</text>
-        </outputEntry>
-      </rule>
       <rule id="DecisionRule_msgd77dzjq">
         <inputEntry id="UnaryTests_msgd0m5ab9">
           <text></text>

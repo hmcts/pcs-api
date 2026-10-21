@@ -7,11 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -50,19 +46,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.COUNTY_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.APPLICATION_DECISION;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.referGenAppToJudge;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 
 /**
- * Court staff refer a general application to a judge, who decides it with an order on it: the order
+ * A judge decides a general application with an order on it, from the link in a message about it: the order
  * starts from the application, and issuing it records what it decided.
  */
 @DisplayName("Decide an application")
 class DecideApplicationIT extends OrderEventIT {
 
     private static final String WHAT_ORDER_WANTED = "The hearing on 14 October is adjourned to the first open date.";
-    private static final String NOTE = "The hearing is next week";
     private static final UUID FORM_ID = UUID.randomUUID();
     private static final UUID WITNESS_STATEMENT_ID = UUID.randomUUID();
 
@@ -72,6 +66,7 @@ class DecideApplicationIT extends OrderEventIT {
     private IssuedCases cases;
 
     private long caseReference;
+    private UUID genAppId;
     private Actor judge;
     private Actor caseworker;
 
@@ -92,26 +87,16 @@ class DecideApplicationIT extends OrderEventIT {
             genApp.getDocuments().add(document(pcsCase, genApp, WITNESS_STATEMENT_ID, "witness-statement.pdf"));
             pcsCase.addGenApp(genApp);
         });
+        genAppId = jdbcTemplate.queryForObject("SELECT ga.id FROM general_application ga JOIN pcs_case pc "
+            + "ON pc.id = ga.case_id WHERE pc.case_reference = ?", UUID.class, caseReference);
         judge = events.registerActor("A", "Judge", "caseworker-pcs");
         caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs");
     }
 
     @Test
-    @DisplayName("refers an open application to a judge with a note, giving the judges a task to decide it")
-    void refersTheApplicationToAJudge() {
-        UUID genAppId = refer();
-
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.DECIDE_GEN_APP), contains(
-            "ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&amp;genAppId=" + genAppId + "&amp;taskId=${[id]}"));
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.DECIDE_GEN_APP), contains(NOTE));
-        assertThat(events.view(caseReference, caseworker).getCaseNotes()).extracting(ListValue::getValue)
-            .extracting(CaseNote::getNote).containsExactly(NOTE);
-    }
-
-    @Test
-    @DisplayName("shows the judge the application they are deciding, what was asked for and the referral note")
+    @DisplayName("shows the judge the application they are deciding and what was asked for")
     void showsTheJudgeTheApplication() {
-        OrderStart start = asJudgeDeciding(refer()).start();
+        OrderStart start = asJudgeDeciding(genAppId).start();
 
         Application application = start.caseContext().application();
         assertThat(application.reference()).isEqualTo("GA1");
@@ -120,8 +105,6 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(application.submittedOn()).isEqualTo(LocalDate.of(2026, 10, 1));
         assertThat(application.within14Days()).isEqualTo(VerticalYesNo.YES);
         assertThat(application.whatOrderWanted()).isEqualTo(WHAT_ORDER_WANTED);
-        assertThat(application.referralNote()).isEqualTo(NOTE);
-        assertThat(application.referredOn()).isNotNull();
         assertThat(application.documents()).extracting(ApplicationDocument::id, ApplicationDocument::fileName)
             .containsExactly(
                 tuple(FORM_ID, "application-form.pdf"),
@@ -131,7 +114,6 @@ class DecideApplicationIT extends OrderEventIT {
     @Test
     @DisplayName("keeps the judge's order on the application apart from their draft for the case")
     void keepsTheApplicationDraftApartFromTheCaseDraft() {
-        UUID genAppId = refer();
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(startDraft("case draft"));
         var asJudge = asJudgeDeciding(genAppId);
         asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, Order.none(genAppId), "grant", null));
@@ -144,7 +126,6 @@ class DecideApplicationIT extends OrderEventIT {
     @Test
     @DisplayName("keeps the hearing context with the case draft beside an application draft")
     void keepsTheHearingWithTheCaseDraft() {
-        UUID genAppId = refer();
         int hearingId = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
         var forHearing = events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("hearingId", Integer.toString(hearingId)));
@@ -169,7 +150,7 @@ class DecideApplicationIT extends OrderEventIT {
     @Test
     @DisplayName("completes the judge's task when they send their order on the application for review")
     void completesTheTaskOnSubmission() {
-        Order submitted = judgeDecides(refer(), "grant");
+        Order submitted = judgeDecides(genAppId, "grant");
 
         assertThat(submitted.genAppId()).isNotNull();
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
@@ -180,7 +161,6 @@ class DecideApplicationIT extends OrderEventIT {
     @Test
     @DisplayName("records the decision when court staff issue the order, which closes a granted application")
     void recordsTheDecisionOnIssue() {
-        UUID genAppId = refer();
         Order submitted = judgeDecides(genAppId, "grant");
         var asCaseworker = asCaseworkerReviewing(submitted.id());
         assertThat(asCaseworker.start().caseContext().application().reference()).isEqualTo("GA1");
@@ -192,40 +172,18 @@ class DecideApplicationIT extends OrderEventIT {
             .containsExactly("The application has already been decided");
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().caseContext().openApplication())
             .isFalse();
-        assertThat(referrable()).isEmpty();
     }
 
     @Test
-    @DisplayName("leaves an application listed for a hearing open, to refer and decide again")
+    @DisplayName("leaves an application listed for a hearing open, to decide again")
     void leavesAListedApplicationOpen() {
-        UUID genAppId = refer();
         Order submitted = judgeDecides(genAppId, "list");
         asCaseworkerReviewing(submitted.id()).submitExpectingSuccess(issue(submitted));
 
         assertThat(outcome(genAppId)).isEqualTo("LISTED");
-        assertThat(referrable()).extracting(DynamicListElement::getCode).containsExactly(genAppId);
+        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().caseContext().openApplication())
+            .isTrue();
         assertThat(asJudgeDeciding(genAppId).start().order().id()).isNull();
-    }
-
-    /** Court staff refer the case's application to a judge, with a note; the list names it in the task. */
-    private UUID refer() {
-        List<DynamicListElement> applications = referrable();
-        assertThat(applications).extracting(DynamicListElement::getLabel)
-            .containsExactly("GA1: Adjourn the hearing, by " + IssuedCases.DEFENDANT);
-        events.start(caseReference, referGenAppToJudge.name()).as(caseworker).startExpectingSuccess()
-            .edit(pcsCase -> {
-                pcsCase.setReferGenAppList(DynamicList.builder()
-                    .value(applications.getFirst()).listItems(applications).build());
-                pcsCase.setReferGenAppNote(NOTE);
-            })
-            .as(caseworker).submitExpectingSuccess();
-        return applications.getFirst().getCode();
-    }
-
-    /** The applications court staff can refer to a judge. */
-    private List<DynamicListElement> referrable() {
-        return events.start(caseReference, referGenAppToJudge.name()).as(caseworker).startExpectingSuccess()
-            .caseData().getReferGenAppList().getListItems();
     }
 
     /** The judge following their task to decide the application, which names it. */

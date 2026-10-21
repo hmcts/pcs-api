@@ -9,9 +9,7 @@ import uk.gov.hmcts.ccd.sdk.testing.ActorDetails;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
@@ -119,13 +117,16 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         assertThat(outcome.changed("orders", Order.class).state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
-        assertThat(events.view(caseReference, caseworker).getCaseNotes()).extracting(ListValue::getValue)
-            .extracting(CaseNote::getNote, CaseNote::getCreatedBy)
-            .containsExactly(tuple(QUERY, "A Caseworker"));
+        assertThat(events.view(caseReference, caseworker).getCaseNotes()).isNullOrEmpty();
+        assertThat(jdbcTemplate.queryForList("SELECT entry.sender_name, entry.body FROM case_message_entry entry "
+            + "JOIN case_message message ON message.id = entry.message_id WHERE message.order_id = ?", order.id()))
+            .extracting(row -> row.get("sender_name"), row -> row.get("body"))
+            .containsExactly(tuple("A Caseworker", QUERY));
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY), contains(QUERY),
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
+            contains("/cases/case-details/%d#Messages".formatted(caseReference)),
             eq(judge.uid()));
 
         // The judge opens the order from their task, seeing the query, and can save changes to it.

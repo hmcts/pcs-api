@@ -146,14 +146,6 @@ public enum TaskType {
             The task will close when you send the order to court staff for review.
             """
     ),
-    DECIDE_GEN_APP(
-        "DecideGenApp",
-        "Decide application",
-        """
-            Court staff referred a general application to you. Read it, then make an order deciding it.
-            The task will close when you send the order to court staff for review.
-            """
-    ),
     REVIEW_MESSAGE_JUDGE(
         "ReviewMessageJudge",
         "Review message",

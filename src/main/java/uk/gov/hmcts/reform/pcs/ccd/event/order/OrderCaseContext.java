@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 
 /**
@@ -60,10 +59,7 @@ class OrderCaseContext {
             genApp.getWithoutNotice(),
             genApp.getWithoutNoticeReason(),
             genApp.getWhatOrderWanted(),
-            applicationDocuments(genApp),
-            genApp.getReferralNote() == null ? null
-                : genApp.getReferralNote().getCreatedOn().atZone(UK_ZONE_ID).toLocalDate(),
-            genApp.getReferralNote() == null ? null : genApp.getReferralNote().getNote()
+            applicationDocuments(genApp)
         );
     }
 
