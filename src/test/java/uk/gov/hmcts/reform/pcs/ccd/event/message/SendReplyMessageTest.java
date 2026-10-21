@@ -15,14 +15,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,7 +80,7 @@ class SendReplyMessageTest extends BaseEventTest {
     void shouldStartWhenMakeOrderIsEnabled() {
         when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
-        when(userRoleService.getCurrentUserOrganisationalRoles()).thenReturn(new UserRoles("user", List.of("judge")));
+        when(userRoleService.isJudge()).thenReturn(true);
 
         PCSCase started = callStartHandler(PCSCase.builder().build());
 

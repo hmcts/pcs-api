@@ -92,6 +92,10 @@ class SendReplyMessageIT extends OrderEventIT {
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
         assertThat(tab).contains("Decide GA1", "Urgent", "Tom Caseworker", "District Judge",
             "Please decide this before the hearing on Friday.", "GA1: Adjourn the hearing");
+        // Only a judge can decide the application, so only a judge is offered the link to.
+        assertThat(tab).doesNotContain("Decide the application");
+        assertThat(events.view(caseReference, judge).getMessagesMarkdown())
+            .contains("Decide the application", "make-order?genAppId=" + genAppId);
     }
 
     @Test

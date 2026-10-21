@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -33,6 +34,7 @@ public class MessagesView {
     private final String frontendUrl;
     private final FeatureToggleService featureToggleService;
     private final OrderTasks orderTasks;
+    private final UserRoleService userRoleService;
 
     /** A message thread as the tab shows it; decideUrl is set for an open message about an open application. */
     public record Thread(String subject, String categories, String application, String decideUrl, String from,
@@ -44,24 +46,28 @@ public class MessagesView {
     }
 
     public MessagesView(PebbleEngine pebbleEngine, @Value("${frontend.url}") String frontendUrl,
-                        FeatureToggleService featureToggleService, OrderTasks orderTasks) {
+                        FeatureToggleService featureToggleService, OrderTasks orderTasks,
+                        UserRoleService userRoleService) {
         this.pebbleEngine = pebbleEngine;
         this.frontendUrl = frontendUrl;
         this.featureToggleService = featureToggleService;
         this.orderTasks = orderTasks;
+        this.userRoleService = userRoleService;
     }
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
             return;
         }
+        // Only a judge can decide an application, so only a judge is offered the link.
+        boolean judge = !pcsCaseEntity.getMessages().isEmpty() && userRoleService.isJudge();
         Comparator<CaseMessageEntity> order = Comparator.comparing((CaseMessageEntity message) -> !message.isUrgent())
             .thenComparing(CaseMessageEntity::createdAt);
         List<Thread> open = pcsCaseEntity.getMessages().stream().filter(CaseMessageEntity::isOpen)
-            .sorted(order).map(message -> thread(message, pcsCaseEntity)).toList();
+            .sorted(order).map(message -> thread(message, pcsCaseEntity, judge)).toList();
         List<Thread> closed = pcsCaseEntity.getMessages().stream().filter(message -> !message.isOpen())
             .sorted(Comparator.comparing(CaseMessageEntity::getClosedAt).reversed())
-            .map(message -> thread(message, pcsCaseEntity)).toList();
+            .map(message -> thread(message, pcsCaseEntity, judge)).toList();
         StringWriter writer = new StringWriter();
         try {
             pebbleEngine.getTemplate("tabs/messages").evaluate(writer, Map.of("open", open, "closed", closed));
@@ -71,7 +77,7 @@ public class MessagesView {
         pcsCase.setMessagesMarkdown(writer.toString());
     }
 
-    private Thread thread(CaseMessageEntity message, PcsCaseEntity pcsCase) {
+    private Thread thread(CaseMessageEntity message, PcsCaseEntity pcsCase, boolean judge) {
         CaseMessageEntryEntity first = message.getEntries().getFirst();
         CaseMessageEntryEntity latest = message.latest();
         GenAppEntity genApp = message.getGenApp();
@@ -79,7 +85,7 @@ public class MessagesView {
             message.getSubject(),
             message.categoryLabels(),
             genApp == null ? null : "GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName()),
-            genApp == null || !message.isOpen() || !orderTasks.canDecide(genApp) ? null
+            !judge || genApp == null || !message.isOpen() || !orderTasks.canDecide(genApp) ? null
                 : "%s/case/%d/make-order?genAppId=%s".formatted(frontendUrl, pcsCase.getCaseReference(),
                     genApp.getId()),
             first.getSenderName(),
