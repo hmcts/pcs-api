@@ -36,22 +36,28 @@ public class CftlibOrganisationConfig {
                 response.setOrganisationIdentifier(TEST_ORG_ID);
                 response.setOrganisationProfileIds(List.of(OrganisationProfile.SOLICITOR_PROFILE.getId()));
                 response.setName("Test Organisation");
-                response.setContactInformation(List.of());
+                response.setContactInformation(List.of(
+                    OrganisationDetailsResponse.ContactInformation.builder()
+                                                           .addressLine1("10 Org Street")
+                                                           .townCity("Cardiff")
+                                                           .postCode("CF24 5JT")
+                                                           .build())
+                );
                 return response;
             }
 
             @Override
-            public String getOrganisationName(OrganisationDetailsResponse orgDetails) {
-                return "Test Organisation";
-            }
-
-            @Override
-            public uk.gov.hmcts.ccd.sdk.type.AddressUK getOrganisationAddress(OrganisationDetailsResponse orgDetails) {
-                return null;
+            public OrganisationDetailsResponse getOrganisationDetails(String userId) {
+                return getOrganisationDetailsForCurrentUser();
             }
 
             @Override
             public String getOrganisationIdForCurrentUser() {
+                return TEST_ORG_ID;
+            }
+
+            @Override
+            public String getOrganisationIdentifier(String userId) {
                 return TEST_ORG_ID;
             }
 
@@ -71,8 +77,8 @@ public class CftlibOrganisationConfig {
             }
 
             @Override
-            public uk.gov.hmcts.ccd.sdk.type.AddressUK getOrganisationAddressForCurrentUser() {
-                return null;
+            public String getOrganisationName(String userId) {
+                return getOrganisationNameForCurrentUser();
             }
         };
     }
