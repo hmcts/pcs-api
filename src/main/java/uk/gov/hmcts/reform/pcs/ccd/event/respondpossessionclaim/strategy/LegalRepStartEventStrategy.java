@@ -11,10 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
@@ -31,7 +31,7 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     private final TenancyLicenceView tenancyLicenceView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final RentArrearsView rentArrearsView;
-    private final CaseDetailsTabView caseDetailsTabView;
+    private final NoticeDetailsBuilder noticeDetailsBuilder;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -72,15 +72,13 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
         pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
 
-        var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
-        var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, caseEntity, 
-            pcsCase.getDateSubmitted() != null);
-        var caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
+        CaseDetailsTab existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
+        CaseDetailsTab caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
 
-        caseDetailsTab.setNoticeDetails(builtCaseDetailsTab.getNoticeDetails()); 
-        
+        caseDetailsTab.setNoticeDetails(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, caseEntity));
+
         pcsCase.setCaseDetailsTab(caseDetailsTab);
-        
+
         return pcsCase;
     }
 

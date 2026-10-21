@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -20,11 +19,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -34,7 +33,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -60,7 +58,7 @@ class LegalRepStartEventHydrationVerificationTest {
     private UploadTimestampProvider uploadTimestampProvider;
 
     @Mock
-    private CaseDetailsTabView caseDetailsTabView;
+    private NoticeDetailsBuilder noticeDetailsBuilder;
 
     private LegalRepStartEventStrategy underTest;
 
@@ -74,12 +72,11 @@ class LegalRepStartEventHydrationVerificationTest {
             new TenancyLicenceView(uploadTimestampProvider),
             new NoticeOfPossessionView(),
             new RentArrearsView(uploadTimestampProvider),
-            caseDetailsTabView
+            noticeDetailsBuilder
         );
-        lenient().when(caseDetailsTabView.buildCaseDetailsTab(
-            any(PCSCase.class), any(PcsCaseEntity.class), anyBoolean()
-        ))
-            .thenReturn(new CaseDetailsTab());
+        lenient().when(noticeDetailsBuilder.buildNoticeTabDetails(
+            any(PCSCase.class), any(PcsCaseEntity.class)
+        )).thenReturn(null);
     }
 
     @Test
@@ -151,7 +148,7 @@ class LegalRepStartEventHydrationVerificationTest {
     }
 
     @Test
-    void shouldPopulateCaseDetailsTabWithNoticeDetailsFromCaseDetailsTabView() {
+    void shouldPopulateCaseDetailsTabWithNoticeDetailsFromNoticeDetailsBuilder() {
         String organisationId = "org";
         PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
@@ -170,14 +167,13 @@ class LegalRepStartEventHydrationVerificationTest {
         when(legalRepPartySelectionService.filterDefendantsAwaitingResponse(CASE_REFERENCE, defendants))
             .thenReturn(List.of());
         when(legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase, defendants)).thenReturn(pcsCase);
-        when(caseDetailsTabView.buildCaseDetailsTab(pcsCase, caseEntity, false))
-            .thenReturn(CaseDetailsTab.builder().noticeDetails(noticeDetails).build());
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, caseEntity)).thenReturn(noticeDetails);
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, pcsCase);
 
         assertThat(result.getCaseDetailsTab()).isNotNull();
         assertThat(result.getCaseDetailsTab().getNoticeDetails()).isEqualTo(noticeDetails);
-        verify(caseDetailsTabView).buildCaseDetailsTab(pcsCase, caseEntity, false);
+        verify(noticeDetailsBuilder).buildNoticeTabDetails(pcsCase, caseEntity);
     }
 
     @Test

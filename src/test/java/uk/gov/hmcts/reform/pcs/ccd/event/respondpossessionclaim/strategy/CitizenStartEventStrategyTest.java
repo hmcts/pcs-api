@@ -189,6 +189,40 @@ class CitizenStartEventStrategyTest {
     }
 
     @Test
+    void shouldReturnNoticeDocumentInCaseDetailsTab() {
+        String defendantUserId = UUID.randomUUID().toString();
+        PCSCase caseData = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        PartyEntity defendantEntity = PartyEntity.builder().idamId(defendantUserId).build();
+        List<ListValue<Document>> noticeDocuments = List.of(
+            ListValue.<Document>builder()
+                .id(UUID.randomUUID().toString())
+                .value(Document.builder().filename("notice.pdf").build())
+                .build()
+        );
+        NoticeTabDetails noticeDetails = NoticeTabDetails.builder()
+            .noticeDocuments(noticeDocuments)
+            .build();
+        CaseDetailsTab builtCaseDetailsTab = CaseDetailsTab.builder()
+            .noticeDetails(noticeDetails)
+            .build();
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, defendantUserId
+        )).thenReturn(true);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(pcsCaseEntity), eq(false)))
+            .thenReturn(builtCaseDetailsTab);
+
+        PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
+
+        assertThat(result.getCaseDetailsTab().getNoticeDetails().getNoticeDocuments())
+            .containsExactlyElementsOf(noticeDocuments);
+    }
+
+    @Test
     void shouldLoadExistingDraftWhenDraftAlreadyExists() {
         // Given
         String defendantUserId = UUID.randomUUID().toString();

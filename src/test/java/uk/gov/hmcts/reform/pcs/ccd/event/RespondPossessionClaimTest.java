@@ -71,6 +71,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -166,6 +167,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private CaseDetailsTabView caseDetailsTabView;
     @Mock
+    private NoticeDetailsBuilder noticeDetailsBuilder;
+    @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
     private NoticeOfPossessionView noticeOfPossessionView;
@@ -218,7 +221,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                    tenancyLicenceView,
                                                    noticeOfPossessionView,
                                                    rentArrearsView,
-                                                   caseDetailsTabView)
+                                                   noticeDetailsBuilder)
             )
         );
 

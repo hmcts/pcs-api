@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
@@ -27,10 +26,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -41,7 +40,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -78,16 +76,16 @@ class LegalRepStartEventStrategyTest {
     private RentArrearsView rentArrearsView;
 
     @Mock
-    private CaseDetailsTabView caseDetailsTabView;
+    private NoticeDetailsBuilder noticeDetailsBuilder;
 
     @InjectMocks
     private LegalRepStartEventStrategy underTest;
 
     @BeforeEach
     void setUp() {
-        lenient().when(caseDetailsTabView.buildCaseDetailsTab(
-            any(PCSCase.class), any(PcsCaseEntity.class), anyBoolean()
-        )).thenReturn(new CaseDetailsTab());
+        lenient().when(noticeDetailsBuilder.buildNoticeTabDetails(
+            any(PCSCase.class), any(PcsCaseEntity.class)
+        )).thenReturn(null);
     }
 
     @Test
@@ -314,7 +312,7 @@ class LegalRepStartEventStrategyTest {
             tenancyLicenceView,
             noticeOfPossessionView,
             rentArrearsView,
-            caseDetailsTabView);
+            noticeDetailsBuilder);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
@@ -377,7 +375,7 @@ class LegalRepStartEventStrategyTest {
             tenancyLicenceView,
             noticeOfPossessionView,
             rentArrearsView,
-            caseDetailsTabView);
+            noticeDetailsBuilder);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
@@ -437,7 +435,7 @@ class LegalRepStartEventStrategyTest {
             tenancyLicenceView,
             noticeOfPossessionView,
             rentArrearsView,
-            caseDetailsTabView);
+            noticeDetailsBuilder);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);

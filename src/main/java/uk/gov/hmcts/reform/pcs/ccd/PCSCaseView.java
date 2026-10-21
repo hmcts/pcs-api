@@ -110,7 +110,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         SubmittedCase submittedCase = getSubmittedCase(caseReference, state);
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
-        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+        PcsCaseEntity pcsCaseEntity = submittedCase.pcsCaseEntity();
 
         if (hasUnsubmittedCaseData) {
             draftCaseDataService
