@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 
@@ -33,7 +32,7 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(enterBreathingSpace.name(), this::submit, this::start)
+                .decentralisedEvent(enterBreathingSpace.name(), this::submit)
                 .forState(State.CASE_ISSUED)
                 .name("Enter breathing space")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
@@ -41,16 +40,6 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
                 .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
                 .showSummary();
         breathingSpacePageConfigurer.configurePages(new PageBuilder(eventBuilder));
-    }
-
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-
-        caseData.setBreathingSpaceDetails(BreathingSpaceDetails.builder()
-            .caseName(caseNameFormatter.formatCaseName(caseData))
-            .build());
-
-        return caseData;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
