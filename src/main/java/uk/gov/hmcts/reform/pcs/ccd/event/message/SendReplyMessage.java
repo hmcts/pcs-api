@@ -201,8 +201,10 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         }
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(eventPayload.caseReference());
-        String name = securityContextService.getCurrentUserDetails().getName();
         MessageRecipient senderRole = MessageRecipient.of(userRoleService.isJudge());
+        // A message is signed with the sender's name, or their role if IDAM gives none.
+        String name = Optional.ofNullable(securityContextService.getCurrentUserDetails().getName())
+            .filter(given -> !given.isBlank()).orElse(senderRole.getLabel());
 
         // The pages check these as the user goes; an event submitted without them is checked here.
         boolean sending = caseData.getMessageAction() == MessageAction.SEND;
