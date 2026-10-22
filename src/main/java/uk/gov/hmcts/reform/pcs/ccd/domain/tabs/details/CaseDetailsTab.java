@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.jackson.NestedComplexTypeDeserializer;
 
 import java.util.List;
 
@@ -39,15 +41,18 @@ public class CaseDetailsTab {
     private String dateClaimSubmitted;
 
     @CCD(label = "Tenancy, occupation contract or licence details")
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private TenancyLicenceTabDetails tenancyLicenceDetails;
 
     @CCD(label = "Notice details")
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private NoticeTabDetails noticeDetails;
 
     @CCD(label = "Actions already taken")
     private ActionsTakenTabDetails actionsTakenDetails;
 
     @CCD(label = "Details of rent arrears")
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private RentArrearsTabDetails rentArrearsDetails;
 
     @CCD(label = "Reasons for possession")
