@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
@@ -27,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,8 +41,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.APPLICATION_DECISION;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
@@ -151,6 +156,34 @@ class DecideApplicationIT extends OrderEventIT {
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has submitted an order for review"));
+    }
+
+    @Test
+    @DisplayName("refuses another order on the application while one is under way, and once one decides it, "
+        + "though listing it for a hearing leaves it to decide")
+    void refusesAnotherOrderOnADecidedApplication() {
+        Actor otherJudge = events.registerActor("Another", "Judge", "caseworker-pcs");
+        var asOtherJudge = events.external(caseReference, MAKE_ORDER).as(otherJudge)
+            .withClientContext(Map.of("genAppId", genAppId.toString()));
+        // The other judge started a draft before the first sent theirs for review.
+        asOtherJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asOtherJudge.start().order(), "dismiss", null));
+        Order listed = judgeDecides(genAppId, "list");
+
+        assertThat(asOtherJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, asOtherJudge.start().order(),
+            "dismiss", null)).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
+
+        issue(listed);
+        Order granted = judgeDecides(genAppId, "grant");
+        issue(granted);
+        assertThat(events.external(caseReference, MAKE_ORDER).as(judge)
+            .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
+            .containsExactly(MakeOrder.ALREADY_DECIDED);
+    }
+
+    private void issue(Order order) {
+        asCaseworkerReviewing(order.id()).submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, null, new Issue(new IssuedOrder(order.orderType(), order.formData(), null,
+                "the order"), List.of(), HIGH_COURT)));
     }
 
     /** The judge following their task to decide the application, which names it. */

@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,4 +23,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     boolean existsByIdAndDocumentIsNotNull(UUID id);
 
     boolean existsByGenAppIdAndStateIn(UUID genAppId, Collection<OrderState> states);
+
+    List<OrderEntity> findByGenAppIdAndState(UUID genAppId, OrderState state);
 }
