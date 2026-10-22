@@ -811,16 +811,6 @@ public class PCSCase {
     private String caseReviewDatesMarkdown;
 
     @CCD(
-        label = JUDICIAL_NOTE_LABEL,
-        hint = "You can enter up to 30,000 characters",
-        typeOverride = TextArea
-    )
-    private String judicialNote;
-
-    @CCD(searchable = false, access = {InternalTabAccess.class})
-    private String judicialNotesMarkdown;
-
-    @CCD(
         label = "Review date",
         min = 1
     )
