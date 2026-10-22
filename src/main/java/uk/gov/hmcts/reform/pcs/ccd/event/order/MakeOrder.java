@@ -67,6 +67,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     /** The states that leave an order its author's to change. */
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
     private static final String NO_LONGER_CHANGEABLE = "The order is no longer waiting for you to change it";
+    static final String NO_WORDING = "The order's wording did not load. Reload the page and send the order again";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -140,6 +141,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
         MakeOrderRequest request = submit.payload();
         OrderChange change = request.order();
+        // Its page posts the wording its script built; an order without it could not be reviewed or issued.
+        if (request.action() == SUBMIT_FOR_REVIEW
+            && (change.docweaveSnapshot() == null || change.docweaveSnapshot().isNull())) {
+            throw ExternalRejection.because(NO_WORDING);
+        }
         long caseReference = submit.caseReference();
         String judge = IdamUserIds.normalise(submit.user().id());
         OrderEntity order = change.id() == null
@@ -177,7 +183,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         // The task the judge opened the order from: its return, or the application it decides.
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
         if (order.getGenAppId() != null) {
-            messageService.closeAnsweredByOrder(order.getPcsCase(), order.getGenAppId(), order.getAuthorName());
+            messageService.closeAnsweredByOrder(order.getPcsCase(), order.getGenAppId(),
+                orderTasks.currentUserName("Judge"));
         }
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(

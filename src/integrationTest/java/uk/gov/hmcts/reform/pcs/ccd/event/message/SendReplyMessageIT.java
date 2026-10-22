@@ -229,7 +229,7 @@ class SendReplyMessageIT extends OrderEventIT {
 
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.APPLICATION_DECISION,
-                Map.of("application-decision", "grant"), null, genAppId), null));
+                Map.of("application-decision", "grant"), WORDING, genAppId), null));
 
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
@@ -267,7 +267,7 @@ class SendReplyMessageIT extends OrderEventIT {
     void keepsTheOrdersStaffMessage() {
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.FREE_FORM,
-                Map.of("staff-message", List.of("yes"), "staff-message-text", "Serve this by post."), null, null),
+                Map.of("staff-message", List.of("yes"), "staff-message-text", "Serve this by post."), WORDING, null),
             null));
 
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())

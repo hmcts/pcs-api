@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -153,8 +154,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         // Issuing the order closes its message thread, which nothing is waiting on any more.
         Order review = asCaseworker.start().order();
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, review.id(), review.version(),
-            "staff-review", null, new Issue(new IssuedOrder(review.orderType(), review.formData(), null, "the order"),
-                List.of(), HIGH_COURT)));
+            "staff-review", null, new Issue(
+                new IssuedOrder(review.orderType(), review.formData(), WORDING, "the order"), List.of(), HIGH_COURT)));
         assertThat(jdbcTemplate.queryForList("SELECT DISTINCT message.closed_at IS NOT NULL AS closed, "
             + "message.closure_note "
             + "FROM order_steps step JOIN case_message_entry entry ON entry.id = step.message_entry_id "
@@ -164,11 +165,34 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("refuses an order sent for review without the wording its page builds, which could not be issued")
+    void refusesToSendAnOrderWithoutWording() {
+        asJudge.submitExpectingSuccess(startDraft("the judge's order"));
+        Order draft = asJudge.start().order();
+
+        assertThat(asJudge.submitExpectingRejection(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
+            draft.id(), draft.version(), draft.orderType(), draft.formData(), NullNode.getInstance(), null), null))
+            .errors()).containsExactly(MakeOrder.NO_WORDING);
+    }
+
+    @Test
+    @DisplayName("refuses to issue an order without the wording its review page builds, leaving it to review again")
+    void refusesToIssueAnOrderWithoutWording() {
+        Order order = judgeSubmitsOrder("the judge's order");
+
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), "staff-review", null, new Issue(
+                new IssuedOrder(order.orderType(), order.formData(), null, null), List.of(), HIGH_COURT)))
+            .errors()).containsExactly(ConfirmOrderReview.NO_WORDING);
+        assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
+    }
+
+    @Test
     @DisplayName("issues the order as the caseworker changed it, with its seal, and adds the review dates to the case")
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");
-        var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"), null,
-            "the caseworker's wording");
+        var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"),
+            WORDING, "the caseworker's wording");
         var reviewDate = new ReviewDateEntry(LocalDate.of(2027, 1, 15), GENERAL_ORDER, "Check the rent is paid");
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),

@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
@@ -26,6 +28,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 @TestPropertySource(properties = {"db-scheduler.executor-enabled=false", "testing-support.enabled=false"})
 public abstract class OrderEventIT extends AbstractPostgresContainerIT {
 
+    /** An order's wording, which an order sent for review or issued always has. */
+    protected static final JsonNode WORDING = TextNode.valueOf("the order");
+
     @MockitoBean
     protected CamundaService camundaService;
     @MockitoBean
@@ -44,7 +49,7 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     /** A judge saves a first draft, which has no id yet. */
     protected static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), null, null), null);
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), WORDING, null), null);
     }
 
     /** The judge acts on the order as they last saw it, with a new note. */
