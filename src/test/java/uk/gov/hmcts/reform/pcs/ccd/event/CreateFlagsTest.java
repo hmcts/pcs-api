@@ -64,6 +64,13 @@ class CreateFlagsTest extends  BaseEventTest {
             .isEqualTo("#ARGUMENT(CREATE,VERSION2.1)");
     }
 
+    @Test
+    void shouldConfigureBothInternalAndExternalPartyFlagCollections() {
+        assertThat(getSubFieldIds("allDefendants"))
+            .contains("defendantFlags", "partyFlagsExternal");
+    }
+
+
     /**
      * Availability before the case is issued is a confirmed requirement, so it is asserted in its own
      * right and the whole state set is spelled out, rather than mirroring whichever helper the event
