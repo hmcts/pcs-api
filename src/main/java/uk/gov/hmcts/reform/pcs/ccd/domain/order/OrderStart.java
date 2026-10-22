@@ -52,8 +52,9 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
     }
 
     /**
-     * Open means issued: nothing yet closes an application or a counterclaim. An order deciding an application
-     * has that application.
+     * Open means issued: nothing yet closes an application or a counterclaim. The open applications are every
+     * one an order made at a hearing, or without one, can decide, in the order they were made; an order made on
+     * one application, as box work, has that application.
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
@@ -61,14 +62,19 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
                               List<Party> defendants,
                               boolean openCounterclaim,
                               boolean openApplication,
+                              List<Application> applications,
                               Application application) {
     }
 
     /**
      * The general application an order decides, as the judge deciding it reads it: what was applied for,
-     * by whom, the applicant's answers, the order they asked for, and their documents.
+     * by whom, the applicant's answers, the order they asked for, and their documents. The id names its answers on
+     * the make order form. An application to suspend the warrant of possession is decided by suspending the
+     * warrant on conditions or saying when the eviction may go ahead.
      */
-    public record Application(String reference,
+    public record Application(UUID id,
+                              boolean warrantSuspension,
+                              String reference,
                               String type,
                               String somethingElseDetails,
                               String applicant,
