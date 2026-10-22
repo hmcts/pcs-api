@@ -210,7 +210,7 @@ class DecideApplicationIT extends OrderEventIT {
 
     private void issue(Order order) {
         asCaseworkerReviewing(order.id()).submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), null, null, new Issue(new IssuedOrder(order.orderType(), order.formData(), null,
+            order.version(), null, null, new Issue(new IssuedOrder(order.orderType(), order.formData(), WORDING,
                 "the order"), List.of(), HIGH_COURT)));
     }
 
@@ -238,7 +238,7 @@ class DecideApplicationIT extends OrderEventIT {
     private static MakeOrderRequest decision(MakeOrderRequest.Action action, Order order, String decision,
                                              String taskId) {
         return new MakeOrderRequest(action, new OrderChange(order.id(), order.version(), APPLICATION_DECISION,
-            Map.of("application-decision", decision), null, order.genAppId()), taskId);
+            Map.of("application-decision", decision), WORDING, order.genAppId()), taskId);
     }
 
     private static DocumentEntity document(PcsCaseEntity pcsCase, GenAppEntity genApp, UUID documentId,

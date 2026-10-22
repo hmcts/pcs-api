@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
@@ -60,6 +61,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
     public static final ExternalEventId<OrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
         ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
+    static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -128,6 +130,12 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalSubmitResponse<State> issue(OrderEntity order, Issue issue, UserInfo caseworker) {
+        // The review page posts the wording its script built, as Docweave and as the HTML the document is made from.
+        IssuedOrder issuing = issue.order();
+        if (issuing == null || issuing.docweaveSnapshot() == null || issuing.docweaveSnapshot().isNull()
+            || issuing.html() == null || issuing.html().isBlank()) {
+            throw ExternalRejection.because(NO_WORDING);
+        }
         order.setSeal(issue.seal());
         OrderStepEntity issued = orderSteps.append(order, ISSUED, IdamUserIds.normalise(caseworker.getUid()),
             OrderStepEntity.builder()
