@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -41,6 +42,8 @@ class SendReplyMessageTest extends BaseEventTest {
     private FeatureToggleService featureToggleService;
     @Mock
     private UserRoleService userRoleService;
+    @Mock
+    private ClientContextRetriever clientContextRetriever;
 
     @InjectMocks
     private SendReplyMessage underTest;
