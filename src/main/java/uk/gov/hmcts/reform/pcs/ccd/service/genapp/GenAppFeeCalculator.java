@@ -54,7 +54,7 @@ public class GenAppFeeCalculator {
         return (applicationType != GenAppType.ADJOURN)
             || (genAppRequest.getWithin14Days() == VerticalYesNo.YES)
             || (featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)
-                && genAppRequest.getOtherPartiesAgreed() == VerticalYesNo.NO);
+                && (genAppRequest.getOtherPartiesAgreed() == VerticalYesNo.NO));
     }
 
     private static boolean isHwfReferenceProvided(GenAppRequest genAppRequest) {
