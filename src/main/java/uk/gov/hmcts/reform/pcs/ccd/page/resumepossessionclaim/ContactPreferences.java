@@ -155,7 +155,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             if (isCorrectClaimantContactAddress == VerticalYesNo.NO
                 || contactPreferences.getOrgAddressFound() == YesOrNo.NO) {
                 AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress();
-                validationErrors.addAll(addressValidator.validateAddressFields(contactAddress));
+                validationErrors.addAll(addressValidator.validateCorrespondenceAddress(contactAddress));
 
             }
             String overriddenEmail = contactPreferences.getOverriddenClaimantContactEmail();

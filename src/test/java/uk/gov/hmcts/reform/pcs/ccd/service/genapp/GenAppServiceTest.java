@@ -999,6 +999,28 @@ class GenAppServiceTest {
         }
 
         @Test
+        void shouldNotPersistConsentAndNoticeAnswersForSuspendApplications() {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SUSPEND)
+                .allPartiesAgree(VerticalYesNo.NO)
+                .withoutNotice(VerticalYesNo.YES)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .enterGenAppRequest(enterGenAppRequest)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getOtherPartiesAgreed()).isNull();
+            assertThat(genAppEntity.getWithoutNotice()).isNull();
+        }
+
+        @Test
         void shouldSaveUploadedGenAppAsSubmissionDocument() {
             // Given
             UUID applicantPartyId = UUID.randomUUID();
