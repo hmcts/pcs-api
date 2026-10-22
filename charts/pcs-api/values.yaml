@@ -68,6 +68,7 @@ java:
     SDP_EXPORT_ENVIRONMENT: "{{ .Values.global.environment }}"
     SDP_EXPORT_OUTPUT_DIR: "/tmp/sdp-export"
     SDP_EXPORT_ACCOUNT_URL: "https://pcssdp{{ .Values.global.environment }}.blob.core.windows.net"
+    MANAGE_CASE_BASE_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net"
 servicebus:
   enabled: false
 ccd:
