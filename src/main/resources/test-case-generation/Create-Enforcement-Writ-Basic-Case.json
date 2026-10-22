@@ -95,7 +95,14 @@
     "AddressLine2": "",
     "AddressLine3": ""
   },
-  "writCompletedBy": "CLAIMANT",
+  "writStatementOfTruth": {
+    "completedBy": "CLAIMANT",
+    "fullNameParty": "Test name",
+    "positionParty": "Test position",
+    "agreementClaimant": [
+      "BELIEVE_TRUE"
+    ]
+  },
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
     "fullNameParty": "wert",
@@ -124,8 +131,6 @@
       }
     }
   ],
-  "writFullNameParty": "dsftsdfg",
-  "writPositionParty": "dsfgsdfgsdf",
   "chooseEnforcementType": {
     "value": {
       "code": "WRIT",
@@ -144,9 +149,6 @@
     ]
   },
   "wantToUploadDocuments": "NO",
-  "writAgreementClaimant": [
-    "BELIEVE_TRUE"
-  ],
   "suspensionOfRTB_Reason": "asdfasdf",
   "claimAgainstTrespassers": "NO",
   "formattedDefendantNames": "TVR HN<br>\nTest1 Testing1<br>",

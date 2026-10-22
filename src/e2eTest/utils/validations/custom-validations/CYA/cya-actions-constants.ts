@@ -9,7 +9,7 @@ export const CYA_EXCLUDED_ACTIONS = new Set([
   'login',
   'reTryOnCallBackError',
   'selectAnEvent',
-  'errorValidationEnterGeneralAppPage',
+  'errorValidationEnterGeneralAppPage'
 ]);
 
 export const CYA_FLOW_EXCLUDED_ACTIONS = new Set([
