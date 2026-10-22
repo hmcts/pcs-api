@@ -51,6 +51,7 @@ public enum UserRole implements HasRole {
     CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
     JUDGE("judge", Set.of(R), RAS),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM),
+    SUPER_USER("caseworker-pcs-superuser", CRU, IDAM),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", Permission.CRU, IDAM),
     ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM);
 

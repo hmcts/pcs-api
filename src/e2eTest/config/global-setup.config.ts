@@ -68,11 +68,11 @@ async function authenticateAndSaveState(): Promise<string> {
 
     await page.waitForSelector('#email', { timeout: LONG_TIMEOUT });
     await page.locator('#email').fill(user.localAuthorityOrg1Usr1.email);
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Continue' }).click(); 
     const pwdHeader = page.getByLabel('Enter your password', { exact: true });
     await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
     await page.locator('#password').fill(user.localAuthorityOrg1Usr1.password);
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Continue' }).click(); 
 
     await page.waitForURL((url) => !url.href.includes('/enter-password'), { timeout: LONG_TIMEOUT });
 
