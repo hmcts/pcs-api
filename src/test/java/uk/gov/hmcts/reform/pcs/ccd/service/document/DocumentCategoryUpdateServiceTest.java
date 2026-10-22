@@ -32,7 +32,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -57,7 +56,7 @@ class DocumentCategoryUpdateServiceTest {
     }
 
     @Test
-    void shouldPersistSuppliedCategoriesAndPreserveDocumentDetails() {
+    void shouldPersistMovedCategoryAndIgnoreMissingCategory() {
         DocumentEntity first = document("propertyDocuments");
         DocumentEntity second = document("evidence");
         existingCase(first, second);
@@ -66,11 +65,10 @@ class DocumentCategoryUpdateServiceTest {
             CASE_REFERENCE, caseData(submitted(first, "correspondence"), submitted(second, null)));
 
         assertThat(first.getCategoryId()).isEqualTo("correspondence");
-        assertThat(second.getCategoryId()).isNull();
+        assertThat(second.getCategoryId()).isEqualTo("evidence");
         assertThat(first.getFileName()).isEqualTo("original.pdf");
         assertThat(first.getUrl()).isEqualTo("http://documents/" + first.getId());
         verify(documentRepository).save(first);
-        verify(documentRepository).save(second);
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verifyNoMoreInteractions(pcsCaseService, documentRepository);
     }
@@ -127,21 +125,22 @@ class DocumentCategoryUpdateServiceTest {
     }
 
     @Test
-    void shouldRejectConflictingChangesBeforeSaving() {
+    void shouldMoveDocumentWhenAnotherCopyIsUnchanged() {
         DocumentEntity entity = document("propertyDocuments");
         existingCase(entity);
 
         PCSCase caseData = PCSCase.builder()
-            .allDocuments(List.of(submitted(entity, "correspondence")))
-            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .tenancyLicenceDocuments(List.of(submitted(entity, "evidence"))).build())
+            .noticeServedDetails(NoticeServedDetails.builder()
+                                     .documents(List.of(submitted(entity, "propertyDocuments"))).build())
+            .caseDetailsTab(CaseDetailsTab.builder().noticeDetails(
+                NoticeTabDetails.builder().noticeDocuments(List.of(submitted(entity, "correspondence"))).build())
+                                .build())
             .build();
 
-        assertThatThrownBy(() -> underTest.updateCategories(CASE_REFERENCE, caseData))
-            .isInstanceOf(IllegalArgumentException.class);
+        underTest.updateCategories(CASE_REFERENCE, caseData);
 
-        assertThat(entity.getCategoryId()).isEqualTo("propertyDocuments");
-        verifyNoInteractions(documentRepository);
+        assertThat(entity.getCategoryId()).isEqualTo("correspondence");
+        verify(documentRepository).save(entity);
     }
 
     private static Stream<Function<List<ListValue<Document>>, PCSCase>> dedicatedDocumentFields() {

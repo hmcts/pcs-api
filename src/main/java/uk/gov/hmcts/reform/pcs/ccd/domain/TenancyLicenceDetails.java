@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalDocumentMoveAccess;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,8 +53,7 @@ public class TenancyLicenceDetails {
     private LocalDate tenancyLicenceDate;
 
     @CCD(
-        label = "Upload a copy of the tenancy or licence agreement",
-        access = {InternalDocumentMoveAccess.class}
+        label = "Upload a copy of the tenancy or licence agreement"
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
 

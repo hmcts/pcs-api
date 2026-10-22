@@ -6,13 +6,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,37 +24,30 @@ public class DocumentCategoryUpdateService {
 
     @Transactional
     public void updateCategories(long caseReference, PCSCase caseData) {
-        var documents = pcsCaseService.loadCase(caseReference).getDocuments();
+        List<DocumentEntity> documents = pcsCaseService.loadCase(caseReference).getDocuments();
         Map<String, String> storedCategories = new HashMap<>();
         documents.forEach(document -> storedCategories.put(document.getUrl(), document.getCategoryId()));
-        Map<String, Optional<String>> changes = new HashMap<>();
-        findChanges(objectMapper.valueToTree(caseData), storedCategories, changes);
 
-        documents.forEach(entity -> {
-            if (changes.containsKey(entity.getUrl())) {
-                entity.setCategoryId(changes.get(entity.getUrl()).orElse(null));
-                documentRepository.save(entity);
-            }
-        });
+        // A document can appear in more than one field, so only the copy that was moved has a new category
+        Map<String, String> movedCategories = new HashMap<>();
+        findMoved(objectMapper.valueToTree(caseData), storedCategories, movedCategories);
+
+        documents.stream()
+            .filter(document -> movedCategories.containsKey(document.getUrl()))
+            .forEach(document -> {
+                document.setCategoryId(movedCategories.get(document.getUrl()));
+                documentRepository.save(document);
+            });
     }
 
-    private void findChanges(JsonNode node, Map<String, String> storedCategories,
-                             Map<String, Optional<String>> changes) {
-        if (node.isObject()) {
-            if (node.hasNonNull("document_url")) {
-                String url = node.get("document_url").asText();
-                String category = node.path("category_id").asText(null);
-                if (storedCategories.containsKey(url) && !Objects.equals(storedCategories.get(url), category)) {
-                    Optional<String> target = Optional.ofNullable(category);
-                    Optional<String> existing = changes.computeIfAbsent(url, ignored -> target);
-                    if (!existing.equals(target)) {
-                        throw new IllegalArgumentException("Conflicting document categories for " + url);
-                    }
-                }
+    private void findMoved(JsonNode node, Map<String, String> storedCategories, Map<String, String> moved) {
+        if (node.isObject() && node.hasNonNull("document_url")) {
+            String url = node.get("document_url").asText();
+            String category = node.path("category_id").asText(null);
+            if (category != null && storedCategories.containsKey(url) && !category.equals(storedCategories.get(url))) {
+                moved.put(url, category);
             }
-            node.elements().forEachRemaining(child -> findChanges(child, storedCategories, changes));
-        } else if (node.isArray()) {
-            node.forEach(child -> findChanges(child, storedCategories, changes));
         }
+        node.forEach(child -> findMoved(child, storedCategories, moved));
     }
 }

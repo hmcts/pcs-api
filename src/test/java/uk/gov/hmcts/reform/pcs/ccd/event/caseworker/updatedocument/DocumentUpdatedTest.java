@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.updateddocument;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.updatedocument;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.event.caseworker.updatedocument.DocumentUpdated;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentCategoryUpdateService;
 
 import java.util.List;
