@@ -102,6 +102,7 @@ class CaseFlagsViewTest {
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(partyEntities.stream().map(this::mappedParty).toList())
+            .allDefendants(List.of(mappedParty(defendantEntity)))
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setParties(partyEntities);
@@ -120,6 +121,14 @@ class CaseFlagsViewTest {
 
         Party mappedOrgParty = findPartyById(pcsCase, orgEntity.getId().toString());
         assertNull(mappedOrgParty.getDefendantFlags());
+
+        assertEquals(1, pcsCase.getAllDefendants().size());
+
+        Party defendant = pcsCase.getAllDefendants().getFirst().getValue();
+        assertNotNull(defendant.getDefendantFlags());
+        assertEquals(1, defendant.getDefendantFlags().getDetails().size());
+        assertEquals("PF0015",
+                     defendant.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
     }
 
     @Test

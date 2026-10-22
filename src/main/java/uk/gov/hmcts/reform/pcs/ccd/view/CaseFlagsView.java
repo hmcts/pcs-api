@@ -48,9 +48,8 @@ public class CaseFlagsView {
 
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-
         mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
-        mapComplexPartyFlagFields(pcsCase, pcsCaseEntity);
+        mapPartiesFlagFields(pcsCase, pcsCaseEntity);
     }
 
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -114,13 +113,16 @@ public class CaseFlagsView {
                 .toList();
     }
 
-    private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    private void mapPartiesFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         Map<UUID, PartyRole> supportedPartyRoles = getSupportedPartyRoles(pcsCaseEntity);
-
         pcsCase.setPartySupport(
             mapPartySupport(pcsCaseEntity, supportedPartyRoles, resolveRepresentedPartyIds(pcsCaseEntity)));
 
-        List<ListValue<Party>> partyListValues = pcsCase.getParties();
+        setComplexFlagsToParty(pcsCase.getParties(), pcsCaseEntity, supportedPartyRoles);
+        setComplexFlagsToParty(pcsCase.getAllDefendants(), pcsCaseEntity, supportedPartyRoles);
+    }
+
+    private void setComplexFlagsToParty(List<ListValue<Party>> partyListValues, PcsCaseEntity pcsCaseEntity, Map<UUID, PartyRole> supportedPartyRoles) {
         if (CollectionUtils.isEmpty(partyListValues)) {
             return;
         }
