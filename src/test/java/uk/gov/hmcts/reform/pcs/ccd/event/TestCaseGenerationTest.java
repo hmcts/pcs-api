@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -250,7 +251,11 @@ class TestCaseGenerationTest {
         // Then
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
-        verify(enforceTheOrder).submit(new EventPayload<>(caseReference, loadedCase, null));
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<EventPayload<PCSCase, State>> captor = ArgumentCaptor.forClass(EventPayload.class);
+        verify(enforceTheOrder).submit(captor.capture());
+        assertThat(captor.getValue().caseReference()).isEqualTo(caseReference);
+        assertThat(captor.getValue().caseData()).isEqualTo(loadedCase);
     }
 
     @Test
