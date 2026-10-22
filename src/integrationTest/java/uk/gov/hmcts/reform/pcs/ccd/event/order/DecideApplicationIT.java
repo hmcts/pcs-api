@@ -53,6 +53,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.APPLICATION_DECISION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.NO_ORDER_ON_CLAIM;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
@@ -201,6 +202,16 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
             .containsExactly(MakeOrder.ALREADY_DECIDED);
+    }
+
+    @Test
+    @DisplayName("refuses an order on the application once an order made at a hearing decides it")
+    void refusesAnOrderOnAnApplicationDecidedAtAHearing() {
+        events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
+            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, NO_ORDER_ON_CLAIM,
+                Map.of("app-" + genAppId + "-decision", "grant"), WORDING, null), null));
+
+        assertThat(asJudgeDeciding(genAppId).startExpectingRejection()).containsExactly(MakeOrder.ALREADY_DECIDED);
     }
 
     @Test

@@ -22,7 +22,5 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     boolean existsByIdAndDocumentIsNotNull(UUID id);
 
-    boolean existsByGenAppIdAndStateIn(UUID genAppId, Collection<OrderState> states);
-
-    List<OrderEntity> findByGenAppIdAndState(UUID genAppId, OrderState state);
+    List<OrderEntity> findByPcsCaseIdAndStateIn(UUID caseId, Collection<OrderState> states);
 }

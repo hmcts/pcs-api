@@ -69,17 +69,18 @@ public class OrderTasks {
     }
 
     /**
-     * Whether a judge can decide the application: it is open, no order on it is with court staff or back with its
-     * judge, whose own tasks lead to it, and none issued on it decided it. Listing it for a hearing leaves it open.
+     * Whether a judge can decide the application: it is open, and no order on the case that decides it, made on it
+     * or at a hearing, is with court staff, back with its judge, whose own tasks lead to it, or issued. Listing it
+     * for a hearing leaves it to decide.
      */
     public boolean canDecide(GenAppEntity genApp) {
-        return genApp.isOpen()
-            && !orderRepository.existsByGenAppIdAndStateIn(genApp.getId(),
-                EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE))
-            && orderRepository.findByGenAppIdAndState(genApp.getId(), OrderState.ISSUED).stream()
-                .allMatch(issued -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(issued.getId())
-                    .map(step -> "list".equals(step.getFormData().get(decisionField(genApp))))
-                    .orElse(false));
+        return genApp.isOpen() && orderRepository.findByPcsCaseIdAndStateIn(genApp.getPcsCase().getId(),
+                EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED)).stream()
+            .noneMatch(order -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId())
+                .map(step -> step.getFormData().get(decisionField(genApp)))
+                .filter(decision -> !"none".equals(decision))
+                .filter(decision -> order.getState() != OrderState.ISSUED || !"list".equals(decision))
+                .isPresent());
     }
 
     /** The make order form's answer to what the judge decides about the application. */
