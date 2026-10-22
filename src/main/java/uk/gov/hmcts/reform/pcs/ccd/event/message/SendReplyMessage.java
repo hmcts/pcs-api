@@ -170,17 +170,14 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private AboutToStartOrSubmitResponse<PCSCase, State> checkAction(CaseDetails<PCSCase, State> details,
                                                                      CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
-        List<String> errors = caseData.getMessageAction() == MessageAction.SEND
+        return respond(caseData, caseData.getMessageAction() == MessageAction.SEND
             && boundMessage(caseData, pcsCaseService.loadCase(details.getId())).isPresent()
-            ? List.of(NOT_THE_TASKS_MESSAGE) : List.of();
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
+            ? List.of(NOT_THE_TASKS_MESSAGE) : List.of());
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> checkMessage(CaseDetails<PCSCase, State> details,
                                                                       CaseDetails<PCSCase, State> before) {
-        PCSCase caseData = details.getData();
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(messageErrors(caseData))
-            .build();
+        return respond(details.getData(), messageErrors(details.getData()));
     }
 
     private List<String> messageErrors(PCSCase caseData) {
@@ -196,20 +193,17 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = details.getData();
         Optional<CaseMessageEntity> message = chosen(pcsCaseService.loadCase(details.getId()), caseData);
         if (message.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData)
-                .errors(List.of(NO_MESSAGES)).build();
+            return respond(caseData, List.of(NO_MESSAGES));
         }
         caseData.setMessageSummaryMarkdown(summary(message.get()));
         caseData.setMessageHistory(history(message.get()));
         caseData.setMessageReplyRecipient(message.get().latest().getSenderRole());
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).build();
+        return respond(caseData, List.of());
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> checkReply(CaseDetails<PCSCase, State> details,
                                                                     CaseDetails<PCSCase, State> before) {
-        PCSCase caseData = details.getData();
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(replyErrors(caseData))
-            .build();
+        return respond(details.getData(), replyErrors(details.getData()));
     }
 
     private List<String> replyErrors(PCSCase caseData) {
@@ -335,6 +329,10 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private static String when(CaseMessageEntryEntity entry) {
         return LocalDateTime.ofInstant(entry.getCreatedAt(), UK_ZONE_ID).format(WHEN)
             .replace("AM", "am").replace("PM", "pm");
+    }
+
+    private static AboutToStartOrSubmitResponse<PCSCase, State> respond(PCSCase caseData, List<String> errors) {
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
     }
 
     private static SubmitResponse<State> rejected(List<String> errors) {
