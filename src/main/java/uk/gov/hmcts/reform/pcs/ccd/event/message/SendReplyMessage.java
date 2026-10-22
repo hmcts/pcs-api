@@ -68,8 +68,6 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private static final String REPLYING = "messageNeedReply=\"YES\"";
     static final String NO_MESSAGES = "There are no open messages for you to reply to on this case";
     static final String NOT_AVAILABLE = "Messages are not available";
-    static final String NOT_THE_TASKS_MESSAGE = "Your task is for a message: reply to it or close it. To send a new "
-        + "message, choose Send and reply to messages from the case";
     private static final UserRole[] JUDGE_ROLES = {
         UserRole.JUDGE, UserRole.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE};
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("d MMM yyyy, h:mma");
@@ -103,7 +101,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         String sending = fieldEquals(MESSAGE_ACTION, MessageAction.SEND);
         String replying = fieldEquals(MESSAGE_ACTION, MessageAction.REPLY);
         PageBuilder pages = new PageBuilder(eventBuilder);
-        pages.page(MESSAGE_ACTION, this::checkAction)
+        pages.page(MESSAGE_ACTION)
             .pageLabel("Send or reply to a message")
             .mandatory(PCSCase::getMessageAction)
             .readonly(PCSCase::getMessageTaskMessageId, ShowConditions.NEVER_SHOW, true);
@@ -147,32 +145,22 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
                 .label("GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName())).build())
             .toList()).build());
         List<CaseMessageEntity> awaiting = messageService.awaiting(pcsCase, userRoleService.isJudge());
-        // Started from a message's task, the user replies to or closes that message, which completes the task.
-        // A task whose message has since been answered or closed offers nothing, so its user marks it done.
+        // Started from a message's task, as XUI also does from the case when the user has one task for the event,
+        // the event starts on replying to that message.
         Optional<UUID> taskMessage = taskMessageId(pcsCase);
-        Optional<CaseMessageEntity> tasks = taskMessage
-            .flatMap(id -> awaiting.stream().filter(message -> message.getId().equals(id)).findFirst());
-        List<DynamicListElement> choices = (taskMessage.isPresent() ? tasks.stream().toList() : awaiting).stream()
+        List<DynamicListElement> choices = awaiting.stream()
             .map(message -> DynamicListElement.builder().code(message.getId())
                 .label("%s, from %s, %s".formatted(message.getSubject(), message.latest().getSenderName(),
                     when(message.latest()))).build())
             .toList();
-        caseData.setMessageReplyList(DynamicList.builder().listItems(choices)
-            .value(tasks.isPresent() ? choices.getFirst() : null).build());
+        Optional<DynamicListElement> tasks = choices.stream()
+            .filter(choice -> taskMessage.filter(choice.getCode()::equals).isPresent()).findFirst();
+        caseData.setMessageReplyList(DynamicList.builder().listItems(choices).value(tasks.orElse(null)).build());
         if (tasks.isPresent()) {
             caseData.setMessageAction(MessageAction.REPLY);
         }
         caseData.setMessageTaskMessageId(taskMessage.map(UUID::toString).orElse(null));
         return caseData;
-    }
-
-    /** Started from a message's task, the user acts on that message, so the task completes with it. */
-    private AboutToStartOrSubmitResponse<PCSCase, State> checkAction(CaseDetails<PCSCase, State> details,
-                                                                     CaseDetails<PCSCase, State> before) {
-        PCSCase caseData = details.getData();
-        return respond(caseData, caseData.getMessageAction() == MessageAction.SEND
-            && boundMessage(caseData, pcsCaseService.loadCase(details.getId())).isPresent()
-            ? List.of(NOT_THE_TASKS_MESSAGE) : List.of());
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> checkMessage(CaseDetails<PCSCase, State> details,
@@ -230,20 +218,26 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
         // The pages check these as the user goes; an event submitted without them is checked here.
         boolean sending = caseData.getMessageAction() == MessageAction.SEND;
-        Optional<UUID> tasksMessage = boundMessage(caseData, pcsCase);
-        if (tasksMessage.isPresent() && (sending || !tasksMessage.get().equals(chosenId(caseData)))) {
-            // Completing the task the event was started from would leave its own message without one.
-            return rejected(List.of(NOT_THE_TASKS_MESSAGE));
-        }
         List<String> errors = sending ? messageErrors(caseData) : replyErrors(caseData);
         if (!errors.isEmpty()) {
             return rejected(errors);
         }
-
-        if (sending) {
-            return send(pcsCase, caseData, name, senderRole);
+        Optional<UUID> tasksMessage = boundMessage(caseData, pcsCase);
+        boolean fromItsTask = !sending && tasksMessage.isPresent() && tasksMessage.get().equals(chosenId(caseData));
+        SubmitResponse<State> response = sending
+            ? send(pcsCase, caseData, name, senderRole)
+            : answer(pcsCase, caseData, name, senderRole, fromItsTask);
+        // XUI completes the task the event was started from whatever the user did, so a message they left for
+        // another is asked about again.
+        if ((response.getErrors() == null || response.getErrors().isEmpty()) && !fromItsTask) {
+            tasksMessage.flatMap(id -> messageService.awaiting(pcsCase, userRoleService.isJudge()).stream()
+                .filter(message -> message.getId().equals(id)).findFirst()).ifPresent(messageService::askToReview);
         }
+        return response;
+    }
 
+    private SubmitResponse<State> answer(PcsCaseEntity pcsCase, PCSCase caseData, String name,
+                                         MessageRecipient senderRole, boolean fromItsTask) {
         Optional<CaseMessageEntity> message = chosen(pcsCase, caseData);
         if (message.isEmpty()) {
             return rejected(List.of(NO_MESSAGES));
@@ -251,15 +245,14 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         if (caseData.getMessageNeedReply() == VerticalYesNo.YES) {
             messageService.reply(message.get(), new Writing(name, senderRole,
                 caseData.getMessageReplyRecipient(), caseData.getMessageReplyUrgent() == VerticalYesNo.YES,
-                caseData.getMessageReply().trim()), tasksMessage.isPresent());
+                caseData.getMessageReply().trim()), fromItsTask);
             return confirmed("Reply sent",
                 "A task to review the reply has been created for " + caseData.getMessageReplyRecipient().getLabel()
                     + ".");
         }
         String note = caseData.getMessageClosureNote() == null || caseData.getMessageClosureNote().isBlank()
             ? null : caseData.getMessageClosureNote().trim();
-        // A task bound to a message is this message's: anything else was refused above.
-        MessageRecipient told = messageService.closeWithoutReply(message.get(), name, note, tasksMessage.isPresent());
+        MessageRecipient told = messageService.closeWithoutReply(message.get(), name, note, fromItsTask);
         return confirmed("Message closed",
             "A task has been created for " + told.getLabel() + " to review.");
     }

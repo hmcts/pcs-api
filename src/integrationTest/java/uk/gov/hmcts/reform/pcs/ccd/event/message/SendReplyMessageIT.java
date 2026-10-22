@@ -36,7 +36,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -155,8 +157,8 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("started from a message's task, offers only that message to reply to or close, and refuses "
-        + "another, so the task completes with its own message")
+    @DisplayName("started from a message's task, starts on that message, and asks about it again if the user "
+        + "answers another or sends a new one, as XUI completes the task whatever they do")
     void keepsTheTaskToItsMessage() {
         send();
         send();
@@ -167,23 +169,27 @@ class SendReplyMessageIT extends OrderEventIT {
 
         var started = events.start(caseReference, sendReplyMessage.name()).as(judge).withClientContext(fromTask)
             .startExpectingSuccess();
-        assertThat(started.caseData().getMessageReplyList().getListItems()).extracting(DynamicListElement::getCode)
-            .containsExactly(tasks);
+        assertThat(started.caseData().getMessageReplyList().getListItems()).hasSize(2);
         assertThat(started.caseData().getMessageReplyList().getValueCode()).isEqualTo(tasks);
         assertThat(started.caseData().getMessageAction()).isEqualTo(MessageAction.REPLY);
 
-        // The event holds the user to the task's message to the end, as its own data records it.
-        assertThat(started.edit(pcsCase -> {
+        clearInvocations(camundaService);
+        started.edit(pcsCase -> {
             pcsCase.setMessageReplyList(DynamicList.builder().value(both.getLast()).listItems(both).build());
             pcsCase.setMessageNeedReply(VerticalYesNo.NO);
-        }).as(judge).submitExpectingErrors().errors()).containsExactly(SendReplyMessage.NOT_THE_TASKS_MESSAGE);
+        }).as(judge).submitExpectingSuccess();
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE), anyString(),
+            eq(true), eq(tasks));
 
         // Answered from its task, the task is XUI's to close.
+        clearInvocations(camundaService);
         events.start(caseReference, sendReplyMessage.name()).as(judge).withClientContext(fromTask)
             .startExpectingSuccess()
             .edit(pcsCase -> pcsCase.setMessageNeedReply(VerticalYesNo.NO))
             .as(judge).submitExpectingSuccess();
         verify(camundaService, never()).cancelMessageTask(anyLong(), any(), any());
+        verify(camundaService, never())
+            .createTask(anyLong(), eq(TaskType.REVIEW_MESSAGE_JUDGE), anyString(), anyBoolean(), any());
     }
 
     @Test
