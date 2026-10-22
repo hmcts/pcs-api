@@ -145,8 +145,8 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("started from a message's task, offers only that message to reply to or close, so the task "
-        + "completes with its own message")
+    @DisplayName("started from a message's task, offers only that message to reply to or close, and refuses "
+        + "another, so the task completes with its own message")
     void keepsTheTaskToItsMessage() {
         send();
         send();
@@ -161,6 +161,12 @@ class SendReplyMessageIT extends OrderEventIT {
             .containsExactly(tasks);
         assertThat(started.caseData().getMessageReplyList().getValueCode()).isEqualTo(tasks);
         assertThat(started.caseData().getMessageAction()).isEqualTo(MessageAction.REPLY);
+
+        // The event holds the user to the task's message to the end, as its own data records it.
+        assertThat(started.edit(pcsCase -> {
+            pcsCase.setMessageReplyList(DynamicList.builder().value(both.getLast()).listItems(both).build());
+            pcsCase.setMessageNeedReply(VerticalYesNo.NO);
+        }).as(judge).submitExpectingErrors().errors()).containsExactly(SendReplyMessage.NOT_THE_TASKS_MESSAGE);
     }
 
     @Test
@@ -177,6 +183,7 @@ class SendReplyMessageIT extends OrderEventIT {
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
             .contains("Closed messages", "Answered by an order on the application");
+        verify(camundaService).cancelMessageTask(caseReference, messageId);
         // The message's task, opened after, offers nothing to reply to, so the judge marks it done.
         assertThat(events.start(caseReference, sendReplyMessage.name()).as(judge)
             .withClientContext(Map.of("client_context", Map.of("user_task", Map.of("task_data",

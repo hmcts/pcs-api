@@ -768,6 +768,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private String messageSummaryMarkdown;
 
+    /** The message the task the event was started from is for, which the event holds the user to. */
+    @CCD(searchable = false)
+    private String messageTaskMessageId;
+
     @CCD(label = "Message history", searchable = false, typeOverride = TextArea)
     private String messageHistory;
 

@@ -103,7 +103,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         PageBuilder pages = new PageBuilder(eventBuilder);
         pages.page("messageAction", this::checkAction)
             .pageLabel("Send or reply to a message")
-            .mandatory(PCSCase::getMessageAction);
+            .mandatory(PCSCase::getMessageAction)
+            .readonly(PCSCase::getMessageTaskMessageId, ShowConditions.NEVER_SHOW, true);
         pages.page("sendMessage", this::checkMessage)
             .showCondition(sending)
             .pageLabel("Send a new message")
@@ -159,6 +160,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         if (tasks.isPresent()) {
             caseData.setMessageAction(MessageAction.REPLY);
         }
+        caseData.setMessageTaskMessageId(taskMessage.map(UUID::toString).orElse(null));
         return caseData;
     }
 
@@ -166,7 +168,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private AboutToStartOrSubmitResponse<PCSCase, State> checkAction(CaseDetails<PCSCase, State> details,
                                                                      CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
-        List<String> errors = caseData.getMessageAction() == MessageAction.SEND && taskMessageId().isPresent()
+        List<String> errors = caseData.getMessageAction() == MessageAction.SEND && boundMessage(caseData).isPresent()
             ? List.of(NOT_THE_TASKS_MESSAGE) : List.of();
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
     }
@@ -231,7 +233,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
         // The pages check these as the user goes; an event submitted without them is checked here.
         boolean sending = caseData.getMessageAction() == MessageAction.SEND;
-        Optional<UUID> tasksMessage = taskMessageId();
+        Optional<UUID> tasksMessage = boundMessage(caseData);
         if (tasksMessage.isPresent() && (sending || !tasksMessage.get().equals(chosenId(caseData)))) {
             // Completing the task the event was started from would leave its own message without one.
             return rejected(List.of(NOT_THE_TASKS_MESSAGE));
@@ -285,6 +287,11 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
     private static UUID chosenId(PCSCase caseData) {
         return caseData.getMessageReplyList() == null ? null : caseData.getMessageReplyList().getValueCode();
+    }
+
+    /** The message the event was started from the task of, as the client context or the event's own data says. */
+    private Optional<UUID> boundMessage(PCSCase caseData) {
+        return taskMessageId().or(() -> Optional.ofNullable(caseData.getMessageTaskMessageId()).map(UUID::fromString));
     }
 
     /** The message the task the event was started from is for, if it was started from one. */
