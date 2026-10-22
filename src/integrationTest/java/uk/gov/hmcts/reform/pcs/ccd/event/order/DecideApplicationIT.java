@@ -47,6 +47,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SOMETHING_ELSE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
@@ -110,6 +111,8 @@ class DecideApplicationIT extends OrderEventIT {
         OrderStart start = asJudgeDeciding(genAppId).start();
 
         Application application = start.caseContext().application();
+        assertThat(application.id()).isEqualTo(genAppId);
+        assertThat(application.warrantSuspension()).isFalse();
         assertThat(application.reference()).isEqualTo("GA1");
         assertThat(application.type()).isEqualTo("Adjourn the hearing");
         assertThat(application.applicant()).isEqualTo(IssuedCases.DEFENDANT + " (Defendant 1)");
@@ -120,6 +123,27 @@ class DecideApplicationIT extends OrderEventIT {
             .containsExactly(
                 tuple(FORM_ID, "application-form.pdf"),
                 tuple(WITNESS_STATEMENT_ID, "witness-statement.pdf"));
+    }
+
+    @Test
+    @DisplayName("sends every open application with an order on the case, oldest first, flagging a warrant suspension")
+    void sendsEveryOpenApplication() {
+        cases.update(caseReference, pcsCase -> {
+            PartyEntity defendant = pcsCase.getParties().stream()
+                .filter(party -> party.getOrgName() == null).findFirst().orElseThrow();
+            pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(SOMETHING_ELSE).state(GEN_APP_ISSUED)
+                .somethingElseDetails("Suspend the warrant of possession")
+                .applicationSubmittedDate(LocalDateTime.of(2026, 10, 9, 14, 0)).build());
+        });
+
+        OrderStart start = events.external(caseReference, MAKE_ORDER).as(judge).start();
+
+        assertThat(start.caseContext().application()).isNull();
+        assertThat(start.caseContext().applications())
+            .extracting(Application::reference, Application::warrantSuspension)
+            .containsExactly(tuple("GA1", false), tuple("GA2", true));
+        assertThat(start.caseContext().applications()).extracting(Application::id).doesNotContainNull()
+            .first().isEqualTo(genAppId);
     }
 
     @Test
