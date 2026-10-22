@@ -122,7 +122,11 @@ public class CaseFlagsView {
         setComplexFlagsToParty(pcsCase.getAllDefendants(), pcsCaseEntity, supportedPartyRoles);
     }
 
-    private void setComplexFlagsToParty(List<ListValue<Party>> partyListValues, PcsCaseEntity pcsCaseEntity, Map<UUID, PartyRole> supportedPartyRoles) {
+    private void setComplexFlagsToParty(
+        List<ListValue<Party>> partyListValues,
+        PcsCaseEntity pcsCaseEntity,
+        Map<UUID, PartyRole> supportedPartyRoles
+    ) {
         if (CollectionUtils.isEmpty(partyListValues)) {
             return;
         }
