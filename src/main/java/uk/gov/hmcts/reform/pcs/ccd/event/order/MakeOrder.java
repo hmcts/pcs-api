@@ -61,6 +61,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     public static final ExternalEventId<OrderStart, MakeOrderRequest> MAKE_ORDER =
         ExternalEventId.of("ext:makeOrder", OrderStart.class, MakeOrderRequest.class);
 
+    static final String ALREADY_DECIDED =
+        "Another order on this application is with court staff, back with its judge, or has decided it";
+
     /** The states that leave an order its author's to change. */
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
     private static final String NO_LONGER_CHANGEABLE = "The order is no longer waiting for you to change it";
@@ -111,6 +114,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             ? Optional.of(chosenOrder(chosenOrderId.get(), caseReference, judge))
             : orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
                 caseReference, judge, DRAFT, genAppId);
+        if (order.isEmpty() && genAppId != null) {
+            requireDecidable(pcsCase, genAppId);
+        }
         OrderStart.Order workingOrder = order
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
                 chosenOrderId.isPresent() ? messageService.lastOrderMessage(o, false).orElse(null) : null))
@@ -139,6 +145,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge, change.genAppId())
             : workingDraft(caseReference, judge, change);
+        if (request.action() == SUBMIT_FOR_REVIEW && order.getState() == DRAFT && order.getGenAppId() != null) {
+            requireDecidable(order.getPcsCase(), order.getGenAppId());
+        }
         if (order.getHearing() != null && request.hearing() == null) {
             throw ExternalRejection.because("The order's hearing record is missing");
         }
@@ -214,6 +223,13 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("The order draft does not exist for this case"));
         orderSteps.latest(draft, change.version());
         return draft;
+    }
+
+    /** Another order on the application, under way or issued, already decides it. */
+    private void requireDecidable(PcsCaseEntity pcsCase, UUID genAppId) {
+        if (!orderTasks.canDecide(openGenApp(pcsCase, genAppId))) {
+            throw ExternalRejection.because(ALREADY_DECIDED);
+        }
     }
 
     /** The case's application, which an order can only be made on while it is open. */

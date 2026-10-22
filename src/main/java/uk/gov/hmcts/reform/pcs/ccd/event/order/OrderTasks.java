@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -33,17 +34,20 @@ public class OrderTasks {
     private final TaskDescriptionService taskDescriptionService;
     private final SecurityContextService securityContextService;
     private final OrderRepository orderRepository;
+    private final OrderStepRepository orderStepRepository;
     private final String frontendUrl;
 
     public OrderTasks(CamundaService camundaService,
                       TaskDescriptionService taskDescriptionService,
                       SecurityContextService securityContextService,
                       OrderRepository orderRepository,
+                      OrderStepRepository orderStepRepository,
                       @Value("${frontend.url}") String frontendUrl) {
         this.camundaService = camundaService;
         this.taskDescriptionService = taskDescriptionService;
         this.securityContextService = securityContextService;
         this.orderRepository = orderRepository;
+        this.orderStepRepository = orderStepRepository;
         this.frontendUrl = frontendUrl;
     }
 
@@ -65,12 +69,17 @@ public class OrderTasks {
     }
 
     /**
-     * Whether a judge can be offered to decide the application: it is open, and no order on it is with court staff
-     * or back with its judge, whose own tasks lead to it.
+     * Whether a judge can decide the application: it is open, no order on it is with court staff or back with its
+     * judge, whose own tasks lead to it, and none issued on it decided it. Listing it for a hearing leaves it open.
      */
     public boolean canDecide(GenAppEntity genApp) {
-        return genApp.isOpen() && !orderRepository.existsByGenAppIdAndStateIn(genApp.getId(),
-            EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE));
+        return genApp.isOpen()
+            && !orderRepository.existsByGenAppIdAndStateIn(genApp.getId(),
+                EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE))
+            && orderRepository.findByGenAppIdAndState(genApp.getId(), OrderState.ISSUED).stream()
+                .allMatch(issued -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(issued.getId())
+                    .map(step -> "list".equals(step.getFormData().get("application-decision")))
+                    .orElse(false));
     }
 
     /** The task link that starts the judge's order deciding the application. */
