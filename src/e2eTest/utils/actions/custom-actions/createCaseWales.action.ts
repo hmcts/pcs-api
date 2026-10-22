@@ -4,9 +4,7 @@ import {performAction, performActions, performValidation} from '@utils/controlle
 import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
 import {
   // migration (page-data → page-data-figma)
-  contactPreferences,
   documentsYouVeUploadedCheckListWales,
-  exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales,
 } from '@data/page-data-figma';
@@ -15,7 +13,6 @@ import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
       ['selectAsb', () => this.selectAsb(fieldName as actionRecord)],
@@ -25,13 +22,6 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
-  }
-
-  private async selectClaimantDetails(claimant: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: claimant.question1, option: claimant.option1});
-    await performAction('clickButtonAndVerifyPageNavigation', exemptLandlord.continueButton, contactPreferences.mainHeader);    
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
