@@ -45,4 +45,9 @@ public class AddJudicialNoteTest extends BaseEventTest {
         assertThat(response.getConfirmationBody()).contains("Judicial note added");
     }
 
+    @Test
+    void shouldShowEventWithoutAFeatureFlagCondition() {
+        assertConfiguredShowConditions(null);
+    }
+
 }

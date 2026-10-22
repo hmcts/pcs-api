@@ -22,7 +22,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '7.7.0'
+  id 'hmcts.ccd.sdk' version '7.16.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2419'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
@@ -207,6 +207,10 @@ serenity {
 tasks.register('integration', Test) {
   description = "Runs integration tests"
   group = "Verification"
+  systemProperty 'feature.make-order-enabled', 'true'
+  // This suite uses PostgreSQL containers; background integrations run in cftlibTest.
+  systemProperty 'ccd.sdk.decentralised.es-indexer.enabled', 'false'
+  environment 'LAUNCHDARKLY_OFFLINE', 'true'
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   maxHeapSize = '1g'
@@ -317,6 +321,7 @@ jacoco {
 jacocoTestReport {
   // Tolerates missing exec files: jacoco skips execution data that is not present.
   executionData(test, integration, cftlibTest)
+  mustRunAfter integration
   reports {
     xml.required = true
     csv.required = false
@@ -325,7 +330,8 @@ jacocoTestReport {
 }
 
 tasks.named('sonarqube') {
-  dependsOn jacocoTestReport
+  // PR checks skip integration, but Sonar needs its coverage before generating the report.
+  dependsOn integration, jacocoTestReport
 }
 
 if (integrationTestsEnabled) {
@@ -493,7 +499,7 @@ dependencies {
   testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.2'
   testImplementation group: 'org.wiremock', name: 'wiremock-standalone', version: '3.13.2'
 
-  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.11') {
+  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.12_CCD-8388') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
@@ -683,14 +689,18 @@ cftlibTest {
   environment 'ENABLE_CASE_GROUP_ACCESS_FILTERING', 'true'
 
   // To match the fake document URLs returned by the shared Wiremock
-  environment 'CCD_DOCUMENT_URL_PATTERN', 'https://docstore/document/[A-Za-z0-9-]+.*'
+  environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:8083/documents/[A-Za-z0-9-]+.*'
 
   // Use shared wiremock (8083) for the document services in CftLib tests
   environment 'DM_STORE_BASE_URL', 'http://localhost:8083'
   environment 'DOC_ASSEMBLY_URL', 'http://localhost:8083'
 
-  // Use wiremock spun up by tests (9400) for email, so it can be queried easily
+  // Use wiremock spun up by tests (9400) for email and bulk print, so it is isolated and can be queried easily
   environment 'NOTIFY_URL', 'http://localhost:9400'
+  environment 'SEND_LETTER_URL', 'http://localhost:9400'
+
+  // Override feature flags for tests
+  systemProperty 'feature.bulk-print-enabled', 'true'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

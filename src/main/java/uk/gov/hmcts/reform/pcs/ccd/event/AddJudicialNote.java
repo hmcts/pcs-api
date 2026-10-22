@@ -53,7 +53,6 @@ public class AddJudicialNote implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         judicialNoteService.addJudicialNote(caseReference, pcsCase);

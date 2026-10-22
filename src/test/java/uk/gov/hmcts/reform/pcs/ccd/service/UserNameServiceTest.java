@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.UserNameRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,13 +36,14 @@ public class UserNameServiceTest {
     @InjectMocks
     private UserNameService userNameService;
 
-    @Test
-    void shouldReturnExistingUserIfPresent() {
+    @ParameterizedTest
+    @ValueSource(strings = {"1245", "idam-user-123", "7FB8BD47-D568-499F-A078-43AFADC74921"})
+    void shouldReturnExistingUserIfPresent(String uid) {
         // Given
-        UUID idamId = UUID.randomUUID();
+        String idamId = uid.toLowerCase(Locale.ROOT);
         String idamName = "IDAM Name";
         UserInfo userInfo = UserInfo.builder()
-            .uid(idamId.toString())
+            .uid(uid)
             .name(idamName)
             .build();
 
@@ -63,13 +66,14 @@ public class UserNameServiceTest {
         verify(userNameRepository, never()).save(any());
     }
 
-    @Test
-    void shouldCreateNewUserIfNotPresent() {
+    @ParameterizedTest
+    @ValueSource(strings = {"1245", "idam-user-123", "7FB8BD47-D568-499F-A078-43AFADC74921"})
+    void shouldCreateNewUserIfNotPresent(String uid) {
         // Given
-        UUID idamId = UUID.randomUUID();
+        String idamId = uid.toLowerCase(Locale.ROOT);
         String idamName = "IDAM Name";
         UserInfo userInfo = UserInfo.builder()
-            .uid(idamId.toString())
+            .uid(uid)
             .name(idamName)
             .build();
 
@@ -94,10 +98,10 @@ public class UserNameServiceTest {
     @Test
     void shouldHandleUserCreatedByADifferentConcurrentRequest() {
         // Given
-        UUID idamId = UUID.randomUUID();
+        String idamId = "1245";
         String idamName = "IDAM Name";
         UserInfo userInfo = UserInfo.builder()
-            .uid(idamId.toString())
+            .uid(idamId)
             .name(idamName)
             .build();
 
@@ -134,10 +138,10 @@ public class UserNameServiceTest {
     @Test
     void shouldThrowExceptionIfUserPresentButNotAbleToBeFetched() {
         // Given
-        UUID idamId = UUID.randomUUID();
+        String idamId = "1245";
         String idamName = "IDAM Name";
         UserInfo userInfo = UserInfo.builder()
-            .uid(idamId.toString())
+            .uid(idamId)
             .name(idamName)
             .build();
 
