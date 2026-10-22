@@ -70,8 +70,6 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                 .mandatory(AdditionalDocument::getDocument)
                 .mandatory(AdditionalDocument::getDescription)
             .done()
-            //.mandatory(PCSCase::getAdditionalDocumentsEngland, ENGLAND)
-            //.mandatory(PCSCase::getAdditionalDocumentsWales, WALES)
             .label("uploadAdditionalDocuments-saveAndReturn", SAVE_AND_RETURN);
     }
 
@@ -135,9 +133,12 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             return firstAdditionalDocument.getValue().getDocumentType().getListItems();
         }
 
-        return caseData.getLegislativeCountry() == LegislativeCountry.WALES
-            ? createDocumentTypeItems(AdditionalDocumentTypeWales.values())
-            : createDocumentTypeItems(AdditionalDocumentTypeEngland.values());
+        List<DynamicListElement> documentTypes = createDocumentTypeItems(
+            caseData.getLegislativeCountry() == LegislativeCountry.WALES
+            ? AdditionalDocumentTypeWales.values()
+            : AdditionalDocumentTypeEngland.values());
+
+        return documentTypes;
     }
 
     private List<DynamicListElement> createDocumentTypeItems(HasLabel[] documentTypes) {

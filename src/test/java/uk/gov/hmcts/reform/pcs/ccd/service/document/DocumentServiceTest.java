@@ -99,7 +99,7 @@ class DocumentServiceTest {
     @Mock
     private CamundaService camundaService;
     @Mock(strictness = LENIENT)
-    private PcsCaseEntity pcsCase;
+    private PcsCaseEntity pcsCaseEntity;
 
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
@@ -112,7 +112,7 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(pcsCase.getCaseReference()).thenReturn(CASE_REFERENCE);
+        when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
         underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService,
                                         documentTypeMapper, documentCategoryMapper,
@@ -1169,7 +1169,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
-        setUpDefendantParty(pcsCase, party, 2);
+        setUpDefendantParty(pcsCaseEntity, party, 2);
 
         UploadedDocument defDoc1 = UploadedDocument.builder()
             .document(Document.builder()
@@ -1198,7 +1198,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result =
-            underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+            underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1209,7 +1209,7 @@ class DocumentServiceTest {
             assertThat(entity.getType()).isNull();
             assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
             assertThat(entity.getDefendantResponse()).isEqualTo(response);
-            assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
+            assertThat(entity.getPcsCase()).isEqualTo(pcsCaseEntity);
             assertThat(entity.getParty()).isEqualTo(party);
         });
 
@@ -1236,7 +1236,7 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(null, response, pcsCase, party);
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(null, response, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -1251,7 +1251,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
-            Collections.emptyList(), response, pcsCase, party);
+            Collections.emptyList(), response, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -1263,7 +1263,7 @@ class DocumentServiceTest {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
-        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+        when(pcsCaseEntity.getClaims()).thenReturn(Collections.emptyList());
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder().url("url1").filename("file1.pdf").binaryUrl("bin1").build())
@@ -1275,7 +1275,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
-            uploadedDocs, response, pcsCase, party);
+            uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -1288,7 +1288,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
-        setUpDefendantParty(pcsCase, party, 1);
+        setUpDefendantParty(pcsCaseEntity, party, 1);
 
         UploadedDocument validDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -1307,7 +1307,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1322,7 +1322,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
-        setUpDefendantParty(pcsCase, party, 1);
+        setUpDefendantParty(pcsCaseEntity, party, 1);
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -1336,7 +1336,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1372,8 +1372,8 @@ class DocumentServiceTest {
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendPartyPostfix("file-new.pdf", mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
@@ -1396,7 +1396,7 @@ class DocumentServiceTest {
         )).thenReturn(description);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1411,7 +1411,7 @@ class DocumentServiceTest {
         assertThat(entity.getBinaryUrl()).isEqualTo("bin-new");
         assertThat(entity.getContentType()).isEqualTo("application/pdf");
         assertThat(entity.getSize()).isEqualTo(123L);
-        assertThat(entity.getPcsCase()).isSameAs(pcsCase);
+        assertThat(entity.getPcsCase()).isSameAs(pcsCaseEntity);
         assertThat(entity.getParty()).isSameAs(party);
         verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
     }
@@ -1424,8 +1424,8 @@ class DocumentServiceTest {
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         GenAppEntity selectedGenApp = mock(GenAppEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendGenAppPostfix("file-new.pdf", selectedGenApp, mainClaim, partyId))
             .thenReturn("file-new GA1 - Defendant 1.pdf");
 
@@ -1448,7 +1448,7 @@ class DocumentServiceTest {
         )).thenReturn(expectedTaskDescription);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, selectedGenApp, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1471,8 +1471,8 @@ class DocumentServiceTest {
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
@@ -1492,7 +1492,7 @@ class DocumentServiceTest {
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, selectedCounterClaim);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1515,8 +1515,8 @@ class DocumentServiceTest {
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
@@ -1539,7 +1539,7 @@ class DocumentServiceTest {
         )).thenReturn(expectedTaskDescription);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, selectedCounterClaim);
 
         // Then
         verify(camundaService)
@@ -1554,8 +1554,8 @@ class DocumentServiceTest {
         DocumentEntity existing = DocumentEntity.builder().url("url-existing").build();
         List<DocumentEntity> existingDocs = new ArrayList<>();
         existingDocs.add(existing);
-        when(pcsCase.getDocuments()).thenReturn(existingDocs);
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(existingDocs);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         UploadedDocument duplicate = UploadedDocument.builder()
             .document(Document.builder()
@@ -1579,7 +1579,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1593,8 +1593,8 @@ class DocumentServiceTest {
         // Given
         List<DocumentEntity> existingDocs = new ArrayList<>();
         existingDocs.add(DocumentEntity.builder().url("url-existing").build());
-        when(pcsCase.getDocuments()).thenReturn(existingDocs);
-        when(pcsCase.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+        when(pcsCaseEntity.getDocuments()).thenReturn(existingDocs);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
 
         UploadedDocument duplicate = UploadedDocument.builder()
             .document(Document.builder()
@@ -1607,7 +1607,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());
@@ -1619,8 +1619,8 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(null, pcsCase, party, null, null);
-        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(null, pcsCaseEntity, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());
@@ -1630,8 +1630,8 @@ class DocumentServiceTest {
     void shouldThrowClaimNotFoundExceptionWhenCaseHasNoClaims() {
         // Given
         PartyEntity party = mock(PartyEntity.class);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(Collections.emptyList());
 
         UploadedDocument uploaded = UploadedDocument.builder()
             .document(Document.builder()
@@ -1643,7 +1643,7 @@ class DocumentServiceTest {
 
         // When / Then
         assertThatThrownBy(() ->
-            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null))
+            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null))
             .isInstanceOf(ClaimNotFoundException.class)
             .hasMessageContaining(String.valueOf(CASE_REFERENCE));
 
@@ -1870,7 +1870,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result =
-            underTest.createCounterClaimUploadedDocuments(null, counterClaim, pcsCase, party);
+            underTest.createCounterClaimUploadedDocuments(null, counterClaim, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -1886,7 +1886,7 @@ class DocumentServiceTest {
         // When
         List<DocumentEntity> result =
             underTest.createCounterClaimUploadedDocuments(
-                Collections.emptyList(), counterClaim, pcsCase, party);
+                Collections.emptyList(), counterClaim, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
@@ -76,7 +77,7 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
         }
 
         draftCase.getAdditionalDocuments().stream()
-            .map(listValue -> listValue.getValue())
+            .map(ListValue::getValue)
             .filter(document -> document != null && document.getDocumentType() != null)
             .filter(document -> document.getDocumentType().getValue() != null)
             .forEach(document -> copyDocumentType(document, legislativeCountry));
