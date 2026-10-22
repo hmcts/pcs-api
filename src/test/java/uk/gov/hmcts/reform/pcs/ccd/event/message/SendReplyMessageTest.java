@@ -28,7 +28,8 @@ class SendReplyMessageTest extends BaseEventTest {
 
     @Test
     void shouldShowTheSubjectAsWrittenNotAsMarkdownOrHtml() {
-        CaseMessageEntity message = CaseMessageEntity.builder().subject("<img src=x> [GA1](x) *now* #2 O'Neil's").build();
+        CaseMessageEntity message = CaseMessageEntity.builder()
+            .subject("<img src=x> [GA1](x) *now* #2 O'Neil's").build();
 
         assertThat(SendReplyMessage.summary(message)).startsWith(
             "### &lt;img src=x&gt; \\[GA1\\](x) \\*now\\* \\#2 O&#39;Neil&#39;s\n\n");
