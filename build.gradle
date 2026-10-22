@@ -710,9 +710,12 @@ tasks.register('highLevelDataSetup', JavaExec) {
 }
 
 tasks.register('e2eTest') {
-  dependsOn('runE2eTests')
+  if (System.getenv('SKIP_LIBRARY_E2E') != 'true') {
+    dependsOn('runE2eTests')
+  }
 }
 
+ 
 // Ensure a local check covers Cftlib dev & test. See integrationTestsEnabled above.
 if (integrationTestsEnabled) {
   check.dependsOn cftlibTest
