@@ -97,8 +97,11 @@ public class MessageService {
      */
     public CaseMessageEntryEntity recordOrderMessage(OrderEntity order, String orderType, String senderName,
                                                      boolean fromJudge, String body) {
-        CaseMessageEntryEntity entry = entry(new Writing(senderName, MessageRecipient.of(fromJudge),
-            MessageRecipient.of(!fromJudge), false, body), Instant.now(utcClock));
+        MessageRecipient sender = MessageRecipient.of(fromJudge);
+        // Signed with the sender's role if IDAM gave them no name.
+        String name = senderName == null || senderName.isBlank() ? sender.getLabel() : senderName;
+        CaseMessageEntryEntity entry = entry(new Writing(name, sender, MessageRecipient.of(!fromJudge), false, body),
+            Instant.now(utcClock));
         orderThread(order, orderType).addEntry(entry);
         // The case cascades to its messages, so flushing inserts the entry the step is about to point at.
         orderStepRepository.flush();
