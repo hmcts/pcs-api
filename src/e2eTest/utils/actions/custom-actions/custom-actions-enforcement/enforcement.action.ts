@@ -146,7 +146,7 @@ export class EnforcementAction implements IAction {
       );
     } else {
       originalDefendantDetails.push(
-        `null null`
+        `Person unknown`
       );
     }
 
@@ -157,13 +157,13 @@ export class EnforcementAction implements IAction {
           originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
         } else {
           originalDefendantDetails.push(
-            `null null`
+            `Person unknown`
           );
         };
       };
     }
-    defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim() !== "Person unknown")),
+    ...originalDefendantDetails.filter(n => n.trim() === "Person unknown")
     ];
 
   }
@@ -191,11 +191,9 @@ export class EnforcementAction implements IAction {
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
     }
-
     defendantDetails = defendantDetails.map(fullName =>
-      fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
+      fullName?.trim() === 'Person unknown' ? 'Name not known' : fullName
     );
-
     await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
@@ -404,7 +402,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
     if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantDetails.option1);
-      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
     if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
@@ -421,7 +419,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantSOT.option1);
-      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
+      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
     if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
