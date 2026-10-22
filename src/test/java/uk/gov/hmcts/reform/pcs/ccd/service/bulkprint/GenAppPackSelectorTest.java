@@ -86,12 +86,12 @@ class GenAppPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Defendant CUI with-notice GAs produce one candidate per postal party")
-    void shouldProduceOneCandidatePerPartyForDefendantCuiWithNoticeApplications() {
+    @DisplayName("Defendant self-serve with-notice GAs produce one candidate per postal party")
+    void shouldProduceOneCandidatePerPartyForDefendantSelfServeWithNoticeApplications() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant, coDefendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant, coDefendant));
 
         assertThat(result).hasSize(3);
         assertThat(candidateFor(result, claimant).role()).isEqualTo(PartyRole.CLAIMANT);
@@ -108,7 +108,7 @@ class GenAppPackSelectorTest {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant, coDefendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant, coDefendant));
 
         assertThat(result).extracting(candidate -> candidate.recipient().getId())
             .containsExactly(claimant.getId(), defendant.getId());
@@ -120,7 +120,7 @@ class GenAppPackSelectorTest {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
 
         assertThat(result).extracting(candidate -> candidate.recipient().getId())
             .containsExactly(claimant.getId(), defendant.getId());
@@ -133,7 +133,7 @@ class GenAppPackSelectorTest {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
 
         assertThat(result).extracting(candidate -> candidate.recipient().getId())
             .containsExactly(claimant.getId());
@@ -147,7 +147,7 @@ class GenAppPackSelectorTest {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
 
         assertThat(result).extracting(candidate -> candidate.recipient().getId())
             .containsExactly(claimant.getId(), defendant.getId());
@@ -160,7 +160,7 @@ class GenAppPackSelectorTest {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
 
         assertThat(candidateFor(result, claimant).documents()).containsExactly(withNoticePdf);
     }
@@ -172,7 +172,7 @@ class GenAppPackSelectorTest {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
 
         assertThat(candidateFor(result, claimant).documents()).containsExactly(withNoticePdf);
     }
@@ -184,7 +184,7 @@ class GenAppPackSelectorTest {
             sent(claimant, withNoticePdf)));
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant));
 
         assertThat(result).extracting(candidate -> candidate.recipient().getId())
             .containsExactly(defendant.getId());
@@ -197,7 +197,7 @@ class GenAppPackSelectorTest {
             sent(claimant, withNoticePdf), sent(defendant, withNoticePdf)));
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(
-            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant))).isEmpty();
+            List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant)), claimant, defendant))).isEmpty();
     }
 
     @Test
@@ -205,7 +205,7 @@ class GenAppPackSelectorTest {
     void shouldExcludeClaimantApplicantGenApps() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        GenAppEntity claimantGa = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity claimantGa = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         claimantGa.setParty(claimant);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(
@@ -244,7 +244,7 @@ class GenAppPackSelectorTest {
     void shouldExcludeCaseworkerEnteredGenApps() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        GenAppEntity caseworkerGa = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity caseworkerGa = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         caseworkerGa.setApplicationReceivedDate(LocalDate.now());
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(
@@ -252,12 +252,12 @@ class GenAppPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Multiple defendant CUI with-notice GAs produce a separate candidate per party and GA")
+    @DisplayName("Multiple defendant self-serve with-notice GAs produce a separate candidate per party and GA")
     void shouldProduceSeparateCandidatesPerPartyAndGa() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity first = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity first = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         first.setRank(1);
-        GenAppEntity second = defendantCuiWithNoticeGa(secondGaPdf, defendant);
+        GenAppEntity second = defendantSelfServeWithNoticeGa(secondGaPdf, defendant);
         second.setRank(2);
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
@@ -275,7 +275,7 @@ class GenAppPackSelectorTest {
     void shouldNotIncludeSupportingEvidence() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
         DocumentEntity evidence = DocumentEntity.builder().id(UUID.randomUUID()).type(DocumentType.OTHER).build();
-        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         genApp.setDocuments(List.of(evidence));
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
@@ -288,7 +288,7 @@ class GenAppPackSelectorTest {
     @DisplayName("Skips GAs that are not yet issued even when a PDF exists")
     void shouldSkipPendingGenApps() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity pending = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity pending = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         pending.setState(GenAppState.PENDING_GEN_APP_ISSUED);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(List.of(pending), claimant, defendant))).isEmpty();
@@ -298,7 +298,7 @@ class GenAppPackSelectorTest {
     @DisplayName("Skips issued with-notice GAs that have no submission PDF")
     void shouldSkipIssuedGenAppsWithoutPdf() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity noPdf = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity noPdf = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         noPdf.setSubmissionDocument(null);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(List.of(noPdf), claimant, defendant))).isEmpty();
@@ -318,7 +318,7 @@ class GenAppPackSelectorTest {
     void shouldSkipGenAppPackWhenTranslationRequired(LanguageUsed languageUsed) {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         genApp.setLanguageUsed(languageUsed);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(
@@ -330,7 +330,7 @@ class GenAppPackSelectorTest {
     void shouldSkipGenAppPackWhenTranslationAndHwf() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         genApp.setLanguageUsed(LanguageUsed.WELSH);
         genApp.setHelpWithFeesEntity(HelpWithFeesEntity.builder().hwfReference("HWF-123").build());
 
@@ -343,7 +343,7 @@ class GenAppPackSelectorTest {
     void shouldStillSendEnglishGenAppWithHwf() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         genApp.setLanguageUsed(LanguageUsed.ENGLISH);
         genApp.setHelpWithFeesEntity(HelpWithFeesEntity.builder().hwfReference("HWF-123").build());
 
@@ -356,7 +356,7 @@ class GenAppPackSelectorTest {
     void shouldSendWelshGenAppWhenRolloutFlagOff() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         genApp.setLanguageUsed(LanguageUsed.WELSH);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(
@@ -368,10 +368,10 @@ class GenAppPackSelectorTest {
     void shouldSkipOnlyTheGenAppThatNeedsTranslation() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity welshGa = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity welshGa = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         welshGa.setRank(1);
         welshGa.setLanguageUsed(LanguageUsed.WELSH);
-        GenAppEntity englishGa = defendantCuiWithNoticeGa(secondGaPdf, defendant);
+        GenAppEntity englishGa = defendantSelfServeWithNoticeGa(secondGaPdf, defendant);
         englishGa.setRank(2);
         englishGa.setLanguageUsed(LanguageUsed.ENGLISH);
 
@@ -391,7 +391,7 @@ class GenAppPackSelectorTest {
             .id(CASE_ID)
             .caseReference(CASE_REF)
             .claims(List.of(claim))
-            .genApps(new LinkedHashSet<>(List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant))))
+            .genApps(new LinkedHashSet<>(List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant))))
             .build();
 
         assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
@@ -409,7 +409,7 @@ class GenAppPackSelectorTest {
             .id(CASE_ID)
             .caseReference(CASE_REF)
             .claims(List.of(claim))
-            .genApps(new LinkedHashSet<>(List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant))))
+            .genApps(new LinkedHashSet<>(List.of(defendantSelfServeWithNoticeGa(withNoticePdf, defendant))))
             .build();
 
         List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(pcsCase);
@@ -440,7 +440,7 @@ class GenAppPackSelectorTest {
     @DisplayName("Excludes issued with-notice GAs that have no applicant party")
     void shouldExcludeGenAppsWithNullApplicant() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        GenAppEntity noApplicant = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        GenAppEntity noApplicant = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
         noApplicant.setParty(null);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(List.of(noApplicant), claimant, defendant))).isEmpty();
@@ -472,7 +472,7 @@ class GenAppPackSelectorTest {
             .id(CASE_ID).caseReference(CASE_REF).claims(List.of(claim)).genApps(genAppSet).build();
     }
 
-    private GenAppEntity defendantCuiWithNoticeGa(DocumentEntity document, PartyEntity applicantDefendant) {
+    private GenAppEntity defendantSelfServeWithNoticeGa(DocumentEntity document, PartyEntity applicantDefendant) {
         return GenAppEntity.builder()
             .id(UUID.randomUUID())
             .state(GenAppState.GEN_APP_ISSUED)
@@ -483,7 +483,7 @@ class GenAppPackSelectorTest {
     }
 
     private GenAppEntity defendantLrWithNoticeGa(DocumentEntity document, PartyEntity applicantDefendant) {
-        GenAppEntity genApp = defendantCuiWithNoticeGa(document, applicantDefendant);
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(document, applicantDefendant);
         genApp.setStatementOfTruth(StatementOfTruthEntity.builder().firmName("Example Firm").build());
         return genApp;
     }
