@@ -99,10 +99,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
-    private final EnforcementOrderView enforcementOrderView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
+    private final EnforcementOrderView enforcementOrderView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
