@@ -6,6 +6,7 @@ import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from '@utils/test-logger';
+import { holdIfPageChanged } from '@utils/page-pacing';
 import { axe_Exclusions } from '@config/axe_exclusions.config';
 
 let testExecutor: { page: Page };
@@ -120,6 +121,7 @@ export async function performAction(action: string, fieldName?: actionData | act
     await logToBrowser(executor.page, stepText);
   });
   await validatePageIfNavigated(action);
+  await holdIfPageChanged(executor.page);
 }
 
 export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
@@ -135,6 +137,7 @@ export async function performValidation(validation: string, inputFieldName?: val
   await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
+  await holdIfPageChanged(executor.page);
 }
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {

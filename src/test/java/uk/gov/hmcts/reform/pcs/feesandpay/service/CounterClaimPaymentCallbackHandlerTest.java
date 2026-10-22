@@ -87,6 +87,11 @@ class CounterClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    void shouldHandleCounterClaimFeePaymentCallbacks() {
+        assertThat(underTest.handlerType()).isEqualTo(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE);
+    }
+
+    @Test
     void shouldSetCounterClaimIssuedWhenPaymentIsPaid() throws Exception {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();

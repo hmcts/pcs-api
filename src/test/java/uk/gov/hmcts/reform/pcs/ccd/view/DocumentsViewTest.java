@@ -57,7 +57,7 @@ class DocumentsViewTest {
     @BeforeEach
     void setUp() {
         lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
-        lenient().when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+        lenient().when(userRoleService.getCurrentUserCaseRolesWithoutGroupAccess(TEST_CASE_REFERENCE))
             .thenReturn(new UserRoles(CURRENT_USER_ID, List.of()));
 
         pcsCase = PCSCase.builder().build();

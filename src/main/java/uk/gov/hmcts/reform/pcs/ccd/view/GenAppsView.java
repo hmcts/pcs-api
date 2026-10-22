@@ -41,7 +41,7 @@ public class GenAppsView {
         }
 
         UserRoles userRoles =
-            userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+            userRoleService.getCurrentUserCaseRolesWithoutGroupAccess(pcsCaseEntity.getCaseReference());
 
         List<ListValue<GeneralApplication>> genApps = genAppEntities.stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())

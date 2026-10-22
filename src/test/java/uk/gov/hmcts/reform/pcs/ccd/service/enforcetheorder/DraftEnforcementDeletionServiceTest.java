@@ -3,21 +3,27 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class DraftEnforcementDeletionServiceTest {
+
+    private static final Instant NOW = Instant.parse("2026-10-21T09:00:00Z");
 
     @Mock
     private DraftCaseDataRepository draftCaseDataRepository;
@@ -26,48 +32,34 @@ class DraftEnforcementDeletionServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DraftEnforcementDeletionService(draftCaseDataRepository);
+        underTest = new DraftEnforcementDeletionService(draftCaseDataRepository,
+                                                        Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
     @Test
-    void shouldDeleteRespondPossessionClaimDraftsOlderThanDiscardDays() {
-        // Given
-        long discardDays = 30L;
-        Instant beforeInvocation = Instant.now();
+    void shouldDeleteEnforcementDraftsOlderThanDiscardDays() {
+        underTest.deleteEnforcementDraftsBatch(30L);
 
-        // When
-        underTest.deleteEnforcementDraftsBatch(discardDays);
+        verify(draftCaseDataRepository).deleteByEventIdAndCutoff(EventId.enforceTheOrder,
+                                                                 NOW.minus(30L, ChronoUnit.DAYS));
+    }
 
-        // Then
-        Instant afterInvocation = Instant.now();
-        ArgumentCaptor<Instant> cutoffCaptor = ArgumentCaptor.forClass(Instant.class);
-        verify(draftCaseDataRepository).deleteByEventIdAndCutoff(eq(EventId.enforceTheOrder),
-                cutoffCaptor.capture()
-        );
+    @ParameterizedTest
+    @ValueSource(longs = {0L, -1L})
+    void shouldRefuseADiscardPeriodThatWouldDeleteEveryDraft(long discardDays) {
+        assertThatThrownBy(() -> underTest.deleteEnforcementDraftsBatch(discardDays))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(DraftEnforcementDeletionService.DISCARD_DAYS_TOO_SMALL.formatted(discardDays));
 
-        Instant cutoff = cutoffCaptor.getValue();
-        assertThat(cutoff)
-                .isAfterOrEqualTo(beforeInvocation.minus(discardDays, ChronoUnit.DAYS))
-                .isBeforeOrEqualTo(afterInvocation.minus(discardDays, ChronoUnit.DAYS));
+        verifyNoInteractions(draftCaseDataRepository);
     }
 
     @Test
-    void shouldUseCurrentTimeAsCutoffWhenDiscardDaysIsZero() {
-        // Given
-        Instant beforeInvocation = Instant.now();
+    void shouldAcceptTheSmallestUsefulDiscardPeriod() {
+        underTest.deleteEnforcementDraftsBatch(1L);
 
-        // When
-        underTest.deleteEnforcementDraftsBatch(0L);
-
-        // Then
-        Instant afterInvocation = Instant.now();
-        ArgumentCaptor<Instant> cutoffCaptor = ArgumentCaptor.forClass(Instant.class);
-        verify(draftCaseDataRepository).deleteByEventIdAndCutoff(eq(EventId.enforceTheOrder),
-                cutoffCaptor.capture()
-        );
-
-        Instant cutoff = cutoffCaptor.getValue();
-        assertThat(cutoff.isBefore(beforeInvocation)).isFalse();
-        assertThat(cutoff.isAfter(afterInvocation)).isFalse();
+        verify(draftCaseDataRepository).deleteByEventIdAndCutoff(EventId.enforceTheOrder,
+                                                                 NOW.minus(1L, ChronoUnit.DAYS));
+        assertThat(NOW.minus(1L, ChronoUnit.DAYS)).isBefore(NOW);
     }
 }

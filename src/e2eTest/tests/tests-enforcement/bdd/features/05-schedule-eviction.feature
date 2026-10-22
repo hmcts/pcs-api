@@ -1,0 +1,135 @@
+# Reachable on a local stack: the warrant is put into "Awaiting scheduling" through the pcs-api
+# testing-support allocate-bailiff endpoint, because the allocateBailiff event's staff type-ahead needs
+# reference data cftlib does not run (HDPI-7356).
+@HDPI-7342 @enforcement @bailiff
+Feature: Bailiff schedules the eviction
+  As a bailiff
+  I want to record the date and time of the eviction
+  So that the claimant is notified and the notices are produced
+
+  Background:
+    Given a PCS case "1234-5678-9101-1121" with a warrant of possession with status "Awaiting scheduling"
+    And I am the allocated bailiff
+    And I am signed in to XUI as a bailiff
+
+  @HDPI-7344
+  Scenario: Schedule eviction event is available when the warrant is awaiting scheduling
+    When I open the case
+    Then the "Schedule eviction" event is available in the next steps drop down
+
+  # "The case has no live warrant" starts a fresh issued case with no enforcement.
+  @HDPI-7344 @HDPI-7419 @not-filmed
+  Scenario: Schedule eviction is not offered without a live warrant
+    Given the case has no live warrant
+    When I open the case
+    Then the "Schedule eviction" event is not offered in the next steps drop down
+
+  @HDPI-7344
+  Scenario: Schedule eviction screen shows the eviction details
+    When I start the "Schedule eviction" event
+    Then I see the case number, the possession property address and "claimant name vs defendant name"
+    And the warrant number is not shown in the header
+    And I see an "Eviction details" table with claimant type, claimants and defendants
+    And none of these are editable
+    And the date question is "When do you want to schedule the eviction for?"
+    And the hint "Use the 24-hour clock. For example, use 17:30 instead of 5:30pm."
+
+  @HDPI-7344
+  Scenario: Unnamed defendants are shown once as persons unknown
+    Given the case has two defendants whose names are not known
+    When I start the "Schedule eviction" event
+    Then the "Eviction details" table shows "Person(s) unknown" once
+
+  @HDPI-7344
+  Scenario Outline: Eviction date and time validation
+    Given I am on the "Schedule eviction" screen
+    When I enter the date "<date>" and time "<time>"
+    And I select "Continue"
+    Then I see "<result>"
+
+    @not-filmed
+    Examples:
+      | date       | time  | result                                 |
+      |            |       | an error that date and time are needed |
+      | 31/02/2026 | 10:00 | an error that the date is not valid    |
+      | yesterday  | 10:00 | an error that the date must be today or in the future |
+      | tomorrow   | 25:00 | an error that the time is not valid    |
+
+    Examples:
+      | date       | time  | result                                 |
+      | tomorrow   | 10:00 | the 'Check your answers' screen        |
+
+  @HDPI-7344
+  Scenario: Permission to dispense with service defaults to no
+    When I start the "Schedule eviction" event
+    Then the question "Has the court given permission to dispense with service?" is mandatory
+    And the answer defaults to "No"
+
+  @HDPI-7546 @not-filmed
+  Scenario: Changing an answer from check your answers
+    Given I am on the "Check your answers" screen
+    When I select "Change" next to the eviction date
+    Then I return to the "Schedule eviction" screen with my previous answer
+    And selecting "Continue" returns me to "Check your answers"
+
+  @HDPI-7546 @not-filmed
+  Scenario: Cancelling from check your answers discards the schedule
+    Given I am on the "Check your answers" screen
+    When I select "Cancel"
+    Then I see the case summary
+    And no eviction date is saved
+
+  # The date must stay in the future — the event rejects a past eviction date — and the weekday must match
+  # it, because the confirmation is formatted from the date the bailiff entered.
+  @HDPI-7547 @HDPI-7351
+  Scenario: Submitting the schedule
+    Given I have entered an eviction date of "Friday 25 June 2027" at "10:00"
+    When I submit the "Schedule eviction" event
+    Then I see the confirmation "Eviction date scheduled for Friday 25 June 2027 at 10:00am" with the case number and warrant number
+    And the confirmation says "We've sent an email to the claimant with the eviction date."
+    And the confirmation says "We will send you a new work task when they either:"
+    And the confirmation says "confirm the eviction date, or"
+    And the confirmation says "decline the eviction date, if they cannot attend"
+    And I see "find and print the 'notice of eviction' (form N54)" under "What you need to do next"
+    And I see "deliver the completed form to the defendants" under "What you need to do next"
+    And I see "return to this service and mark the 'notice of eviction' as served" under "What you need to do next"
+    And I see a link "go to Case File View (same service, opens in a new tab)"
+    And the "Eviction status" tab shows the scheduled eviction date and time under "Scheduled eviction"
+    And the enforcement status changes to "Awaiting claimant confirmation"
+
+  @HDPI-7354 @HDPI-8442
+  Scenario: Scheduling generates a sealed notice of eviction
+    When I submit the "Schedule eviction" event
+    Then a "notice of eviction" document is generated with the county court seal
+    And it is stored in the "Enforcement" folder in case file view
+    And it is visible to the claimant and internal users
+
+  @HDPI-7355 @HDPI-8442
+  Scenario: Scheduling generates and issues an unsealed notice of appointment
+    When I submit the "Schedule eviction" event
+    Then a "notice of appointment" document is generated without a seal
+    And it is stored in the "Enforcement" folder in case file view
+    And it is visible to the claimant and internal users
+    And it is sent to the claimant by email
+
+  @HDPI-7538
+  Scenario: Claimant is asked to confirm the eviction date
+    When I submit the "Schedule eviction" event
+    Then the claimant receives the "Bailiff schedules the eviction date" email with a link to confirm the date
+    And the claimant sees a "Confirm the eviction date" notification on their dashboard
+
+  @HDPI-7346 @HDPI-8627
+  Scenario Outline: Notice of eviction task depends on dispense with service
+    Given I answered "<dispense>" to "Has the court given permission to dispense with service?"
+    When I submit the "Schedule eviction" event
+    Then a "Mark notice of eviction as served" task "<task>"
+
+    Examples:
+      | dispense | task              |
+      | No       | is created for me |
+
+    # Nothing to see: the assertion is that no task appears.
+    @not-filmed
+    Examples:
+      | dispense | task              |
+      | Yes      | is not created    |

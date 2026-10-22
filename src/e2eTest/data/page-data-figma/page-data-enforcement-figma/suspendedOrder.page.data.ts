@@ -6,7 +6,6 @@ export const suspendedOrder = {
   //Updated above hint text to be consistent with the application. Defect HDPI-5199 has been raised.
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   errorValidation: `NO`,//set it to `NO` before raising a PR

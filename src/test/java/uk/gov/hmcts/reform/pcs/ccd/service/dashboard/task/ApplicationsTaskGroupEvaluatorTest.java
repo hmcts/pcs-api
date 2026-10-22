@@ -130,7 +130,7 @@ class ApplicationsTaskGroupEvaluatorTest {
     }
 
     private void stubUserRoles() {
-        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+        when(userRoleService.getCurrentUserCaseRolesWithoutGroupAccess(TEST_CASE_REFERENCE))
             .thenReturn(new UserRoles(CURRENT_USER_ID, List.of()));
     }
 

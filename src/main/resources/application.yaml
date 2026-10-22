@@ -434,3 +434,42 @@ manage_case:
 docweave:
   templates:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
+
+enforcement-notify:
+  # Every id below is unset until the template is authored in the Notify UI. An email with no template id is
+  # skipped and logged at WARN naming the key to set; it never fails the case event.
+  templates:
+    warrant-application-received: ${ENFORCEMENT_WARRANT_APPLICATION_RECEIVED_TEMPLATE_ID:}
+    writ-application-received: ${ENFORCEMENT_WRIT_APPLICATION_RECEIVED_TEMPLATE_ID:}
+    warrant-of-restitution-application-received: ${ENFORCEMENT_WARRANT_RESTITUTION_APPLICATION_TEMPLATE_ID:}
+    writ-of-restitution-application-received: ${ENFORCEMENT_WRIT_RESTITUTION_APPLICATION_TEMPLATE_ID:}
+    warrant-approved: ${ENFORCEMENT_WARRANT_APPROVED_TEMPLATE_ID:}
+    writ-approved: ${ENFORCEMENT_WRIT_APPROVED_TEMPLATE_ID:}
+    warrant-of-restitution-approved: ${ENFORCEMENT_WARRANT_RESTITUTION_APPROVED_TEMPLATE_ID:}
+    warrant-rejected: ${ENFORCEMENT_WARRANT_REJECTED_TEMPLATE_ID:}
+    writ-rejected: ${ENFORCEMENT_WRIT_REJECTED_TEMPLATE_ID:}
+    warrant-of-restitution-rejected: ${ENFORCEMENT_WARRANT_RESTITUTION_REJECTED_TEMPLATE_ID:}
+    eviction-scheduled: ${ENFORCEMENT_EVICTION_SCHEDULED_TEMPLATE_ID:}
+    eviction-rescheduled: ${ENFORCEMENT_EVICTION_RESCHEDULED_TEMPLATE_ID:}
+    claimant-confirmed-attendance: ${ENFORCEMENT_CLAIMANT_CONFIRMED_ATTENDANCE_TEMPLATE_ID:}
+    claimant-declined-attendance: ${ENFORCEMENT_CLAIMANT_DECLINED_ATTENDANCE_TEMPLATE_ID:}
+    warrant-return: ${ENFORCEMENT_WARRANT_RETURN_TEMPLATE_ID:}
+
+enforcement:
+  documents:
+    request:
+      max-retries: ${ENFORCEMENT_DOCUMENT_MAX_RETRIES:5}
+      backoff-delay-seconds: ${ENFORCEMENT_DOCUMENT_BACKOFF_DELAY_SECONDS:3600s}
+    # Every default is the general application summary, standing in until the real Docmosis templates exist.
+    templates:
+      warrant-of-possession-application: ${ENFORCEMENT_WARRANT_OF_POSSESSION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      writ-of-possession-application: ${ENFORCEMENT_WRIT_OF_POSSESSION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      warrant-of-restitution-application: ${ENFORCEMENT_WARRANT_OF_RESTITUTION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      writ-of-restitution-application: ${ENFORCEMENT_WRIT_OF_RESTITUTION_APPLICATION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      risk-assessment: ${ENFORCEMENT_RISK_ASSESSMENT_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      warrant-of-possession: ${ENFORCEMENT_WARRANT_OF_POSSESSION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      writ-of-possession: ${ENFORCEMENT_WRIT_OF_POSSESSION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      warrant-of-restitution: ${ENFORCEMENT_WARRANT_OF_RESTITUTION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      writ-of-restitution: ${ENFORCEMENT_WRIT_OF_RESTITUTION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      notice-of-eviction: ${ENFORCEMENT_NOTICE_OF_EVICTION_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}
+      notice-of-appointment: ${ENFORCEMENT_NOTICE_OF_APPOINTMENT_TEMPLATE:CV-PCS-GAP-ENG-Application-Summary.docx}

@@ -9,6 +9,9 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_MANAGER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
@@ -29,7 +32,10 @@ class InternalCaseFlagAccessTest {
         FEE_PAID_JUDGE,
         CIRCUIT_JUDGE,
         LEADERSHIP_JUDGE,
-        JUDGE
+        JUDGE,
+        BAILIFF,
+        BAILIFF_ADMIN,
+        BAILIFF_MANAGER
     };
 
     private InternalCaseFlagAccess underTest;
@@ -48,7 +54,8 @@ class InternalCaseFlagAccessTest {
         // Then
         assertAllHavePermissions(grants, CREATE_READ_UPDATE_ROLES, Permission.CRU);
         assertAllHavePermission(grants, READ_ROLES, Permission.R);
-        assertThat(grants.asMap().size()).isEqualTo(7);
+        assertThat(grants.asMap().size()).isEqualTo(10);
+        assertThat(grants.get(BAILIFF)).containsExactly(Permission.R);
     }
 
     private void assertAllHavePermissions(SetMultimap<HasRole, Permission> grants,

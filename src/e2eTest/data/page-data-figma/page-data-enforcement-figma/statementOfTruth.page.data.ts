@@ -8,16 +8,9 @@ export const statementOfTruth = {
   //commented above line as this is expected to be changeds as per discussion with Nafees and is reported in HDPI-5199 scenario3
  // noticeHasBeenGivenParagraph: `notice has been given in accordance with The Dwelling Houses (Execution of Possession Orders by Mortgagees) Regulations 2010. `,
   //aStatementOfThePaymentParagraph: `a statement of the payments due and made under the judgment or order is attached to this request.††`,  // not in all cases only for suspended order
-  paymentDueCaption: `The payments due`,
-  repaymentForTableHeader: `Repayment for`,
-  amountTableHeader: `Amount`,
-  arrearsAndOtherCostsTableHeader: `Arrears and other costs`,
-  legalCostsTableHeader: `Legal costs`,
-  landRegistryFeesTableHeader: `Land Registry fees`,
   //warrantOfPossessionFeeTableHeader: `Warrant of possession fee`, //Will create Dynamic element for this during page replacement
   //writOfPossessionFeeTableHeader: `Writ of possession fee`,
-  TotalTableHeader: `Total`,
-  completedByLabel: `Completed by`,
+  completedByParagraph: `Completed by`,
   claimantRadioOption: `Claimant`,
   claimantLegalRepresentativeRadioOption: `Claimant’s legal representative (as defined by CPR 2.3 (1))`,
   iBelieveTheFactsHiddenCheckbox: `I believe that the facts stated in this claim form are true.`,
@@ -27,10 +20,11 @@ export const statementOfTruth = {
   fullNameHiddenTextInput: `John Doe`,
   nameOfFirmHiddenTextInput: `Doe & Co Solicitors`,
   positionOrOfficeHeldHiddenTextInput: `Solicitor`,
-  signThisStatementHiddenCheckbox: `The claimant believes that the facts stated in this claim form are true.  I am authorised by the claimant to sign this statement.`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  positionOrOfficeHeldChangeHiddenTextInput: `Solicitor Test`,
+  signThisStatementHiddenCheckbox: `The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.`,
   previousButton: `Previous`,
   continueButton: `Continue`,
+  theClaimantBelievesHiddenCheckBox: `The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.`,
   thereIsAProblemErrorMessageHeader: `There is a problem`,
   checkBoxGenericErrorMessageHeader: `Field is required`,
   errorValidation: `NO`,//set it to `NO` before raising a PR
@@ -40,18 +34,18 @@ export const statementOfTruth = {
       { type: `none`, input: ``, errMessage: `Field is required` }
     ],
     errorRadioOption: [
-      { type: `none`, input: ``, errMessage: `Completed by is required` }
+      { type: `none`, input: ``, isSOT: true, errInlineMessage: `Field is required`, errMessage: `Field is required` }
     ],
     errorTextField1: [
-      { type: `moreThanMax`, input: 60, errMessage: `Full name exceeds the maximum length` },
+      { type: `moreThanMax`, input: 100, errMessage: `Full name exceeds the maximum length` },
       { type: `empty`, input: `EMPTY`, errMessage: `Full name is required` },
     ],
     errorTextField2: [
-      { type: `moreThanMax`, input: 60, errMessage: `Name of firm exceeds the maximum length` },
+      { type: `moreThanMax`, input: 100, errMessage: `Name of firm exceeds the maximum length` },
       { type: `empty`, input: `EMPTY`, errMessage: `Name of firm is required` },
     ],
     errorTextField3: [
-      { type: `moreThanMax`, input: 60, errMessage: `Position or office held exceeds the maximum length` },
+      { type: `moreThanMax`, input: 100, errMessage: `Position or office held exceeds the maximum length` },
       { type: `empty`, input: `EMPTY`, errMessage: `Position or office held is required` },
     ]
   },

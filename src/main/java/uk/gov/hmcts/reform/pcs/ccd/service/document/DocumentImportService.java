@@ -48,6 +48,16 @@ public class DocumentImportService {
     public DocumentEntity addDocumentToCase(PcsCaseEntity pcsCaseEntity,
                                             String documentUrl,
                                             CaseFileCategory caseFileCategory) {
+        return addDocumentToCase(pcsCaseEntity, documentUrl, caseFileCategory.getId());
+    }
+
+    /**
+     * Adds the document to the case in the Case File View folder with this category id, for a folder that is
+     * not a {@link CaseFileCategory}.
+     */
+    public DocumentEntity addDocumentToCase(PcsCaseEntity pcsCaseEntity,
+                                            String documentUrl,
+                                            String categoryId) {
 
         UUID documentId = documentIdExtractor.extractDocumentId(documentUrl);
 
@@ -71,7 +81,7 @@ public class DocumentImportService {
             .documentId(documentId)
             .url(documentMetadata.links.self.href)
             .binaryUrl(documentMetadata.links.binary.href)
-            .categoryId(caseFileCategory.getId())
+            .categoryId(categoryId)
             .build();
 
         pcsCaseEntity.addDocuments(List.of(documentEntity));

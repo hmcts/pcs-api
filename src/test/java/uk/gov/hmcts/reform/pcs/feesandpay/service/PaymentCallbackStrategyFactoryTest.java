@@ -1,62 +1,57 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class)
 class PaymentCallbackStrategyFactoryTest {
 
-    @Mock
-    private MakeAClaimPaymentCallbackHandler makeAClaimPaymentCallbackHandler;
-    @Mock
-    private CounterClaimPaymentCallbackHandler counterClaimPaymentCallbackHandler;
-    @Mock
-    private GenAppPaymentCallbackHandler genAppPaymentCallbackHandler;
+    @ParameterizedTest
+    @EnumSource(PaymentCallbackHandlerType.class)
+    void shouldReturnTheStrategyRegisteredForEachType(PaymentCallbackHandlerType type) {
+        List<PaymentCallbackStrategy> strategies = Arrays.stream(PaymentCallbackHandlerType.values())
+            .map(StubStrategy::new)
+            .map(PaymentCallbackStrategy.class::cast)
+            .toList();
 
-    @InjectMocks
-    private PaymentCallbackStrategyFactory underTest;
+        PaymentCallbackStrategy result = new PaymentCallbackStrategyFactory(strategies).getStrategy(type);
 
-    @Test
-    void shouldReturnMakeAClaimCallbackHandlerForResumePossessionClaim() {
-        // When
-        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.CLAIM);
-
-        // Then
-        assertThat(result).isSameAs(makeAClaimPaymentCallbackHandler);
+        assertThat(result).isSameAs(strategies.get(type.ordinal()));
     }
 
     @Test
-    void shouldReturnPaymentCallbackHandlerForCounterClaim() {
-        // When
-        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE);
+    void shouldReturnNoStrategyForATypeWithNoneRegistered() {
+        PaymentCallbackStrategyFactory underTest =
+            new PaymentCallbackStrategyFactory(List.of(new StubStrategy(PaymentCallbackHandlerType.CLAIM)));
 
-        // Then
-        assertThat(result).isSameAs(counterClaimPaymentCallbackHandler);
+        assertThat(underTest.getStrategy(PaymentCallbackHandlerType.ENFORCEMENT)).isNull();
     }
 
     @Test
-    void shouldReturnPaymentCallbackHandlerForGenApp() {
-        // When
-        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.GEN_APP_ISSUE);
+    void shouldRefuseTwoStrategiesForTheSameType() {
+        List<PaymentCallbackStrategy> strategies = List.of(
+            new StubStrategy(PaymentCallbackHandlerType.ENFORCEMENT),
+            new StubStrategy(PaymentCallbackHandlerType.ENFORCEMENT));
 
-        // Then
-        assertThat(result).isSameAs(genAppPaymentCallbackHandler);
+        assertThatThrownBy(() -> new PaymentCallbackStrategyFactory(strategies))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("ENFORCEMENT");
     }
 
-    @Test
-    void shouldHaveARegisteredStrategyForEveryJourneyId() {
-        for (PaymentCallbackHandlerType paymentCallbackHandlerType : PaymentCallbackHandlerType.values()) {
-            PaymentCallbackStrategy result = underTest.getStrategy(paymentCallbackHandlerType);
-            assertThat(result)
-                .as("Missing strategy mapping for PaymentCallbackHandlerType: %s", paymentCallbackHandlerType)
-                .isNotNull();
+    private record StubStrategy(PaymentCallbackHandlerType handlerType) implements PaymentCallbackStrategy {
+
+        @Override
+        public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
+            // Not called by the factory.
         }
     }
-
 }

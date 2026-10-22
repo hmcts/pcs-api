@@ -13,6 +13,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_MANAGER;
 
 
 
@@ -28,6 +31,9 @@ public class InternalCaseFlagAccess implements HasAccessControl {
         grants.put(CIRCUIT_JUDGE, Permission.R);
         grants.put(LEADERSHIP_JUDGE, Permission.R);
         grants.put(JUDGE, Permission.R);
+        grants.put(BAILIFF, Permission.R);
+        grants.put(BAILIFF_ADMIN, Permission.R);
+        grants.put(BAILIFF_MANAGER, Permission.R);
 
         return grants;
     }

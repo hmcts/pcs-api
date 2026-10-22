@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import {defineConfig, devices} from '@playwright/test';
+import {defineBddConfig} from 'playwright-bdd';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
 export const VERY_SHORT_TIMEOUT = 1000;
@@ -31,6 +32,19 @@ function resolveWorkers(): number {
   const parsed = Number(process.env.E2E_WORKERS?.trim());
   return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
 }
+
+function demoSlowMo(): number {
+  const parsed = Number(process.env.DEMO_SLOW_MO?.trim());
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 275;
+}
+
+const ENFORCEMENT_BDD_DIR = 'tests/tests-enforcement/bdd';
+const enforcementBddTestDir = defineBddConfig({
+  features: `${ENFORCEMENT_BDD_DIR}/features/**/*.feature`,
+  steps: [`${ENFORCEMENT_BDD_DIR}/fixtures/*.ts`, `${ENFORCEMENT_BDD_DIR}/steps/**/*.ts`],
+  featuresRoot: `${ENFORCEMENT_BDD_DIR}/features`,
+  outputDir: '.features-gen/enforcement',
+});
 
 export default defineConfig({
   testDir: 'tests/',
@@ -72,6 +86,42 @@ export default defineConfig({
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
         trace: 'on-first-retry',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: !!process.env.CI,
+      },
+    },
+    {
+      name: 'enforcement-bdd',
+      testDir: enforcementBddTestDir,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        trace: 'on-first-retry',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: !!process.env.CI,
+      },
+    },
+    // Demo recording (scripts/enforcement-demo-videos.sh). Not parallel: a feature's scenarios must run in
+    // order in one worker to share a case and a session (tests-enforcement/bdd/support/demo-continuity.ts).
+    {
+      name: 'enforcement-bdd-demo',
+      testDir: enforcementBddTestDir,
+      grepInvert: /@not-filmed/,
+      fullyParallel: false,
+      retries: 0,
+      // Human-speed actions make a long journey take several times longer.
+      timeout: 1800 * 1000,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        launchOptions: { slowMo: demoSlowMo() },
+        screenshot: 'on',
+        video: { mode: 'on', size: DEFAULT_VIEWPORT },
+        trace: 'on',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,

@@ -8,7 +8,6 @@ export const nameAndAddressForEviction = {
   youCanChooseTheDefendantsHintText: `You can choose the defendants you want to evict on the next page`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

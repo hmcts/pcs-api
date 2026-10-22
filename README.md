@@ -113,8 +113,10 @@ The first time this is run locally there will be a small additional delay at sta
 spins up. However, it will remain up even when `bootWithCCD` is stopped so restarting pcs-api will not incur that
 additional delay each time.
 
-In order for document generation and viewing of documents in Case File View to work, it is currently necessary
-to be on the VPN as the AAT version of Docmosis is still used. (This does not need `AuthMode.AAT`).
+Generated documents are rendered by a wiremock Docmosis stub (`wiremock/mappings/docmosis/render.json`), so every
+template produces the same one-page placeholder PDF, which is then uploaded to the local dm-store through CDAM and
+shows in Case File View. To render the real templates instead, set `LOCAL_DOCMOSIS=aat` as well and be on the VPN,
+as the AAT version of Docmosis is then used. (This does not need `AuthMode.AAT`).
 
 NOTE: This is a new configuration for running the dm-store locally. If it proves to be practical for developers
 then it may be updated to alwys run when `AuthMode.Local` is set.
@@ -200,6 +202,28 @@ Payload:
 Note that there seems to be a delay of a couple of seconds before a freshly submitted Camunda task
 is detected by the task monitor, so you may need to trigger the poll a second time if no Camunda tasks were picked
 up and configured as WA tasks.
+
+#### How PCS creates tasks
+
+pcs-api does not publish CCD case events to Service Bus, so `wa-case-event-handler` never sees a PCS event.
+`CamundaService` instead posts a `createTaskMessage` straight to `wa-workflow-api` with the `taskId`, `name`
+and `__processCategory__<taskId>` process variables from the `TaskType` enum, and a `cancelTasks` message to
+cancel. So of the six DMN tables in `src/main/resources/dmn`:
+
+| Table | Evaluated by | Affects PCS today? |
+|---|---|---|
+| `wa-task-configuration` | `wa-task-management-api` | Yes — sets every task attribute |
+| `wa-task-permissions` | `wa-task-management-api` | Yes — sets who can see and work the task |
+| `wa-task-types` | `wa-task-management-api` | Yes — XUI's task type filters |
+| `wa-task-completion` | `wa-task-management-api` (`/task/search-for-completable`) | Yes — closes a task when its event is submitted |
+| `wa-task-initiation` | `wa-case-event-handler` | No — nothing publishes the case events it reads |
+| `wa-task-cancellation` | `wa-case-event-handler` | No — the same |
+
+A new task type therefore needs rows in the configuration, permissions, types and completion tables.
+
+Every condition in a DMN table must be a FEEL unary test — a string literal, or a comma-separated list of
+them. Camunda evaluates every rule's cell for a column it reads, so one cell holding free text fails the
+whole decision for every input.
 
 ### Running the tests
 

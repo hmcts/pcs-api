@@ -1,0 +1,44 @@
+package uk.gov.hmcts.reform.pcs.enforcement.domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import uk.gov.hmcts.ccd.sdk.api.HasLabel;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+@AllArgsConstructor
+@Getter
+public enum EnforcementStatus implements HasLabel {
+
+    AWAITING_PAYMENT("Awaiting payment"),
+    AWAITING_REVIEW("Awaiting review"),
+    REJECTED("Rejected"),
+    AWAITING_BAILIFF_ALLOCATION("Awaiting bailiff allocation"),
+    AWAITING_SCHEDULING("Awaiting scheduling"),
+    AWAITING_CLAIMANT_CONFIRMATION("Awaiting claimant confirmation"),
+    CLAIMANT_CONFIRMED("Claimant confirmed"),
+    CLAIMANT_UNABLE_TO_ATTEND("Claimant unable to attend on this date"),
+    AWAITING_PROPERTY_VISIT("Awaiting property visit"),
+    BREATHING_SPACE("Breathing space"),
+    TRANSFERRED_TO_HIGH_COURT("Transferred to the High Court"),
+    CLOSED("Closed");
+
+    private static final Set<EnforcementStatus> NOT_LIVE = EnumSet.of(CLOSED, REJECTED, TRANSFERRED_TO_HIGH_COURT);
+
+    private static final Set<EnforcementStatus> NOT_GENERATED = EnumSet.of(AWAITING_PAYMENT, AWAITING_REVIEW, REJECTED);
+
+    private final String label;
+
+    public boolean isLive() {
+        return !NOT_LIVE.contains(this);
+    }
+
+    public boolean isGenerated() {
+        return !NOT_GENERATED.contains(this);
+    }
+
+    public static Set<EnforcementStatus> notLive() {
+        return EnumSet.copyOf(NOT_LIVE);
+    }
+}

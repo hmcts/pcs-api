@@ -1,0 +1,419 @@
+import { Given, Then, When, expect } from '../fixtures/enforcement.fixtures';
+import type { EnforcementWorld } from '../fixtures/enforcement.fixtures';
+import type { Page } from '@playwright/test';
+import { approximatePrecondition, markPending, pendingSteps } from '../fixtures/pending';
+import { CLAIMANT_LEGAL_REPRESENTATIVE, expectSignedInAs } from '../support/session';
+import {
+  canSignInAs,
+  createCaseWithWarrant,
+  createIssuedCase,
+  nextStepOptions,
+  openCaseSummary,
+  requireCaseReference,
+  signInAs,
+  signInRoleFor,
+  startEvent,
+  startEventAllowingRefusal,
+  xuiEvents,
+} from '../support/enforcement-journeys';
+import { enforcementRows } from '../support/enforcement-status-tab';
+import {
+  DECIDE_ENFORCEMENT,
+  chooseDecision,
+  clickContinue,
+  decideEnforcement,
+  expectCaseDetailsHeader,
+  expectCaseDetailsNotEditable,
+  signInAsHearingCentreAdmin,
+  submitDecision,
+} from '../support/decide-enforcement';
+import { isLocalStack, localUsers } from '@config/local-stack.config';
+import { user as testUsers } from '@data/user-data';
+import { LONG_TIMEOUT } from 'playwright.config';
+import { AWAITING_BAILIFF_ALLOCATION, scheduleEvictionInXui, setUpWarrantAtStatus } from '../support/approve-warrant';
+import {
+  CITIZEN_DEFENDANT,
+  DEFENDANT_LEGAL_REPRESENTATIVE,
+  canLinkCitizenDefendant,
+  linkCitizenDefendant,
+  viewAsEachDefendant,
+} from '../support/defendant-visibility';
+import { RESCHEDULE_EVICTION, SCHEDULE_EVICTION, scheduleEviction } from '../support/schedule-eviction';
+import { MARK_NOTICE_SERVED, noticeServed } from '../support/notice-served';
+import {
+  ADD_BAILIFF_NOTE,
+  ALLOCATE_BAILIFF,
+  SET_RISK_LEVEL,
+  addBailiffNote,
+  changeAllocatedBailiff,
+  chooseRiskLevel,
+  findBailiff,
+  goToAllocationCheckYourAnswers,
+  setRiskLevel,
+  standInBailiff,
+} from '../support/bailiff-events';
+
+const eventTickets: Record<string, string> = {
+  'Decide enforcement': 'HDPI-8656',
+  'Allocate case to bailiff': 'HDPI-7356',
+  'Set risk level': 'HDPI-7343',
+  'Schedule eviction': 'HDPI-7344',
+  'Reschedule eviction': 'HDPI-7549',
+  'Mark notice of eviction as served': 'HDPI-7346',
+  'Add a bailiff note': 'HDPI-7593',
+  'Record warrant return': 'HDPI-7347',
+};
+
+function eventNotBuilt(eventName: string) {
+  return { ticket: eventTickets[eventName], summary: `the "${eventName}" event` };
+}
+
+Given('a PCS case {string}', async ({ world }, _reference: string) => {
+  await createIssuedCase(world);
+});
+
+Given('a PCS case {string} with a possession order made', async ({ world }, _reference: string) => {
+  approximatePrecondition('HDPI-7342', 'no possession order is made; "Enforce the order" is available once the case is issued (OPEN-QUESTIONS 1)');
+  await createIssuedCase(world);
+});
+
+Given('a PCS case {string} with a warrant of possession with status {string}', async ({ world }, _reference: string, status: string) => {
+  await setUpWarrantAtStatus(world, status);
+});
+
+Given('a PCS case {string} with a warrant of possession', async ({ world }, _reference: string) => {
+  await setUpWarrantAtStatus(world, AWAITING_BAILIFF_ALLOCATION);
+});
+
+Given('I am signed in to XUI as the claimant\'s legal representative', async () => {
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
+});
+
+Given('I am signed in to XUI as the claimant\'s legal representative with the {string} case role', async ({ $tags }, caseRole: string) => {
+  if (caseRole !== '[CLAIMANTSOLICITOR]') {
+    return markPending({ ticket: 'HDPI-7539', summary: `signing in with the ${caseRole} case role` }, $tags);
+  }
+  expectSignedInAs(CLAIMANT_LEGAL_REPRESENTATIVE);
+});
+
+Given('there is no live enforcement on the case', async ({ world }) => {
+  expect(world.caseReference, 'a case created by this scenario').toBeDefined();
+  expect(world.enforcementSeeded, 'an enforcement seeded on the case').toBe(false);
+});
+
+Given('I am signed in to XUI as a {string}', async ({ $tags }, role: string) => {
+  if (!canSignInAs(role)) {
+    return markPending(
+      {
+        ticket: 'HDPI-7539',
+        summary: `signing in as a ${role}: no ${role} the suite can use in this environment`,
+      },
+      $tags
+    );
+  }
+  expectSignedInAs(role);
+});
+
+When('I open the case', async ({ page }) => {
+  await openCaseSummary(page);
+});
+
+When('a {string} opens the case', async ({ page, context, world, $tags }, user: string) => {
+  world.openedAs = user;
+  world.defendantViews = undefined;
+  if (user === DEFENDANT_LEGAL_REPRESENTATIVE) {
+    world.defendantLegalRepresentative = isLocalStack() ? localUsers.defendantSolicitor : testUsers.defendantSolicitor.email;
+    world.citizenDefendant = undefined;
+  }
+  if (user === CITIZEN_DEFENDANT) {
+    if (!canLinkCitizenDefendant()) {
+      return markPending({ ticket: 'HDPI-7539', summary: 'a citizen defendant linked to the case: only a local stack has a citizen user' }, $tags);
+    }
+    await linkCitizenDefendant(world);
+    world.defendantLegalRepresentative = undefined;
+    await viewAsEachDefendant(page, context, world);
+    return;
+  }
+  const role = signInRoleFor(user);
+  if (!canSignInAs(role)) {
+    return markPending({ ticket: 'HDPI-7539', summary: `opening the case as a ${user}` }, $tags);
+  }
+  await signInAs(role, page, context);
+  await openCaseSummary(page);
+});
+
+When('an internal user opens the case', async ({ page, context }) => {
+  await signInAs('hearing-centre-admin', page, context);
+  await openCaseSummary(page);
+});
+
+When('a bailiff opens the case', async ({ page, context }) => {
+  await signInAs('bailiff', page, context);
+  await openCaseSummary(page);
+});
+
+When('a hearing centre admin opens the case', async ({ page, context }) => {
+  await signInAs('hearing-centre-admin', page, context);
+  await openCaseSummary(page);
+});
+
+Then('the {string} event is available in the next steps drop down', async ({ page, $tags }, eventName: string) => {
+  const event = xuiEvents[eventName];
+  if (!event) {
+    return markPending(eventNotBuilt(eventName), $tags);
+  }
+  await expect.poll(() => nextStepOptions(page)).toContain(event.label);
+});
+
+async function expectNotOffered(page: Page, $tags: string[], eventName: string): Promise<void> {
+  const event = xuiEvents[eventName];
+  if (!event) {
+    return markPending(eventNotBuilt(eventName), $tags);
+  }
+  // Wait for the drop down to load with the user's other events before checking this one is missing.
+  await expect.poll(async () => (await nextStepOptions(page)).length).toBeGreaterThan(0);
+  expect(await nextStepOptions(page)).not.toContain(event.label);
+}
+
+Then('the {string} event is not available', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
+});
+
+Then('the {string} event is not offered in the next steps drop down', async ({ page, $tags }, eventName: string) => {
+  await expectNotOffered(page, $tags, eventName);
+});
+
+When('I start the {string} event', async ({ page, world, $tags }, eventName: string) => {
+  if (!xuiEvents[eventName]) {
+    return markPending(eventNotBuilt(eventName), $tags);
+  }
+  await openCaseSummary(page);
+  world.startEventError = await startEventAllowingRefusal(page, eventName);
+  if (!world.startEventError) {
+    world.currentEvent = eventName;
+  }
+});
+
+/** CCD puts the callback's own message in a separate "Errors" list rather than the error summary, so the page text is matched. */
+Then('I see the error {string}', async ({ world }, message: string) => {
+  expect(world.startEventError, 'the event to have been refused by its start callback').toBeDefined();
+  expect(world.startEventError).toContain(message);
+});
+
+When('I start the {string} event from the next steps drop down', async ({ page, world, $tags }, eventName: string) => {
+  if (!xuiEvents[eventName]) {
+    return markPending(eventNotBuilt(eventName), $tags);
+  }
+  await openCaseSummary(page);
+  await startEvent(eventName);
+  world.currentEvent = eventName;
+});
+
+Then('the case reference is unchanged', async ({ page, world }) => {
+  const caseReference = requireCaseReference(world);
+  const numbers = (await enforcementRows(caseReference)).map(row => row.number);
+  expect(numbers, `the enforcements on case ${caseReference}`).toEqual(
+    expect.arrayContaining([...world.earlierWarrantNumbers, ...(world.warrantNumber ? [world.warrantNumber] : [])])
+  );
+  await openCaseSummary(page);
+  expect(page.url()).toContain(caseReference);
+});
+
+pendingSteps({ ticket: 'HDPI-7419', summary: 'Enforcement events gated on the live enforcement' }, [
+]);
+
+Given('I am signed in to XUI as a bailiff', async () => {
+  expectSignedInAs('bailiff');
+});
+
+Given('I am signed in to XUI as a bailiff manager', async () => {
+  expectSignedInAs('bailiff-manager');
+});
+
+Given('I am signed in to XUI as a bailiff admin', async () => {
+  expectSignedInAs('bailiff-admin');
+});
+
+Given('I am signed in to XUI as the allocated bailiff', async () => {
+  approximatePrecondition('HDPI-8189', 'signed in as a bailiff; no allocated-bailiff case role is granted yet');
+  expectSignedInAs('bailiff');
+});
+
+pendingSteps({ ticket: 'HDPI-8627', summary: 'A bailiff with open enforcement work allocation tasks' }, [
+  'I am signed in to XUI as a bailiff with open enforcement tasks',
+]);
+
+const genericStepPending = { summary: 'Generic XUI step for an enforcement event that does not exist yet' };
+
+pendingSteps(genericStepPending, [
+  'I open {string}',
+  '{string}',
+]);
+
+Then('the warrant number is not shown in the header', async ({ page, world, $tags }) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  expect(world.warrantNumber, 'a warrant number generated when the warrant was approved').toBeDefined();
+  const event = xuiEvents[world.currentEvent];
+  if (event) {
+    await expect(page.getByRole('heading', { name: event.firstPageHeader })).toBeVisible();
+  }
+  const form = page.locator('ccd-case-edit-page');
+  await expect(form.getByRole('paragraph').filter({ hasText: 'Case number:' }).first()).toBeVisible();
+  await expect(form).not.toContainText('Warrant number');
+  await expect(page.locator('body')).not.toContainText(world.warrantNumber as string);
+});
+
+Then('the {string} screen shows my answers with {string} links', async ({ page, world, $tags }, screen: string, link: string) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: screen })).toBeVisible({ timeout: LONG_TIMEOUT });
+  const answers = page.locator('ccd-case-edit-submit tr').filter({ has: page.locator('td') });
+  await expect(answers.first()).toBeVisible();
+  for (const answer of await answers.all()) {
+    await expect(answer.getByRole('link', { name: new RegExp(`^${link}\\b`) })).toBeVisible();
+  }
+});
+
+function inDecideEnforcement(world: EnforcementWorld): boolean {
+  return world.currentEvent === DECIDE_ENFORCEMENT;
+}
+
+Given('I am signed in to XUI as a hearing centre admin', async () => {
+  expectSignedInAs('hearing-centre-admin');
+});
+
+Then('the {string} journey opens', async ({ page, world, $tags }, journey: string) => {
+  if (journey === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
+    await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+    return;
+  }
+  const started = world.currentEvent ? xuiEvents[world.currentEvent] : undefined;
+  if (!started || (journey !== world.currentEvent && journey !== started.firstPageHeader)) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: started.firstPageHeader })).toBeVisible();
+});
+
+const screenEvents: Record<string, string> = {
+  [DECIDE_ENFORCEMENT]: DECIDE_ENFORCEMENT,
+  [setRiskLevel.pageLabel]: SET_RISK_LEVEL,
+  [addBailiffNote.pageLabel]: ADD_BAILIFF_NOTE,
+  [findBailiff.pageLabel]: ALLOCATE_BAILIFF,
+  [scheduleEviction.pageLabel]: SCHEDULE_EVICTION,
+  [noticeServed.pageLabel]: MARK_NOTICE_SERVED,
+  [RESCHEDULE_EVICTION]: RESCHEDULE_EVICTION,
+};
+
+Given('I am on the {string} screen', async ({ page, world, $tags }, screen: string) => {
+  if (screen === findBailiff.checkYourAnswers && world.journey === ALLOCATE_BAILIFF) {
+    return goToAllocationCheckYourAnswers(page, world, standInBailiff('Sam Jones') as string);
+  }
+  const event = screenEvents[screen];
+  if (!event) {
+    return markPending(genericStepPending, $tags);
+  }
+  await openCaseSummary(page);
+  await startEvent(event);
+  world.currentEvent = event;
+});
+
+const eventsWithoutPartiesLine: Record<string, string> = {
+  [MARK_NOTICE_SERVED]: 'HDPI-7346',
+};
+
+Then('I see the case number, the possession property address and {string}', async ({ page, world, $tags }, partyNames: string) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  const partiesTicket = eventsWithoutPartiesLine[world.currentEvent];
+  if (partiesTicket && / vs /.test(partyNames)) {
+    await expectCaseDetailsHeader(page, world, '');
+    return markPending({
+      ticket: partiesTicket,
+      summary: `"${world.currentEvent}" shows the case number and property address but no "${partyNames}" line`,
+    }, $tags);
+  }
+  await expectCaseDetailsHeader(page, world, partyNames);
+});
+
+Then('none of these are editable', async ({ page, world, $tags }) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expectCaseDetailsNotEditable(page);
+});
+
+Then('the {string} button is disabled', async ({ page, world, $tags }, button: string) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('button', { name: button, exact: true })).toBeDisabled();
+});
+
+When('I select {string}', async ({ page, world, $tags }, option: string) => {
+  if (option === decideEnforcement.cancelLink) {
+    return page.getByText(decideEnforcement.cancelLink, { exact: true }).click();
+  }
+  if (option === decideEnforcement.continueButton) {
+    return clickContinue(page);
+  }
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  if (world.currentEvent === ALLOCATE_BAILIFF && option === findBailiff.changeLink) {
+    return changeAllocatedBailiff(page);
+  }
+  if (world.currentEvent === SET_RISK_LEVEL && (option === setRiskLevel.high || option === setRiskLevel.medium)) {
+    return chooseRiskLevel(page, option);
+  }
+  if (
+    world.currentEvent === DECIDE_ENFORCEMENT
+    && (option === decideEnforcement.acceptRadioOption || option === decideEnforcement.rejectRadioOption)
+  ) {
+    return chooseDecision(page, option);
+  }
+  return markPending(genericStepPending, $tags);
+});
+
+Then('I return to the case summary', async ({ page, world, $tags }) => {
+  if (!world.currentEvent) {
+    return markPending(genericStepPending, $tags);
+  }
+  const eventPageHeadings: Record<string, string> = {
+    [SET_RISK_LEVEL]: setRiskLevel.pageLabel,
+    [ALLOCATE_BAILIFF]: findBailiff.pageLabel,
+  };
+  const eventPageHeading = eventPageHeadings[world.currentEvent] ?? decideEnforcement.mainHeader;
+  await expect(page).toHaveURL(new RegExp(`/cases/case-details/.*${world.caseReference}(#.*)?$`));
+  await expect(page.getByRole('heading', { name: eventPageHeading })).toBeHidden();
+  world.currentEvent = undefined;
+});
+
+When('I submit the {string} event', async ({ page, world, $tags }, eventName: string) => {
+  if (eventName === DECIDE_ENFORCEMENT && inDecideEnforcement(world)) {
+    return submitDecision(page);
+  }
+  if (eventName === SCHEDULE_EVICTION && world.currentEvent !== eventName && !world.evictionScheduled) {
+    return scheduleEvictionInXui(page, world);
+  }
+  if (eventName === SCHEDULE_EVICTION || eventName === RESCHEDULE_EVICTION) {
+    if (world.currentEvent !== eventName) {
+      return markPending(genericStepPending, $tags);
+    }
+    await page.getByRole('button', { name: scheduleEviction.saveAndContinue, exact: true }).click();
+    world.currentEvent = undefined;
+    return;
+  }
+  return markPending(genericStepPending, $tags);
+});
+
+Then('the {string} screen opens', async ({ page, world, $tags }, screen: string) => {
+  const event = screenEvents[screen];
+  if (!event || world.currentEvent !== event) {
+    return markPending(genericStepPending, $tags);
+  }
+  await expect(page.getByRole('heading', { name: screen, exact: true })).toBeVisible({ timeout: LONG_TIMEOUT });
+});

@@ -15,7 +15,6 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -33,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseViewContributor;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
@@ -63,6 +63,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -124,8 +125,6 @@ class PCSCaseViewTest {
     @Mock
     private CaseLinkView caseLinkView;
     @Mock
-    private EnforcementOrderMediator enforcementOrderMediator;
-    @Mock
     private CaseNoteView caseNoteView;
     @Mock
     private OrdersView ordersView;
@@ -143,6 +142,8 @@ class PCSCaseViewTest {
     private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     @Mock
     private HearingView hearingView;
+    @Mock
+    private CaseViewContributor caseViewContributor;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -165,11 +166,11 @@ class PCSCaseViewTest {
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
-                                    caseLinkView, enforcementOrderMediator,
+                                    caseLinkView,
                                     caseNoteView, ordersView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
-                                    hearingView, legalRepresentativeSummaryService, organisationService,
-                                    judicialNoteView
+                                    hearingView, List.of(caseViewContributor), legalRepresentativeSummaryService,
+                                    organisationService, judicialNoteView
         );
     }
 
@@ -235,13 +236,13 @@ class PCSCaseViewTest {
     void shouldSetSearchCriteriaFromIndexer() {
         // Given
         SearchCriteria searchCriteria = SearchCriteria.builder().build();
-        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class))).thenReturn(searchCriteria);
+        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class), anyLong())).thenReturn(searchCriteria);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then - indexing is delegated to the indexer and its result is set on the case
-        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase);
+        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase, CASE_REFERENCE);
         assertThat(pcsCase.getSearchCriteria()).isSameAs(searchCriteria);
     }
 
@@ -256,7 +257,7 @@ class PCSCaseViewTest {
 
             // Then - the indexer is never invoked and SearchCriteria is left null, so the
             // decentralised indexer won't write a global_search document for this case type
-            verify(searchCriteriaIndexer, never()).buildSearchCriteria(any(PCSCase.class));
+            verify(searchCriteriaIndexer, never()).buildSearchCriteria(any(PCSCase.class), anyLong());
             assertThat(pcsCase.getSearchCriteria()).isNull();
         }
     }
@@ -489,12 +490,12 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldCallEnforcementOrderMediator() {
+    void shouldCallCaseViewContributors() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+        verify(caseViewContributor).contribute(pcsCaseEntity, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

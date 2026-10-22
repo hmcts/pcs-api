@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
+import static uk.gov.hmcts.reform.pcs.ccd.page.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
 class LegalRepDocumentUploadDetailsConfigurerTest extends BasePageTest {

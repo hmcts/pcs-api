@@ -514,7 +514,7 @@ class DashboardJourneyServiceTest {
     }
 
     private void stubUserRoles(String userId) {
-        when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
+        when(userRoleService.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE))
             .thenReturn(new UserRoles(userId, List.of()));
     }
 

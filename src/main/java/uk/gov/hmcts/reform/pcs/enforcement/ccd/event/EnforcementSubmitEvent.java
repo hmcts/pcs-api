@@ -1,0 +1,109 @@
+package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.exception.LiveEnforcementExistsException;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+
+import java.util.List;
+import java.util.Optional;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
+
+@Component("enforcementSubmitEventHandler")
+@Slf4j
+@RequiredArgsConstructor
+public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
+
+    static final String NO_ENFORCEMENT_TYPE_ERROR =
+        "Select what you want to apply for before submitting this application";
+    static final String FEE_UNAVAILABLE_ERROR =
+        "We could not get the fee for this application. Try submitting it again later";
+
+    private final EnforcementOrderService enforcementOrderService;
+    private final MoneyFormatter moneyFormatter;
+
+    @Override
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {
+        long caseReference = payload.caseReference();
+        PCSCase pcsCase = payload.caseData();
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+
+        SelectEnforcementType enforcementType = SelectEnforcementType.from(enforcementOrder);
+        if (enforcementType == null) {
+            return errorResponse(NO_ENFORCEMENT_TYPE_ERROR);
+        }
+        if (enforcementOrderService.hasLiveEnforcement(caseReference)) {
+            return errorResponse(LiveEnforcementExistsException.MESSAGE);
+        }
+
+        EnforcementChange<FeeDetails> submitted;
+        try {
+            submitted = enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+        } catch (FeeNotFoundException e) {
+            log.error("Could not look up the {} fee to submit the enforcement on case {}",
+                      enforcementType, caseReference, e);
+            return errorResponse(FEE_UNAVAILABLE_ERROR);
+        } catch (DataIntegrityViolationException e) {
+            if (!LiveEnforcementExistsException.isConstraintViolation(e)) {
+                throw e;
+            }
+            log.info("Case {}: another live enforcement was created while this application was being submitted",
+                     caseReference);
+            return errorResponse(LiveEnforcementExistsException.MESSAGE);
+        }
+        if (submitted.refused()) {
+            return SubmitResponse.<State>builder().errors(submitted.errors()).build();
+        }
+        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
+        Optional<String> formattedFee = Optional.ofNullable(submitted.change())
+            .map(fee -> moneyFormatter.formatFee(fee.getFeeAmount()));
+        return SubmitResponse.<State>builder()
+            .confirmationHeader(formattedFee.map(EnforcementSubmitEvent::paymentConfirmationHeader).orElse(null))
+            .confirmationBody(formattedFee
+                                  .map(fee -> paymentConfirmationBody(fee, caseReference))
+                                  .orElse(null))
+            .state(PENDING_ENFORCEMENT_ISSUED)
+            .build();
+    }
+
+    private static SubmitResponse<State> errorResponse(String error) {
+        return SubmitResponse.<State>builder().errors(List.of(error)).build();
+    }
+
+    private static String paymentConfirmationHeader(String enforcementFee) {
+        return "# Pay %s for HM Courts and Tribunals Service to review your application".formatted(enforcementFee);
+    }
+
+    private static String paymentConfirmationBody(String enforcementFee, long caseReference) {
+        return """
+            <div class="govuk-body">
+            We have saved your application, but you still need to pay for it before we can review it.
+            This costs %s
+            </div>
+
+            <div class="govuk-body">
+            We cannot review your application until you pay this fee.
+            </div>
+
+            <div class="govuk-body">
+            <a href="/cases/case-details/%d#Service%%20Request"
+                    class="govuk-link govuk-link--no-visited-state">Pay your application fee</a>.
+            </div>
+            """.formatted(enforcementFee, caseReference);
+    }
+
+}

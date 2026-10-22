@@ -26,6 +26,7 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/protestorGroupR
 export * from '@data/page-data-figma/page-data-enforcement-figma/repaymentsWrit.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/repayments.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/statementOfTruth.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/statementOfTruthWrit.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/suspendedOrder.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/verbalOrWrittenThreatsRisk.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/violentAggressiveRisk.page.data';
@@ -35,3 +36,6 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefen
 export * from '@data/page-data-figma/page-data-enforcement-figma/shareEvidenceWithJudge.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/confirmEvictionDetails.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/evictionDate.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/missedPayments.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/defendantInBreathingSpace.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWarrantInfo.page.data';

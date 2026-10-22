@@ -12,7 +12,6 @@ export const changeNameAddress = {
   ifyouWantToKeepParagraph: `If you want to keep the existing name or address`,
   ifYouAreconfidentParagraph: `If you are confident that the name or address is correct, you can go back to the previous page and change your answer to the last question.`,
   ifTheNameAndAddressParagraph: `If the name and address is incorrect, the bailiff will not be able to carry out the eviction.`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

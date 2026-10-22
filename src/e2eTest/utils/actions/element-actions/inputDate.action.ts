@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import { actionData, actionRecord, IAction } from '../../interfaces/action.interface';
+import { fillDateParts } from '@utils/demo-actions';
 
 
 export class InputDateAction implements IAction {
@@ -22,8 +23,6 @@ export class InputDateAction implements IAction {
       );
     }
 
-    for (let i = 0; i < dateVal.length; i++) {
-      await locator.nth(i).fill(dateVal[i]);
-    }
+    await fillDateParts(dateVal.map((value, i) => ({ input: locator.nth(i), value })));
   }
 }

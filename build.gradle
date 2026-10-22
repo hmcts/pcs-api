@@ -213,10 +213,11 @@ tasks.register('integration', Test) {
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
-  maxHeapSize = '1g'
   failFast = true
-  // Spring caches each distinct test context; the default 512m runs out once they all load.
-  maxHeapSize = '1g'
+  // Spring caches each distinct test context, and every one of them loads the whole CCD definition
+  // through CCDDefinitionGenerator.loadConfigs, so this grows with the definition. At 1g loadConfigs
+  // ran out of heap once the enforcement declaration pages were added.
+  maxHeapSize = '2g'
 }
 
 tasks.register('smoke', Test) {
@@ -355,12 +356,15 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      // The enforcement equivalents of the three above are deliberately not excluded: their domain, entity and
+      // page classes carry the status model, the fee rules and the page validators, which the gate should cover.
       "**/entities/**," +
       "**/model/**," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
       // Covered by MakeOrderIT, which runs in the integration suite rather than before this scan.
       "**/uk/gov/hmcts/reform/pcs/ccd/event/order/**/*.java"
-    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
+    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/enforcement/entity/WarrantEntity.java," +
+      "**/uk/gov/hmcts/reform/pcs/enforcement/domain/warrant/WarrantDetails," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentamend/DocumentAmendDetails.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentremoval/DocumentRemovalDetails.java,"
@@ -498,6 +502,7 @@ dependencies {
   testImplementation group: 'org.instancio', name: 'instancio', version: '5.6.0'
   testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.2'
   testImplementation group: 'org.wiremock', name: 'wiremock-standalone', version: '3.13.2'
+  testImplementation group: 'com.tngtech.archunit', name: 'archunit-junit5', version: '1.5.1'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.12_CCD-8388') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
@@ -652,6 +657,9 @@ tasks.withType(CftlibExec).configureEach {
   // reasons are fetched) at the local wiremock stub
   environment 'SERVICES_LOCATION_REF_API_URL', 'http://host.docker.internal:8083'
   environment 'RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG', '{"PCS":{"webUrl":"http://localhost:3209","nocBaseUrl":"http://host.docker.internal:3206"}}'
+  // XUI's global search only searches the services listed here. Its default has included PCS only since
+  // rpx-xui-webapp #5254, so name it explicitly for older pinned XUI images.
+  environment 'RSE_LIB_XUI_ENV_GLOBAL_SEARCH_SERVICES', 'PCS'
 
   // wa-task-management-api overrides
   environment 'IDAM_SECURITY_ALLOWED_ISSUER_0', 'http://localhost:5062/o'
@@ -670,6 +678,12 @@ tasks.withType(CftlibExec).configureEach {
 
     // Used by docassembly
     environment 'DM_STORE_APP_URL', 'http://localhost:4506'
+
+    // Docmosis is only reachable on the VPN, so by default docassembly renders every template as the placeholder
+    // PDF the wiremock stub returns (wiremock/mappings/docmosis). LOCAL_DOCMOSIS=aat renders with AAT Docmosis.
+    if (System.getenv("LOCAL_DOCMOSIS") != "aat") {
+      environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:8083/rs/render'
+    }
 
     // CCD validation of document URLs
     environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:4506/documents/[A-Za-z0-9-]+.*'

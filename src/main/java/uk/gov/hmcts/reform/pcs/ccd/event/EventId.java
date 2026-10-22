@@ -35,5 +35,15 @@ public enum EventId {
     reindexCases,
     defendantPaperResponse,
     legalRepresentativeContactDetails,
+    resumeEnforcementOrder,
+    deleteDraftApplication,
+    decideEnforcement,
+    addBailiffNote,
+    allocateBailiff,
+    setRiskLevel,
+    scheduleEviction,
+    rescheduleEviction,
+    markNoticeOfEvictionServed,
+    recordWarrantReturn,
     addJudicialNote
 }

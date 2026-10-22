@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -30,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseViewContributor;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
@@ -87,7 +87,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final SearchCriteriaIndexer searchCriteriaIndexer;
     private final CaseListView caseListView;
     private final CaseLinkView caseLinkView;
-    private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseNoteView caseNoteView;
     private final OrdersView ordersView;
     private final CaseTabView caseTabView;
@@ -98,6 +97,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
+    private final List<CaseViewContributor> caseViewContributors;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
@@ -119,9 +119,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
-                    draft -> {
-                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
-                        },
+                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
                     () -> caseTabView.setCaseTabFields(pcsCase)
                 );
         } else {
@@ -130,7 +128,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
+        caseViewContributors.forEach(
+            contributor -> contributor.contribute(submittedCase.pcsCaseEntity(), pcsCase, caseReference, state)
+        );
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -139,7 +139,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         );
 
         if (!CaseType.isSuffixedCaseType()) {
-            pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
+            pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase, caseReference));
         }
 
         return pcsCase;

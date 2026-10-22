@@ -4,7 +4,6 @@ export const confirmDefendantsDOB = {
   defendantsDOBQuestion: `Do you know the defendants’ dates of birth?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`, 
   errorValidation: `NO`,//set it to `NO` before raising a PR

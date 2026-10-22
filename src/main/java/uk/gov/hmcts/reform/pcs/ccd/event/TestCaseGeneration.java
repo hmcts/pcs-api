@@ -16,19 +16,20 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseGenerationContext;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
@@ -36,16 +37,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
+public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole>, TestCaseGenerationContext {
 
     static final String NO_NON_PROD_CASE_AVAILABLE = "No non-prod case json available.";
     static final String TEST_FEE_AMOUNT = "123.45";
     static final String EVENT_NAME = "Test Support Case Creation";
     static final String MAKE_A_CLAIM_CASE_GENERATOR = "Create Case";
-    static final String ENFORCEMENT_CASE_GENERATOR = "Create Enforcement";
 
     private final ResumePossessionClaim resumePossessionClaim;
-    private final EnforceTheOrder enforceTheOrder;
+    private final List<TestCaseGenerator> testCaseGenerators;
 
     private final TestCaseSupportHelper testCaseSupportHelper;
 
@@ -90,15 +90,17 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         if (label.startsWith(MAKE_A_CLAIM_CASE_GENERATOR)) {
             makeAClaimTestCreation(label, caseReference);
             return SubmitResponse.<State>builder().state(PENDING_CASE_ISSUED).build();
-        } else if (label.startsWith(ENFORCEMENT_CASE_GENERATOR)) {
-            makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
-            enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
-            return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
         }
-        return SubmitResponse.<State>builder().state(AWAITING_SUBMISSION_TO_HMCTS).build();
+        State state = testCaseGenerators.stream()
+            .filter(generator -> generator.handles(label))
+            .findFirst()
+            .map(generator -> generator.generate(label, caseReference, this))
+            .orElse(AWAITING_SUBMISSION_TO_HMCTS);
+        return SubmitResponse.<State>builder().state(state).build();
     }
 
-    void makeAClaimTestCreation(String label, Long caseReference) {
+    @Override
+    public void makeAClaimTestCreation(String label, Long caseReference) {
         PCSCase loadedCase = loadTestPcsCase(label);
         loadedCase.setFeeAmount(TEST_FEE_AMOUNT);
         pcsCaseService.createCase(
@@ -108,7 +110,8 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }
 
-    PCSCase loadTestPcsCase(String label) {
+    @Override
+    public PCSCase loadTestPcsCase(String label) {
         try {
             Resource testResource = testCaseSupportHelper.getTestResource(label);
             try (var inputStream = testResource.getInputStream()) {

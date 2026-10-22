@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -25,10 +24,9 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
@@ -38,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -51,6 +50,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -65,7 +65,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENG
 @ExtendWith(MockitoExtension.class)
 class TestCaseGenerationTest {
 
-    @InjectMocks
     private TestCaseGeneration underTest;
 
     @Mock
@@ -75,16 +74,16 @@ class TestCaseGenerationTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private OrganisationService organisationService;
-    @Mock
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
-    private EnforceTheOrder enforceTheOrder;
+    private TestCaseGenerator testCaseGenerator;
 
     private MockedStatic<TestSupportEnvironment> mockedEnv;
 
     @BeforeEach
     void setUp() {
+        underTest = new TestCaseGeneration(resumePossessionClaim, List.of(testCaseGenerator), testCaseSupportHelper,
+            draftCaseDataService, pcsCaseService);
         mockedEnv = Mockito.mockStatic(TestSupportEnvironment.class);
     }
 
@@ -232,34 +231,45 @@ class TestCaseGenerationTest {
     }
 
     @Test
-    void shouldSubmitEnforcementWarrantBasicCase() {
+    void shouldDelegateToTestCaseGeneratorThatHandlesLabel() {
         // Given
         Long caseReference = 456L;
         String label = "Create Enforcement Warrant Basic Case";
-
         DynamicList testFilesList = DynamicList.builder()
-            .value(DynamicListElement.builder().label(label).build())
-            .build();
-
-        PCSCase pcsCase = PCSCase.builder()
-            .testCaseSupportFileList(testFilesList)
-            .build();
+            .value(DynamicListElement.builder().label(label).build()).build();
+        PCSCase pcsCase = PCSCase.builder().testCaseSupportFileList(testFilesList).build();
 
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(caseReference, pcsCase, null);
-
-        PCSCase loadedCase = PCSCase.builder().build();
-        TestCaseGeneration spyUnderTest = spy(underTest);
-
-        doNothing().when(spyUnderTest).makeAClaimTestCreation(anyString(), anyLong());
-        doReturn(loadedCase).when(spyUnderTest).loadTestPcsCase(label);
+        when(testCaseGenerator.handles(label)).thenReturn(true);
+        when(testCaseGenerator.generate(label, caseReference, underTest)).thenReturn(State.CASE_ISSUED);
 
         // When
-        SubmitResponse<State> response = spyUnderTest.submit(eventPayload);
+        SubmitResponse<State> response = underTest.submit(eventPayload);
 
         // Then
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
-        verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
-        verify(enforceTheOrder).submitOrder(caseReference, loadedCase);
+        verify(testCaseGenerator).generate(label, caseReference, underTest);
+        verifyNoInteractions(pcsCaseService, resumePossessionClaim);
+    }
+
+    @Test
+    void shouldLeaveCaseAwaitingSubmissionWhenNoTestCaseGeneratorHandlesLabel() {
+        // Given
+        Long caseReference = 789L;
+        String label = "Unknown Fixture";
+        DynamicList testFilesList = DynamicList.builder()
+            .value(DynamicListElement.builder().label(label).build()).build();
+        PCSCase pcsCase = PCSCase.builder().testCaseSupportFileList(testFilesList).build();
+
+        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(caseReference, pcsCase, null);
+        when(testCaseGenerator.handles(label)).thenReturn(false);
+
+        // When
+        SubmitResponse<State> response = underTest.submit(eventPayload);
+
+        // Then
+        assertThat(response.getState()).isEqualTo(AWAITING_SUBMISSION_TO_HMCTS);
+        verify(testCaseGenerator, never()).generate(anyString(), anyLong(), any());
     }
 
     @Test

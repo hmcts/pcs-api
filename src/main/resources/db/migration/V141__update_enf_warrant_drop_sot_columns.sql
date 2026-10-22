@@ -1,0 +1,10 @@
+ALTER TABLE enf_warrant
+    DROP COLUMN completed_by,
+    DROP COLUMN certification,
+    DROP COLUMN agreement_claimant,
+    DROP COLUMN full_name_claimant,
+    DROP COLUMN position_claimant,
+    DROP COLUMN agreement_legal_rep,
+    DROP COLUMN full_name_legal_rep,
+    DROP COLUMN firm_name_legal_rep,
+    DROP COLUMN position_legal_rep;

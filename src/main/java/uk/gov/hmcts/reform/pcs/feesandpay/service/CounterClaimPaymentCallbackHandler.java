@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormSche
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -55,6 +56,11 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         this.translationWAService = translationWAService;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
+    }
+
+    @Override
+    public PaymentCallbackHandlerType handlerType() {
+        return PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
     }
 
     @Override

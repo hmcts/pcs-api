@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFormScheduler;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -21,6 +22,11 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final GenAppRepository genAppRepository;
     private final GenAppFormScheduler genAppFormScheduler;
+
+    @Override
+    public PaymentCallbackHandlerType handlerType() {
+        return PaymentCallbackHandlerType.GEN_APP_ISSUE;
+    }
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {

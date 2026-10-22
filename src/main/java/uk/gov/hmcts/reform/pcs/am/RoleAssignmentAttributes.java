@@ -17,5 +17,10 @@ public class RoleAssignmentAttributes {
     private String caseType;
     private String workTypes;
     private String primaryLocation;
+    /**
+     * Set on group-access role assignments only: the case access group the role applies to, which a case
+     * matches when its CaseAccessGroups hold the same id.
+     */
+    private String caseAccessGroupId;
 
 }

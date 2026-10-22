@@ -83,6 +83,21 @@ class RoleToAccessProfilesTest {
     }
 
     @Test
+    void shouldMapEachBailiffRoleToItsOwnAccessProfile() {
+        assertThat(UserRole.BAILIFF.getAccessProfiles()).containsExactly(AccessProfile.BAILIFF.getRole());
+        assertThat(UserRole.BAILIFF_ADMIN.getAccessProfiles()).containsExactly(AccessProfile.BAILIFF_ADMIN.getRole());
+        assertThat(UserRole.BAILIFF_MANAGER.getAccessProfiles())
+            .containsExactly(AccessProfile.BAILIFF_MANAGER.getRole());
+    }
+
+    @Test
+    void shouldGiveTheAllocatedBailiffCaseRoleTheBailiffAccessProfile() {
+        assertThat(UserRole.ALLOCATED_BAILIFF.getRole()).isEqualTo("allocated-bailiff");
+        assertThat(UserRole.ALLOCATED_BAILIFF.getRoleType()).isEqualTo(RoleType.RAS);
+        assertThat(UserRole.ALLOCATED_BAILIFF.getAccessProfiles()).containsExactly(AccessProfile.BAILIFF.getRole());
+    }
+
+    @Test
     void shouldGiveTheGroupAccessProfilesRead() {
         assertThat(AccessProfile.CLAIMANT.getCaseTypePermissions()).contains("R");
         assertThat(AccessProfile.GA_CLAIMANT_SOLICITOR.getCaseTypePermissions()).contains("R");

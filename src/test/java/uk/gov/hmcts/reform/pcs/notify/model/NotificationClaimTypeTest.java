@@ -15,6 +15,7 @@ class NotificationClaimTypeTest {
             case POSSESSION_CLAIM -> "possession_claim";
             case GENERAL_APPLICATION -> "general_application";
             case NOTICE_OF_CHANGE -> "notice_of_change";
+            case ENFORCEMENT -> "enforcement";
         };
 
         assertThat(claimType.getValue()).isEqualTo(expectedValue);
