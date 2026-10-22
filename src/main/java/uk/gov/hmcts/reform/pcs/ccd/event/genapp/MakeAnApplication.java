@@ -30,10 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.UploadSupportingDocume
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StatementOfTruth;
 
-
-
-
-
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.makeAnApplication;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
