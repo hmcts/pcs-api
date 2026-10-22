@@ -14,7 +14,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
 
-    private static final String WITHOUT_NOTICE_APPLICATION_GUIDANCE  = """
+    private static final String WITHOUT_NOTICE_APPLICATION_GUIDANCE = """
                     <p class="govuk-body">
                         We usually share anything you upload with the other parties, for example
                         a tenant, landlord, housing association, or mortgage lender.
@@ -38,12 +38,8 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", WITHOUT_NOTICE_APPLICATION_GUIDANCE)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .readonly(LegalRepDocumentUploadDetails::getExistingApplicationDocumentLinks, NEVER_SHOW)
+            .readonly(LegalRepDocumentUploadDetails::getExistingApplicationDocumentLinks, featureFlagsEnabled(RELEASE_1_DOT_4))
             .done()
-            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
-            .label(pageKey + "-application-links",
-                   "${lrDocUpload_ExistingApplicationDocumentLinks}",
-                   featureFlagsEnabled(RELEASE_1_DOT_4))
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
             .mandatory(LegalRepDocumentUploadDetails::getValidCategories)
             .done();
