@@ -38,7 +38,8 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", WITHOUT_NOTICE_APPLICATION_GUIDANCE)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .readonly(LegalRepDocumentUploadDetails::getExistingApplicationDocumentLinks, featureFlagsEnabled(RELEASE_1_DOT_4))
+            .readonly(LegalRepDocumentUploadDetails::getExistingApplicationDocumentLinks,
+                      featureFlagsEnabled(RELEASE_1_DOT_4))
             .done()
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
             .mandatory(LegalRepDocumentUploadDetails::getValidCategories)
