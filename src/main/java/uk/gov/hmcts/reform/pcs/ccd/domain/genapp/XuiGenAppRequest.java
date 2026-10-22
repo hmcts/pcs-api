@@ -154,7 +154,7 @@ public class XuiGenAppRequest implements GenAppRequest {
     @CCD(searchable = false)
     private VerticalYesNo showNoticeScreens;
 
-    @CCD(label = "Which type of application has the applicant made?", typeOverride = DynamicRadioList)
+    @CCD(label = "What do you want to apply for?", typeOverride = DynamicRadioList)
     private DynamicStringList applicationTypeOptionList;
 
     private String applicantPartyId;
