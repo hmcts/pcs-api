@@ -34,7 +34,6 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
                 .forState(State.CASE_ISSUED)
                 .name("Enter breathing space")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
                 .showSummary();
         breathingSpacePageConfigurer.configurePages(new PageBuilder(eventBuilder));
