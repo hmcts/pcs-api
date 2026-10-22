@@ -19,7 +19,6 @@ import java.util.EnumSet;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The Work Allocation tasks an order passes between court staff and its judge, and the link that starts a judge's
@@ -81,30 +80,21 @@ public class OrderTasks {
     }
 
     /** Whether a judge can decide the application with the order, which is not one already deciding it. */
-    public boolean canDecide(GenAppEntity genApp, UUID order) {
-        return genApp.isOpen() && !decidedBy(genApp, order,
-            EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED));
+    public boolean canDecide(GenAppEntity genApp, UUID except) {
+        return genApp.isOpen() && orderRepository.findByPcsCaseIdAndStateIn(genApp.getPcsCase().getId(),
+                EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED)).stream()
+            .filter(order -> !order.getId().equals(except))
+            .noneMatch(order -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId())
+                .filter(step -> decides(step.getFormData(), genApp))
+                .filter(step -> order.getState() != OrderState.ISSUED
+                    || !"list".equals(step.getFormData().get(decisionField(genApp))))
+                .isPresent());
     }
 
     /** Whether the order's answers decide the application. */
     public static boolean decides(Map<String, Object> formData, GenAppEntity genApp) {
         Object decision = formData == null ? null : formData.get(decisionField(genApp));
         return decision != null && !"none".equals(decision);
-    }
-
-    /** Whether an issued order decided the application, which listing it for a hearing does not. */
-    public boolean decided(GenAppEntity genApp) {
-        return decidedBy(genApp, null, EnumSet.of(OrderState.ISSUED));
-    }
-
-    private boolean decidedBy(GenAppEntity genApp, UUID except, Set<OrderState> states) {
-        return orderRepository.findByPcsCaseIdAndStateIn(genApp.getPcsCase().getId(), states).stream()
-            .filter(order -> !order.getId().equals(except))
-            .anyMatch(order -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId())
-                .filter(step -> decides(step.getFormData(), genApp))
-                .filter(step -> order.getState() != OrderState.ISSUED
-                    || !"list".equals(step.getFormData().get(decisionField(genApp))))
-                .isPresent());
     }
 
     /** The make order form's answer to what the judge decides about the application. */
