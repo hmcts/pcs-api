@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -76,7 +77,8 @@ class EnforcementGlobalSearchReferencesIT extends AbstractPostgresContainerIT {
         flushAndClear();
 
         save(claim, SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_REVIEW);
-        enforcementDecisionService.reject(caseReference, "The possession order was set aside");
+        enforcementDecisionService.reject(caseReference, EnforcementRejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED,
+                                          "The possession order was set aside");
         flushAndClear();
 
         SearchCriteria searchCriteria = searchCriteriaIndexer.buildSearchCriteria(PCSCase.builder().build(),

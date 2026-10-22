@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 
@@ -41,6 +42,7 @@ class DecideEnforcementStartHandlerTest {
             .caseNameHmctsInternal("Landlord Ltd vs John Smith")
             .enforcementOrder(EnforcementOrder.builder()
                                   .enforcementDecision(EnforcementDecision.REJECT)
+                                  .selectedEnforcementRejectionReason(EnforcementRejectionReason.OTHER)
                                   .enforcementRejectionReason("old reason")
                                   .build())
             .build();
@@ -53,6 +55,7 @@ class DecideEnforcementStartHandlerTest {
         assertThat(enforcementOrder.getFormattedPropertyAddress()).isEqualTo("1 High Street<br>");
         assertThat(enforcementOrder.getFormattedCaseName()).isEqualTo("Landlord Ltd vs John Smith");
         assertThat(enforcementOrder.getEnforcementDecision()).isNull();
+        assertThat(enforcementOrder.getSelectedEnforcementRejectionReason()).isNull();
         assertThat(enforcementOrder.getEnforcementRejectionReason()).isNull();
     }
 

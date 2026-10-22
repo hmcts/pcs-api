@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
@@ -433,6 +434,8 @@ class EnforcementWaTaskIT extends AbstractPostgresContainerIT {
         return PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                                   .enforcementDecision(EnforcementDecision.REJECT)
+                                  .selectedEnforcementRejectionReason(
+                                      EnforcementRejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED)
                                   .enforcementRejectionReason("The possession order was set aside")
                                   .build())
             .build();

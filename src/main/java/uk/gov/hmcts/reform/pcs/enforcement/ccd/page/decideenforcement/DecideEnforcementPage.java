@@ -5,14 +5,18 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.or;
 
 public class DecideEnforcementPage implements CcdPageConfiguration {
 
     public static final String PAGE_ID = "decideEnforcement";
     public static final String REJECTED = fieldEquals("enforcementDecision", EnforcementDecision.REJECT);
+    public static final String REJECTED_FOR_A_REASON_NEEDING_DETAIL = and(REJECTED, anyReasonNeedingDetail());
 
     static final String CASE_DETAILS = """
         <dl class="govuk-summary-list">
@@ -42,7 +46,15 @@ public class DecideEnforcementPage implements CcdPageConfiguration {
             .readonly(EnforcementOrder::getFormattedCaseName, NEVER_SHOW, true)
             .label(PAGE_ID + "-caseDetails", CASE_DETAILS, null, true)
             .mandatory(EnforcementOrder::getEnforcementDecision)
-            .mandatory(EnforcementOrder::getEnforcementRejectionReason, REJECTED)
+            .mandatory(EnforcementOrder::getSelectedEnforcementRejectionReason, REJECTED)
+            .mandatory(EnforcementOrder::getEnforcementRejectionReason, REJECTED_FOR_A_REASON_NEEDING_DETAIL)
             .done();
+    }
+
+    private static String anyReasonNeedingDetail() {
+        String[] reasons = EnforcementRejectionReason.needingDetail().stream()
+            .map(reason -> fieldEquals("selectedEnforcementRejectionReason", reason))
+            .toArray(String[]::new);
+        return "(%s)".formatted(or(reasons));
     }
 }

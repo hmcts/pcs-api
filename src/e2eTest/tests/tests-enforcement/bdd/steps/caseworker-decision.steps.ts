@@ -17,6 +17,7 @@ import { expectSingleErrorMessage } from '../support/error-summary';
 import {
   DECIDE_ENFORCEMENT,
   chooseDecision,
+  chooseRejectionReason,
   clickContinue,
   decideEnforcement,
   decisionRow,
@@ -24,6 +25,7 @@ import {
   goToCheckYourAnswers,
   confirmationPanel,
   recordEnforcementFeePaid,
+  rejectionReasonDetail,
   withDashes,
 } from '../support/decide-enforcement';
 
@@ -101,8 +103,30 @@ Given('I have accepted the application', async ({ page, world }) => {
   await acceptTheApplication(page, world);
 });
 
-When('I enter a reason for rejecting', async ({ page }) => {
-  await page.getByLabel(decideEnforcement.rejectionReasonLabel).fill(decideEnforcement.rejectionReasonInput);
+When('I select the rejection reason {string}', async ({ page }, reason: string) => {
+  await chooseRejectionReason(page, reason);
+});
+
+When('I enter the extra detail that reason asks for', async ({ page }) => {
+  await rejectionReasonDetail(page).fill(decideEnforcement.rejectionReasonInput);
+});
+
+Then('I see an error asking me to choose a reason for rejecting', async ({ page }) => {
+  await expectSingleErrorMessage(page, decideEnforcement.rejectionReasonQuestion);
+  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+});
+
+Then('I see an error asking me for the extra detail', async ({ page }) => {
+  await expectSingleErrorMessage(page, decideEnforcement.rejectionReasonLabel);
+  await expect(page.getByRole('heading', { name: decideEnforcement.mainHeader })).toBeVisible();
+});
+
+Then('the reason detail box is {string}', async ({ page }, shown: string) => {
+  if (shown === 'shown') {
+    await expect(rejectionReasonDetail(page)).toBeVisible();
+  } else {
+    await expect(rejectionReasonDetail(page)).toBeHidden();
+  }
 });
 
 Then('I see the {string} confirmation screen with the case number, property address and party names', async ({ page, world }, title: string) => {

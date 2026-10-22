@@ -14,6 +14,7 @@ export const decideEnforcement = {
   decisionQuestion: 'Do you want to accept or reject this application?',
   acceptRadioOption: 'Accept',
   rejectRadioOption: 'Reject',
+  rejectionReasonQuestion: 'Why are you rejecting this application?',
   rejectionReasonLabel: 'Reason for rejecting the application',
   rejectionReasonInput: 'The possession order has been set aside.',
   caseNumberKey: 'Case number',
@@ -84,6 +85,14 @@ export async function expectCaseDetailsNotEditable(page: Page): Promise<void> {
 
 export async function chooseDecision(page: Page, option: string): Promise<void> {
   await page.getByRole('radio', { name: option, exact: true }).check();
+}
+
+export async function chooseRejectionReason(page: Page, reason: string): Promise<void> {
+  await page.getByRole('radio', { name: reason, exact: true }).check();
+}
+
+export function rejectionReasonDetail(page: Page) {
+  return page.getByLabel(decideEnforcement.rejectionReasonLabel);
 }
 
 export async function clickContinue(page: Page): Promise<void> {

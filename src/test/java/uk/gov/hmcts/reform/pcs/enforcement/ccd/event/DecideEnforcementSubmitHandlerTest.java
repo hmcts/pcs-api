@@ -3,9 +3,10 @@ package uk.gov.hmcts.reform.pcs.enforcement.ccd.event;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -19,14 +20,17 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.exception.NoEnforcementAwaitingReviewException;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
 
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -35,6 +39,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision.ACCEPT;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision.REJECT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED;
 
 @ExtendWith(MockitoExtension.class)
 class DecideEnforcementSubmitHandlerTest {
@@ -68,7 +73,7 @@ class DecideEnforcementSubmitHandlerTest {
             .thenReturn(EnforcementChange.made(new EnforcementDecisionOutcome(type, ACCEPT, number)));
         givenFormattedAddress();
 
-        SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null));
+        SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null, null));
 
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         assertThat(response.getErrors()).isNullOrEmpty();
@@ -76,7 +81,7 @@ class DecideEnforcementSubmitHandlerTest {
         assertThat(response.getConfirmationBody())
             .contains(numberLine, "Case number: " + DASHED_CASE_REFERENCE, "Property address: 1 High Street",
                       CASE_NAME, whatNext);
-        verify(enforcementDecisionService, never()).reject(anyLong(), org.mockito.ArgumentMatchers.any());
+        verify(enforcementDecisionService, never()).reject(anyLong(), any(), any());
     }
 
     @ParameterizedTest
@@ -88,11 +93,12 @@ class DecideEnforcementSubmitHandlerTest {
     })
     void shouldRejectTheApplicationAndPutTheCaseBackSoTheClaimantCanApplyAgain(SelectEnforcementType type,
                                                                                String title) {
-        when(enforcementDecisionService.reject(CASE_REFERENCE, "No possession order"))
+        when(enforcementDecisionService.reject(CASE_REFERENCE, ORDER_SET_ASIDE_OR_SUSPENDED, "No possession order"))
             .thenReturn(EnforcementChange.made(new EnforcementDecisionOutcome(type, REJECT, null)));
         givenFormattedAddress();
 
-        SubmitResponse<State> response = underTest.submit(payload(REJECT, "No possession order"));
+        SubmitResponse<State> response = underTest.submit(
+            payload(REJECT, ORDER_SET_ASIDE_OR_SUSPENDED, "No possession order"));
 
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         assertThat(response.getConfirmationHeader()).isEqualTo("# " + title);
@@ -105,7 +111,7 @@ class DecideEnforcementSubmitHandlerTest {
 
     @Test
     void shouldRefuseASubmissionWithNoDecision() {
-        SubmitResponse<State> response = underTest.submit(payload(null, null));
+        SubmitResponse<State> response = underTest.submit(payload(null, null, null));
 
         assertThat(response.getErrors()).containsExactly(DecideEnforcementSubmitHandler.NO_DECISION_MESSAGE);
         assertThat(response.getState()).isNull();
@@ -123,11 +129,20 @@ class DecideEnforcementSubmitHandlerTest {
         verifyNoInteractions(enforcementDecisionService);
     }
 
+    @Test
+    void shouldRefuseARejectionWithNoReasonSelectedWithoutStartingATransaction() {
+        SubmitResponse<State> response = underTest.submit(payload(REJECT, null, null));
+
+        assertThat(response.getErrors())
+            .containsExactly(EnforcementDecisionService.NO_REJECTION_REASON_SELECTED_MESSAGE);
+        assertThat(response.getState()).isNull();
+        verifyNoInteractions(enforcementDecisionService);
+    }
+
     @ParameterizedTest
-    @NullSource
-    @ValueSource(strings = {"", "   "})
-    void shouldRefuseARejectionWithNoReasonWithoutStartingATransaction(String reason) {
-        SubmitResponse<State> response = underTest.submit(payload(REJECT, reason));
+    @MethodSource("reasonsNeedingDetailWithoutIt")
+    void shouldRefuseARejectionWithNoDetailForAReasonThatNeedsIt(EnforcementRejectionReason reason, String detail) {
+        SubmitResponse<State> response = underTest.submit(payload(REJECT, reason, detail));
 
         assertThat(response.getErrors())
             .containsExactly(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
@@ -135,12 +150,36 @@ class DecideEnforcementSubmitHandlerTest {
         verifyNoInteractions(enforcementDecisionService);
     }
 
+    private static Stream<Arguments> reasonsNeedingDetailWithoutIt() {
+        return EnforcementRejectionReason.needingDetail().stream()
+            .flatMap(reason -> Stream.of(null, "", "   ").map(detail -> Arguments.of(reason, detail)));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EnforcementRejectionReason.class, names = {
+        "APPLYING_OUT_OF_TIME",
+        "APPLYING_BEFORE_POSSESSION_DATE",
+        "NOT_TRANSFERRED_TO_HIGH_COURT",
+        "ANOTHER_ENFORCEMENT_JOURNEY_ONGOING",
+        "DEFENDANTS_IN_BREATHING_SPACE"})
+    void shouldRejectOnAReasonThatStandsAloneWithNoDetail(EnforcementRejectionReason reason) {
+        when(enforcementDecisionService.reject(CASE_REFERENCE, reason, null))
+            .thenReturn(EnforcementChange.made(
+                new EnforcementDecisionOutcome(SelectEnforcementType.WARRANT, REJECT, null)));
+        givenFormattedAddress();
+
+        SubmitResponse<State> response = underTest.submit(payload(REJECT, reason, null));
+
+        assertThat(response.getErrors()).isNullOrEmpty();
+        assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
+    }
+
     @Test
     void shouldReportAnApplicationAlreadyDecidedByAnotherCaseworkerAsAnError() {
         when(enforcementDecisionService.accept(CASE_REFERENCE))
             .thenReturn(EnforcementChange.refused(NoEnforcementAwaitingReviewException.MESSAGE));
 
-        SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null));
+        SubmitResponse<State> response = underTest.submit(payload(ACCEPT, null, null));
 
         assertThat(response.getErrors()).containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
         assertThat(response.getState()).isNull();
@@ -150,10 +189,11 @@ class DecideEnforcementSubmitHandlerTest {
 
     @Test
     void shouldReportARejectionOfAnApplicationAlreadyDecidedAsAnError() {
-        when(enforcementDecisionService.reject(CASE_REFERENCE, "No possession order"))
+        when(enforcementDecisionService.reject(CASE_REFERENCE, ORDER_SET_ASIDE_OR_SUSPENDED, "No possession order"))
             .thenReturn(EnforcementChange.refused(NoEnforcementAwaitingReviewException.MESSAGE));
 
-        SubmitResponse<State> response = underTest.submit(payload(REJECT, "No possession order"));
+        SubmitResponse<State> response = underTest.submit(
+            payload(REJECT, ORDER_SET_ASIDE_OR_SUSPENDED, "No possession order"));
 
         assertThat(response.getErrors()).containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
         assertThat(response.getState()).isNull();
@@ -164,13 +204,15 @@ class DecideEnforcementSubmitHandlerTest {
         when(addressFormatter.formatMediumAddress(PROPERTY_ADDRESS, COMMA_DELIMITER)).thenReturn("1 High Street");
     }
 
-    private static EventPayload<PCSCase, State> payload(EnforcementDecision decision, String reason) {
+    private static EventPayload<PCSCase, State> payload(EnforcementDecision decision,
+                                                        EnforcementRejectionReason reason, String detail) {
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(PROPERTY_ADDRESS)
             .caseNameHmctsInternal(CASE_NAME)
             .enforcementOrder(EnforcementOrder.builder()
                                   .enforcementDecision(decision)
-                                  .enforcementRejectionReason(reason)
+                                  .selectedEnforcementRejectionReason(reason)
+                                  .enforcementRejectionReason(detail)
                                   .build())
             .build();
         return new EventPayload<>(CASE_REFERENCE, caseData, null);

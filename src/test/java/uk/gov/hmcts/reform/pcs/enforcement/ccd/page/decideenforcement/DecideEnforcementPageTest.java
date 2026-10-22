@@ -28,9 +28,29 @@ class DecideEnforcementPageTest extends BasePageTest {
             "formattedCaseName",
             "decideEnforcement-caseDetails",
             "enforcementDecision",
+            "selectedEnforcementRejectionReason",
             "enforcementRejectionReason"
         );
         assertFieldsArePlacedBeforeTheLabelsThatShowThem();
+    }
+
+    @Test
+    void shouldAskForAReasonOnlyWhenTheApplicationIsRejected() {
+        assertThat(field("selectedEnforcementRejectionReason").getShowCondition())
+            .isEqualTo("enforcementDecision=\"REJECT\"");
+        assertThat(field("selectedEnforcementRejectionReason").getContext())
+            .isEqualTo(DisplayContext.Mandatory);
+    }
+
+    @Test
+    void shouldAskForDetailOnlyForTheReasonsThatNeedIt() {
+        assertThat(field("enforcementRejectionReason").getShowCondition()).isEqualTo(
+            "enforcementDecision=\"REJECT\" AND ("
+                + "selectedEnforcementRejectionReason=\"CHANGE_IN_PARTY_CIRCUMSTANCES\""
+                + " OR selectedEnforcementRejectionReason=\"ORDER_NOT_ENFORCEABLE\""
+                + " OR selectedEnforcementRejectionReason=\"ORDER_SET_ASIDE_OR_SUSPENDED\""
+                + " OR selectedEnforcementRejectionReason=\"OTHER\")");
+        assertThat(field("enforcementRejectionReason").getContext()).isEqualTo(DisplayContext.Mandatory);
     }
 
     @Test

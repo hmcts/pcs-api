@@ -122,11 +122,46 @@ Feature: Caseworker decides an enforcement application
     Then the "Risk assessment" tab is shown on the case to internal users and the claimant
     And an "Allocate case to bailiff" task is created
 
+  @HDPI-8656 @not-filmed
+  Scenario: Caseworker must choose a reason for rejecting
+    Given I am on the "Decide enforcement" screen
+    When I select "Reject"
+    And I select "Continue"
+    Then I see an error asking me to choose a reason for rejecting
+
+  @HDPI-8656 @not-filmed
+  Scenario Outline: Only some reasons ask the caseworker to write what they mean
+    Given I am on the "Decide enforcement" screen
+    When I select "Reject"
+    And I select the rejection reason "<reason>"
+    Then the reason detail box is "<detail box>"
+
+    Examples:
+      | reason                                         | detail box |
+      | Change in party circumstances                  | shown      |
+      | Order not enforceable                          | shown      |
+      | Possession order set aside or suspended        | shown      |
+      | Other                                          | shown      |
+      | Applying to enforce out of time                | not shown  |
+      | Applying to enforce before the possession date | not shown  |
+      | Case not transferred to the high court         | not shown  |
+      | Another possession enforcement journey ongoing | not shown  |
+      | Defendant(s) in breathing space                | not shown  |
+
+  @HDPI-8656 @not-filmed
+  Scenario: Caseworker must write what they mean when the reason asks for it
+    Given I am on the "Decide enforcement" screen
+    When I select "Reject"
+    And I select the rejection reason "Other"
+    And I select "Continue"
+    Then I see an error asking me for the extra detail
+
   @HDPI-8656 @HDPI-9566 @HDPI-7538 @open-question
   Scenario: Rejecting an application
     Given I am on the "Decide enforcement" screen
     When I select "Reject"
-    And I enter a reason for rejecting
+    And I select the rejection reason "Possession order set aside or suspended"
+    And I enter the extra detail that reason asks for
     And I submit the "Decide enforcement" event
     Then I see the "Warrant of possession rejected" confirmation screen
     And no warrant is generated
@@ -140,7 +175,8 @@ Feature: Caseworker decides an enforcement application
     Given the enforcement is of type "writ of possession"
     And I am on the "Decide enforcement" screen
     When I select "Reject"
-    And I enter a reason for rejecting
+    And I select the rejection reason "Possession order set aside or suspended"
+    And I enter the extra detail that reason asks for
     And I submit the "Decide enforcement" event
     Then I see the "Writ of possession rejected" confirmation screen
     And the enforcement status changes to "Rejected"
@@ -152,7 +188,8 @@ Feature: Caseworker decides an enforcement application
     Given the enforcement is of type "warrant of restitution"
     And I am on the "Decide enforcement" screen
     When I select "Reject"
-    And I enter a reason for rejecting
+    And I select the rejection reason "Possession order set aside or suspended"
+    And I enter the extra detail that reason asks for
     And I submit the "Decide enforcement" event
     Then I see the "Warrant of restitution rejected" confirmation screen
     And the enforcement status changes to "Rejected"

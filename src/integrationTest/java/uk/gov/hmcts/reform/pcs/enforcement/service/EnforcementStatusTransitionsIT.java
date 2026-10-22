@@ -63,6 +63,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.APPLYING_OUT_OF_TIME;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_BAILIFF_ALLOCATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_CLAIMANT_CONFIRMATION;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_PAYMENT;
@@ -295,7 +296,7 @@ class EnforcementStatusTransitionsIT extends AbstractPostgresContainerIT {
         long caseReference = nextCaseReference();
         final UUID id = savedEnforcement(caseReference, AWAITING_REVIEW).getId();
 
-        assertThat(enforcementDecisionService.reject(caseReference, "Not eligible").refused()).isFalse();
+        assertThat(enforcementDecisionService.reject(caseReference, APPLYING_OUT_OF_TIME, null).refused()).isFalse();
         entityManager.flush();
         entityManager.clear();
 

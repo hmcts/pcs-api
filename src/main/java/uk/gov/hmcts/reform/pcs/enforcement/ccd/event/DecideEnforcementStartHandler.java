@@ -34,6 +34,7 @@ public class DecideEnforcementStartHandler implements Start<PCSCase, State> {
             addressFormatter.formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
         enforcementOrder.setFormattedCaseName(pcsCase.getCaseNameHmctsInternal());
         enforcementOrder.setEnforcementDecision(null);
+        enforcementOrder.setSelectedEnforcementRejectionReason(null);
         enforcementOrder.setEnforcementRejectionReason(null);
         return pcsCase;
     }

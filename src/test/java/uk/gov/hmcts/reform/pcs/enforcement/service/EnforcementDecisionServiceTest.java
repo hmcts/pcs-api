@@ -3,10 +3,10 @@ package uk.gov.hmcts.reform.pcs.enforcement.service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -27,6 +28,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,6 +40,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.APPLYING_OUT_OF_TIME;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.OTHER;
 import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.AWAITING_REVIEW;
 import static uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
 
@@ -123,6 +128,7 @@ class EnforcementDecisionServiceTest {
         assertThat(enforcement.getApprovedAt()).isEqualTo(NOW);
         assertThat(enforcement.getEnforcementNumber()).isEqualTo(number);
         assertThat(enforcement.getRejectionReason()).isNull();
+        assertThat(enforcement.getRejectionReasonCode()).isNull();
         verify(enforcementStatusTransitions).transition(enforcement, approvedStatus);
         verify(enforcementOrderRepository).save(enforcement);
         verify(enforcementDocumentScheduler).scheduleApprovalDocument(enforcement.getId(), type);
@@ -170,14 +176,15 @@ class EnforcementDecisionServiceTest {
     void shouldRejectTheApplicationWithTheReasonAndNoNumber() {
         EnforcementOrderEntity enforcement = givenAwaitingReview(SelectEnforcementType.WARRANT);
 
-        EnforcementChange<EnforcementDecisionOutcome> decided =
-            underTest.reject(CASE_REFERENCE, "  The order has been set aside  ");
+        EnforcementChange<EnforcementDecisionOutcome> decided = underTest.reject(
+            CASE_REFERENCE, ORDER_SET_ASIDE_OR_SUSPENDED, "  The order has been set aside  ");
 
         assertThat(decided.change()).isEqualTo(
             new EnforcementDecisionOutcome(SelectEnforcementType.WARRANT, EnforcementDecision.REJECT, null));
         assertThat(enforcement.getStatus()).isEqualTo(EnforcementStatus.REJECTED);
         assertThat(enforcement.getStatus().isLive()).isFalse();
         assertThat(enforcement.getStatusUpdatedAt()).isEqualTo(NOW);
+        assertThat(enforcement.getRejectionReasonCode()).isEqualTo(ORDER_SET_ASIDE_OR_SUSPENDED);
         assertThat(enforcement.getRejectionReason()).isEqualTo("The order has been set aside");
         assertThat(enforcement.getEnforcementNumber()).isNull();
         assertThat(enforcement.getApprovedAt()).isNull();
@@ -188,20 +195,65 @@ class EnforcementDecisionServiceTest {
     }
 
     @ParameterizedTest
-    @NullSource
-    @ValueSource(strings = {"", "   "})
-    void shouldRefuseToRejectWithoutAReason(String reason) {
-        assertThat(underTest.reject(CASE_REFERENCE, reason).errors())
+    @EnumSource(value = EnforcementRejectionReason.class, names = {
+        "APPLYING_OUT_OF_TIME",
+        "APPLYING_BEFORE_POSSESSION_DATE",
+        "NOT_TRANSFERRED_TO_HIGH_COURT",
+        "ANOTHER_ENFORCEMENT_JOURNEY_ONGOING",
+        "DEFENDANTS_IN_BREATHING_SPACE"})
+    void shouldRejectTheApplicationOnAReasonThatStandsAlone(EnforcementRejectionReason reason) {
+        EnforcementOrderEntity enforcement = givenAwaitingReview(SelectEnforcementType.WARRANT);
+
+        EnforcementChange<EnforcementDecisionOutcome> decided = underTest.reject(CASE_REFERENCE, reason, null);
+
+        assertThat(decided.refused()).isFalse();
+        assertThat(enforcement.getStatus()).isEqualTo(EnforcementStatus.REJECTED);
+        assertThat(enforcement.getRejectionReasonCode()).isEqualTo(reason);
+        assertThat(enforcement.getRejectionReason()).isNull();
+        verify(enforcementOrderRepository).save(enforcement);
+        verify(enforcementNotificationService).notifyClaimantOfRejection(
+            CASE_REFERENCE, SelectEnforcementType.WARRANT, null);
+    }
+
+    @Test
+    void shouldDiscardDetailTypedUnderAReasonThatWasThenChangedForOneStandingAlone() {
+        EnforcementOrderEntity enforcement = givenAwaitingReview(SelectEnforcementType.WARRANT);
+
+        underTest.reject(CASE_REFERENCE, APPLYING_OUT_OF_TIME, "Typed under \"Other\" before changing my mind");
+
+        assertThat(enforcement.getRejectionReasonCode()).isEqualTo(APPLYING_OUT_OF_TIME);
+        assertThat(enforcement.getRejectionReason()).isNull();
+        verify(enforcementNotificationService).notifyClaimantOfRejection(
+            CASE_REFERENCE, SelectEnforcementType.WARRANT, null);
+    }
+
+    @Test
+    void shouldRefuseToRejectWithoutASelectedReason() {
+        assertThat(underTest.reject(CASE_REFERENCE, null, "The order has been set aside").errors())
+            .containsExactly(EnforcementDecisionService.NO_REJECTION_REASON_SELECTED_MESSAGE);
+        verify(enforcementOrderRepository, never()).save(any());
+        verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
+    }
+
+    @ParameterizedTest
+    @MethodSource("reasonsNeedingDetailWithoutIt")
+    void shouldRefuseToRejectWithoutTheDetailAReasonNeeds(EnforcementRejectionReason reason, String detail) {
+        assertThat(underTest.reject(CASE_REFERENCE, reason, detail).errors())
             .containsExactly(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
+    }
+
+    private static Stream<Arguments> reasonsNeedingDetailWithoutIt() {
+        return EnforcementRejectionReason.needingDetail().stream()
+            .flatMap(reason -> Stream.of(null, "", "   ").map(detail -> Arguments.of(reason, detail)));
     }
 
     @Test
     void shouldRejectNothingWhenNoApplicationIsAwaitingReview() {
         givenNoEnforcement();
 
-        assertThat(underTest.reject(CASE_REFERENCE, "reason").errors())
+        assertThat(underTest.reject(CASE_REFERENCE, OTHER, "reason").errors())
             .containsExactly(NoEnforcementAwaitingReviewException.MESSAGE);
         verify(enforcementOrderRepository, never()).save(any());
         verifyNoInteractions(enforcementNotificationService, enforcementWaTaskService);
@@ -235,7 +287,8 @@ class EnforcementDecisionServiceTest {
         doThrow(new DataIntegrityViolationException("case_notification"))
             .when(enforcementNotificationService).notifyClaimantOfRejection(anyLong(), any(), anyString());
 
-        assertThat(underTest.reject(CASE_REFERENCE, "The order has been set aside").errors())
+        assertThat(underTest.reject(CASE_REFERENCE, ORDER_SET_ASIDE_OR_SUSPENDED, "The order has been set aside")
+                       .errors())
             .containsExactly(EnforcementSideEffects.COULD_NOT_SCHEDULE_ERROR);
     }
 

@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EvictionSchedule;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
@@ -54,6 +55,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED;
 import static uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementEmail.EVICTION_DATE_TIME;
 
 @PcsCcdEventTest
@@ -170,7 +172,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     void approvalQueuesTheEmail() {
         givenEnforcement(SelectEnforcementType.WRIT, EnforcementStatus.AWAITING_REVIEW);
 
-        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null))
+        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null, null))
             .as(caseworker)
             .submitExpectingSuccess();
 
@@ -187,7 +189,8 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         givenEnforcement(SelectEnforcementType.WARRANT, EnforcementStatus.AWAITING_REVIEW);
 
         events.event(caseReference, EventId.decideEnforcement.name(),
-                     decision(EnforcementDecision.REJECT, "The possession order was set aside"))
+                     decision(EnforcementDecision.REJECT, ORDER_SET_ASIDE_OR_SUSPENDED,
+                              "The possession order was set aside"))
             .as(caseworker)
             .submitExpectingSuccess();
 
@@ -201,7 +204,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     void warrantOfRestitutionApprovalQueuesTheEmail() {
         givenEnforcement(SelectEnforcementType.WARRANT_OF_RESTITUTION, EnforcementStatus.AWAITING_REVIEW);
 
-        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null))
+        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null, null))
             .as(caseworker)
             .submitExpectingSuccess();
 
@@ -222,7 +225,8 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
         givenEnforcement(enforcementType, EnforcementStatus.AWAITING_REVIEW);
 
         events.event(caseReference, EventId.decideEnforcement.name(),
-                     decision(EnforcementDecision.REJECT, "The possession order was set aside"))
+                     decision(EnforcementDecision.REJECT, ORDER_SET_ASIDE_OR_SUSPENDED,
+                              "The possession order was set aside"))
             .as(caseworker)
             .submitExpectingSuccess();
 
@@ -236,7 +240,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     void writOfRestitutionDecisionEmailsNoOne() {
         givenEnforcement(SelectEnforcementType.WRIT_OF_RESTITUTION, EnforcementStatus.AWAITING_REVIEW);
 
-        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null))
+        events.event(caseReference, EventId.decideEnforcement.name(), decision(EnforcementDecision.ACCEPT, null, null))
             .as(caseworker)
             .submitExpectingSuccess();
 
@@ -254,7 +258,8 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
             .when(sender).send(eq(caseReference), any(), any());
 
         var rejected = events.event(caseReference, EventId.decideEnforcement.name(),
-                                    decision(EnforcementDecision.REJECT, "The possession order was set aside"))
+                                    decision(EnforcementDecision.REJECT, ORDER_SET_ASIDE_OR_SUSPENDED,
+                                             "The possession order was set aside"))
             .as(caseworker)
             .submitExpectingErrors();
 
@@ -268,7 +273,7 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
     @DisplayName("Decide enforcement refused on submit emails no one")
     void decisionRefusedSendsNothing() {
         var rejected = events.event(caseReference, EventId.decideEnforcement.name(),
-                                    decision(EnforcementDecision.ACCEPT, null))
+                                    decision(EnforcementDecision.ACCEPT, null, null))
             .as(caseworker)
             .submitExpectingErrors();
 
@@ -454,11 +459,13 @@ class EnforcementNotificationRollbackIT extends AbstractPostgresContainerIT {
             .build();
     }
 
-    private static PCSCase decision(EnforcementDecision decision, String rejectionReason) {
+    private static PCSCase decision(EnforcementDecision decision, EnforcementRejectionReason rejectionReason,
+                                    String rejectionReasonDetail) {
         return PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                                   .enforcementDecision(decision)
-                                  .enforcementRejectionReason(rejectionReason)
+                                  .selectedEnforcementRejectionReason(rejectionReason)
+                                  .enforcementRejectionReason(rejectionReasonDetail)
                                   .build())
             .build();
     }

@@ -25,6 +25,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.RiskLevel;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -88,6 +89,10 @@ public class EnforcementOrderEntity {
 
     @Column(name = "approved_at")
     private Instant approvedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rejection_reason_code")
+    private EnforcementRejectionReason rejectionReasonCode;
 
     @Column(name = "rejection_reason")
     private String rejectionReason;

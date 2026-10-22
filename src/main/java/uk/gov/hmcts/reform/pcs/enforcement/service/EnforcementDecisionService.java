@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
@@ -26,6 +27,8 @@ import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementStatus.TRANS
 @RequiredArgsConstructor
 public class EnforcementDecisionService {
 
+    public static final String NO_REJECTION_REASON_SELECTED_MESSAGE =
+        "A reason must be selected to reject an enforcement application";
     public static final String NO_REJECTION_REASON_MESSAGE =
         "A reason is needed to reject an enforcement application";
 
@@ -77,8 +80,13 @@ public class EnforcementDecisionService {
     }
 
     @Transactional
-    public EnforcementChange<EnforcementDecisionOutcome> reject(long caseReference, String rejectionReason) {
-        if (StringUtils.isBlank(rejectionReason)) {
+    public EnforcementChange<EnforcementDecisionOutcome> reject(long caseReference,
+                                                                EnforcementRejectionReason rejectionReason,
+                                                                String rejectionReasonDetail) {
+        if (rejectionReason == null) {
+            return EnforcementChange.refused(NO_REJECTION_REASON_SELECTED_MESSAGE);
+        }
+        if (rejectionReason.isDetailRequired() && StringUtils.isBlank(rejectionReasonDetail)) {
             return EnforcementChange.refused(NO_REJECTION_REASON_MESSAGE);
         }
         Optional<EnforcementOrderEntity> awaitingReview = findAwaitingReview(caseReference);
@@ -89,7 +97,11 @@ public class EnforcementDecisionService {
         final SelectEnforcementType enforcementType = enforcementTypeOf(enforcement);
 
         enforcementStatusTransitions.transition(enforcement, REJECTED);
-        enforcement.setRejectionReason(rejectionReason.trim());
+        enforcement.setRejectionReasonCode(rejectionReason);
+        // A reason that stands alone keeps no text, even where the caseworker typed some under another one
+        // before changing their mind: the detail reaches the claimant's email and must match the reason.
+        enforcement.setRejectionReason(rejectionReason.isDetailRequired()
+                                           ? StringUtils.trimToNull(rejectionReasonDetail) : null);
         enforcementOrderRepository.save(enforcement);
 
         EnforcementChange<Void> scheduled = EnforcementSideEffects.schedule(

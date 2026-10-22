@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionOutcome;
 import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDecisionService;
@@ -42,14 +43,20 @@ public class DecideEnforcementSubmitHandler implements Submit<PCSCase, State> {
         if (decision == null) {
             return errorResponse(List.of(NO_DECISION_MESSAGE));
         }
-        String rejectionReason = enforcementOrder.getEnforcementRejectionReason();
-        if (decision == EnforcementDecision.REJECT && StringUtils.isBlank(rejectionReason)) {
-            return errorResponse(List.of(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE));
+        EnforcementRejectionReason rejectionReason = enforcementOrder.getSelectedEnforcementRejectionReason();
+        String rejectionReasonDetail = enforcementOrder.getEnforcementRejectionReason();
+        if (decision == EnforcementDecision.REJECT) {
+            if (rejectionReason == null) {
+                return errorResponse(List.of(EnforcementDecisionService.NO_REJECTION_REASON_SELECTED_MESSAGE));
+            }
+            if (rejectionReason.isDetailRequired() && StringUtils.isBlank(rejectionReasonDetail)) {
+                return errorResponse(List.of(EnforcementDecisionService.NO_REJECTION_REASON_MESSAGE));
+            }
         }
 
         EnforcementChange<EnforcementDecisionOutcome> decided = switch (decision) {
             case ACCEPT -> enforcementDecisionService.accept(caseReference);
-            case REJECT -> enforcementDecisionService.reject(caseReference, rejectionReason);
+            case REJECT -> enforcementDecisionService.reject(caseReference, rejectionReason, rejectionReasonDetail);
         };
         if (decided.refused()) {
             return errorResponse(decided.errors());

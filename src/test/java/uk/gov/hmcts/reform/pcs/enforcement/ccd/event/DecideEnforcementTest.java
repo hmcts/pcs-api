@@ -67,6 +67,7 @@ class DecideEnforcementTest extends BaseEventTest {
             "formattedCaseName",
             "decideEnforcement-caseDetails",
             "enforcementDecision",
+            "selectedEnforcementRejectionReason",
             "enforcementRejectionReason");
     }
 

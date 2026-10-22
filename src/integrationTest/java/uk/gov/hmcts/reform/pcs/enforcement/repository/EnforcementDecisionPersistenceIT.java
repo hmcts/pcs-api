@@ -34,11 +34,13 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementRejectionReason.OTHER;
 
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Enforcement decision persistence (V143)")
+@DisplayName("Enforcement decision persistence (V143, V155)")
 class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
 
     @Autowired
@@ -80,13 +82,35 @@ class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
     void storesTheDecisionColumns() {
         UUID id = save(savedClaim(1212121212121212L), SelectEnforcementType.WARRANT, EnforcementStatus.REJECTED);
         Instant approvedAt = Instant.parse("2026-10-17T09:30:00Z");
-        jdbcTemplate.update("UPDATE enf_case SET enforcement_number = ?, approved_at = ?, rejection_reason = ? "
-                                + "WHERE id = ?", "WP-T0000001", Timestamp.from(approvedAt), "reason", id);
+        jdbcTemplate.update("UPDATE enf_case SET enforcement_number = ?, approved_at = ?, rejection_reason = ?, "
+                                + "rejection_reason_code = ? WHERE id = ?", "WP-T0000001",
+                            Timestamp.from(approvedAt), "reason", "OTHER", id);
 
         EnforcementOrderEntity reloaded = enforcementOrderRepository.findById(id).orElseThrow();
         assertThat(reloaded.getEnforcementNumber()).isEqualTo("WP-T0000001");
         assertThat(reloaded.getApprovedAt()).isEqualTo(approvedAt);
         assertThat(reloaded.getRejectionReason()).isEqualTo("reason");
+        assertThat(reloaded.getRejectionReasonCode()).isEqualTo(OTHER);
+    }
+
+    @Test
+    @DisplayName("refuses a rejection reason outside the fixed list")
+    void refusesAnUnknownRejectionReasonCode() {
+        UUID id = save(savedClaim(1818181818181818L), SelectEnforcementType.WARRANT, EnforcementStatus.REJECTED);
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            "UPDATE enf_case SET rejection_reason_code = 'NOT_A_REASON' WHERE id = ?", id))
+            .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    @DisplayName("refuses a rejection reason that needs free text without any")
+    void refusesAReasonNeedingDetailWithoutIt() {
+        UUID id = save(savedClaim(1919191919191919L), SelectEnforcementType.WARRANT, EnforcementStatus.REJECTED);
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            "UPDATE enf_case SET rejection_reason_code = 'OTHER' WHERE id = ?", id))
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -145,12 +169,14 @@ class EnforcementDecisionPersistenceIT extends AbstractPostgresContainerIT {
                              EnforcementStatus.AWAITING_REVIEW);
         assertThat(enforcementOrderService.hasLiveEnforcement(caseReference)).isTrue();
 
-        enforcementDecisionService.reject(caseReference, "The possession order was set aside");
+        enforcementDecisionService.reject(caseReference, ORDER_SET_ASIDE_OR_SUSPENDED,
+                                          "The possession order was set aside");
         entityManager.flush();
         entityManager.clear();
 
         EnforcementOrderEntity reloaded = enforcementOrderRepository.findById(id).orElseThrow();
         assertThat(reloaded.getStatus()).isEqualTo(EnforcementStatus.REJECTED);
+        assertThat(reloaded.getRejectionReasonCode()).isEqualTo(ORDER_SET_ASIDE_OR_SUSPENDED);
         assertThat(reloaded.getRejectionReason()).isEqualTo("The possession order was set aside");
         assertThat(reloaded.getEnforcementNumber()).isNull();
         assertThat(reloaded.getApprovedAt()).isNull();

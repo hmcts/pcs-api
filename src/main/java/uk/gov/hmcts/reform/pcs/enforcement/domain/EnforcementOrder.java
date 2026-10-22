@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
@@ -139,7 +140,21 @@ public class EnforcementOrder {
     @CCD(label = "Do you want to accept or reject this application?", searchable = false)
     private EnforcementDecision enforcementDecision;
 
-    @CCD(label = "Reason for rejecting the application", typeOverride = TextArea, searchable = false)
+    @CCD(
+        label = "Why are you rejecting this application?",
+        typeOverride = FixedRadioList,
+        typeParameterOverride = "EnforcementRejectionReason",
+        searchable = false
+    )
+    private EnforcementRejectionReason selectedEnforcementRejectionReason;
+
+    @CCD(
+        label = "Reason for rejecting the application",
+        hint = "You can enter up to 6,800 characters.",
+        typeOverride = TextArea,
+        max = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT,
+        searchable = false
+    )
     private String enforcementRejectionReason;
 
     @CCD(label = "Add note", typeOverride = TextArea, max = RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT, searchable = false)
