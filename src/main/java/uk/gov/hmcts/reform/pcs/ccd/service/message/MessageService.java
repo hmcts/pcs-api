@@ -138,12 +138,15 @@ public class MessageService {
 
     /**
      * Closes the case's open messages about the application that wait for a judge, once a judge sends an order
-     * deciding it for review: the order answers them.
+     * deciding it for review: the order answers them. The order's own thread stays open until it is issued.
      */
-    public void closeAnsweredByOrder(PcsCaseEntity pcsCase, UUID genAppId, String judgeName) {
+    public void closeAnsweredByOrder(OrderEntity order, String judgeName) {
+        PcsCaseEntity pcsCase = order.getPcsCase();
+        List<CaseMessageEntity> ordersThread = orderEntries(order).map(CaseMessageEntryEntity::getMessage).toList();
         pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
-            .filter(message -> message.getGenApp() != null && genAppId.equals(message.getGenApp().getId()))
+            .filter(message -> !ordersThread.contains(message))
+            .filter(message -> message.getGenApp() != null && order.getGenAppId().equals(message.getGenApp().getId()))
             .filter(message -> message.latest().getRecipientRole().isJudicial())
             .forEach(message -> {
                 close(message, judgeName, "Answered by an order on the application");
