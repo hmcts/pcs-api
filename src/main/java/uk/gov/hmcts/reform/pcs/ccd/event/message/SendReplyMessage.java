@@ -147,7 +147,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         List<CaseMessageEntity> awaiting = messageService.awaiting(pcsCase, userRoleService.isJudge());
         // Started from a message's task, the user replies to or closes that message, which completes the task.
         // A task whose message has since been answered or closed offers nothing, so its user marks it done.
-        Optional<UUID> taskMessage = taskMessageId();
+        Optional<UUID> taskMessage = taskMessageId(pcsCase);
         Optional<CaseMessageEntity> tasks = taskMessage
             .flatMap(id -> awaiting.stream().filter(message -> message.getId().equals(id)).findFirst());
         List<DynamicListElement> choices = (taskMessage.isPresent() ? tasks.stream().toList() : awaiting).stream()
@@ -168,7 +168,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private AboutToStartOrSubmitResponse<PCSCase, State> checkAction(CaseDetails<PCSCase, State> details,
                                                                      CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
-        List<String> errors = caseData.getMessageAction() == MessageAction.SEND && boundMessage(caseData).isPresent()
+        List<String> errors = caseData.getMessageAction() == MessageAction.SEND
+            && boundMessage(caseData, pcsCaseService.loadCase(details.getId())).isPresent()
             ? List.of(NOT_THE_TASKS_MESSAGE) : List.of();
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
     }
@@ -233,7 +234,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
         // The pages check these as the user goes; an event submitted without them is checked here.
         boolean sending = caseData.getMessageAction() == MessageAction.SEND;
-        Optional<UUID> tasksMessage = boundMessage(caseData);
+        Optional<UUID> tasksMessage = boundMessage(caseData, pcsCase);
         if (tasksMessage.isPresent() && (sending || !tasksMessage.get().equals(chosenId(caseData)))) {
             // Completing the task the event was started from would leave its own message without one.
             return rejected(List.of(NOT_THE_TASKS_MESSAGE));
@@ -290,14 +291,17 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /** The message the event was started from the task of, as the client context or the event's own data says. */
-    private Optional<UUID> boundMessage(PCSCase caseData) {
-        return taskMessageId().or(() -> Optional.ofNullable(caseData.getMessageTaskMessageId()).map(UUID::fromString));
+    private Optional<UUID> boundMessage(PCSCase caseData, PcsCaseEntity pcsCase) {
+        return taskMessageId(pcsCase)
+            .or(() -> Optional.ofNullable(caseData.getMessageTaskMessageId()).map(UUID::fromString));
     }
 
     /** The message the task the event was started from is for, if it was started from one. */
-    private Optional<UUID> taskMessageId() {
+    private Optional<UUID> taskMessageId(PcsCaseEntity pcsCase) {
         try {
-            return clientContextRetriever.getTaskProperty("messageId").map(UUID::fromString);
+            // XUI can keep a task's context after the user has left it, so only one of this case's messages counts.
+            return clientContextRetriever.getTaskProperty("messageId").map(UUID::fromString)
+                .filter(id -> pcsCase.getMessages().stream().anyMatch(message -> message.getId().equals(id)));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }

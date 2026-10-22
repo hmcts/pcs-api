@@ -170,6 +170,20 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("ignores a task context XUI kept from another case's message, so the user can send a new message")
+    void ignoresAnotherCasesTask() {
+        send();
+        Map<String, Object> staleTask = Map.of("client_context", Map.of("user_task", Map.of("task_data",
+            Map.of("additional_properties", Map.of("messageId", UUID.randomUUID().toString())))));
+
+        var started = events.start(caseReference, sendReplyMessage.name()).as(judge).withClientContext(staleTask)
+            .startExpectingSuccess();
+
+        assertThat(started.caseData().getMessageReplyList().getListItems()).hasSize(1);
+        assertThat(started.caseData().getMessageTaskMessageId()).isNull();
+    }
+
+    @Test
     @DisplayName("closes the messages about an application that wait for a judge once a judge sends an order "
         + "deciding it for review")
     void closesTheApplicationsMessagesWhenItsOrderIsSent() {
