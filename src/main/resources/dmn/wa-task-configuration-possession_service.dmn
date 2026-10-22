@@ -189,6 +189,26 @@ Short name</description>
           <text>true</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_msgaddmsgid">
+        <inputEntry id="UnaryTests_msgaddmsg1">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgaddmsg2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_msgaddmsg3">
+          <text>"ReviewMessageJudge","ReviewMessageStaff"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msgaddmsg4">
+          <text>"additionalProperties_messageId"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgaddmsg5">
+          <text>if taskAttributes != null and taskAttributes.messageId != null then taskAttributes.messageId else null</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgaddmsg6">
+          <text>false</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_0izexy4">
         <inputEntry id="UnaryTests_1xbxnca">
           <text></text>

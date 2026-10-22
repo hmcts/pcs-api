@@ -79,21 +79,25 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
-        createTask(caseId, taskType, taskDescription, scheduledTo, null, null);
+        createTask(caseId, taskType, taskDescription, scheduledTo, null, null, null);
     }
 
     /** Creates a task assigned to one user. */
     public void createTask(long caseId, TaskType taskType, String taskDescription, String assignee) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee, null);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee, null, null);
     }
 
-    /** Creates a task for a role's pool that is urgent or not, which the configuration DMN prioritises. */
-    public void createTask(long caseId, TaskType taskType, String taskDescription, boolean urgent) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), null, urgent);
+    /**
+     * Creates a task for a role's pool about a message, urgent or not, which the configuration DMN prioritises and
+     * names the message on.
+     */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, boolean urgent, UUID messageId) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), null, urgent,
+            messageId == null ? null : messageId.toString());
     }
 
     private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
-                            String assignee, Boolean urgent) {
+                            String assignee, Boolean urgent, String messageId) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
@@ -102,6 +106,7 @@ public class CamundaService {
             .idempotencyKey(UUID.randomUUID())
             .assignee(assignee)
             .urgent(urgent)
+            .messageId(messageId)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
@@ -124,7 +129,8 @@ public class CamundaService {
                 taskData.getTaskDescription(),
                 taskData.getIdempotencyKey(),
                 taskData.getAssignee(),
-                taskData.getUrgent()
+                taskData.getUrgent(),
+                taskData.getMessageId()
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
@@ -147,7 +153,7 @@ public class CamundaService {
     }
 
     private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
-                                     String assignee, Boolean urgent) {
+                                     String assignee, Boolean urgent, String messageId) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -187,6 +193,9 @@ public class CamundaService {
         }
         if (urgent != null) {
             processVariables.put("urgent", dmnStringValue(urgent ? "Yes" : "No"));
+        }
+        if (messageId != null) {
+            processVariables.put("messageId", dmnStringValue(messageId));
         }
 
         // Default values - WA task due date is configured in configuration dmn

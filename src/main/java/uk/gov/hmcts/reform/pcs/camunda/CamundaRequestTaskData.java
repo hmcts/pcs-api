@@ -32,4 +32,7 @@ public class CamundaRequestTaskData {
     /** Whether the task is urgent, which the configuration DMN gives a higher priority; null if it does not say. */
     private final Boolean urgent;
 
+    /** The message the task is about, which the configuration DMN gives the task, so its event acts on that one. */
+    private final String messageId;
+
 }

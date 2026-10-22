@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
@@ -65,6 +66,8 @@ public class MessageService {
             .build();
         message.addEntry(entry(writing, Instant.now(utcClock)));
         pcsCase.addMessage(message);
+        // Saved so it has the id its task names.
+        orderStepRepository.flush();
         askToReview(message);
     }
 
@@ -87,7 +90,8 @@ public class MessageService {
         String description = taskDescriptionService.createReviewClosedMessageDescription(closedBy,
             message.getSubject(), note, caseReference);
         camundaService.createTask(caseReference,
-            told.isJudicial() ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF, description, false);
+            told.isJudicial() ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF, description, false,
+            null);
         return told;
     }
 
@@ -106,6 +110,18 @@ public class MessageService {
         // The case cascades to its messages, so flushing inserts the entry the step is about to point at.
         orderStepRepository.flush();
         return entry;
+    }
+
+    /**
+     * Closes the case's open messages about the application that wait for a judge, once a judge sends an order
+     * deciding it for review: the order answers them.
+     */
+    public void closeAnsweredByOrder(PcsCaseEntity pcsCase, UUID genAppId, String judgeName) {
+        pcsCase.getMessages().stream()
+            .filter(CaseMessageEntity::isOpen)
+            .filter(message -> message.getGenApp() != null && genAppId.equals(message.getGenApp().getId()))
+            .filter(message -> message.latest().getRecipientRole().isJudicial())
+            .forEach(message -> close(message, judgeName, "Answered by an order on the application"));
     }
 
     /** Closes the order's open thread once the order is issued, as nothing more is waited for on it. */
@@ -157,7 +173,7 @@ public class MessageService {
             latest.getSenderName(), message.getSubject(), latest.isUrgent(), caseReference,
             genApp == null ? null : "GA" + genApp.getRank(), decideUrl);
         TaskType taskType = toJudge ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF;
-        camundaService.createTask(caseReference, taskType, description, latest.isUrgent());
+        camundaService.createTask(caseReference, taskType, description, latest.isUrgent(), message.getId());
     }
 
     private static CaseMessageEntryEntity entry(Writing writing, Instant at) {

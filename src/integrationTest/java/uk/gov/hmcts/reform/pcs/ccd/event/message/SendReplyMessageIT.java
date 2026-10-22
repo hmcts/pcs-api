@@ -35,8 +35,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.AdditionalMatchers.and;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -88,7 +90,7 @@ class SendReplyMessageIT extends OrderEventIT {
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
             and(contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&amp;genAppId=" + genAppId),
                 contains("/cases/case-details/%d/trigger/sendReplyMessage?tid=${[id]}".formatted(caseReference))),
-            eq(true));
+            eq(true), any(UUID.class));
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
         assertThat(tab).contains("Decide GA1", "Urgent", "Tom Caseworker", "District Judge",
             "Please decide this before the hearing on Friday.", "GA1: Adjourn the hearing");
@@ -119,7 +121,7 @@ class SendReplyMessageIT extends OrderEventIT {
             })
             .as(judge).submitExpectingSuccess();
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_STAFF),
-            contains("Sarah Hughes sent a message"), eq(false));
+            contains("Sarah Hughes sent a message"), eq(false), any(UUID.class));
         clearInvocations(camundaService);
 
         assertThat(replyList(judge)).isEmpty();
@@ -135,11 +137,45 @@ class SendReplyMessageIT extends OrderEventIT {
 
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
             contains("Tom Caseworker closed the message without replying: Decide GA1. Their note: Listed."),
-            eq(false));
+            eq(false), isNull());
         assertThat(replyList(caseworker)).isEmpty();
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
         assertThat(tab).contains("Closed messages", "Please list it for a hearing on notice.",
             "Closed by Tom Caseworker: Listed.");
+    }
+
+    @Test
+    @DisplayName("started from a message's task, offers only that message to reply to or close, so the task "
+        + "completes with its own message")
+    void keepsTheTaskToItsMessage() {
+        send();
+        send();
+        List<DynamicListElement> both = replyList(judge);
+        UUID tasks = both.getFirst().getCode();
+        Map<String, Object> fromTask = Map.of("client_context", Map.of("user_task", Map.of("task_data",
+            Map.of("additional_properties", Map.of("messageId", tasks.toString())))));
+
+        var started = events.start(caseReference, sendReplyMessage.name()).as(judge).withClientContext(fromTask)
+            .startExpectingSuccess();
+        assertThat(started.caseData().getMessageReplyList().getListItems()).extracting(DynamicListElement::getCode)
+            .containsExactly(tasks);
+        assertThat(started.caseData().getMessageReplyList().getValueCode()).isEqualTo(tasks);
+        assertThat(started.caseData().getMessageAction()).isEqualTo(MessageAction.REPLY);
+    }
+
+    @Test
+    @DisplayName("closes the messages about an application that wait for a judge once a judge sends an order "
+        + "deciding it for review")
+    void closesTheApplicationsMessagesWhenItsOrderIsSent() {
+        UUID genAppId = send();
+
+        events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
+            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.APPLICATION_DECISION,
+                Map.of("application-decision", "grant"), null, genAppId), null));
+
+        assertThat(replyList(judge)).isEmpty();
+        assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
+            .contains("Closed messages", "Answered by an order on the application");
     }
 
     @Test

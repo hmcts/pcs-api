@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
+import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -65,6 +66,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     static final int CLOSURE_NOTE_LIMIT = 250;
     static final String NO_MESSAGES = "There are no open messages for you to reply to on this case";
     static final String NOT_AVAILABLE = "Messages are not available";
+    static final String NOT_THE_TASKS_MESSAGE = "Reply to or close the message your task is for. To do anything "
+        + "else, choose Send and reply to messages from the case";
     private static final UserRole[] JUDGE_ROLES = {
         UserRole.JUDGE, UserRole.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE};
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("d MMM yyyy, h:mma");
@@ -75,6 +78,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private final TextAreaValidationService textAreaValidationService;
     private final FeatureToggleService featureToggleService;
     private final UserRoleService userRoleService;
+    private final ClientContextRetriever clientContextRetriever;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -139,12 +143,20 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .map(genApp -> DynamicListElement.builder().code(genApp.getId())
                 .label("GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName())).build())
             .toList()).build());
-        caseData.setMessageReplyList(DynamicList.builder().listItems(messageService
-            .awaiting(pcsCase, userRoleService.isJudge()).stream()
+        List<CaseMessageEntity> awaiting = messageService.awaiting(pcsCase, userRoleService.isJudge());
+        // Started from a message's task, the user replies to or closes that message, which completes the task.
+        Optional<CaseMessageEntity> tasks = taskMessageId()
+            .flatMap(id -> awaiting.stream().filter(message -> message.getId().equals(id)).findFirst());
+        List<DynamicListElement> choices = (tasks.isPresent() ? List.of(tasks.get()) : awaiting).stream()
             .map(message -> DynamicListElement.builder().code(message.getId())
                 .label("%s, from %s, %s".formatted(message.getSubject(), message.latest().getSenderName(),
                     when(message.latest()))).build())
-            .toList()).build());
+            .toList();
+        caseData.setMessageReplyList(DynamicList.builder().listItems(choices)
+            .value(tasks.isPresent() ? choices.getFirst() : null).build());
+        if (tasks.isPresent()) {
+            caseData.setMessageAction(MessageAction.REPLY);
+        }
         return caseData;
     }
 
@@ -208,6 +220,11 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
         // The pages check these as the user goes; an event submitted without them is checked here.
         boolean sending = caseData.getMessageAction() == MessageAction.SEND;
+        Optional<UUID> tasksMessage = taskMessageId();
+        if (tasksMessage.isPresent() && (sending || !tasksMessage.get().equals(chosenId(caseData)))) {
+            // Completing the task the event was started from would leave its own message without one.
+            return rejected(List.of(NOT_THE_TASKS_MESSAGE));
+        }
         List<String> errors = sending ? messageErrors(caseData) : replyErrors(caseData);
         if (!errors.isEmpty()) {
             return rejected(errors);
@@ -249,10 +266,23 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
     /** The open message chosen, if it is still waiting for the user's side. */
     private Optional<CaseMessageEntity> chosen(PcsCaseEntity pcsCase, PCSCase caseData) {
-        UUID id = caseData.getMessageReplyList() == null ? null : caseData.getMessageReplyList().getValueCode();
+        UUID id = chosenId(caseData);
         return messageService.awaiting(pcsCase, userRoleService.isJudge()).stream()
             .filter(message -> message.getId().equals(id))
             .findFirst();
+    }
+
+    private static UUID chosenId(PCSCase caseData) {
+        return caseData.getMessageReplyList() == null ? null : caseData.getMessageReplyList().getValueCode();
+    }
+
+    /** The message the task the event was started from is for, if it was started from one. */
+    private Optional<UUID> taskMessageId() {
+        try {
+            return clientContextRetriever.getTaskProperty("messageId").map(UUID::fromString);
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     private static Optional<GenAppEntity> chosenGenApp(PcsCaseEntity pcsCase, PCSCase caseData) {

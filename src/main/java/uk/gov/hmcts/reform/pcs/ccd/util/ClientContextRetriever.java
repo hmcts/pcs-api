@@ -9,7 +9,10 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Component
@@ -41,6 +44,27 @@ public class ClientContextRetriever {
             return objectMapper.readValue(clientContextAsStringJson, ClientContext.class);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to parse Client-context",e);
+        }
+    }
+
+    /**
+     * A property Work Allocation gave the task XUI started the event from, which XUI passes in the client context,
+     * as JSON or base64 encoded JSON.
+     */
+    public Optional<String> getTaskProperty(String name) {
+        String header = getRequest().getHeader(CLIENT_CONTEXT_HEADER_KEY);
+        if (header == null || header.isBlank()) {
+            return Optional.empty();
+        }
+        String context = header.trim().replaceAll("^\\[|\\]$", "");
+        try {
+            String json = context.startsWith("{") ? context
+                : new String(Base64.getDecoder().decode(context), StandardCharsets.UTF_8);
+            String value = objectMapperSupplier.get().readTree(json).path("client_context").path("user_task")
+                .path("task_data").path("additional_properties").path(name).asText(null);
+            return Optional.ofNullable(value).filter(given -> !given.isBlank());
+        } catch (Exception e) {
+            return Optional.empty();
         }
     }
 
