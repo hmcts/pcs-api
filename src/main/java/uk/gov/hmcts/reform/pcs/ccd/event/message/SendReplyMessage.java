@@ -66,8 +66,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     static final int CLOSURE_NOTE_LIMIT = 250;
     static final String NO_MESSAGES = "There are no open messages for you to reply to on this case";
     static final String NOT_AVAILABLE = "Messages are not available";
-    static final String NOT_THE_TASKS_MESSAGE = "Reply to or close the message your task is for. To do anything "
-        + "else, choose Send and reply to messages from the case";
+    static final String NOT_THE_TASKS_MESSAGE = "Your task is for a message: reply to it or close it. To send a new "
+        + "message, choose Send and reply to messages from the case";
     private static final UserRole[] JUDGE_ROLES = {
         UserRole.JUDGE, UserRole.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE};
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("d MMM yyyy, h:mma");
@@ -101,7 +101,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         String sending = fieldEquals("messageAction", MessageAction.SEND);
         String replying = fieldEquals("messageAction", MessageAction.REPLY);
         PageBuilder pages = new PageBuilder(eventBuilder);
-        pages.page("messageAction")
+        pages.page("messageAction", this::checkAction)
             .pageLabel("Send or reply to a message")
             .mandatory(PCSCase::getMessageAction);
         pages.page("sendMessage", this::checkMessage)
@@ -158,6 +158,15 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             caseData.setMessageAction(MessageAction.REPLY);
         }
         return caseData;
+    }
+
+    /** Started from a message's task, the user acts on that message, so the task completes with it. */
+    private AboutToStartOrSubmitResponse<PCSCase, State> checkAction(CaseDetails<PCSCase, State> details,
+                                                                     CaseDetails<PCSCase, State> before) {
+        PCSCase caseData = details.getData();
+        List<String> errors = caseData.getMessageAction() == MessageAction.SEND && taskMessageId().isPresent()
+            ? List.of(NOT_THE_TASKS_MESSAGE) : List.of();
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).errors(errors).build();
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> checkMessage(CaseDetails<PCSCase, State> details,
