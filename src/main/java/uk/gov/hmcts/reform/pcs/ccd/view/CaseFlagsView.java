@@ -52,6 +52,11 @@ public class CaseFlagsView {
         mapPartiesFlagFields(pcsCase, pcsCaseEntity);
     }
 
+    public void setDefendantsCaseFlags(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        Map<UUID, PartyRole> supportedPartyRoles = getSupportedPartyRoles(pcsCaseEntity);
+        setComplexFlagsToParty(pcsCase.getAllDefendants(), pcsCaseEntity, supportedPartyRoles);
+    }
+
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<BaseCaseFlag> baseCaseFlags = new ArrayList<>(pcsCaseEntity.getCaseFlags());
 
@@ -119,7 +124,6 @@ public class CaseFlagsView {
             mapPartySupport(pcsCaseEntity, supportedPartyRoles, resolveRepresentedPartyIds(pcsCaseEntity)));
 
         setComplexFlagsToParty(pcsCase.getParties(), pcsCaseEntity, supportedPartyRoles);
-        setComplexFlagsToParty(pcsCase.getAllDefendants(), pcsCaseEntity, supportedPartyRoles);
     }
 
     private void setComplexFlagsToParty(

@@ -102,7 +102,6 @@ class CaseFlagsViewTest {
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(partyEntities.stream().map(this::mappedParty).toList())
-            .allDefendants(List.of(mappedParty(defendantEntity)))
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setParties(partyEntities);
@@ -121,14 +120,6 @@ class CaseFlagsViewTest {
 
         Party mappedOrgParty = findPartyById(pcsCase, orgEntity.getId().toString());
         assertNull(mappedOrgParty.getDefendantFlags());
-
-        assertEquals(1, pcsCase.getAllDefendants().size());
-
-        Party defendant = pcsCase.getAllDefendants().getFirst().getValue();
-        assertNotNull(defendant.getDefendantFlags());
-        assertEquals(1, defendant.getDefendantFlags().getDetails().size());
-        assertEquals("PF0015",
-                     defendant.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
     }
 
     @Test
@@ -863,6 +854,32 @@ class CaseFlagsViewTest {
         assertThat(pcsCase.getPartySupport())
             .as("representation organisations are not support parties either")
             .noneMatch(listValue -> "YPERQ40".equals(listValue.getId()));
+    }
+
+    @Test
+    void shouldMapComplexPartyFlagFieldsForAllDefendants() {
+        PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(createMockCasePartyFlagsEntity()));
+
+        Set<PartyEntity> partyEntities = Set.of(defendantEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(partyEntities);
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setDefendantsCaseFlags(pcsCase, pcsCaseEntity);
+
+        assertNotNull(pcsCase.getAllDefendants());
+        assertEquals(1, pcsCase.getAllDefendants().size());
+
+        Party mappedDefendant = pcsCase.getAllDefendants().getFirst().getValue();
+        assertNotNull(mappedDefendant.getDefendantFlags());
+        assertEquals(1, mappedDefendant.getDefendantFlags().getDetails().size());
+        assertEquals("PF0015",
+                     mappedDefendant.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
     }
 
     private ListValue<Party> findPartyListValueById(PCSCase pcsCase, UUID partyId) {
