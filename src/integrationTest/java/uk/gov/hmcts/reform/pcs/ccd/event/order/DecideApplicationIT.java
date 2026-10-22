@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.serializer.JacksonSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
@@ -24,6 +26,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
@@ -36,9 +40,11 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
@@ -48,6 +54,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.APPLICATION_DECISION;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
+import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
 
 /**
  * A judge decides a general application with an order on it, from the link in a message about it: the order
@@ -64,6 +71,10 @@ class DecideApplicationIT extends OrderEventIT {
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
     private IssuedCases cases;
+    @Autowired
+    private OrderDocumentService orderDocumentService;
+    @Autowired
+    private SchedulerClient schedulerClient;
 
     private long caseReference;
     private UUID genAppId;
@@ -178,6 +189,23 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
             .containsExactly(MakeOrder.ALREADY_DECIDED);
+    }
+
+    @Test
+    @DisplayName("files the issued order's document with the application, so it is seen only by those who may see "
+        + "the application")
+    void filesTheOrderDocumentWithTheApplication() {
+        Order dismissed = judgeDecides(genAppId, "dismiss");
+        when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString()))
+            .thenReturn(events.documents().store("Order application.pdf").getUrl());
+        issue(dismissed);
+
+        orderDocumentService.generateAndAttach(new JacksonSerializer().deserialize(OrderDocumentTaskData.class,
+            schedulerClient.getScheduledExecutionsForTask(ORDER_DOCUMENT_TASK_DESCRIPTOR.getTaskName())
+                .getFirst().getRawData()));
+
+        assertThat(jdbcTemplate.queryForObject("SELECT d.general_application_id FROM orders o JOIN document d "
+            + "ON d.id = o.document_id WHERE o.id = ?", UUID.class, dismissed.id())).isEqualTo(genAppId);
     }
 
     private void issue(Order order) {

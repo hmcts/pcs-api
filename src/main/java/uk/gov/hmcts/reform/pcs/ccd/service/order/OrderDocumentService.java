@@ -86,6 +86,10 @@ public class OrderDocumentService {
         DocumentEntity document = documentImportService.addDocumentToCase(
             order.getPcsCase(), dmStoreUrl, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
         document.setType(DocumentType.ORDER);
+        // An order on an application is filed with it, so only those who may see the application see the order.
+        if (order.getGenAppId() != null) {
+            document.setGeneralApplication(order.getPcsCase().findGenApp(order.getGenAppId()).orElseThrow());
+        }
         // The order is issued, so its latest step is the issuing one.
         document.setIssueDate(orderSteps.latest(order).getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
         order.setDocument(document);
