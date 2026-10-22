@@ -29,6 +29,12 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.util.UUID;
 
+import uk.gov.hmcts.reform.pcs.hearings.mapping.HearingRequestMapper;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
+import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
+
+
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -43,8 +49,13 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
+
     private final SchedulerClient schedulerClient;
     private final SecurityContextService securityContextService;
+
+    private final HmcHearingService hmcHearingService;
+    private final HearingRequestMapper hearingRequestMapper;
+
 
 
     @Override
@@ -58,6 +69,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grant(Permission.CRUD, UserRole.SSCS_CASE_WORKER)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
@@ -94,6 +106,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String userId = securityContextService.getCurrentUserDetails().getUid();
         scheduleRoleAssignment(caseReference, userId);
 
+        requestHearing(caseReference, caseData);
+
         return SubmitResponse.defaultResponse();
     }
 
@@ -111,5 +125,16 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
+    }
+
+    private void requestHearing(long caseReference, PCSCase pcsCase) {
+        try {
+            HearingRequest request = hearingRequestMapper.buildHearingRequest(caseReference, pcsCase);
+            HearingResponse response = hmcHearingService.createHearing(request);
+            pcsCaseService.saveHearingId(caseReference, String.valueOf(response.getHearingRequestId()));
+            log.info("Hearing created for case {}: hearingId={}", caseReference, response.getHearingRequestId());
+        } catch (Exception e) {
+            log.error("Failed to create HMC hearing for case {}: {}", caseReference, e.getMessage(), e);
+        }
     }
 }

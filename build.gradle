@@ -619,9 +619,10 @@ tasks.withType(CftlibExec).configureEach {
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'PCS_DB_PORT', '6432'
-  environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_PCS', 'http://localhost:3206'
+  environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_BENEFIT', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
+
   // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
   environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
@@ -634,7 +635,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'S2S_NAMES_WHITELIST', 'pcs_api,ccd,em_gw,xui_webapp,pcs_frontend,ccd_data,dg_docassembly_api'
 
   // ExUI config overrides
-  environment 'XUI_JURISDICTIONS', 'PCS'
+  environment 'XUI_JURISDICTIONS', 'PCS,SSCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
   // Point XUI's common data (case-linking reason codes) at the local wiremock stub
   environment 'SERVICES_PRD_COMMONDATA_API', 'http://host.docker.internal:8083'

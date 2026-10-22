@@ -66,6 +66,9 @@ public class PcsCaseEntity {
 
     private Boolean preActionProtocolCompleted;
 
+    @Column(name = "hearing_id")
+    private String hearingId;
+
     @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private TenancyLicenceEntity tenancyLicence;

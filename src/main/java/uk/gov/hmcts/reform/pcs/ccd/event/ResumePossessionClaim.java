@@ -37,6 +37,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.hearings.mapping.HearingRequestMapper;
+import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -74,6 +76,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final NotificationService notificationService;
     private final FeatureFlagView featureFlagView;
+    private final HmcHearingService hmcHearingService;
+    private final HearingRequestMapper hearingRequestMapper;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -86,6 +90,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grant(Permission.CRUD, UserRole.SSCS_CASE_WORKER)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");
