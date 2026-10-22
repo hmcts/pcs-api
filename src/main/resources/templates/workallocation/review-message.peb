@@ -1,4 +1,4 @@
-### Review message{% if urgent %} (urgent){% endif %}
+### Review {% if urgent %}urgent {% endif %}message
 
 {{senderName}} sent a message: {{subject}}.
 
@@ -6,6 +6,6 @@
 <a href="/cases/case-details/{{caseReference}}/trigger/sendReplyMessage?tid=${[id]}">reply to it or close it</a>. The task will close when you do.
 {% if decideUrl %}
 
-The message is about application {{application}}. <a href="{{decideUrl}}">Decide the application</a> by making an
+The message is about application {{application}}. <a href="{{decideUrl | raw}}">Decide the application</a> by making an
 order on it.
 {% endif %}
