@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -13,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +22,8 @@ import java.util.stream.Stream;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 
 /**
- * The case as the order journeys show it: its property, its main claim's parties, its open applications, and
- * the application an order on one decides.
+ * The case as the order journeys show it: its property, its main claim's parties, and the
+ * application an order on one decides.
  */
 @Component
 @AllArgsConstructor
@@ -44,19 +42,12 @@ class OrderCaseContext {
             pcsCase.getCounterClaims().stream()
                 .map(CounterClaimEntity::getStatus).anyMatch(COUNTER_CLAIM_ISSUED::equals),
             pcsCase.getGenApps().stream().anyMatch(GenAppEntity::isOpen),
-            pcsCase.getGenApps().stream()
-                .filter(GenAppEntity::isOpen)
-                .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
-                .map(genApp -> application(genApp, claim.orElse(null)))
-                .toList(),
             genAppId == null ? null : application(pcsCase.findGenApp(genAppId).orElseThrow(), claim.orElse(null))
         );
     }
 
     private OrderStart.Application application(GenAppEntity genApp, ClaimEntity claim) {
         return new OrderStart.Application(
-            genApp.getId(),
-            isWarrantSuspension(genApp),
             "GA" + genApp.getRank(),
             genApp.getType().getShortName(),
             genApp.getSomethingElseDetails(),
@@ -70,15 +61,6 @@ class OrderCaseContext {
             genApp.getWhatOrderWanted(),
             applicationDocuments(genApp)
         );
-    }
-
-    /**
-     * Whether the application asks to suspend the warrant of possession. The application journeys have no such
-     * type yet, so an applicant asks for it as something else: this reads what they said it is for.
-     */
-    private static boolean isWarrantSuspension(GenAppEntity genApp) {
-        return genApp.getType() == GenAppType.SOMETHING_ELSE
-            && StringUtils.containsIgnoreCase(genApp.getSomethingElseDetails(), "warrant");
     }
 
     /** The applicant by name, with their role on the claim: "Jane Doe (Defendant 1)". */

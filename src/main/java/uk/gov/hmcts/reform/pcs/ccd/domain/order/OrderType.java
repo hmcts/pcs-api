@@ -12,7 +12,6 @@ public enum OrderType {
     ADJOURNMENT("Adjournment", "Order (adjournment)"),
     STRIKE_OUT_DISMISSAL("Strike out or dismissal", "Order (strike out or dismissal)"),
     FREE_FORM("Free form", "Order"),
-    NO_ORDER_ON_CLAIM("No order on the claim", "Order"),
     APPLICATION_DECISION("Application decision", "Order (application)");
 
     private final String label;

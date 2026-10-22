@@ -11,7 +11,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
@@ -69,9 +68,7 @@ public class CaseMessageEntity {
     private Set<MessageCategory> categories = EnumSet.noneOf(MessageCategory.class);
 
     @ManyToOne(fetch = LAZY)
-    @JoinTable(name = "case_message_gen_app",
-        joinColumns = @JoinColumn(name = "message_id"),
-        inverseJoinColumns = @JoinColumn(name = "gen_app_id"))
+    @JoinColumn(name = "gen_app_id")
     private GenAppEntity genApp;
 
     /** When the thread was closed; it is open until then. */
