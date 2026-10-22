@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
@@ -159,7 +161,15 @@ class DocumentCategoryUpdateServiceTest {
                     NoticeTabDetails.builder().noticeDocuments(docs).noticeServed("Yes").build()).build()).build(),
             docs -> PCSCase.builder().caseDetailsTab(
                 CaseDetailsTab.builder().rentArrearsDetails(
-                    RentArrearsTabDetails.builder().rentStatement(docs).rentAmount("£100").build()).build()).build()
+                    RentArrearsTabDetails.builder().rentStatement(docs).rentAmount("£100").build()).build()).build(),
+            docs -> PCSCase.builder().requiredDocumentsWales(
+                WalesDocuments.builder().energyPerformance(docs).build()).build(),
+            docs -> PCSCase.builder().requiredDocumentsWales(
+                WalesDocuments.builder().gasSafetyReport(docs).build()).build(),
+            docs -> PCSCase.builder().requiredDocumentsWales(
+                WalesDocuments.builder().electricalInstallation(docs).build()).build(),
+            docs -> PCSCase.builder().occupationLicenceDetailsWales(
+                OccupationLicenceDetailsWales.builder().licenceDocuments(docs).build()).build()
         );
     }
 

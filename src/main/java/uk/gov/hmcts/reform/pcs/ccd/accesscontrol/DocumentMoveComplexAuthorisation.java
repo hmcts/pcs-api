@@ -7,7 +7,9 @@ import uk.gov.hmcts.ccd.sdk.generator.JsonUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 
 import java.io.File;
@@ -32,12 +34,21 @@ public class DocumentMoveComplexAuthorisation implements ConfigGenerator<PCSCase
 
     List<Map<String,Object>> buildRows(String caseType) {
         List<Map<String,Object>> rows = new ArrayList<>();
-        addFields(rows, caseType, "detailsTab_TenancyLicenceDetails", TenancyLicenceTabDetails.class,
+        addFields(rows, caseType, "detailsTab_TenancyLicenceDetails",
+                  TenancyLicenceTabDetails.class,
                   Set.of("tenancyLicenceDocuments"));
-        addFields(rows, caseType, "detailsTab_NoticeDetails", NoticeTabDetails.class,
+        addFields(rows, caseType, "detailsTab_NoticeDetails",
+                  NoticeTabDetails.class,
                   Set.of("noticeDocuments"));
-        addFields(rows, caseType, "detailsTab_RentArrearsDetails", RentArrearsTabDetails.class,
+        addFields(rows, caseType, "detailsTab_RentArrearsDetails",
+                  RentArrearsTabDetails.class,
                   Set.of("rentStatement"));
+        addFields(rows, caseType, "detailsTab_OccupationContractLicenceDetails",
+                  OccupationContractOrLicenceTabDetails.class,
+                  Set.of("documents"));
+        addFields(rows, caseType, "detailsTab_RequiredDocumentsDetails",
+                  RequiredDocumentsTabDetails.class,
+                  Set.of("energyPerformanceCertificates", "gasSafetyReports", "electricalInstallationReports"));
         return rows;
     }
 

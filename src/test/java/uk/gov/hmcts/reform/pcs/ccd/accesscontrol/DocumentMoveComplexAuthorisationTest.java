@@ -20,7 +20,7 @@ public class DocumentMoveComplexAuthorisationTest {
     @Test
     void shouldUpdateOnlyOnDocumentPathForInternalRoles() {
         assertThat(rows).allSatisfy(row -> {
-            assertThat(row.get("CaseTypeID")).isEqualTo("PCS-test");
+            assertThat(row).containsEntry("CaseTypeID", "PCS-test");
             assertThat(row.get("UserRole")).isIn("judge", "fee-paid-judge", "circuit-judge", "leadership-judge",
                      "hearing-centre-admin", "hearing-centre-team-leader", "ctsc", "ctsc-team-leader",
                      "wlu-admin", "wlu-team-leader");
@@ -32,7 +32,11 @@ public class DocumentMoveComplexAuthorisationTest {
             .containsExactlyInAnyOrder(
                 "detailsTab_TenancyLicenceDetails.tenancyLicenceDocuments",
                 "detailsTab_NoticeDetails.noticeDocuments",
-                "detailsTab_RentArrearsDetails.rentStatement");
+                "detailsTab_RentArrearsDetails.rentStatement",
+                "detailsTab_OccupationContractLicenceDetails.documents",
+                "detailsTab_RequiredDocumentsDetails.energyPerformanceCertificates",
+                "detailsTab_RequiredDocumentsDetails.gasSafetyReports",
+                "detailsTab_RequiredDocumentsDetails.electricalInstallationReports");
     }
 
     @Test

@@ -31,9 +31,8 @@ public class DocumentCategoryUpdateService {
         findChanges(objectMapper.valueToTree(caseData), storedCategories, changes);
 
         documents.forEach(entity -> {
-            Optional<String> category = changes.get(entity.getUrl());
-            if (category != null) {
-                entity.setCategoryId(category.orElse(null));
+            if (changes.containsKey(entity.getUrl())) {
+                entity.setCategoryId(changes.get(entity.getUrl()).orElse(null));
                 documentRepository.save(entity);
             }
         });

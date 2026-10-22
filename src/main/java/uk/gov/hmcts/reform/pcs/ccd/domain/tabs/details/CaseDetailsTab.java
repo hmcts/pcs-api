@@ -99,7 +99,9 @@ public class CaseDetailsTab {
     @CCD(label = "Suspension of right to buy claim")
     private SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyDetails;
 
-    @CCD(label = "Occupation contract or licence details")
+    @CCD(label = "Occupation contract or licence details",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private OccupationContractOrLicenceTabDetails occupationContractLicenceDetails;
 
     @CCD(label = "Antisocial behaviour and illegal or prohibited conduct")
@@ -111,7 +113,9 @@ public class CaseDetailsTab {
     @CCD(label = "Prohibited conduct standard contract claim")
     private ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractDetails;
 
-    @CCD(label = "Required documents")
+    @CCD(label = "Required documents",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private RequiredDocumentsTabDetails requiredDocumentsDetails;
 
     @CCD(label = "Documents you've uploaded")
