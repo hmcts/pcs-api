@@ -81,7 +81,6 @@ export class EnforcementAction implements IAction {
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
-      ['deleteDraftApplication', () => this.deleteDraftApplication()],
       ['resumeDraftApplication', () => this.resumeDraftApplication(page)]
     ]);
     const actionToPerform = actionsMap.get(action);
