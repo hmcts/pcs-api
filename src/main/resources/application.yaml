@@ -424,6 +424,13 @@ ccd:
       username: pcs-system-event
       first-name: PCS
       last-name: System
+  conversion:
+    docmosis:
+      # Bulk print converts pack documents to PDF/X-1a. PDFs and images convert in-process; Word,
+      # Excel, PowerPoint, text, RTF and CSV go through the shared Docmosis service, and with no
+      # endpoint configured a pack holding one fails with MERGE_FAILED.
+      convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
+      access-key: ${DOCMOSIS_ACCESS_KEY:}
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
