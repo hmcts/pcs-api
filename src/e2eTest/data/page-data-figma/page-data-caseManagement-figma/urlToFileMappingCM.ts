@@ -30,5 +30,8 @@ export default {
   'manageParties/submit': 'managePartiesCheckYourAnswers',
   'manageParties/confirm': 'confirmManageParties',
   'managePartiesaddLitigationParty': 'addAParty',
+  'addJudicialNoteaddJudicialNote': 'addJudicialNotes',
+  'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
+  'addJudicialNote/confirm': 'confirmJudicialNotes',
   'managePartiesremovePartyDetails': 'checkFullPartyDetails'
 };
