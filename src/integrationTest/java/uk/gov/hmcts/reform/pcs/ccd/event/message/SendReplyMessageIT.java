@@ -229,7 +229,7 @@ class SendReplyMessageIT extends OrderEventIT {
 
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.APPLICATION_DECISION,
-                Map.of("application-decision", "grant"), WORDING, genAppId), null));
+                Map.of("app-" + genAppId + "-decision", "grant"), WORDING, genAppId), null));
 
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())

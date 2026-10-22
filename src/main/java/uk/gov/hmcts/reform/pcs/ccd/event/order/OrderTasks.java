@@ -78,8 +78,13 @@ public class OrderTasks {
                 EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE))
             && orderRepository.findByGenAppIdAndState(genApp.getId(), OrderState.ISSUED).stream()
                 .allMatch(issued -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(issued.getId())
-                    .map(step -> "list".equals(step.getFormData().get("application-decision")))
+                    .map(step -> "list".equals(step.getFormData().get(decisionField(genApp))))
                     .orElse(false));
+    }
+
+    /** The make order form's answer to what the judge decides about the application. */
+    private static String decisionField(GenAppEntity genApp) {
+        return "app-" + genApp.getId() + "-decision";
     }
 
     /** The task link that starts the judge's order deciding the application. */

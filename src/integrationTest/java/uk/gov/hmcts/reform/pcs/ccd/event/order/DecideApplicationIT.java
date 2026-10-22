@@ -250,7 +250,7 @@ class DecideApplicationIT extends OrderEventIT {
     private static MakeOrderRequest decision(MakeOrderRequest.Action action, Order order, String decision,
                                              String taskId) {
         return new MakeOrderRequest(action, new OrderChange(order.id(), order.version(), APPLICATION_DECISION,
-            Map.of("application-decision", decision), WORDING, order.genAppId()), taskId);
+            Map.of("app-" + order.genAppId() + "-decision", decision), WORDING, order.genAppId()), taskId);
     }
 
     private static DocumentEntity document(PcsCaseEntity pcsCase, GenAppEntity genApp, UUID documentId,
