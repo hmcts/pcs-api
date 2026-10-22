@@ -71,9 +71,33 @@ public class MessageService {
         askToReview(message);
     }
 
-    public void reply(CaseMessageEntity message, Writing writing) {
+    /**
+     * Replies to the message; {@code fromItsTask} says whether the replier came from its task, which XUI closes.
+     */
+    public void reply(CaseMessageEntity message, Writing writing, boolean fromItsTask) {
+        // A reply to the same side gets a task that only the time it is made tells apart from the one it answers.
+        closeTaskUnlessFrom(message, fromItsTask || taskFor(writing.recipient()) == taskFor(waitingSide(message)));
         message.addEntry(entry(writing, Instant.now(utcClock)));
         askToReview(message);
+    }
+
+    /**
+     * The side the message waits for may answer it without its task, such as from the case's events; XUI then leaves
+     * the task open with nothing to do, so it is cancelled. A task the user came from is XUI's to close.
+     */
+    private void closeTaskUnlessFrom(CaseMessageEntity message, boolean keepTask) {
+        if (!keepTask) {
+            camundaService.cancelMessageTask(message.getPcsCase().getCaseReference(), message.getId(),
+                taskFor(waitingSide(message)));
+        }
+    }
+
+    private static MessageRecipient waitingSide(CaseMessageEntity message) {
+        return message.latest().getRecipientRole();
+    }
+
+    private static TaskType taskFor(MessageRecipient side) {
+        return side.isJudicial() ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF;
     }
 
     private void close(CaseMessageEntity message, String closedBy, String note) {
@@ -83,15 +107,15 @@ public class MessageService {
     }
 
     /** Closes the message without a reply, telling the side that wrote its latest message, whose side it returns. */
-    public MessageRecipient closeWithoutReply(CaseMessageEntity message, String closedBy, String note) {
+    public MessageRecipient closeWithoutReply(CaseMessageEntity message, String closedBy, String note,
+                                              boolean fromItsTask) {
+        closeTaskUnlessFrom(message, fromItsTask);
         close(message, closedBy, note);
         MessageRecipient told = message.latest().getSenderRole();
         long caseReference = message.getPcsCase().getCaseReference();
         String description = taskDescriptionService.createReviewClosedMessageDescription(closedBy,
             message.getSubject(), note, caseReference);
-        camundaService.createTask(caseReference,
-            told.isJudicial() ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF, description, false,
-            null);
+        camundaService.createTask(caseReference, taskFor(told), description, false, null);
         return told;
     }
 
@@ -124,7 +148,8 @@ public class MessageService {
             .forEach(message -> {
                 close(message, judgeName, "Answered by an order on the application");
                 // Its task, if the judge did not come from it, has nothing left to do.
-                camundaService.cancelMessageTask(pcsCase.getCaseReference(), message.getId());
+                camundaService.cancelMessageTask(pcsCase.getCaseReference(), message.getId(),
+                    TaskType.REVIEW_MESSAGE_JUDGE);
             });
     }
 
@@ -176,8 +201,8 @@ public class MessageService {
         String description = taskDescriptionService.createReviewMessageDescription(
             latest.getSenderName(), message.getSubject(), latest.isUrgent(), caseReference,
             genApp == null ? null : "GA" + genApp.getRank(), decideUrl);
-        TaskType taskType = toJudge ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF;
-        camundaService.createTask(caseReference, taskType, description, latest.isUrgent(), message.getId());
+        camundaService.createTask(caseReference, taskFor(latest.getRecipientRole()), description, latest.isUrgent(),
+            message.getId());
     }
 
     private static CaseMessageEntryEntity entry(Writing writing, Instant at) {

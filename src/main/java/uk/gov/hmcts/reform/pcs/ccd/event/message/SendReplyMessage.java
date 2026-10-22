@@ -257,14 +257,15 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         if (caseData.getMessageNeedReply() == VerticalYesNo.YES) {
             messageService.reply(message.get(), new Writing(name, senderRole,
                 caseData.getMessageReplyRecipient(), caseData.getMessageReplyUrgent() == VerticalYesNo.YES,
-                caseData.getMessageReply().trim()));
+                caseData.getMessageReply().trim()), tasksMessage.isPresent());
             return confirmed("Reply sent",
                 "A task to review the reply has been created for " + caseData.getMessageReplyRecipient().getLabel()
                     + ".");
         }
         String note = caseData.getMessageClosureNote() == null || caseData.getMessageClosureNote().isBlank()
             ? null : caseData.getMessageClosureNote().trim();
-        MessageRecipient told = messageService.closeWithoutReply(message.get(), name, note);
+        // A task bound to a message is this message's: anything else was refused above.
+        MessageRecipient told = messageService.closeWithoutReply(message.get(), name, note, tasksMessage.isPresent());
         return confirmed("Message closed",
             "A task has been created for " + told.getLabel() + " to review.");
     }

@@ -22,8 +22,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
@@ -114,12 +116,16 @@ public class CamundaService {
         scheduleCamundaRequest(taskData, scheduledTo);
     }
 
-    /** Cancels the task about the message, once the message is closed without its task. */
-    public void cancelMessageTask(long caseId, UUID messageId) {
+    /**
+     * Cancels one side's task about the message, once the message is answered without it. The other side's task about
+     * the same message, such as the one the answer creates, is left alone.
+     */
+    public void cancelMessageTask(long caseId, UUID messageId, TaskType side) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CANCEL)
             .caseReference(caseId)
             .messageId(messageId.toString())
+            .taskType(side)
             .build();
         scheduleCamundaRequest(taskData, Instant.now(utcClock));
     }
@@ -150,8 +156,9 @@ public class CamundaService {
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
-                taskData.getMessageId() != null ? messageCategory(taskData.getMessageId())
-                    : taskData.getTaskType().getId()
+                Stream.of(taskData.getTaskType() == null ? null : taskData.getTaskType().getId(),
+                        taskData.getMessageId() == null ? null : messageCategory(taskData.getMessageId()))
+                    .filter(Objects::nonNull).toList()
             );
         }
     }
@@ -233,7 +240,8 @@ public class CamundaService {
         sendCamundaRequest(request, caseId);
     }
 
-    private void requestTaskCancellation(Long caseId, String processCategory) {
+    /** Cancels the case's tasks in every one of the process categories. */
+    private void requestTaskCancellation(Long caseId, List<String> processCategories) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped cancelling task for {}", caseId);
             return;
@@ -241,7 +249,7 @@ public class CamundaService {
 
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
-        correlationKeys.put(PROCESS_CATEGORY + processCategory, dmnBooleanValue(true));
+        processCategories.forEach(category -> correlationKeys.put(PROCESS_CATEGORY + category, dmnBooleanValue(true)));
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
         processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));
