@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.message;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -306,9 +307,10 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return id == null ? Optional.empty() : pcsCase.findGenApp(id).filter(GenAppEntity::isOpen);
     }
 
-    /** The message's subject and what it is about, heading the reply page. */
-    private static String summary(CaseMessageEntity message) {
-        return "### " + message.getSubject() + "\n\n**What it relates to:** " + message.categoryLabels();
+    /** The message's subject and what it is about, heading the reply page, the subject as written, not as markdown. */
+    static String summary(CaseMessageEntity message) {
+        String subject = HtmlUtils.htmlEscape(message.getSubject().replaceAll("([\\\\`*_\\[\\]#|~!])", "\\\\$1"));
+        return "### " + subject + "\n\n**What it relates to:** " + message.categoryLabels();
     }
 
     /** Every message so far, which the reply page and check your answers play back. */
