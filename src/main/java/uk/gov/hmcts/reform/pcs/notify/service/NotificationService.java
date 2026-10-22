@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -284,11 +286,14 @@ public class NotificationService {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
 
         List<PartyEntity> recipients = new ArrayList<>();
-        recipients.add(partyService.getPrimaryClaimantPartyEntity(pcsCase));
+        getActivePartiesByRole(pcsCase, PartyRole.CLAIMANT).stream()
+            .findFirst()
+            .ifPresent(recipients::add);
 
         pcsCase.getClaims().getFirst().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
+            .filter(this::isActiveParty)
             .filter(defendant -> !defendant.getId().equals(representedDefendant.getId()))
             .forEach(recipients::add);
 
@@ -305,6 +310,18 @@ public class NotificationService {
                 notificationPersonalisationFactory.forParty(recipient, pcsCase)
             );
         }
+    }
+
+    private List<PartyEntity> getActivePartiesByRole(PcsCaseEntity pcsCase, PartyRole role) {
+        return pcsCase.getClaims().getFirst().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == role)
+            .map(ClaimPartyEntity::getParty)
+            .filter(this::isActiveParty)
+            .toList();
+    }
+
+    private boolean isActiveParty(PartyEntity party) {
+        return party != null && !party.isRemoved();
     }
 
     private NotificationRecipient partyRecipient(PartyEntity party) {
@@ -589,16 +606,23 @@ public class NotificationService {
         );
     }
 
-    protected static EmailNotificationRequest buildRequest(
+    protected EmailNotificationRequest buildRequest(
         String templateId,
         String email,
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
+        Map<String, Object> fields = personalisation.toMap();
+        if (!templateConfiguration.isRelease14Enabled()) {
+            fields = new HashMap<>(fields);
+            fields.remove("caseName");
+            fields.remove("nextStepUrl");
+        }
+
         return EmailNotificationRequest.builder()
             .templateId(templateId)
             .emailAddress(email)
-            .personalisation(personalisation.toMap())
+            .personalisation(fields)
             .claimType(claimType)
             .build();
     }

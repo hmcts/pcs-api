@@ -51,7 +51,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
@@ -104,7 +104,7 @@ class PaymentServiceTest {
     @Mock
     private IdamAuthenticator idamAuthenticator;
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationService organisationService;
     @Mock
     private User user;
     @Mock
@@ -227,7 +227,7 @@ class PaymentServiceTest {
                 .paymentCallbackHandlerType(CLAIM)
                 .build();
 
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(any(PaymentCallbackHandlerType.class)))
                 .thenReturn(mock(MakeAClaimPaymentCallbackHandler.class));
@@ -236,7 +236,7 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
             verify(feePaymentRepository).save(feePaymentCaptor.capture());
             FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
@@ -255,13 +255,14 @@ class PaymentServiceTest {
                 .serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
                 .build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference)).thenReturn(Optional.empty());
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
+                .thenReturn(Optional.empty());
 
             // When
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
         }
 
@@ -276,7 +277,7 @@ class PaymentServiceTest {
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
                 .serviceRequestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
@@ -300,7 +301,7 @@ class PaymentServiceTest {
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.PAID).serviceRequestReference(requestReference)
                 .paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
 
@@ -579,7 +580,7 @@ class PaymentServiceTest {
             when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
             when(user.getUserDetails()).thenReturn(userDetails);
             when(userDetails.getUid()).thenReturn(uid);
-            when(organisationDetailsService.getOrganisationPaymentAccount(uid)).thenReturn(pbaAccounts);
+            when(organisationService.getOrganisationPaymentAccount(uid)).thenReturn(pbaAccounts);
 
             // When
             PbaAccountsResponse response = underTest.getPbaAccounts(authToken);
@@ -651,7 +652,7 @@ class PaymentServiceTest {
             );
 
             // Then
-            verify(organisationDetailsService).getOrganisationName(uid);
+            verify(organisationService).getOrganisationName(uid);
             verify(paymentsClient).createPbaPayment(eq(serviceRequestReference),
                                                                   eq(SYSTEM_USER_BEARER),
                                                                   pbaPaymentRequestCaptor.capture());
@@ -692,7 +693,7 @@ class PaymentServiceTest {
             ));
 
             // Then
-            verify(organisationDetailsService, never()).getOrganisationName(anyString());
+            verify(organisationService, never()).getOrganisationName(anyString());
             assertThat(throwable).isInstanceOf(IllegalStateException.class);
             assertThat(throwable).hasMessage(
                 "Service request " + serviceRequestReference + " already has a completed status"
@@ -721,7 +722,7 @@ class PaymentServiceTest {
 
             // Then
             verify(paymentsClient, never()).createPbaPayment(any(), anyString(), any());
-            verify(organisationDetailsService, never()).getOrganisationName(anyString());
+            verify(organisationService, never()).getOrganisationName(anyString());
             assertThat(throwable).isInstanceOf(FeePaymentNotFoundException.class);
         }
 

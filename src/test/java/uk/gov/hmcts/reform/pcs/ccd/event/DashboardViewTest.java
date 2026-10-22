@@ -108,7 +108,7 @@ class DashboardViewTest extends BaseEventTest {
 
     @Test
     void shouldExposeConfiguredStartHandlerThatPopulatesDashboardFromJourneyService() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         AddressUK propertyAddress = AddressUK.builder().addressLine1("2 River Lane").build();
         PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();

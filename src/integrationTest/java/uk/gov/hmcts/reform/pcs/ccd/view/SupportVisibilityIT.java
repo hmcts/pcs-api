@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 @DisplayName("External support visibility")
 class SupportVisibilityIT extends AbstractPostgresContainerIT {
 
-    private static final UUID CLAIMANT_SOLICITOR_USER_ID = UUID.randomUUID();
+    private static final String CLAIMANT_SOLICITOR_USER_ID = UUID.randomUUID().toString();
     private static final String CLAIMANT_FIRM = "CLAIMANT-FIRM";
     private static final String DEFENDANT_FIRM = "DEFENDANT-FIRM";
     private static final String UNRELATED_FIRM = "UNRELATED-FIRM";

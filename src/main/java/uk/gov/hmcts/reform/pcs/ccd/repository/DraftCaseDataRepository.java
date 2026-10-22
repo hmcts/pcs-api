@@ -1,9 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,7 +25,7 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
         long caseReference, EventId eventId, String organisationId);
 
     void deleteByCaseReferenceAndEventIdAndIdamUserId(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     void deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partyId);
@@ -29,19 +33,24 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
-
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
-        long caseReference, EventId eventId, UUID idamUserId);
+        long caseReference, EventId eventId, String idamUserId);
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
+
+    @Modifying
+    @Query("""
+        DELETE FROM DraftCaseDataEntity d
+        WHERE d.eventId = :eventId
+          AND d.createdAt < :cutoff
+        """)
+    int deleteByEventIdAndCutoff(@Param("eventId") EventId eventId, @Param("cutoff") Instant cutoff);
 
 }

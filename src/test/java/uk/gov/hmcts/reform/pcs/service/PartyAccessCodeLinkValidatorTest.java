@@ -34,9 +34,9 @@ class PartyAccessCodeLinkValidatorTest {
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final String ACCESS_CODE = "ABCD1234";
     private static final UUID PARTY_ID = UUID.randomUUID();
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
 
-    private PartyEntity createParty(UUID partyId, UUID idamUserId) {
+    private PartyEntity createParty(UUID partyId, String idamUserId) {
         PartyEntity partyEntity = new PartyEntity();
         partyEntity.setId(partyId);
         partyEntity.setIdamId(idamUserId);
@@ -122,7 +122,7 @@ class PartyAccessCodeLinkValidatorTest {
         // GIVEN
         UUID partyId1 = UUID.randomUUID();
         UUID partyId2 = UUID.randomUUID();
-        PartyEntity partyEntity1 = createParty(partyId1, UUID.randomUUID());
+        PartyEntity partyEntity1 = createParty(partyId1, UUID.randomUUID().toString());
         PartyEntity partyEntity2 = createParty(partyId2, null);
         List<PartyEntity> partyEntities = List.of(partyEntity1, partyEntity2);
 
