@@ -23,7 +23,7 @@ public class BreathingSpaceApplicationPage implements CcdPageConfiguration {
     protected static final String FUTURE_START_DATE_ERROR = "Date Breathing Space started must be today or in the past";
     private static final String CASE_NAME_MARKDOWN = """
         <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-0">
-            ${breathingSpace_CaseName}
+            ${caseNamePublic}
         </p>""";
 
     private final Clock ukClock;
@@ -36,10 +36,8 @@ public class BreathingSpaceApplicationPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("breathingSpaceApplication", this::midEvent)
-            .complex(PCSCase::getBreathingSpaceDetails)
-            .readonly(BreathingSpaceDetails::getCaseName, NEVER_SHOW)
-            .done()
-            .label("breathingSpaceApplication-caseName", CASE_NAME_MARKDOWN)
+            .readonly(PCSCase::getCaseNamePublic, NEVER_SHOW)
+            .label("breathingSpaceApplication-caseNamePublic", CASE_NAME_MARKDOWN)
             .label("breathingSpaceApplication-lineSeparator", "---")
             .complex(PCSCase::getBreathingSpaceDetails)
             .optional(BreathingSpaceDetails::getReferenceNumber)

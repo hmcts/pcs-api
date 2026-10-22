@@ -31,14 +31,14 @@ public class BreathingSpaceApplicationPageTest extends BasePageTest {
 
     @Test
     void shouldReturnErrorWhenStartDateIsInFuture() {
-        PCSCase caseData = caseDataWithStartDate(LocalDate.of(2026, 7, 17));
+        PCSCase caseData = caseDataWithStartDate(LocalDate.now(UK_CLOCK).plusDays(1));
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
         assertThat(response.getErrorMessageOverride()).isEqualTo(FUTURE_START_DATE_ERROR);
     }
 
     @Test
     void shouldAllowStartDateOfPast() {
-        PCSCase caseData = caseDataWithStartDate(LocalDate.parse("2026-07-16"));
+        PCSCase caseData = caseDataWithStartDate(LocalDate.now(UK_CLOCK).minusDays(1));
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
         assertThat(response.getErrorMessageOverride()).isNull();
     }
