@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -173,7 +174,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
             String orgName = "ACME Org Ltd";
-            when(organisationService.getOrganisationName(any())).thenReturn(orgName);
+            OrganisationDetailsResponse organisationDetails = OrganisationDetailsResponse.builder()
+                .name(orgName)
+                .build();
+            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(organisationDetails);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
