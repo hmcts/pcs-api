@@ -64,6 +64,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     static final int SUBJECT_LIMIT = 60;
     static final int MESSAGE_LIMIT = 750;
     static final int CLOSURE_NOTE_LIMIT = 250;
+    private static final String MESSAGE_ACTION = "messageAction";
+    private static final String REPLYING = "messageNeedReply=\"YES\"";
     static final String NO_MESSAGES = "There are no open messages for you to reply to on this case";
     static final String NOT_AVAILABLE = "Messages are not available";
     static final String NOT_THE_TASKS_MESSAGE = "Your task is for a message: reply to it or close it. To send a new "
@@ -98,10 +100,10 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.CRU, JUDGE_ROLES)
             .showSummary();
 
-        String sending = fieldEquals("messageAction", MessageAction.SEND);
-        String replying = fieldEquals("messageAction", MessageAction.REPLY);
+        String sending = fieldEquals(MESSAGE_ACTION, MessageAction.SEND);
+        String replying = fieldEquals(MESSAGE_ACTION, MessageAction.REPLY);
         PageBuilder pages = new PageBuilder(eventBuilder);
-        pages.page("messageAction", this::checkAction)
+        pages.page(MESSAGE_ACTION, this::checkAction)
             .pageLabel("Send or reply to a message")
             .mandatory(PCSCase::getMessageAction)
             .readonly(PCSCase::getMessageTaskMessageId, ShowConditions.NEVER_SHOW, true);
@@ -125,9 +127,9 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .label("replyOrClose-summary", "${messageSummaryMarkdown}")
             .readonly(PCSCase::getMessageHistory)
             .mandatory(PCSCase::getMessageNeedReply)
-            .mandatory(PCSCase::getMessageReplyRecipient, "messageNeedReply=\"YES\"")
-            .mandatory(PCSCase::getMessageReplyUrgent, "messageNeedReply=\"YES\"")
-            .mandatory(PCSCase::getMessageReply, "messageNeedReply=\"YES\"")
+            .mandatory(PCSCase::getMessageReplyRecipient, REPLYING)
+            .mandatory(PCSCase::getMessageReplyUrgent, REPLYING)
+            .mandatory(PCSCase::getMessageReply, REPLYING)
             .label("replyOrClose-closing", "The message will be marked as closed.", "messageNeedReply=\"NO\"")
             .optional(PCSCase::getMessageClosureNote, "messageNeedReply=\"NO\"");
     }
@@ -245,18 +247,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         if (sending) {
-            Set<MessageCategory> categories = caseData.getMessageCategories();
-            boolean aboutApplication = categories.contains(MessageCategory.APPLICATION);
-            GenAppEntity genApp = aboutApplication ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
-            if (aboutApplication && genApp == null) {
-                return rejected(List.of("Choose the open application the message is about"));
-            }
-            messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
-                new Writing(name, senderRole, caseData.getMessageRecipient(),
-                    caseData.getMessageUrgent() == VerticalYesNo.YES, caseData.getMessageBody().trim()));
-            return confirmed("Your message has been sent",
-                "A task to review the message has been created for " + caseData.getMessageRecipient().getLabel()
-                    + ".");
+            return send(pcsCase, caseData, name, senderRole);
         }
 
         Optional<CaseMessageEntity> message = chosen(pcsCase, caseData);
@@ -276,6 +267,21 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         MessageRecipient told = messageService.closeWithoutReply(message.get(), name, note);
         return confirmed("Message closed",
             "A task has been created for " + told.getLabel() + " to review.");
+    }
+
+    private SubmitResponse<State> send(PcsCaseEntity pcsCase, PCSCase caseData, String name,
+                                       MessageRecipient senderRole) {
+        Set<MessageCategory> categories = caseData.getMessageCategories();
+        boolean aboutApplication = categories.contains(MessageCategory.APPLICATION);
+        GenAppEntity genApp = aboutApplication ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
+        if (aboutApplication && genApp == null) {
+            return rejected(List.of("Choose the open application the message is about"));
+        }
+        messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
+            new Writing(name, senderRole, caseData.getMessageRecipient(),
+                caseData.getMessageUrgent() == VerticalYesNo.YES, caseData.getMessageBody().trim()));
+        return confirmed("Your message has been sent",
+            "A task to review the message has been created for " + caseData.getMessageRecipient().getLabel() + ".");
     }
 
     /** The open message chosen, if it is still waiting for the user's side. */

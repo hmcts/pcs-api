@@ -56,7 +56,7 @@ public class ClientContextRetriever {
         if (header == null || header.isBlank()) {
             return Optional.empty();
         }
-        String context = header.trim().replaceAll("^\\[|\\]$", "");
+        String context = header.trim().replaceAll("(^\\[)|(\\]$)", "");
         try {
             String json = context.startsWith("{") ? context
                 : new String(Base64.getDecoder().decode(context), StandardCharsets.UTF_8);

@@ -61,8 +61,9 @@ class SendReplyMessageTest extends BaseEventTest {
     @Test
     void shouldRefuseToStartWhenMakeOrderIsDisabled() {
         when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(false);
+        PCSCase caseData = PCSCase.builder().build();
 
-        assertThatThrownBy(() -> callStartHandler(PCSCase.builder().build()))
+        assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage(SendReplyMessage.NOT_AVAILABLE);
         verifyNoInteractions(pcsCaseService, messageService);
