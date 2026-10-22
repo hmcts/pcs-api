@@ -87,7 +87,7 @@ public class StartSuspend implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("startSuspend")
-            .pageLabel("Ask the court to suspend the eviction on behalf of the defendant")
+            .pageLabel("Ask the court to suspend an eviction on behalf of the defendant")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.SUSPEND))
             .label("startSuspend-lineSeparator", "---")
             .label("startSuspend-info", INFO_MARKDOWN);

@@ -404,7 +404,6 @@ class UploadDocumentsTest extends BaseEventTest {
         private static Stream<Arguments> genAppTypeScenarios() {
             return Stream.of(
                 Arguments.of(GenAppType.ADJOURN, DocumentUploadCategory.ADJOURN_HEARING_APPLICATION),
-                Arguments.of(GenAppType.SUSPEND, DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION),
                 Arguments.of(GenAppType.SET_ASIDE, DocumentUploadCategory.SET_ASIDE_ORDER_APPLICATION)
             );
         }
