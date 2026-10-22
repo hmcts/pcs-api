@@ -4,7 +4,6 @@ import test from '@playwright/test';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {caseSummary, home, user} from '@data/page-data';
-import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
 import {
   addJudicialNotes,
@@ -17,7 +16,7 @@ import {
 
 
 test.use({ storageState: undefined })
-  test.beforeEach(async ({page, context}, testInfo) => {
+  test.beforeEach(async ({page, context}) => {
     await context.clearCookies();
     initializeExecutor(page);
     initializeCMExecutor(page);
