@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,27 +27,29 @@ public class DocumentCategoryUpdateService {
         var documents = pcsCaseService.loadCase(caseReference).getDocuments();
         Map<String, String> storedCategories = new HashMap<>();
         documents.forEach(document -> storedCategories.put(document.getUrl(), document.getCategoryId()));
-        Map<String, String> changes = new HashMap<>();
+        Map<String, Optional<String>> changes = new HashMap<>();
         findChanges(objectMapper.valueToTree(caseData), storedCategories, changes);
 
         documents.forEach(entity -> {
-            if (changes.containsKey(entity.getUrl())) {
-                entity.setCategoryId(changes.get(entity.getUrl()));
+            Optional<String> category = changes.get(entity.getUrl());
+            if (category != null) {
+                entity.setCategoryId(category.orElse(null));
                 documentRepository.save(entity);
             }
         });
     }
 
-    private void findChanges(JsonNode node, Map<String, String> storedCategories, Map<String, String> changes) {
+    private void findChanges(JsonNode node, Map<String, String> storedCategories, Map<String, Optional<String>> changes) {
         if (node.isObject()) {
             if (node.hasNonNull("document_url")) {
                 String url = node.get("document_url").asText();
                 String category = node.path("category_id").asText(null);
                 if (storedCategories.containsKey(url) && !Objects.equals(storedCategories.get(url), category)) {
-                    if (changes.containsKey(url) && !Objects.equals(changes.get(url), category)) {
+                    Optional<String> target = Optional.ofNullable(category);
+                    Optional<String> existing = changes.computeIfAbsent(url, ignored -> target);
+                    if (!existing.equals(target)) {
                         throw new IllegalArgumentException("Conflicting document categories for " + url);
                     }
-                    changes.put(url, category);
                 }
             }
             node.elements().forEachRemaining(child -> findChanges(child, storedCategories, changes));
