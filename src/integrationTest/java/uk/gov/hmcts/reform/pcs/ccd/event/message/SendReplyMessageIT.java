@@ -168,6 +168,7 @@ class SendReplyMessageIT extends OrderEventIT {
         + "deciding it for review")
     void closesTheApplicationsMessagesWhenItsOrderIsSent() {
         UUID genAppId = send();
+        UUID messageId = replyList(judge).getFirst().getCode();
 
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.APPLICATION_DECISION,
@@ -176,6 +177,11 @@ class SendReplyMessageIT extends OrderEventIT {
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
             .contains("Closed messages", "Answered by an order on the application");
+        // The message's task, opened after, offers nothing to reply to, so the judge marks it done.
+        assertThat(events.start(caseReference, sendReplyMessage.name()).as(judge)
+            .withClientContext(Map.of("client_context", Map.of("user_task", Map.of("task_data",
+                Map.of("additional_properties", Map.of("messageId", messageId.toString()))))))
+            .startExpectingSuccess().caseData().getMessageReplyList().getListItems()).isEmpty();
     }
 
     @Test
