@@ -29,7 +29,6 @@ class EnforcementDataMigrationIT {
     private static final UUID LEGACY_RESTITUTION_WITH_FEE_PAYMENT = UUID.randomUUID();
     private static final UUID LEGACY_RESTITUTION_MOVED_ON = UUID.randomUUID();
     private static final UUID SUBMITTED_AFTER_V142 = UUID.randomUUID();
-    private static final LocalDateTime DRAFT_CREATED = LocalDateTime.of(2026, 3, 1, 9, 30);
 
     private static JdbcTemplate jdbc;
     private static UUID claimId;
@@ -76,12 +75,6 @@ class EnforcementDataMigrationIT {
                     SUBMITTED_AFTER_V142, claimId, chosen("WARRANT_OF_RESTITUTION"), movedOnAt, movedOnAt);
 
         migrateTo(dataSource, "151");
-        jdbc.update("""
-            INSERT INTO draft.draft_case_data (case_reference, case_data, event_id, idam_user_id, created_at)
-            VALUES (1234123412341234, '{}'::jsonb, 'enforceTheOrder', 'user-1', ?)""",
-                    Timestamp.valueOf(DRAFT_CREATED));
-
-        migrateTo(dataSource, "152");
     }
 
     @AfterAll
@@ -118,28 +111,6 @@ class EnforcementDataMigrationIT {
         assertThat(statusUpdatedAt(LEGACY_RESTITUTION_MOVED_ON)).isEqualTo(movedOnAt.toInstant());
         assertThat(status(SUBMITTED_AFTER_V142)).isEqualTo("AWAITING_PAYMENT");
         assertThat(statusUpdatedAt(SUBMITTED_AFTER_V142)).isEqualTo(movedOnAt.toInstant());
-    }
-
-    @Test
-    @DisplayName("V152 dates an existing draft's last save from when it was created")
-    void existingDraftsAreLastSavedWhenCreated() {
-        Map<String, Object> draft = jdbc.queryForMap(
-            "SELECT created_at, updated_at FROM draft.draft_case_data WHERE case_reference = 1234123412341234");
-        assertThat(draft.get("updated_at")).isEqualTo(draft.get("created_at"));
-        assertThat(((Timestamp) draft.get("updated_at")).toLocalDateTime()).isEqualTo(DRAFT_CREATED);
-    }
-
-    @Test
-    @DisplayName("V152 makes updated_at required, defaulted and indexed with the event id")
-    void updatedAtIsRequiredAndIndexed() {
-        assertThat(jdbc.queryForObject("""
-            SELECT is_nullable FROM information_schema.columns
-            WHERE table_schema = 'draft' AND table_name = 'draft_case_data' AND column_name = 'updated_at'""",
-            String.class)).isEqualTo("NO");
-        assertThat(jdbc.queryForObject("""
-            SELECT indexdef FROM pg_indexes
-            WHERE schemaname = 'draft' AND indexname = 'draft_case_data_event_id_updated_at_idx'""",
-            String.class)).contains("(event_id, updated_at)");
     }
 
     private static void migrateTo(DriverManagerDataSource dataSource, String version) {

@@ -14,14 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.DraftEnforcementDeletionService;
 
-import java.sql.Timestamp;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Enforcement draft deletion by last save")
+@DisplayName("Enforcement draft deletion by when the draft was created")
 class DraftEnforcementDeletionIT extends AbstractPostgresContainerIT {
 
     private static final int DISCARD_AFTER_DAYS = 30;
@@ -36,55 +34,40 @@ class DraftEnforcementDeletionIT extends AbstractPostgresContainerIT {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("keeps an old draft saved recently, and deletes one left unsaved for longer than the period")
-    void deletesByLastSave() {
-        final int startedLongAgoSavedRecently = draft(8_100_000_000_000_001L, EventId.enforceTheOrder, 90, 1);
-        final int leftUnsaved = draft(8_100_000_000_000_002L, EventId.enforceTheOrder, 40, 40);
-        final int otherJourney = draft(8_100_000_000_000_003L, EventId.resumePossessionClaim, 40, 40);
+    @DisplayName("deletes a draft created before the cutoff, keeping a newer one and another journey's")
+    void deletesByCreationDate() {
+        final int createdBeforeTheCutoff = draft(8_100_000_000_000_001L, EventId.enforceTheOrder, 40);
+        final int createdAfterTheCutoff = draft(8_100_000_000_000_002L, EventId.enforceTheOrder, 29);
+        final int otherJourney = draft(8_100_000_000_000_003L, EventId.resumePossessionClaim, 40);
 
         draftEnforcementDeletionService.deleteEnforcementDraftsBatch(DISCARD_AFTER_DAYS);
         entityManager.clear();
 
-        assertThat(draftCaseDataRepository.existsById(startedLongAgoSavedRecently)).isTrue();
-        assertThat(draftCaseDataRepository.existsById(leftUnsaved)).isFalse();
+        assertThat(draftCaseDataRepository.existsById(createdBeforeTheCutoff)).isFalse();
+        assertThat(draftCaseDataRepository.existsById(createdAfterTheCutoff)).isTrue();
         assertThat(draftCaseDataRepository.existsById(otherJourney)).isTrue();
     }
 
     @Test
-    @DisplayName("every save of a draft, from any journey, moves its last save on and leaves when it was created")
-    void savingADraftRecordsTheSave() {
-        int id = draft(8_100_000_000_000_004L, EventId.resumePossessionClaim, 40, 40);
-        final Timestamp created = column(id, "created_at");
+    @DisplayName("deletes a draft created before the cutoff even though it was saved today")
+    void deletesADraftCreatedBeforeTheCutoffThatWasSavedToday() {
+        final int startedLongAgoSavedToday = draft(8_100_000_000_000_004L, EventId.enforceTheOrder, 90);
 
-        DraftCaseDataEntity draft = draftCaseDataRepository.findById(id).orElseThrow();
+        DraftCaseDataEntity draft = draftCaseDataRepository.findById(startedLongAgoSavedToday).orElseThrow();
         draft.setCaseData("{\"answer\": \"changed\"}");
         draftCaseDataRepository.saveAndFlush(draft);
         entityManager.clear();
 
-        assertThat(column(id, "created_at")).isEqualTo(created);
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT updated_at > now() - interval '1 day' FROM draft.draft_case_data WHERE id = ?",
-            Boolean.class, id)).isTrue();
-    }
-
-    @Test
-    @DisplayName("a new draft is last saved when it is created")
-    void newDraftIsLastSavedOnCreation() {
-        DraftCaseDataEntity draft = new DraftCaseDataEntity();
-        draft.setCaseReference(8_100_000_000_000_005L);
-        draft.setEventId(EventId.enforceTheOrder);
-        draft.setIdamUserId("user-1");
-        draft.setCaseData("{}");
-        int id = draftCaseDataRepository.saveAndFlush(draft).getId();
+        draftEnforcementDeletionService.deleteEnforcementDraftsBatch(DISCARD_AFTER_DAYS);
         entityManager.clear();
 
-        assertThat(draftCaseDataRepository.findById(id).orElseThrow().getUpdatedAt()).isNotNull();
+        assertThat(draftCaseDataRepository.existsById(startedLongAgoSavedToday)).isFalse();
     }
 
     /**
-     * Written straight to the table, so the dates are the test's rather than Hibernate's.
+     * Written straight to the table, so the creation date is the test's rather than Hibernate's.
      */
-    private int draft(long caseReference, EventId eventId, int createdDaysAgo, int savedDaysAgo) {
+    private int draft(long caseReference, EventId eventId, int createdDaysAgo) {
         DraftCaseDataEntity draft = new DraftCaseDataEntity();
         draft.setCaseReference(caseReference);
         draft.setEventId(eventId);
@@ -93,14 +76,9 @@ class DraftEnforcementDeletionIT extends AbstractPostgresContainerIT {
         int id = draftCaseDataRepository.saveAndFlush(draft).getId();
         jdbcTemplate.update("""
             UPDATE draft.draft_case_data
-            SET created_at = now() - make_interval(days => ?), updated_at = now() - make_interval(days => ?)
-            WHERE id = ?""", createdDaysAgo, savedDaysAgo, id);
+            SET created_at = now() - make_interval(days => ?)
+            WHERE id = ?""", createdDaysAgo, id);
         entityManager.clear();
         return id;
-    }
-
-    private Timestamp column(int id, String column) {
-        return jdbcTemplate.queryForObject(
-            "SELECT " + column + " FROM draft.draft_case_data WHERE id = ?", Timestamp.class, id);
     }
 }
