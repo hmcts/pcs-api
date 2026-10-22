@@ -136,6 +136,9 @@ class DecideApplicationIT extends OrderEventIT {
             pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(SOMETHING_ELSE).state(GEN_APP_ISSUED)
                 .somethingElseDetails("Suspend the warrant of possession")
                 .applicationSubmittedDate(LocalDateTime.of(2026, 10, 9, 14, 0)).build());
+            pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(SOMETHING_ELSE).state(GEN_APP_ISSUED)
+                .somethingElseDetails("Extend the validity of the warrant")
+                .applicationSubmittedDate(LocalDateTime.of(2026, 10, 10, 14, 0)).build());
         });
 
         OrderStart start = events.external(caseReference, MAKE_ORDER).as(judge).start();
@@ -143,7 +146,7 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(start.caseContext().application()).isNull();
         assertThat(start.caseContext().applications())
             .extracting(Application::reference, Application::warrantSuspension)
-            .containsExactly(tuple("GA1", false), tuple("GA2", true));
+            .containsExactly(tuple("GA1", false), tuple("GA2", true), tuple("GA3", false));
         assertThat(start.caseContext().applications()).extracting(Application::id).doesNotContainNull()
             .first().isEqualTo(genAppId);
     }
@@ -216,6 +219,17 @@ class DecideApplicationIT extends OrderEventIT {
                 Map.of("app-" + genAppId + "-decision", "grant"), WORDING, null), null));
 
         assertThat(asJudgeDeciding(genAppId).startExpectingRejection()).containsExactly(MakeOrder.ALREADY_DECIDED);
+    }
+
+    @Test
+    @DisplayName("refuses an order made at a hearing deciding an application another order is deciding")
+    void refusesAHearingOrderOnAnApplicationBeingDecided() {
+        judgeDecides(genAppId, "grant");
+
+        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingRejection(new MakeOrderRequest(
+            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, NO_ORDER_ON_CLAIM,
+                Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, null), null)).errors())
+            .containsExactly(MakeOrder.ALREADY_DECIDED);
     }
 
     @Test
