@@ -127,7 +127,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .or(() -> Optional.ofNullable(link.hearingId()).map(id -> hearingRecords.hearing(pcsCase, id)))
             .orElse(null);
         return ExternalStartResponse.started(new OrderStart(workingOrder,
-            orderCaseContext.of(pcsCase, workingOrder.genAppId()),
+            orderCaseContext.of(pcsCase, workingOrder.id(), workingOrder.genAppId()),
             hearing == null ? null : hearingRecords.start(pcsCase, hearing)));
     }
 

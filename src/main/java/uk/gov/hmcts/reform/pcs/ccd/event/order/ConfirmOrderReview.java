@@ -100,7 +100,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
             OrderStart.Order.of(order, orderSteps.latest(order), null),
-            orderCaseContext.of(order.getPcsCase(), order.getGenAppId())));
+            orderCaseContext.of(order.getPcsCase(), order.getId(), order.getGenAppId())));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {

@@ -214,17 +214,24 @@ class DecideApplicationIT extends OrderEventIT {
     @Test
     @DisplayName("refuses an order on the application once an order made at a hearing decides it")
     void refusesAnOrderOnAnApplicationDecidedAtAHearing() {
-        events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
-            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, NO_ORDER_ON_CLAIM,
-                Map.of("app-" + genAppId + "-decision", "grant"), WORDING, null), null));
+        UUID orderId = events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(
+            new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(null, 0, NO_ORDER_ON_CLAIM,
+                Map.of("app-" + genAppId + "-decision", "grant"), WORDING, null), null))
+            .changed("orders", Order.class).id();
 
         assertThat(asJudgeDeciding(genAppId).startExpectingRejection()).containsExactly(MakeOrder.ALREADY_DECIDED);
+        // Court staff reviewing the order still see the application it decides.
+        assertThat(asCaseworkerReviewing(orderId).start().caseContext().applications())
+            .extracting(Application::id).containsExactly(genAppId);
     }
 
     @Test
     @DisplayName("refuses an order made at a hearing deciding an application another order is deciding")
     void refusesAHearingOrderOnAnApplicationBeingDecided() {
         judgeDecides(genAppId, "grant");
+        // Nor does it offer the application to decide while the other order is with court staff.
+        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().caseContext().applications())
+            .isEmpty();
 
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingRejection(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, NO_ORDER_ON_CLAIM,
