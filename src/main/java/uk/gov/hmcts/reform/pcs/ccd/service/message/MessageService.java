@@ -191,7 +191,8 @@ public class MessageService {
             });
     }
 
-    private void askToReview(CaseMessageEntity message) {
+    /** Gives the pool of the side the message waits for a task to review it. */
+    public void askToReview(CaseMessageEntity message) {
         CaseMessageEntryEntity latest = message.latest();
         GenAppEntity genApp = message.getGenApp();
         long caseReference = message.getPcsCase().getCaseReference();
