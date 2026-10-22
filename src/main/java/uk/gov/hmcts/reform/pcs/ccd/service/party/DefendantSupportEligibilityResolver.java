@@ -23,7 +23,7 @@ public class DefendantSupportEligibilityResolver {
 
     private final PartySupportOwnershipResolver partySupportOwnershipResolver;
 
-    public Set<UUID> resolveEligibleDefendantPartyIds(PcsCaseEntity pcsCaseEntity, UUID authenticatedUserId) {
+    public Set<UUID> resolveEligibleDefendantPartyIds(PcsCaseEntity pcsCaseEntity, String authenticatedUserId) {
         if (pcsCaseEntity == null || authenticatedUserId == null) {
             return Set.of();
         }
@@ -49,6 +49,7 @@ public class DefendantSupportEligibilityResolver {
 
         return claims.getFirst().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .filter(claimParty -> !claimParty.getParty().isRemoved())
             .map(this::partyId)
             .filter(Objects::nonNull)
             .collect(toCollection(LinkedHashSet::new));

@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 
 @Builder
 @Data
@@ -82,8 +81,4 @@ public class WritDetails {
         label = "TEMPORARY TEST ONLY – Was the general application to transfer to the High Court successful?"
     )
     private YesOrNo wasGeneralApplicationToTransferToHighCourtSuccessful;
-
-    @JsonUnwrapped
-    @CCD
-    private StatementOfTruthDetailsEnforcement statementOfTruth;
 }

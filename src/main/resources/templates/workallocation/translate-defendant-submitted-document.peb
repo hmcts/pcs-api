@@ -1,7 +1,6 @@
-### Translate Documents
+### Translate Defendant Submitted Document
 
-{{partyLabel}} has uploaded documents that require translation.
-
+{{partyLabel}} has submitted documents to the claim that require translation.
 Review the defendant submitted document in
 <a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20File%20View">Case File View</a> and arrange
 translation where required. Upload or record the translated document on the case file and take any further action needed.

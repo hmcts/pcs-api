@@ -22,8 +22,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefe
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -115,9 +116,11 @@ public class WarrantDetails {
     )
     private VerticalYesNo isSuspendedOrder;
 
-    @JsonUnwrapped
-    @CCD
-    private StatementOfTruthDetailsEnforcement statementOfTruth;
+    @CCD(
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "StatementOfTruthAgreement"
+    )
+    private List<StatementOfTruthAgreement> certification;
 
     @CCD
     @JsonUnwrapped

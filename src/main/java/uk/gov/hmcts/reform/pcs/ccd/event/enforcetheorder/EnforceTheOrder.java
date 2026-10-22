@@ -171,7 +171,6 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
-            .state(State.PENDING_ENFORCEMENT_ISSUED)
             .build();
     }
 

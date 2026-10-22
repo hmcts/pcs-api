@@ -9,10 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
@@ -42,7 +43,8 @@ public class WarrantDetailsMapper {
             landRegistry(warrantDetails, warrantEntity);
             repayment(warrantDetails, warrantEntity);
             defendantsDOB(warrantEntity, warrantDetails);
-            statementOfTruth(warrantDetails, warrantEntity);
+            certification(warrantEntity, warrantDetails);
+            statementOfTruth(enforcementOrder.getRawWarrantDetails(), warrantEntity);
         }
         return warrantEntity;
     }
@@ -54,9 +56,9 @@ public class WarrantDetailsMapper {
             convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleYouWantToEvictPage()));
     }
 
-    private void statementOfTruth(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
-        if (warrantDetails.getStatementOfTruth() != null) {
-            StatementOfTruthDetailsEnforcement statementOfTruth = warrantDetails.getStatementOfTruth();
+    private void statementOfTruth(RawWarrantDetails rawWarrantDetails, WarrantEntity warrantEntity) {
+        if (rawWarrantDetails != null && rawWarrantDetails.getWarrantStatementOfTruth() != null) {
+            StatementOfTruthDetails statementOfTruth = rawWarrantDetails.getWarrantStatementOfTruth();
             warrantEntity.setCompletedBy(statementOfTruth.getCompletedBy());
             warrantEntity.setFullNameClaimant(statementOfTruth.getFullNameParty());
             warrantEntity.setPositionClaimant(statementOfTruth.getPositionParty());
@@ -66,13 +68,11 @@ public class WarrantDetailsMapper {
 
             agreementClaimant(warrantEntity, statementOfTruth);
             agreementLegalRep(warrantEntity, statementOfTruth);
-            certification(warrantEntity, statementOfTruth);
         }
     }
 
-    private void certification(WarrantEntity warrantEntity,
-                               StatementOfTruthDetailsEnforcement statementOfTruth) {
-        List<StatementOfTruthAgreement> certification = statementOfTruth.getCertification();
+    private void certification(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+        List<StatementOfTruthAgreement> certification = warrantDetails.getCertification();
         if (certification != null && !certification.isEmpty()) {
             warrantEntity.setCertification(
                 certification.stream()
@@ -83,7 +83,7 @@ public class WarrantDetailsMapper {
     }
 
     private void agreementLegalRep(WarrantEntity warrantEntity,
-                                   StatementOfTruthDetailsEnforcement statementOfTruth) {
+                                   StatementOfTruthDetails statementOfTruth) {
         List<AgreementClaimantLegalRep> agreementLegalRep = statementOfTruth.getAgreementClaimantLegalRep();
         if (agreementLegalRep != null && !agreementLegalRep.isEmpty()) {
             warrantEntity.setAgreementLegalRep(agreementLegalRep.stream()
@@ -94,7 +94,7 @@ public class WarrantDetailsMapper {
     }
 
     private void agreementClaimant(WarrantEntity warrantEntity,
-                                   StatementOfTruthDetailsEnforcement statementOfTruth) {
+                                   StatementOfTruthDetails statementOfTruth) {
         List<StatementOfTruthAgreementClaimant> agreementClaimant = statementOfTruth.getAgreementClaimant();
         if (agreementClaimant != null && !agreementClaimant.isEmpty()) {
             warrantEntity.setAgreementClaimant(

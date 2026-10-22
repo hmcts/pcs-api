@@ -46,6 +46,8 @@ export const TEST_DOCUMENT_SLOTS: readonly { file: string; slot?: string }[] = [
   { file: 'legalAidCertificate.pdf' },
   { file: 'otherDocument.pdf' },
   { file: 'inspectionOrReport.pdf' },
+  { file: 'licence.pdf' },
+  { file: 'possessionNoticeWithOutNotice.pdf' },
 ];
 
 const slotKey = (file: string, slot?: string): string => (slot ? `${file}#${slot}` : file);

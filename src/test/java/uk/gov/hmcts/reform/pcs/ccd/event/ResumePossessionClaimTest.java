@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -72,7 +73,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ResumePossessionClaimTest extends BaseEventTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
 
     @Mock
@@ -111,7 +112,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
-        when(userDetails.getUid()).thenReturn(USER_ID.toString());
+        when(userDetails.getUid()).thenReturn(USER_ID);
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, partyService, securityContextService,
@@ -173,7 +174,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
             String orgName = "ACME Org Ltd";
-            when(organisationService.getOrganisationName(any())).thenReturn(orgName);
+            OrganisationDetailsResponse organisationDetails = OrganisationDetailsResponse.builder()
+                .name(orgName)
+                .build();
+            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(organisationDetails);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))

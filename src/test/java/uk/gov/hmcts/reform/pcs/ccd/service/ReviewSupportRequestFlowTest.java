@@ -357,7 +357,7 @@ class ReviewSupportRequestFlowTest {
         PartySupportOwnershipResolver resolver = mock(PartySupportOwnershipResolver.class);
         when(resolver.resolveRepresentedPartyIds(any(), any())).thenReturn(Set.of(defendant.getId()));
         SecurityContextService securityContextService = mock(SecurityContextService.class);
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID().toString());
         return viewMappedCase(new CaseFlagsView(resolver, securityContextService));
     }
 
