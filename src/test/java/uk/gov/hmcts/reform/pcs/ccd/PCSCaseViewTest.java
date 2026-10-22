@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
+import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -127,6 +129,8 @@ class PCSCaseViewTest {
     @Mock
     private CaseNoteView caseNoteView;
     @Mock
+    private OrdersView ordersView;
+    @Mock
     private CaseTabView caseTabView;
     @Mock
     private PartiesView partiesView;
@@ -149,6 +153,9 @@ class PCSCaseViewTest {
     @Mock
     private OrganisationService organisationService;
 
+    @Mock
+    private JudicialNoteView judicialNoteView;
+
     private PCSCaseView underTest;
 
     @BeforeEach
@@ -162,10 +169,10 @@ class PCSCaseViewTest {
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
+                                    caseNoteView, ordersView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
-                                    hearingView, enforcementOrderView, legalRepresentativeSummaryService,
-                                    organisationService
+                                    hearingView, legalRepresentativeSummaryService, organisationService,
+                                    judicialNoteView, enforcementOrderView
         );
     }
 
@@ -398,6 +405,7 @@ class PCSCaseViewTest {
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(featureFlagView).setCaseFields(pcsCase);
         verify(hearingView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(judicialNoteView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
     }
