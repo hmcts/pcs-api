@@ -1686,15 +1686,12 @@ class DocumentServiceTest {
     class LegalRepDocumentTests {
 
         @Mock
-        private PcsCaseEntity pcsCaseEntity;
-        @Mock
         private ClaimEntity mainClaim;
         @Mock
         private PartyEntity party;
 
         @BeforeEach
         void setUp() {
-            when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
             when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
         }
 
