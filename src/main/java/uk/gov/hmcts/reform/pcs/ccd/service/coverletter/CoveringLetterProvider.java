@@ -3,15 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.coverletter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterDocumentFetcher;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
-import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.document.model.coverletter.CoveringLetterPayload;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
@@ -19,8 +15,6 @@ import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
-
-import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 @Service
 public class CoveringLetterProvider {
@@ -53,7 +47,8 @@ public class CoveringLetterProvider {
                          AddressUK address, String caseReference) {
         CourtVenue court = resolveOwningCourt(pcsCase);
         CoveringLetterPayload payload = coveringLetterPayloadBuilder.build(
-            recipient, recipientName, address, caseReference, caseName(pcsCase), court, LocalDate.now(ukClock));
+            recipient, recipientName, address, caseReference,
+            caseNameFormatter.formatCaseName(pcsCase), court, LocalDate.now(ukClock));
         String letterUrl = coveringLetterDocumentGenerator.generate(payload);
         return letterDocumentFetcher.fetchBytes(documentIdExtractor.extractDocumentId(letterUrl));
     }
@@ -72,20 +67,5 @@ public class CoveringLetterProvider {
                     + "; cannot resolve respond-by-post court");
         }
         return venues.getFirst();
-    }
-
-    private String caseName(PcsCaseEntity pcsCase) {
-        if (pcsCase.getClaims().isEmpty()) {
-            return null;
-        }
-        ClaimEntity claim = pcsCase.getClaims().getFirst();
-        return caseNameFormatter.formatCaseName(domainParties(claim, PartyRole.CLAIMANT),
-            domainParties(claim, PartyRole.DEFENDANT));
-    }
-
-    private List<Party> domainParties(ClaimEntity claim, PartyRole role) {
-        return partiesByRole(claim, role).stream()
-            .map(PartyDisplayMapper::toDomainParty)
-            .toList();
     }
 }

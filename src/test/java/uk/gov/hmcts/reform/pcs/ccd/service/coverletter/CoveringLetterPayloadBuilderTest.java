@@ -33,10 +33,9 @@ class CoveringLetterPayloadBuilderTest {
         assertThat(payload.getSignOff()).isEqualTo(YOURS_SINCERELY);
         assertThat(payload.getLetterDate()).isEqualTo("15 October 2026");
         assertThat(payload.getRecipientAddressLine2()).isEqualTo("1 High Street, Northside");
+        assertThat(payload.getRecipientCounty()).isEqualTo("West Yorkshire");
         assertThat(payload.getCourtAddressLine1()).isEqualTo("Y Lanfa");
         assertThat(payload.getCourtAddressLine2()).isEqualTo("Trefechan, Aberystwyth");
-        assertThat(payload.isHasCourtAddressLine2()).isTrue();
-        assertThat(payload.isHasRecipientCounty()).isTrue();
     }
 
     @Test
@@ -51,8 +50,8 @@ class CoveringLetterPayloadBuilderTest {
         assertThat(payload.getSignOff()).isEqualTo(YOURS_FAITHFULLY);
         assertThat(payload.getRecipientOrganisationName()).isEqualTo("Acme Ltd");
         assertThat(payload.getRecipientPersonalName()).isNull();
-        assertThat(payload.isHasCourtAddressLine2()).isFalse();
-        assertThat(payload.isHasRecipientAddressLine2()).isFalse();
+        assertThat(payload.getCourtAddressLine2()).isNull();
+        assertThat(payload.getRecipientAddressLine2()).isNull();
     }
 
     private CourtVenue court(String courtName, String courtAddress, String postcode) {

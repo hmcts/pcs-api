@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 @Service
 public class CoveringLetterDocumentGenerator {
 
-    static final String TEMPLATE_ID = "CV-PCS-LET-ENG-Covering-Letter.docx";
-    static final String OUTPUT_FILENAME = "Covering Letter";
+    private static final String TEMPLATE_ID = "CV-PCS-LET-ENG-Covering-Letter.docx";
+    private static final String OUTPUT_FILENAME = "Covering Letter";
 
     private final DocAssemblyService docAssemblyService;
 

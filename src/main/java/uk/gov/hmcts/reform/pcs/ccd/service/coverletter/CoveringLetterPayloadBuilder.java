@@ -30,8 +30,8 @@ public class CoveringLetterPayloadBuilder {
             ? null
             : String.join(", ", courtLines.subList(1, courtLines.size()));
         String recipientAddressLine2 = secondAddressLine(address);
-        boolean organisation = StringUtils.isNotBlank(recipient.getOrgName());
-        String personalName = organisation ? null : StringUtils.trimToNull(recipientName);
+        boolean isOrganisation = StringUtils.isNotBlank(recipient.getOrgName());
+        String personalName = isOrganisation ? null : StringUtils.trimToNull(recipientName);
 
         return CoveringLetterPayload.builder()
             .caseReference(caseReference)
@@ -42,19 +42,14 @@ public class CoveringLetterPayloadBuilder {
             .courtAddressLine1(courtAddressLine1)
             .courtAddressLine2(courtAddressLine2)
             .courtPostcode(StringUtils.trimToNull(court.postcode()))
-            .hasCourtAddressLine2(courtAddressLine2 != null)
             .recipientName(recipientName)
             .recipientPersonalName(personalName)
-            .recipientOrganisationName(organisation ? recipient.getOrgName().trim() : null)
-            .hasRecipientPersonalName(personalName != null)
-            .hasRecipientOrganisationName(organisation)
+            .recipientOrganisationName(isOrganisation ? recipient.getOrgName().trim() : null)
             .recipientAddressLine1(address.getAddressLine1())
             .recipientAddressLine2(recipientAddressLine2)
             .recipientPostTown(StringUtils.trimToNull(address.getPostTown()))
             .recipientCounty(StringUtils.trimToNull(address.getCounty()))
             .recipientPostcode(StringUtils.trimToNull(address.getPostCode()))
-            .hasRecipientAddressLine2(recipientAddressLine2 != null)
-            .hasRecipientCounty(StringUtils.isNotBlank(address.getCounty()))
             .build();
     }
 

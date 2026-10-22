@@ -29,7 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,13 +67,13 @@ class CoveringLetterProviderTest {
             .firstName("Jane").lastName("Doe").nameKnown(VerticalYesNo.YES).build();
         PcsCaseEntity pcsCase = caseWith(42, claimant, recipient);
         AddressUK address = AddressUK.builder().addressLine1("1 High Street").build();
-        CourtVenue court = court();
+        CourtVenue court = mock(CourtVenue.class);
         CoveringLetterPayload payload = CoveringLetterPayload.builder().build();
         UUID letterId = UUID.randomUUID();
         byte[] letter = "letter".getBytes();
 
         when(locationReferenceService.getCourtVenues(List.of(42))).thenReturn(List.of(court));
-        when(caseNameFormatter.formatCaseName(any(), any())).thenReturn("Sarah Freeman vs Jane Doe");
+        when(caseNameFormatter.formatCaseName(pcsCase)).thenReturn("Sarah Freeman vs Jane Doe");
         when(coveringLetterPayloadBuilder.build(
             recipient, "Jane Doe", address, "1234-5678-9012-3456", "Sarah Freeman vs Jane Doe",
             court, LocalDate.of(2026, 10, 15))).thenReturn(payload);
@@ -107,17 +107,5 @@ class CoveringLetterProviderTest {
             .caseManagementLocation(epimsId)
             .claims(new ArrayList<>(List.of(claim)))
             .build();
-    }
-
-    private CourtVenue court() {
-        return new CourtVenue(
-            null, null, null, null, null, null, null, null, null, null,
-            "Town Road",
-            "LS1 1AA",
-            null, null, null, null, null, null, null, null,
-            "Leeds County Court",
-            null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null
-        );
     }
 }
