@@ -39,7 +39,8 @@ public class DocumentCategoryUpdateService {
         });
     }
 
-    private void findChanges(JsonNode node, Map<String, String> storedCategories, Map<String, Optional<String>> changes) {
+    private void findChanges(JsonNode node, Map<String, String> storedCategories,
+                             Map<String, Optional<String>> changes) {
         if (node.isObject()) {
             if (node.hasNonNull("document_url")) {
                 String url = node.get("document_url").asText();

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalDocumentMoveAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
@@ -40,18 +42,21 @@ public class CaseDetailsTab {
     @CCD(label = "Date claim Submitted")
     private String dateClaimSubmitted;
 
-    @CCD(label = "Tenancy, occupation contract or licence details")
+    @CCD(label = "Tenancy, occupation contract or licence details",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
     @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private TenancyLicenceTabDetails tenancyLicenceDetails;
 
-    @CCD(label = "Notice details")
+    @CCD(label = "Notice details",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
     @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private NoticeTabDetails noticeDetails;
 
     @CCD(label = "Actions already taken")
     private ActionsTakenTabDetails actionsTakenDetails;
 
-    @CCD(label = "Details of rent arrears")
+    @CCD(label = "Details of rent arrears",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
     @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private RentArrearsTabDetails rentArrearsDetails;
 
