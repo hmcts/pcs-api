@@ -154,7 +154,7 @@ export class CreateCaseAction implements IAction {
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
-      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
+      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],
       ['resumePartialClaim', () => this.resumePartialClaim()],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
@@ -1622,11 +1622,11 @@ export class CreateCaseAction implements IAction {
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
 
-   const folderName = caseFile.folder as string;
+    const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
-    const file = (caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload)?.toString();    
+    const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload;
 
     switch (folderName) {
       case 'Property documents':
@@ -1638,10 +1638,10 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
         if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles.push(...(Array.isArray(caseFile.caseWorkerAmend) ? caseFile.caseWorkerAmend : [caseFile.caseWorkerAmend]));
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1653,9 +1653,9 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
         if (caseFile.caseWorkerAmend) {
           const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
-          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1669,9 +1669,9 @@ export class CreateCaseAction implements IAction {
           this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments)
         if (caseFile.caseWorkerAmend) {
           const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
-          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1706,9 +1706,9 @@ export class CreateCaseAction implements IAction {
     }
 
     if (!caseFile.allowEmptyFolder && fileCount === 0) {
-      await expect(async () => {        
+      await expect(async () => {
         await performAction('clickTab', home.caseSummary);
-        await performAction('clickTab', home.caseFileView);        
+        await performAction('clickTab', home.caseFileView);
         await this.checkFolderCount(page);
         const text = await folder.innerText();
         fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
@@ -1722,7 +1722,7 @@ export class CreateCaseAction implements IAction {
       });
     }
 
-    if (fileCount === 0) {      
+    if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
@@ -2082,7 +2082,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async getAllPartyDetails(allPartiesDetails: actionRecord) {
-  
+
       let originalDefendantDetails: string[] = [];
       const payLoad = allPartiesDetails.payLoad as Record<string, any>;
       if (allPartiesDetails.defendant1NameKnown === 'YES') {
@@ -2094,9 +2094,9 @@ export class CreateCaseAction implements IAction {
           `null null`
         );
       }
-  
+
       if (allPartiesDetails.additionalDefendants === 'YES') {
-  
+
         for (const [index, defendant] of payLoad.additionalDefendants.entries()) {
           if (defendant.value.nameKnown === 'YES') {
             originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName} - Defendant ${index + 2}`);
@@ -2107,7 +2107,7 @@ export class CreateCaseAction implements IAction {
           }
         }
       }
-  
+
       allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
       ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
       ];
