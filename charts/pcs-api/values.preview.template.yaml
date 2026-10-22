@@ -25,6 +25,8 @@ java:
           alias: PCS_PRD_ADMIN_PASSWORD
         - name: launchdarkly-sdk-key
           alias: LAUNCHDARKLY_SDK_KEY
+        - name: docmosis-access-key
+          alias: DOCMOSIS_ACCESS_KEY
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     # HDPI-8115: preview shares one small flexible server across ~70 releases;
