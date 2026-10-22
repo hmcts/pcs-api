@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.UUID;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -75,21 +77,33 @@ public class OrderTasks {
      * for a hearing leaves it to decide.
      */
     public boolean canDecide(GenAppEntity genApp) {
-        return genApp.isOpen() && !decidedBy(genApp,
+        return canDecide(genApp, null);
+    }
+
+    /** Whether a judge can decide the application with the order, which is not one already deciding it. */
+    public boolean canDecide(GenAppEntity genApp, UUID order) {
+        return genApp.isOpen() && !decidedBy(genApp, order,
             EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED));
+    }
+
+    /** Whether the order's answers decide the application. */
+    public static boolean decides(Map<String, Object> formData, GenAppEntity genApp) {
+        Object decision = formData == null ? null : formData.get(decisionField(genApp));
+        return decision != null && !"none".equals(decision);
     }
 
     /** Whether an issued order decided the application, which listing it for a hearing does not. */
     public boolean decided(GenAppEntity genApp) {
-        return decidedBy(genApp, EnumSet.of(OrderState.ISSUED));
+        return decidedBy(genApp, null, EnumSet.of(OrderState.ISSUED));
     }
 
-    private boolean decidedBy(GenAppEntity genApp, Set<OrderState> states) {
+    private boolean decidedBy(GenAppEntity genApp, UUID except, Set<OrderState> states) {
         return orderRepository.findByPcsCaseIdAndStateIn(genApp.getPcsCase().getId(), states).stream()
+            .filter(order -> !order.getId().equals(except))
             .anyMatch(order -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId())
-                .map(step -> step.getFormData().get(decisionField(genApp)))
-                .filter(decision -> !"none".equals(decision))
-                .filter(decision -> order.getState() != OrderState.ISSUED || !"list".equals(decision))
+                .filter(step -> decides(step.getFormData(), genApp))
+                .filter(step -> order.getState() != OrderState.ISSUED
+                    || !"list".equals(step.getFormData().get(decisionField(genApp))))
                 .isPresent());
     }
 

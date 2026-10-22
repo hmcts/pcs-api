@@ -151,8 +151,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge, change.genAppId())
             : workingDraft(caseReference, judge, change);
-        if (request.action() == SUBMIT_FOR_REVIEW && order.getState() == DRAFT && order.getGenAppId() != null) {
-            requireDecidable(order.getPcsCase(), order.getGenAppId());
+        // Every application the order decides, whether made on it or at a hearing, must still be the judge's to decide.
+        if (request.action() == SUBMIT_FOR_REVIEW && order.getPcsCase().getGenApps().stream()
+            .anyMatch(genApp -> OrderTasks.decides(change.formData(), genApp)
+                && !orderTasks.canDecide(genApp, order.getId()))) {
+            throw ExternalRejection.because(ALREADY_DECIDED);
         }
         if (order.getHearing() != null && request.hearing() == null) {
             throw ExternalRejection.because("The order's hearing record is missing");
