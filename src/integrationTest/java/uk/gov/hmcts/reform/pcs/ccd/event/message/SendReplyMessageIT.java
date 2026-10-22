@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -88,9 +89,12 @@ class SendReplyMessageIT extends OrderEventIT {
         UUID genAppId = send();
 
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
-            and(contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&amp;genAppId=" + genAppId),
+            and(contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=" + genAppId),
                 contains("/cases/case-details/%d/trigger/sendReplyMessage?tid=${[id]}".formatted(caseReference))),
             eq(true), any(UUID.class));
+        // XUI keeps a task's details for its event only up to their first semicolon.
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
+            argThat(description -> !description.contains(";")), eq(true), any(UUID.class));
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
         assertThat(tab).contains("Decide GA1", "Urgent", "Tom Caseworker", "District Judge",
             "Please decide this before the hearing on Friday.", "GA1: Adjourn the hearing");
@@ -203,6 +207,26 @@ class SendReplyMessageIT extends OrderEventIT {
             .withClientContext(Map.of("client_context", Map.of("user_task", Map.of("task_data",
                 Map.of("additional_properties", Map.of("messageId", messageId.toString()))))))
             .startExpectingSuccess().caseData().getMessageReplyList().getListItems()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("words a message's task with no semicolon, whatever its subject, so XUI can start its event")
+    void keepsSemicolonsOutOfTheTask() {
+        events.start(caseReference, sendReplyMessage.name()).as(caseworker).startExpectingSuccess()
+            .edit(pcsCase -> {
+                pcsCase.setMessageAction(MessageAction.SEND);
+                pcsCase.setMessageCategories(Set.of(MessageCategory.OTHER));
+                pcsCase.setMessageRecipient(MessageRecipient.DISTRICT_JUDGE);
+                pcsCase.setMessageSubject("Tenant's rent; costs & \"arrears\" (GA1)");
+                pcsCase.setMessageUrgent(VerticalYesNo.NO);
+                pcsCase.setMessageBody("Body");
+            })
+            .as(caseworker).submitExpectingSuccess();
+
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
+            and(argThat(description -> !description.contains(";")),
+                contains("Tenant’s rent, costs and ”arrears” [GA1]")),
+            eq(false), any(UUID.class));
     }
 
     @Test

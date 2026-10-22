@@ -254,8 +254,8 @@ public class TaskDescriptionService {
                                                  String application,
                                                  String decideUrl) {
         Map<String, Object> context = new HashMap<>();
-        context.put("senderName", senderName);
-        context.put("subject", subject);
+        context.put("senderName", plain(senderName));
+        context.put("subject", plain(subject));
         context.put("urgent", urgent);
         context.put("caseReference", caseReference);
         context.put("application", application);
@@ -266,11 +266,21 @@ public class TaskDescriptionService {
     public String createReviewClosedMessageDescription(String closedBy, String subject, String note,
                                                        long caseReference) {
         Map<String, Object> context = new HashMap<>();
-        context.put("closedBy", closedBy);
-        context.put("subject", subject);
-        context.put("note", note);
+        context.put("closedBy", plain(closedBy));
+        context.put("subject", plain(subject));
+        context.put("note", plain(note));
         context.put("caseReference", caseReference);
         return renderTemplate("review-closed-message", context);
+    }
+
+    /**
+     * What someone wrote, put so that no HTML entity is made of it, nor of its brackets below: XUI keeps a task's
+     * details for the event it starts only as far as their first semicolon, so a task whose description has one
+     * cannot start its event.
+     */
+    private static String plain(String text) {
+        return text == null ? null : text.replace("&", "and").replace(";", ",").replace("'", "’")
+            .replace("\"", "”").replace("<", "").replace(">", "").replace("(", "[").replace(")", "]");
     }
 
     private String renderTemplate(String templateName, Map<String, Object> context) {
