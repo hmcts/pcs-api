@@ -36,12 +36,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
@@ -126,6 +128,9 @@ class SendReplyMessageIT extends OrderEventIT {
             .as(judge).submitExpectingSuccess();
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_STAFF),
             contains("Sarah Hughes sent a message"), eq(false), any(UUID.class));
+        // The judge answered without their task, which XUI leaves open, so it goes.
+        UUID messageId = forJudge.getFirst().getCode();
+        verify(camundaService).cancelMessageTask(caseReference, messageId, TaskType.REVIEW_MESSAGE_JUDGE);
         clearInvocations(camundaService);
 
         assertThat(replyList(judge)).isEmpty();
@@ -139,6 +144,7 @@ class SendReplyMessageIT extends OrderEventIT {
             })
             .as(caseworker).submitExpectingSuccess();
 
+        verify(camundaService).cancelMessageTask(caseReference, messageId, TaskType.REVIEW_MESSAGE_STAFF);
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
             contains("Tom Caseworker closed the message without replying: Decide GA1. Their note: Listed."),
             eq(false), isNull());
@@ -171,6 +177,33 @@ class SendReplyMessageIT extends OrderEventIT {
             pcsCase.setMessageReplyList(DynamicList.builder().value(both.getLast()).listItems(both).build());
             pcsCase.setMessageNeedReply(VerticalYesNo.NO);
         }).as(judge).submitExpectingErrors().errors()).containsExactly(SendReplyMessage.NOT_THE_TASKS_MESSAGE);
+
+        // Answered from its task, the task is XUI's to close.
+        events.start(caseReference, sendReplyMessage.name()).as(judge).withClientContext(fromTask)
+            .startExpectingSuccess()
+            .edit(pcsCase -> pcsCase.setMessageNeedReply(VerticalYesNo.NO))
+            .as(judge).submitExpectingSuccess();
+        verify(camundaService, never()).cancelMessageTask(anyLong(), any(), any());
+    }
+
+    @Test
+    @DisplayName("leaves the task of a message answered to the same side, whose new task it could otherwise cancel")
+    void keepsTheTaskOfAReplyToTheSameSide() {
+        send();
+        List<DynamicListElement> forJudge = replyList(judge);
+
+        events.start(caseReference, sendReplyMessage.name()).as(judge).startExpectingSuccess()
+            .edit(pcsCase -> {
+                pcsCase.setMessageAction(MessageAction.REPLY);
+                pcsCase.setMessageReplyList(chosen(forJudge));
+                pcsCase.setMessageNeedReply(VerticalYesNo.YES);
+                pcsCase.setMessageReplyRecipient(MessageRecipient.CIRCUIT_JUDGE);
+                pcsCase.setMessageReplyUrgent(VerticalYesNo.NO);
+                pcsCase.setMessageReply("Over to you.");
+            })
+            .as(judge).submitExpectingSuccess();
+
+        verify(camundaService, never()).cancelMessageTask(anyLong(), any(), any());
     }
 
     @Test
@@ -201,7 +234,7 @@ class SendReplyMessageIT extends OrderEventIT {
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
             .contains("Closed messages", "Answered by an order on the application");
-        verify(camundaService).cancelMessageTask(caseReference, messageId);
+        verify(camundaService).cancelMessageTask(caseReference, messageId, TaskType.REVIEW_MESSAGE_JUDGE);
         // The message's task, opened after, offers nothing to reply to, so the judge marks it done.
         assertThat(events.start(caseReference, sendReplyMessage.name()).as(judge)
             .withClientContext(Map.of("client_context", Map.of("user_task", Map.of("task_data",
