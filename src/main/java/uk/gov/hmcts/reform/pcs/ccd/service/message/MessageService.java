@@ -121,7 +121,11 @@ public class MessageService {
             .filter(CaseMessageEntity::isOpen)
             .filter(message -> message.getGenApp() != null && genAppId.equals(message.getGenApp().getId()))
             .filter(message -> message.latest().getRecipientRole().isJudicial())
-            .forEach(message -> close(message, judgeName, "Answered by an order on the application"));
+            .forEach(message -> {
+                close(message, judgeName, "Answered by an order on the application");
+                // Its task, if the judge did not come from it, has nothing left to do.
+                camundaService.cancelMessageTask(pcsCase.getCaseReference(), message.getId());
+            });
     }
 
     /** Closes the order's open thread once the order is issued, as nothing more is waited for on it. */

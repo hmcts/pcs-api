@@ -32,6 +32,8 @@ import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUND
 @Service
 public class CamundaService {
 
+    private static final String PROCESS_CATEGORY = "__processCategory__";
+
     private final WorkAllocationWorkflowApi workAllocationWorkflowApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
@@ -112,6 +114,20 @@ public class CamundaService {
         scheduleCamundaRequest(taskData, scheduledTo);
     }
 
+    /** Cancels the task about the message, once the message is closed without its task. */
+    public void cancelMessageTask(long caseId, UUID messageId) {
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(caseId)
+            .messageId(messageId.toString())
+            .build();
+        scheduleCamundaRequest(taskData, Instant.now(utcClock));
+    }
+
+    private static String messageCategory(String messageId) {
+        return "message_" + messageId;
+    }
+
     public void cancelTask(long caseId, TaskType taskType) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CANCEL)
@@ -134,7 +150,8 @@ public class CamundaService {
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
-                taskData.getTaskType()
+                taskData.getMessageId() != null ? messageCategory(taskData.getMessageId())
+                    : taskData.getTaskType().getId()
             );
         }
     }
@@ -180,7 +197,7 @@ public class CamundaService {
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
-        processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processVariables.put(PROCESS_CATEGORY + taskType.getId(), dmnBooleanValue(true));
         processVariables.put("pcsApiEnv", dmnStringValue(pcsApiEnvironment));
         if (idempotencyKey != null) {
             processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
@@ -196,6 +213,8 @@ public class CamundaService {
         }
         if (messageId != null) {
             processVariables.put("messageId", dmnStringValue(messageId));
+            // So the task can be cancelled on its own when its message is closed without it.
+            processVariables.put(PROCESS_CATEGORY + messageCategory(messageId), dmnBooleanValue(true));
         }
 
         // Default values - WA task due date is configured in configuration dmn
@@ -214,7 +233,7 @@ public class CamundaService {
         sendCamundaRequest(request, caseId);
     }
 
-    private void requestTaskCancellation(Long caseId, TaskType taskType) {
+    private void requestTaskCancellation(Long caseId, String processCategory) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped cancelling task for {}", caseId);
             return;
@@ -222,7 +241,7 @@ public class CamundaService {
 
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
-        correlationKeys.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        correlationKeys.put(PROCESS_CATEGORY + processCategory, dmnBooleanValue(true));
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
         processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));
