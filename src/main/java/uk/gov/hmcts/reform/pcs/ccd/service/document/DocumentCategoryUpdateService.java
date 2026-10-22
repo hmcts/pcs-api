@@ -1,16 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,18 +19,39 @@ public class DocumentCategoryUpdateService {
 
     private final PcsCaseService pcsCaseService;
     private final DocumentRepository documentRepository;
+    private final ObjectMapper objectMapper;
 
     @Transactional
-    public void updateCategories(long caseReference, List<ListValue<Document>> documents) {
-        var documentsById = documents.stream()
-            .collect(Collectors.toMap(ListValue::getId, ListValue::getValue));
+    public void updateCategories(long caseReference, PCSCase caseData) {
+        var documents = pcsCaseService.loadCase(caseReference).getDocuments();
+        Map<String, String> storedCategories = new HashMap<>();
+        documents.forEach(document -> storedCategories.put(document.getUrl(), document.getCategoryId()));
+        Map<String, String> changes = new HashMap<>();
+        findChanges(objectMapper.valueToTree(caseData), storedCategories, changes);
 
-        pcsCaseService.loadCase(caseReference).getDocuments().forEach(entity -> {
-            Document document = documentsById.get(entity.getId().toString());
-            if (document != null && !Objects.equals(entity.getCategoryId(), document.getCategoryId())) {
-                entity.setCategoryId(document.getCategoryId());
+        documents.forEach(entity -> {
+            if (changes.containsKey(entity.getUrl())) {
+                entity.setCategoryId(changes.get(entity.getUrl()));
                 documentRepository.save(entity);
             }
         });
+    }
+
+    private void findChanges(JsonNode node, Map<String, String> storedCategories, Map<String, String> changes) {
+        if (node.isObject()) {
+            if (node.hasNonNull("document_url")) {
+                String url = node.get("document_url").asText();
+                String category = node.path("category_id").asText(null);
+                if (storedCategories.containsKey(url) && !Objects.equals(storedCategories.get(url), category)) {
+                    if (changes.containsKey(url) && !Objects.equals(changes.get(url), category)) {
+                        throw new IllegalArgumentException("Conflicting document categories for " + url);
+                    }
+                    changes.put(url, category);
+                }
+            }
+            node.elements().forEachRemaining(child -> findChanges(child, storedCategories, changes));
+        } else if (node.isArray()) {
+            node.forEach(child -> findChanges(child, storedCategories, changes));
+        }
     }
 }

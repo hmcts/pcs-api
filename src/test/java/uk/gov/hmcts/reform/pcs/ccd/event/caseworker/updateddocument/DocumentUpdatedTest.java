@@ -45,8 +45,9 @@ class DocumentUpdatedTest extends BaseEventTest {
         var documents = List.of(ListValue.<Document>builder()
                 .id("document-1").value(Document.builder().categoryId("evidence").build()).build());
 
-        callSubmitHandler(PCSCase.builder().allDocuments(documents).build());
+        PCSCase caseData = PCSCase.builder().allDocuments(documents).build();
+        callSubmitHandler(caseData);
 
-        verify(documentCategoryUpdateService).updateCategories(TEST_CASE_REFERENCE, documents);
+        verify(documentCategoryUpdateService).updateCategories(TEST_CASE_REFERENCE, caseData);
     }
 }

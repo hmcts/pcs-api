@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalDocumentMoveAccess;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -49,7 +50,8 @@ public class OccupationLicenceDetailsWales {
 
     @CCD(
         label = "Add document",
-        hint = "Upload a document to the system"
+        hint = "Upload a document to the system",
+        access = {InternalDocumentMoveAccess.class}
     )
     private List<ListValue<Document>> licenceDocuments;
 }

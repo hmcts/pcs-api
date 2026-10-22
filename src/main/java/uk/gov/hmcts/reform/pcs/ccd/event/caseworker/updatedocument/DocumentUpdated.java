@@ -29,7 +29,7 @@ public class DocumentUpdated implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {
-        documentCategoryUpdateService.updateCategories(payload.caseReference(), payload.caseData().getAllDocuments());
+        documentCategoryUpdateService.updateCategories(payload.caseReference(), payload.caseData());
         return SubmitResponse.defaultResponse();
     }
 }

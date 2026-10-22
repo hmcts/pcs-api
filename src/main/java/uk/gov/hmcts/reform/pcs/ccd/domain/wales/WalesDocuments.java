@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalDocumentMoveAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
@@ -34,7 +35,8 @@ public class WalesDocuments {
     private VerticalYesNo hasEnergyPerformanceCertificate;
 
     @CCD(
-        label = "Upload energy performance certificate"
+        label = "Upload energy performance certificate",
+        access = {InternalDocumentMoveAccess.class}
     )
     private List<ListValue<Document>> energyPerformance;
 
@@ -51,7 +53,8 @@ public class WalesDocuments {
     private VerticalYesNo hasGasSafetyReport;
 
     @CCD(
-        label = "Upload current gas safety report"
+        label = "Upload current gas safety report",
+        access = {InternalDocumentMoveAccess.class}
     )
     private List<ListValue<Document>> gasSafetyReport;
 
@@ -68,7 +71,8 @@ public class WalesDocuments {
     private VerticalYesNo hasElectricalInstallationConditionReport;
 
     @CCD(
-        label = "Upload current Electrical Installation Condition Report (EICR)"
+        label = "Upload current Electrical Installation Condition Report (EICR)",
+        access = {InternalDocumentMoveAccess.class}
     )
     private List<ListValue<Document>> electricalInstallation;
 
