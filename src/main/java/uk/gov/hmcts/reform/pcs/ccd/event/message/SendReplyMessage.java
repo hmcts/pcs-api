@@ -145,9 +145,11 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .toList()).build());
         List<CaseMessageEntity> awaiting = messageService.awaiting(pcsCase, userRoleService.isJudge());
         // Started from a message's task, the user replies to or closes that message, which completes the task.
-        Optional<CaseMessageEntity> tasks = taskMessageId()
+        // A task whose message has since been answered or closed offers nothing, so its user marks it done.
+        Optional<UUID> taskMessage = taskMessageId();
+        Optional<CaseMessageEntity> tasks = taskMessage
             .flatMap(id -> awaiting.stream().filter(message -> message.getId().equals(id)).findFirst());
-        List<DynamicListElement> choices = (tasks.isPresent() ? List.of(tasks.get()) : awaiting).stream()
+        List<DynamicListElement> choices = (taskMessage.isPresent() ? tasks.stream().toList() : awaiting).stream()
             .map(message -> DynamicListElement.builder().code(message.getId())
                 .label("%s, from %s, %s".formatted(message.getSubject(), message.latest().getSenderName(),
                     when(message.latest()))).build())
