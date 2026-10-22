@@ -203,6 +203,9 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
             .containsExactly(MakeOrder.ALREADY_DECIDED);
+        // Nor does an order made at a hearing offer it again.
+        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().caseContext().applications())
+            .isEmpty();
     }
 
     @Test

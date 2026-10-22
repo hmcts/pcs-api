@@ -33,6 +33,7 @@ class OrderCaseContext {
 
     private final AddressMapper addressMapper;
     private final PartyService partyService;
+    private final OrderTasks orderTasks;
 
     public OrderStart.CaseContext of(PcsCaseEntity pcsCase, UUID genAppId) {
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
@@ -46,6 +47,8 @@ class OrderCaseContext {
             pcsCase.getGenApps().stream().anyMatch(GenAppEntity::isOpen),
             pcsCase.getGenApps().stream()
                 .filter(GenAppEntity::isOpen)
+                // One an issued order decided stays open, as nothing yet records the decision on it.
+                .filter(genApp -> !orderTasks.decided(genApp))
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
                 .toList(),

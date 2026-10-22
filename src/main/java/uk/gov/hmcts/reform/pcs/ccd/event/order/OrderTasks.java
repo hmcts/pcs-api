@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * The Work Allocation tasks an order passes between court staff and its judge, and the link that starts a judge's
@@ -74,9 +75,18 @@ public class OrderTasks {
      * for a hearing leaves it to decide.
      */
     public boolean canDecide(GenAppEntity genApp) {
-        return genApp.isOpen() && orderRepository.findByPcsCaseIdAndStateIn(genApp.getPcsCase().getId(),
-                EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED)).stream()
-            .noneMatch(order -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId())
+        return genApp.isOpen() && !decidedBy(genApp,
+            EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED));
+    }
+
+    /** Whether an issued order decided the application, which listing it for a hearing does not. */
+    public boolean decided(GenAppEntity genApp) {
+        return decidedBy(genApp, EnumSet.of(OrderState.ISSUED));
+    }
+
+    private boolean decidedBy(GenAppEntity genApp, Set<OrderState> states) {
+        return orderRepository.findByPcsCaseIdAndStateIn(genApp.getPcsCase().getId(), states).stream()
+            .anyMatch(order -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId())
                 .map(step -> step.getFormData().get(decisionField(genApp)))
                 .filter(decision -> !"none".equals(decision))
                 .filter(decision -> order.getState() != OrderState.ISSUED || !"list".equals(decision))
