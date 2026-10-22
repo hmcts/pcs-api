@@ -69,11 +69,18 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   if (title.includes('GenApps submitted and counter claim included')) {
     await performAction('makeAnApplicationAPI', {
       data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
-        defendantUserDetails[0].id,defendantUserDetails[0].name),
+        defendantUserDetails[0].id, defendantUserDetails[0].name),
     });
-    await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
-    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
-    await performAction('updatePaymentAPI', { amt: 3500, app: 'Counter Claim' });
+
+    await performAction('midEventRespondPossessionClaimLRAPI', {
+      data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
+      defendantID: defendantUserDetails[0].id,
+    });
+
+    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id });
+
+    // Waits internally until the case reflects the payment
+    await performAction('updatePaymentAPILRCC', { amt: 3500, app: 'Counter Claim' });
   }
 
   if (title.includes('MULTI_APP')) {
@@ -382,9 +389,11 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
 
   test('Upload documents when GenApps submitted and counter claim included - Single def @regression', async () => {
     let docRelatedToOption = confirmIfTheseDocumentsRelateToAnApplication.noRadioOption;
-    let docRelatedToOptionForCC =  `${confirmIfTheseDocumentsRelateToCounterClaim.relatedToCounterClaimRadioOptionHidden} ${getFormattedDate()}`;
+    let docRelatedToOptionForCC = confirmIfTheseDocumentsRelateToCounterClaim.relatedToCounterClaimRadioOption(
+      defendantUserDetails[0].name,
+      getFormattedDate()
+    );
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
@@ -393,8 +402,14 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       option: docRelatedToOption,
       nextPage: confirmIfTheseDocumentsRelateToCounterClaim.mainHeader,
     });
-    await performAction('reTryOnCallBackError', confirmIfTheseDocumentsRelateToAnApplication.continueButton, confirmIfTheseDocumentsRelateToCounterClaim.mainHeader as string);
-    await performAction('selectDocumentRelatingToCC', {
+    await test.step(`Verify CC pdf links`, async () => {
+      await performAction('verifyPdfLinks', {
+        expectedTexts: [
+          confirmIfTheseDocumentsRelateToCounterClaim.CCLinkHidden,
+        ],
+      });
+    });
+  await performAction('selectDocumentRelatingToCC', {
       question: confirmIfTheseDocumentsRelateToCounterClaim.doTheseDocumentsQuestion,
       option: docRelatedToOptionForCC,
       nextPage: uploadYourDocuments.mainHeader,
@@ -406,20 +421,23 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
     await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
+    await performValidation('mainHeader', documentsUploadConfirm.mainHeader);
     await performAction('readDocumentsSubmit');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
-    await performAction('validateCaseFileViewIndividualFolder', {
-      folder: 'Property documents',
-      submitPayload: submitPayload,
-      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
-    });
+    const uploadedDocBase = fileName.replace(/\.pdf$/i, '');
+    const ccDocName = (base: string, defendantIndex = 1) => `${base} CC1 - Defendant ${defendantIndex}.pdf`;
+
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Statements of case',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
-      ccPayload : midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
-      allowEmptyFolder: true
+      expectedFiles: [
+        ccDocName(uploadedDocBase),                  // uploaded via Upload additional documents
+        ccDocName('possessionNoticeWithOutNotice'),  // counterClaimDocuments from the CC payload
+        'Counterclaim CC1 - Defendant 1.pdf',
+        'Defence - Defendant 1.pdf',
+        'Claim - Claimant 1.pdf',
+      ],
     });
   });
 });

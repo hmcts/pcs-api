@@ -201,6 +201,7 @@ export class ActionRegistry {
     ['uploadAdditionalDocsLR', new DocumentsAction()],
     ['selectDocumentRelatingTo', new DocumentsAction()],
     ['selectDocumentRelatingToCC', new DocumentsAction()],
+    ['updatePaymentAPILRCC', new CreateCaseAPIAction()],
     ['verifyPdfLinks', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],

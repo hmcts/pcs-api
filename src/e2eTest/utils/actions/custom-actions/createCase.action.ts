@@ -1620,12 +1620,11 @@ export class CreateCaseAction implements IAction {
     expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
   }
 
-  public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
-
-   const folderName = caseFile.folder as string;
+  public async validateCaseFileViewIndividualFolder(page: Page, caseFile: actionRecord) {
+    const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
-    let userInputFiles:string[]= [];
+    let userInputFiles: string[] = [];
     const file =
       caseFile.caseWorkerUpload ??
       caseFile.caseWorkerAmend ??
@@ -1644,8 +1643,8 @@ export class CreateCaseAction implements IAction {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
-          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
-         } else if (caseFile.claimantLRUpload) {
+          userInputFiles = userInputFiles.filter(file => file === (caseFile.caseWorkerAmend as string));
+        } else if (caseFile.claimantLRUpload) {
           userInputFiles.push(caseFile.claimantLRUpload as string);
           //userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
         } else if (caseFile.defendantLRUpload) {
@@ -1655,30 +1654,8 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Statements of case':
+        // Exact names (CC1 / Defendant n suffixes etc.) are validated through caseFile.expectedFiles below
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Notice for service out of the jurisdiction');
-        break;
-
-      case 'Statements of case':
-        this.readDocFilesFromPayLoad(
-          userInputFiles,
-          submitPayLoad?.additionalDocuments,
-          'Notice for service out of the jurisdiction'
-        );
-
-        // Counterclaim (CC) documents
-        if (ccPayload) {
-          // Docs uploaded as part of the counterclaim, e.g. "Screenshot ... CC1 - Defendant 1.png"
-          this.readDocFilesFromPayLoad(
-            userInputFiles,
-            ccPayload.ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments
-          );
-
-          // Generated counterclaim PDF, e.g. "Counterclaim CC1 - Defendant 1.pdf"
-          const defIndex = Number(caseFile.defendantIndex ?? 1);
-          userInputFiles.push(`Counterclaim CC1 - Defendant ${defIndex}.pdf`);
-        }
-
-        // Any file passed in directly on the action (if the CC upload is driven from the test data)
         if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
@@ -1690,7 +1667,7 @@ export class CreateCaseAction implements IAction {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
-          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === (caseFile.caseWorkerAmend as string));
         } else if (caseFile.defendantLRUpload) {
           userInputFiles.push(caseFile.defendantLRUpload as string);
         } else if (caseFile.claimantLRUpload) {
@@ -1705,7 +1682,10 @@ export class CreateCaseAction implements IAction {
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
         if (ccPayload) {
-          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+          this.readDocFilesFromPayLoad(
+            userInputFiles,
+            ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments
+          );
         }
         if (file) {
           userInputFiles.push(file as string);
@@ -1713,9 +1693,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Applications':
-        if(submitPayLoad){
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.xui_genapp_UploadedDocuments, 'All Files');
-        userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        if (submitPayLoad) {
+          this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.xui_genapp_UploadedDocuments, 'All Files');
+          userInputFiles = this.cleanGenAppFilesArray(
+            userInputFiles,
+            Number(caseFile.defendantIndex ?? defendantUserDetails.length)
+          );
         }
         if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
@@ -1729,7 +1712,7 @@ export class CreateCaseAction implements IAction {
     let folder = page
       .locator('button.node')
       .filter({ hasText: folderName });
-    let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
+    let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true });
     const text = await folder.innerText();
     let fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
@@ -1764,16 +1747,49 @@ export class CreateCaseAction implements IAction {
     }
     await folder.click();
     const actualFileCount = await fileLocator.count();
+    expect(actualFileCount, 'File count matching').toEqual(fileCount);
 
-    expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
-    expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+    // When expectedFiles is passed, validate the exact displayed names (including CC1 / Defendant n suffixes)
+    const expectedFiles = caseFile.expectedFiles as string[] | undefined;
+    const fileArray = expectedFiles
+      ? (await fileLocator.allInnerTexts()).map(text =>
+        text
+          .replace(/\s+/g, ' ')
+          .replace(/\s*\d{1,2} [A-Za-z]{3} \d{4} \d{1,2}:\d{2}\s*$/, '') // strip the trailing "21 Oct 2026 13:15"
+          .trim()
+      )
+      : this.cleanFilesArray(await fileLocator.allTextContents());
+    const expectedList = expectedFiles ?? userInputFiles;
+
+    try {
+      // UI first, test-built list second, so "Expected" in the report is what the test wanted
+      expect([...fileArray].sort(), `validating  upload files for "${folderName}"`).toEqual([...expectedList].sort());
+    } catch (error) {
+      console.log(
+        `\n❌ "${folderName}": test expected ${JSON.stringify(expectedList)}; UI shows ${JSON.stringify(fileArray)}`
+      );
+      await this.logCaseFileViewTree(page);
+      throw error;
+    }
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
     if ((await folder.getAttribute('aria-expanded')) === 'true') {
       await folder.click();
       await expect(folder).toHaveAttribute('aria-expanded', 'false');
     }
+  }
+
+  private async logCaseFileViewTree(page: Page): Promise<void> {
+    // Expand every collapsed folder, then print all nodes in DOM order (folders followed by their files)
+    for (let i = 0; i < 20; i++) {
+      const collapsed = page.locator('button.node[aria-expanded="false"]');
+      if ((await collapsed.count()) === 0) break;
+      await collapsed.first().click();
+    }
+    const nodes = await page.locator('button.node').allInnerTexts();
+    console.log(
+      `\n🔎 Case file view (DOM order):\n${nodes.map(n => '  ' + n.replace(/\s+/g, ' ').trim()).join('\n')}`
+    );
   }
 
   public  cleanFilesArray(filesArray: string[]): string[] {

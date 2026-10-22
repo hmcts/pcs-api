@@ -413,7 +413,9 @@ export class DocumentsAction implements IAction {
   }
 
   private async verifyPdfLinks(expectedTexts: string[], page: Page) {
-    const links = page.locator('ul.govuk-list li a.govuk-link');
+    const links = page.locator(
+      'ul.govuk-list li a.govuk-link, .govuk-inset-text p.govuk-body a[href*="/documents/"]'
+    );
     await expect(links).toHaveText(expectedTexts);
   }
 
