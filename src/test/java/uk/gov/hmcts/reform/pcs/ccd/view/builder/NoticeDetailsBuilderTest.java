@@ -65,7 +65,9 @@ class NoticeDetailsBuilderTest {
         // Given
         PCSCase pcsCase = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(null)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(null)
+                        .build())
                 .build();
 
         // When
