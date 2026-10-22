@@ -35,7 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRe
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -85,7 +85,7 @@ public class PcsNoticeOfChangeTest {
     private OrganisationRepository organisationRepository;
 
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationService organisationService;
 
     @Mock
     private SchedulerClient schedulerClient;
@@ -101,7 +101,7 @@ public class PcsNoticeOfChangeTest {
 
     @BeforeEach
     void setUp() {
-        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, organisationDetailsService, schedulerClient,
+        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, organisationService, schedulerClient,
                                                   featureToggleService, organisationRepository);
     }
 
@@ -469,7 +469,7 @@ public class PcsNoticeOfChangeTest {
         String userId = "123";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(null);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(null);
 
         // when
         NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
@@ -507,7 +507,7 @@ public class PcsNoticeOfChangeTest {
         String orgId = "org";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
         when(organisationRepository
                  .isOrganisationLinkedToPartyAndActive(orgId, partyId)).thenReturn(true);
@@ -553,7 +553,7 @@ public class PcsNoticeOfChangeTest {
         String orgName = "orgName";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
         when(organisationDetailsResponse.getOrgProfileId()).thenReturn("SOLICITOR_PROFILE");
         when(organisationDetailsResponse.getName()).thenReturn(orgName);
@@ -601,7 +601,7 @@ public class PcsNoticeOfChangeTest {
         String orgName = "orgName";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
         when(organisationDetailsResponse.getOrgProfileId()).thenReturn("SOLICITOR_PROFILE");
         when(organisationDetailsResponse.getName()).thenReturn(orgName);
@@ -644,7 +644,7 @@ public class PcsNoticeOfChangeTest {
         String orgId = "org";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
         when(organisationDetailsResponse.getOrgProfileId()).thenReturn("LOCALAUTH_PROFILE");
 
@@ -688,7 +688,7 @@ public class PcsNoticeOfChangeTest {
         String userId = "123";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
         when(organisationDetailsResponse.getOrgProfileId()).thenReturn("SOLICITOR_PROFILE");
 
@@ -742,7 +742,7 @@ public class PcsNoticeOfChangeTest {
         String userId = UUID.randomUUID().toString();
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(null);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(null);
 
         // when
         NocSubmissionResponse actual = pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
@@ -777,7 +777,7 @@ public class PcsNoticeOfChangeTest {
         String userId = UUID.randomUUID().toString();
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
 
         // when
         NocSubmissionResponse actual = pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
@@ -818,7 +818,7 @@ public class PcsNoticeOfChangeTest {
         when(nocSubmitContext.givenName()).thenReturn("James");
         when(nocSubmitContext.familyName()).thenReturn("Solicitor");
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(
             TEST_CASE_REFERENCE,
             List.of(new NocAnswer("pcs-defendant-first-name", firstName),
@@ -855,7 +855,7 @@ public class PcsNoticeOfChangeTest {
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(nocSubmitContext.email()).thenReturn("solicitor@new-firm.example");
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(
             TEST_CASE_REFERENCE,
             List.of(new NocAnswer("pcs-defendant-first-name", firstName),
@@ -886,7 +886,7 @@ public class PcsNoticeOfChangeTest {
         String userId = UUID.randomUUID().toString();
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
 
         // when
         pcsNoticeOfChange.submit(nocSubmitContext, answersFor("Amy", "Arrears"));
