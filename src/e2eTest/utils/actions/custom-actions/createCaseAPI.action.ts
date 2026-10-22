@@ -17,7 +17,8 @@ import {
   paymentApiData,
   manageHearingEventTokenApiData, manageHearingApiData,
   respondPossessionClaimSolicitorEventTokenApiData,
-  submitPossessionClaimResponseApiDataForLR
+  submitPossessionClaimResponseApiDataForLR,
+  respondPossessionClaimCitizenApiData
 } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
@@ -51,6 +52,8 @@ export class CreateCaseAPIAction implements IAction {
       ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord)],
       ['submitPossessionClaimResponseLRAPI', () => this.submitPossessionClaimResponseLRAPI(fieldName as actionRecord)],
       ['midEventRespondPossessionClaimLRAPI', () => this.midEventRespondPossessionClaimLRAPI(fieldName as actionRecord)],
+      ['midEventRespondPossessionClaimCitizenAPI', () => this.midEventRespondPossessionClaimCitizenAPI(fieldName as actionRecord)],
+      ['submitPossessionClaimResponseCitizenAPI', () => this.submitPossessionClaimResponseCitizenAPI()],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -549,7 +552,15 @@ export class CreateCaseAPIAction implements IAction {
         if (!paymentInfo?.length) {
           throw new Error('No payment information found.');
         }
-        const requestReference = paymentInfo[0].serviceRequestReference;
+        const payment = payType?.app === 'Counter Claim'
+          ? paymentInfo.find((item: any) => item.paymentCallbackHandlerType === 'COUNTER_CLAIM_ISSUE')
+          : paymentInfo.find((item: any) => item.paymentCallbackHandlerType === 'CLAIM');
+
+        if (!payment?.serviceRequestReference) {
+          throw new Error(`No ${payType?.app === 'Counter Claim' ? 'counterclaim' : 'claim'} payment request found`);
+        }
+
+        const requestReference = payment.serviceRequestReference;
         const updateResponse = await paymentApi.put(
           paymentApiData.updatePaymentApiEndPoint,
           payLoad(requestReference, payType?.amt as number | undefined)
@@ -758,6 +769,22 @@ export class CreateCaseAPIAction implements IAction {
       throw new Error(`MID EVENT LEGAL REPRESENTATIVE RESPONSE FAILED${status}.RESPONSE RECEIVED IS ${responseBody?.message}}`);
 
     }
+  }
+
+  private async midEventRespondPossessionClaimCitizenAPI(midEvent: actionRecord): Promise<void> {
+    const api = Axios.create(respondPossessionClaimCitizenApiData.eventTokenApiInstance());
+    await api.get(`/cases/${process.env.CASE_NUMBER}/event-triggers/respondPossessionClaim`);
+    await api.post(
+      respondPossessionClaimCitizenApiData.midEventApiEndPoint(),
+      typeof midEvent === 'object' && 'data' in midEvent ? midEvent.data : midEvent
+    );
+  }
+
+  private async submitPossessionClaimResponseCitizenAPI(): Promise<void> {
+    const api = Axios.create(respondPossessionClaimCitizenApiData.eventTokenApiInstance());
+    const startEvent = (await api.get(respondPossessionClaimCitizenApiData.eventTokenApiEndPoint())).data;
+    await api.post(`/cases/${process.env.CASE_NUMBER}/events`,
+      respondPossessionClaimCitizenApiData.submitPayload(startEvent.token, startEvent.case_details?.case_data?.possessionClaimResponse?.draftVersion ?? 1));
   }
 
   private async submitPossessionClaimResponseLRAPI(rtac: actionRecord): Promise<void> {
