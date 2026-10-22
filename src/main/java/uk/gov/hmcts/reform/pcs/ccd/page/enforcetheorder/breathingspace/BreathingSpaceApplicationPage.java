@@ -36,10 +36,12 @@ public class BreathingSpaceApplicationPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("breathingSpaceApplication", this::midEvent)
+            .complex(PCSCase::getBreathingSpaceDetails)
+            .readonly(BreathingSpaceDetails::getCaseName, NEVER_SHOW)
+            .done()
             .label("breathingSpaceApplication-caseName", CASE_NAME_MARKDOWN)
             .label("breathingSpaceApplication-lineSeparator", "---")
             .complex(PCSCase::getBreathingSpaceDetails)
-            .readonly(BreathingSpaceDetails::getCaseName, NEVER_SHOW, true)
             .optional(BreathingSpaceDetails::getReferenceNumber)
             .optional(BreathingSpaceDetails::getStartDate)
             .mandatory(BreathingSpaceDetails::getType)
