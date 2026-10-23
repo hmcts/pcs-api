@@ -63,8 +63,9 @@ class OrderCaseContext {
             genApp.getType().getShortName(),
             genApp.getSomethingElseDetails(),
             applicant(genApp, claim),
-            genApp.getApplicationSubmittedDate() != null
-                ? genApp.getApplicationSubmittedDate().toLocalDate() : genApp.getApplicationReceivedDate(),
+            // A paper application court staff entered is dated when the court received it, not when they entered it.
+            genApp.getApplicationReceivedDate() != null || genApp.getApplicationSubmittedDate() == null
+                ? genApp.getApplicationReceivedDate() : genApp.getApplicationSubmittedDate().toLocalDate(),
             genApp.getWithin14Days(),
             genApp.getOtherPartiesAgreed(),
             genApp.getWithoutNotice(),
