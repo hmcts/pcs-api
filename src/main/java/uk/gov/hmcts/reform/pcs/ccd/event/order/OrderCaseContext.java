@@ -70,7 +70,7 @@ class OrderCaseContext {
         );
     }
 
-    /** Whether the application asks to suspend the warrant of possession, which an application to suspend is. */
+    /** Whether the application is one to suspend the warrant of possession. */
     private static boolean isWarrantSuspension(GenAppEntity genApp) {
         return genApp.getType() == GenAppType.SUSPEND;
     }
