@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DraftResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -95,6 +96,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
     private final DefendantResponseView defendantResponseView;
+    private final DraftResponseView draftResponseView;
     private final FeatureFlagView featureFlagView;
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
@@ -194,6 +196,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
+        draftResponseView.setCaseFields(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 
