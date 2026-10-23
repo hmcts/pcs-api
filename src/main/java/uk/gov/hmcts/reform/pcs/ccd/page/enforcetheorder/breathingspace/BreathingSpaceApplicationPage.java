@@ -14,17 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.breathingspace.Breathi
 import java.time.Clock;
 import java.time.LocalDate;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Component
 public class BreathingSpaceApplicationPage implements CcdPageConfiguration {
 
     protected static final String FUTURE_START_DATE_ERROR = "Date Breathing Space started must be today or in the past";
-    private static final String CASE_NAME_MARKDOWN = """
-        <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-0">
-            ${caseNamePublic}
-        </p>""";
 
     private final Clock ukClock;
 
@@ -36,8 +31,6 @@ public class BreathingSpaceApplicationPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("breathingSpaceApplication", this::midEvent)
-            .readonly(PCSCase::getCaseNamePublic, NEVER_SHOW)
-            .label("breathingSpaceApplication-caseNamePublic", CASE_NAME_MARKDOWN)
             .label("breathingSpaceApplication-lineSeparator", "---")
             .complex(PCSCase::getBreathingSpaceDetails)
             .optional(BreathingSpaceDetails::getReferenceNumber)
