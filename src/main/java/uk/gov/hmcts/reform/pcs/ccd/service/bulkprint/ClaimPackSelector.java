@@ -17,9 +17,10 @@ import java.util.Set;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects claim-pack envelopes per recipient. The claim form goes to the claimant and every defendant, each of
- * whom also gets their own access code once it exists; only documents not covered by a {@code PACK_SENT} success
- * row are included, so a failed access-code letter self-heals without re-sending the claim form.
+ * Selects claim-pack envelopes per recipient. The claim form goes to every defendant and, while release flag 1.4 is
+ * off, the claimant too. When release flag 1.4 is on, only defendants will receive the claim pack.
+ * Defendants also get their own access code once it exists. Only documents not covered by a {@code PACK_SENT}
+ * success row are included, so a failed access-code letter self-heals without re-sending the claim form.
  */
 @Service
 @Slf4j
@@ -53,7 +54,9 @@ public class ClaimPackSelector {
         Set<String> sent =
             sentPackDocuments.sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
         List<ClaimPackCandidate> candidates = new ArrayList<>();
-        addClaimantCandidate(candidates, claim, claimForm, sent);
+        if (!packSkipRules.shouldExcludeClaimant()) {
+            addClaimantCandidate(candidates, claim, claimForm, sent);
+        }
         addDefendantCandidates(candidates, pcsCase, claim, claimForm, sent);
         return candidates;
     }
