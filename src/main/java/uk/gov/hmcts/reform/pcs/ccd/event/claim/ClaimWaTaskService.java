@@ -55,24 +55,31 @@ public class ClaimWaTaskService {
             case WELSH, ENGLISH_AND_WELSH -> createTranslationTaskForClaim(pcsCaseEntity, claimEntity);
         }
 
-        createReviewOtherDocumentsTask(pcsCaseEntity, claimEntity);
+        createReviewAdditionalDocumentsTask(pcsCaseEntity, claimEntity);
     }
 
-    // "Other" documents uploaded with the claim land in the Uncategorised folder, so a caseworker needs to review them
-    private void createReviewOtherDocumentsTask(PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        List<DocumentEntity> otherDocuments = pcsCaseEntity.getDocuments().stream()
-            .filter(document -> document.getType() == DocumentType.OTHER)
-            .filter(document -> document.getClaim() != null
-                && Objects.equals(document.getClaim().getId(), claimEntity.getId()))
-            .toList();
-
-        if (otherDocuments.isEmpty()) {
+    private void createReviewAdditionalDocumentsTask(PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+        List<DocumentEntity> uncategorisedDocuments = findUncategorisedClaimDocuments(pcsCaseEntity, claimEntity);
+        if (uncategorisedDocuments.isEmpty()) {
             return;
         }
 
-        String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
-            pcsCaseEntity.getCaseReference(), claimEntity, getClaimCreator(pcsCaseEntity), otherDocuments);
-        camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
+        String taskDescription = taskDescriptionService.createClaimAdditionalDocumentsDescription(
+            pcsCaseEntity.getCaseReference(), claimEntity, getClaimCreator(pcsCaseEntity), uncategorisedDocuments);
+        camundaService.createTask(
+            pcsCaseEntity.getCaseReference(), TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, taskDescription);
+    }
+
+    private static List<DocumentEntity> findUncategorisedClaimDocuments(PcsCaseEntity pcsCaseEntity,
+                                                                        ClaimEntity claimEntity) {
+        return pcsCaseEntity.getDocuments().stream()
+            .filter(document -> document.getType() == DocumentType.OTHER)
+            .filter(document -> belongsToClaim(document, claimEntity))
+            .toList();
+    }
+
+    private static boolean belongsToClaim(DocumentEntity document, ClaimEntity claimEntity) {
+        return document.getClaim() != null && Objects.equals(document.getClaim().getId(), claimEntity.getId());
     }
 
     private void createTranslationTaskForClaim(PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
