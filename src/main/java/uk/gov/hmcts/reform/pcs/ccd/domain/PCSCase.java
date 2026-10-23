@@ -791,7 +791,7 @@ public class PCSCase {
     @CCD(label = "Reply", hint = "You can enter up to 750 characters", searchable = false, typeOverride = TextArea)
     private String messageReply;
 
-    @CCD(label = "Note for closing the message (optional)", hint = "You can enter up to 250 characters",
+    @CCD(label = "Note for closing the message", hint = "You can enter up to 250 characters",
         searchable = false, typeOverride = TextArea)
     private String messageClosureNote;
 
