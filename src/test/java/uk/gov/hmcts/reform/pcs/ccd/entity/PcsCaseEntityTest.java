@@ -109,6 +109,9 @@ class PcsCaseEntityTest {
         // Then
         verify(counterClaim).setRank(4);
         verify(counterClaim).setPcsCase(underTest);
+    }
+
+    @Test
     void shouldAddCaseReviewDateEntityAndSetCaseLevelRank() {
         // Given
         CaseReviewDateEntity reviewDateEntity1 = mock(CaseReviewDateEntity.class);
