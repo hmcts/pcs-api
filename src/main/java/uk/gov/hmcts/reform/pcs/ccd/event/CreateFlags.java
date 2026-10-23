@@ -16,7 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -33,12 +35,13 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
     static final State[] CREATE_FLAG_STATES =
         ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED);
 
-    private  final PcsCaseService pcsCaseService;
+    private final PcsCaseService pcsCaseService;
+    private final CaseFlagsView caseFlagsView;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
-                .decentralisedEvent(EventId.createFlags.name(), this::submit)
+                .decentralisedEvent(EventId.createFlags.name(), this::submit, this::start)
                 .forStates(CREATE_FLAG_STATES)
                 .nonConcurrent()
                 .name("Create case flags")
@@ -53,15 +56,25 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .pageLabel("Create case flags")
                 .label("caseworkerCaseFlag-lineSeparator", "---")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-                .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
+                .optional(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW, true, true)
                 .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
-                    .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
-                    .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
+                .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,
                       "#ARGUMENT(CREATE,VERSION2.1)");
 
+    }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
+        PCSCase caseData = eventPayload.caseData();
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        caseFlagsView.setDefendantsCaseFlags(caseData, pcsCaseEntity);
+
+        return caseData;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -70,8 +83,10 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker created case flag for {}", caseReference);
 
+        pcsCase.setParties(pcsCase.getAllDefendants());
         pcsCaseService.patchCaseFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }
+
 }
