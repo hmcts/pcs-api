@@ -93,6 +93,9 @@ export class ActionEnforcementRegistry {
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['continueFromCYAPage', new EnforcementAction()],
+    ['selectPayClaimFee', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
