@@ -145,10 +145,9 @@ public class MessageService {
      */
     public void closeAnsweredByOrder(OrderEntity order, Collection<GenAppEntity> decided, String judgeName) {
         PcsCaseEntity pcsCase = order.getPcsCase();
-        List<CaseMessageEntity> ordersThread = orderEntries(order).map(CaseMessageEntryEntity::getMessage).toList();
+        // An order's own thread is about no application, so it stays open.
         pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
-            .filter(message -> !ordersThread.contains(message))
             .filter(message -> decided.contains(message.getGenApp()))
             .filter(message -> message.latest().getRecipientRole().isJudicial())
             .forEach(message -> {
