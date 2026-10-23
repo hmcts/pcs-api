@@ -124,7 +124,14 @@
       }
     ]
   },
-  "warrantCompletedBy": "CLAIMANT",
+  "warrantStatementOfTruth": {
+    "completedBy": "CLAIMANT",
+    "fullNameParty": "Test name",
+    "positionParty": "Test position",
+    "agreementClaimant": [
+      "BELIEVE_TRUE"
+    ]
+  },
   "addAnotherDefendant": "YES",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",
@@ -169,13 +176,8 @@
   "formattedDefendantNames": "TVR HN<br>\nTest1 Testing1<br>",
   "vulnerablePeoplePresent": "NO",
   "warrantAnyRiskToBailiff": "NO",
-  "warrantFullNameParty": "fgsdfg",
   "warrantIsSuspendedOrder": "NO",
-  "warrantPositionParty": "sdfgsdfgsdfg",
   "formattedPropertyAddress": "1 Rse Way<br>London<br>SW11 1PD",
-  "warrantAgreementClaimant": [
-    "BELIEVE_TRUE"
-  ],
   "hasUnderlesseeOrMortgagee": "NO",
   "warrantDefendantsDOBKnown": "NO",
   "preActionProtocolCompleted": "NO",
