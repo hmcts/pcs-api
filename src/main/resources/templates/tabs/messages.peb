@@ -2,9 +2,9 @@
 <details class="govuk-details govuk-!-margin-bottom-3">
   <summary class="govuk-details__summary">
     <span class="govuk-details__summary-text">
-      {% if message.urgent %}<strong class="govuk-tag govuk-tag--red">Urgent</strong> {% endif %}{{ message.subject }}
+      {% if message.urgent %}<strong class="govuk-tag govuk-tag--red">Urgent</strong> {% endif %}{{ message.subject | plaintext }}
     </span>
-    <br><span class="govuk-body-s">From {{ message.from }} to {{ message.to }}, sent {{ message.sent | date("d MMM yyyy, h:mm a") }}, last updated {{ message.updated | date("d MMM yyyy, h:mm a") }}</span>
+    <br><span class="govuk-body-s">From {{ message.from | plaintext }} to {{ message.to | plaintext }}, sent {{ message.sent | date("d MMM yyyy, h:mm a") }}, last updated {{ message.updated | date("d MMM yyyy, h:mm a") }}</span>
   </summary>
   <div class="govuk-details__text">
     <dl class="govuk-summary-list govuk-!-margin-bottom-3">
@@ -19,18 +19,18 @@
       {% if message.application %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key govuk-!-font-size-16">Application</dt>
-        <dd class="govuk-summary-list__value govuk-!-font-size-16">{{ message.application }}{% if message.decideUrl %} <a class="govuk-link" href="{{ message.decideUrl }}">Decide the application</a>{% endif %}</dd>
+        <dd class="govuk-summary-list__value govuk-!-font-size-16">{{ message.application | plaintext }}{% if message.decideUrl %} <a class="govuk-link" href="{{ message.decideUrl }}">Decide the application</a>{% endif %}</dd>
       </div>
       {% endif %}
     </dl>
     {% for entry in message.entries %}
     <div class="govuk-inset-text govuk-!-margin-top-2 govuk-!-margin-bottom-2">
-      <p class="govuk-body-s govuk-!-margin-bottom-1"><strong>{{ entry.from }}</strong> to {{ entry.to }}, {{ entry.sent | date("d MMM yyyy, h:mm a") }}{% if entry.urgent %} (urgent){% endif %}</p>
-      <p class="govuk-body govuk-!-margin-bottom-0" style="white-space: pre-wrap">{{ entry.body }}</p>
+      <p class="govuk-body-s govuk-!-margin-bottom-1"><strong>{{ entry.from | plaintext }}</strong> to {{ entry.to | plaintext }}, {{ entry.sent | date("d MMM yyyy, h:mm a") }}{% if entry.urgent %} (urgent){% endif %}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0" style="white-space: pre-wrap">{{ entry.body | plaintext }}</p>
     </div>
     {% endfor %}
     {% if message.status == "Closed" %}
-    <p class="govuk-body-s">Closed by {{ message.closedBy }}{% if message.closureNote %}: {{ message.closureNote }}{% endif %}</p>
+    <p class="govuk-body-s">Closed by {{ message.closedBy | plaintext }}{% if message.closureNote %}: {{ message.closureNote | plaintext }}{% endif %}</p>
     {% endif %}
   </div>
 </details>
