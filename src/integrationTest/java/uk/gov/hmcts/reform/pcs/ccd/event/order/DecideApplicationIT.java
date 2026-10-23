@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.serializer.JacksonSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Application;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.ApplicationDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -53,15 +56,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.APPLICATION_DECISION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.FREE_FORM;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.NO_ORDER_ON_CLAIM;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
 
 /**
- * A judge decides a general application with an order on it, from the link in a message about it: the order
- * starts from the application.
+ * A judge decides a general application with an order on it, from the link in a message about it, which names the
+ * application for the page to put first, or in any other order on the case.
  */
 @DisplayName("Decide an application")
 class DecideApplicationIT extends OrderEventIT {
@@ -108,28 +111,9 @@ class DecideApplicationIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("shows the judge the application they are deciding and what was asked for")
-    void showsTheJudgeTheApplication() {
-        OrderStart start = asJudgeDeciding(genAppId).start();
-
-        Application application = start.caseContext().application();
-        assertThat(application.id()).isEqualTo(genAppId);
-        assertThat(application.warrantSuspension()).isFalse();
-        assertThat(application.reference()).isEqualTo("GA1");
-        assertThat(application.type()).isEqualTo("Adjourn the hearing");
-        assertThat(application.applicant()).isEqualTo(IssuedCases.DEFENDANT + " (Defendant 1)");
-        assertThat(application.submittedOn()).isEqualTo(LocalDate.of(2026, 10, 1));
-        assertThat(application.within14Days()).isEqualTo(VerticalYesNo.YES);
-        assertThat(application.whatOrderWanted()).isEqualTo(WHAT_ORDER_WANTED);
-        assertThat(application.documents()).extracting(ApplicationDocument::id, ApplicationDocument::fileName)
-            .containsExactly(
-                tuple(FORM_ID, "application-form.pdf"),
-                tuple(WITNESS_STATEMENT_ID, "witness-statement.pdf"));
-    }
-
-    @Test
-    @DisplayName("sends every open application with an order on the case, oldest first, flagging a warrant suspension")
-    void sendsEveryOpenApplication() {
+    @DisplayName("names the application the judge's task asks them to decide among every open application, oldest "
+        + "first, each as the judge reads it")
+    void namesTheTasksApplicationAmongEveryOpenApplication() {
         cases.update(caseReference, pcsCase -> {
             PartyEntity defendant = pcsCase.getParties().stream()
                 .filter(party -> party.getOrgName() == null).findFirst().orElseThrow();
@@ -142,49 +126,33 @@ class DecideApplicationIT extends OrderEventIT {
                 .applicationReceivedDate(LocalDate.of(2026, 10, 8)).build());
         });
 
-        OrderStart start = events.external(caseReference, MAKE_ORDER).as(judge).start();
+        OrderStart start = asJudgeDeciding(genAppId).start();
 
-        assertThat(start.caseContext().application()).isNull();
+        assertThat(start.taskGenAppId()).isEqualTo(genAppId);
+        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().taskGenAppId()).isNull();
         assertThat(start.caseContext().applications())
             .extracting(Application::reference, Application::warrantSuspension, Application::submittedOn)
             .containsExactly(tuple("GA1", false, LocalDate.of(2026, 10, 1)),
                 tuple("GA2", true, LocalDate.of(2026, 10, 9)),
                 // Entered by court staff from paper, it is dated when the court received it.
                 tuple("GA3", false, LocalDate.of(2026, 10, 8)));
-        assertThat(start.caseContext().applications()).extracting(Application::id).doesNotContainNull()
-            .first().isEqualTo(genAppId);
-    }
-
-    @Test
-    @DisplayName("keeps the judge's order on the application apart from their draft for the case and its hearing")
-    void keepsTheHearingWithTheCaseDraft() {
-        int hearingId = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
-        var forHearing = events.external(caseReference, MAKE_ORDER).as(judge)
-            .withClientContext(Map.of("hearingId", Integer.toString(hearingId)));
-        MakeOrderRequest draft = startDraft("hearing draft");
-        forHearing.submitExpectingSuccess(new MakeOrderRequest(draft.action(), draft.order(), null,
-            new MakeOrderRequest.HearingChange(hearingId, null, null, null)));
-
-        var forApplication = asJudgeDeciding(genAppId);
-        forApplication.submitExpectingSuccess(decision(SAVE_DRAFT, Order.none(genAppId), "grant", null));
-
-        OrderStart application = forApplication.start();
-        assertThat(application.order().genAppId()).isEqualTo(genAppId);
-        assertThat(application.caseContext().application()).isNotNull();
-        assertThat(application.hearing()).isNull();
-        OrderStart hearing = events.external(caseReference, MAKE_ORDER).as(judge).start();
-        assertThat(hearing.order().formData()).containsEntry("notes", "hearing draft");
-        assertThat(hearing.order().genAppId()).isNull();
-        assertThat(hearing.hearing().id()).isEqualTo(hearingId);
-        assertThat(hearing.caseContext().application()).isNull();
+        Application application = start.caseContext().applications().getFirst();
+        assertThat(application.id()).isEqualTo(genAppId);
+        assertThat(application.type()).isEqualTo("Adjourn the hearing");
+        assertThat(application.applicant()).isEqualTo(IssuedCases.DEFENDANT + " (Defendant 1)");
+        assertThat(application.within14Days()).isEqualTo(VerticalYesNo.YES);
+        assertThat(application.whatOrderWanted()).isEqualTo(WHAT_ORDER_WANTED);
+        assertThat(application.documents()).extracting(ApplicationDocument::id, ApplicationDocument::fileName)
+            .containsExactly(
+                tuple(FORM_ID, "application-form.pdf"),
+                tuple(WITNESS_STATEMENT_ID, "witness-statement.pdf"));
     }
 
     @Test
     @DisplayName("completes the judge's task when they send their order on the application for review")
     void completesTheTaskOnSubmission() {
-        Order submitted = judgeDecides(genAppId, "grant");
+        judgeDecides(genAppId, "grant");
 
-        assertThat(submitted.genAppId()).isNotNull();
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has submitted an order for review"));
@@ -198,11 +166,15 @@ class DecideApplicationIT extends OrderEventIT {
         var asOtherJudge = events.external(caseReference, MAKE_ORDER).as(otherJudge)
             .withClientContext(Map.of("genAppId", genAppId.toString()));
         // The other judge started a draft before the first sent theirs for review.
-        asOtherJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asOtherJudge.start().order(), "dismiss", null));
+        asOtherJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asOtherJudge.start().order(), NO_ORDER_ON_CLAIM,
+            "dismiss", null));
         Order listed = judgeDecides(genAppId, "list");
+        // Court staff reviewing the order still see the application it decides.
+        assertThat(asCaseworkerReviewing(listed.id()).start().caseContext().applications())
+            .extracting(Application::id).containsExactly(genAppId);
 
         assertThat(asOtherJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, asOtherJudge.start().order(),
-            "dismiss", null)).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
+            NO_ORDER_ON_CLAIM, "dismiss", null)).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
 
         issue(listed);
         Order granted = judgeDecides(genAppId, "grant");
@@ -216,31 +188,17 @@ class DecideApplicationIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("refuses an order on the application once an order made at a hearing decides it")
-    void refusesAnOrderOnAnApplicationDecidedAtAHearing() {
-        UUID orderId = events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(
-            new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(null, 0, NO_ORDER_ON_CLAIM,
-                Map.of("app-" + genAppId + "-decision", "grant"), WORDING, null), null))
-            .changed("orders", Order.class).id();
+    @DisplayName("refuses an order deciding an application made without notice together with the claim or another "
+        + "application, so its order goes only to those who may see the application")
+    void decidesAWithoutNoticeApplicationAlone() {
+        cases.update(caseReference, pcsCase -> pcsCase.getGenApps().forEach(
+            genApp -> genApp.setWithoutNotice(VerticalYesNo.YES)));
+        var asJudge = asJudgeDeciding(genAppId);
 
-        assertThat(asJudgeDeciding(genAppId).startExpectingRejection()).containsExactly(MakeOrder.ALREADY_DECIDED);
-        // Court staff reviewing the order still see the application it decides.
-        assertThat(asCaseworkerReviewing(orderId).start().caseContext().applications())
-            .extracting(Application::id).containsExactly(genAppId);
-    }
-
-    @Test
-    @DisplayName("refuses an order made at a hearing deciding an application another order is deciding")
-    void refusesAHearingOrderOnAnApplicationBeingDecided() {
-        judgeDecides(genAppId, "grant");
-        // Nor does it offer the application to decide while the other order is with court staff.
-        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().caseContext().applications())
-            .isEmpty();
-
-        assertThat(events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingRejection(new MakeOrderRequest(
-            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, NO_ORDER_ON_CLAIM,
-                Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, null), null)).errors())
-            .containsExactly(MakeOrder.ALREADY_DECIDED);
+        assertThat(asJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), FREE_FORM,
+            "grant", null)).errors()).containsExactly(MakeOrder.WITHOUT_NOTICE_ALONE);
+        asJudge.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), NO_ORDER_ON_CLAIM,
+            "grant", null));
     }
 
     @Test
@@ -251,7 +209,8 @@ class DecideApplicationIT extends OrderEventIT {
             submitted.id(), submitted.version(), null, "Which date?", null));
         var asAuthor = events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("orderId", submitted.id().toString()));
-        asAuthor.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asAuthor.start().order(), "grant", null));
+        asAuthor.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asAuthor.start().order(), NO_ORDER_ON_CLAIM,
+            "grant", null));
 
         assertThat(jdbcTemplate.queryForList("SELECT DISTINCT message.closed_at IS NULL AS open "
             + "FROM order_steps step JOIN case_message_entry entry ON entry.id = step.message_entry_id "
@@ -259,11 +218,12 @@ class DecideApplicationIT extends OrderEventIT {
             submitted.id())).extracting(row -> row.get("open")).containsExactly(true);
     }
 
-    @Test
-    @DisplayName("files the issued order's document with the application, so it is seen only by those who may see "
-        + "the application")
-    void filesTheOrderDocumentWithTheApplication() {
-        Order dismissed = judgeDecides(genAppId, "dismiss");
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({"NO_ORDER_ON_CLAIM, true", "FREE_FORM, false"})
+    @DisplayName("files the issued order's document with the application when it decides that alone, so it is seen "
+        + "only by those who may see the application, and otherwise with the case")
+    void filesTheOrderDocumentWithTheApplicationItDecidesAlone(OrderType orderType, boolean withApplication) {
+        Order dismissed = judgeDecides(genAppId, orderType, "dismiss");
         when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString()))
             .thenReturn(events.documents().store("Order application.pdf").getUrl());
         issue(dismissed);
@@ -273,7 +233,8 @@ class DecideApplicationIT extends OrderEventIT {
                 .getFirst().getRawData()));
 
         assertThat(jdbcTemplate.queryForObject("SELECT d.general_application_id FROM orders o JOIN document d "
-            + "ON d.id = o.document_id WHERE o.id = ?", UUID.class, dismissed.id())).isEqualTo(genAppId);
+            + "ON d.id = o.document_id WHERE o.id = ?", UUID.class, dismissed.id()))
+            .isEqualTo(withApplication ? genAppId : null);
     }
 
     private void issue(Order order) {
@@ -290,11 +251,15 @@ class DecideApplicationIT extends OrderEventIT {
 
     /** The judge decides the application and sends their order for review; returns it as court staff see it. */
     private Order judgeDecides(UUID genAppId, String decision) {
+        return judgeDecides(genAppId, NO_ORDER_ON_CLAIM, decision);
+    }
+
+    private Order judgeDecides(UUID genAppId, OrderType orderType, String decision) {
         var asJudge = asJudgeDeciding(genAppId);
-        asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), decision, null));
-        UUID orderId = asJudge
-            .submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), decision, "decide-task"))
-            .changed("orders", Order.class).id();
+        asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), orderType, decision, null));
+        UUID orderId = asJudge.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), orderType,
+                decision, "decide-task"))
+            .changed("orders", OrderRow.class).id();
         return asCaseworkerReviewing(orderId).start().order();
     }
 
@@ -303,10 +268,10 @@ class DecideApplicationIT extends OrderEventIT {
             .withClientContext(Map.of("orderId", orderId.toString()));
     }
 
-    private static MakeOrderRequest decision(MakeOrderRequest.Action action, Order order, String decision,
-                                             String taskId) {
-        return new MakeOrderRequest(action, new OrderChange(order.id(), order.version(), APPLICATION_DECISION,
-            Map.of("app-" + order.genAppId() + "-decision", decision), WORDING, order.genAppId()), taskId);
+    private MakeOrderRequest decision(MakeOrderRequest.Action action, Order order, OrderType orderType,
+                                      String decision, String taskId) {
+        return new MakeOrderRequest(action, new OrderChange(order.id(), order.version(), orderType,
+            Map.of("app-" + genAppId + "-decision", decision), WORDING), taskId);
     }
 
     private static DocumentEntity document(PcsCaseEntity pcsCase, GenAppEntity genApp, UUID documentId,

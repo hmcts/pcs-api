@@ -49,13 +49,9 @@ public class OrderEntity {
     @Column(nullable = false, updatable = false)
     private String authorIdamUserId;
 
-    /** The general application the order decides, when the judge started it from their task to decide one. */
-    @Column(updatable = false)
-    private UUID genAppId;
-
-    /** The hearing the judge made the order for, if they made it for one. */
+    /** The hearing the judge made the order for, if they made it for one; an order keeps its hearing. */
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "hearing_id")
+    @JoinColumn(name = "hearing_id", updatable = false)
     private HearingEntity hearing;
 
     /** The judge's name as IDAM had it when they started the order, for the order's document. */

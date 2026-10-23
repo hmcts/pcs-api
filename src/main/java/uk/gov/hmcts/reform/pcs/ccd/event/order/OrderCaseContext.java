@@ -23,10 +23,7 @@ import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 
-/**
- * The case as the order journeys show it: its property, its main claim's parties, its open applications, and
- * the application an order on one decides.
- */
+/** The case as the order journeys show it: its property, its main claim's parties and its open applications. */
 @Component
 @AllArgsConstructor
 class OrderCaseContext {
@@ -36,7 +33,7 @@ class OrderCaseContext {
     private final OrderTasks orderTasks;
 
     /** The case for the order, which offers the applications no other order is deciding or has decided. */
-    public OrderStart.CaseContext of(PcsCaseEntity pcsCase, UUID orderId, UUID genAppId) {
+    public OrderStart.CaseContext of(PcsCaseEntity pcsCase, UUID orderId) {
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
         return new OrderStart.CaseContext(
             pcsCase.getCaseReference(),
@@ -45,13 +42,11 @@ class OrderCaseContext {
             claim.map(c -> parties(c, PartyRole.DEFENDANT)).orElse(List.of()),
             pcsCase.getCounterClaims().stream()
                 .map(CounterClaimEntity::getStatus).anyMatch(COUNTER_CLAIM_ISSUED::equals),
-            pcsCase.getGenApps().stream().anyMatch(GenAppEntity::isOpen),
             pcsCase.getGenApps().stream()
                 .filter(genApp -> orderTasks.canDecide(genApp, orderId))
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
-                .toList(),
-            genAppId == null ? null : application(pcsCase.findGenApp(genAppId).orElseThrow(), claim.orElse(null))
+                .toList()
         );
     }
 

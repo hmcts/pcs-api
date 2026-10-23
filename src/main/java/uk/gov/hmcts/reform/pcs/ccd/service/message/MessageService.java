@@ -136,16 +136,16 @@ public class MessageService {
     }
 
     /**
-     * Closes the case's open messages about the application that wait for a judge, once a judge sends an order
-     * deciding it for review: the order answers them. The order's own thread stays open until it is issued.
+     * Closes the case's open messages about the applications that wait for a judge, once a judge sends an order
+     * deciding them for review: the order answers them. The order's own thread stays open until it is issued.
      */
-    public void closeAnsweredByOrder(OrderEntity order, String judgeName) {
+    public void closeAnsweredByOrder(OrderEntity order, Collection<GenAppEntity> decided, String judgeName) {
         PcsCaseEntity pcsCase = order.getPcsCase();
         List<CaseMessageEntity> ordersThread = orderEntries(order).map(CaseMessageEntryEntity::getMessage).toList();
         pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
             .filter(message -> !ordersThread.contains(message))
-            .filter(message -> message.getGenApp() != null && order.getGenAppId().equals(message.getGenApp().getId()))
+            .filter(message -> decided.contains(message.getGenApp()))
             .filter(message -> message.latest().getRecipientRole().isJudicial())
             .forEach(message -> {
                 close(message, judgeName, "Answered by an order on the application");
@@ -162,10 +162,10 @@ public class MessageService {
             .forEach(message -> close(message, closedBy, "Order issued"));
     }
 
-    /** What the judge, or court staff, last wrote with the order: the judge's message, or court staff's query. */
-    public Optional<String> lastOrderMessage(OrderEntity order, boolean fromJudge) {
+    /** Court staff's last query on the order, which they returned it with. */
+    public Optional<String> lastQuery(OrderEntity order) {
         return orderEntries(order)
-            .filter(entry -> entry.getSenderRole().isJudicial() == fromJudge)
+            .filter(entry -> !entry.getSenderRole().isJudicial())
             .findFirst()
             .map(CaseMessageEntryEntity::getBody);
     }
@@ -181,12 +181,9 @@ public class MessageService {
             .filter(CaseMessageEntity::isOpen)
             .findFirst()
             .orElseGet(() -> {
-                GenAppEntity genApp = order.getGenAppId() == null ? null
-                    : order.getPcsCase().findGenApp(order.getGenAppId()).orElse(null);
                 CaseMessageEntity started = CaseMessageEntity.builder()
                     .subject(Character.toUpperCase(orderType.charAt(0)) + orderType.substring(1) + " order")
-                    .categories(EnumSet.of(genApp == null ? MessageCategory.OTHER : MessageCategory.APPLICATION))
-                    .genApp(genApp)
+                    .categories(EnumSet.of(MessageCategory.OTHER))
                     .build();
                 order.getPcsCase().addMessage(started);
                 return started;

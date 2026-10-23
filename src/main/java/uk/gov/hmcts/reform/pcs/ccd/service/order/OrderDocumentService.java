@@ -10,12 +10,15 @@ import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
 import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
@@ -86,12 +89,17 @@ public class OrderDocumentService {
         DocumentEntity document = documentImportService.addDocumentToCase(
             order.getPcsCase(), dmStoreUrl, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
         document.setType(DocumentType.ORDER);
-        // An order on an application is filed with it, so only those who may see the application see the order.
-        if (order.getGenAppId() != null) {
-            document.setGeneralApplication(order.getPcsCase().findGenApp(order.getGenAppId()).orElseThrow());
-        }
         // The order is issued, so its latest step is the issuing one.
-        document.setIssueDate(orderSteps.latest(order).getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
+        OrderStepEntity issued = orderSteps.latest(order);
+        // An order deciding one application alone is filed with it, so only those who may see the application see
+        // the order; any other order is the case's.
+        List<GenAppEntity> decided = order.getPcsCase().getGenApps().stream()
+            .filter(genApp -> OrderTasks.decides(issued.getFormData(), genApp))
+            .toList();
+        if (issued.getOrderType() == OrderType.NO_ORDER_ON_CLAIM && decided.size() == 1) {
+            document.setGeneralApplication(decided.getFirst());
+        }
+        document.setIssueDate(issued.getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
         order.setDocument(document);
         return SystemEventResult.withoutStateTransition("orderDocumentGenerated", "Order document generated");
     }

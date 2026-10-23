@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What the frontend sends when a judge saves or submits their order, with the task returning it or
- * asking them to decide an application, and the hearing's facts and note when made for a hearing.
+ * What the frontend sends when a judge saves or submits their order, with the task that brought them to it, and
+ * the hearing's facts and note when made for a hearing.
  */
 public record MakeOrderRequest(Action action, OrderChange order, String taskId, HearingChange hearing) {
 
@@ -28,8 +28,7 @@ public record MakeOrderRequest(Action action, OrderChange order, String taskId, 
                               long version,
                               OrderType orderType,
                               Map<String, Object> formData,
-                              JsonNode docweaveSnapshot,
-                              UUID genAppId) {
+                              JsonNode docweaveSnapshot) {
     }
 
     /**

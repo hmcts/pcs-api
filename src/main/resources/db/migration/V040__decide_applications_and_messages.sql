@@ -1,13 +1,13 @@
 -- A judge decides a general application with an order on it, and court staff and judges message each other on a case.
 
--- An order deciding an application names it, and a judge can have a draft for each application beside their draft
--- for the case.
-ALTER TABLE orders ADD COLUMN gen_app_id UUID REFERENCES general_application(id);
+-- Making orders is not live, so the orders made while it was built are test data and are not kept.
+SET LOCAL ccd.audit_disabled = 'true';
+DELETE FROM scheduled_tasks WHERE task_name = 'order-document-generation';
+DELETE FROM orders;
 
-CREATE INDEX orders_gen_app_idx ON orders(gen_app_id) WHERE gen_app_id IS NOT NULL;
-
+-- A judge has a draft for each hearing beside their draft made without one; an application has no draft of its own.
 DROP INDEX orders_one_draft_per_author_idx;
-CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id, gen_app_id)
+CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id, hearing_id)
     NULLS NOT DISTINCT WHERE state = 'DRAFT';
 
 -- Messages between court staff and judges on a case: a thread with a subject, which a sender starts and either side
@@ -60,24 +60,10 @@ ALTER TABLE order_steps ADD COLUMN message_entry_id UUID REFERENCES case_message
         CHECK (message_entry_id IS NULL OR state IN ('SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE'));
 CREATE INDEX order_steps_message_entry_idx ON order_steps(message_entry_id) WHERE message_entry_id IS NOT NULL;
 
--- Court staff's queries on orders already returned move from the steps' case notes into a thread for each order,
--- closed once the order is issued, so a judge reopening a returned order still reads the query.
-INSERT INTO case_message (id, case_id, subject, closed_at, closed_by_name)
-SELECT md5(o.id::text)::uuid, o.case_id, 'Returned order',
-       CASE WHEN o.state = 'ISSUED' THEN now() END, CASE WHEN o.state = 'ISSUED' THEN 'Court staff' END
-FROM orders o
-WHERE EXISTS (SELECT 1 FROM order_steps s WHERE s.order_id = o.id AND s.note_id IS NOT NULL);
-INSERT INTO case_message_category (message_id, category)
-SELECT DISTINCT md5(order_id::text)::uuid, 'OTHER' FROM order_steps WHERE note_id IS NOT NULL;
-INSERT INTO case_message_entry (id, message_id, created_at, sender_name, sender_role, recipient_role, urgent, body)
-SELECT md5(s.id::text || 'query')::uuid, md5(s.order_id::text)::uuid, n.created_on,
-       COALESCE(NULLIF(n.created_by, ''), 'Court staff'), 'COURT_STAFF', 'DISTRICT_JUDGE', false, COALESCE(n.note, '')
-FROM order_steps s JOIN case_note n ON n.id = s.note_id;
-UPDATE order_steps SET message_entry_id = md5(id::text || 'query')::uuid WHERE note_id IS NOT NULL;
+-- A step's message replaces its case note.
 ALTER TABLE order_steps DROP COLUMN note_id;
 
--- An order sent for review or issued has its wording: without it, court staff could not review it or issue it. Steps
--- made before this was enforced are left as they are.
+-- An order sent for review or issued has its wording: without it, court staff could not review it or issue it.
 ALTER TABLE order_steps ADD CONSTRAINT order_steps_wording_check
     CHECK (state NOT IN ('SUBMITTED_FOR_REVIEW', 'ISSUED')
-        OR (docweave_snapshot IS NOT NULL AND docweave_snapshot <> 'null'::jsonb)) NOT VALID;
+        OR (docweave_snapshot IS NOT NULL AND docweave_snapshot <> 'null'::jsonb));
