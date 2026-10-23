@@ -23,7 +23,7 @@ import { home } from '@data/page-data';
 import {
   confirmIfTheseDocumentsRelateToCounterClaim
 } from "@data/page-data-figma/page-data-legalRepresentative/confirmIfTheseDocumentsRelateToCounterClaim.page.data";
-import { midEventLRRespondPossessionClaimApiData } from "@data/api-data/respondPossessionClaimMidEventLR.api.data";
+import {midEventLRRespondPossessionClaimApiData} from "@data/api-data/respondPossessionClaimMidEventLR.api.data";
 
 
 
@@ -84,21 +84,21 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   }
 
   if (title.includes('MULTI_APP')) {
-    await performAction('makeAnApplicationAPI', {
-      data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
-        defendantUserDetails[0].id, defendantUserDetails[0].name),
-    });
+  await performAction('makeAnApplicationAPI', {
+    data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
+      defendantUserDetails[0].id,defendantUserDetails[0].name),
+  });
 
-    await performAction('makeAnApplicationAPI', {
-      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
-        defendantUserDetails[0].id, defendantUserDetails[0].name),
-    });
+  await performAction('makeAnApplicationAPI', {
+    data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+      defendantUserDetails[0].id, defendantUserDetails[0].name),
+  });
 
-    await performAction('makeAnApplicationAPI', {
-      data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
-        defendantUserDetails[0].id, defendantUserDetails[0].name),
-    });
-  }
+  await performAction('makeAnApplicationAPI', {
+    data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
+      defendantUserDetails[0].id, defendantUserDetails[0].name),
+  });
+}
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
