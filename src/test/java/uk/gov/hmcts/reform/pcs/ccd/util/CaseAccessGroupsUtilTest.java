@@ -49,6 +49,17 @@ class CaseAccessGroupsUtilTest {
     }
 
     @Test
+    void shouldDeriveProfOrgGroupIdForGenericOrganisationProfileParty() {
+        Set<PartyEntity> parties = Set.of(party("WK8GIHE", "ORGANISATION_PROFILE"));
+
+        List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties, defendants);
+
+        assertThat(groups).hasSize(1);
+        assertThat(groups.getFirst().getValue().getCaseAccessGroupId())
+            .isEqualTo("PCS:PCS:prof-org-claimant-access:claimant:WK8GIHE");
+    }
+
+    @Test
     void shouldDeriveNothingWhenNoPartiesExistYet() {
         assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(), defendants)).isEmpty();
     }
