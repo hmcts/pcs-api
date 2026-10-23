@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
+import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -88,6 +90,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseNoteView caseNoteView;
+    private final OrdersView ordersView;
     private final CaseTabView caseTabView;
     private final PartiesView partiesView;
     private final GenAppsView genAppsView;
@@ -96,9 +99,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
-    private final EnforcementOrderView enforcementOrderView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
+    private final JudicialNoteView judicialNoteView;
+    private final EnforcementOrderView enforcementOrderView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -183,11 +187,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         genAppsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
+        ordersView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
+        judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
