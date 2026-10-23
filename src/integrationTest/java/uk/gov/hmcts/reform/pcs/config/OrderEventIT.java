@@ -1,10 +1,12 @@
 package uk.gov.hmcts.reform.pcs.config;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -16,10 +18,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Map;
 import java.util.UUID;
 
+import static org.mockito.Mockito.doReturn;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 
 /**
@@ -42,6 +47,13 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     protected DocAssemblyService docAssemblyService;
     @Autowired
     protected JdbcTemplate jdbcTemplate;
+    @MockitoSpyBean
+    protected FeatureToggleService featureToggleService;
+
+    @BeforeEach
+    void makeOrdersEnabled() {
+        doReturn(true).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+    }
 
     /** The jobs a test's events scheduled are its own, not the next test's. */
     @AfterEach

@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Collection;
 import java.util.List;
@@ -64,6 +65,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     public static final ExternalEventId<OrderStart, MakeOrderRequest> MAKE_ORDER =
         ExternalEventId.of("ext:makeOrder", OrderStart.class, MakeOrderRequest.class);
 
+    static final String NOT_AVAILABLE = "Making orders is not available";
     static final String ALREADY_DECIDED =
         "Another order on this application is with court staff, back with its judge, or has decided it";
 
@@ -81,6 +83,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final TaskCompletionService taskCompletionService;
     private final MessageService messageService;
     private final HearingRecords hearingRecords;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -107,6 +110,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
+        requireMakeOrder(featureToggleService);
         long caseReference = start.caseReference();
         String judge = IdamUserIds.normalise(start.user().id());
         PcsCaseEntity pcsCase = findCase(caseReference);
@@ -143,6 +147,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
+        requireMakeOrder(featureToggleService);
         MakeOrderRequest request = submit.payload();
         OrderChange change = request.order();
         // Its page posts the wording its script built; an order without it could not be reviewed or issued.
@@ -191,6 +196,13 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
+    }
+
+    /** Refuses the order events while making orders is off, as their show condition only hides them in XUI. */
+    static void requireMakeOrder(FeatureToggleService featureToggleService) {
+        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
+            throw ExternalRejection.because(NOT_AVAILABLE);
+        }
     }
 
     /** The judge's message for court staff with their order, if they wrote one, which the Messages tab keeps. */

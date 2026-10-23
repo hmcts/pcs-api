@@ -22,12 +22,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
@@ -35,6 +37,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
@@ -63,6 +66,17 @@ class MakeOrderIT extends OrderEventIT {
         asFirstJudge = events.external(caseReference, MAKE_ORDER).as(firstJudge);
         secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs");
         asSecondJudge = events.external(caseReference, MAKE_ORDER).as(secondJudge);
+    }
+
+    @Test
+    @DisplayName("refuses making and reviewing orders while making orders is off")
+    void refusedWhenMakeOrderIsOff() {
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+
+        assertThat(asFirstJudge.startExpectingRejection()).containsExactly(MakeOrder.NOT_AVAILABLE);
+        assertThat(events.external(caseReference, CONFIRM_ORDER_REVIEW)
+            .as(events.registerActor("A", "Caseworker", "caseworker-pcs")).startExpectingRejection())
+            .containsExactly(MakeOrder.NOT_AVAILABLE);
     }
 
     @Test
