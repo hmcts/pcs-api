@@ -15,6 +15,7 @@ import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-acti
 import { RetryOnCallBackError } from '@utils/actions/element-actions/reTryOnCallBackError.action';
 import { ErrorValidationAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcementErrorValidation.action';
 import { RemoveFileAction } from '@utils/actions/element-actions/removeFile.action';
+import {ClickLinkAction} from "@utils/actions/element-actions/clickLink.action";
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -93,6 +94,8 @@ export class ActionEnforcementRegistry {
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['continueFromCYAPage', new EnforcementAction()],
+    ['selectPayClaimFee', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
