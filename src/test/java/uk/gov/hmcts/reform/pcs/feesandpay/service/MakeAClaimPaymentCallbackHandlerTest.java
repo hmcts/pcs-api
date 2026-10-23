@@ -35,6 +35,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 
 @ExtendWith(MockitoExtension.class)
 class MakeAClaimPaymentCallbackHandlerTest {
@@ -78,7 +79,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference(), claimIssuePayment);
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
         }

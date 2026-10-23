@@ -15,11 +15,13 @@ public class PaymentCallbackStrategyFactory {
     @Autowired
     public PaymentCallbackStrategyFactory(MakeAClaimPaymentCallbackHandler makeAClaimPaymentCallbackHandler,
                                           CounterClaimPaymentCallbackHandler counterClaimPaymentCallbackHandler,
-                                          GenAppPaymentCallbackHandler genAppPaymentCallbackHandler) {
+                                          GenAppPaymentCallbackHandler genAppPaymentCallbackHandler,
+                                          EnforcementPaymentCallbackHandler enforcementPaymentCallbackHandler) {
         strategyMap = new HashMap<>();
         strategyMap.put(PaymentCallbackHandlerType.CLAIM, makeAClaimPaymentCallbackHandler);
         strategyMap.put(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE, counterClaimPaymentCallbackHandler);
         strategyMap.put(PaymentCallbackHandlerType.GEN_APP_ISSUE, genAppPaymentCallbackHandler);
+        strategyMap.put(PaymentCallbackHandlerType.ENFORCEMENT, enforcementPaymentCallbackHandler);
     }
 
     public PaymentCallbackStrategy getStrategy(PaymentCallbackHandlerType paymentCallbackHandlerType) {
