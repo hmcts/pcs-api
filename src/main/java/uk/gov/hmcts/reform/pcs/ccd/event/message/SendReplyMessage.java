@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.message;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -29,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.pebble.PlainTextFilter;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
@@ -309,8 +309,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
 
     /** The message's subject and what it is about, heading the reply page, the subject as written, not as markdown. */
     static String summary(CaseMessageEntity message) {
-        String subject = HtmlUtils.htmlEscape(message.getSubject().replaceAll("([\\\\`*_\\[\\]#|~!])", "\\\\$1"));
-        return "### " + subject + "\n\n**What it relates to:** " + message.categoryLabels();
+        return "### " + PlainTextFilter.encode(message.getSubject()) + "\n\n**What it relates to:** "
+            + message.categoryLabels();
     }
 
     /** Every message so far, which the reply page and check your answers play back. */

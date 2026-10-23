@@ -298,6 +298,22 @@ class SendReplyMessageIT extends OrderEventIT {
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown()).isNull();
     }
 
+    @Test
+    @DisplayName("shows a message on the Messages tab as typed, not as markdown or with the case's fields in it")
+    void showsAMessageAsTyped() {
+        PCSCase message = PCSCase.builder().messageAction(MessageAction.SEND)
+            .messageCategories(Set.of(MessageCategory.OTHER)).messageRecipient(MessageRecipient.DISTRICT_JUDGE)
+            .messageSubject("*Re* ${caseTitleMarkdown}").messageUrgent(VerticalYesNo.NO)
+            .messageBody("They ask for:\n\n1. more time\n\n    [a link](http://x)").build();
+        events.event(caseReference, sendReplyMessage.name(), message).as(caseworker).submitExpectingSuccess();
+
+        // One line of HTML, as a blank line would end the tab's HTML and leave the rest to markdown.
+        assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
+            .contains("&#42;Re&#42; &#36;&#123;caseTitleMarkdown&#125;",
+                "They ask for:<br><br>1. more time<br><br>    &#91;a link&#93;(http://x)")
+            .doesNotContain("${");
+    }
+
     /** Court staff send the judges an urgent message about the case's application, and return it. */
     private UUID send() {
         PCSCase started = events.start(caseReference, sendReplyMessage.name()).as(caseworker)
