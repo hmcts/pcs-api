@@ -8,14 +8,24 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 
 @Slf4j
 @AllArgsConstructor
 public class HearingInNext14Days implements CcdPageConfiguration {
+
+    private static final String INFO_MARKDOWN = """
+        <p class="govuk-body">The ‘other parties’ are the other people or organisations named on the claim form.
+        For example a tenant, landlord, housing association, or mortgage lender.</p>
+        <p class="govuk-body">Every other party will need to agree to let the defendant make this application,
+        if they don’t agree, the defendant may need to pay a higher fee.</p>
+        """;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -24,6 +34,7 @@ public class HearingInNext14Days implements CcdPageConfiguration {
             .pageLabel("Is the defendant’s court hearing in the next 14 days?")
             .showCondition(fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
             .label("hearingInNext14Days-lineSeparator", "---")
+            .label("hearingInNext14Days-info", INFO_MARKDOWN, featureFlagsEnabled(RELEASE_1B))
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWithin14Days)
             .done();
@@ -35,7 +46,9 @@ public class HearingInNext14Days implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
 
-        xuiGenAppRequest.setShowHwfScreens(xuiGenAppRequest.getWithin14Days());
+        boolean release1bEnabled = caseData.getFeatureFlags() != null
+            && caseData.getFeatureFlags().getRelease1bEnabled() == VerticalYesNo.YES;
+        xuiGenAppRequest.setShowHwfScreens(release1bEnabled ? VerticalYesNo.YES : xuiGenAppRequest.getWithin14Days());
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
