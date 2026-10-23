@@ -42,6 +42,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SOMETHING_ELSE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SUSPEND;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
@@ -102,11 +103,11 @@ class DecideApplicationIT extends OrderEventIT {
         cases.update(caseReference, pcsCase -> {
             PartyEntity defendant = pcsCase.getParties().stream()
                 .filter(party -> party.getOrgName() == null).findFirst().orElseThrow();
-            pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(SOMETHING_ELSE).state(GEN_APP_ISSUED)
-                .somethingElseDetails("Suspend the warrant of possession")
+            pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(SUSPEND).state(GEN_APP_ISSUED)
                 .applicationSubmittedDate(LocalDateTime.of(2026, 10, 9, 14, 0)).build());
             pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(SOMETHING_ELSE).state(GEN_APP_ISSUED)
-                .somethingElseDetails("Extend the validity of the warrant")
+                // Only an application to suspend is decided as one, whatever else's details say.
+                .somethingElseDetails("Lift the suspension of the warrant")
                 .applicationSubmittedDate(LocalDateTime.of(2026, 10, 10, 14, 0))
                 .applicationReceivedDate(LocalDate.of(2026, 10, 8)).build());
         });
