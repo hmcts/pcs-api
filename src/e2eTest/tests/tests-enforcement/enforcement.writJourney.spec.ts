@@ -157,14 +157,18 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         await performAction('selectStatementOfTruthWrit', {
           question: statementOfTruth.completedByParagraph,
           option: statementOfTruth.claimantRadioOption,
-          option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+          option1: statementOfTruth.iCertifyCheckboxDynamic,
           label: statementOfTruth.fullNameHiddenTextLabel,
           input: statementOfTruth.fullNameHiddenTextInput,
           label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
           input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
           label2: statementOfTruth.nameOfFirmHiddenTextLabel,
           input2: statementOfTruth.nameOfFirmHiddenTextInput,
-          nextPage: checkYourAnswersEnforcement.mainHeader
+          nextPage: checkYourAnswersEnforcement.mainHeader,
+        });
+
+        await performAction('selectStatementOfTruthWrit', {
+          iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
         });
       });
 
