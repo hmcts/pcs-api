@@ -173,6 +173,18 @@ class DecideApplicationIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("refuses court staff issuing an order they changed to decide an application another order decided")
+    void refusesIssuingAnOrderChangedToDecideADecidedApplication() {
+        Order undecided = judgeDecides(genAppId, "none");
+        issue(judgeDecides(genAppId, "grant"));
+
+        assertThat(asCaseworkerReviewing(undecided.id()).submitExpectingRejection(new ConfirmOrderReviewRequest(
+            ISSUE, undecided.id(), undecided.version(), null, null, new Issue(new IssuedOrder(
+                undecided.orderType(), Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order"),
+                List.of(), HIGH_COURT, true, List.of()))).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
+    }
+
+    @Test
     @DisplayName("keeps the order's own thread open when the judge sends it back after court staff's query")
     void keepsTheOrdersThreadOpenWhenItIsResubmitted() {
         Order submitted = judgeDecides(genAppId, "grant");
