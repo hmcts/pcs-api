@@ -29,6 +29,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopu
  * Selector-time skip rules for bulk-print packs. When {@link FeatureFlag#RELEASE_1_DOT_3} is on, packs that
  * need translation, a follow-on gen app, or an issued counterclaim HWF reference are held back silently —
  * no {@code PACK_SENT} or {@code PACK_FAILED} row is written. Flag off keeps current send behaviour.
+ * Testing in HDPI-9007 to see if changes in HDPI-7804 apply to RTAC Pro
  */
 @Service
 @Slf4j
