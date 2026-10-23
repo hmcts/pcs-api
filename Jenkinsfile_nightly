@@ -2,7 +2,16 @@
 
 properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
-  pipelineTriggers([cron('H 07 * * 1-5')]),
+  // Existing weekday nightly unchanged. Perf User Refresh uses parameterizedCron so it does not
+  // alter default @nightly params. TEMPORARY schedule below (~15:20 UTC on 2026-10-06) is for
+  // first Jenkins path verification only — restore to the 28-day line after a successful run:
+  //   H 9 1/28 * * %E2E_TARGET_ENV=perftest;PLAYWRIGHT_GREP_TAG=@perfUserRefresh;PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList
+  pipelineTriggers([
+    cron('H 07 * * 1-5'),
+    parameterizedCron('''
+H 9 1/28 * * %E2E_TARGET_ENV=perftest;PLAYWRIGHT_GREP_TAG=@perfUserRefresh;PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList
+    ''')
+  ]),
   parameters([
     text(
       name: 'MANUAL_BUILD_REASON',
@@ -56,8 +65,8 @@ properties([
     ),
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
-      choices: ['@nightly', '@smoke', '@regression', '@release'],
-      description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default. @release option will run all tests tagged @nightly and also @release'
+      choices: ['@nightly', '@smoke', '@regression', '@release', '@perfUserRefresh'],
+      description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default. @release option will run all tests tagged @nightly and also @release. @perfUserRefresh runs the monthly (~every 28–31 days) Manage Case login / user refresh (use with PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList).'
 
     ),
   ])
