@@ -89,15 +89,16 @@ export class LoginAction implements IAction {
       return process.env.CREATE_USER_BEARER_TOKEN;
     }
 
-    if (!process.env.IDAM_SYSTEM_USERNAME || !process.env.IDAM_SYSTEM_PASSWORD) {
+    const systemPassword = process.env.IDAM_SYSTEM_PASSWORD ?? process.env.IDAM_SYSTEM_USER_PASSWORD;
+    if (!process.env.IDAM_SYSTEM_USERNAME || !systemPassword) {
       throw new Error(
-        'Temporary user creation requires IDAM_SYSTEM_USERNAME and IDAM_SYSTEM_PASSWORD'
+        'Temporary user creation requires IDAM_SYSTEM_USERNAME and IDAM_SYSTEM_PASSWORD (or IDAM_SYSTEM_USER_PASSWORD)'
       );
     }
 
     return new IdamUtils().generateIdamToken({
       username: process.env.IDAM_SYSTEM_USERNAME,
-      password: process.env.IDAM_SYSTEM_PASSWORD,
+      password: systemPassword,
       grantType: 'password',
       clientId: 'pcs-frontend',
       clientSecret: process.env.PCS_FRONTEND_IDAM_SECRET as string,
