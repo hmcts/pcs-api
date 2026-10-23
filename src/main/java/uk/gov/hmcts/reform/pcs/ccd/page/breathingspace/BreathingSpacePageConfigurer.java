@@ -1,10 +1,9 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.breathingspace;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.breathingspace.BreathingSpaceApplicationPage;
 
 @Component
 @AllArgsConstructor
