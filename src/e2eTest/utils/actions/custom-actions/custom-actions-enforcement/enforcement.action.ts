@@ -82,7 +82,6 @@ export class EnforcementAction implements IAction {
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
       ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
-      ['deleteDraftApplication', () => this.deleteDraftApplication()]
       
     ]);
     const actionToPerform = actionsMap.get(action);
