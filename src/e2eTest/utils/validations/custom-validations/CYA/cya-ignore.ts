@@ -28,5 +28,7 @@ export const cyaIgnoreQuestions = [
   'How much do you want to reclaim?',
   'How much did you spend on Land Registry fees?',
   'Enter the amount that you want the defendants to repay',
-  'Next step'
+  'Next step',
+  'TEMPORARY TEST ONLY - Has the claim been transferred to the High Court?',
+  'TEMPORARY TEST ONLY - Was the general application to transfer to the High Court successful?',
 ];
