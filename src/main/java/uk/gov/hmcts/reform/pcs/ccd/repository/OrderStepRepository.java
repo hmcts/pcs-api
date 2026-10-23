@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 
 import java.util.List;
@@ -15,9 +14,6 @@ public interface OrderStepRepository extends JpaRepository<OrderStepEntity, Long
 
     /** The order's steps that carry a message, the latest first. */
     List<OrderStepEntity> findByOrderIdAndMessageEntryIsNotNullOrderByIdDesc(UUID orderId);
-
-    /** Whether the message is an order's thread, whose entries were sent with the order's steps. */
-    boolean existsByMessageEntryMessage(CaseMessageEntity message);
 
     /** Each order on a case as it stands. */
     @Query("""

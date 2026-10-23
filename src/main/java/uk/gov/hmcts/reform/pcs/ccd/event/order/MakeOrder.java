@@ -37,9 +37,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -182,11 +180,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         final OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
             .orderType(change.orderType())
             .formData(change.formData())
-            .docweaveSnapshot(change.docweaveSnapshot())
-            .messageEntry(request.action() != SUBMIT_FOR_REVIEW ? null : staffMessage(change)
-                .map(message -> messageService.recordOrderMessage(order, OrderTasks.inWords(change.orderType()),
-                    order.getAuthorName(), true, message))
-                .orElse(null)));
+            .docweaveSnapshot(change.docweaveSnapshot()));
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
@@ -203,15 +197,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
             throw ExternalRejection.because(NOT_AVAILABLE);
         }
-    }
-
-    /** The judge's message for court staff with their order, if they wrote one, which the Messages tab keeps. */
-    private static Optional<String> staffMessage(OrderChange change) {
-        Map<String, Object> formData = change.formData() == null ? Map.of() : change.formData();
-        Object ticked = formData.get("staff-message");
-        boolean wanted = ticked instanceof Collection<?> values ? values.contains("yes") : "yes".equals(ticked);
-        return Optional.ofNullable(formData.get("staff-message-text"))
-            .map(Object::toString).map(String::trim).filter(text -> wanted && !text.isEmpty());
     }
 
     /** A judge's new draft, for the hearing the change is for, if it is for one, which it keeps. */

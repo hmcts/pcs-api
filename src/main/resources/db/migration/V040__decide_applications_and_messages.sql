@@ -70,11 +70,9 @@ CREATE TABLE case_message_entry (
 
 CREATE INDEX case_message_entry_message_idx ON case_message_entry(message_id, created_at);
 
--- The message an order step carries: the judge's message to court staff when they submit it, or court staff's query
--- when they return it, in place of a case note.
+-- Court staff's query when they return an order, kept as a closed message in place of a case note.
 ALTER TABLE order_steps ADD COLUMN message_entry_id UUID REFERENCES case_message_entry(id),
-    ADD CONSTRAINT order_steps_message_check
-        CHECK (message_entry_id IS NULL OR state IN ('SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE'));
+    ADD CONSTRAINT order_steps_message_check CHECK (message_entry_id IS NULL OR state = 'RETURNED_TO_JUDGE');
 CREATE INDEX order_steps_message_entry_idx ON order_steps(message_entry_id) WHERE message_entry_id IS NOT NULL;
 
 -- A step's message replaces its case note.

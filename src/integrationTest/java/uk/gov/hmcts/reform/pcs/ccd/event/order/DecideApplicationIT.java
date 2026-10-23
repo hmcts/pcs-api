@@ -34,12 +34,14 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SOMETHING_ELSE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SUSPEND;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
@@ -161,28 +163,14 @@ class DecideApplicationIT extends OrderEventIT {
     @DisplayName("refuses court staff issuing an order they changed to decide an application another order decided")
     void refusesIssuingAnOrderChangedToDecideADecidedApplication() {
         Order undecided = judgeDecides(genAppId, "none");
+        // Sent from the task to decide the application, the order completes it.
+        verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
         issue(judgeDecides(genAppId, "grant"));
 
         assertThat(asCaseworkerReviewing(undecided.id()).submitExpectingRejection(new ConfirmOrderReviewRequest(
             ISSUE, undecided.id(), undecided.version(), null, null, new Issue(new IssuedOrder(
                 undecided.orderType(), Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order"),
                 List.of(), HIGH_COURT, true, List.of()))).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
-    }
-
-    @Test
-    @DisplayName("keeps the order's own thread open when the judge sends it back after court staff's query")
-    void keepsTheOrdersThreadOpenWhenItIsResubmitted() {
-        Order submitted = judgeDecides(genAppId, "grant");
-        asCaseworkerReviewing(submitted.id()).submitExpectingSuccess(new ConfirmOrderReviewRequest(RETURN_TO_JUDGE,
-            submitted.id(), submitted.version(), null, "Which date?", null));
-        var asAuthor = events.external(caseReference, MAKE_ORDER).as(judge)
-            .withClientContext(Map.of("orderId", submitted.id().toString()));
-        asAuthor.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asAuthor.start().order(), "grant", null));
-
-        assertThat(jdbcTemplate.queryForList("SELECT DISTINCT message.closed_at IS NULL AS open "
-            + "FROM order_steps step JOIN case_message_entry entry ON entry.id = step.message_entry_id "
-            + "JOIN case_message message ON message.id = entry.message_id WHERE step.order_id = ?",
-            submitted.id())).extracting(row -> row.get("open")).containsExactly(true);
     }
 
     private void issue(Order order) {

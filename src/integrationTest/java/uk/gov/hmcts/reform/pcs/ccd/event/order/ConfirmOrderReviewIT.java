@@ -120,11 +120,14 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(outcome.changed("orders", OrderRow.class).state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
         assertThat(events.view(caseReference, caseworker).getCaseNotes()).isNullOrEmpty();
-        // The step that returned the order carries the query.
-        assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.sender_name, entry.body FROM order_steps step "
-            + "JOIN case_message_entry entry ON entry.id = step.message_entry_id WHERE step.order_id = ?", order.id()))
-            .extracting(row -> row.get("state"), row -> row.get("sender_name"), row -> row.get("body"))
-            .containsExactly(tuple("RETURNED_TO_JUDGE", "A Caseworker", QUERY));
+        // The step that returned the order carries the query, kept as a closed message: the order's task asks for it.
+        assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.sender_name, entry.body, "
+            + "message.closed_at IS NOT NULL AS closed FROM order_steps step "
+            + "JOIN case_message_entry entry ON entry.id = step.message_entry_id "
+            + "JOIN case_message message ON message.id = entry.message_id WHERE step.order_id = ?", order.id()))
+            .extracting(row -> row.get("state"), row -> row.get("sender_name"), row -> row.get("body"),
+                row -> row.get("closed"))
+            .containsExactly(tuple("RETURNED_TO_JUDGE", "A Caseworker", QUERY, true));
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
@@ -150,18 +153,6 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has changed an order that was returned to them"));
 
-        // Issuing the order closes its message thread, which nothing is waiting on any more.
-        Order review = asCaseworker.start().order();
-        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, review.id(), review.version(),
-            "staff-review", null, new Issue(
-                new IssuedOrder(review.orderType(), review.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
-                true, List.of())));
-        assertThat(jdbcTemplate.queryForList("SELECT DISTINCT message.closed_at IS NOT NULL AS closed, "
-            + "message.closure_note "
-            + "FROM order_steps step JOIN case_message_entry entry ON entry.id = step.message_entry_id "
-            + "JOIN case_message message ON message.id = entry.message_id WHERE step.order_id = ?",
-            order.id())).extracting(row -> row.get("closed"), row -> row.get("closure_note"))
-            .containsExactly(tuple(true, "Order issued"));
     }
 
     @Test
@@ -228,33 +219,34 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("keeps the judge's messages and the caseworker's query in one thread, each on the step it came with")
-    void keepsEachStepsMessageInTheOrdersThread() {
+    @DisplayName("keeps each query on the Messages tab as a closed message that came with the order, and the judge's "
+        + "message for court staff with the order, to send again")
+    void keepsEachQueryAsAClosedMessage() {
         asJudge.submitExpectingSuccess(startDraft("the judge's order"));
         Order draft = asJudge.start().order();
         asJudge.submitExpectingSuccess(withStaffMessage(draft, "Serve this by post."));
         choose(draft.id());
         Order order = asCaseworker.start().order();
-
         asCaseworker.submitExpectingSuccess(returnToJudge(order));
         var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
         Order returned = asAuthor.start().order();
-        // The judge's message stays in the thread, so the order comes back without it to send again.
-        assertThat(returned.formData()).doesNotContainKeys("staff-message", "staff-message-text");
-        assertThat(returned.queryFromCaseworker()).isEqualTo(QUERY);
+        assertThat(returned.formData()).containsEntry("staff-message-text", "Serve this by post.");
         asAuthor.submitExpectingSuccess(withStaffMessage(returned, "Paragraph 2 means the first defendant."));
+        Order resubmitted = asCaseworker.start().order();
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(RETURN_TO_JUDGE, resubmitted.id(),
+            resubmitted.version(), null, "Which defendant?", null));
 
-        assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.body, entry.message_id FROM order_steps step "
-            + "JOIN case_message_entry entry ON entry.id = step.message_entry_id WHERE step.order_id = ? "
-            + "ORDER BY step.id", order.id()))
-            .extracting(row -> row.get("state"), row -> row.get("body"))
-            .containsExactly(
-                tuple("SUBMITTED_FOR_REVIEW", "Serve this by post."),
-                tuple("RETURNED_TO_JUDGE", QUERY),
-                tuple("SUBMITTED_FOR_REVIEW", "Paragraph 2 means the first defendant."));
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM case_message_entry entry "
-            + "JOIN order_steps step ON step.message_entry_id = entry.id WHERE step.order_id = ? "
-            + "GROUP BY entry.message_id", Long.class, order.id())).isEqualTo(3L);
+        assertThat(asAuthor.start().order().queryFromCaseworker()).isEqualTo("Which defendant?");
+        assertThat(jdbcTemplate.queryForList("SELECT message.subject, message.closure_note, entry.body "
+            + "FROM case_message message JOIN case_message_entry entry ON entry.message_id = message.id "
+            + "JOIN pcs_case pc ON pc.id = message.case_id "
+            + "WHERE pc.case_reference = ? AND message.closed_at IS NOT NULL ORDER BY entry.created_at", caseReference))
+            .extracting(row -> row.get("body"), row -> row.get("closure_note"))
+            .containsExactly(tuple(QUERY, "Sent with the order, which went back to its judge"),
+                tuple("Which defendant?", "Sent with the order, which went back to its judge"));
+        String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
+        assertThat(tab).contains("There are no open messages", "Query on the order written ", QUERY)
+            .doesNotContain("Serve this by post.");
     }
 
     /** The judge submits the order for review with a message for court staff. */
