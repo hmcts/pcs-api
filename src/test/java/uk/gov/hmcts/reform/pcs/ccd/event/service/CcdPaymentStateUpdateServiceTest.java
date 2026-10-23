@@ -78,12 +78,12 @@ class CcdPaymentStateUpdateServiceTest {
 
         SchedulableInstance<CcdPaymentStateUpdateTaskData> scheduled = schedulableInstanceCaptor.getValue();
         TaskInstance<CcdPaymentStateUpdateTaskData> taskInstance = scheduled.getTaskInstance();
-
+        assertThat(scheduled.getNextExecutionTime(Instant.now())).isBetween(before, after);
         assertThat(taskInstance.getTaskName()).isEqualTo(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getTaskName());
         assertThat(taskInstance.getId()).isEqualTo(eventId + "-" + CASE_ID);
         assertThat(taskInstance.getData().getCaseReference()).isEqualTo(CASE_ID);
         assertThat(taskInstance.getData().getEventId()).isEqualTo(eventId);
-        assertThat(scheduled.getNextExecutionTime(Instant.now())).isBetween(before, after);
+
     }
 
     @ParameterizedTest
