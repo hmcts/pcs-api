@@ -242,7 +242,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                                class="govuk-button">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
@@ -258,7 +258,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                                class="govuk-button">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
