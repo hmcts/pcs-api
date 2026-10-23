@@ -1,5 +1,6 @@
 export const askTheCourtToMakeAnOrder = {
   mainHeader: `Ask the court to make an order on behalf of a defendant`,
+  mainHeader1: `Ask the court to suspend the eviction on behalf of the defendant`,
   theDefendantCanAskTheCourtParagraph: `The defendant can ask the court to make a decision at any point during their case. This is called an application.`,
   forExampleParagraph: `For example, they can use this to:`,
   addSomeoneList: `add someone as an extra party to their claim`,
