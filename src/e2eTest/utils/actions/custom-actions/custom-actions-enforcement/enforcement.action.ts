@@ -426,7 +426,7 @@ export class EnforcementAction implements IAction {
   private async continueFromCYAPage(cyaPageData: actionRecord){
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('reTryOnCallBackError', checkYourAnswersEnforcement.saveAndContinueButton, cyaPageData.nextPage as string);
+    await performAction('reTryOnCallBackError', checkYourAnswersEnforcement.submitApplication, cyaPageData.nextPage as string);
   }
 
   private async selectPayClaimFee(payClaimFeeDetails: actionRecord, page: Page) {
