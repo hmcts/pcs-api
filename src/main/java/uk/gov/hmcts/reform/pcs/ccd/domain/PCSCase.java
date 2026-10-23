@@ -745,6 +745,10 @@ public class PCSCase {
     @CCD(label = "Which application?", searchable = false, typeOverride = DynamicRadioList)
     private DynamicList messageGenAppList;
 
+    /** Whether the case has an open application for a message to name, which the event asks for only if it has. */
+    @CCD(searchable = false)
+    private YesOrNo messageOpenGenApps;
+
     @CCD(label = "Who is the message for?",
         searchable = false,
         typeOverride = FixedList,

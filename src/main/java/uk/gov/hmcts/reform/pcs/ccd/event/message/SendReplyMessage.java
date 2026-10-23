@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -105,12 +106,14 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         pages.page(MESSAGE_ACTION)
             .pageLabel("Send or reply to a message")
             .mandatory(PCSCase::getMessageAction)
-            .readonly(PCSCase::getMessageTaskMessageId, ShowConditions.NEVER_SHOW, true);
+            .readonly(PCSCase::getMessageTaskMessageId, ShowConditions.NEVER_SHOW, true)
+            .readonly(PCSCase::getMessageOpenGenApps, ShowConditions.NEVER_SHOW, true);
         pages.page("sendMessage", this::checkMessage)
             .showCondition(sending)
             .pageLabel("Send a new message")
             .mandatory(PCSCase::getMessageCategories)
-            .mandatory(PCSCase::getMessageGenAppList, "messageCategories CONTAINS \"APPLICATION\"")
+            .mandatory(PCSCase::getMessageGenAppList,
+                "messageCategories CONTAINS \"APPLICATION\" AND messageOpenGenApps=\"Yes\"")
             .mandatory(PCSCase::getMessageRecipient)
             .mandatory(PCSCase::getMessageSubject)
             .mandatory(PCSCase::getMessageUrgent)
@@ -145,6 +148,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .map(genApp -> DynamicListElement.builder().code(genApp.getId())
                 .label("GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName())).build())
             .toList()).build());
+        caseData.setMessageOpenGenApps(YesOrNo.from(!caseData.getMessageGenAppList().getListItems().isEmpty()));
         List<CaseMessageEntity> awaiting = messageService.awaiting(pcsCase, userRoleService.isJudge());
         // Started from a message's task, as XUI also does from the case when the user has one task for the event,
         // the event starts on replying to that message.
@@ -263,7 +267,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         Set<MessageCategory> categories = caseData.getMessageCategories();
         boolean aboutApplication = categories.contains(MessageCategory.APPLICATION);
         GenAppEntity genApp = aboutApplication ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
-        if (aboutApplication && genApp == null) {
+        // A case with no open application asks for none, as the message can be about one not yet entered.
+        if (aboutApplication && genApp == null && caseData.getMessageOpenGenApps() == YesOrNo.YES) {
             return rejected(List.of("Choose the open application the message is about"));
         }
         messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
