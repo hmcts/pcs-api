@@ -6,6 +6,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -16,54 +18,42 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What the frontend is sent when an order event starts: the order, the case it is made on, and the
- * hearing it is made for, if any.
+ * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
+ * made for, if any, and the application the judge's task asks them to decide, if it asks them to decide one.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) {
-
-    public OrderStart(Order order, CaseContext caseContext) {
-        this(order, caseContext, null);
-    }
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
 
     /**
-     * No id means the judge has no draft on the case, or on the application, yet. The version is the latest
-     * step's id, sent back with a change to the order. An order with an application decides it.
+     * No id means the judge has no draft for the hearing, or made without one, yet. The version is the latest
+     * step's id, sent back with a change to the order.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,
-                        OrderState state,
                         long version,
                         OrderType orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot,
-                        String queryFromCaseworker,
-                        UUID genAppId) {
+                        String queryFromCaseworker) {
 
-        /** A judge's first order on the case, or on one of its applications. */
-        public static Order none(UUID genAppId) {
-            return new Order(null, OrderState.DRAFT, 0, null, Map.of(), null, null, genAppId);
-        }
+        public static final Order NONE = new Order(null, 0, null, Map.of(), null, null);
 
         /** An order as its latest step left it, with the query it was returned with if it was. */
         public static Order of(OrderEntity order, OrderStepEntity latest, String queryFromCaseworker) {
-            return new Order(order.getId(), order.getState(), latest.getId(), latest.getOrderType(),
-                latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker, order.getGenAppId());
+            return new Order(order.getId(), latest.getId(), latest.getOrderType(),
+                latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker);
         }
     }
 
     /**
-     * Open means issued: nothing yet closes an application or a counterclaim. The open applications are every
-     * one an order made at a hearing, or without one, can decide, in the order they were made; an order made on
-     * one application, as box work, has that application.
+     * Open means issued: nothing yet closes a counterclaim. The applications are every one the order can decide,
+     * in the order they were made.
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
                               List<Party> claimants,
                               List<Party> defendants,
                               boolean openCounterclaim,
-                              boolean openApplication,
-                              List<Application> applications,
-                              Application application) {
+                              List<Application> applications) {
     }
 
     /**
@@ -120,6 +110,14 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
                           Recorded recorded,
                           String note,
                           List<JudicialNote> earlierNotes) {
+
+        /** The order's hearing as court staff reviewing it see it: when it was, without what the judge records. */
+        public static Hearing ofOrder(OrderEntity order) {
+            HearingEntity hearing = order.getHearing();
+            return hearing == null ? null : new Hearing(hearing.getId(), hearing.getHearingDate(),
+                order.getPcsCase().getLegislativeCountry() == LegislativeCountry.WALES, null, null, null, null,
+                List.of());
+        }
     }
 
     /** Who last updated the facts, and when. */

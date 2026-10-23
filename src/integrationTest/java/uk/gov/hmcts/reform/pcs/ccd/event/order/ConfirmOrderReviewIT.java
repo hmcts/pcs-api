@@ -117,7 +117,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         var outcome = asCaseworker.submitExpectingSuccess(returnToJudge(order));
 
-        assertThat(outcome.changed("orders", Order.class).state()).isEqualTo(RETURNED_TO_JUDGE);
+        assertThat(outcome.changed("orders", OrderRow.class).state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
         assertThat(events.view(caseReference, caseworker).getCaseNotes()).isNullOrEmpty();
         // The step that returned the order carries the query.
@@ -135,13 +135,12 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
         asAuthor.submitExpectingSuccess(change(SAVE_DRAFT, asAuthor.start().order(), "half way"));
         Order saved = asAuthor.start().order();
-        assertThat(saved.state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(saved.formData()).containsEntry("notes", "half way");
         assertThat(saved.queryFromCaseworker()).isEqualTo(QUERY);
 
-        Order resubmitted = asAuthor
+        OrderRow resubmitted = asAuthor
             .submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, saved, "the defendant named", "judge-query"))
-            .changed("orders", Order.class);
+            .changed("orders", OrderRow.class);
         assertThat(resubmitted.id()).isEqualTo(order.id());
         assertThat(resubmitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
         assertThat(asCaseworker.start().order().formData()).containsEntry("notes", "the defendant named");
@@ -171,7 +170,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         Order draft = asJudge.start().order();
 
         assertThat(asJudge.submitExpectingRejection(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
-            draft.id(), draft.version(), draft.orderType(), draft.formData(), NullNode.getInstance(), null), null))
+            draft.id(), draft.version(), draft.orderType(), draft.formData(), NullNode.getInstance()), null))
             .errors()).containsExactly(MakeOrder.NO_WORDING);
     }
 
@@ -241,6 +240,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         // The judge's message stays in the thread, so the order comes back without it to send again.
         assertThat(returned.formData()).doesNotContainKeys("staff-message", "staff-message-text");
         assertThat(returned.queryFromCaseworker()).isEqualTo(QUERY);
+        // The judge's message stays in the thread, so the order comes back without it to send again.
+        assertThat(returned.formData()).doesNotContainKeys("staff-message", "staff-message-text");
         asAuthor.submitExpectingSuccess(withStaffMessage(returned, "Paragraph 2 means the first defendant."));
 
         assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.body, entry.message_id FROM order_steps step "
@@ -260,7 +261,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     private static MakeOrderRequest withStaffMessage(Order order, String message) {
         return new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(order.id(), order.version(), order.orderType(),
             Map.of("notes", "the judge's order", "staff-message", List.of("yes"), "staff-message-text", message),
-            order.docweaveSnapshot(), null), null);
+            order.docweaveSnapshot()), null);
     }
 
     /** The judge submits an order for review, which the caseworker then chooses to review. */

@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
@@ -39,6 +40,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.HearingRecords.CHANGED_BY_ANOTHER_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
+import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
@@ -49,6 +51,8 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
  */
 @DisplayName("Make an order for a hearing")
 class MakeOrderForAHearingIT extends OrderEventIT {
+
+    private static final String HEARING_CHANGED = "The order is for a different hearing";
 
     private static final LocalDateTime FIRST_HEARING = LocalDateTime.of(2026, 9, 1, 10, 0);
     private static final LocalDateTime SECOND_HEARING = LocalDateTime.of(2026, 10, 13, 10, 0);
@@ -194,24 +198,64 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         forHearing(firstJudge, firstHearing)
             .submitExpectingSuccess(submission(SAVE_DRAFT, firstHearing, null, facts("900.00"), "draft note"));
 
-        Hearing reopened = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing();
-        assertThat(reopened.id()).isEqualTo(firstHearing);
+        Hearing reopened = forHearing(firstJudge, firstHearing).start().hearing();
         assertThat(reopened.caseFacts().currentRent()).isEqualByComparingTo("900.00");
         assertThat(reopened.note()).isEqualTo("draft note");
-        assertThat(forHearing(firstJudge, secondHearing).start().hearing().id())
-            .as("a link to another hearing opens the draft, for its own hearing").isEqualTo(firstHearing);
-        assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
-                change(firstHearing, secondHearing)).errors())
-            .containsExactly("The order is for a different hearing");
-        assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
-                change(firstHearing, null)).errors())
-            .containsExactly("The order's hearing record is missing");
 
         // Another judge records newer facts for the hearing; the draft reopens with them.
         submitForReview(secondJudge, firstHearing, reopened.version(), facts("950.00"), "draft note");
-        Hearing latest = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing();
+        Hearing latest = forHearing(firstJudge, firstHearing).start().hearing();
         assertThat(latest.caseFacts().currentRent()).isEqualByComparingTo("950.00");
         assertThat(latest.recorded().by()).isEqualTo("Second Judge");
+    }
+
+    @Test
+    @DisplayName("keeps a judge's draft for each hearing apart from their draft made without one, each keeping its "
+        + "hearing")
+    void keepsADraftForEachHearing() {
+        forHearing(firstJudge, firstHearing)
+            .submitExpectingSuccess(submission(SAVE_DRAFT, firstHearing, null, facts("900.00"), null));
+        events.external(caseReference, MAKE_ORDER).as(firstJudge).submitExpectingSuccess(startDraft("on the papers"));
+
+        assertThat(forHearing(firstJudge, firstHearing).start().order().id()).isNotNull();
+        OrderStart second = forHearing(firstJudge, secondHearing).start();
+        assertThat(second.order().id()).as("the second hearing has no draft yet").isNull();
+        assertThat(second.hearing().id()).isEqualTo(secondHearing);
+        OrderStart papers = events.external(caseReference, MAKE_ORDER).as(firstJudge).start();
+        assertThat(papers.order().formData()).containsEntry("notes", "on the papers");
+        assertThat(papers.hearing()).isNull();
+
+        assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
+                change(firstHearing, secondHearing)).errors())
+            .containsExactly(HEARING_CHANGED);
+        assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
+                change(firstHearing, null)).errors())
+            .containsExactly(HEARING_CHANGED);
+        OrderStart.Order onPapers = papers.order();
+        assertThat(events.external(caseReference, MAKE_ORDER).as(firstJudge).submitExpectingRejection(
+                new MakeOrderRequest(SAVE_DRAFT, new OrderChange(onPapers.id(), onPapers.version(),
+                    onPapers.orderType(), Map.of(), WORDING), null,
+                    new HearingChange(firstHearing, null, facts("900.00"), null))).errors())
+            .as("a draft made without a hearing is not given one").containsExactly(HEARING_CHANGED);
+    }
+
+    @Test
+    @DisplayName("shows court staff reviewing the order which hearing it was made for, without the facts and note the "
+        + "judge records for the hearing")
+    void showsCourtStaffTheOrdersHearing() {
+        UUID orderId = forHearing(firstJudge, firstHearing)
+            .submitExpectingSuccess(submission(SUBMIT_FOR_REVIEW, firstHearing, null, facts("900.00"), "a note"))
+            .changed("orders", OrderRow.class).id();
+
+        Hearing reviewed = events.external(caseReference, CONFIRM_ORDER_REVIEW)
+            .as(events.registerActor("A", "Caseworker", "caseworker-pcs"))
+            .withClientContext(Map.of("orderId", orderId.toString())).start().hearing();
+
+        assertThat(reviewed.id()).isEqualTo(firstHearing);
+        assertThat(reviewed.date()).isEqualTo(FIRST_HEARING);
+        assertThat(reviewed.caseFacts()).isNull();
+        assertThat(reviewed.note()).isNull();
+        assertThat(reviewed.earlierNotes()).isEmpty();
     }
 
     @Test
@@ -260,7 +304,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     private static MakeOrderRequest submission(MakeOrderRequest.Action action, int hearingId, Long version,
                                                CaseFacts facts, String note) {
         return new MakeOrderRequest(action,
-            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), WORDING, null), null,
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), WORDING), null,
             new HearingChange(hearingId, version, facts, note));
     }
 
@@ -269,7 +313,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         Hearing hearing = forHearing(firstJudge, draftsHearing).start().hearing();
         OrderStart.Order draft = forHearing(firstJudge, draftsHearing).start().order();
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(draft.id(), draft.version(), draft.orderType(), Map.of(), WORDING, null), null,
+            new OrderChange(draft.id(), draft.version(), draft.orderType(), Map.of(), WORDING), null,
             hearingId == null ? null : new HearingChange(hearingId, hearing.version(), facts("900.00"), null));
     }
 

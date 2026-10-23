@@ -227,15 +227,15 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("closes the messages about an application that wait for a judge once a judge sends an order "
-        + "deciding it for review")
+    @DisplayName("closes the messages about an application that wait for a judge once a judge sends any order "
+        + "deciding it for review, not only one from the message's link")
     void closesTheApplicationsMessagesWhenItsOrderIsSent() {
         UUID genAppId = send();
         UUID messageId = replyList(judge).getFirst().getCode();
 
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
-            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.APPLICATION_DECISION,
-                Map.of("app-" + genAppId + "-decision", "grant"), WORDING, genAppId), null));
+            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.FREE_FORM,
+                Map.of("app-" + genAppId + "-decision", "grant"), WORDING), null));
 
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
@@ -273,7 +273,7 @@ class SendReplyMessageIT extends OrderEventIT {
     void keepsTheOrdersStaffMessage() {
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.FREE_FORM,
-                Map.of("staff-message", List.of("yes"), "staff-message-text", "Serve this by post."), WORDING, null),
+                Map.of("staff-message", List.of("yes"), "staff-message-text", "Serve this by post."), WORDING),
             null));
 
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())

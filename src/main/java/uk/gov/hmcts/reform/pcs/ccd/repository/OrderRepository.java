@@ -11,9 +11,9 @@ import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
-    /** A judge's draft for the case, or for one of its applications; a null application finds the case's. */
-    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
-        long caseReference, String authorIdamUserId, OrderState state, UUID genAppId);
+    /** A judge's draft for one of the case's hearings, or with a null hearing, their draft made without one. */
+    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
+        long caseReference, String authorIdamUserId, OrderState state, Integer hearingId);
 
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
         UUID id, long caseReference, String authorIdamUserId, Collection<OrderState> states);

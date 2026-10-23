@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
@@ -12,10 +13,12 @@ import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 
@@ -49,7 +52,7 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     /** A judge saves a first draft, which has no id yet. */
     protected static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), WORDING, null), null);
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), WORDING), null);
     }
 
     /** The judge acts on the order as they last saw it, with a new note. */
@@ -61,7 +64,12 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     protected static MakeOrderRequest change(MakeOrderRequest.Action action, Order order, String notes,
                                              String taskId) {
         return new MakeOrderRequest(action, new OrderChange(
-            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot(), null),
+            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot()),
             taskId);
+    }
+
+    /** The orders row an event changed: where the order now is. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    protected record OrderRow(UUID id, OrderState state) {
     }
 }

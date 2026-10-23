@@ -16,12 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
@@ -37,7 +39,9 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -49,10 +53,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JU
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 
 /**
- * A judge makes an order in pcs-frontend. Each judge has one working draft per case, which a change
- * with no id starts. An order a caseworker returned is the judge's to change and resubmit, opened from
- * the task its return gave them. An order made for a hearing records the case's facts and the judge's
- * note for that hearing whenever the judge saves it. An application has its own draft beside the case's.
+ * A judge makes an order in pcs-frontend. Each judge has one working draft per hearing on the case, and one
+ * made without a hearing, which a change with no id starts; the draft's hearing never changes. An order a
+ * caseworker returned is the judge's to change and resubmit, opened from the task its return gave them. An order
+ * made for a hearing records the case's facts and the judge's note for that hearing whenever the judge saves it.
+ * The task that asks a judge to decide an application names it, for the page to put first and require.
  */
 @Component
 @AllArgsConstructor
@@ -63,6 +68,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     static final String ALREADY_DECIDED =
         "Another order on this application is with court staff, back with its judge, or has decided it";
+    static final String WITHOUT_NOTICE_ALONE =
+        "Decide an application made without notice in an order of its own, without the claim or another application";
 
     /** The states that leave an order its author's to change. */
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
@@ -108,27 +115,28 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         String judge = IdamUserIds.normalise(start.user().id());
         PcsCaseEntity pcsCase = findCase(caseReference);
         OrderLink link = start.clientContext().as(OrderLink.class).orElse(OrderLink.NONE);
-        Optional<UUID> chosenOrderId = Optional.ofNullable(link.orderId());
-        UUID genAppId = chosenOrderId.isEmpty() ? Optional.ofNullable(link.genAppId())
-            .map(id -> openGenApp(pcsCase, id).getId()).orElse(null) : null;
-        Optional<OrderEntity> order = chosenOrderId.isPresent()
-            ? Optional.of(chosenOrder(chosenOrderId.get(), caseReference, judge))
-            : orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
-                caseReference, judge, DRAFT, genAppId);
-        if (order.isEmpty() && genAppId != null) {
-            requireDecidable(pcsCase, genAppId);
+        Optional<OrderEntity> order = link.orderId() != null
+            ? Optional.of(chosenOrder(link.orderId(), caseReference, judge))
+            : orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
+                caseReference, judge, DRAFT, link.hearingId());
+        UUID orderId = order.map(OrderEntity::getId).orElse(null);
+        GenAppEntity task = link.orderId() != null || link.genAppId() == null ? null
+            : openGenApp(pcsCase, link.genAppId());
+        // A judge reopens their draft whatever another order has done since, which refuses it when it is sent.
+        if (task != null && !orderTasks.canDecide(task, orderId)) {
+            if (order.isEmpty()) {
+                throw ExternalRejection.because(ALREADY_DECIDED);
+            }
+            task = null;
         }
+        HearingEntity hearing = order.map(OrderEntity::getHearing).orElseGet(() ->
+            link.hearingId() == null ? null : hearingRecords.hearing(pcsCase, link.hearingId()));
         OrderStart.Order workingOrder = order
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
-                chosenOrderId.isPresent() ? messageService.lastOrderMessage(o, false).orElse(null) : null))
-            .orElseGet(() -> OrderStart.Order.none(genAppId));
-        // An order already under way stays with the hearing it was started for.
-        HearingEntity hearing = order.map(OrderEntity::getHearing)
-            .or(() -> Optional.ofNullable(link.hearingId()).map(id -> hearingRecords.hearing(pcsCase, id)))
-            .orElse(null);
-        return ExternalStartResponse.started(new OrderStart(workingOrder,
-            orderCaseContext.of(pcsCase, workingOrder.id(), workingOrder.genAppId()),
-            hearing == null ? null : hearingRecords.start(pcsCase, hearing)));
+                link.orderId() != null ? messageService.lastQuery(o).orElse(null) : null))
+            .orElse(OrderStart.Order.NONE);
+        return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase, orderId),
+            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId()));
     }
 
     /** A returned order the judge's task links to. */
@@ -149,24 +157,22 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = submit.caseReference();
         String judge = IdamUserIds.normalise(submit.user().id());
         OrderEntity order = change.id() == null
-            ? newDraft(caseReference, judge, change.genAppId())
+            ? newDraft(caseReference, judge, request.hearing())
             : workingDraft(caseReference, judge, change);
-        // Every application the order decides, whether made on it or at a hearing, must still be the judge's to decide.
-        if (request.action() == SUBMIT_FOR_REVIEW && order.getPcsCase().getGenApps().stream()
-            .anyMatch(genApp -> OrderTasks.decides(change.formData(), genApp)
-                && !orderTasks.canDecide(genApp, order.getId()))) {
-            throw ExternalRejection.because(ALREADY_DECIDED);
+        List<GenAppEntity> decided = order.getPcsCase().getGenApps().stream()
+            .filter(genApp -> OrderTasks.decides(change.formData(), genApp))
+            .toList();
+        if (request.action() == SUBMIT_FOR_REVIEW) {
+            requireDecidable(order, change, decided);
         }
-        if (order.getHearing() != null && request.hearing() == null) {
-            throw ExternalRejection.because("The order's hearing record is missing");
+        Integer hearingId = order.getHearing() == null ? null : order.getHearing().getId();
+        if (!Objects.equals(hearingId, request.hearing() == null ? null : request.hearing().id())) {
+            throw ExternalRejection.because("The order is for a different hearing");
         }
-        if (request.hearing() != null) {
-            HearingEntity hearing = forHearing(order, request.hearing());
-            // The order holds no copy of the hearing's facts and note, which are recorded only when the judge
-            // changed them, so another judge's are not refused or overwritten by a save that left them alone.
-            if (request.hearing().caseFacts() != null) {
-                hearingRecords.record(order.getPcsCase(), hearing, request.hearing());
-            }
+        // The order holds no copy of the hearing's facts and note, which are recorded only when the judge changed
+        // them, so another judge's are not refused or overwritten by a save that left them alone.
+        if (request.hearing() != null && request.hearing().caseFacts() != null) {
+            hearingRecords.record(order.getPcsCase(), order.getHearing(), request.hearing());
         }
         final boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
         OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
@@ -181,11 +187,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
-        // The task the judge opened the order from: its return, or the application it decides.
+        // The task the judge opened the order from: its return, a hearing's, or the application it decides.
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
-        if (order.getGenAppId() != null) {
-            messageService.closeAnsweredByOrder(order, orderTasks.currentUserName("Judge"));
-        }
+        messageService.closeAnsweredByOrder(order, decided, orderTasks.currentUserName("Judge"));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
@@ -200,26 +204,12 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .map(Object::toString).map(String::trim).filter(text -> wanted && !text.isEmpty());
     }
 
-    /** The hearing the order is for, which a change can give an order that has none. */
-    private HearingEntity forHearing(OrderEntity order, HearingChange change) {
-        HearingEntity hearing = hearingRecords.hearing(order.getPcsCase(), change.id());
-        if (order.getHearing() == null) {
-            order.setHearing(hearing);
-        } else if (!order.getHearing().getId().equals(hearing.getId())) {
-            throw ExternalRejection.because("The order is for a different hearing");
-        }
-        return hearing;
-    }
-
-    /**
-     * A judge has one draft per case, and one per application on it, which the database enforces. A draft
-     * on an application needs it to be open.
-     */
-    private OrderEntity newDraft(long caseReference, String judge, UUID genAppId) {
+    /** A judge's new draft, for the hearing the change is for, if it is for one, which it keeps. */
+    private OrderEntity newDraft(long caseReference, String judge, HearingChange hearing) {
         PcsCaseEntity pcsCase = findCase(caseReference);
         return OrderEntity.builder()
             .pcsCase(pcsCase)
-            .genAppId(genAppId == null ? null : openGenApp(pcsCase, genAppId).getId())
+            .hearing(hearing == null ? null : hearingRecords.hearing(pcsCase, hearing.id()))
             .authorIdamUserId(judge)
             .authorName(securityContextService.getCurrentUserDetails().getName())
             .state(DRAFT)
@@ -235,10 +225,17 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         return draft;
     }
 
-    /** Another order on the application, under way or issued, already decides it. */
-    private void requireDecidable(PcsCaseEntity pcsCase, UUID genAppId) {
-        if (!orderTasks.canDecide(openGenApp(pcsCase, genAppId))) {
+    /**
+     * Every application the order decides must still be the judge's to decide, and one made without notice is
+     * decided alone, so that its order goes only to those who may see the application.
+     */
+    private void requireDecidable(OrderEntity order, OrderChange change, List<GenAppEntity> decided) {
+        if (decided.stream().anyMatch(genApp -> !orderTasks.canDecide(genApp, order.getId()))) {
             throw ExternalRejection.because(ALREADY_DECIDED);
+        }
+        boolean alone = decided.size() == 1 && change.orderType() == OrderType.NO_ORDER_ON_CLAIM;
+        if (!alone && decided.stream().anyMatch(genApp -> genApp.getWithoutNotice() == VerticalYesNo.YES)) {
+            throw ExternalRejection.because(WITHOUT_NOTICE_ALONE);
         }
     }
 
