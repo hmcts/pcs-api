@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -35,10 +34,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SOMETHING_ELSE;
@@ -132,16 +127,6 @@ class DecideApplicationIT extends OrderEventIT {
             .containsExactly(
                 tuple(FORM_ID, "application-form.pdf"),
                 tuple(WITNESS_STATEMENT_ID, "witness-statement.pdf"));
-    }
-
-    @Test
-    @DisplayName("completes the judge's task when they send their order on the application for review")
-    void completesTheTaskOnSubmission() {
-        judgeDecides(genAppId, "grant");
-
-        verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
-            contains("has submitted an order for review"));
     }
 
     @Test

@@ -242,8 +242,6 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         // The judge's message stays in the thread, so the order comes back without it to send again.
         assertThat(returned.formData()).doesNotContainKeys("staff-message", "staff-message-text");
         assertThat(returned.queryFromCaseworker()).isEqualTo(QUERY);
-        // The judge's message stays in the thread, so the order comes back without it to send again.
-        assertThat(returned.formData()).doesNotContainKeys("staff-message", "staff-message-text");
         asAuthor.submitExpectingSuccess(withStaffMessage(returned, "Paragraph 2 means the first defendant."));
 
         assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.body, entry.message_id FROM order_steps step "

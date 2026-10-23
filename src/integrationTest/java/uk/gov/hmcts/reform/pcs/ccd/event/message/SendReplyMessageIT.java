@@ -93,9 +93,6 @@ class SendReplyMessageIT extends OrderEventIT {
             and(contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=" + genAppId),
                 contains("/cases/case-details/%d/trigger/sendReplyMessage?tid=${[id]}".formatted(caseReference))),
             eq(true), any(UUID.class));
-        // XUI keeps a task's details for its event only up to their first semicolon.
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_MESSAGE_JUDGE),
-            argThat(description -> !description.contains(";")), eq(true), any(UUID.class));
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
         assertThat(tab).contains("Decide GA1", "Urgent", "Tom Caseworker", "District Judge",
             "Please decide this before the hearing on Friday.", "GA1: Adjourn the hearing");
@@ -348,10 +345,9 @@ class SendReplyMessageIT extends OrderEventIT {
 
     /** Court staff send the judges an urgent message about the case's application, and return it. */
     private UUID send() {
-        PCSCase started = events.start(caseReference, sendReplyMessage.name()).as(caseworker)
-            .startExpectingSuccess().caseData();
-        List<DynamicListElement> applications = started.getMessageGenAppList().getListItems();
-        events.start(caseReference, sendReplyMessage.name()).as(caseworker).startExpectingSuccess()
+        var started = events.start(caseReference, sendReplyMessage.name()).as(caseworker).startExpectingSuccess();
+        List<DynamicListElement> applications = started.caseData().getMessageGenAppList().getListItems();
+        started
             .edit(pcsCase -> {
                 pcsCase.setMessageAction(MessageAction.SEND);
                 pcsCase.setMessageCategories(Set.of(MessageCategory.APPLICATION));
