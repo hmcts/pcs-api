@@ -811,7 +811,7 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
     });
     await performAction('clickButton', nameAndAddressForEviction.cancelLink);
     await performValidation('mainHeader', caseSummary.mainHeader);
-    await performAction('deleteDraftApplication');
+    await performAction('resumeDraftApplication');
   });
 
   test('As a Claimant user, the enforcement draft application can be deleted after selecting a writ of possession @enforcement @regression', async () => {
@@ -828,7 +828,7 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
     });
     await performAction('clickButton', nameAndAddressForEviction.cancelLink);
     await performValidation('mainHeader', caseSummary.mainHeader);
-    await performAction('deleteDraftApplication');
+    await performAction('resumeDraftApplication');
   });
   test ('As a claimant user, I can resume the draft application of enforcement @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);

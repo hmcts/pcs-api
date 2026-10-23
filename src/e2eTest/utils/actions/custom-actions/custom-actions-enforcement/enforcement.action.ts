@@ -81,7 +81,9 @@ export class EnforcementAction implements IAction {
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
-      ['resumeDraftApplication', () => this.resumeDraftApplication(page)]
+      ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
+      ['deleteDraftApplication', () => this.deleteDraftApplication()]
+      
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
