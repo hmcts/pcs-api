@@ -138,15 +138,19 @@ class DecideApplicationIT extends OrderEventIT {
                 .applicationSubmittedDate(LocalDateTime.of(2026, 10, 9, 14, 0)).build());
             pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(SOMETHING_ELSE).state(GEN_APP_ISSUED)
                 .somethingElseDetails("Extend the validity of the warrant")
-                .applicationSubmittedDate(LocalDateTime.of(2026, 10, 10, 14, 0)).build());
+                .applicationSubmittedDate(LocalDateTime.of(2026, 10, 10, 14, 0))
+                .applicationReceivedDate(LocalDate.of(2026, 10, 8)).build());
         });
 
         OrderStart start = events.external(caseReference, MAKE_ORDER).as(judge).start();
 
         assertThat(start.caseContext().application()).isNull();
         assertThat(start.caseContext().applications())
-            .extracting(Application::reference, Application::warrantSuspension)
-            .containsExactly(tuple("GA1", false), tuple("GA2", true), tuple("GA3", false));
+            .extracting(Application::reference, Application::warrantSuspension, Application::submittedOn)
+            .containsExactly(tuple("GA1", false, LocalDate.of(2026, 10, 1)),
+                tuple("GA2", true, LocalDate.of(2026, 10, 9)),
+                // Entered by court staff from paper, it is dated when the court received it.
+                tuple("GA3", false, LocalDate.of(2026, 10, 8)));
         assertThat(start.caseContext().applications()).extracting(Application::id).doesNotContainNull()
             .first().isEqualTo(genAppId);
     }
