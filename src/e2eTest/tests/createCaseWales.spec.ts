@@ -37,7 +37,6 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
   statementOfTruth,
-  exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales,
   underlesseeMortgageeDetails,
@@ -79,9 +78,6 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', exemptLandlord.mainHeader);
-    await performAction('selectClaimantDetails',
-        {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
@@ -212,9 +208,6 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', exemptLandlord.mainHeader);
-    await performAction('selectClaimantDetails',
-      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
@@ -356,9 +349,6 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', exemptLandlord.mainHeader);
-    await performAction('selectClaimantDetails',
-        {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.noRadioOption});
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
@@ -492,9 +482,6 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', exemptLandlord.mainHeader);
-    await performAction('selectClaimantDetails',
-        {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.noRadioOption});
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
@@ -620,9 +607,6 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', exemptLandlord.mainHeader);
-    await performAction('selectClaimantDetails',
-      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
@@ -770,9 +754,6 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', exemptLandlord.mainHeader);
-    await performAction('selectClaimantDetails',
-      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
@@ -895,9 +876,6 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', exemptLandlord.mainHeader);
-    await performAction('selectClaimantDetails',
-      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,

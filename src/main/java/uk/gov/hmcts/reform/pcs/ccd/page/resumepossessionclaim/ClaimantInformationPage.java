@@ -33,6 +33,7 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             .label("claimantInformation-separator", "---")
             .readonly(PCSCase::getRegionId, NEVER_SHOW, true)
             .readonly(PCSCase::getCaseManagementLocationNumber, NEVER_SHOW, true)
+            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .complex(PCSCase::getClaimantInformation)
             .readonly(ClaimantInformation::getOrgNameFound, NEVER_SHOW, true)
             .readonlyNoSummary(ClaimantInformation::getClaimantName, ORG_NAME_FOUND)
