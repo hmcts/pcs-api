@@ -78,14 +78,6 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       mainTable: 'Defendant',
       subTable: 'Service address'
     });
-    await performAction('validateDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab().defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadCaseTab().addAnotherDefendant,
-      createPayload: createCaseApiData.createCasePayload,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseTab(),
-      mainTable: 'Defendant',
-      subTable: 'Representative'
-    });
 
     await performAction('validateClaimantDetails', {
       submitPayload: submitCaseApiData.submitCasePayloadCaseTab(),

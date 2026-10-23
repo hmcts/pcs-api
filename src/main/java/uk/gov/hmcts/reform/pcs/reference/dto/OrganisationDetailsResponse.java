@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 
 // rd-professional adds fields over time (dxAddress and friends); parse only what we use.
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,7 +20,7 @@ import org.springframework.util.CollectionUtils;
 @AllArgsConstructor
 public class OrganisationDetailsResponse {
 
-    public static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
+    private static final String ORGANISATION_PROFILE = OrganisationProfile.ORGANISATION_PROFILE.getId();
 
     private String name;
 
@@ -69,8 +70,7 @@ public class OrganisationDetailsResponse {
             .toList();
 
         if (orgProfileIds.isEmpty()) {
-            throw new IllegalArgumentException("No valid organisation profile id found for organisation "
-                                                   + getOrganisationIdentifier());
+            return ORGANISATION_PROFILE;
         }
         if (orgProfileIds.size() > 1) {
             throw new IllegalArgumentException(

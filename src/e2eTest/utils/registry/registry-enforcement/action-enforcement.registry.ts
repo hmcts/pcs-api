@@ -92,6 +92,7 @@ export class ActionEnforcementRegistry {
     ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
   ]);
 
   static getAction(actionName: string): IAction {

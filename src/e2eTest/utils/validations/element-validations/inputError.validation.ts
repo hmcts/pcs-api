@@ -25,7 +25,11 @@ export class InputErrorValidation implements IValidation {
       // Date fields
       page.locator(
         `//legend//span[normalize-space()="${fieldName}"]/following::span[contains(@class,'error-message')][1]`
-      )
+      ),
+
+      page.locator(
+        `//label[normalize-space()="${fieldName}"]/ancestor::fieldset[1]//span[contains(@class,'error-message')]`
+      ),
     ];
 
 
@@ -34,25 +38,20 @@ export class InputErrorValidation implements IValidation {
       const count = await locator.count();
 
       if (count === 0) {
-        throw new Error(`The error message "${data}" is not triggered (no elements found).`);
-      }
-
-      if (count === 1) {
-        const item = locator.first();
-        if (await item.isVisible()) {
-          return item;
-        }
-        throw new Error(`The error message "${data}" exists but is hidden.`);
+        continue;
       }
 
       for (let i = 0; i < count; i++) {
         const item = locator.nth(i);
+
         if (await item.isVisible()) {
           return item;
         }
       }
-
     }
-    throw new Error(`The error message "${data}" is not triggered`);
+
+    throw new Error(
+      `The error message "${JSON.stringify(data)}" is not triggered or not visible.`
+    );
   }
 }

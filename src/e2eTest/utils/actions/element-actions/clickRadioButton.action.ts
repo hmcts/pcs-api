@@ -14,6 +14,7 @@ export class ClickRadioButtonAction implements IAction {
       () => this.radioPattern2(page, question, option, idx),
       () => this.radioPattern4(page, question, option, idx),
       () => this.radioPattern3(page, question, option, idx),
+      () => this.radioPattern5(page, question, option, idx),
     ];
 
     // count() below never retries, so wait for a settled DOM first. Only the
@@ -80,7 +81,10 @@ export class ClickRadioButtonAction implements IAction {
 
   private radioPattern3(page: Page, question: string, option: string, idx: number) {
     return page.locator(`label >> text=${option}`);
-  } 
+  }
+
+  private radioPattern5(page: Page, question: string, option: string, idx: number) {
+    return page.getByLabel(option, { exact: true });
+  }
 }
 
- 
