@@ -30,7 +30,7 @@ public class PlainTextFilter implements Filter {
 
     public static String encode(String text) {
         StringBuilder html = new StringBuilder();
-        text.replace("\r\n", "\n").chars().forEach(c -> {
+        text.replace("\r\n", "\n").replace('\r', '\n').chars().forEach(c -> {
             if (c == '\n') {
                 html.append("<br>");
             } else if (SPECIAL.indexOf(c) >= 0) {
