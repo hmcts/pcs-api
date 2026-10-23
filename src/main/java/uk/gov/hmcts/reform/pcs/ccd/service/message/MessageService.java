@@ -11,30 +11,32 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderTasks;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
  * Messages between court staff and judges on a case. Sending or replying gives the recipient role's pool a task to
  * review the message; closing one without a reply gives the pool of whoever wrote its latest message a task to see
- * that it is closed. An order has a thread of its own, holding the judge's messages to court staff with it and court
- * staff's queries when they return it, each pointed at by the order step it was sent with; the order's tasks already
- * ask for those to be read, so they give no task here.
+ * that it is closed. Court staff's query on an order they return is kept as a closed message, pointed at by the step
+ * that returned it: the judge answers it by changing the order, from the order's own task, so it gives no task here.
  */
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+
+    private static final DateTimeFormatter WRITTEN = DateTimeFormatter.ofPattern("d MMM yyyy");
 
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
@@ -47,15 +49,11 @@ public class MessageService {
                           boolean urgent, String body) {
     }
 
-    /**
-     * The case's open messages whose latest message is for the user's side: a judge's, or court staff's. An order's
-     * thread is not one, as it is answered by changing or reviewing the order, from the order's own tasks.
-     */
+    /** The case's open messages whose latest message is for the user's side: a judge's, or court staff's. */
     public List<CaseMessageEntity> awaiting(PcsCaseEntity pcsCase, boolean judge) {
         return pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
             .filter(message -> message.latest().getRecipientRole().isJudicial() == judge)
-            .filter(message -> !orderStepRepository.existsByMessageEntryMessage(message))
             .sorted(Comparator.comparing(CaseMessageEntity::createdAt))
             .toList();
     }
@@ -123,17 +121,22 @@ public class MessageService {
     }
 
     /**
-     * A judge's message for court staff with their order, or court staff's query when they return it, saved so the
-     * step it is sent with can point at it.
+     * Court staff's query on the order they return to its judge, kept on the Messages tab as a closed message that says
+     * it came with the order and when the judge wrote it. Saved so the returning step can point at it.
      */
-    public CaseMessageEntryEntity recordOrderMessage(OrderEntity order, String orderType, String senderName,
-                                                     boolean fromJudge, String body) {
-        MessageRecipient sender = MessageRecipient.of(fromJudge);
-        // Signed with the sender's role if IDAM gave them no name.
-        String name = senderName == null || senderName.isBlank() ? sender.getLabel() : senderName;
-        CaseMessageEntryEntity entry = entry(new Writing(name, sender, MessageRecipient.of(!fromJudge), false, body),
-            Instant.now(utcClock));
-        orderThread(order, orderType).addEntry(entry);
+    public CaseMessageEntryEntity recordOrderQuery(OrderEntity order, Instant written, String staffName,
+                                                   String query) {
+        // Signed with the role if IDAM gave them no name.
+        String name = staffName == null || staffName.isBlank() ? MessageRecipient.COURT_STAFF.getLabel() : staffName;
+        CaseMessageEntity message = CaseMessageEntity.builder()
+            .subject("Query on the order written " + WRITTEN.format(written.atZone(UK_ZONE_ID)))
+            .categories(EnumSet.of(MessageCategory.OTHER))
+            .build();
+        CaseMessageEntryEntity entry = entry(new Writing(name, MessageRecipient.COURT_STAFF,
+            MessageRecipient.of(true), false, query), Instant.now(utcClock));
+        message.addEntry(entry);
+        close(message, name, "Sent with the order, which went back to its judge");
+        order.getPcsCase().addMessage(message);
         // The case cascades to its messages, so flushing inserts the entry the step is about to point at.
         orderStepRepository.flush();
         return entry;
@@ -141,11 +144,10 @@ public class MessageService {
 
     /**
      * Closes the case's open messages about the applications that wait for a judge, once a judge sends an order
-     * deciding them for review: the order answers them. The order's own thread stays open until it is issued.
+     * deciding them for review: the order answers them.
      */
     public void closeAnsweredByOrder(OrderEntity order, Collection<GenAppEntity> decided, String judgeName) {
         PcsCaseEntity pcsCase = order.getPcsCase();
-        // An order's own thread is about no application, so it stays open.
         pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
             .filter(message -> decided.contains(message.getGenApp()))
@@ -158,39 +160,11 @@ public class MessageService {
             });
     }
 
-    /** Closes the order's open thread once the order is issued, as nothing more is waited for on it. */
-    public void closeOrderThread(OrderEntity order, String closedBy) {
-        orderEntries(order).map(CaseMessageEntryEntity::getMessage).distinct()
-            .filter(CaseMessageEntity::isOpen)
-            .forEach(message -> close(message, closedBy, "Order issued"));
-    }
-
     /** Court staff's last query on the order, which they returned it with. */
     public Optional<String> lastQuery(OrderEntity order) {
-        return orderEntries(order)
-            .filter(entry -> !entry.getSenderRole().isJudicial())
-            .findFirst()
-            .map(CaseMessageEntryEntity::getBody);
-    }
-
-    /** The messages sent with the order's steps, the latest first. */
-    private Stream<CaseMessageEntryEntity> orderEntries(OrderEntity order) {
         return orderStepRepository.findByOrderIdAndMessageEntryIsNotNullOrderByIdDesc(order.getId()).stream()
-            .map(OrderStepEntity::getMessageEntry);
-    }
-
-    private CaseMessageEntity orderThread(OrderEntity order, String orderType) {
-        return orderEntries(order).map(CaseMessageEntryEntity::getMessage)
-            .filter(CaseMessageEntity::isOpen)
             .findFirst()
-            .orElseGet(() -> {
-                CaseMessageEntity started = CaseMessageEntity.builder()
-                    .subject(Character.toUpperCase(orderType.charAt(0)) + orderType.substring(1) + " order")
-                    .categories(EnumSet.of(MessageCategory.OTHER))
-                    .build();
-                order.getPcsCase().addMessage(started);
-                return started;
-            });
+            .map(step -> step.getMessageEntry().getBody());
     }
 
     /** Gives the pool of the side the message waits for a task to review it. */
