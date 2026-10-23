@@ -109,6 +109,42 @@ class PcsCaseEntityTest {
         // Then
         verify(counterClaim).setRank(4);
         verify(counterClaim).setPcsCase(underTest);
+    void shouldAddCaseReviewDateEntityAndSetCaseLevelRank() {
+        // Given
+        CaseReviewDateEntity reviewDateEntity1 = mock(CaseReviewDateEntity.class);
+        CaseReviewDateEntity reviewDateEntity2 = mock(CaseReviewDateEntity.class);
+        CaseReviewDateEntity reviewDateEntity3 = mock(CaseReviewDateEntity.class);
+
+        // When
+        underTest.addCaseReviewDate(reviewDateEntity1);
+        underTest.addCaseReviewDate(reviewDateEntity2);
+        underTest.addCaseReviewDate(reviewDateEntity3);
+
+        // Then
+        verify(reviewDateEntity1).setReviewDateNumber(1);
+        verify(reviewDateEntity1).setPcsCase(underTest);
+
+        verify(reviewDateEntity2).setReviewDateNumber(2);
+        verify(reviewDateEntity2).setPcsCase(underTest);
+
+        verify(reviewDateEntity3).setReviewDateNumber(3);
+        verify(reviewDateEntity3).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldContinueCaseReviewDateCaseLevelRankFromExistingReviewDates() {
+        // Given
+        for (int i = 0; i < 5; i++) {
+            underTest.getReviewDates().add(mock(CaseReviewDateEntity.class));
+        }
+        CaseReviewDateEntity reviewDateEntity = mock(CaseReviewDateEntity.class);
+
+        // When
+        underTest.addCaseReviewDate(reviewDateEntity);
+
+        // Then
+        verify(reviewDateEntity).setReviewDateNumber(6);
+        verify(reviewDateEntity).setPcsCase(underTest);
     }
 
     @Test
@@ -123,6 +159,20 @@ class PcsCaseEntityTest {
         assertThat(underTest.getHearings()).hasSize(1);
         assertThat(underTest.getHearings().getFirst()).isEqualTo(hearingEntity);
         verify(hearingEntity).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldAddJudicialNote() {
+        // Given
+        JudicialNoteEntity judicialNoteEntity = mock(JudicialNoteEntity.class);
+
+        // When
+        underTest.addJudicialNote(judicialNoteEntity);
+
+        // Then
+        assertThat(underTest.getJudicialNotes()).hasSize(1);
+        assertThat(underTest.getJudicialNotes().getFirst()).isEqualTo(judicialNoteEntity);
+        verify(judicialNoteEntity).setPcsCase(underTest);
     }
 
 }
