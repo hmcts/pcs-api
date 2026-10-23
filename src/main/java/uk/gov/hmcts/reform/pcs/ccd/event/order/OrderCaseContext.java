@@ -53,7 +53,7 @@ class OrderCaseContext {
     private OrderStart.Application application(GenAppEntity genApp, ClaimEntity claim) {
         return new OrderStart.Application(
             genApp.getId(),
-            isWarrantSuspension(genApp),
+            genApp.getType() == GenAppType.SUSPEND,
             "GA" + genApp.getRank(),
             genApp.getType().getShortName(),
             genApp.getSomethingElseDetails(),
@@ -68,11 +68,6 @@ class OrderCaseContext {
             genApp.getWhatOrderWanted(),
             applicationDocuments(genApp)
         );
-    }
-
-    /** Whether the application is one to suspend the warrant of possession. */
-    private static boolean isWarrantSuspension(GenAppEntity genApp) {
-        return genApp.getType() == GenAppType.SUSPEND;
     }
 
     /** The applicant by name, with their role on the claim: "Jane Doe (Defendant 1)". */

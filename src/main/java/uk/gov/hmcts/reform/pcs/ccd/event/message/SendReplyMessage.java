@@ -108,7 +108,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .mandatory(PCSCase::getMessageAction)
             .readonly(PCSCase::getMessageTaskMessageId, ShowConditions.NEVER_SHOW, true)
             .readonly(PCSCase::getMessageHasOpenGenApps, ShowConditions.NEVER_SHOW, true);
-        pages.page("sendMessage", this::checkMessage)
+        pages.page("sendMessage", (details, before) -> respond(details.getData(), messageErrors(details.getData())))
             .showCondition(sending)
             .pageLabel("Send a new message")
             .mandatory(PCSCase::getMessageCategories)
@@ -122,7 +122,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(replying)
             .pageLabel("Reply to a message")
             .mandatory(PCSCase::getMessageReplyList);
-        pages.page("replyOrClose", this::checkReply)
+        pages.page("replyOrClose", (details, before) -> respond(details.getData(), replyErrors(details.getData())))
             .showCondition(replying)
             .pageLabel("Reply to a message")
             .readonly(PCSCase::getMessageSummaryMarkdown, ShowConditions.NEVER_SHOW, true)
@@ -168,11 +168,6 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return caseData;
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> checkMessage(CaseDetails<PCSCase, State> details,
-                                                                      CaseDetails<PCSCase, State> before) {
-        return respond(details.getData(), messageErrors(details.getData()));
-    }
-
     private List<String> messageErrors(PCSCase caseData) {
         List<String> errors = new ArrayList<>();
         textAreaValidationService.validateTextArea(caseData.getMessageSubject(), "Subject", SUBJECT_LIMIT, errors);
@@ -192,11 +187,6 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         caseData.setMessageHistory(history(message.get()));
         caseData.setMessageReplyRecipient(message.get().latest().getSenderRole());
         return respond(caseData, List.of());
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> checkReply(CaseDetails<PCSCase, State> details,
-                                                                    CaseDetails<PCSCase, State> before) {
-        return respond(details.getData(), replyErrors(details.getData()));
     }
 
     private List<String> replyErrors(PCSCase caseData) {
