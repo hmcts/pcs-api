@@ -11,24 +11,24 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+//import uk.gov.hmcts.ccd.sdk.type.ListValue;
+//import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
+//import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.bulkprint.MockSendLetterServer;
 import uk.gov.hmcts.reform.pcs.bulkprint.model.Letter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
+//import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
+//import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
+//import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+//import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+//import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+//import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
@@ -45,11 +45,11 @@ import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+//import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.CLAIMANT_CLAIM_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT_TASK_NAME;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+//import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)

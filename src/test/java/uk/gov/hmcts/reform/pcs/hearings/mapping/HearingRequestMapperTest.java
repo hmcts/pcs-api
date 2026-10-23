@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.pcs.hearings.mapping;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -12,6 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static org.mockito.Mock.Strictness.LENIENT;
 
 class HearingRequestMapperTest {
 
@@ -22,6 +26,9 @@ class HearingRequestMapperTest {
     private static final String HEARING_TYPE = "BBA3-SUB";
     private static final int DEFAULT_DURATION = 60;
     private static final String EXUI_URL = "https://manage-case.aat.platform.hmcts.net";
+
+    @Mock(strictness = LENIENT)
+    private CaseLocation caseLocation;
 
     @BeforeEach
     void setUp() {
@@ -125,7 +132,7 @@ class HearingRequestMapperTest {
     void shouldUseCaseManagementLocationWhenSet() {
         PCSCase pcsCase = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.ENGLAND)
-            .caseManagementLocation(12345)
+            .caseManagementLocation(caseLocation)
             .build();
 
         HearingRequest result = mapper.buildHearingRequest(CASE_REFERENCE, pcsCase);
