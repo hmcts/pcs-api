@@ -40,7 +40,6 @@ public enum UserRole implements HasRole {
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
     HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, GS_PROFILE),
 
-    CHALLENGED_ACCESS_CTSC("challenged-access-ctsc", Set.of(R), RAS, AccessProfile.CTSC_ADMIN),
     CHALLENGED_ACCESS_ADMIN("challenged-access-admin", Set.of(R), RAS, AccessProfile.HEARING_CENTRE_ADMIN),
     CHALLENGED_ACCESS_JUDICIARY("challenged-access-judiciary", Set.of(R), RAS, AccessProfile.JUDGE),
 
