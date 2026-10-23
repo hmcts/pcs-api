@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -143,6 +144,8 @@ class PCSCaseViewTest {
     private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     @Mock
     private HearingView hearingView;
+    @Mock
+    private EnforcementOrderView enforcementOrderView;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -169,7 +172,7 @@ class PCSCaseViewTest {
                                     caseNoteView, ordersView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    judicialNoteView
+                                    judicialNoteView, enforcementOrderView
         );
     }
 
@@ -495,6 +498,15 @@ class PCSCaseViewTest {
 
         // Then
         verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+    }
+
+    @Test
+    void shouldCallEnforcementOrderView() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
