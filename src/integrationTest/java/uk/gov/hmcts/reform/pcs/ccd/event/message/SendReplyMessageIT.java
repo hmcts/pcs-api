@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.UnexpectedResponse;
@@ -26,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Map;
@@ -67,8 +65,6 @@ class SendReplyMessageIT extends OrderEventIT {
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
     private IssuedCases cases;
-    @MockitoSpyBean
-    private FeatureToggleService featureToggleService;
 
     private long caseReference;
     private Actor caseworker;
@@ -76,7 +72,6 @@ class SendReplyMessageIT extends OrderEventIT {
 
     @BeforeEach
     void setUp() {
-        doReturn(true).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
         caseReference = cases.issue();
         cases.update(caseReference, pcsCase -> {
             PartyEntity defendant = pcsCase.getParties().stream()

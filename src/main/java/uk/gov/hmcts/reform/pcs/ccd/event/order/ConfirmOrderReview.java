@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -78,6 +79,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final TaskCompletionService taskCompletionService;
     private final MessageService messageService;
     private final OrderDocumentService orderDocumentService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -100,6 +102,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
+        MakeOrder.requireMakeOrder(featureToggleService);
         UUID orderId = start.clientContext().as(OrderLink.class).map(OrderLink::orderId)
             .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
@@ -109,6 +112,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
+        MakeOrder.requireMakeOrder(featureToggleService);
         ConfirmOrderReviewRequest request = submit.payload();
         OrderEntity order = orderAwaitingReview(request.orderId(), submit.caseReference());
         OrderStepEntity submitted = orderSteps.latest(order, request.version());
