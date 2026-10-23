@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.UnexpectedResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -48,6 +49,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.sendReplyMessage;
@@ -296,6 +298,23 @@ class SendReplyMessageIT extends OrderEventIT {
         assertThat(events.event(caseReference, sendReplyMessage.name(), message).as(caseworker)
             .submitExpectingErrors().errors()).containsExactly(SendReplyMessage.NOT_AVAILABLE);
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown()).isNull();
+    }
+
+    @Test
+    @DisplayName("sends a message about an application on a case with no open application, naming none")
+    void sendsAboutAnApplicationWithNoneOpen() {
+        cases.update(caseReference, pcsCase -> pcsCase.getGenApps()
+            .forEach(genApp -> genApp.setState(PENDING_GEN_APP_ISSUED)));
+        assertThat(events.start(caseReference, sendReplyMessage.name()).as(caseworker).startExpectingSuccess()
+            .caseData().getMessageOpenGenApps()).isEqualTo(YesOrNo.NO);
+        PCSCase message = PCSCase.builder().messageAction(MessageAction.SEND).messageOpenGenApps(YesOrNo.NO)
+            .messageCategories(Set.of(MessageCategory.APPLICATION)).messageRecipient(MessageRecipient.DISTRICT_JUDGE)
+            .messageSubject("New application").messageUrgent(VerticalYesNo.NO)
+            .messageBody("One arrived today, not yet entered.").build();
+
+        events.event(caseReference, sendReplyMessage.name(), message).as(caseworker).submitExpectingSuccess();
+
+        assertThat(events.view(caseReference, caseworker).getMessagesMarkdown()).contains("New application");
     }
 
     @Test
