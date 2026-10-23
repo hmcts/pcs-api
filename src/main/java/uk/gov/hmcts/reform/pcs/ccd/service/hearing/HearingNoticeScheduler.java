@@ -21,7 +21,7 @@ public class HearingNoticeScheduler {
     }
 
     public void scheduleHearingNoticeGeneration(long caseReference, Integer hearingId) {
-        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
             return;
         }
         HearingNoticeTaskData taskData = HearingNoticeTaskData.builder()

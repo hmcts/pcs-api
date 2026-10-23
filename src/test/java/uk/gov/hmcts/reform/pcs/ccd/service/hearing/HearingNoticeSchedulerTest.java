@@ -38,7 +38,7 @@ class HearingNoticeSchedulerTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
     }
 
     @Test
@@ -63,8 +63,8 @@ class HearingNoticeSchedulerTest {
     }
 
     @Test
-    void doesNotScheduleWhenRelease1Dot4Disabled() {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+    void doesNotScheduleWhenRelease1bDisabled() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(false);
 
         scheduler.scheduleHearingNoticeGeneration(CASE_REFERENCE, HEARING_ID);
 
