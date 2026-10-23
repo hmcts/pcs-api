@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -549,6 +550,42 @@ class DocumentAmendServiceTest {
         assertThat(savedDocument.getCounterClaim()).isNull();
         assertThat(amendedDocument.fileName()).isEqualTo("rent statement 16042021");
         assertThat(amendedDocument.partyName()).isEqualTo("Defendant One");
+    }
+
+    @Test
+    void shouldKeepTheServedPartiesOfAWithoutNoticeOrderThatStaysWithoutNotice() {
+        PartyEntity secondDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        documentEntity.setType(DocumentType.WITHOUT_NOTICE_ORDER);
+        documentEntity.getAudience().addAll(Set.of(partyEntity, secondDefendant));
+
+        DocumentEntity savedDocument = amendToWithoutNoticeOrder();
+
+        assertThat(savedDocument.getAudience()).containsExactlyInAnyOrder(partyEntity, secondDefendant);
+    }
+
+    @Test
+    void shouldLimitADocumentThatBecomesAWithoutNoticeOrderToItsParty() {
+        documentEntity.setType(DocumentType.ORDER);
+
+        DocumentEntity savedDocument = amendToWithoutNoticeOrder();
+
+        assertThat(savedDocument.getAudience()).containsExactly(partyEntity);
+    }
+
+    private DocumentEntity amendToWithoutNoticeOrder() {
+        DocumentAmendDetails amendDetails = baseDetails()
+            .amendedFileName("order.pdf")
+            .showRelatedSubmissionsList(VerticalYesNo.NO)
+            .standaloneDocumentType(dynamicStringList(CaseworkerDocumentType.WITHOUT_NOTICE_ORDER.name()))
+            .build();
+        when(documentService.mapCaseworkerDocumentTypeToDocumentType(CaseworkerDocumentType.WITHOUT_NOTICE_ORDER))
+            .thenReturn(DocumentType.WITHOUT_NOTICE_ORDER);
+        lenient().when(documentNameService.appendPartyPostfix(any(), any(), any())).thenReturn("order");
+
+        underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE);
+
+        verify(documentRepository).save(documentCaptor.capture());
+        return documentCaptor.getValue();
     }
 
     @Test
