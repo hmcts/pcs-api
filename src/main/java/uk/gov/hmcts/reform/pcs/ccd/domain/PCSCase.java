@@ -153,7 +153,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private String currentRepresentedPartyId;
 
-    @CCD(searchable = false)
+    @CCD(label = "Defendant:", searchable = false)
     private String currentRepresentedPartyName;
 
     @CCD(searchable = false)
@@ -394,7 +394,7 @@ public class PCSCase {
     private TenancyLicenceDetails tenancyLicenceDetails;
 
     @CCD(searchable = false)
-    private String nextStepsMarkdown;
+    private YesOrNo nextStepsResumeClaim;
 
     @CCD(searchable = false, access = DefendantSolicitorAccess.class)
     private String summaryLegalRepresentativeMarkdown;

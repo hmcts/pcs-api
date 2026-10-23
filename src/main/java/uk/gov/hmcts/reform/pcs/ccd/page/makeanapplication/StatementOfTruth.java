@@ -14,13 +14,12 @@ public class StatementOfTruth implements CcdPageConfiguration {
           I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be
           made, a false statement in a document verified by a statement of truth without an honest belief in its truth.
         </p>
-        <p class="govuk-body">
-          Defendant: ${currentRepresentedPartyName}
-        </p>
+        """;
+
+    private static final String COMPLETED_BY_MARKDOWN = """
         <p class="govuk-body govuk-!-font-weight-bold">
           Completed by the defendant’s legal representative (as defined by CPR 2.3 (1))
         </p>
-
         """;
 
     @Override
@@ -30,6 +29,8 @@ public class StatementOfTruth implements CcdPageConfiguration {
             .pageLabel("Statement of truth")
             .label("statementOfTruth-lineSeparator", "---")
             .label("statementOfTruth-info", INFO_MARKDOWN)
+            .readonlyNoSummary(PCSCase::getCurrentRepresentedPartyName)
+            .label("statementOfTruth-completedBy", COMPLETED_BY_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getAgreementDefendantLegalRep)
             .mandatory(XuiGenAppRequest::getSotFullName)

@@ -52,7 +52,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.NEWLINE_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
@@ -145,7 +145,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddress(orgDetails));
 
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
-            .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
+            .formatMediumAddress(contactPreferences.getOrganisationAddress(), NEWLINE_DELIMITER));
 
         if (contactPreferences.getOrganisationAddress() != null) {
             contactPreferences.setOrgAddressFound(YesOrNo.YES);

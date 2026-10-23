@@ -24,7 +24,7 @@ public class LegalRepresentativeDetails {
     )
     private String emailAddress;
 
-    @CCD(typeOverride = FieldType.Email)
+    @CCD(label = "Your registered email address is:", typeOverride = FieldType.Email)
     private String originalEmailAddress;
 
     @CCD(
@@ -58,6 +58,7 @@ public class LegalRepresentativeDetails {
 
     private YesOrNo organisationAddressFound;
 
+    @CCD(label = "Your registered address is:", typeOverride = FieldType.TextArea)
     private String formattedContactAddress;
 
     private String organisationId;

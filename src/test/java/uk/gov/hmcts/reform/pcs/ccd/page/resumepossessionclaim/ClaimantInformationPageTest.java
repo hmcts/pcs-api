@@ -53,6 +53,8 @@ class ClaimantInformationPageTest extends BasePageTest {
         // Then
         assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
             .isEqualTo(expectedPossessiveName);
+        assertThat(caseData.getClaimantCircumstances().getClaimantCircumstancesName())
+            .isEqualTo(fallbackName);
     }
 
     @Test
@@ -82,6 +84,8 @@ class ClaimantInformationPageTest extends BasePageTest {
         // Then
         assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
             .isEqualTo(expectedPossessiveName);
+        assertThat(caseData.getClaimantCircumstances().getClaimantCircumstancesName())
+            .isEqualTo(overriddenName);
     }
 
     @Test
@@ -111,6 +115,8 @@ class ClaimantInformationPageTest extends BasePageTest {
         // Then
         assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
             .isEqualTo(expectedPossessiveName);
+        assertThat(caseData.getClaimantCircumstances().getClaimantCircumstancesName())
+            .isEqualTo(orgName);
     }
 
 }

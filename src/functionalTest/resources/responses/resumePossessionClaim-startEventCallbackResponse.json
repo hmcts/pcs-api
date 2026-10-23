@@ -20,7 +20,7 @@
     },
     "orgAddressFound": "Yes",
     "claimantContactEmail": "pcs-solicitor-automation@test.com",
-    "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
+    "formattedClaimantContactAddress": "Ministry Of Justice\nSeventh Floor 102 Petty France\nLondon\nSW1H 9AJ",
     "legislativeCountry": "England",
     "claimantType": {
       "list_items": [

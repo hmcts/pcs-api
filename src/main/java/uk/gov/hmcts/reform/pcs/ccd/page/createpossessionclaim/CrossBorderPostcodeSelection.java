@@ -28,20 +28,16 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
 
     private final EligibilityService eligibilityService;
 
-    @Override
-    public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
-            .page("crossBorderPostcodeSelection", this::midEvent)
-            .pageLabel("Border postcode")
-            .showCondition("showCrossBorderPage=\"Yes\"")
-            .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
-            .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
-            .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
-            .label("crossBorderPostcodeSelection-info", """
+    private static final String WALES_BORDER =
+        "crossBorderCountry1=\"Wales\" OR crossBorderCountry2=\"Wales\"";
+    private static final String SCOTLAND_BORDER =
+        "crossBorderCountry1=\"Scotland\" OR crossBorderCountry2=\"Scotland\"";
+
+    private static final String ENGLAND_AND_WALES_INFO = """
                 ---
                 <section tabindex="0">
                 <p class="govuk-body">
-                Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}. We need to know
+                Your postcode includes properties in England and Wales. We need to know
                 which country your property is in, as the law is different in each country.
                 </p>
 
@@ -60,7 +56,44 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                   </strong>
                 </div>
                 </section>
-                """)
+                """;
+
+    private static final String ENGLAND_AND_SCOTLAND_INFO = """
+                ---
+                <section tabindex="0">
+                <p class="govuk-body">
+                Your postcode includes properties in England and Scotland. We need to know
+                which country your property is in, as the law is different in each country.
+                </p>
+
+                <p class="govuk-body">
+                If you’re not sure which country your property is in, try searching for your
+                address on the land and property register.
+                </p>
+
+                <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
+                  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                  <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    <span id="warning-message">
+                      Your case could be delayed or rejected if you select the wrong country.
+                    </span>
+                  </strong>
+                </div>
+                </section>
+                """;
+
+    @Override
+    public void addTo(PageBuilder pageBuilder) {
+        pageBuilder
+            .page("crossBorderPostcodeSelection", this::midEvent)
+            .pageLabel("Border postcode")
+            .showCondition("showCrossBorderPage=\"Yes\"")
+            .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
+            .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
+            .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
+            .label("crossBorderPostcodeSelection-info-wales", ENGLAND_AND_WALES_INFO, WALES_BORDER)
+            .label("crossBorderPostcodeSelection-info-scotland", ENGLAND_AND_SCOTLAND_INFO, SCOTLAND_BORDER)
             .mandatory(PCSCase::getCrossBorderCountriesList,
                 null,
                 null,
