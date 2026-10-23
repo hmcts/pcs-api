@@ -15,12 +15,13 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CcdPaymentStateUpdateTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_DATE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR;
 
 @AllArgsConstructor
 @Service
@@ -36,14 +37,15 @@ public class CcdPaymentStateUpdateService {
     public void submitPaymentSuccess(long caseId, EventId eventId) {
         CcdPaymentStateUpdateTaskData taskData = CcdPaymentStateUpdateTaskData.builder()
             .caseReference(caseId).eventId(eventId).build();
-        schedulerClient.scheduleIfNotExists(CCD_PAYMENT_DATE_TASK_DESCRIPTOR
-                .instance(UUID.randomUUID().toString()).data(taskData).scheduledTo(Instant.now()));
+        String instanceId = eventId.name() + "-" + caseId;
+        schedulerClient.scheduleIfNotExists(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR
+                .instance(instanceId).data(taskData).scheduledTo(Instant.now()));
     }
 
     public void updateCcd(CcdPaymentStateUpdateTaskData taskData) {
         String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = systemUpdateUserTokenProvider.getAuthToken();
-        log.debug("Submitting payment event for case: {}", taskData.getCaseReference());
+        log.info("Submitting payment event {} for case: {}", taskData.getEventId(), taskData.getCaseReference());
         StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
                                                                            String.valueOf(taskData.getCaseReference()),
                                                                            taskData.getEventId().name());

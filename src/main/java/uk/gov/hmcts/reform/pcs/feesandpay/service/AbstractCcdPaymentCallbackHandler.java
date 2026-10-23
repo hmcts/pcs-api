@@ -47,10 +47,8 @@ public abstract class AbstractCcdPaymentCallbackHandler implements PaymentCallba
     }
 
     private PartyEntity getResponsibleParty(FeesAndPayTaskData feesAndPayTaskData) {
-        return partyService.getPartyEntityByEntityId(
-            feesAndPayTaskData.getResponsiblePartyId(),
-            feesAndPayTaskData.getCaseReference()
-        );
+        return partyService.getPartyEntityByEntityId(feesAndPayTaskData.getResponsiblePartyId(),
+            feesAndPayTaskData.getCaseReference());
     }
 
 }

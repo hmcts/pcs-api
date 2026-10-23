@@ -24,7 +24,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_DATE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CcdPaymentUpdateTaskComponent Tests")
@@ -49,8 +49,8 @@ class CcdPaymentUpdateTaskComponentTest {
 
     @Test
     void shouldExposeTaskDescriptor() {
-        assertThat(CCD_PAYMENT_DATE_TASK_DESCRIPTOR.getTaskName()).isEqualTo("ccd-payment-update-task");
-        assertThat(CCD_PAYMENT_DATE_TASK_DESCRIPTOR.getDataClass()).isEqualTo(CcdPaymentStateUpdateTaskData.class);
+        assertThat(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getTaskName()).isEqualTo("ccd-payment-update-task");
+        assertThat(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getDataClass()).isEqualTo(CcdPaymentStateUpdateTaskData.class);
     }
 
     @Test

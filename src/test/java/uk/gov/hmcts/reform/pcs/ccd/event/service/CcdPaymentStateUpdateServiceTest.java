@@ -3,11 +3,15 @@ package uk.gov.hmcts.reform.pcs.ccd.event.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,12 +20,12 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CcdPaymentStateUpdateTaskData;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,10 +33,12 @@ import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforcementPayment;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 class CcdPaymentStateUpdateServiceTest {
@@ -50,14 +56,35 @@ class CcdPaymentStateUpdateServiceTest {
     @Mock
     private ObjectMapper objectMapper;
     @Mock
-    private NotificationService notificationService;
-    @Mock
-    private ClaimEntity claim;
-    @Mock
     private SchedulerClient schedulerClient;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<CcdPaymentStateUpdateTaskData>> schedulableInstanceCaptor;
 
     @InjectMocks
     private CcdPaymentStateUpdateService underTest;
+
+    @ParameterizedTest
+    @MethodSource("eventIds")
+    void shouldScheduleCcdPaymentUpdateTask(EventId eventId) {
+        // Given
+        Instant before = Instant.now();
+
+        // When
+        underTest.submitPaymentSuccess(CASE_ID, eventId);
+
+        // Then
+        Instant after = Instant.now();
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        SchedulableInstance<CcdPaymentStateUpdateTaskData> scheduled = schedulableInstanceCaptor.getValue();
+        TaskInstance<CcdPaymentStateUpdateTaskData> taskInstance = scheduled.getTaskInstance();
+
+        assertThat(taskInstance.getTaskName()).isEqualTo(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getTaskName());
+        assertThat(taskInstance.getId()).isEqualTo(eventId + "-" + CASE_ID);
+        assertThat(taskInstance.getData().getCaseReference()).isEqualTo(CASE_ID);
+        assertThat(taskInstance.getData().getEventId()).isEqualTo(eventId);
+        assertThat(scheduled.getNextExecutionTime(Instant.now())).isBetween(before, after);
+    }
 
     @ParameterizedTest
     @MethodSource("eventIds")
@@ -67,6 +94,42 @@ class CcdPaymentStateUpdateServiceTest {
 
         // Then
         verify(schedulerClient).scheduleIfNotExists(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("eventIds")
+    void shouldUseSameInstanceIdWhenSubmittedMultipleTimesForSamePayment(EventId eventId) {
+        // Given // When
+        underTest.submitPaymentSuccess(CASE_ID, eventId);
+        underTest.submitPaymentSuccess(CASE_ID, eventId);
+
+        // Then
+        verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        List<String> instanceIds = schedulableInstanceCaptor.getAllValues().stream()
+            .map(scheduled -> scheduled.getTaskInstance().getId())
+            .toList();
+
+        assertThat(instanceIds).containsExactly(
+            eventId.name() + "-" + CASE_ID,
+            eventId.name() + "-" + CASE_ID
+        );
+    }
+
+    @Test
+    void shouldUseDifferentInstanceIdsForDifferentEvents() {
+        // Given // When
+        underTest.submitPaymentSuccess(CASE_ID, claimIssuePayment);
+        underTest.submitPaymentSuccess(CASE_ID, enforcementPayment);
+
+        // Then
+        verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        var instanceIds = schedulableInstanceCaptor.getAllValues().stream()
+            .map(scheduled -> scheduled.getTaskInstance().getId())
+            .toList();
+
+        assertThat(instanceIds).doesNotHaveDuplicates();
     }
 
     @ParameterizedTest

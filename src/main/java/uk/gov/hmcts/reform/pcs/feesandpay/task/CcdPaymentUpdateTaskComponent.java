@@ -20,7 +20,7 @@ public class CcdPaymentUpdateTaskComponent {
 
     private static final String CCD_PAYMENT_UPDATE_TASK = "ccd-payment-update-task";
 
-    public static final TaskDescriptor<CcdPaymentStateUpdateTaskData> CCD_PAYMENT_DATE_TASK_DESCRIPTOR =
+    public static final TaskDescriptor<CcdPaymentStateUpdateTaskData> CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR =
         TaskDescriptor.of(CCD_PAYMENT_UPDATE_TASK, CcdPaymentStateUpdateTaskData.class);
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
@@ -37,7 +37,7 @@ public class CcdPaymentUpdateTaskComponent {
 
     @Bean
     public CustomTask<CcdPaymentStateUpdateTaskData> ccdPaymentUpdateTask() {
-        return Tasks.custom(CCD_PAYMENT_DATE_TASK_DESCRIPTOR)
+        return Tasks.custom(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(maxRetriesCcdPaymentUpdate,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(ccdPaymentUpdateBackoffDelay)
             ))
