@@ -135,7 +135,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
-        // The judge reads the query on the order: in their task it could be cut short at a semicolon, or be too long.
+        // The judge reads the query on the order, where it can be as long as court staff need, not in their task.
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
             argThat(description -> description.contains("has returned your") && !description.contains(QUERY)),
             eq(judge.uid()));
@@ -277,6 +277,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             .containsExactly(tuple("Query on the order written 1 Mar 2026", query));
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
             argThat(description -> description.contains("Change the order")
+                && description.contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&amp;orderId=" + order.id())
                 && !description.contains("Which defendant")),
             eq(judge.uid()));
     }
