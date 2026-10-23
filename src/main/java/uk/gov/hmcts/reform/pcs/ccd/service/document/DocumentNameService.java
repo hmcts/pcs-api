@@ -5,7 +5,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,6 +23,7 @@ public class DocumentNameService {
     public static final String GENERATED_DOC_EXTENSION = ".pdf";
 
     private final PartyService partyService;
+    private final FeatureToggleService featureToggleService;
 
     public String expectedGenAppFilename(GenAppEntity genAppEntity, ClaimEntity mainClaim) {
         return appendGenAppPostfix(GEN_APP_FILENAME_PREFIX, genAppEntity, mainClaim, genAppEntity.getParty().getId());
@@ -70,21 +74,27 @@ public class DocumentNameService {
         return filename;
     }
 
-    public String appendCounterClaimPostfix(String originalFilename, ClaimEntity claim, UUID partyId) {
+    public String appendCounterClaimPostfix(String originalFilename,
+                                            CounterClaimEntity counterClaimEntity,
+                                            ClaimEntity claim,
+                                            UUID partyId) {
         if (originalFilename == null) {
             return null;
         }
 
         String baseName = FilenameUtils.getBaseName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
+
+        // Example label when release 1.4 is on: Evidence CC1 - Defendant 1.pdf
         String partyLabel = partyService.getPartyLabel(claim, partyId);
-        String filename = partyLabel != null ? baseName + " - " + partyLabel : baseName;
+        Integer rank = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
+            ? counterClaimEntity.getRank()
+            : null;
+        String filename = rank != null
+            ? "%s CC%d".formatted(baseName, rank)
+            : baseName;
 
-        if (!extension.isBlank()) {
-            filename += "." + extension;
-        }
-
-        return filename;
+        return buildFilename(filename, extension, partyLabel);
     }
 
     public String appendPartyPostfix(String originalFilename,
