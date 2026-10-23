@@ -255,6 +255,32 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             .doesNotContain("Serve this by post.");
     }
 
+    @Test
+    @DisplayName("takes a query of up to 30,000 characters as typed, dated on the Messages tab by when the judge wrote "
+        + "the order, and leaves it out of the judge's task")
+    void takesALongQueryDatedByTheOrder() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        // The judge wrote the order on an earlier day than court staff return it.
+        jdbcTemplate.update("UPDATE order_steps SET created_at = '2026-03-01T10:00:00Z' "
+            + "WHERE order_id = ? AND state = 'SUBMITTED_FOR_REVIEW'", order.id());
+        String query = "Which defendant; paragraph 2 & \"costs\" (£250)?\n".repeat(700).substring(0, 30_000);
+
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(
+            RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", query, null));
+
+        assertThat(asJudge.withClientContext(Map.of("orderId", order.id().toString())).start().order()
+            .queryFromCaseworker()).isEqualTo(query);
+        assertThat(jdbcTemplate.queryForList("SELECT message.subject, entry.body FROM case_message message "
+            + "JOIN case_message_entry entry ON entry.message_id = message.id "
+            + "JOIN pcs_case pc ON pc.id = message.case_id WHERE pc.case_reference = ?", caseReference))
+            .extracting(row -> row.get("subject"), row -> row.get("body"))
+            .containsExactly(tuple("Query on the order written 1 Mar 2026", query));
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
+            argThat(description -> description.contains("Change the order")
+                && !description.contains("Which defendant")),
+            eq(judge.uid()));
+    }
+
     /** The judge submits the order for review with a message for court staff. */
     private static MakeOrderRequest withStaffMessage(Order order, String message) {
         return new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(order.id(), order.version(), order.orderType(),
