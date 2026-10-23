@@ -144,6 +144,12 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             || issuing.html() == null || issuing.html().isBlank()) {
             throw ExternalRejection.because(NO_WORDING);
         }
+        // Court staff may change the order's answers, but not to decide an application another order decides.
+        if (order.getPcsCase().getGenApps().stream()
+            .anyMatch(genApp -> OrderTasks.decides(issuing.formData(), genApp)
+                && !orderTasks.canDecide(genApp, order.getId()))) {
+            throw ExternalRejection.because(MakeOrder.ALREADY_DECIDED);
+        }
         order.setSeal(issue.seal());
         if (!issue.serveAllParties()) {
             order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
