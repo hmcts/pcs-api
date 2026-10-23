@@ -165,9 +165,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           label2: statementOfTruth.nameOfFirmHiddenTextLabel,
           input2: statementOfTruth.nameOfFirmHiddenTextInput,
           nextPage: checkYourAnswersEnforcement.mainHeader,
-        });
-
-        await performAction('selectStatementOfTruthWrit', {
           iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
         });
       });
@@ -234,7 +231,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       input1: statementOfTruth.nameOfFirmHiddenTextInput,
       label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
       input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswersEnforcement.mainHeader
+      nextPage: checkYourAnswersEnforcement.mainHeader,
+      claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox
     });
   });
 
@@ -286,7 +284,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
       label2: statementOfTruth.nameOfFirmHiddenTextLabel,
       input2: statementOfTruth.nameOfFirmHiddenTextInput,
-      nextPage: checkYourAnswersEnforcement.mainHeader
+      nextPage: checkYourAnswersEnforcement.mainHeader,
+      iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
     });
   });
 
