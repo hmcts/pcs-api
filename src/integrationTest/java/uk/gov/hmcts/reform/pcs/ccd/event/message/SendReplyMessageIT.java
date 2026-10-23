@@ -302,16 +302,32 @@ class SendReplyMessageIT extends OrderEventIT {
     void sendsAboutAnApplicationWithNoneOpen() {
         cases.update(caseReference, pcsCase -> pcsCase.getGenApps()
             .forEach(genApp -> genApp.setState(PENDING_GEN_APP_ISSUED)));
-        assertThat(events.start(caseReference, sendReplyMessage.name()).as(caseworker).startExpectingSuccess()
-            .caseData().getMessageOpenGenApps()).isEqualTo(YesOrNo.NO);
-        PCSCase message = PCSCase.builder().messageAction(MessageAction.SEND).messageOpenGenApps(YesOrNo.NO)
-            .messageCategories(Set.of(MessageCategory.APPLICATION)).messageRecipient(MessageRecipient.DISTRICT_JUDGE)
-            .messageSubject("New application").messageUrgent(VerticalYesNo.NO)
-            .messageBody("One arrived today, not yet entered.").build();
+        var started = events.start(caseReference, sendReplyMessage.name()).as(caseworker).startExpectingSuccess();
+        assertThat(started.caseData().getMessageHasOpenGenApps()).isEqualTo(YesOrNo.NO);
 
-        events.event(caseReference, sendReplyMessage.name(), message).as(caseworker).submitExpectingSuccess();
+        started.edit(pcsCase -> {
+            pcsCase.setMessageAction(MessageAction.SEND);
+            pcsCase.setMessageCategories(Set.of(MessageCategory.APPLICATION));
+            pcsCase.setMessageRecipient(MessageRecipient.DISTRICT_JUDGE);
+            pcsCase.setMessageSubject("New application");
+            pcsCase.setMessageUrgent(VerticalYesNo.NO);
+            pcsCase.setMessageBody("One arrived today, not yet entered.");
+        }).as(caseworker).submitExpectingSuccess();
 
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown()).contains("New application");
+        // Naming no application, it offers the judges none to decide.
+        assertThat(events.view(caseReference, judge).getMessagesMarkdown()).doesNotContain("Decide the application");
+    }
+
+    @Test
+    @DisplayName("still asks which open application a message is about when the case has one")
+    void asksWhichApplicationWhenOneIsOpen() {
+        PCSCase message = PCSCase.builder().messageAction(MessageAction.SEND)
+            .messageCategories(Set.of(MessageCategory.APPLICATION)).messageRecipient(MessageRecipient.DISTRICT_JUDGE)
+            .messageSubject("Which?").messageUrgent(VerticalYesNo.NO).messageBody("Body").build();
+
+        assertThat(events.event(caseReference, sendReplyMessage.name(), message).as(caseworker)
+            .submitExpectingErrors().errors()).containsExactly("Choose the open application the message is about");
     }
 
     @Test
