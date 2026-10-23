@@ -53,7 +53,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.breathingspace.BreathingSpaceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;

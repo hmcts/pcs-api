@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.breathingspace;
+package uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

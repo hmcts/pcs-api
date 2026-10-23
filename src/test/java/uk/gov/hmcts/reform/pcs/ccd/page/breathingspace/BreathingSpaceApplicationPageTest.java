@@ -1,12 +1,12 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.breathingspace;
+package uk.gov.hmcts.reform.pcs.ccd.page.breathingspace;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.breathingspace.BreathingSpaceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.breathingspace.BreathingSpaceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.time.Clock;
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.breathingspace.BreathingSpaceApplicationPage.FUTURE_START_DATE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpaceApplicationPage.FUTURE_START_DATE_ERROR;
 
 public class BreathingSpaceApplicationPageTest extends BasePageTest {
 

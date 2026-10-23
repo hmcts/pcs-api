@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.breathingspace;
+package uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
