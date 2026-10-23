@@ -554,13 +554,15 @@ class DocumentAmendServiceTest {
 
     @Test
     void shouldKeepTheServedPartiesOfAWithoutNoticeOrderThatStaysWithoutNotice() {
+        // Served on two other defendants, while staff pick a party it was not served on.
         PartyEntity secondDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity thirdDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         documentEntity.setType(DocumentType.WITHOUT_NOTICE_ORDER);
-        documentEntity.getAudience().addAll(Set.of(partyEntity, secondDefendant));
+        documentEntity.getAudience().addAll(Set.of(secondDefendant, thirdDefendant));
 
         DocumentEntity savedDocument = amendToWithoutNoticeOrder();
 
-        assertThat(savedDocument.getAudience()).containsExactlyInAnyOrder(partyEntity, secondDefendant);
+        assertThat(savedDocument.getAudience()).containsExactlyInAnyOrder(secondDefendant, thirdDefendant);
     }
 
     @Test
