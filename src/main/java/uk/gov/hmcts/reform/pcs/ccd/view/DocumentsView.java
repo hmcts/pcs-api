@@ -10,15 +10,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -75,10 +77,13 @@ public class DocumentsView {
             );
         }
 
-        if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
-            PartyEntity party = documentEntity.getParty();
-            return genAppVisibilityService
-                .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles());
+        // A document for some parties alone is seen by them, as anyone acting for them, and court staff; a without
+        // notice order whose parties were never recorded, by court staff alone.
+        Set<PartyEntity> audience = documentEntity.getAudience();
+        if (!audience.isEmpty() || documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
+            return (audience.isEmpty() ? Collections.<PartyEntity>singleton(null) : audience).stream()
+                .anyMatch(party -> genAppVisibilityService
+                    .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles()));
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();

@@ -1,20 +1,30 @@
 package uk.gov.hmcts.reform.pcs.config;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Map;
+import java.util.UUID;
 
+import static org.mockito.Mockito.doReturn;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 
 /**
@@ -26,6 +36,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 @TestPropertySource(properties = {"db-scheduler.executor-enabled=false", "testing-support.enabled=false"})
 public abstract class OrderEventIT extends AbstractPostgresContainerIT {
 
+    /** An order's wording, which an order sent for review or issued always has. */
+    protected static final JsonNode WORDING = TextNode.valueOf("the order");
+
     @MockitoBean
     protected CamundaService camundaService;
     @MockitoBean
@@ -34,6 +47,13 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     protected DocAssemblyService docAssemblyService;
     @Autowired
     protected JdbcTemplate jdbcTemplate;
+    @MockitoSpyBean
+    protected FeatureToggleService featureToggleService;
+
+    @BeforeEach
+    void makeOrdersEnabled() {
+        doReturn(true).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+    }
 
     /** The jobs a test's events scheduled are its own, not the next test's. */
     @AfterEach
@@ -44,7 +64,7 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     /** A judge saves a first draft, which has no id yet. */
     protected static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), null), null);
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), WORDING), null);
     }
 
     /** The judge acts on the order as they last saw it, with a new note. */
@@ -56,6 +76,12 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     protected static MakeOrderRequest change(MakeOrderRequest.Action action, Order order, String notes,
                                              String taskId) {
         return new MakeOrderRequest(action, new OrderChange(
-            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot()), taskId);
+            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot()),
+            taskId);
+    }
+
+    /** The orders row an event changed: where the order now is. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    protected record OrderRow(UUID id, OrderState state) {
     }
 }

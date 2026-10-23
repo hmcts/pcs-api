@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,9 +10,7 @@ import uk.gov.hmcts.ccd.sdk.testing.ActorDetails;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
@@ -19,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
@@ -35,6 +35,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -114,31 +115,41 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(
             RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", " ", null)).errors())
             .containsExactly("Enter a query for the judge");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(
+            RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", "q".repeat(30_001), null)).errors())
+            .containsExactly("The query must be 30,000 characters or fewer");
 
         var outcome = asCaseworker.submitExpectingSuccess(returnToJudge(order));
 
-        assertThat(outcome.changed("orders", Order.class).state()).isEqualTo(RETURNED_TO_JUDGE);
+        assertThat(outcome.changed("orders", OrderRow.class).state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
-        assertThat(events.view(caseReference, caseworker).getCaseNotes()).extracting(ListValue::getValue)
-            .extracting(CaseNote::getNote, CaseNote::getCreatedBy)
-            .containsExactly(tuple(QUERY, "A Caseworker"));
+        assertThat(events.view(caseReference, caseworker).getCaseNotes()).isNullOrEmpty();
+        // The step that returned the order carries the query, kept as a closed message: the order's task asks for it.
+        assertThat(jdbcTemplate.queryForList("SELECT step.state, entry.sender_name, entry.body, "
+            + "message.closed_at IS NOT NULL AS closed FROM order_steps step "
+            + "JOIN case_message_entry entry ON entry.id = step.message_entry_id "
+            + "JOIN case_message message ON message.id = entry.message_id WHERE step.order_id = ?", order.id()))
+            .extracting(row -> row.get("state"), row -> row.get("sender_name"), row -> row.get("body"),
+                row -> row.get("closed"))
+            .containsExactly(tuple("RETURNED_TO_JUDGE", "A Caseworker", QUERY, true));
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY), contains(QUERY),
+        // The judge reads the query on the order, where it can be as long as court staff need, not in their task.
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
+            argThat(description -> description.contains("has returned your") && !description.contains(QUERY)),
             eq(judge.uid()));
 
         // The judge opens the order from their task, seeing the query, and can save changes to it.
         var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
         asAuthor.submitExpectingSuccess(change(SAVE_DRAFT, asAuthor.start().order(), "half way"));
         Order saved = asAuthor.start().order();
-        assertThat(saved.state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(saved.formData()).containsEntry("notes", "half way");
         assertThat(saved.queryFromCaseworker()).isEqualTo(QUERY);
 
-        Order resubmitted = asAuthor
+        OrderRow resubmitted = asAuthor
             .submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, saved, "the defendant named", "judge-query"))
-            .changed("orders", Order.class);
+            .changed("orders", OrderRow.class);
         assertThat(resubmitted.id()).isEqualTo(order.id());
         assertThat(resubmitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
         assertThat(asCaseworker.start().order().formData()).containsEntry("notes", "the defendant named");
@@ -147,19 +158,44 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         verify(taskManagementApi).completeTask(any(), any(), eq("judge-query"), any());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has changed an order that was returned to them"));
+
+    }
+
+    @Test
+    @DisplayName("refuses an order sent for review without the wording its page builds, which could not be issued")
+    void refusesToSendAnOrderWithoutWording() {
+        asJudge.submitExpectingSuccess(startDraft("the judge's order"));
+        Order draft = asJudge.start().order();
+
+        assertThat(asJudge.submitExpectingRejection(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
+            draft.id(), draft.version(), draft.orderType(), draft.formData(), NullNode.getInstance()), null))
+            .errors()).containsExactly(MakeOrder.NO_WORDING);
+    }
+
+    @Test
+    @DisplayName("refuses to issue an order without the wording its review page builds, leaving it to review again")
+    void refusesToIssueAnOrderWithoutWording() {
+        Order order = judgeSubmitsOrder("the judge's order");
+
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), "staff-review", null, new Issue(
+                new IssuedOrder(order.orderType(), order.formData(), null, null), List.of(), HIGH_COURT, true,
+                List.of())))
+            .errors()).containsExactly(ConfirmOrderReview.NO_WORDING);
+        assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
 
     @Test
     @DisplayName("issues the order as the caseworker changed it, with its seal, and adds the review dates to the case")
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");
-        var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"), null,
-            "the caseworker's wording");
+        var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"),
+            WORDING, "the caseworker's wording");
         var reviewDate = new ReviewDateEntry(LocalDate.of(2027, 1, 15), GENERAL_ORDER, "Check the rent is paid");
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(changed, List.of(reviewDate), HIGH_COURT)));
+            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of())));
 
         Issued issued = outcome.changed("orders", Issued.class);
         assertThat(issued.state()).isEqualTo(ISSUED);
@@ -186,6 +222,71 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         assertThat(asCaseworker.submitExpectingRejection(returnToJudge(staleCopy)).errors())
             .containsExactly("The order has been updated by another user. Reload it and try again");
+    }
+
+    @Test
+    @DisplayName("keeps each query on the Messages tab as a closed message that came with the order, and the judge's "
+        + "message for court staff with the order, to send again")
+    void keepsEachQueryAsAClosedMessage() {
+        asJudge.submitExpectingSuccess(startDraft("the judge's order"));
+        Order draft = asJudge.start().order();
+        asJudge.submitExpectingSuccess(withStaffMessage(draft, "Serve this by post."));
+        choose(draft.id());
+        Order order = asCaseworker.start().order();
+        asCaseworker.submitExpectingSuccess(returnToJudge(order));
+        var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
+        Order returned = asAuthor.start().order();
+        assertThat(returned.formData()).containsEntry("staff-message-text", "Serve this by post.");
+        asAuthor.submitExpectingSuccess(withStaffMessage(returned, "Paragraph 2 means the first defendant."));
+        Order resubmitted = asCaseworker.start().order();
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(RETURN_TO_JUDGE, resubmitted.id(),
+            resubmitted.version(), null, "Which defendant?", null));
+
+        assertThat(asAuthor.start().order().queryFromCaseworker()).isEqualTo("Which defendant?");
+        assertThat(jdbcTemplate.queryForList("SELECT message.subject, message.closure_note, entry.body "
+            + "FROM case_message message JOIN case_message_entry entry ON entry.message_id = message.id "
+            + "JOIN pcs_case pc ON pc.id = message.case_id "
+            + "WHERE pc.case_reference = ? AND message.closed_at IS NOT NULL ORDER BY entry.created_at", caseReference))
+            .extracting(row -> row.get("body"), row -> row.get("closure_note"))
+            .containsExactly(tuple(QUERY, "Sent with the order, which went back to its judge"),
+                tuple("Which defendant?", "Sent with the order, which went back to its judge"));
+        String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
+        assertThat(tab).contains("There are no open messages", "Query on the order written ", QUERY)
+            .doesNotContain("Serve this by post.");
+    }
+
+    @Test
+    @DisplayName("takes a query of up to 30,000 characters as typed, dated on the Messages tab by when the judge wrote "
+        + "the order, and leaves it out of the judge's task")
+    void takesALongQueryDatedByTheOrder() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        // The judge wrote the order on an earlier day than court staff return it.
+        jdbcTemplate.update("UPDATE order_steps SET created_at = '2026-03-01T10:00:00Z' "
+            + "WHERE order_id = ? AND state = 'SUBMITTED_FOR_REVIEW'", order.id());
+        String query = "Which defendant; paragraph 2 & \"costs\" (£250)?\n".repeat(700).substring(0, 30_000);
+
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(
+            RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", query, null));
+
+        assertThat(asJudge.withClientContext(Map.of("orderId", order.id().toString())).start().order()
+            .queryFromCaseworker()).isEqualTo(query);
+        assertThat(jdbcTemplate.queryForList("SELECT message.subject, entry.body FROM case_message message "
+            + "JOIN case_message_entry entry ON entry.message_id = message.id "
+            + "JOIN pcs_case pc ON pc.id = message.case_id WHERE pc.case_reference = ?", caseReference))
+            .extracting(row -> row.get("subject"), row -> row.get("body"))
+            .containsExactly(tuple("Query on the order written 1 Mar 2026", query));
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
+            argThat(description -> description.contains("Change the order")
+                && description.contains("ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&amp;orderId=" + order.id())
+                && !description.contains("Which defendant")),
+            eq(judge.uid()));
+    }
+
+    /** The judge submits the order for review with a message for court staff. */
+    private static MakeOrderRequest withStaffMessage(Order order, String message) {
+        return new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(order.id(), order.version(), order.orderType(),
+            Map.of("notes", "the judge's order", "staff-message", List.of("yes"), "staff-message-text", message),
+            order.docweaveSnapshot()), null);
     }
 
     /** The judge submits an order for review, which the caseworker then chooses to review. */

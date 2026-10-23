@@ -29,4 +29,10 @@ public class CamundaRequestTaskData {
     /** Whom the task is for, which the configuration DMN makes its assignee. */
     private final String assignee;
 
+    /** Whether the task is urgent, which the configuration DMN gives a higher priority; null if it does not say. */
+    private final Boolean urgent;
+
+    /** The message the task is about, which the configuration DMN gives the task, so its event acts on that one. */
+    private final String messageId;
+
 }
