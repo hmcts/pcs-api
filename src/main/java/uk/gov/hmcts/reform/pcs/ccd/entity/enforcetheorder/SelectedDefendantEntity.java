@@ -33,7 +33,7 @@ public class SelectedDefendantEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enf_case_id")
     @JsonBackReference
-    private EnforcementOrderEntity enforcementCase;
+    private EnforcementOrderEntity enfCase;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "party_id", nullable = false)

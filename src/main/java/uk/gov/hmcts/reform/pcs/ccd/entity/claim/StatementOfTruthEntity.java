@@ -26,6 +26,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 
 import java.time.LocalDateTime;
 
+import static jakarta.persistence.CascadeType.ALL;
+
 @Entity
 @Builder
 @Getter
@@ -43,11 +45,11 @@ public class StatementOfTruthEntity {
     @JsonBackReference
     private ClaimEntity claim;
 
-    @OneToOne(mappedBy = "statementOfTruth")
+    @OneToOne(mappedBy = "statementOfTruth", cascade = ALL)
     @JsonBackReference
     private DefendantResponseEntity defendantResponse;
 
-    @OneToOne(mappedBy = "statementOfTruth")
+    @OneToOne(mappedBy = "statementOfTruth", cascade = ALL)
     @JsonManagedReference
     private EnforcementOrderEntity enforcementOrder;
 
