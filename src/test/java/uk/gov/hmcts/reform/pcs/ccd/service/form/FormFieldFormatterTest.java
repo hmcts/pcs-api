@@ -21,6 +21,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatLongDate;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatOrdinalDate;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatShortTime;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatUkDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isNo;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
@@ -105,6 +107,45 @@ class FormFieldFormatterTest {
             Arguments.argumentSet("thousands", new BigDecimal("1500.00"), "£1,500.00"),
             Arguments.argumentSet("pence", new BigDecimal("12.34"), "£12.34"),
             Arguments.argumentSet("zero", BigDecimal.ZERO, "£0.00"),
+            Arguments.argumentSet("null", null, null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("shortTimes")
+    void shouldFormatShortTime(LocalDateTime dateTime, String expected) {
+        assertThat(formatShortTime(dateTime)).isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @MethodSource("ordinalDates")
+    void shouldFormatOrdinalDate(LocalDate date, String expected) {
+        assertThat(formatOrdinalDate(date)).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> shortTimes() {
+        return Stream.of(
+            Arguments.argumentSet("with minutes", LocalDateTime.of(2026, 8, 15, 15, 40), "3:40pm"),
+            Arguments.argumentSet("on the hour", LocalDateTime.of(2026, 8, 15, 10, 0), "10am"),
+            Arguments.argumentSet("midday", LocalDateTime.of(2026, 8, 15, 12, 0), "12pm"),
+            Arguments.argumentSet("after midnight", LocalDateTime.of(2026, 8, 15, 0, 5), "12:05am"),
+            Arguments.argumentSet("null", null, null)
+        );
+    }
+
+    private static Stream<Arguments> ordinalDates() {
+        return Stream.of(
+            Arguments.argumentSet("1st", LocalDate.of(2026, 8, 1), "1st August 2026"),
+            Arguments.argumentSet("2nd", LocalDate.of(2026, 8, 2), "2nd August 2026"),
+            Arguments.argumentSet("3rd", LocalDate.of(2026, 8, 3), "3rd August 2026"),
+            Arguments.argumentSet("11th", LocalDate.of(2026, 8, 11), "11th August 2026"),
+            Arguments.argumentSet("12th", LocalDate.of(2026, 8, 12), "12th August 2026"),
+            Arguments.argumentSet("13th", LocalDate.of(2026, 8, 13), "13th August 2026"),
+            Arguments.argumentSet("15th", LocalDate.of(2026, 8, 15), "15th August 2026"),
+            Arguments.argumentSet("21st", LocalDate.of(2026, 8, 21), "21st August 2026"),
+            Arguments.argumentSet("22nd", LocalDate.of(2026, 8, 22), "22nd August 2026"),
+            Arguments.argumentSet("23rd", LocalDate.of(2026, 8, 23), "23rd August 2026"),
+            Arguments.argumentSet("31st", LocalDate.of(2026, 8, 31), "31st August 2026"),
             Arguments.argumentSet("null", null, null)
         );
     }

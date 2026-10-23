@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ConfirmationBodyRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ManageHearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -42,10 +43,13 @@ import static java.time.Month.JULY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,6 +71,8 @@ public class ManageHearingTest extends BaseEventTest {
     @Mock
     private ConfirmationBodyRenderer confirmationBodyRenderer;
     @Mock
+    private HearingNoticeScheduler hearingNoticeScheduler;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
 
     @InjectMocks
@@ -75,8 +81,11 @@ public class ManageHearingTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         underTest = new ManageHearing(manageHearingConfigurer, hearingService, locationReferenceService,
-                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer);
+                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer,
+                                      hearingNoticeScheduler);
         setEventUnderTest(underTest);
+        lenient().when(hearingService.addHearing(anyLong(), any())).thenReturn(HearingEntity.builder().build());
+        lenient().when(hearingService.updateHearing(anyLong(), any())).thenReturn(HearingEntity.builder().build());
     }
 
     @Test
@@ -441,6 +450,41 @@ public class ManageHearingTest extends BaseEventTest {
             // Then
             verify(hearingService).cancelHearing(hearing);
             assertThat(submitResponse.getConfirmationBody()).isEqualTo(expectedConfirmationBody);
+            verifyNoInteractions(hearingNoticeScheduler);
+        }
+
+        @Test
+        void shouldScheduleHearingNoticesForAddedHearing() {
+            // Given
+            PCSCase pcsCase = PCSCase.builder()
+                .manageHearingOption(ManageHearingOption.ADD)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .build();
+            HearingEntity addedHearing = HearingEntity.builder().id(1).build();
+            when(hearingService.addHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(addedHearing);
+
+            // When
+            callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingNoticeScheduler).scheduleHearingNoticeGeneration(TEST_CASE_REFERENCE, 1);
+        }
+
+        @Test
+        void shouldScheduleHearingNoticesForUpdatedHearing() {
+            // Given
+            PCSCase pcsCase = PCSCase.builder()
+                .manageHearingOption(ManageHearingOption.EDIT)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .build();
+            HearingEntity updatedHearing = HearingEntity.builder().id(2).build();
+            when(hearingService.updateHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(updatedHearing);
+
+            // When
+            callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingNoticeScheduler).scheduleHearingNoticeGeneration(TEST_CASE_REFERENCE, 2);
         }
     }
 
