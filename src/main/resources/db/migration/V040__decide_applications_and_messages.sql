@@ -10,6 +10,23 @@ DROP INDEX orders_one_draft_per_author_idx;
 CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id, hearing_id)
     NULLS NOT DISTINCT WHERE state = 'DRAFT';
 
+-- The parties court staff served an order on without notice; an order with none is served on all parties.
+CREATE TABLE order_served_party (
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    party_id UUID NOT NULL REFERENCES party(id),
+    PRIMARY KEY (order_id, party_id)
+);
+
+-- The parties a document is for alone, with court staff, such as an order served on them without notice. A document
+-- with none follows the case file's rules. A without notice order already uploaded is for the party it names.
+CREATE TABLE document_audience (
+    document_id UUID NOT NULL REFERENCES document(id) ON DELETE CASCADE,
+    party_id UUID NOT NULL REFERENCES party(id),
+    PRIMARY KEY (document_id, party_id)
+);
+INSERT INTO document_audience (document_id, party_id)
+SELECT id, party_id FROM document WHERE type = 'WITHOUT_NOTICE_ORDER' AND party_id IS NOT NULL;
+
 -- Messages between court staff and judges on a case: a thread with a subject, which a sender starts and either side
 -- replies to until someone closes it. A thread is open until it has a closed_at; when anyone wrote is on its entries.
 CREATE TABLE case_message (

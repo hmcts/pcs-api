@@ -3,10 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import com.github.kagkarlsson.scheduler.SchedulerClient;
-import com.github.kagkarlsson.scheduler.serializer.JacksonSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
@@ -24,13 +20,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Application;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.ApplicationDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
@@ -43,11 +36,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SOMETHING_ELSE;
@@ -56,11 +47,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.FREE_FORM;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType.NO_ORDER_ON_CLAIM;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
-import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
 
 /**
  * A judge decides a general application with an order on it, from the link in a message about it, which names the
@@ -77,10 +66,6 @@ class DecideApplicationIT extends OrderEventIT {
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
     private IssuedCases cases;
-    @Autowired
-    private OrderDocumentService orderDocumentService;
-    @Autowired
-    private SchedulerClient schedulerClient;
 
     private long caseReference;
     private UUID genAppId;
@@ -166,15 +151,14 @@ class DecideApplicationIT extends OrderEventIT {
         var asOtherJudge = events.external(caseReference, MAKE_ORDER).as(otherJudge)
             .withClientContext(Map.of("genAppId", genAppId.toString()));
         // The other judge started a draft before the first sent theirs for review.
-        asOtherJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asOtherJudge.start().order(), NO_ORDER_ON_CLAIM,
-            "dismiss", null));
+        asOtherJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asOtherJudge.start().order(), "dismiss", null));
         Order listed = judgeDecides(genAppId, "list");
         // Court staff reviewing the order still see the application it decides.
         assertThat(asCaseworkerReviewing(listed.id()).start().caseContext().applications())
             .extracting(Application::id).containsExactly(genAppId);
 
         assertThat(asOtherJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, asOtherJudge.start().order(),
-            NO_ORDER_ON_CLAIM, "dismiss", null)).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
+            "dismiss", null)).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
 
         issue(listed);
         Order granted = judgeDecides(genAppId, "grant");
@@ -188,20 +172,6 @@ class DecideApplicationIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("refuses an order deciding an application made without notice together with the claim or another "
-        + "application, so its order goes only to those who may see the application")
-    void decidesAWithoutNoticeApplicationAlone() {
-        cases.update(caseReference, pcsCase -> pcsCase.getGenApps().forEach(
-            genApp -> genApp.setWithoutNotice(VerticalYesNo.YES)));
-        var asJudge = asJudgeDeciding(genAppId);
-
-        assertThat(asJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), FREE_FORM,
-            "grant", null)).errors()).containsExactly(MakeOrder.WITHOUT_NOTICE_ALONE);
-        asJudge.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), NO_ORDER_ON_CLAIM,
-            "grant", null));
-    }
-
-    @Test
     @DisplayName("keeps the order's own thread open when the judge sends it back after court staff's query")
     void keepsTheOrdersThreadOpenWhenItIsResubmitted() {
         Order submitted = judgeDecides(genAppId, "grant");
@@ -209,8 +179,7 @@ class DecideApplicationIT extends OrderEventIT {
             submitted.id(), submitted.version(), null, "Which date?", null));
         var asAuthor = events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("orderId", submitted.id().toString()));
-        asAuthor.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asAuthor.start().order(), NO_ORDER_ON_CLAIM,
-            "grant", null));
+        asAuthor.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asAuthor.start().order(), "grant", null));
 
         assertThat(jdbcTemplate.queryForList("SELECT DISTINCT message.closed_at IS NULL AS open "
             + "FROM order_steps step JOIN case_message_entry entry ON entry.id = step.message_entry_id "
@@ -218,29 +187,10 @@ class DecideApplicationIT extends OrderEventIT {
             submitted.id())).extracting(row -> row.get("open")).containsExactly(true);
     }
 
-    @ParameterizedTest(name = "{0}")
-    @CsvSource({"NO_ORDER_ON_CLAIM, true", "FREE_FORM, false"})
-    @DisplayName("files the issued order's document with the application when it decides that alone, so it is seen "
-        + "only by those who may see the application, and otherwise with the case")
-    void filesTheOrderDocumentWithTheApplicationItDecidesAlone(OrderType orderType, boolean withApplication) {
-        Order dismissed = judgeDecides(genAppId, orderType, "dismiss");
-        when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString()))
-            .thenReturn(events.documents().store("Order application.pdf").getUrl());
-        issue(dismissed);
-
-        orderDocumentService.generateAndAttach(new JacksonSerializer().deserialize(OrderDocumentTaskData.class,
-            schedulerClient.getScheduledExecutionsForTask(ORDER_DOCUMENT_TASK_DESCRIPTOR.getTaskName())
-                .getFirst().getRawData()));
-
-        assertThat(jdbcTemplate.queryForObject("SELECT d.general_application_id FROM orders o JOIN document d "
-            + "ON d.id = o.document_id WHERE o.id = ?", UUID.class, dismissed.id()))
-            .isEqualTo(withApplication ? genAppId : null);
-    }
-
     private void issue(Order order) {
         asCaseworkerReviewing(order.id()).submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), null, null, new Issue(new IssuedOrder(order.orderType(), order.formData(), WORDING,
-                "the order"), List.of(), HIGH_COURT)));
+                "the order"), List.of(), HIGH_COURT, true, List.of())));
     }
 
     /** The judge following their task to decide the application, which names it. */
@@ -251,14 +201,10 @@ class DecideApplicationIT extends OrderEventIT {
 
     /** The judge decides the application and sends their order for review; returns it as court staff see it. */
     private Order judgeDecides(UUID genAppId, String decision) {
-        return judgeDecides(genAppId, NO_ORDER_ON_CLAIM, decision);
-    }
-
-    private Order judgeDecides(UUID genAppId, OrderType orderType, String decision) {
         var asJudge = asJudgeDeciding(genAppId);
-        asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), orderType, decision, null));
-        UUID orderId = asJudge.submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), orderType,
-                decision, "decide-task"))
+        asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), decision, null));
+        UUID orderId = asJudge
+            .submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asJudge.start().order(), decision, "decide-task"))
             .changed("orders", OrderRow.class).id();
         return asCaseworkerReviewing(orderId).start().order();
     }
@@ -268,9 +214,9 @@ class DecideApplicationIT extends OrderEventIT {
             .withClientContext(Map.of("orderId", orderId.toString()));
     }
 
-    private MakeOrderRequest decision(MakeOrderRequest.Action action, Order order, OrderType orderType,
-                                      String decision, String taskId) {
-        return new MakeOrderRequest(action, new OrderChange(order.id(), order.version(), orderType,
+    private MakeOrderRequest decision(MakeOrderRequest.Action action, Order order, String decision,
+                                      String taskId) {
+        return new MakeOrderRequest(action, new OrderChange(order.id(), order.version(), NO_ORDER_ON_CLAIM,
             Map.of("app-" + genAppId + "-decision", decision), WORDING), taskId);
     }
 

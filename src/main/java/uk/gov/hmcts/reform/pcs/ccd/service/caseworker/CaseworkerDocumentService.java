@@ -72,6 +72,10 @@ public class CaseworkerDocumentService {
 
         PartyEntity partyEntity = partyRepository.getReferenceById(partyId);
         documentEntity.setParty(partyEntity);
+        // A without notice order is for the party it is about alone.
+        if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
+            documentEntity.getAudience().add(partyEntity);
+        }
 
         pcsCaseEntity.addDocument(documentEntity);
 

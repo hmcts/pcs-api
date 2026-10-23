@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload.OrderParty;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,7 +82,7 @@ class OrderDocumentIT extends OrderEventIT {
             submitted.version(), "staff-review", null,
             new Issue(
                 new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), WORDING, "the caseworker's wording"),
-                List.of(), COUNTY_COURT)));
+                List.of(), COUNTY_COURT, true, List.of())));
         OrderDocumentTaskData job = scheduledGeneration();
         assertThat(job).extracting(OrderDocumentTaskData::getOrderId, OrderDocumentTaskData::getCaseReference,
                 OrderDocumentTaskData::getCaseworkerId, OrderDocumentTaskData::getCaseworkerFirstName,
@@ -107,6 +110,104 @@ class OrderDocumentIT extends OrderEventIT {
         orderDocumentService.generateAndAttach(job);
         verify(docAssemblyService).generateDocument(any(), anyString(), any(), anyString());
         assertThat(documents(caseReference, caseworker)).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("issues an order served on all parties as an order every party sees")
+    void servesAnOrderOnAllParties() {
+        long caseReference = cases.issue();
+        issueAndAttach(caseReference, true, List.of());
+
+        assertThat(documentType(caseReference)).isEqualTo("ORDER");
+        assertThat(documents(caseReference, party(caseReference, IssuedCases.CLAIMANT))).hasSize(1);
+        assertThat(documents(caseReference, party(caseReference, "Jane"))).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("issues an order served on some parties without notice as a without notice order only they and "
+        + "court staff see")
+    void servesAnOrderOnSomePartiesWithoutNotice() {
+        long caseReference = cases.issue();
+        cases.update(caseReference, pcsCase -> pcsCase.addParty(
+            PartyEntity.builder().firstName("John").lastName("Smith").build()));
+        issueAndAttach(caseReference, false,
+            List.of(partyId(caseReference, IssuedCases.CLAIMANT), partyId(caseReference, "Jane")));
+
+        assertThat(documentType(caseReference)).isEqualTo("WITHOUT_NOTICE_ORDER");
+        assertThat(documents(caseReference, party(caseReference, IssuedCases.CLAIMANT))).hasSize(1);
+        assertThat(documents(caseReference, party(caseReference, "Jane"))).hasSize(1);
+        assertThat(documents(caseReference, events.registerActor("Court", "Staff", "hearing-centre-admin")))
+            .hasSize(1);
+        assertThat(documents(caseReference, party(caseReference, "John"))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("refuses to issue an order served without notice on no one, or on someone not a party to the case")
+    void refusesToServeAnOrderOnNoParty() {
+        long caseReference = cases.issue();
+        var review = submittedForReview(caseReference);
+
+        assertThat(review.asCaseworker().submitExpectingRejection(issue(review.order(), false, List.of())).errors())
+            .containsExactly("Select who to serve the order on");
+        assertThat(review.asCaseworker().submitExpectingRejection(issue(review.order(), false,
+            List.of(partyId(caseReference, "Jane"), UUID.randomUUID()))).errors())
+            .containsExactly("Select who to serve the order on");
+    }
+
+    /** A judge's order sent for review, as the caseworker reviewing it has it. */
+    private Review submittedForReview(long caseReference) {
+        Actor judge = events.registerActor("Sarah", "Hughes", "caseworker-pcs");
+        Actor caseworker = events.registerActor("Tom", "Baker", "caseworker-pcs");
+        var asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
+        asJudge.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
+            new OrderChange(null, 0, OrderType.FREE_FORM, Map.of(), WORDING), null));
+        UUID orderId = jdbcTemplate.queryForObject("SELECT o.id FROM orders o JOIN pcs_case c ON c.id = o.case_id "
+            + "WHERE c.case_reference = ?", UUID.class, caseReference);
+        var asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker)
+            .withClientContext(Map.of("orderId", orderId.toString()));
+        return new Review(asCaseworker, asCaseworker.start().order());
+    }
+
+    private record Review(ExternalEvent<OrderStart, ConfirmOrderReviewRequest> asCaseworker, Order order) {
+    }
+
+    private static ConfirmOrderReviewRequest issue(Order order, boolean serveAllParties, List<UUID> partiesToServe) {
+        return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), null, null, new Issue(
+            new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), COUNTY_COURT,
+            serveAllParties, partiesToServe));
+    }
+
+    /** Issues the case's order, served as court staff chose, and runs the job that adds its document. */
+    private void issueAndAttach(long caseReference, boolean serveAllParties, List<UUID> partiesToServe) {
+        var review = submittedForReview(caseReference);
+        when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString()))
+            .thenReturn(events.documents().store("Order.pdf").getUrl());
+        review.asCaseworker().submitExpectingSuccess(issue(review.order(), serveAllParties, partiesToServe));
+        orderDocumentService.generateAndAttach(scheduledGeneration());
+    }
+
+    /** A citizen signed in as the party on the case with that organisation or first name. */
+    private Actor party(long caseReference, String name) {
+        Actor actor = events.registerActor(name, "Citizen", "citizen");
+        cases.update(caseReference, pcsCase -> partyOf(pcsCase, name).setIdamId(actor.uid()));
+        return actor;
+    }
+
+    private UUID partyId(long caseReference, String name) {
+        UUID[] id = new UUID[1];
+        cases.update(caseReference, pcsCase -> id[0] = partyOf(pcsCase, name).getId());
+        return id[0];
+    }
+
+    private static PartyEntity partyOf(PcsCaseEntity pcsCase, String name) {
+        return pcsCase.getParties().stream()
+            .filter(party -> name.equals(party.getOrgName()) || name.equals(party.getFirstName()))
+            .findFirst().orElseThrow();
+    }
+
+    private String documentType(long caseReference) {
+        return jdbcTemplate.queryForObject("SELECT type FROM document WHERE case_id = (SELECT id FROM pcs_case "
+            + "WHERE case_reference = ?)", String.class, caseReference);
     }
 
     /** The document generation the issuing event left for the scheduler. */

@@ -514,6 +514,8 @@ class DocumentAmendServiceTest {
     @Test
     void shouldUpdateDocumentDetailsAndRegenerateFilenameWhenNotRelatedToSubmission() {
         LocalDate issueDate = LocalDate.of(2021, 4, 16);
+        // It was a without notice order, for its party alone.
+        documentEntity.getAudience().add(partyEntity);
         DocumentAmendDetails amendDetails = baseDetails()
             .amendedFileName("rent statement.docx")
             .issueDate(issueDate)
@@ -542,6 +544,7 @@ class DocumentAmendServiceTest {
         assertThat(savedDocument.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
         assertThat(savedDocument.getIssueDate()).isEqualTo(issueDate);
         assertThat(savedDocument.getParty()).isSameAs(partyEntity);
+        assertThat(savedDocument.getAudience()).as("a rent statement follows the case file's rules").isEmpty();
         assertThat(savedDocument.getGeneralApplication()).isNull();
         assertThat(savedDocument.getCounterClaim()).isNull();
         assertThat(amendedDocument.fileName()).isEqualTo("rent statement 16042021");

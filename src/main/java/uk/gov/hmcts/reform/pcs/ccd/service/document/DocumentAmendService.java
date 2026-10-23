@@ -92,6 +92,11 @@ public class DocumentAmendService {
         documentEntity.setType(documentType);
         documentEntity.setIssueDate(amendDetails.getIssueDate());
         documentEntity.setParty(partyEntity);
+        // A without notice order is for the party it is about alone; any other document follows the case file's rules.
+        documentEntity.getAudience().clear();
+        if (documentType == DocumentType.WITHOUT_NOTICE_ORDER) {
+            documentEntity.getAudience().add(partyEntity);
+        }
 
         String fileName = fileNameWithOriginalExtension(amendDetails, documentEntity);
         if (amendDetails.getIssueDate() != null) {

@@ -23,14 +23,17 @@ public record ConfirmOrderReviewRequest(Action action,
     }
 
     /**
-     * How the order is issued. The frontend also asks about next steps, whether the order is final and
-     * whom to serve it on; nothing acts on those answers yet, so they are not read.
+     * How the order is issued: served on all parties, or without notice on the parties to serve, each one of the
+     * case's parties as the start sent them. The frontend also asks about next steps and whether the order is final;
+     * nothing acts on those answers yet, so they are not read.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal) {
+    public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal,
+                        boolean serveAllParties, List<UUID> partiesToServe) {
 
         public Issue {
             reviewDates = reviewDates == null ? List.of() : reviewDates;
+            partiesToServe = partiesToServe == null ? List.of() : partiesToServe;
         }
     }
 
