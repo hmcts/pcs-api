@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicatio
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
@@ -75,6 +76,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseTitleService caseTitleService;
     private final ClaimView claimView;
     private final DocumentsView documentsView;
+    private final BundleTabView bundleTabView;
     private final TenancyLicenceView tenancyLicenceView;
     private final ClaimGroundsView claimGroundsView;
     private final RentDetailsView rentDetailsView;
@@ -101,6 +103,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
+
+    // The SDK calls this overload, whose default calls getCase(request) on this instance, bypassing its
+    // transaction. Without one, the bundle status query takes a second pooled connection.
+    @Override
+    @Transactional(readOnly = true)
+    public PCSCase getCase(CaseViewRequest<State> request, PCSCase blobCase) {
+        return getCase(request);
+    }
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -173,6 +183,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
         documentsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
+        bundleTabView.setCaseFields(pcsCase, pcsCaseEntity);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);

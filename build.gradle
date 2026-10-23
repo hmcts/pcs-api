@@ -22,7 +22,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '7.16.0'
+  id 'hmcts.ccd.sdk' version '7.18.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2419'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
@@ -432,6 +432,7 @@ dependencies {
 
 dependencies {
   implementation 'com.github.hmcts:decentralised-runtime'
+  implementation 'com.github.hmcts:document-bundling'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
 
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
