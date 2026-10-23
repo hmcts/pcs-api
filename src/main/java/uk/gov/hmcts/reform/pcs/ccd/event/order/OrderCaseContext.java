@@ -70,15 +70,9 @@ class OrderCaseContext {
         );
     }
 
-    /**
-     * Whether the application asks to suspend the warrant of possession. The application journeys have no such
-     * type yet, so an applicant asks for it as something else: this reads what they said it is for. Any other
-     * application about the warrant is decided in the judge's own words, not as a suspension.
-     */
+    /** Whether the application asks to suspend the warrant of possession, which an application to suspend is. */
     private static boolean isWarrantSuspension(GenAppEntity genApp) {
-        return genApp.getType() == GenAppType.SOMETHING_ELSE
-            && StringUtils.containsIgnoreCase(genApp.getSomethingElseDetails(), "warrant")
-            && StringUtils.containsIgnoreCase(genApp.getSomethingElseDetails(), "suspen");
+        return genApp.getType() == GenAppType.SUSPEND;
     }
 
     /** The applicant by name, with their role on the claim: "Jane Doe (Defendant 1)". */
