@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskCompon
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -28,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormDocumentGenerator.counterClaimFormFilename;
 import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormPersistenceService.defendantNumber;
 import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 
@@ -40,6 +42,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
     private final SchedulerClient schedulerClient;
     private final CounterClaimFormScheduler counterClaimFormScheduler;
     private final TranslationWAService translationWAService;
+    private final FeatureToggleService featureToggleService;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
@@ -47,12 +50,14 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                                               SchedulerClient schedulerClient,
                                               CounterClaimFormScheduler counterClaimFormScheduler,
                                               TranslationWAService translationWAService,
+                                              FeatureToggleService featureToggleService,
                                               ObjectMapper objectMapper,
                                               @Qualifier("utcClock") Clock utcClock) {
         this.counterClaimRepository = counterClaimRepository;
         this.schedulerClient = schedulerClient;
         this.counterClaimFormScheduler = counterClaimFormScheduler;
         this.translationWAService = translationWAService;
+        this.featureToggleService = featureToggleService;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -141,7 +146,11 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         // The counterclaim form is scheduled for generation so we reference it by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
-            .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaimEntity)) + GENERATED_DOC_EXTENSION)
+            .fileName(counterClaimFormFilename(
+                featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4),
+                counterClaimEntity.getRank(),
+                defendantNumber(counterClaimEntity)
+            ) + GENERATED_DOC_EXTENSION)
             .build());
 
         documents.addAll(counterClaimEntity.getPcsCase().getDocuments().stream()
