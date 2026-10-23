@@ -320,13 +320,13 @@ class SendReplyMessageIT extends OrderEventIT {
         PCSCase message = PCSCase.builder().messageAction(MessageAction.SEND)
             .messageCategories(Set.of(MessageCategory.OTHER)).messageRecipient(MessageRecipient.DISTRICT_JUDGE)
             .messageSubject("*Re* ${caseTitleMarkdown}").messageUrgent(VerticalYesNo.NO)
-            .messageBody("They ask for:\n\n1. more time\n\n    [a link](http://x)").build();
+            .messageBody("They ask for:\n\n1. more time\r\n\r\n2. a hearing\r\r    [a link](http://x)").build();
         events.event(caseReference, sendReplyMessage.name(), message).as(caseworker).submitExpectingSuccess();
 
         // One line of HTML, as a blank line would end the tab's HTML and leave the rest to markdown.
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
             .contains("&#42;Re&#42; &#36;&#123;caseTitleMarkdown&#125;",
-                "They ask for:<br><br>1. more time<br><br>    &#91;a link&#93;(http://x)")
+                "They ask for:<br><br>1. more time<br><br>2. a hearing<br><br>    &#91;a link&#93;(http://x)")
             .doesNotContain("${");
     }
 
