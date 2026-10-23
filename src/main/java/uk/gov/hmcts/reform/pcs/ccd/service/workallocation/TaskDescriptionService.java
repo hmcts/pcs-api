@@ -229,12 +229,10 @@ public class TaskDescriptionService {
 
     public String createReviewOrderQueryDescription(String caseworkerName,
                                                     String orderType,
-                                                    String query,
                                                     String changeUrl) {
         Map<String, Object> context = Map.of(
             "caseworkerName", caseworkerName,
             "orderType", orderType,
-            "query", query,
             "changeUrl", changeUrl
         );
 

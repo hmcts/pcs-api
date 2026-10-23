@@ -35,6 +35,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -114,6 +115,9 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(
             RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", " ", null)).errors())
             .containsExactly("Enter a query for the judge");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(
+            RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", "q".repeat(30_001), null)).errors())
+            .containsExactly("The query must be 30,000 characters or fewer");
 
         var outcome = asCaseworker.submitExpectingSuccess(returnToJudge(order));
 
@@ -131,7 +135,9 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
-        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY), contains(QUERY),
+        // The judge reads the query on the order: in their task it could be cut short at a semicolon, or be too long.
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
+            argThat(description -> description.contains("has returned your") && !description.contains(QUERY)),
             eq(judge.uid()));
 
         // The judge opens the order from their task, seeing the query, and can save changes to it.

@@ -50,7 +50,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.MEDIUM_TEXT_LIMIT;
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
 
 /**
@@ -62,6 +61,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.
 @AllArgsConstructor
 public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
+    /** As HDPI-8476 allows; the judge reads it on the order and the Messages tab, not in their task. */
+    static final int QUERY_LIMIT = 30_000;
     public static final ExternalEventId<OrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
         ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
     static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
@@ -132,7 +133,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 .docweaveSnapshot(submitted.getDocweaveSnapshot())
                 .messageEntry(messageService.recordOrderQuery(order, submitted.getCreatedAt(),
                     orderTasks.currentUserName("Court staff"), query)));
-        orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned, query);
+        orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned);
         return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
     }
 
@@ -193,8 +194,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (query == null || query.isBlank()) {
             throw ExternalRejection.because("Enter a query for the judge");
         }
-        if (query.length() > MEDIUM_TEXT_LIMIT) {
-            throw ExternalRejection.because("The query must be 500 characters or fewer");
+        if (query.length() > QUERY_LIMIT) {
+            throw ExternalRejection.because("The query must be 30,000 characters or fewer");
         }
         return query;
     }
