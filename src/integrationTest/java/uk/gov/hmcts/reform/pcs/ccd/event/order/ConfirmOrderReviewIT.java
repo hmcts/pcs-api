@@ -238,6 +238,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         asCaseworker.submitExpectingSuccess(returnToJudge(order));
         var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
         Order returned = asAuthor.start().order();
+        // The judge's message stays in the thread, so the order comes back without it to send again.
+        assertThat(returned.formData()).doesNotContainKeys("staff-message", "staff-message-text");
         assertThat(returned.queryFromCaseworker()).isEqualTo(QUERY);
         asAuthor.submitExpectingSuccess(withStaffMessage(returned, "Paragraph 2 means the first defendant."));
 

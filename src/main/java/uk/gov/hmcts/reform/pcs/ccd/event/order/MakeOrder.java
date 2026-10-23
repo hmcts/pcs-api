@@ -175,8 +175,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .formData(change.formData())
             .docweaveSnapshot(change.docweaveSnapshot())
             .messageEntry(request.action() != SUBMIT_FOR_REVIEW ? null : staffMessage(change)
-                // The frontend fills in the judge's last message again, which is not sent twice.
-                .filter(message -> !messageService.lastOrderMessage(order, true).equals(Optional.of(message)))
                 .map(message -> messageService.recordOrderMessage(order, OrderTasks.inWords(change.orderType()),
                     order.getAuthorName(), true, message))
                 .orElse(null)));

@@ -38,6 +38,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -114,14 +116,17 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             : issue(order, request.issue(), caseworker);
     }
 
-    /** The order goes back as the judge submitted it, with the query in its message thread for the judge to read. */
+    /**
+     * The order goes back as the judge submitted it, with the query in its message thread for the judge to read.
+     * The message the judge sent with it stays in the thread, so the order goes back without it.
+     */
     private ExternalSubmitResponse<State> returnToJudge(OrderEntity order, OrderStepEntity submitted, String query,
                                                         UserInfo caseworker) {
         OrderStepEntity returned = orderSteps.append(
             order, RETURNED_TO_JUDGE, IdamUserIds.normalise(caseworker.getUid()),
             OrderStepEntity.builder()
                 .orderType(submitted.getOrderType())
-                .formData(submitted.getFormData())
+                .formData(withoutStaffMessage(submitted.getFormData()))
                 .docweaveSnapshot(submitted.getDocweaveSnapshot())
                 .messageEntry(messageService.recordOrderMessage(order, OrderTasks.inWords(submitted.getOrderType()),
                     orderTasks.currentUserName("Court staff"), false, query)));
@@ -155,6 +160,12 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 issue.reviewDates().stream().map(ConfirmOrderReview::toReviewDate).toList());
         }
         return ExternalSubmitResponse.accepted("Order issued", "Reviewed and issued an order");
+    }
+
+    private static Map<String, Object> withoutStaffMessage(Map<String, Object> formData) {
+        Map<String, Object> returned = new HashMap<>(formData);
+        returned.keySet().removeAll(Set.of("staff-message", "staff-message-text"));
+        return returned;
     }
 
     private OrderEntity orderAwaitingReview(UUID orderId, long caseReference) {
