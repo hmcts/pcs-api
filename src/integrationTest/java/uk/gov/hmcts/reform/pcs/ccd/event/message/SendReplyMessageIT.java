@@ -271,7 +271,8 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("keeps the judge's message for court staff with their order on the Messages tab")
+    @DisplayName("keeps the judge's message for court staff with their order on the Messages tab, to be answered by "
+        + "reviewing the order, not as a message")
     void keepsTheOrdersStaffMessage() {
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.FREE_FORM,
@@ -280,6 +281,7 @@ class SendReplyMessageIT extends OrderEventIT {
 
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
             .contains("Free form order", "Serve this by post.", "Court staff");
+        assertThat(replyList(caseworker)).isEmpty();
     }
 
     @Test

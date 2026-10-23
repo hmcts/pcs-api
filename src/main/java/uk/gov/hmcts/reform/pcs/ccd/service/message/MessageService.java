@@ -47,11 +47,15 @@ public class MessageService {
                           boolean urgent, String body) {
     }
 
-    /** The case's open messages whose latest message is for the user's side: a judge's, or court staff's. */
+    /**
+     * The case's open messages whose latest message is for the user's side: a judge's, or court staff's. An order's
+     * thread is not one, as it is answered by changing or reviewing the order, from the order's own tasks.
+     */
     public List<CaseMessageEntity> awaiting(PcsCaseEntity pcsCase, boolean judge) {
         return pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
             .filter(message -> message.latest().getRecipientRole().isJudicial() == judge)
+            .filter(message -> !orderStepRepository.existsByMessageEntryMessage(message))
             .sorted(Comparator.comparing(CaseMessageEntity::createdAt))
             .toList();
     }
