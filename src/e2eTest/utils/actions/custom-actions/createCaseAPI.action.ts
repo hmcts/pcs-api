@@ -552,15 +552,13 @@ export class CreateCaseAPIAction implements IAction {
         if (!paymentInfo?.length) {
           throw new Error('No payment information found.');
         }
-        const payment = payType?.app === 'Counter Claim'
-          ? paymentInfo.find((item: any) => item.paymentCallbackHandlerType === 'COUNTER_CLAIM_ISSUE')
-          : paymentInfo.find((item: any) => item.paymentCallbackHandlerType === 'CLAIM');
-
-        if (!payment?.serviceRequestReference) {
-          throw new Error(`No ${payType?.app === 'Counter Claim' ? 'counterclaim' : 'claim'} payment request found`);
+        const selectedPayment = payType?.app === 'Counter Claim'
+          ? this.selectCounterClaimPayment(paymentInfo, payType.amt)
+          : paymentInfo[0];
+        const requestReference = selectedPayment?.serviceRequestReference;
+        if (!requestReference) {
+          throw new Error('Selected payment does not contain a service request reference');
         }
-
-        const requestReference = payment.serviceRequestReference;
         const updateResponse = await paymentApi.put(
           paymentApiData.updatePaymentApiEndPoint,
           payLoad(requestReference, payType?.amt as number | undefined)
@@ -583,6 +581,38 @@ export class CreateCaseAPIAction implements IAction {
     }
     throw new Error('Payment API failed after multiple retries');
   }
+
+  private selectCounterClaimPayment(paymentInfo: any[], amount?: actionData): any {
+    const callbackPayment = paymentInfo.find(
+      payment => payment?.paymentCallbackHandlerType === 'COUNTER_CLAIM_ISSUE'
+    );
+    if (callbackPayment) {
+      return callbackPayment;
+    }
+
+    const requestedAmount = Number(amount);
+    const amountRepresentations = new Set([
+      requestedAmount,
+      requestedAmount / 100,
+    ].filter(value => Number.isFinite(value)));
+
+    const matchingPayments = paymentInfo.filter(payment => {
+      const paymentAmount = Number(payment?.amount);
+      return amountRepresentations.has(paymentAmount)
+        || amountRepresentations.has(Number(payment?.amountInPence));
+    });
+
+    if (matchingPayments.length > 0) {
+      return matchingPayments[matchingPayments.length - 1];
+    }
+
+    if (paymentInfo.length === 1) {
+      return paymentInfo[0];
+    }
+
+    throw new Error(`No counterclaim payment found for amount ${amount}`);
+  }
+
   private defendantIds: string[] = [];
   private def1Details: { id: string; name: string } | null = null;
   private solicitor1Details: { email: string; password: string } | null = null;
