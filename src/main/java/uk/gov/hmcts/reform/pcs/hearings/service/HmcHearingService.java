@@ -54,7 +54,8 @@ public class HmcHearingService {
 
     public HearingResponse deleteHearing(String id, @RequestBody DeleteHearingRequest hearingDeletePayload) {
         return hmcHearingApi.deleteHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
-                                           hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, id, hearingDeletePayload);
+                                           hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, 
+                                           id, hearingDeletePayload);
     }
 
     public GetHearingsResponse getHearing(String id) {

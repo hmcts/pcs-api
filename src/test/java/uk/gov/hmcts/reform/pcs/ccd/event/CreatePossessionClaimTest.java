@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.hearings.mapping.HearingRequestMapper;
+import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -48,6 +50,10 @@ class CreatePossessionClaimTest extends BaseEventTest {
     private SchedulerClient schedulerClient;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private HmcHearingService hmcHearingService;
+    @Mock
+    private HearingRequestMapper hearingRequestMapper;
 
     @BeforeEach
     void setUp() {
