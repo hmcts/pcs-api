@@ -8,15 +8,8 @@ export const statementOfTruth = {
   //commented above line as this is expected to be changeds as per discussion with Nafees and is reported in HDPI-5199 scenario3
  // noticeHasBeenGivenParagraph: `notice has been given in accordance with The Dwelling Houses (Execution of Possession Orders by Mortgagees) Regulations 2010. `,
   //aStatementOfThePaymentParagraph: `a statement of the payments due and made under the judgment or order is attached to this request.††`,  // not in all cases only for suspended order
-  paymentDueCaption: `The payments due`,
-  repaymentForTableHeader: `Repayment for`,
-  amountTableHeader: `Amount`,
-  arrearsAndOtherCostsTableHeader: `Arrears and other costs`,
-  legalCostsTableHeader: `Legal costs`,
-  landRegistryFeesTableHeader: `Land Registry fees`,
   //warrantOfPossessionFeeTableHeader: `Warrant of possession fee`, //Will create Dynamic element for this during page replacement
   //writOfPossessionFeeTableHeader: `Writ of possession fee`,
-  TotalTableHeader: `Total`,
   completedByLabel: `Completed by`,
   claimantRadioOption: `Claimant`,
   claimantLegalRepresentativeRadioOption: `Claimant’s legal representative (as defined by CPR 2.3 (1))`,
@@ -27,7 +20,7 @@ export const statementOfTruth = {
   fullNameHiddenTextInput: `John Doe`,
   nameOfFirmHiddenTextInput: `Doe & Co Solicitors`,
   positionOrOfficeHeldHiddenTextInput: `Solicitor`,
-  signThisStatementHiddenCheckbox: `The claimant believes that the facts stated in this claim form are true.  I am authorised by the claimant to sign this statement.`,
+  signThisStatementHiddenCheckbox: `The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.`,
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
