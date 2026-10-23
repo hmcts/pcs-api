@@ -747,7 +747,7 @@ public class PCSCase {
 
     /** Whether the case has an open application for a message to name, which the event asks for only if it has. */
     @CCD(searchable = false)
-    private YesOrNo messageOpenGenApps;
+    private YesOrNo messageHasOpenGenApps;
 
     @CCD(label = "Who is the message for?",
         searchable = false,

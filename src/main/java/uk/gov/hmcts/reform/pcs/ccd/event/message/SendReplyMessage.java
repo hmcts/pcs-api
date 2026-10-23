@@ -107,13 +107,13 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .pageLabel("Send or reply to a message")
             .mandatory(PCSCase::getMessageAction)
             .readonly(PCSCase::getMessageTaskMessageId, ShowConditions.NEVER_SHOW, true)
-            .readonly(PCSCase::getMessageOpenGenApps, ShowConditions.NEVER_SHOW, true);
+            .readonly(PCSCase::getMessageHasOpenGenApps, ShowConditions.NEVER_SHOW, true);
         pages.page("sendMessage", this::checkMessage)
             .showCondition(sending)
             .pageLabel("Send a new message")
             .mandatory(PCSCase::getMessageCategories)
             .mandatory(PCSCase::getMessageGenAppList,
-                "messageCategories CONTAINS \"APPLICATION\" AND messageOpenGenApps=\"Yes\"")
+                "messageCategories CONTAINS \"APPLICATION\" AND messageHasOpenGenApps=\"Yes\"")
             .mandatory(PCSCase::getMessageRecipient)
             .mandatory(PCSCase::getMessageSubject)
             .mandatory(PCSCase::getMessageUrgent)
@@ -148,7 +148,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             .map(genApp -> DynamicListElement.builder().code(genApp.getId())
                 .label("GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName())).build())
             .toList()).build());
-        caseData.setMessageOpenGenApps(YesOrNo.from(!caseData.getMessageGenAppList().getListItems().isEmpty()));
+        caseData.setMessageHasOpenGenApps(YesOrNo.from(!caseData.getMessageGenAppList().getListItems().isEmpty()));
         List<CaseMessageEntity> awaiting = messageService.awaiting(pcsCase, userRoleService.isJudge());
         // Started from a message's task, as XUI also does from the case when the user has one task for the event,
         // the event starts on replying to that message.
@@ -268,7 +268,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         boolean aboutApplication = categories.contains(MessageCategory.APPLICATION);
         GenAppEntity genApp = aboutApplication ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
         // A case with no open application asks for none, as the message can be about one not yet entered.
-        if (aboutApplication && genApp == null && caseData.getMessageOpenGenApps() == YesOrNo.YES) {
+        if (aboutApplication && genApp == null && pcsCase.getGenApps().stream().anyMatch(GenAppEntity::isOpen)) {
             return rejected(List.of("Choose the open application the message is about"));
         }
         messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
