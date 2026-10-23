@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -17,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.Map;
 
@@ -31,24 +31,24 @@ public class OrderTasks {
 
     private static final String A_JUDGE = "A judge";
     private static final String COURT_STAFF = "Court staff";
+    /** The states of an order that has decided, or is deciding, what it says about an application. */
+    private static final Set<OrderState> DECIDING =
+        EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED);
 
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
     private final SecurityContextService securityContextService;
-    private final OrderRepository orderRepository;
     private final OrderStepRepository orderStepRepository;
     private final String frontendUrl;
 
     public OrderTasks(CamundaService camundaService,
                       TaskDescriptionService taskDescriptionService,
                       SecurityContextService securityContextService,
-                      OrderRepository orderRepository,
                       OrderStepRepository orderStepRepository,
                       @Value("${frontend.url}") String frontendUrl) {
         this.camundaService = camundaService;
         this.taskDescriptionService = taskDescriptionService;
         this.securityContextService = securityContextService;
-        this.orderRepository = orderRepository;
         this.orderStepRepository = orderStepRepository;
         this.frontendUrl = frontendUrl;
     }
@@ -81,14 +81,12 @@ public class OrderTasks {
 
     /** Whether a judge can decide the application with the order, which is not one already deciding it. */
     public boolean canDecide(GenAppEntity genApp, UUID except) {
-        return genApp.isOpen() && orderRepository.findByPcsCaseIdAndStateIn(genApp.getPcsCase().getId(),
-                EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED)).stream()
-            .filter(order -> !order.getId().equals(except))
-            .noneMatch(order -> orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId())
-                .filter(step -> decides(step.getFormData(), genApp))
-                .filter(step -> order.getState() != OrderState.ISSUED
-                    || !"list".equals(step.getFormData().get(decisionField(genApp))))
-                .isPresent());
+        return genApp.isOpen() && orderStepRepository.findLatestByCaseId(genApp.getPcsCase().getId()).stream()
+            .filter(step -> DECIDING.contains(step.getOrder().getState()))
+            .filter(step -> !step.getOrder().getId().equals(except))
+            .filter(step -> decides(step.getFormData(), genApp))
+            .noneMatch(step -> step.getOrder().getState() != OrderState.ISSUED
+                || !"list".equals(step.getFormData().get(decisionField(genApp))));
     }
 
     /** Whether the order's answers decide the application. */
