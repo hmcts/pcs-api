@@ -264,7 +264,7 @@ export class ErrorValidationAction implements IAction {
 
         validationType: statementOfTruth.errorValidationType.three,
         inputArray: statementOfTruth.errorValidationField.errorRadioOption,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantRadioOption,
         button: statementOfTruth.continueButton
       });
@@ -310,7 +310,7 @@ export class ErrorValidationAction implements IAction {
 
         validationType: statementOfTruth.errorValidationType.three,
         inputArray: statementOfTruth.errorValidationField.errorRadioOption,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         button: statementOfTruth.continueButton
       });
@@ -356,8 +356,8 @@ export class ErrorValidationAction implements IAction {
 
         validationType: statementOfTruth.errorValidationType.three,
         inputArray: statementOfTruth.errorValidationField.errorRadioOption,
-        question: statementOfTruth.completedByLabel,
-        option: statementOfTruth.claimantRadioOption,
+        question: statementOfTruth.claimantRadioOption,
+        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
@@ -365,7 +365,7 @@ export class ErrorValidationAction implements IAction {
         validationType: statementOfTruth.errorValidationType.four,
         inputArray: statementOfTruth.errorValidationField.errorCheckBoxOption,
         label: statementOfTruth.checkBoxGenericErrorMessageHeader,
-        checkBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        checkBox: statementOfTruth.iCertifyCheckboxDynamic,
         button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
@@ -382,6 +382,14 @@ export class ErrorValidationAction implements IAction {
         inputArray: statementOfTruth.errorValidationField.errorTextField3,
         header: statementOfTruth.thereIsAProblemErrorMessageHeader,
         label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruth.continueButton
+      });
+      await performAction('inputErrorValidation', {
+
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField2,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.nameOfFirmHiddenTextLabel,
         button: statementOfTruth.continueButton
       });
     }

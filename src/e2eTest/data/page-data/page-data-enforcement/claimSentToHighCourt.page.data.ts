@@ -8,7 +8,7 @@ export const claimSentToHighCourt = {
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [
-      { type: 'none', input: '', errMessage: 'Has the claim been transferred to the High Court? is required' }
+      { type: 'none', input: '', errMessage: 'Has the claim been transferred to the High Court? is required', errInlineMessage:`Has the claim been transferred to the High Court? is required` }
     ]
   },
   continueButton: 'Continue'
