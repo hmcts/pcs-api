@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
@@ -39,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -64,6 +66,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     public static final ExternalEventId<OrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
         ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
     static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
+    static final String NO_PARTY_TO_SERVE = "Select who to serve the order on";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -142,6 +145,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             throw ExternalRejection.because(NO_WORDING);
         }
         order.setSeal(issue.seal());
+        if (!issue.serveAllParties()) {
+            order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
+        }
         OrderStepEntity issued = orderSteps.append(order, ISSUED, IdamUserIds.normalise(caseworker.getUid()),
             OrderStepEntity.builder()
                 .orderType(issue.order().orderType())
@@ -160,6 +166,17 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 issue.reviewDates().stream().map(ConfirmOrderReview::toReviewDate).toList());
         }
         return ExternalSubmitResponse.accepted("Order issued", "Reviewed and issued an order");
+    }
+
+    /** The case's parties court staff chose to serve the order on without notice, at least one. */
+    private static List<PartyEntity> partiesToServe(OrderEntity order, List<UUID> chosen) {
+        List<PartyEntity> parties = order.getPcsCase().getParties().stream()
+            .filter(party -> chosen.contains(party.getId()))
+            .toList();
+        if (chosen.isEmpty() || parties.size() != Set.copyOf(chosen).size()) {
+            throw ExternalRejection.because(NO_PARTY_TO_SERVE);
+        }
+        return parties;
     }
 
     private static Map<String, Object> withoutStaffMessage(Map<String, Object> formData) {

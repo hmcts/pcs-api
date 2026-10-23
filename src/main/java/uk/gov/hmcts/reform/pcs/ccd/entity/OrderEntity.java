@@ -8,6 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -20,7 +22,10 @@ import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -53,6 +58,14 @@ public class OrderEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "hearing_id", updatable = false)
     private HearingEntity hearing;
+
+    /** The parties court staff served the order on without notice; none means it is served on all parties. */
+    @ManyToMany
+    @JoinTable(name = "order_served_party", joinColumns = @JoinColumn(name = "order_id"),
+        inverseJoinColumns = @JoinColumn(name = "party_id"))
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private Set<PartyEntity> servedParties = new HashSet<>();
 
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)

@@ -16,14 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
@@ -68,8 +66,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     static final String ALREADY_DECIDED =
         "Another order on this application is with court staff, back with its judge, or has decided it";
-    static final String WITHOUT_NOTICE_ALONE =
-        "Decide an application made without notice in an order of its own, without the claim or another application";
 
     /** The states that leave an order its author's to change. */
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
@@ -162,8 +158,10 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         List<GenAppEntity> decided = order.getPcsCase().getGenApps().stream()
             .filter(genApp -> OrderTasks.decides(change.formData(), genApp))
             .toList();
-        if (request.action() == SUBMIT_FOR_REVIEW) {
-            requireDecidable(order, change, decided);
+        // Every application the order decides must still be the judge's to decide.
+        if (request.action() == SUBMIT_FOR_REVIEW
+            && decided.stream().anyMatch(genApp -> !orderTasks.canDecide(genApp, order.getId()))) {
+            throw ExternalRejection.because(ALREADY_DECIDED);
         }
         Integer hearingId = order.getHearing() == null ? null : order.getHearing().getId();
         if (!Objects.equals(hearingId, request.hearing() == null ? null : request.hearing().id())) {
@@ -223,20 +221,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("The order draft does not exist for this case"));
         orderSteps.latest(draft, change.version());
         return draft;
-    }
-
-    /**
-     * Every application the order decides must still be the judge's to decide, and one made without notice is
-     * decided alone, so that its order goes only to those who may see the application.
-     */
-    private void requireDecidable(OrderEntity order, OrderChange change, List<GenAppEntity> decided) {
-        if (decided.stream().anyMatch(genApp -> !orderTasks.canDecide(genApp, order.getId()))) {
-            throw ExternalRejection.because(ALREADY_DECIDED);
-        }
-        boolean alone = decided.size() == 1 && change.orderType() == OrderType.NO_ORDER_ON_CLAIM;
-        if (!alone && decided.stream().anyMatch(genApp -> genApp.getWithoutNotice() == VerticalYesNo.YES)) {
-            throw ExternalRejection.because(WITHOUT_NOTICE_ALONE);
-        }
     }
 
     /** The case's application, which an order can only be made on while it is open. */

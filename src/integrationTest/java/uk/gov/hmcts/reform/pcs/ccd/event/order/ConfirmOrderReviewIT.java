@@ -154,7 +154,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         Order review = asCaseworker.start().order();
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, review.id(), review.version(),
             "staff-review", null, new Issue(
-                new IssuedOrder(review.orderType(), review.formData(), WORDING, "the order"), List.of(), HIGH_COURT)));
+                new IssuedOrder(review.orderType(), review.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
+                true, List.of())));
         assertThat(jdbcTemplate.queryForList("SELECT DISTINCT message.closed_at IS NOT NULL AS closed, "
             + "message.closure_note "
             + "FROM order_steps step JOIN case_message_entry entry ON entry.id = step.message_entry_id "
@@ -181,7 +182,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null, new Issue(
-                new IssuedOrder(order.orderType(), order.formData(), null, null), List.of(), HIGH_COURT)))
+                new IssuedOrder(order.orderType(), order.formData(), null, null), List.of(), HIGH_COURT, true,
+                List.of())))
             .errors()).containsExactly(ConfirmOrderReview.NO_WORDING);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
@@ -196,7 +198,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(changed, List.of(reviewDate), HIGH_COURT)));
+            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of())));
 
         Issued issued = outcome.changed("orders", Issued.class);
         assertThat(issued.state()).isEqualTo(ISSUED);

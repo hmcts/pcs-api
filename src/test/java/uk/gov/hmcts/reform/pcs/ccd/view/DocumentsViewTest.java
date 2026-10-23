@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
@@ -26,10 +27,14 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -303,20 +308,21 @@ class DocumentsViewTest {
         assertThat(pcsCase.getAllDocuments()).isEmpty();
     }
 
-    @Test
-    void shouldHideStandaloneWithoutNoticeOrderWhenPartyScopedRuleDoesNotAllowAccess() {
+    @ParameterizedTest(name = "visible to one of its parties: {0}")
+    @ValueSource(booleans = {true, false})
+    void shouldShowADocumentForSomePartiesOnlyToThoseTheirRuleAllows(boolean visibleToOne) {
         // Given
-        PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(genAppVisibilityService
-                 .isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
-            .thenReturn(false);
+        PartyEntity served = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity alsoServed = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(any(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of()))).thenAnswer(call -> visibleToOne && call.getArgument(0) == alsoServed);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("without notice order.pdf")
             .url("without-notice-order-url")
             .type(DocumentType.WITHOUT_NOTICE_ORDER)
-            .party(relatedParty)
+            .audience(Set.of(served, alsoServed))
             .build();
 
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
@@ -325,23 +331,21 @@ class DocumentsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
-        assertThat(pcsCase.getAllDocuments()).isEmpty();
+        assertThat(pcsCase.getAllDocuments()).hasSize(visibleToOne ? 1 : 0);
     }
 
-    @Test
-    void shouldShowStandaloneWithoutNoticeOrderWhenPartyScopedRuleAllowsAccess() {
+    @ParameterizedTest(name = "court staff: {0}")
+    @ValueSource(booleans = {true, false})
+    void shouldShowAWithoutNoticeOrderWithNoPartyRecordedOnlyToCourtStaff(boolean courtStaff) {
         // Given
-        PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(genAppVisibilityService
-                 .isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
-            .thenReturn(true);
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(isNull(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of()))).thenReturn(courtStaff);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("without notice order.pdf")
             .url("without-notice-order-url")
             .type(DocumentType.WITHOUT_NOTICE_ORDER)
-            .party(relatedParty)
             .build();
 
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
@@ -350,8 +354,7 @@ class DocumentsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
-        assertThat(pcsCase.getAllDocuments()).singleElement()
-            .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("without notice order.pdf"));
+        assertThat(pcsCase.getAllDocuments()).hasSize(courtStaff ? 1 : 0);
     }
 
     @ParameterizedTest(name = "[{index}] description={0} => isEmpty={1}")
