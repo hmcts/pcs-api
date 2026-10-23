@@ -37,6 +37,7 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
             .done()
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", WITHOUT_NOTICE_APPLICATION_GUIDANCE)
+            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .label(
                 pageKey + "-application-links", "${lrDocUpload_ExistingApplicationDocumentLinks}",
                 featureFlagsEnabled(RELEASE_1_DOT_4)
