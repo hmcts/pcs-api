@@ -41,7 +41,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('Citizen respond to a claim - counterclaim documents @nightly', () => {
+test.describe('Citizen respond to a claim - counterclaim documents @regression @nightly', () => {
   test('Counterclaim PDF reference code sequencing @regression', async () => {
     const defendantRank = process.env.CITIZEN_DEFENDANT_RANK ?? 'Defendant 1';
     await performCMAction('clickTab', home.caseFileView);

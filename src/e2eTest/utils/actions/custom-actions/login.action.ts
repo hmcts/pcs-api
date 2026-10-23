@@ -84,11 +84,6 @@ export class LoginAction implements IAction {
     });
   }
 
-  /**
-   * The IDAM testing-support endpoint does not accept a normal PCS API user
-   * token.  pcs-frontend creates temporary users with a token generated from
-   * the IDAM system user and the pcs-frontend client.
-   */
   private async getTemporaryUserCreationToken(): Promise<string> {
     if (process.env.CREATE_USER_BEARER_TOKEN) {
       return process.env.CREATE_USER_BEARER_TOKEN;
