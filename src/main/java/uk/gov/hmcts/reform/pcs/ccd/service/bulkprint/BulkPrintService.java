@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.LetterV3;
@@ -39,6 +41,7 @@ public class BulkPrintService {
     private final SendLetterApi sendLetterApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseReferenceFormatter caseReferenceFormatter;
+    private final FeatureToggleService featureToggleService;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
                             CoveringLetterProvider coveringLetterProvider,
@@ -46,7 +49,8 @@ public class BulkPrintService {
                             PdfMerger pdfMerger,
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
-                            CaseReferenceFormatter caseReferenceFormatter) {
+                            CaseReferenceFormatter caseReferenceFormatter,
+                            FeatureToggleService featureToggleService) {
         this.coversheetProvider = coversheetProvider;
         this.coveringLetterProvider = coveringLetterProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
@@ -54,6 +58,7 @@ public class BulkPrintService {
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
         this.caseReferenceFormatter = caseReferenceFormatter;
+        this.featureToggleService = featureToggleService;
     }
 
     public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
@@ -63,7 +68,8 @@ public class BulkPrintService {
 
         List<byte[]> pdfs = new ArrayList<>();
         pdfs.add(coversheetProvider.render(recipientName, address, caseReference));
-        if (letterType.includesCoveringLetter()) {
+        if (letterType.includesCoveringLetter()
+            && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
             pdfs.add(coveringLetterProvider.render(pcsCase, recipient, recipientName, address, caseReference));
         }
         documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));

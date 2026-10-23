@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterResponse;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.LetterV3;
@@ -54,6 +56,8 @@ class BulkPrintServiceTest {
     private AuthTokenGenerator authTokenGenerator;
     @Mock
     private CaseReferenceFormatter caseReferenceFormatter;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @InjectMocks
     private BulkPrintService underTest;
@@ -113,6 +117,7 @@ class BulkPrintServiceTest {
         when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
         byte[] letterBytes = "covering-letter".getBytes();
         if (letterType.includesCoveringLetter()) {
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
             when(coveringLetterProvider.render(any(), any(), any(), any(), any())).thenReturn(letterBytes);
         }
         byte[] documentBytes = "document".getBytes();
@@ -133,6 +138,30 @@ class BulkPrintServiceTest {
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo(expectedLetterType);
         verify(pdfMerger).merge(pdfs);
+    }
+
+    @Test
+    @DisplayName("Posts a defence pack without the covering letter when release 1.4 is off")
+    void shouldOmitCoveringLetterWhenRelease14IsOff() {
+        when(authTokenGenerator.generate()).thenReturn("s2s");
+        when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        byte[] coversheetBytes = "coversheet".getBytes();
+        when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
+        byte[] documentBytes = "document".getBytes();
+        when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
+        byte[] mergedBytes = "merged-pdf".getBytes();
+        when(pdfMerger.merge(List.of(coversheetBytes, documentBytes))).thenReturn(mergedBytes);
+        when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
+
+        DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
+        AddressUK address = AddressUK.builder()
+            .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
+
+        underTest.sendPack(pcsCase, recipient, LetterType.DEFENCE_PACK, "Jane Doe", address, List.of(document));
+
+        verify(pdfMerger).merge(List.of(coversheetBytes, documentBytes));
+        verifyNoInteractions(coveringLetterProvider);
     }
 
     @Test
