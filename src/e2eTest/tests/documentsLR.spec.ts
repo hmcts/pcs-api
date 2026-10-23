@@ -23,7 +23,7 @@ import { home } from '@data/page-data';
 import {
   confirmIfTheseDocumentsRelateToCounterClaim
 } from "@data/page-data-figma/page-data-legalRepresentative/confirmIfTheseDocumentsRelateToCounterClaim.page.data";
-import {midEventLRRespondPossessionClaimApiData} from "@data/api-data/respondPossessionClaimMidEventLR.api.data";
+import { midEventLRRespondPossessionClaimApiData } from "@data/api-data/respondPossessionClaimMidEventLR.api.data";
 
 
 
@@ -84,21 +84,21 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   }
 
   if (title.includes('MULTI_APP')) {
-  await performAction('makeAnApplicationAPI', {
-    data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
-      defendantUserDetails[0].id,defendantUserDetails[0].name),
-  });
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
+        defendantUserDetails[0].id, defendantUserDetails[0].name),
+    });
 
-  await performAction('makeAnApplicationAPI', {
-    data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
-      defendantUserDetails[0].id, defendantUserDetails[0].name),
-  });
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+        defendantUserDetails[0].id, defendantUserDetails[0].name),
+    });
 
-  await performAction('makeAnApplicationAPI', {
-    data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
-      defendantUserDetails[0].id, defendantUserDetails[0].name),
-  });
-}
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
+        defendantUserDetails[0].id, defendantUserDetails[0].name),
+    });
+  }
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
@@ -393,6 +393,10 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       defendantUserDetails[0].name,
       getFormattedDate()
     );
+    let appType = CaseManagementCommonUtils.getCCApplicationType(defendantUserDetails.length)[0];
+    let ccDocList = confirmIfTheseDocumentsRelateToAnApplication.ccDocHiddenOption.map(files =>
+      CaseManagementCommonUtils.renameDocument(files,'',appType));
+
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
@@ -409,7 +413,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
         ],
       });
     });
-  await performAction('selectDocumentRelatingToCC', {
+    await performAction('selectDocumentRelatingToCC', {
       question: confirmIfTheseDocumentsRelateToCounterClaim.doTheseDocumentsQuestion,
       option: docRelatedToOptionForCC,
       nextPage: uploadYourDocuments.mainHeader,
@@ -431,13 +435,9 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
 
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Statements of case',
-      expectedFiles: [
-        ccDocName(uploadedDocBase),                  // uploaded via Upload additional documents
-        ccDocName('possessionNoticeWithOutNotice'),  // counterClaimDocuments from the CC payload
-        'Counterclaim CC1 - Defendant 1.pdf',
-        'Defence - Defendant 1.pdf',
-        'Claim - Claimant 1.pdf',
-      ],
+      submitPayload: submitPayload,
+      ccPayload: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
+      defendantLRUpload: [...ccDocList,CaseManagementCommonUtils.renameDocument(fileName)]
     });
   });
 });
