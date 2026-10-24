@@ -143,9 +143,17 @@ export class CaseManagementCommonUtils {
     );
   }
 
+  public static getCCApplicationType(length: number): string[] {
+        return Array.from(
+      { length: length },
+      (_, index) =>
+        `Counterclaim CC${index + 1}`
+    );
+  }
+
   public static renameDocument(fileName: string, fileDate?: string, app?: string): string {
     const extension = fileName.match(/\.[^.]+$/)?.[0] ?? '';
-    const baseName = fileName.replace(/\.[^.]+$/, '');
+    const baseName = fileName.replace(/\.[^.]+$/, '').replace(/\s*-\s*(Claimant|Defendant)\s+\d+/i, '').replace(/\s+CC\d+/i, '');
     const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
     const formattedDate = fileDate ? (() => {
       const [day, month, year] = fileDate.split('/');
