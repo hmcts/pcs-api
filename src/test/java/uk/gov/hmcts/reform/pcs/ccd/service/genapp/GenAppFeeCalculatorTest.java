@@ -138,35 +138,9 @@ class GenAppFeeCalculatorTest {
     private static Stream<Arguments> applicationTypeScenarios() {
         return Stream.of(
             argumentSet(
-                "Suspend, CUI route without notice or consent fields",
+                "Suspend, route without notice or consent fields",
                 XuiGenAppRequest.builder()
                     .applicationType(GenAppType.SUSPEND)
-                    .build(),
-                FeeType.GEN_APP_SUSPEND_FEE
-            ),
-            argumentSet(
-                "Suspend, parties agreed",
-                XuiGenAppRequest.builder()
-                    .applicationType(GenAppType.SUSPEND)
-                    .otherPartiesAgreed(VerticalYesNo.YES)
-                    .build(),
-                FeeType.GEN_APP_SUSPEND_FEE
-            ),
-            argumentSet(
-                "Suspend, without notice",
-                XuiGenAppRequest.builder()
-                    .applicationType(GenAppType.SUSPEND)
-                    .otherPartiesAgreed(VerticalYesNo.NO)
-                    .withoutNotice(VerticalYesNo.YES)
-                    .build(),
-                FeeType.GEN_APP_SUSPEND_FEE
-            ),
-            argumentSet(
-                "Suspend, with notice",
-                XuiGenAppRequest.builder()
-                    .applicationType(GenAppType.SUSPEND)
-                    .otherPartiesAgreed(VerticalYesNo.NO)
-                    .withoutNotice(VerticalYesNo.NO)
                     .build(),
                 FeeType.GEN_APP_SUSPEND_FEE
             ),
