@@ -8,10 +8,13 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.util.List;
@@ -24,7 +27,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DI
 @ExtendWith(MockitoExtension.class)
 class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
-
     @BeforeEach
     void setUp() {
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
@@ -33,43 +35,139 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     }
 
     @Test
-    void shouldNotReturnErrorsWhenDescriptionIsCorrectLength() {
-        // Given
-        AdditionalDocument doc = AdditionalDocument.builder()
-                .description("Valid description")
-                .build();
+    void shouldNotReturnErrorsWhenEnglandDescriptionIsCorrectLength() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
+            .description("Valid description")
+            .build();
 
         PCSCase caseData = PCSCase.builder()
-                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
-                .build();
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(additionalDocument)
+                    .build()))
+            .build();
 
-        // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        // Then
         assertThat(response.getErrorMessageOverride()).isNull();
         assertThat(response.getData()).isEqualTo(caseData);
     }
 
     @Test
-    void shouldReturnValidationErrorsWhenDescriptionTooLong() {
-        // Given
-        String longDescription = "a".repeat(61);
-        AdditionalDocument doc = AdditionalDocument.builder()
-                .description(longDescription)
-                .build();
+    void shouldReturnValidationErrorsWhenEnglandDescriptionTooLong() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
+            .description("a".repeat(61))
+            .build();
 
         PCSCase caseData = PCSCase.builder()
-                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
-                .build();
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(additionalDocument)
+                    .build()))
+            .build();
 
-        // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        // Then
         assertThat(response.getErrorMessageOverride())
             .isNotNull()
             .contains("more than the maximum number of characters");
+    }
+
+    @Test
+    void shouldCopyEnglandDocumentTypeOnSubmit() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+            .document(Document.builder().filename("tenancy-agreement.pdf").build())
+            .description("Valid description")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(additionalDocument)
+                    .build()))
+            .build();
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
+        assertThat(returnedDocument.getDocumentType().getValueLabel())
+            .isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT.getLabel());
+    }
+
+    @Test
+    void shouldNotReturnErrorsWhenWalesDescriptionIsCorrectLength() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeWales(AdditionalDocumentTypeWales.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
+            .description("Valid description")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(additionalDocument)
+                    .build()))
+            .build();
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        assertThat(response.getErrorMessageOverride()).isNull();
+        assertThat(response.getData()).isEqualTo(caseData);
+    }
+
+    @Test
+    void shouldReturnValidationErrorsWhenWalesDescriptionTooLong() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeWales(AdditionalDocumentTypeWales.WITNESS_STATEMENT)
+            .document(Document.builder().filename("evidence.pdf").build())
+            .description("a".repeat(61))
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(additionalDocument)
+                    .build()))
+            .build();
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        assertThat(response.getErrorMessageOverride())
+            .isNotNull()
+            .contains("more than the maximum number of characters");
+    }
+
+    @Test
+    void shouldCopyWalesDocumentTypeOnSubmit() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+            .document(Document.builder().filename("occupation-licence.pdf").build())
+            .description("Valid description")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(additionalDocument)
+                    .build()))
+            .build();
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
+        assertThat(returnedDocument.getDocumentType().getValueLabel())
+            .isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE.getLabel());
     }
 
     @Test
@@ -103,5 +201,6 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         assertThat(response.getErrorMessageOverride())
             .isEqualTo(DISALLOWED_FILE_TYPE_ERROR + "\n" + ALLOWED_FILE_TYPE_GUIDANCE);
     }
+
 
 }
