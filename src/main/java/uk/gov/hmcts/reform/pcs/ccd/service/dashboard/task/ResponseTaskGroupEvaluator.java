@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.RESPOND_TO_CLAIM;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_RESPONSE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.YOUR_SUPPORT;
 
 @Component
 public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
@@ -53,8 +54,20 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
                 Task.builder()
                     .templateId(VIEW_RESPONSE)
                     .status(viewResponseStatus)
+                    .build(),
+                Task.builder()
+                    .templateId(YOUR_SUPPORT)
+                    .status(yourSupportStatus(hasSubmittedResponse))
                     .build()
             )))
             .build();
+    }
+
+    /**
+     * YourSupport can be revisited at any time, so the row is never COMPLETED.
+     * dashboard row only opens once a response exists.
+     */
+    private static TaskStatus yourSupportStatus(boolean hasSubmittedResponse) {
+        return hasSubmittedResponse ? TaskStatus.AVAILABLE : TaskStatus.NOT_AVAILABLE;
     }
 }
