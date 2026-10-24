@@ -107,6 +107,7 @@ final class AccessGrants {
         // a case to a user who can read it in the case.
         grants.put(SYSTEM_USER, Permission.R);
         addReadAccess(grants, INTERNAL_READ_ROLES);
+        grants.putAll(new InternalDocumentMoveAccess().getGrants());
         return grants;
     }
 
