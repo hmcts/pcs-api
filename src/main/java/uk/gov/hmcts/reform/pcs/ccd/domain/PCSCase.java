@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -731,6 +732,13 @@ public class PCSCase {
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
     @JsonProperty("SearchCriteria")
     private SearchCriteria searchCriteria;
+
+    @CCD(
+        label = "Hearing ID",
+        searchable = false,
+        access = {CaseworkerReadAccess.class}
+    )
+    private String hearingId;
 
     @CCD(
         label = "CaseNameHmctsRestricted",

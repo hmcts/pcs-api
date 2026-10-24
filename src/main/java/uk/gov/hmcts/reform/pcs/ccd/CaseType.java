@@ -23,10 +23,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
 @Component
 public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
-    private static final String CASE_TYPE_ID = "PCS";
+
+    private static final String CASE_TYPE_ID = "benefit";
     private static final String CASE_TYPE_NAME = "Possession";
     private static final String CASE_TYPE_DESCRIPTION = "Possession Case Type";
-    private static final String JURISDICTION_ID = "PCS";
+    private static final String JURISDICTION_ID = "SSCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
@@ -192,6 +193,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
+
+        builder.tab("hearings", "Hearings")
+            .field(PCSCase::getHearingId);
 
         buildCaseNotesTab(builder);
 

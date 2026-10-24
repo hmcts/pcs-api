@@ -1,0 +1,1 @@
+ALTER TABLE pcs_case ADD COLUMN hearing_id VARCHAR(255);

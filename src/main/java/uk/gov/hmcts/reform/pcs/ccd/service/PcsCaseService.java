@@ -153,6 +153,12 @@ public class PcsCaseService {
         }
     }
 
+    public void saveHearingId(long caseReference, String hearingId) {
+        PcsCaseEntity entity = loadCase(caseReference);
+        entity.setHearingId(hearingId);
+        pcsCaseRepository.save(entity);
+    }
+
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));

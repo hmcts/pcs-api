@@ -40,6 +40,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.hearings.mapping.HearingRequestMapper;
+import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -76,6 +78,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private static final String USER_ID = UUID.randomUUID().toString();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
 
+    @Mock
+    private HmcHearingService hmcHearingService;
+    @Mock
+    private HearingRequestMapper hearingRequestMapper;
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
@@ -118,7 +124,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, notificationService, featureFlagView
+            moneyFormatter, resumePossessionClaimConfigurer, notificationService, featureFlagView,
+            hmcHearingService, hearingRequestMapper
         );
 
         setEventUnderTest(underTest);
