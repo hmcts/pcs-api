@@ -30,7 +30,7 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWritDetails)
                     .label("statementOfTruthWrit-line-separator", "---")
-                .mandatoryNoSummary(WritDetails::getCertification)
+                    .mandatoryNoSummary(WritDetails::getCertification)
                     .label("statementOfTruthWrit-declaration",
                            """
                            <p class="govuk-body">
