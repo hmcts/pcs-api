@@ -19,9 +19,6 @@ public class BreathingSpaceDetails {
 
     private static final int MAX_REFERENCE_NUMBER_LENGTH = 14;
 
-    @CCD(searchable = false)
-    private String caseName;
-
     @CCD(
         label = "Reference Number",
         max = MAX_REFERENCE_NUMBER_LENGTH
