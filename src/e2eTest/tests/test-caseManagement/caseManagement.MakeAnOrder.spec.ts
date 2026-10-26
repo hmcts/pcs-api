@@ -3,16 +3,11 @@ import {initializeExecutor, performValidation} from '@utils/controller';
 import test from '@playwright/test';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import {caseSummary, home, user} from '@data/page-data';
+import {caseSummary, user} from '@data/page-data';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
 import {
-  addJudicialNotes,
-  checkYourAnswersJudicialNotes,
+  makeAnOder,
 } from "@data/page-data-figma/page-data-caseManagement-figma";
-import {getCurrentBSTTime} from "@utils/common/string.utils";
-import {
-  CaseManagementCommonUtils
-} from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
 
 
 test.use({ storageState: undefined })
@@ -22,7 +17,7 @@ test.use({ storageState: undefined })
     initializeCMExecutor(page);
     await test.step(`Given the user creates a case and completes the payment via API,`, async () => {
       await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-      await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
+      await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayloadDefault()});
       await performAction('getAddressInfo', {data: createCaseApiData.createCasePayload});
       await performAction('updatePaymentAPI');
     });
@@ -45,7 +40,7 @@ test.use({ storageState: undefined })
     });
 
     test.describe('Case management - As a Judge resumes draft order @nightly', async () => {
-      test('Case management - As a Judge user resumes draft order',
+      test('Case management - Verify the Judge user can save an order as a draft',
         {
           tag: ['@CM, @regression'],
           annotation: [
@@ -54,40 +49,26 @@ test.use({ storageState: undefined })
           ],
         },
         async () => {
-          const judicialNoteText = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1);
-          const currentTime = getCurrentBSTTime();
-
-          await test.step(`Given the user selects the "Add a judicial note" event from the event dropdown`, async () => {
+          await test.step(`Given the user selects the "Make an Order" event from the event dropdown`, async () => {
             await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
-            await performValidation('mainHeader', addJudicialNotes.mainHeader);
+            await performValidation('mainHeader', makeAnOder.mainHeader);
           });
 
-          await test.step(`And the user validates the error messages on the Add Judicial Notes screen`, async () => {
-            await performAction('clickButton', {eventType: caseSummary.makeAnOrder});
-
-            await test.step(`When the user adds a judicial note in the text field`, async () => {
-              await performAction('addJudicialNotes', {
-                label: addJudicialNotes.notesAboutThisCaseTextLabel,
-                noteTextInput: judicialNoteText,
-                nextPage: checkYourAnswersJudicialNotes.mainHeader
+          await test.step(`When the user provides input in Recitals section and click Save and Draft button`, async () => {
+              await performAction('inputProvidedInRecitals', {
+                submitPayload: submitCaseApiData.submitCasePayloadDefault(),
+                label: makeAnOder.recitalParagraphTextLabel,
+                recitalInput: makeAnOder.recitalParagraphTextInput,
+                button: makeAnOder.saveAsDraftButton
               });
-              await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
-            });
-
-            await test.step(`And the user confirms that the judicial note has been added successfully`, async () => {
-              await performAction('confirmAddJudicialNotes');
-              await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
-            });
-
-            await test.step(`Then the user verifies that the judicial note is displayed on the Judicial Notes tab`, async () => {
-              await performAction('clickTab', home.judicialNotes);
-              await performAction('validateJudgeNotesTab', {
-                table: 'Note 1',
-                userInput: judicialNoteText,
-                createdOn: currentTime
-              });
-            });
+          });
+          await test.step(`And the user selects the "Make an Order" event from the event dropdown`, async () => {
+            await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
+            await performValidation('mainHeader', makeAnOder.mainHeader);
           });
 
+          await test.step(`And the user verify saved draft order reloads automaticallyS`, async () => {
+              await performAction('verifySavedDraftOrderDetails');
+          });
         });
     });
