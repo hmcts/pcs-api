@@ -33,13 +33,12 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
                     .mandatoryNoSummary(WritDetails::getCertification)
                     .label("statementOfTruthWrit-declaration",
                            """
-                           <p class="govuk-body">
-                           the details I have given are correct and that to my knowledge there is no application
-                           or other procedure pending.</p>
-                           <p class="govuk-body">
-                           I request an order for enforcement in the High Court by writ of possession.</p>
-                           <p class="govuk-body">
-                           I believe that the facts stated in this form are true.</p>
+                           <ul class="govuk-list govuk-list--bullet">
+                                <li>the details I have given are correct and that to my knowledge there is no
+                                application or other procedure pending.</li>
+                               <li>I request an order for enforcement in the High Court by writ of possession.</li>
+                               <li>I believe that the facts stated in this form are true.</li>
+                            </ul>
                            """
                     )
                     .complex(WritDetails::getRepaymentCosts)
