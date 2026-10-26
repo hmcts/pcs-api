@@ -66,7 +66,8 @@ public class DefendantResponseNotificationService {
             .isPresent();
 
         if (defendantRepresented) {
-            log.info("Defendant has Legal Representation. Not sending email notification");
+            log.info("Defendant response {} has Legal Representation. Not sending email notification",
+                defendantResponse.getId());
             return;
         }
 
