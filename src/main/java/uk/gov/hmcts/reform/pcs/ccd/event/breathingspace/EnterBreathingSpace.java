@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterBreathingSpace;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
@@ -33,7 +34,7 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
                 .decentralisedEvent(enterBreathingSpace.name(), this::submit)
                 .forState(State.CASE_ISSUED)
                 .name("Enter breathing space")
-                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
+                .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
                 .showSummary();
         breathingSpacePageConfigurer.configurePages(new PageBuilder(eventBuilder));
