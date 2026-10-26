@@ -141,7 +141,7 @@ public class ExportService {
         sdpClaimSnapshotRepository.saveAll(changed);
 
         log.info("SDP claim snapshot export complete: {} record(s) -> {}", records.size(), filename);
-        return new ExportResult(filename, records.size(), json);
+        return new ExportResult(filename, records.size());
     }
 
     private ClaimSnapshotRecord mapClaim(ClaimEntity claim, String extractDate,

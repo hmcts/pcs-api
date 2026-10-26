@@ -76,6 +76,9 @@ class ExportServiceTest {
     @Captor
     private ArgumentCaptor<List<SdpClaimSnapshotEntity>> savedCaptor;
 
+    @Captor
+    private ArgumentCaptor<byte[]> uploadedJsonCaptor;
+
     private ExportService exportService;
 
     @BeforeEach
@@ -115,7 +118,7 @@ class ExportServiceTest {
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
 
-        String json = json(result);
+        String json = uploadedJson();
         assertThat(json).contains("\"contract_version\" : \"4.1.0\"");
         assertThat(json).contains("\"claim_reference\" : \"1234567890123456\"");
         assertThat(json).contains("\"claim_type\" : \"AAA3-SLD\"");
@@ -134,7 +137,7 @@ class ExportServiceTest {
 
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
-        assertThat(json(result)).contains("\"snapshot_version\" : 1");
+        assertThat(uploadedJson()).contains("\"snapshot_version\" : 1");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
@@ -152,7 +155,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(json(result)).contains("\"snapshot_version\" : 3");
+        assertThat(uploadedJson()).contains("\"snapshot_version\" : 3");
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getSnapshotVersion()).isEqualTo(3);
@@ -186,7 +189,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(2);
-        String json = json(result);
+        String json = uploadedJson();
         assertThat(json).contains("\"snapshot_version\" : 2");
         assertThat(json).contains("\"snapshot_version\" : 1");
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
@@ -242,7 +245,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(json(result)).contains("\"tenancy_type\" : \"AAA3-OTH\"");
+        assertThat(uploadedJson()).contains("\"tenancy_type\" : \"AAA3-OTH\"");
     }
 
     @Test
@@ -255,7 +258,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(json(result)).doesNotContain("postal_claim_received_by_court_date");
+        assertThat(uploadedJson()).doesNotContain("postal_claim_received_by_court_date");
     }
 
     @Test
@@ -268,7 +271,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(json(result)).contains("\"parties\" : [ ]");
+        assertThat(uploadedJson()).contains("\"parties\" : [ ]");
     }
 
     @Test
@@ -281,7 +284,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(json(result)).contains("\"parties\" : [ ]");
+        assertThat(uploadedJson()).contains("\"parties\" : [ ]");
     }
 
     @Test
@@ -296,11 +299,12 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(json(result)).contains("\"parties\" : [ ]");
+        assertThat(uploadedJson()).contains("\"parties\" : [ ]");
     }
 
-    private static String json(ExportResult result) {
-        return new String(result.json(), StandardCharsets.UTF_8);
+    private String uploadedJson() {
+        verify(blobUploader).upload(any(), uploadedJsonCaptor.capture());
+        return new String(uploadedJsonCaptor.getValue(), StandardCharsets.UTF_8);
     }
 
     private void givenClaimWithHash() {
