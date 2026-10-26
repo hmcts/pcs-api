@@ -2,11 +2,11 @@
 
 CREATE TABLE public.judge_type
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT judge_type_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
   lov_order INTEGER,
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -25,10 +25,10 @@ VALUES
 
 CREATE TABLE public.hearing_channel
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT hearing_channel_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -43,10 +43,10 @@ VALUES
 
 CREATE TABLE public.hearing_priority
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT hearing_priority_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -58,11 +58,11 @@ VALUES
 
 CREATE TABLE public.hearing_case_subtype
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT hearing_case_subtype_pk PRIMARY KEY,
   value_en VARCHAR(128),
   parent_category VARCHAR(64),
   parent_key VARCHAR(64),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -87,10 +87,10 @@ VALUES
 
 CREATE TABLE public.facilities
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT facilities_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -116,9 +116,9 @@ VALUES
 
 CREATE TABLE public.auto_list_change_reasons
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT auto_list_change_reasons_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL
+  active YES_NO
 );
 
 INSERT INTO public.auto_list_change_reasons (key, value_en, active)
@@ -128,18 +128,18 @@ VALUES
 
 CREATE TABLE public.additional_roles
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT additional_roles_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL
+  active YES_NO
 );
 
 -- additional_roles: no active AdditionalRoles values in List of Values V76 for PCS or shared services
 
 CREATE TABLE public.actual_part_heard_reason
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT part_heard_reason_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -167,9 +167,9 @@ VALUES
 
 CREATE TABLE public.change_reasons
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT change_reason_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -195,9 +195,9 @@ VALUES
 
 CREATE TABLE public.listing_status
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT listing_status_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL
+  active YES_NO
 );
 
 INSERT INTO public.listing_status (key, value_en, active)
@@ -209,9 +209,9 @@ VALUES
 
 CREATE TABLE public.actual_cancellation_reason
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT actual_cancellation_reason_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -235,9 +235,9 @@ VALUES
 
 CREATE TABLE public.case_management_cancellation_reason
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT case_management_cancellation_reason_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -274,11 +274,11 @@ VALUES
 
 CREATE TABLE public.hearing_type
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT hearing_type_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
   lov_order INTEGER,
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -300,10 +300,10 @@ VALUES
 
 CREATE TABLE public.sign_language
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT sign_language_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  active YES_NO NOT NULL
+  active YES_NO
 );
 
 INSERT INTO public.sign_language (key, value_en, value_cy, active)
@@ -323,10 +323,10 @@ VALUES
 
 CREATE TABLE public.unavailable_type
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT unavailable_type_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  active YES_NO NOT NULL
+  active YES_NO
 );
 
 INSERT INTO public.unavailable_type (key, value_en, value_cy, active)
@@ -337,9 +337,9 @@ VALUES
 
 CREATE TABLE public.hearing_case_type
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT case_type_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -364,10 +364,10 @@ VALUES
 
 CREATE TABLE public.interpreter_language
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT interpreter_language_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  active YES_NO NOT NULL
+  active YES_NO
 );
 
 INSERT INTO public.interpreter_language (key, value_en, value_cy, active)
@@ -593,17 +593,17 @@ VALUES
 
 CREATE TABLE public.hearing_subchannel
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT hearing_subchannel_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  parent_category VARCHAR(64),
-  parent_key VARCHAR(64),
-  active YES_NO NOT NULL,
+  parentcategory VARCHAR(64),
+  parentkey VARCHAR(64),
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
 
-INSERT INTO public.hearing_subchannel (key, value_en, value_cy, parent_category, parent_key, active)
+INSERT INTO public.hearing_subchannel (key, value_en, value_cy, parentcategory, parentkey, active)
 VALUES
   ('INTER', 'In Person', 'Yn Bersonol', 'HearingChannel', 'INTER', 'YES'),
   ('NA', 'Not in Attendance', 'Ddim yn Bresennol', 'HearingChannel', 'NA', 'YES'),
@@ -619,9 +619,9 @@ VALUES
 
 CREATE TABLE public.custody_status
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT custody_status_pk PRIMARY KEY,
   value_en VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
@@ -634,10 +634,10 @@ VALUES
 
 CREATE TABLE public.party_relationship_type
 (
-  key VARCHAR(64) PRIMARY KEY,
+  key VARCHAR(64) CONSTRAINT party_relationship_pk PRIMARY KEY,
   value_en VARCHAR(128),
   value_cy VARCHAR(128),
-  active YES_NO NOT NULL,
+  active YES_NO,
   created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
