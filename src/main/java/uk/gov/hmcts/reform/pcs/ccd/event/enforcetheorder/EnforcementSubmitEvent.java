@@ -23,10 +23,10 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
@@ -88,8 +88,8 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             .responsiblePartyName(partyService.getPartyName(partyEntity))
             .paymentCallbackHandlerType(ENFORCEMENT)
             .build();
-
-        schedulerClient.scheduleIfNotExists(FEES_AND_PAY_TASK_DESCRIPTOR.instance(UUID.randomUUID().toString())
+        String instanceId = enforceTheOrder.name() + "-" + caseReference;
+        schedulerClient.scheduleIfNotExists(FEES_AND_PAY_TASK_DESCRIPTOR.instance(instanceId)
                                                 .data(taskData).scheduledTo(Instant.now())
         );
     }
