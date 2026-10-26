@@ -197,6 +197,10 @@ ccd:
     logstashJavaOpts: "-Xmx1g -Xms512M"
   am-role-assignment-service:
     java:
+      # Everything in this file calls http://${SERVICE_NAME}-am-role-assignment-service. The chart library
+      # only reads releaseNameOverride (nameOverride is ignored), so without it the service gets a
+      # different name and nothing can reach the preview RAS.
+      releaseNameOverride: ${SERVICE_NAME}-am-role-assignment-service
       image: 'hmctsprod.azurecr.io/am/role-assignment-service:latest'
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
       autoscaling:
@@ -210,9 +214,9 @@ ccd:
         ORM_ENV: pr
         CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
         RAS_ENV: pr
-        # Default list (see am-role-assignment-service chart) plus pcs_api, so pcs-api can call RAS
-        # without a 403.
-        ROLE_ASSIGNMENT_S2S_AUTHORISED_SERVICES: "ccd_gw,am_role_assignment_service,am_org_role_mapping_service,am_role_assignment_refresh_batch,wa_task_management_api,wa_task_configuration_api,xui_webapp,aac_manage_case_assignment,ccd_data,wa_workflow_api,wa_task_monitor,wa_case_event_handler,iac,hmc_cft_hearing_service,ccd_case_disposer,sscs,fis_hmc_api,fpl_case_service,disposer-idam-user,civil_service,prl_cos_api,wa_reporting_frontend,pcs_api"
+        # Default list (see am-role-assignment-service chart) plus pcs_api and xui_mo_webapp, so they can
+        # call the preview RAS without a 403.
+        ROLE_ASSIGNMENT_S2S_AUTHORISED_SERVICES: "ccd_gw,am_role_assignment_service,am_org_role_mapping_service,am_role_assignment_refresh_batch,wa_task_management_api,wa_task_configuration_api,xui_webapp,aac_manage_case_assignment,ccd_data,wa_workflow_api,wa_task_monitor,wa_case_event_handler,iac,hmc_cft_hearing_service,ccd_case_disposer,sscs,fis_hmc_api,fpl_case_service,disposer-idam-user,civil_service,prl_cos_api,wa_reporting_frontend,pcs_api,xui_mo_webapp"
       devmemoryRequests: 1024Mi
       devcpuRequests: 250m
       devmemoryLimits: 2048Mi
@@ -375,6 +379,11 @@ am-org-role-mapping-service:
       ORM_ENV: pr
       PROFESSIONAL_SCHEDULING_ENABLED: true
       PROFESSIONAL_REFRESH_API_ENABLED: true
+      PROFESSIONAL_REF_APP_URL: http://rd-professional-api-aat.service.core-compute-aat.internal
+      # Every PRM cron defaults to disabled since ORM #2871 (24 Sep 2026), so without this ORM never reloads
+      # this PR's access types and a manage-org save grants no roles. P2-P6 stay off: on a fresh preview DB
+      # they start from 2000-01-01 and sweep every organisation and user in AAT PRD.
+      CRON_PRM_P1_FIND_CASE_DEFINITION_CHANGES: "0 */5 * * * *"
 
 aac-manage-case-assignment:
   enabled: true
