@@ -7,11 +7,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
 
 import java.util.List;
@@ -40,6 +42,9 @@ class DefendantResponseNotificationServiceTest {
     @Mock
     private CounterClaimFeeCalculator counterClaimFeeCalculator;
 
+    @Mock
+    private OrganisationRepository organisationRepository;
+
     private DefendantResponseNotificationService underTest;
 
     @BeforeEach
@@ -48,7 +53,8 @@ class DefendantResponseNotificationServiceTest {
             notificationService,
             defendantResponseRepository,
             counterClaimRepository,
-            counterClaimFeeCalculator
+            counterClaimFeeCalculator,
+            organisationRepository
         );
     }
 
@@ -378,5 +384,77 @@ class DefendantResponseNotificationServiceTest {
             IllegalArgumentException.class,
             () -> underTest.sendPendingCounterClaimIssuedNotification(counterClaimId)
         );
+    }
+
+    @Test
+    void shouldOnlyEmailRepresentativeForCounterclaimPaymentIfRepresented() {
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        Integer defendantResponseId = 1;
+        UUID partyId = UUID.randomUUID();
+        long caseReference = 1234567890123456L;
+
+        when(defendantResponseRepository.findById(defendantResponseId))
+            .thenReturn(Optional.of(response));
+
+        when(response.getPcsCase()).thenReturn(caseEntity);
+        when(response.getParty()).thenReturn(party);
+
+        when(party.getId()).thenReturn(partyId);
+        when(counterClaim.getParty()).thenReturn(party);
+        when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+        when(caseEntity.getCaseReference()).thenReturn(caseReference);
+
+        // Defendant is legally represented
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(partyId, caseReference))
+            .thenReturn(Optional.of(mock(OrganisationEntity.class)));
+
+        underTest.sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
+
+        // Verify no citizen email notifications were sent
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+        verify(counterClaimFeeCalculator, never()).isHwfReferencePresent(any());
+    }
+
+    @Test
+    void shouldOnlyEmailCitizenForCounterclaimPaymentIfRepresentativeNotRepresented() {
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        Integer defendantResponseId = 1;
+        UUID partyId = UUID.randomUUID();
+        long caseReference = 1234567890123456L;
+
+        when(defendantResponseRepository.findById(defendantResponseId))
+            .thenReturn(Optional.of(response));
+
+        when(response.getPcsCase()).thenReturn(caseEntity);
+        when(response.getParty()).thenReturn(party);
+
+        when(party.getId()).thenReturn(partyId);
+        when(counterClaim.getParty()).thenReturn(party);
+        when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+        when(caseEntity.getCaseReference()).thenReturn(caseReference);
+
+        // Defendant is NOT legally represented
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(partyId, caseReference))
+            .thenReturn(Optional.empty());
+
+        when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
+            .thenReturn(false);
+
+        underTest.sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
+
+        // Verify citizen email notification was sent
+        verify(notificationService)
+            .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
     }
 }
