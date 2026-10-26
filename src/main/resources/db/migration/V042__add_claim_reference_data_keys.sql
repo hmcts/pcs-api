@@ -11,7 +11,3 @@ ALTER TABLE public.tenancy_licence
 ALTER TABLE public.claim_party
   ADD COLUMN entity_role_code_key VARCHAR(64) CONSTRAINT claim_party_entity_role_code_key_fk REFERENCES public.entity_role_code (key),
   ADD COLUMN claimant_type_key VARCHAR(64) CONSTRAINT claim_party_claimant_type_key_fk REFERENCES public.claimant_type (key);
-
-ALTER TABLE public.pcs_case
-  ADD COLUMN case_type_key VARCHAR(64) CONSTRAINT pcs_case_case_type_key_fk REFERENCES public.hearing_case_type (key),
-  ADD COLUMN case_subtype_key VARCHAR(64) CONSTRAINT pcs_case_case_subtype_key_fk REFERENCES public.hearing_case_subtype (key);

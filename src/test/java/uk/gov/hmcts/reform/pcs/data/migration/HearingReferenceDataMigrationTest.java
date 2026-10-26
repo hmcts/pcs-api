@@ -25,8 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class HearingReferenceDataMigrationTest {
 
-    private static final String REFERENCE_TABLES_SCRIPT = "db/migration/V038__create_hearing_reference_data_tables.sql";
-    private static final String KEY_COLUMNS_SCRIPT = "db/migration/V039__add_hearing_reference_data_keys.sql";
+    private static final String REFERENCE_TABLES_SCRIPT = "db/migration/V039__create_hearing_reference_data_tables.sql";
+    private static final String KEY_COLUMNS_SCRIPT = "db/migration/V040__add_hearing_reference_data_keys.sql";
 
     private static final String KEY = "key VARCHAR(64) NOT NULL PK=%s";
     private static final String VALUE_EN = "value_en VARCHAR(128)";

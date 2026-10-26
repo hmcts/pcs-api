@@ -43,6 +43,10 @@ public class ClaimPartyEntity {
     @Enumerated(EnumType.STRING)
     private PartyRole role;
 
+    private String entityRoleCodeKey;
+
+    private String claimantTypeKey;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "acting_for_party_id")
     private PartyEntity actingForParty;
