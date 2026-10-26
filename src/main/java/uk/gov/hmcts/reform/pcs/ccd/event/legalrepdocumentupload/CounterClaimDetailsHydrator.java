@@ -37,10 +37,6 @@ public class CounterClaimDetailsHydrator {
         this.partyService = partyService;
     }
 
-    public CounterClaimDetailsHydrator() {
-        this(null);
-    }
-
     public void hydrate(
         PcsCaseEntity pcsCaseEntity,
         LegalRepDocumentUploadDetails details,

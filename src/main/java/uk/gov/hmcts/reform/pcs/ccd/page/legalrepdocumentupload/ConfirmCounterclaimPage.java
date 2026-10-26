@@ -27,10 +27,10 @@ public class ConfirmCounterclaimPage implements CcdPageConfiguration, CcdPage {
         String pageKey = getPageKey();
         String showCondition = and(
             fieldEquals("lrDocUpload_ShowCounterclaimPage", VerticalYesNo.YES),
-            or(
+             "(" + or(
                 fieldEquals("lrDocUpload_ShowExistingApplicationPage", VerticalYesNo.NO),
                 fieldEquals("lrDocUpload_ValidCategories", DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM)
-            )
+            ) + ")"
         );
 
         pageBuilder
