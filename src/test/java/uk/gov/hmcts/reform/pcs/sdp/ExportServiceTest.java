@@ -14,15 +14,22 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
@@ -36,6 +43,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -291,6 +299,60 @@ class ExportServiceTest {
 
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(uploadedJson()).contains("\"parties\":[]");
+    }
+
+    @Test
+    void shouldExportGroundsPaymentsResponsesAndRepresentation() throws Exception {
+        ClaimEntity claimWithDetails = claim();
+        PartyEntity party = claimWithDetails.getClaimParties().get(0).getParty();
+        party.setClaimPartyOrganisationList(List.of(
+            ClaimPartyOrganisationEntity.builder().active(YesOrNo.YES).build()
+        ));
+        claimWithDetails.setClaimGrounds(Set.of(
+            ClaimGroundEntity.builder()
+                .code("SERIOUS_RENT_ARREARS_GROUND8")
+                .description("Serious rent arrears")
+                .category(ClaimGroundCategory.ASSURED_MANDATORY)
+                .build()
+        ));
+        claimWithDetails.setFeePayments(List.of(
+            FeePaymentEntity.builder()
+                .externalReference("RC-1234")
+                .paymentStatus(PaymentStatus.PAID)
+                .requestDate(LocalDateTime.of(2026, 2, 3, 10, 0))
+                .build(),
+            FeePaymentEntity.builder()
+                .externalReference(" ")
+                .paymentStatus(PaymentStatus.NOT_PAID)
+                .build()
+        ));
+        claimWithDetails.getPcsCase().setDefendantResponses(List.of(
+            DefendantResponseEntity.builder()
+                .id(12)
+                .party(party)
+                .claim(claimWithDetails)
+                .makeCounterClaim(VerticalYesNo.NO)
+                .responseSubmittedDate(LocalDateTime.of(2026, 3, 1, 10, 0))
+                .build(),
+            DefendantResponseEntity.builder()
+                .id(13)
+                .claim(ClaimEntity.builder().id(UUID.randomUUID()).build())
+                .build()
+        ));
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithDetails));
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        String json = uploadedJson();
+        assertThat(json).contains("\"grounds_code\":\"SERIOUS_RENT_ARREARS_GROUND8\"");
+        assertThat(json).contains("\"payment_reference\":\"RC-1234\"");
+        assertThat(json).contains("\"response_id\":\"12\"");
+        assertThat(json).contains("\"response_type\":\"Defence\"");
+        assertThat(json).contains("\"party_represented\":\"Yes\"");
+        assertThat(json).contains("\"claim_fee_paid_date\":\"2026-02-03T10:00:00Z\"");
+        assertThat(json).doesNotContain("\"response_id\":\"13\"");
     }
 
     @Test

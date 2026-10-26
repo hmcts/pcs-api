@@ -7,8 +7,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -54,11 +57,21 @@ class SnapshotHasherTest {
         ClaimSnapshot changedMilestones = claim(parties);
         changedMilestones.setMilestones(
             SnapshotMilestones.builder().claimSubmittedToSystemDate("2026-02-02").build());
+        ClaimSnapshot changedGrounds = claim(parties);
+        changedGrounds.setGrounds(List.of(SnapshotGround.builder().groundsCode("8").build()));
+        ClaimSnapshot changedPayments = claim(parties);
+        changedPayments.setPaymentReferences(
+            List.of(SnapshotPaymentReference.builder().paymentReference("RC-1").build()));
+        ClaimSnapshot changedResponses = claim(parties);
+        changedResponses.setResponses(List.of(SnapshotResponse.builder().responseId("12").build()));
         return Stream.of(
             argumentSet("claim reference", changedReference),
             argumentSet("dimensions", changedDimensions),
             argumentSet("milestones", changedMilestones),
-            argumentSet("parties", claim(List.of(party("changed"))))
+            argumentSet("parties", claim(List.of(party("changed")))),
+            argumentSet("grounds", changedGrounds),
+            argumentSet("payments", changedPayments),
+            argumentSet("responses", changedResponses)
         );
     }
 

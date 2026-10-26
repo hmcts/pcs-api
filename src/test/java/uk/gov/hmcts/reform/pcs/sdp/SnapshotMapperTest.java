@@ -89,6 +89,38 @@ class SnapshotMapperTest {
     }
 
     @Test
+    void shouldMapCommunityLandlordClaimType() {
+        SnapshotDimensions result = claimSnapshotMapper.mapDimensions(
+            "COMMUNITY_LANDLORD",
+            "NO",
+            "ENGLISH",
+            "SECURE_CONTRACT",
+            "45",
+            "WALES"
+        );
+
+        assertThat(result.getClaimType()).isEqualTo("AAA3-WSL");
+        assertThat(result.getClaimSubType()).isEqualTo("Social");
+        assertThat(result.getTenancyType()).isEqualTo("AAA3-SEC");
+    }
+
+    @Test
+    void shouldMapRemainingTenancyTypes() {
+        assertThat(claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD", "NO", "ENGLISH", "INTRODUCTORY_TENANCY", "45", "ENGLAND"
+        ).getTenancyType()).isEqualTo("AAA3-ITY");
+        assertThat(claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD", "NO", "ENGLISH", "FLEXIBLE_TENANCY", "45", "ENGLAND"
+        ).getTenancyType()).isEqualTo("AAA3-FTY");
+        assertThat(claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD", "NO", "ENGLISH", "DEMOTED_TENANCY", "45", "ENGLAND"
+        ).getTenancyType()).isEqualTo("AAA3-DTY");
+        assertThat(claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD", "NO", "ENGLISH", "STANDARD_CONTRACT", "45", "WALES"
+        ).getTenancyType()).isEqualTo("AAA3-STN");
+    }
+
+    @Test
     void shouldDefaultLocationCodeWhenMissing() {
         SnapshotDimensions result = claimSnapshotMapper.mapDimensions(
             "PRIVATE_LANDLORD",
@@ -139,12 +171,35 @@ class SnapshotMapperTest {
     }
 
     @Test
+    void shouldMapRemainingClaimantPartyTypesAndOtherRole() {
+        assertThat(claimSnapshotMapper.mapParty("p", "CLAIMANT", "MORTGAGE_LENDER", false).getPartyType())
+            .isEqualTo("AAA3-MPL");
+        assertThat(claimSnapshotMapper.mapParty("p", "CLAIMANT", "COMMUNITY_LANDLORD", false).getPartyType())
+            .isEqualTo("AAA3-RCL");
+        assertThat(claimSnapshotMapper.mapParty("p", "CLAIMANT", "OTHER", false).getPartyType())
+            .isEqualTo("AAA3-OTH");
+        assertThat(claimSnapshotMapper.mapParty("p", "CLAIMANT", "PRIVATE_LANDLORD", false).getPartyType())
+            .isEqualTo("AAA3-PLD");
+        assertThat(claimSnapshotMapper.mapParty("p", "UNDERLESSEE_OR_MORTGAGEE", "PRIVATE_LANDLORD", false)
+            .getPartyRole()).isEqualTo("UNDERLESSEE_OR_MORTGAGEE");
+    }
+
+    @Test
     void shouldMapGroundFromStoredValues() {
         SnapshotGround result = claimSnapshotMapper.mapGround("GROUND_8", "Serious rent arrears", "ASSURED_MANDATORY");
 
         assertThat(result.getGroundsCode()).isEqualTo("GROUND_8");
         assertThat(result.getGroundsDescription()).isEqualTo("Serious rent arrears");
         assertThat(result.getGroundsSubType()).isEqualTo("Mandatory");
+    }
+
+    @Test
+    void shouldMapDiscretionaryAndUnmappedGrounds() {
+        assertThat(claimSnapshotMapper.mapGround("10", "Rent arrears", "ASSURED_DISCRETIONARY")
+            .getGroundsSubType()).isEqualTo("Discretionary");
+        assertThat(claimSnapshotMapper.mapGround("OTHER", "Other", "ASSURED_OTHER")
+            .getGroundsSubType()).isEqualTo("ASSURED_OTHER");
+        assertThat(claimSnapshotMapper.mapGround("OTHER", "Other", null).getGroundsSubType()).isNull();
     }
 
     @Test
@@ -155,6 +210,24 @@ class SnapshotMapperTest {
         assertThat(result.getDefendantId()).isEqualTo("party-1");
         assertThat(result.getResponseType()).isEqualTo("Counter Claim");
         assertThat(result.getRespondedDate()).isEqualTo("2026-03-01T10:00:00Z");
+    }
+
+    @Test
+    void shouldMapDefenceResponse() {
+        assertThat(claimSnapshotMapper.mapResponse("12", "party-1", "NO", null).getResponseType())
+            .isEqualTo("Defence");
+    }
+
+    @Test
+    void shouldMapEnvironments() {
+        ClaimSnapshot claim = ClaimSnapshot.builder().claimReference("PCS-1001").build();
+
+        assertThat(claimSnapshotMapper.mapRecord("prod", "2026-03-09", "s", "2026-03-09T12:00:00Z", claim)
+            .getProducer().getEnvironment()).isEqualTo("prod");
+        assertThat(claimSnapshotMapper.mapRecord("preview", "2026-03-09", "s", "2026-03-09T12:00:00Z", claim)
+            .getProducer().getEnvironment()).isEqualTo("dev");
+        assertThat(claimSnapshotMapper.mapRecord("demo", "2026-03-09", "s", "2026-03-09T12:00:00Z", claim)
+            .getProducer().getEnvironment()).isEqualTo("demo");
     }
 
     @Test
