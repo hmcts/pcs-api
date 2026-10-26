@@ -170,6 +170,42 @@ class ExportServiceTest {
     }
 
     @Test
+    void shouldKeepUnchangedClaimExportedTodayWhenAnotherClaimChanges() throws Exception {
+        UUID unchangedId = UUID.randomUUID();
+        ClaimEntity changedClaim = claim();
+        ClaimEntity unchangedClaim = claim();
+        unchangedClaim.setId(unchangedId);
+        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(changedClaim, unchangedClaim));
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+        when(sdpClaimSnapshotRepository.findAllById(anyList())).thenReturn(List.of(
+            SdpClaimSnapshotEntity.builder()
+                .claimId(CLAIM_ID)
+                .snapshotVersion(1)
+                .snapshotHash("old-hash")
+                .exportedAt(LocalDateTime.of(2026, 3, 9, 2, 0))
+                .build(),
+            SdpClaimSnapshotEntity.builder()
+                .claimId(unchangedId)
+                .snapshotVersion(1)
+                .snapshotHash(HASH)
+                .exportedAt(LocalDateTime.of(2026, 3, 9, 2, 0))
+                .build()
+        ));
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(2);
+        String json = Files.readString(result.outputPath());
+        assertThat(json).contains("\"snapshot_version\" : 2");
+        assertThat(json).contains("\"snapshot_version\" : 1");
+        verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
+        assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
+            assertThat(saved.getClaimId()).isEqualTo(CLAIM_ID);
+            assertThat(saved.getSnapshotVersion()).isEqualTo(2);
+        });
+    }
+
+    @Test
     void shouldSkipUnchangedClaimAndNotUpload() {
         givenClaimWithHash();
         givenStoredSnapshot(2, HASH);

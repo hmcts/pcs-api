@@ -122,6 +122,11 @@ public class ExportService {
             snapshot.setSnapshotHash(hash);
             snapshot.setExportedAt(now);
             changed.add(snapshot);
+        } else if (snapshot.getExportedAt() != null
+            && snapshot.getExportedAt().toLocalDate().equals(now.toLocalDate())) {
+            snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
+            records.add(snapshotRecord);
+            return;
         } else {
             return;
         }
