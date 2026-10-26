@@ -381,12 +381,10 @@ am-org-role-mapping-service:
       ORM_ENV: pr
       PROFESSIONAL_SCHEDULING_ENABLED: true
       PROFESSIONAL_REFRESH_API_ENABLED: true
-      # TODO HDPI-6947: REMOVE BEFORE MERGE - this and the P1 cron below (preview-only, copied from #2900)
+      # TODO HDPI-6947: REMOVE BEFORE MERGE (preview-only, copied from #2900)
       PROFESSIONAL_REF_APP_URL: http://rd-professional-api-aat.service.core-compute-aat.internal
-      # Every PRM cron defaults to disabled since ORM #2871 (24 Sep 2026), so without this ORM never reloads
-      # this PR's access types and a manage-org save grants no roles. P2-P6 stay off: on a fresh preview DB
-      # they start from 2000-01-01 and sweep every organisation and user in AAT PRD.
-      CRON_PRM_P1_FIND_CASE_DEFINITION_CHANGES: "0 */5 * * * *"
+      # No PRM P1 cron here: bin/setup-professional-role-assignments.sh runs P1 before smoke, and a cron
+      # run holds the P1 lock for 5 min, which makes that call return empty and fail the build.
 
 aac-manage-case-assignment:
   enabled: true
