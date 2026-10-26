@@ -4,25 +4,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,29 +37,12 @@ class WritDetailsMapperTest {
             .correctNameAndAddress(VerticalYesNo.YES)
             .build();
 
-        LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
-            .amountOfLandRegistryFees(new BigDecimal("500.00"))
-            .build();
-
-        LegalCosts legalCosts = LegalCosts.builder()
-            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
-            .amountOfLegalCosts(new BigDecimal("1500.00"))
-            .build();
-
-        MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
-            .amountOwed(new BigDecimal("3000.00"))
-            .build();
-
         writDetails = WritDetails.builder()
             .nameAndAddressForEviction(nameAndAddressForEviction)
             .showChangeNameAddressPage(YesOrNo.NO)
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
             .hceoDetails("John Smith, Enforcement Ltd")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
-            .landRegistryFees(landRegistryFees)
-            .legalCosts(legalCosts)
-            .moneyOwedByDefendants(moneyOwedByDefendants)
             .build();
 
         enforcementOrderEntity = new EnforcementOrderEntity();
@@ -87,11 +61,6 @@ class WritDetailsMapperTest {
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.YES);
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.YES);
-        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.YES);
-        assertThat(entity.getAmountOfLandRegistryFees()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(entity.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.YES);
-        assertThat(entity.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1500.00"));
-        assertThat(entity.getAmountOwed()).isEqualByComparingTo(new BigDecimal("3000.00"));
     }
 
     @Test
@@ -108,47 +77,6 @@ class WritDetailsMapperTest {
     }
 
     @Test
-    void shouldHandleNullLandRegistryFees() {
-        // Given
-        writDetails.setLandRegistryFees(null);
-
-        // When
-        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isNull();
-        assertThat(entity.getAmountOfLandRegistryFees()).isNull();
-        assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
-    }
-
-    @Test
-    void shouldHandleNullLegalCosts() {
-        // Given
-        writDetails.setLegalCosts(null);
-
-        // When
-        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(entity.getAreLegalCostsToBeClaimed()).isNull();
-        assertThat(entity.getAmountOfLegalCosts()).isNull();
-        assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
-    }
-
-    @Test
-    void shouldHandleNullMoneyOwedByDefendants() {
-        // Given
-        writDetails.setMoneyOwedByDefendants(null);
-
-        // When
-        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(entity.getAmountOwed()).isNull();
-        assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
-    }
-
-    @Test
     void shouldHandleAllNullCompositeObjects() {
         // Given
         writDetails.setNameAndAddressForEviction(null);
@@ -160,11 +88,6 @@ class WritDetailsMapperTest {
         WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         assertThat(entity.getCorrectNameAndAddress()).isNull();
-        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isNull();
-        assertThat(entity.getAmountOfLandRegistryFees()).isNull();
-        assertThat(entity.getAreLegalCostsToBeClaimed()).isNull();
-        assertThat(entity.getAmountOfLegalCosts()).isNull();
-        assertThat(entity.getAmountOwed()).isNull();
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
     }
 
@@ -179,13 +102,6 @@ class WritDetailsMapperTest {
             .showChangeNameAddressPage(YesOrNo.NO)
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
             .hasClaimTransferredToHighCourt(YesOrNo.NO)
-            .landRegistryFees(LandRegistryFees.builder()
-                                  .haveLandRegistryFeesBeenPaid(VerticalYesNo.NO)
-                                  .build())
-            .legalCosts(LegalCosts.builder()
-                            .areLegalCostsToBeClaimed(VerticalYesNo.NO)
-                            .build())
-            .moneyOwedByDefendants(MoneyOwedByDefendants.builder().build())
             .build();
 
         enforcementOrder.setWritDetails(noWritDetails);
@@ -197,66 +113,6 @@ class WritDetailsMapperTest {
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.NO);
-        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.NO);
-        assertThat(entity.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.NO);
-    }
-
-    @Test
-    void shouldMapWithZeroAmounts() {
-        // Given
-        WritDetails zeroAmountWritDetails = WritDetails.builder()
-            .nameAndAddressForEviction(nameAndAddressForEviction)
-            .landRegistryFees(LandRegistryFees.builder()
-                                  .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
-                                  .amountOfLandRegistryFees(BigDecimal.ZERO)
-                                  .build())
-            .legalCosts(LegalCosts.builder()
-                            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
-                            .amountOfLegalCosts(BigDecimal.ZERO)
-                            .build())
-            .moneyOwedByDefendants(MoneyOwedByDefendants.builder()
-                                       .amountOwed(BigDecimal.ZERO)
-                                       .build())
-            .build();
-
-        enforcementOrder.setWritDetails(zeroAmountWritDetails);
-
-        // When
-        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(entity.getAmountOfLandRegistryFees()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(entity.getAmountOfLegalCosts()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(entity.getAmountOwed()).isEqualByComparingTo(BigDecimal.ZERO);
-    }
-
-    @Test
-    void shouldMapWithLargeAmounts() {
-        // Given
-        BigDecimal largeAmount = new BigDecimal("999999.99");
-        WritDetails largeAmountWritDetails = WritDetails.builder()
-            .nameAndAddressForEviction(nameAndAddressForEviction)
-            .landRegistryFees(LandRegistryFees.builder()
-                                  .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
-                                  .amountOfLandRegistryFees(largeAmount)
-                                  .build())
-            .legalCosts(LegalCosts.builder()
-                            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
-                            .amountOfLegalCosts(largeAmount)
-                            .build())
-            .moneyOwedByDefendants(MoneyOwedByDefendants.builder()
-                                       .amountOwed(largeAmount)
-                                       .build())
-            .build();
-
-        enforcementOrder.setWritDetails(largeAmountWritDetails);
-        // When
-        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(entity.getAmountOfLandRegistryFees()).isEqualByComparingTo(largeAmount);
-        assertThat(entity.getAmountOfLegalCosts()).isEqualByComparingTo(largeAmount);
-        assertThat(entity.getAmountOwed()).isEqualByComparingTo(largeAmount);
     }
 
     @Test
@@ -292,9 +148,6 @@ class WritDetailsMapperTest {
         WritDetails partialWritDetails = WritDetails.builder()
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
-            .moneyOwedByDefendants(MoneyOwedByDefendants.builder()
-                                       .amountOwed(new BigDecimal("2000.00"))
-                                       .build())
             .build();
         enforcementOrder.setWritDetails(partialWritDetails);
         // When
@@ -303,10 +156,7 @@ class WritDetailsMapperTest {
         // Then
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.YES);
-        assertThat(entity.getAmountOwed()).isEqualByComparingTo(new BigDecimal("2000.00"));
         assertThat(entity.getCorrectNameAndAddress()).isNull();
-        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isNull();
-        assertThat(entity.getAreLegalCostsToBeClaimed()).isNull();
     }
 
     @Test
@@ -319,39 +169,5 @@ class WritDetailsMapperTest {
 
         // Then
         assertThat(entity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
-    }
-
-    @Test
-    void shouldMapRepaymentCostsAllNull() {
-        // Given
-        writDetails.setRepaymentCosts(null);
-
-        // When
-        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(entity.getRepaymentChoice()).isNull();
-        assertThat(entity.getAmountOfRepaymentCosts()).isNull();
-        assertThat(entity.getRepaymentSummaryMarkdown()).isNull();
-    }
-
-    @ParameterizedTest
-    @EnumSource(RepaymentPreference.class)
-    void shouldMapRepaymentCostsForAllPreferences(RepaymentPreference repaymentPreference) {
-        // Given
-        RepaymentCosts repaymentCosts = RepaymentCosts.builder()
-            .repaymentChoice(repaymentPreference)
-            .amountOfRepaymentCosts(new BigDecimal("500.00"))
-            .repaymentSummaryMarkdown("Repayment summary")
-            .build();
-        writDetails.setRepaymentCosts(repaymentCosts);
-
-        // When
-        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(entity.getRepaymentChoice()).isEqualTo(repaymentPreference.getLabel());
-        assertThat(entity.getAmountOfRepaymentCosts()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(entity.getRepaymentSummaryMarkdown()).isEqualTo("Repayment summary");
     }
 }
