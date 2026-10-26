@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
+import java.util.Arrays;
+
 @AllArgsConstructor
 @Getter
 public enum CaseFileCategory implements HasLabel {
@@ -21,4 +23,12 @@ public enum CaseFileCategory implements HasLabel {
     private final String id;
     private final String label;
     private final int displayOrder;
+
+    public static String labelFor(String id) {
+        return Arrays.stream(values())
+            .filter(category -> category.getId().equals(id))
+            .map(CaseFileCategory::getLabel)
+            .findFirst()
+            .orElse(id);
+    }
 }

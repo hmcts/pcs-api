@@ -61,9 +61,11 @@ class DocumentCategoryUpdateServiceTest {
         DocumentEntity second = document("evidence");
         existingCase(first, second);
 
-        underTest.updateCategories(
+        List<DocumentCategoryUpdateService.DocumentMove> moves = underTest.updateCategories(
             CASE_REFERENCE, caseData(submitted(first, "correspondence"), submitted(second, null)));
 
+        assertThat(moves).containsExactly(
+            new DocumentCategoryUpdateService.DocumentMove("original.pdf", "propertyDocuments", "correspondence"));
         assertThat(first.getCategoryId()).isEqualTo("correspondence");
         assertThat(second.getCategoryId()).isEqualTo("evidence");
         assertThat(first.getFileName()).isEqualTo("original.pdf");
@@ -79,7 +81,7 @@ class DocumentCategoryUpdateServiceTest {
         DocumentEntity omitted = document("propertyDocuments");
         existingCase(unchanged, omitted);
 
-        underTest.updateCategories(CASE_REFERENCE, caseData(submitted(unchanged, "evidence")));
+        assertThat(underTest.updateCategories(CASE_REFERENCE, caseData(submitted(unchanged, "evidence")))).isEmpty();
 
         assertThat(omitted.getCategoryId()).isEqualTo("propertyDocuments");
         verifyNoInteractions(documentRepository);

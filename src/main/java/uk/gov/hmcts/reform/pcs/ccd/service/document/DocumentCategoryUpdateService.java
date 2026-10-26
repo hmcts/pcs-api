@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +23,11 @@ public class DocumentCategoryUpdateService {
     private final DocumentRepository documentRepository;
     private final ObjectMapper objectMapper;
 
+    public record DocumentMove(String fileName, String fromCategory, String toCategory) {
+    }
+
     @Transactional
-    public void updateCategories(long caseReference, PCSCase caseData) {
+    public List<DocumentMove> updateCategories(long caseReference, PCSCase caseData) {
         List<DocumentEntity> documents = pcsCaseService.loadCase(caseReference).getDocuments();
         Map<String, String> storedCategories = new HashMap<>();
         documents.forEach(document -> storedCategories.put(document.getUrl(), document.getCategoryId()));
@@ -32,12 +36,16 @@ public class DocumentCategoryUpdateService {
         Map<String, String> movedCategories = new HashMap<>();
         findMoved(objectMapper.valueToTree(caseData), storedCategories, movedCategories);
 
+        List<DocumentMove> moves = new ArrayList<>();
         documents.stream()
             .filter(document -> movedCategories.containsKey(document.getUrl()))
             .forEach(document -> {
-                document.setCategoryId(movedCategories.get(document.getUrl()));
+                String toCategory = movedCategories.get(document.getUrl());
+                moves.add(new DocumentMove(document.getFileName(), document.getCategoryId(), toCategory));
+                document.setCategoryId(toCategory);
                 documentRepository.save(document);
             });
+        return moves;
     }
 
     private void findMoved(JsonNode node, Map<String, String> storedCategories, Map<String, String> moved) {
