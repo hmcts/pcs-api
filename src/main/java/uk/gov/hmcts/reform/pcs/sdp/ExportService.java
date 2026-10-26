@@ -5,24 +5,32 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -36,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -159,17 +168,19 @@ public class ExportService {
             tenancy != null ? enumName(tenancy.getType()) : null,
             pcsCase != null && pcsCase.getCaseManagementLocation() != null
                 ? String.valueOf(pcsCase.getCaseManagementLocation())
-                : null
+                : null,
+            pcsCase != null ? enumName(pcsCase.getLegislativeCountry()) : null
         );
 
         SnapshotMilestones milestones = claimSnapshotMapper.mapMilestones(
             notice != null ? enumName(notice.getServingMethod()) : null,
             notice != null && notice.getNoticeDate() != null ? notice.getNoticeDate().toString() : null,
             formatDateTime(claim.getClaimSubmittedDate()),
-            formatDateTime(claim.getClaimIssuedDate())
+            formatDateTime(claim.getClaimIssuedDate()),
+            formatDateTime(firstPaidFeeDate(claim.getFeePayments()))
         );
 
-        List<SnapshotParty> parties = mapParties(claim.getClaimParties());
+        List<SnapshotParty> parties = mapParties(claim.getClaimParties(), enumName(claim.getClaimantType()));
 
         String claimReference = caseReferenceFormatter
             .formatCaseReferenceWithDashes(pcsCase != null ? pcsCase.getCaseReference() : null);
@@ -188,11 +199,14 @@ public class ExportService {
                 .dimensions(dimensions)
                 .milestones(milestones)
                 .parties(parties)
+                .paymentReferences(mapPayments(claim.getFeePayments()))
+                .grounds(mapGrounds(claim.getClaimGrounds()))
+                .responses(mapResponses(pcsCase != null ? pcsCase.getDefendantResponses() : null, claim.getId()))
                 .build()
         );
     }
 
-    private List<SnapshotParty> mapParties(List<ClaimPartyEntity> claimParties) {
+    private List<SnapshotParty> mapParties(List<ClaimPartyEntity> claimParties, String claimantType) {
         if (claimParties == null || claimParties.isEmpty()) {
             return List.of();
         }
@@ -204,10 +218,82 @@ public class ExportService {
             }
             parties.add(claimSnapshotMapper.mapParty(
                 party.getId() != null ? party.getId().toString() : null,
-                enumName(claimParty.getRole())
+                enumName(claimParty.getRole()),
+                claimantType,
+                isRepresented(party)
             ));
         }
         return parties;
+    }
+
+    private List<SnapshotPaymentReference> mapPayments(List<FeePaymentEntity> feePayments) {
+        if (feePayments == null || feePayments.isEmpty()) {
+            return List.of();
+        }
+        List<SnapshotPaymentReference> payments = new ArrayList<>();
+        for (FeePaymentEntity feePayment : feePayments) {
+            if (feePayment.getExternalReference() == null || feePayment.getExternalReference().isBlank()) {
+                continue;
+            }
+            payments.add(claimSnapshotMapper.mapPayment(feePayment.getExternalReference()));
+        }
+        return payments;
+    }
+
+    private List<SnapshotGround> mapGrounds(Set<ClaimGroundEntity> claimGrounds) {
+        if (claimGrounds == null || claimGrounds.isEmpty()) {
+            return List.of();
+        }
+        List<SnapshotGround> grounds = new ArrayList<>();
+        for (ClaimGroundEntity ground : claimGrounds) {
+            grounds.add(claimSnapshotMapper.mapGround(
+                ground.getCode(),
+                ground.getDescription(),
+                enumName(ground.getCategory())
+            ));
+        }
+        return grounds;
+    }
+
+    private List<SnapshotResponse> mapResponses(List<DefendantResponseEntity> defendantResponses, UUID claimId) {
+        if (defendantResponses == null || defendantResponses.isEmpty()) {
+            return List.of();
+        }
+        List<SnapshotResponse> responses = new ArrayList<>();
+        for (DefendantResponseEntity response : defendantResponses) {
+            if (response.getClaim() != null && claimId != null
+                && !claimId.equals(response.getClaim().getId())) {
+                continue;
+            }
+            PartyEntity party = response.getParty();
+            responses.add(claimSnapshotMapper.mapResponse(
+                response.getId() != null ? response.getId().toString() : null,
+                party != null && party.getId() != null ? party.getId().toString() : null,
+                enumName(response.getMakeCounterClaim()),
+                formatDateTime(response.getResponseSubmittedDate())
+            ));
+        }
+        return responses;
+    }
+
+    private static boolean isRepresented(PartyEntity party) {
+        if (party.getClaimPartyOrganisationList() == null) {
+            return false;
+        }
+        return party.getClaimPartyOrganisationList().stream()
+            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
+    }
+
+    private static LocalDateTime firstPaidFeeDate(List<FeePaymentEntity> feePayments) {
+        if (feePayments == null) {
+            return null;
+        }
+        return feePayments.stream()
+            .filter(payment -> payment.getPaymentStatus() == PaymentStatus.PAID)
+            .map(FeePaymentEntity::getRequestDate)
+            .filter(Objects::nonNull)
+            .min(LocalDateTime::compareTo)
+            .orElse(null);
     }
 
     private Map<UUID, LocalDateTime> findPublishedDates(List<ClaimEntity> claims) {

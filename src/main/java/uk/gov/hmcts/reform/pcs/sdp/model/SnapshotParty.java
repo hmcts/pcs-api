@@ -11,5 +11,7 @@ import lombok.Data;
 public class SnapshotParty {
 
     private String partyId;
+    private String partyType;
     private String partyRole;
+    private String partyRepresented;
 }

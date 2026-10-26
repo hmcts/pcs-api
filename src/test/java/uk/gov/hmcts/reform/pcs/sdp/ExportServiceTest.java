@@ -122,9 +122,14 @@ class ExportServiceTest {
         assertThat(json).contains("\"contract_version\":\"4.1.0\"");
         assertThat(json).contains("\"claim_reference\":\"1234-5678-9012-3456\"");
         assertThat(json).contains("\"claim_type\":\"AAA3-SLD\"");
+        assertThat(json).contains("\"claim_sub_type\":\"Social\"");
         assertThat(json).contains("\"party_role\":\"Defendant\"");
+        assertThat(json).contains("\"party_represented\":\"No\"");
+        assertThat(json).contains("\"grounds\":[]");
+        assertThat(json).contains("\"payment_references\":[]");
+        assertThat(json).contains("\"responses\":[]");
         assertThat(json).contains("\"recorded_date\":\"2026-02-01T14:30:00Z\"");
-        assertThat(json).contains("\"environment\":\"local\"");
+        assertThat(json).contains("\"environment\":\"dev\"");
         assertThat(json).contains("\"snapshot_version\":1");
         assertThat(json).contains("\"published_date\":\"2026-02-05T10:00:00Z\"");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));

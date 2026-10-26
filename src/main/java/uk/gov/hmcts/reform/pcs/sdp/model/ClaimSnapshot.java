@@ -18,4 +18,7 @@ public class ClaimSnapshot {
     private SnapshotDimensions dimensions;
     private SnapshotMilestones milestones;
     private List<SnapshotParty> parties;
+    private List<SnapshotPaymentReference> paymentReferences;
+    private List<SnapshotGround> grounds;
+    private List<SnapshotResponse> responses;
 }
