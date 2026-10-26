@@ -1,6 +1,8 @@
 -- The data model calls the hearing table case_hearing; in PCS it is the existing hearing table.
 -- date, notice_issued and pcs_case_id sit alongside hearing_date, issue_notice and case_id, which PCS still writes.
 -- Key columns, listing_status, hearing_venue_id and pcs_case_id are nullable because existing hearings have no values.
+-- pcs_case.case_type_key and case_subtype_key reference hearing_case_type and hearing_case_subtype: the model's
+-- case_type and case_subtype tables share their primary key names, so they are the same reference data.
 
 CREATE TYPE public.hearing_listing_status AS ENUM ('DRAFT', 'FIXED', 'PROV', 'CNCL');
 
@@ -42,6 +44,11 @@ SET date = hearing_date, notice_issued = issue_notice, pcs_case_id = case_id;
 ALTER TABLE public.hearing
   ALTER COLUMN date SET NOT NULL,
   ALTER COLUMN notice_issued SET NOT NULL;
+
+ALTER TABLE public.pcs_case
+  ADD COLUMN case_type_key TEXT CONSTRAINT pcs_case_case_type_fk REFERENCES public.hearing_case_type (key),
+  ADD COLUMN case_subtype_key TEXT CONSTRAINT pcs_case_case_subtype_fk REFERENCES public.hearing_case_subtype (key),
+  ADD COLUMN last_modified_datetime TIMESTAMP WITHOUT TIME ZONE;
 
 ALTER TABLE public.facilities
   ADD COLUMN hearing_venue_id INTEGER CONSTRAINT facilities_hearing_venue_fk REFERENCES public.hearing_venue (id);

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.data.migration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 
 import java.io.IOException;
@@ -112,6 +113,18 @@ class HearingReferenceDataMigrationTest {
             + "FK=case_hearing_actual_part_heard_reason_fk->actual_part_heard_reason(key)"
     );
 
+    private static final List<String> EXPECTED_PCS_CASE_ADDED_COLUMNS = List.of(
+        "case_type_key TEXT FK=pcs_case_case_type_fk->hearing_case_type(key)",
+        "case_subtype_key TEXT FK=pcs_case_case_subtype_fk->hearing_case_subtype(key)",
+        "last_modified_datetime TIMESTAMP WITHOUT TIME ZONE"
+    );
+
+    private static final Set<String> LEGACY_PCS_CASE_COLUMNS = Set.of(
+        "id", "version", "case_reference", "property_address_id", "case_management_location",
+        "pre_action_protocol_completed", "legislative_country", "party_documents", "claimant_type", "region_id",
+        "base_location", "created_at"
+    );
+
     private static final Set<String> LEGACY_HEARING_COLUMNS = Set.of(
         "id", "case_id", "type", "other_hearing_type", "notice_wording", "hearing_date", "duration_hours",
         "duration_minutes", "notes", "issue_notice", "is_without_notice", "additional_information", "cancelled",
@@ -135,7 +148,8 @@ class HearingReferenceDataMigrationTest {
         "INSERT INTO public\\.(\\w+) \\([^)]*\\)\\s+VALUES(.*?);", Pattern.DOTALL);
     private static final Pattern ROW_KEY = Pattern.compile("^\\s*\\('((?:[^']|'')*)'", Pattern.MULTILINE);
     private static final Pattern COLUMN = Pattern.compile(
-        "^(\\w+) (VARCHAR\\(\\d+\\)|INTEGER|UUID|YES_NO|TIMESTAMP WITHOUT TIME ZONE|TIMESTAMP|public\\.\\w+)(.*)$");
+        "^(\\w+) (VARCHAR\\(\\d+\\)|TEXT|INTEGER|UUID|YES_NO|TIMESTAMP WITHOUT TIME ZONE|TIMESTAMP"
+            + "|public\\.\\w+)(.*)$");
     private static final Pattern PRIMARY_KEY = Pattern.compile("CONSTRAINT (\\w+) PRIMARY KEY");
     private static final Pattern FOREIGN_KEY = Pattern.compile(
         "CONSTRAINT (\\w+) REFERENCES public\\.(\\w+) \\((\\w+)\\)");
@@ -168,6 +182,25 @@ class HearingReferenceDataMigrationTest {
         assertThat(altered.get("hearing")).containsExactlyElementsOf(EXPECTED_HEARING_ADDED_COLUMNS);
         assertThat(altered.get("facilities")).containsExactly(
             "hearing_venue_id INTEGER FK=facilities_hearing_venue_fk->hearing_venue(id)");
+    }
+
+    @Test
+    void shouldAddOnlyNullableModelColumnsToPcsCaseAndKeepEveryExistingColumn() throws IOException {
+        String script = readScript(KEY_COLUMNS_SCRIPT);
+        Matcher alter = Pattern.compile("ALTER TABLE public\\.pcs_case\\n(.*?);\\n", Pattern.DOTALL).matcher(script);
+
+        assertThat(alter.find()).isTrue();
+        assertThat(alter.group(1).lines().map(String::strip)).allMatch(line -> line.startsWith("ADD COLUMN "));
+        assertThat(alteredTables(script).get("pcs_case")).containsExactlyElementsOf(EXPECTED_PCS_CASE_ADDED_COLUMNS);
+        assertThat(script).doesNotContain("pcs_case ALTER").doesNotContain("pcs_case DROP");
+
+        Matcher baseline = Pattern.compile("CREATE TABLE public\\.pcs_case \\((.*?)\\n\\);", Pattern.DOTALL)
+            .matcher(readScript("db/migration/V001__r1a_baseline_schema.sql"));
+        assertThat(baseline.find()).isTrue();
+        Set<String> columns = baseline.group(1).lines().map(String::strip).filter(line -> !line.isEmpty())
+            .map(line -> line.split(" ")[0]).collect(Collectors.toCollection(HashSet::new));
+        columns.add("created_at");
+        assertThat(columns).containsExactlyInAnyOrderElementsOf(LEGACY_PCS_CASE_COLUMNS);
     }
 
     @Test
@@ -231,6 +264,17 @@ class HearingReferenceDataMigrationTest {
             .contains("('AAA3-FPH', 'First Possession Hearing'")
             .contains("('VID', 'Video', 'Fideo'")
             .contains("('INTER', 'In Person', 'Yn Bersonol'");
+    }
+
+    @Test
+    void shouldMapNewPcsCaseColumnsOnPcsCaseEntity() {
+        Set<String> entityFields = Arrays.stream(PcsCaseEntity.class.getDeclaredFields())
+            .map(Field::getName).collect(Collectors.toSet());
+
+        for (String column : EXPECTED_PCS_CASE_ADDED_COLUMNS) {
+            String name = column.substring(0, column.indexOf(' '));
+            assertThat(entityFields).as("PcsCaseEntity field for column " + name).contains(toCamelCase(name));
+        }
     }
 
     @Test
