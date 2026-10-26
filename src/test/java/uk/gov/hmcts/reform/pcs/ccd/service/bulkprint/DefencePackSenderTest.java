@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -63,12 +64,13 @@ class DefencePackSenderTest {
     void shouldPostRecipientAndRecordEachDocument() {
         when(packRecipientResolver.resolveDefenceRecipients(CASE_ID)).thenReturn(List.of(
             new ResolvedRecipient(pcsCase, defendant, LetterType.DEFENCE_PACK,
-                List.of(defenceForm, counterClaim), "Bob Tenant", address)));
-        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any())).thenReturn(UUID.randomUUID());
+                List.of(defenceForm, counterClaim), "Bob Tenant", address, 2)));
+        when(bulkPrintService.sendPack(any(), any(), any(), anyInt(), any(), any(), any()))
+            .thenReturn(UUID.randomUUID());
 
         underTest.sendDefencePacks(CASE_ID);
 
-        verify(bulkPrintService).sendPack(pcsCase, defendant, LetterType.DEFENCE_PACK, "Bob Tenant", address,
+        verify(bulkPrintService).sendPack(pcsCase, defendant, LetterType.DEFENCE_PACK, 2, "Bob Tenant", address,
             List.of(defenceForm, counterClaim));
         verify(accessCodeActivityLogService).recordPackSent(eq(pcsCase), eq(defendant), any(PackDetails.class));
     }
@@ -78,8 +80,8 @@ class DefencePackSenderTest {
     void shouldRecordFailureWhenSendThrowsMissingAddress() {
         when(packRecipientResolver.resolveDefenceRecipients(CASE_ID)).thenReturn(List.of(
             new ResolvedRecipient(pcsCase, defendant, LetterType.DEFENCE_PACK, List.of(defenceForm),
-                "Bob Tenant", address)));
-        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
+                "Bob Tenant", address, 1)));
+        when(bulkPrintService.sendPack(any(), any(), any(), anyInt(), any(), any(), any()))
             .thenThrow(new MissingPostalAddressException("no address"));
 
         underTest.sendDefencePacks(CASE_ID);

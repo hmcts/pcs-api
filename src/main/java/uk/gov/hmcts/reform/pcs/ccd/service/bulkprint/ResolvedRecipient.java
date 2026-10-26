@@ -13,5 +13,6 @@ public record ResolvedRecipient(PcsCaseEntity pcsCase,
                                 LetterType letterType,
                                 List<DocumentEntity> documents,
                                 String recipientName,
-                                AddressUK address) {
+                                AddressUK address,
+                                int letterSequence) {
 }
