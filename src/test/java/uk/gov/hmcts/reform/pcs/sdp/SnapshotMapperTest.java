@@ -78,7 +78,7 @@ class SnapshotMapperTest {
     }
 
     @Test
-    void shouldMapMilestonesWithPostalNoticeAndDateOnlySubmitted() {
+    void shouldMapMilestonesWithPostalNotice() {
         SnapshotMilestones result = claimSnapshotMapper.mapMilestones(
             "FIRST_CLASS_POST",
             "2026-01-10",
@@ -87,26 +87,17 @@ class SnapshotMapperTest {
         );
 
         assertThat(result.getPostalClaimReceivedByCourtDate()).isEqualTo("2026-01-10");
-        assertThat(result.getClaimSubmittedToSystemDate()).isEqualTo("2026-02-01");
-        assertThat(result.getClaimFeePaidDate()).isEqualTo("2026-02-01");
-        assertThat(result.getIssueClaimDate()).isEqualTo("2026-02-05");
+        assertThat(result.getClaimSubmittedToSystemDate()).isEqualTo("2026-02-01 14:30:00");
+        assertThat(result.getClaimFeePaidDate()).isEqualTo("2026-02-01 14:30:00");
+        assertThat(result.getIssueClaimDate()).isEqualTo("2026-02-05 09:00:00");
     }
 
     @Test
-    void shouldMapPartyNameFromPersonWhenOrgNameMissing() {
-        SnapshotParty result = claimSnapshotMapper.mapParty(
-            "party-1",
-            "DEFENDANT",
-            null,
-            "Jane",
-            "Doe",
-            "jane@example.com"
-        );
+    void shouldMapDefendantPartyRole() {
+        SnapshotParty result = claimSnapshotMapper.mapParty("party-1", "DEFENDANT");
 
         assertThat(result.getPartyId()).isEqualTo("party-1");
-        assertThat(result.getRole()).isEqualTo("DEFENDANT");
-        assertThat(result.getName()).isEqualTo("Jane Doe");
-        assertThat(result.getEmail()).isEqualTo("jane@example.com");
+        assertThat(result.getPartyRole()).isEqualTo("Defendant");
     }
 
     @Test
@@ -117,9 +108,7 @@ class SnapshotMapperTest {
         SnapshotMilestones milestones = claimSnapshotMapper.mapMilestones(
             "EMAIL", null, "2026-03-01 10:00:00", "2026-03-02 11:00:00"
         );
-        SnapshotParty party = claimSnapshotMapper.mapParty(
-            "party-1", "CLAIMANT", "Housing Assoc", null, null, "ha@example.com"
-        );
+        SnapshotParty party = claimSnapshotMapper.mapParty("party-1", "CLAIMANT");
 
         ClaimSnapshotRecord result = claimSnapshotMapper.mapRecord(
             "aat",

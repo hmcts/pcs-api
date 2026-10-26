@@ -63,23 +63,18 @@ public class SnapshotMapper {
                                             String noticeDate,
                                             String claimSubmittedDate,
                                             String claimIssuedDate) {
-        String submittedDateOnly = toDateOnly(claimSubmittedDate);
-
         return SnapshotMilestones.builder()
             .postalClaimReceivedByCourtDate(resolvePostalReceivedDate(servingMethod, noticeDate))
-            .claimSubmittedToSystemDate(submittedDateOnly)
-            .claimFeePaidDate(submittedDateOnly)
-            .issueClaimDate(toDateOnly(claimIssuedDate))
+            .claimSubmittedToSystemDate(claimSubmittedDate)
+            .claimFeePaidDate(claimSubmittedDate)
+            .issueClaimDate(claimIssuedDate)
             .build();
     }
 
-    public SnapshotParty mapParty(String partyId, String role, String orgName,
-                                  String firstName, String lastName, String email) {
+    public SnapshotParty mapParty(String partyId, String role) {
         return SnapshotParty.builder()
             .partyId(partyId)
-            .role(role)
-            .name(resolvePartyName(orgName, firstName, lastName))
-            .email(email)
+            .partyRole(resolvePartyRole(role))
             .build();
     }
 
@@ -120,19 +115,13 @@ public class SnapshotMapper {
         return "FIRST_CLASS_POST".equals(servingMethod) ? noticeDate : null;
     }
 
-    private String toDateOnly(String dateTime) {
-        if (dateTime == null || dateTime.isBlank()) {
-            return null;
+    private String resolvePartyRole(String role) {
+        if ("CLAIMANT".equals(role)) {
+            return "Claimant";
         }
-        return dateTime.split(" ")[0];
-    }
-
-    private String resolvePartyName(String orgName, String firstName, String lastName) {
-        if (orgName != null && !orgName.isBlank()) {
-            return orgName;
+        if ("DEFENDANT".equals(role)) {
+            return "Defendant";
         }
-        String first = firstName == null ? "" : firstName;
-        String last = lastName == null ? "" : lastName;
-        return (first + " " + last).trim();
+        return role;
     }
 }

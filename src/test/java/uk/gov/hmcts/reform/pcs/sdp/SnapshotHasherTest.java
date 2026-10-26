@@ -22,31 +22,31 @@ class SnapshotHasherTest {
 
     @Test
     void shouldReturnSameHashForSameClaim() {
-        String hash = snapshotHasher.hash(claim(List.of(party("1", "a@example.com"), party("2", "b@example.com"))));
+        String hash = snapshotHasher.hash(claim(List.of(party("1"), party("2"))));
 
         assertThat(hash).hasSize(64);
-        assertThat(snapshotHasher.hash(claim(List.of(party("1", "a@example.com"), party("2", "b@example.com")))))
+        assertThat(snapshotHasher.hash(claim(List.of(party("1"), party("2")))))
             .isEqualTo(hash);
     }
 
     @Test
     void shouldIgnorePartyOrder() {
-        String hash = snapshotHasher.hash(claim(List.of(party("1", "a@example.com"), party("2", "b@example.com"))));
+        String hash = snapshotHasher.hash(claim(List.of(party("1"), party("2"))));
 
-        assertThat(snapshotHasher.hash(claim(List.of(party("2", "b@example.com"), party("1", "a@example.com")))))
+        assertThat(snapshotHasher.hash(claim(List.of(party("2"), party("1")))))
             .isEqualTo(hash);
     }
 
     @ParameterizedTest
     @MethodSource("hashFieldChanges")
     void shouldChangeHashWhenHashedFieldChanges(ClaimSnapshot changed) {
-        String hash = snapshotHasher.hash(claim(List.of(party("1", "a@example.com"))));
+        String hash = snapshotHasher.hash(claim(List.of(party("1"))));
 
         assertThat(snapshotHasher.hash(changed)).isNotEqualTo(hash);
     }
 
     private static Stream<Arguments> hashFieldChanges() {
-        List<SnapshotParty> parties = List.of(party("1", "a@example.com"));
+        List<SnapshotParty> parties = List.of(party("1"));
         ClaimSnapshot changedReference = claim(parties);
         changedReference.setClaimReference("9999");
         ClaimSnapshot changedDimensions = claim(parties);
@@ -58,13 +58,13 @@ class SnapshotHasherTest {
             argumentSet("claim reference", changedReference),
             argumentSet("dimensions", changedDimensions),
             argumentSet("milestones", changedMilestones),
-            argumentSet("parties", claim(List.of(party("1", "changed@example.com"))))
+            argumentSet("parties", claim(List.of(party("changed"))))
         );
     }
 
     @Test
     void shouldIgnoreSnapshotVersionAndRecordedDate() {
-        ClaimSnapshot claim = claim(List.of(party("1", "a@example.com")));
+        ClaimSnapshot claim = claim(List.of(party("1")));
         String hash = snapshotHasher.hash(claim);
 
         claim.setSnapshotVersion(5);
@@ -84,12 +84,10 @@ class SnapshotHasherTest {
             .build();
     }
 
-    private static SnapshotParty party(String partyId, String email) {
+    private static SnapshotParty party(String partyId) {
         return SnapshotParty.builder()
             .partyId(partyId)
-            .role("DEFENDANT")
-            .name("Jane Doe")
-            .email(email)
+            .partyRole("Defendant")
             .build();
     }
 }

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
@@ -56,6 +57,7 @@ public class ExportService {
     private final Optional<BlobUploader> blobUploader;
     private final Clock utcClock;
     private final String environment;
+    private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
 
     public ExportService(ClaimRepository claimRepository,
                          ClaimActivityLogRepository claimActivityLogRepository,
@@ -169,9 +171,8 @@ public class ExportService {
 
         List<SnapshotParty> parties = mapParties(claim.getClaimParties());
 
-        String claimReference = pcsCase != null && pcsCase.getCaseReference() != null
-            ? String.valueOf(pcsCase.getCaseReference())
-            : null;
+        String claimReference = caseReferenceFormatter
+            .formatCaseReferenceWithDashes(pcsCase != null ? pcsCase.getCaseReference() : null);
 
         UUID caseId = pcsCase != null ? pcsCase.getId() : null;
 
@@ -203,11 +204,7 @@ public class ExportService {
             }
             parties.add(claimSnapshotMapper.mapParty(
                 party.getId() != null ? party.getId().toString() : null,
-                enumName(claimParty.getRole()),
-                party.getOrgName(),
-                party.getFirstName(),
-                party.getLastName(),
-                party.getEmailAddress()
+                enumName(claimParty.getRole())
             ));
         }
         return parties;
@@ -235,7 +232,7 @@ public class ExportService {
     }
 
     private static String formatDateTime(LocalDateTime dateTime) {
-        return dateTime == null ? null : dateTime.toString().replace('T', ' ');
+        return dateTime == null ? null : dateTime.toInstant(ZoneOffset.UTC).toString();
     }
 
     private static String enumName(Enum<?> value) {

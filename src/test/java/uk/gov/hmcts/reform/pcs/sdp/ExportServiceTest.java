@@ -120,9 +120,10 @@ class ExportServiceTest {
 
         String json = uploadedJson();
         assertThat(json).contains("\"contract_version\":\"4.1.0\"");
-        assertThat(json).contains("\"claim_reference\":\"1234567890123456\"");
+        assertThat(json).contains("\"claim_reference\":\"1234-5678-9012-3456\"");
         assertThat(json).contains("\"claim_type\":\"AAA3-SLD\"");
-        assertThat(json).contains("\"name\":\"Jane Doe\"");
+        assertThat(json).contains("\"party_role\":\"Defendant\"");
+        assertThat(json).contains("\"recorded_date\":\"2026-02-01T14:30:00Z\"");
         assertThat(json).contains("\"environment\":\"local\"");
         assertThat(json).contains("\"snapshot_version\":1");
         assertThat(json).contains("\"published_date\":\"2026-02-05T10:00:00Z\"");
