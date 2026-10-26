@@ -202,7 +202,6 @@ sdp:
     account-url: ${SDP_EXPORT_ACCOUNT_URL:}
     container-name: ${SDP_EXPORT_CONTAINER_NAME:sdp-export}
     environment: ${SDP_EXPORT_ENVIRONMENT:local}
-    output-directory: ${SDP_EXPORT_OUTPUT_DIR:./build/sdp-export}
 
 access-code-form:
   respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}

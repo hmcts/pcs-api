@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -29,8 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -59,9 +57,6 @@ class ExportServiceTest {
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID CLAIM_ID = UUID.randomUUID();
     private static final String HASH = "current-hash";
-
-    @TempDir
-    private Path tempDir;
 
     @Mock
     private ClaimRepository claimRepository;
@@ -99,8 +94,7 @@ class ExportServiceTest {
             sdpClaimSnapshotRepository,
             uploader,
             FIXED_CLOCK,
-            "local",
-            tempDir.toString()
+            "local"
         );
     }
 
@@ -119,11 +113,9 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(result.outputPath()).exists();
-        assertThat(result.outputPath().getFileName().toString())
-            .isEqualTo("claim_snapshot_2026-03-08.json");
+        assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
 
-        String json = Files.readString(result.outputPath());
+        String json = json(result);
         assertThat(json).contains("\"contract_version\" : \"4.1.0\"");
         assertThat(json).contains("\"claim_reference\" : \"1234567890123456\"");
         assertThat(json).contains("\"claim_type\" : \"AAA3-SLD\"");
@@ -141,9 +133,8 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(result.outputPath().getFileName().toString())
-            .isEqualTo("claim_snapshot_2026-03-08.json");
-        assertThat(Files.readString(result.outputPath())).contains("\"snapshot_version\" : 1");
+        assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
+        assertThat(json(result)).contains("\"snapshot_version\" : 1");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
@@ -161,7 +152,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(Files.readString(result.outputPath())).contains("\"snapshot_version\" : 3");
+        assertThat(json(result)).contains("\"snapshot_version\" : 3");
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getSnapshotVersion()).isEqualTo(3);
@@ -195,7 +186,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(2);
-        String json = Files.readString(result.outputPath());
+        String json = json(result);
         assertThat(json).contains("\"snapshot_version\" : 2");
         assertThat(json).contains("\"snapshot_version\" : 1");
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
@@ -237,7 +228,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isZero();
-        assertThat(result.outputPath()).exists();
+        assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
         verifyNoInteractions(blobUploader);
     }
 
@@ -251,7 +242,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(Files.readString(result.outputPath())).contains("\"tenancy_type\" : \"AAA3-OTH\"");
+        assertThat(json(result)).contains("\"tenancy_type\" : \"AAA3-OTH\"");
     }
 
     @Test
@@ -264,7 +255,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(Files.readString(result.outputPath())).doesNotContain("postal_claim_received_by_court_date");
+        assertThat(json(result)).doesNotContain("postal_claim_received_by_court_date");
     }
 
     @Test
@@ -277,7 +268,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(Files.readString(result.outputPath())).contains("\"parties\" : [ ]");
+        assertThat(json(result)).contains("\"parties\" : [ ]");
     }
 
     @Test
@@ -290,7 +281,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(Files.readString(result.outputPath())).contains("\"parties\" : [ ]");
+        assertThat(json(result)).contains("\"parties\" : [ ]");
     }
 
     @Test
@@ -305,7 +296,11 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(Files.readString(result.outputPath())).contains("\"parties\" : [ ]");
+        assertThat(json(result)).contains("\"parties\" : [ ]");
+    }
+
+    private static String json(ExportResult result) {
+        return new String(result.json(), StandardCharsets.UTF_8);
     }
 
     private void givenClaimWithHash() {

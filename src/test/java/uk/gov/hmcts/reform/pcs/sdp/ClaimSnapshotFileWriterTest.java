@@ -1,39 +1,30 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.Producer;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ClaimSnapshotFileWriterTest {
 
-    @TempDir
-    private Path tempDir;
-
-    private ObjectMapper objectMapper;
-    private ClaimSnapshotFileWriter fileWriter;
-
-    @BeforeEach
-    void setUp() {
-        objectMapper = new JacksonConfiguration().getMapper();
-        fileWriter = new ClaimSnapshotFileWriter(objectMapper);
-    }
-
     @Test
-    void shouldWriteSnapshotRecordsAsSnakeCaseJsonArray() throws Exception {
+    void shouldSerialiseSnapshotRecordsAsSnakeCaseJsonArray() throws Exception {
+        ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
+        ClaimSnapshotFileWriter fileWriter = new ClaimSnapshotFileWriter(objectMapper);
         ClaimSnapshotRecord snapshotRecord = ClaimSnapshotRecord.builder()
             .contractVersion("4.1.0")
             .producer(Producer.builder()
@@ -55,14 +46,8 @@ class ClaimSnapshotFileWriterTest {
                 .build())
             .build();
 
-        Path outputPath = tempDir.resolve("claim_snapshot_export.json");
-
-        byte[] written = fileWriter.write(List.of(snapshotRecord), outputPath);
-
-        assertThat(outputPath).exists();
-        assertThat(written).isEqualTo(Files.readAllBytes(outputPath));
-        String json = Files.readString(outputPath);
-        JsonNode root = objectMapper.readTree(json);
+        byte[] written = fileWriter.write(List.of(snapshotRecord));
+        JsonNode root = objectMapper.readTree(written);
 
         assertThat(root.isArray()).isTrue();
         assertThat(root).hasSize(1);
@@ -74,13 +59,15 @@ class ClaimSnapshotFileWriterTest {
     }
 
     @Test
-    void shouldThrowWhenFileCannotBeWritten() throws Exception {
-        Path blocked = tempDir.resolve("blocked");
-        Files.writeString(blocked, "not-a-directory");
-        Path outputPath = blocked.resolve("claim_snapshot_export.json");
+    void shouldThrowWhenSerialiseFails() throws Exception {
+        ObjectMapper objectMapper = mock(ObjectMapper.class);
+        ObjectWriter objectWriter = mock(ObjectWriter.class);
+        when(objectMapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+        when(objectWriter.writeValueAsBytes(any())).thenThrow(new JsonProcessingException("boom") {
+        });
 
-        assertThatThrownBy(() -> fileWriter.write(List.of(), outputPath))
+        assertThatThrownBy(() -> new ClaimSnapshotFileWriter(objectMapper).write(List.of()))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Failed to write SDP claim snapshot file to " + outputPath);
+            .hasMessage("Failed to serialise SDP claim snapshot");
     }
 }

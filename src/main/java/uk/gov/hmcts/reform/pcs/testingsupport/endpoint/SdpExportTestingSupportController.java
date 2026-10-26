@@ -35,7 +35,7 @@ public class SdpExportTestingSupportController {
         }
         ExportResult result = exportService.exportClaims();
         return ResponseEntity.ok(Map.of(
-            "outputPath", result.outputPath().toAbsolutePath().toString(),
+            "filename", result.filename(),
             "recordCount", result.recordCount()
         ));
     }

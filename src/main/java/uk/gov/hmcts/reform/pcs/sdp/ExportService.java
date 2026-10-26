@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
 
-import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,7 +41,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Extracts claim data from the PCS database, maps it to the SDP contract, and writes a JSON file.
+ * Extracts claim data from the PCS database, maps it to the SDP contract, and uploads JSON.
  */
 @Slf4j
 @Service
@@ -57,7 +56,6 @@ public class ExportService {
     private final Optional<BlobUploader> blobUploader;
     private final Clock utcClock;
     private final String environment;
-    private final Path outputDirectory;
 
     public ExportService(ClaimRepository claimRepository,
                          ClaimActivityLogRepository claimActivityLogRepository,
@@ -67,8 +65,7 @@ public class ExportService {
                          SdpClaimSnapshotRepository sdpClaimSnapshotRepository,
                          Optional<BlobUploader> blobUploader,
                          @Qualifier("utcClock") Clock utcClock,
-                         @Value("${sdp.export.environment}") String environment,
-                         @Value("${sdp.export.output-directory}") String outputDirectory) {
+                         @Value("${sdp.export.environment}") String environment) {
         this.claimRepository = claimRepository;
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.claimSnapshotMapper = claimSnapshotMapper;
@@ -78,7 +75,6 @@ public class ExportService {
         this.blobUploader = blobUploader;
         this.utcClock = utcClock;
         this.environment = environment;
-        this.outputDirectory = Path.of(outputDirectory);
     }
 
     @Transactional
@@ -138,15 +134,14 @@ public class ExportService {
                                         List<ClaimSnapshotRecord> records,
                                         List<SdpClaimSnapshotEntity> changed) {
         String filename = "claim_snapshot_" + extractDate + ".json";
-        Path outputPath = outputDirectory.resolve(filename);
-        byte[] json = claimSnapshotFileWriter.write(records, outputPath);
+        byte[] json = claimSnapshotFileWriter.write(records);
         if (!records.isEmpty()) {
             blobUploader.ifPresent(uploader -> uploader.upload(filename, json));
         }
         sdpClaimSnapshotRepository.saveAll(changed);
 
-        log.info("SDP claim snapshot export complete: {} record(s) -> {}", records.size(), outputPath);
-        return new ExportResult(outputPath, records.size());
+        log.info("SDP claim snapshot export complete: {} record(s) -> {}", records.size(), filename);
+        return new ExportResult(filename, records.size(), json);
     }
 
     private ClaimSnapshotRecord mapClaim(ClaimEntity claim, String extractDate,

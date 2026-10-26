@@ -1,19 +1,12 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Writes SDP claim snapshot records to a local JSON file.
- */
-@Slf4j
 @Component
 public class ClaimSnapshotFileWriter {
 
@@ -23,18 +16,11 @@ public class ClaimSnapshotFileWriter {
         this.objectMapper = objectMapper;
     }
 
-    public byte[] write(List<ClaimSnapshotRecord> records, Path outputPath) {
+    public byte[] write(List<ClaimSnapshotRecord> records) {
         try {
-            Path parent = outputPath.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            byte[] json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(records);
-            Files.write(outputPath, json);
-            log.info("Wrote {} SDP claim snapshot record(s) to {}", records.size(), outputPath);
-            return json;
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to write SDP claim snapshot file to " + outputPath, e);
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(records);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialise SDP claim snapshot", e);
         }
     }
 }
