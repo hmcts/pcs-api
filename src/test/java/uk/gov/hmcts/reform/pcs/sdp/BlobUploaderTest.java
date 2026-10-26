@@ -42,11 +42,11 @@ class BlobUploaderTest {
     @Test
     void shouldUploadJson() {
         String blobName = "claim_snapshot_2026-10-13.json";
-        byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
         when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
         when(blobClient.uploadWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
         when(response.getStatusCode()).thenReturn(201);
-
+        
+        byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
         new BlobUploader(blobContainerClient).upload(blobName, json);
 
         verify(blobClient).uploadWithResponse(uploadOptionsCaptor.capture(), isNull(), eq(Context.NONE));
