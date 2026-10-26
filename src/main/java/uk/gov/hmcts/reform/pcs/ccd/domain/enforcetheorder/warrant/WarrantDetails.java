@@ -22,8 +22,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefe
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -108,16 +109,18 @@ public class WarrantDetails {
     private RepaymentCosts repaymentCosts;
 
     @CCD(
-            label = "Is your order a suspended order?",
-            hint = "If your order is suspended, you will see a different version of the statement of truth on the "
-                    + "next page. If you do not know if your order is suspended: save your application as a draft, "
-                    + "return to the case summary page, and then check the tab named 'Case File View'"
+        label = "Is your order a suspended order?",
+        hint = "If your order is suspended, you will see a different version of the statement of truth on the "
+                + "next page. If you do not know if your order is suspended: save your application as a draft, "
+                + "return to the case summary page, and then check the tab named 'Case File View'"
     )
     private VerticalYesNo isSuspendedOrder;
 
-    @JsonUnwrapped
-    @CCD
-    private StatementOfTruthDetailsEnforcement statementOfTruth;
+    @CCD(
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "StatementOfTruthAgreement"
+    )
+    private List<StatementOfTruthAgreement> certification;
 
     @CCD
     @JsonUnwrapped
