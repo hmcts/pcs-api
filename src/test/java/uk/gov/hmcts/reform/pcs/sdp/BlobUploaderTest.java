@@ -5,6 +5,7 @@ import com.azure.core.util.BinaryData;
 import com.azure.core.util.Context;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.models.BlockBlobItem;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,7 @@ class BlobUploaderTest {
     private BlobClient blobClient;
 
     @Mock
-    private Response<?> response;
+    private Response<BlockBlobItem> response;
 
     @Captor
     private ArgumentCaptor<BlobParallelUploadOptions> uploadOptionsCaptor;
