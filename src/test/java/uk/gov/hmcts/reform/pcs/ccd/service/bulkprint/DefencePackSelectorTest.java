@@ -408,54 +408,52 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("AC01: legal rep defence and counterclaim go to postal co-defendants, not the represented defendant")
-    void shouldSendLegalRepDefenceAndCounterClaimToCoDefendantsOnly() {
-        PartyEntity representedDefendant = party();
+    @DisplayName("AC01: legal rep defence and counterclaim go to every postal defendant, including the responder")
+    void shouldSendLegalRepDefenceAndCounterClaimToEveryPostalDefendant() {
+        PartyEntity respondingDefendant = party();
         PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
-        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant, postalCoDefendant);
-        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
-        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, representedDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, respondingDefendant, postalCoDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, respondingDefendant);
+        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, respondingDefendant);
         pcsCase.setDocuments(List.of(lrDefence, lrCounterClaim));
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
 
-        assertThat(result).singleElement().satisfies(candidate -> {
-            assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
-            assertThat(candidate.documents()).containsExactly(lrDefence, lrCounterClaim);
-        });
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(lrDefence, lrCounterClaim);
+        assertThat(candidateFor(result, postalCoDefendant).documents()).containsExactly(lrDefence, lrCounterClaim);
     }
 
     @Test
-    @DisplayName("AC02: legal rep defence without a generated counterclaim goes to postal co-defendants only")
-    void shouldSendLegalRepDefenceOnlyToCoDefendants() {
-        PartyEntity representedDefendant = partyWithPostPreference(VerticalYesNo.YES);
+    @DisplayName("AC02: legal rep defence without a counterclaim goes to postal defendants, not those who opted out")
+    void shouldSendLegalRepDefenceToPostalDefendantsOnly() {
+        PartyEntity respondingDefendant = partyWithPostPreference(VerticalYesNo.YES);
         PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
         PartyEntity nonPostalCoDefendant = partyWithPostPreference(VerticalYesNo.NO);
         PcsCaseEntity pcsCase =
-            caseWith(List.of(), claimant, representedDefendant, postalCoDefendant, nonPostalCoDefendant);
-        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+            caseWith(List.of(), claimant, respondingDefendant, postalCoDefendant, nonPostalCoDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, respondingDefendant);
         pcsCase.setDocuments(List.of(lrDefence));
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
 
-        assertThat(result).singleElement().satisfies(candidate -> {
-            assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
-            assertThat(candidate.documents()).containsExactly(lrDefence);
-        });
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(lrDefence);
+        assertThat(candidateFor(result, postalCoDefendant).documents()).containsExactly(lrDefence);
     }
 
     @Test
-    @DisplayName("AC03: a late legal rep counterclaim goes alone to co-defendants already sent the defence")
-    void shouldSendLateLegalRepCounterClaimOnlyToCoDefendants() {
-        PartyEntity representedDefendant = party();
+    @DisplayName("AC03: a late legal rep counterclaim goes to postal defendants without resending a sent defence")
+    void shouldSendLateLegalRepCounterClaimToPostalDefendants() {
+        PartyEntity respondingDefendant = party();
         PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
-        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant, postalCoDefendant);
-        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
-        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, representedDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, respondingDefendant, postalCoDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, respondingDefendant);
+        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, respondingDefendant);
         pcsCase.setDocuments(List.of(lrDefence, lrCounterClaim));
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
@@ -463,14 +461,13 @@ class DefencePackSelectorTest {
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
 
-        assertThat(result).singleElement().satisfies(candidate -> {
-            assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
-            assertThat(candidate.documents()).containsExactly(lrCounterClaim);
-        });
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(lrDefence, lrCounterClaim);
+        assertThat(candidateFor(result, postalCoDefendant).documents()).containsExactly(lrCounterClaim);
     }
 
     @Test
-    @DisplayName("Still sends a citizen's defence to the citizen alongside a legal rep defence for a co-defendant")
+    @DisplayName("Sends both a citizen defence and a legal rep defence to each postal defendant")
     void shouldKeepCitizenOwnCopyWhenCoDefendantRespondedByLegalRep() {
         PartyEntity citizenDefendant = partyWithPostPreference(VerticalYesNo.YES);
         PartyEntity representedDefendant = party();
@@ -485,12 +482,12 @@ class DefencePackSelectorTest {
 
         assertThat(result).hasSize(2);
         assertThat(candidateFor(result, citizenDefendant).documents()).containsExactly(citizenDefence, lrDefence);
-        assertThat(candidateFor(result, representedDefendant).documents()).containsExactly(citizenDefence);
+        assertThat(candidateFor(result, representedDefendant).documents()).containsExactly(citizenDefence, lrDefence);
     }
 
     @Test
-    @DisplayName("Does not post a legal rep defence to a co-defendant who has their own legal representative")
-    void shouldNotPostToRepresentedCoDefendant() {
+    @DisplayName("Posts a legal rep defence to a represented co-defendant who still wants post")
+    void shouldPostToRepresentedCoDefendantWhoWantsPost() {
         PartyEntity respondingDefendant = party();
         PartyEntity representedCoDefendant = representedParty(YesOrNo.YES);
         PartyEntity citizenCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
@@ -503,15 +500,15 @@ class DefencePackSelectorTest {
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
 
-        assertThat(result).singleElement().satisfies(candidate -> {
-            assertThat(candidate.recipient()).isEqualTo(citizenCoDefendant);
-            assertThat(candidate.documents()).containsExactly(lrDefence);
-        });
+        assertThat(result).hasSize(3);
+        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(lrDefence);
+        assertThat(candidateFor(result, representedCoDefendant).documents()).containsExactly(lrDefence);
+        assertThat(candidateFor(result, citizenCoDefendant).documents()).containsExactly(lrDefence);
     }
 
     @Test
-    @DisplayName("Posts both legal rep defences only to the unrepresented citizen when two defendants are represented")
-    void shouldPostOnlyToCitizenWhenTwoDefendantsAreRepresented() {
+    @DisplayName("Posts every defence to each postal defendant when two defendants are represented")
+    void shouldPostToEveryPostalDefendantWhenTwoDefendantsAreRepresented() {
         PartyEntity firstRepresented = representedParty(YesOrNo.YES);
         PartyEntity secondRepresented = representedParty(YesOrNo.YES);
         PartyEntity citizen = partyWithPostPreference(VerticalYesNo.YES);
@@ -525,14 +522,17 @@ class DefencePackSelectorTest {
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
 
-        assertThat(result).singleElement().satisfies(candidate -> {
-            assertThat(candidate.recipient()).isEqualTo(citizen);
-            assertThat(candidate.documents()).containsExactlyInAnyOrder(firstDefence, secondDefence, citizenDefence);
-        });
+        assertThat(result).hasSize(3);
+        assertThat(candidateFor(result, firstRepresented).documents())
+            .containsExactlyInAnyOrder(firstDefence, secondDefence, citizenDefence);
+        assertThat(candidateFor(result, secondRepresented).documents())
+            .containsExactlyInAnyOrder(firstDefence, secondDefence, citizenDefence);
+        assertThat(candidateFor(result, citizen).documents())
+            .containsExactlyInAnyOrder(firstDefence, secondDefence, citizenDefence);
     }
 
     @Test
-    @DisplayName("Posts to a defendant whose legal representative is no longer active")
+    @DisplayName("Posts to the responding defendant and to a defendant whose representative is no longer active")
     void shouldPostToDefendantWithInactiveLegalRepresentative() {
         PartyEntity respondingDefendant = party();
         PartyEntity formerlyRepresented = representedParty(YesOrNo.NO);
@@ -544,8 +544,9 @@ class DefencePackSelectorTest {
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
 
-        assertThat(result).singleElement()
-            .satisfies(candidate -> assertThat(candidate.recipient()).isEqualTo(formerlyRepresented));
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(lrDefence);
+        assertThat(candidateFor(result, formerlyRepresented).documents()).containsExactly(lrDefence);
     }
 
     private DefendantResponseEntity submittedDefence(PartyEntity party, LanguageUsed languageUsed) {
