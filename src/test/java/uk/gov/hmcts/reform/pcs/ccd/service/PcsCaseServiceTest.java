@@ -720,6 +720,21 @@ class PcsCaseServiceTest {
         verify(caseFlagService, never()).applyReviewedSupportFlags(any(), any());
     }
 
+    @Test
+    void shouldReturnFirstClaimFromPcsCaseEntity() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity firstClaim = new ClaimEntity();
+        ClaimEntity secondClaim = new ClaimEntity();
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(firstClaim, secondClaim));
+
+        // When
+        ClaimEntity result = underTest.retrieveClaimEntity(CASE_REFERENCE);
+
+        // Then
+        assertThat(result).isSameAs(firstClaim);
+    }
+
     private PcsCaseEntity stubFindCase() {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));

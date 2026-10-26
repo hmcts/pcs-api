@@ -15,9 +15,12 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterBreathingSpace;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @Slf4j
@@ -26,6 +29,8 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
 
     private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
+    private BreathingSpaceService breathingSpaceService;
+    private AddressFormatter addressFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -41,7 +46,35 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        return SubmitResponse.defaultResponse();
+        long caseReference = eventPayload.caseReference();
+        PCSCase caseData = eventPayload.caseData();
+
+        breathingSpaceService.createBreathingSpace(caseReference, caseData.getBreathingSpaceDetails());
+
+        return SubmitResponse.<State>builder()
+            .confirmationBody(this.getConfirmationBodyMarkdown(caseData, caseReference))
+            .build();
+    }
+
+    private String getConfirmationBodyMarkdown(PCSCase caseData, long caseReference) {
+        String address = addressFormatter.formatMediumAddress(caseData.getPropertyAddress(), COMMA_DELIMITER);
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">Breathing space has been entered</span><br>
+            <span class="govuk-panel__body">Case number #%s</span><br>
+            <span class="govuk-panel__body">%s</span><br>
+            <span class="govuk-panel__body">%s</span>
+            </div>
+
+            <h3 class="govuk-heading-s">What happens next</h3>
+            <p class="govuk-body govuk-!-margin-bottom-6">If breathing space has been granted due to Mental Health
+            Crisis Moratorium, you must add a review date for it to be referred to a judge after 6 months.</p>
+            """.formatted(
+                caseReference,
+                address,
+                caseData.getCaseNameHmctsInternal()
+            );
     }
 
 }
