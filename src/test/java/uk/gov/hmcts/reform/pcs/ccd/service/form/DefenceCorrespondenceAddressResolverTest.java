@@ -64,6 +64,26 @@ class DefenceCorrespondenceAddressResolverTest {
     }
 
     @Test
+    void shouldFallBackToPropertyWhenPartyAddressHasNoLine1() {
+        stubAssertions();
+        PartyEntity defendant = defendantWith(AddressEntity.builder().postcode("SW1A 1AA").build());
+
+        AddressUK result = underTest.resolveCorrespondenceAddress(defendant, propertyAddress);
+
+        assertThat(result.getAddressLine1()).isEqualTo("1 Property Street");
+    }
+
+    @Test
+    void shouldFallBackToPropertyWhenAssertionHasNoAddressLine1() {
+        stubAssertions(jsonAssertion(PartyAttributeType.CORRESPONDENCE_ADDRESS, "{\"PostCode\":\"LS1 1AA\"}"));
+        PartyEntity defendant = defendantWith(AddressEntity.builder().postTown("London").build());
+
+        AddressUK result = underTest.resolveCorrespondenceAddress(defendant, propertyAddress);
+
+        assertThat(result.getAddressLine1()).isEqualTo("1 Property Street");
+    }
+
+    @Test
     void shouldFallBackToPropertyWhenNoAssertionAndNoPartyAddress() {
         stubAssertions();
         PartyEntity defendant = defendantWith(null);
