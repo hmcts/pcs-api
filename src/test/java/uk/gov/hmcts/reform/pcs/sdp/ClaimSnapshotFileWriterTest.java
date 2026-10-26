@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ClaimSnapshotFileWriterTest {
 
@@ -70,5 +71,16 @@ class ClaimSnapshotFileWriterTest {
         assertThat(root.get(0).get("claim").get("claim_reference").asText()).isEqualTo("PCS-1001");
         assertThat(root.get(0).get("claim").get("dimensions").get("claim_type").asText())
             .isEqualTo("AAA3-SLD");
+    }
+
+    @Test
+    void shouldThrowWhenFileCannotBeWritten() throws Exception {
+        Path blocked = tempDir.resolve("blocked");
+        Files.writeString(blocked, "not-a-directory");
+        Path outputPath = blocked.resolve("claim_snapshot_export.json");
+
+        assertThatThrownBy(() -> fileWriter.write(List.of(), outputPath))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Failed to write SDP claim snapshot file to " + outputPath);
     }
 }

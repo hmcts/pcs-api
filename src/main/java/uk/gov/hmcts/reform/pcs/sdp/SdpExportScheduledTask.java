@@ -36,7 +36,7 @@ public class SdpExportScheduledTask {
     }
 
     private void runExport() {
-        if (!enabled || !featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+        if (!enabled || !featureToggleService.isEnabled(FeatureFlag.SDP_EXPORT)) {
             return;
         }
         exportService.exportClaims();

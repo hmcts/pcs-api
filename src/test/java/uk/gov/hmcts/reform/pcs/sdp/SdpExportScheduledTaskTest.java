@@ -35,8 +35,8 @@ class SdpExportScheduledTaskTest {
     }
 
     @Test
-    void shouldRunExportWhenEnabledAndReleaseFlagOn() {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+    void shouldRunExportWhenEnabledAndFeatureFlagOn() {
+        when(featureToggleService.isEnabled(FeatureFlag.SDP_EXPORT)).thenReturn(true);
         RecurringTask<Void> task = component("DAILY|02:00", true).sdpExportTask();
         task.execute(null, null);
 
@@ -52,8 +52,8 @@ class SdpExportScheduledTaskTest {
     }
 
     @Test
-    void shouldNotRunExportWhenReleaseFlagOff() {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+    void shouldNotRunExportWhenFeatureFlagOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.SDP_EXPORT)).thenReturn(false);
         RecurringTask<Void> task = component("DAILY|02:00", true).sdpExportTask();
         task.execute(null, null);
 
