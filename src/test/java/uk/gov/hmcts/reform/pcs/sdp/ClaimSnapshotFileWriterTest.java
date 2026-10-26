@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.sdp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
@@ -61,9 +60,7 @@ class ClaimSnapshotFileWriterTest {
     @Test
     void shouldThrowWhenSerialiseFails() throws Exception {
         ObjectMapper objectMapper = mock(ObjectMapper.class);
-        ObjectWriter objectWriter = mock(ObjectWriter.class);
-        when(objectMapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
-        when(objectWriter.writeValueAsBytes(any())).thenThrow(new JsonProcessingException("boom") {
+        when(objectMapper.writeValueAsBytes(any())).thenThrow(new JsonProcessingException("boom") {
         });
 
         assertThatThrownBy(() -> new ClaimSnapshotFileWriter(objectMapper).write(List.of()))

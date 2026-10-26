@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+import com.azure.core.http.rest.Response;
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.Context;
 import com.azure.storage.blob.BlobClient;
@@ -28,8 +29,15 @@ public class BlobUploader {
             BlobClient blobClient = blobContainerClient.getBlobClient(blobName);
             BlobParallelUploadOptions options = new BlobParallelUploadOptions(BinaryData.fromBytes(json))
                 .setHeaders(new BlobHttpHeaders().setContentType(CONTENT_TYPE));
-            blobClient.uploadWithResponse(options, null, Context.NONE);
-            log.info("Uploaded SDP claim snapshot to blob {}", blobName);
+            Response<?> response = blobClient.uploadWithResponse(options, null, Context.NONE);
+            log.info("Uploaded SDP claim snapshot to blob {} status={}", blobName, response.getStatusCode());
+            
+            int status = response.getStatusCode();
+            if (status < 200 || status >= 300) {
+                throw new IllegalStateException(
+                    "Failed to upload SDP claim snapshot to blob " + blobName
+                        + " status=" + response.getStatusCode());
+            }
         } catch (RuntimeException e) {
             log.error("Failed to upload SDP claim snapshot to blob {}", blobName, e);
             throw e;

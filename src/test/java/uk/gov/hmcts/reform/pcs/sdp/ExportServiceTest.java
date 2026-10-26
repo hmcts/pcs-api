@@ -119,13 +119,13 @@ class ExportServiceTest {
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
 
         String json = uploadedJson();
-        assertThat(json).contains("\"contract_version\" : \"4.1.0\"");
-        assertThat(json).contains("\"claim_reference\" : \"1234567890123456\"");
-        assertThat(json).contains("\"claim_type\" : \"AAA3-SLD\"");
-        assertThat(json).contains("\"name\" : \"Jane Doe\"");
-        assertThat(json).contains("\"environment\" : \"local\"");
-        assertThat(json).contains("\"snapshot_version\" : 1");
-        assertThat(json).contains("\"published_date\" : \"2026-02-05T10:00:00Z\"");
+        assertThat(json).contains("\"contract_version\":\"4.1.0\"");
+        assertThat(json).contains("\"claim_reference\":\"1234567890123456\"");
+        assertThat(json).contains("\"claim_type\":\"AAA3-SLD\"");
+        assertThat(json).contains("\"name\":\"Jane Doe\"");
+        assertThat(json).contains("\"environment\":\"local\"");
+        assertThat(json).contains("\"snapshot_version\":1");
+        assertThat(json).contains("\"published_date\":\"2026-02-05T10:00:00Z\"");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
     }
 
@@ -137,7 +137,7 @@ class ExportServiceTest {
 
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
-        assertThat(uploadedJson()).contains("\"snapshot_version\" : 1");
+        assertThat(uploadedJson()).contains("\"snapshot_version\":1");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
@@ -155,7 +155,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).contains("\"snapshot_version\" : 3");
+        assertThat(uploadedJson()).contains("\"snapshot_version\":3");
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getSnapshotVersion()).isEqualTo(3);
@@ -190,8 +190,8 @@ class ExportServiceTest {
 
         assertThat(result.recordCount()).isEqualTo(2);
         String json = uploadedJson();
-        assertThat(json).contains("\"snapshot_version\" : 2");
-        assertThat(json).contains("\"snapshot_version\" : 1");
+        assertThat(json).contains("\"snapshot_version\":2");
+        assertThat(json).contains("\"snapshot_version\":1");
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getClaimId()).isEqualTo(CLAIM_ID);
@@ -245,7 +245,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).contains("\"tenancy_type\" : \"AAA3-OTH\"");
+        assertThat(uploadedJson()).contains("\"tenancy_type\":\"AAA3-OTH\"");
     }
 
     @Test
@@ -271,7 +271,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).contains("\"parties\" : [ ]");
+        assertThat(uploadedJson()).contains("\"parties\":[]");
     }
 
     @Test
@@ -284,7 +284,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).contains("\"parties\" : [ ]");
+        assertThat(uploadedJson()).contains("\"parties\":[]");
     }
 
     @Test
@@ -299,7 +299,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).contains("\"parties\" : [ ]");
+        assertThat(uploadedJson()).contains("\"parties\":[]");
     }
 
     private String uploadedJson() {

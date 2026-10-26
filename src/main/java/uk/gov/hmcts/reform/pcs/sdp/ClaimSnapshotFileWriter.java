@@ -18,7 +18,7 @@ public class ClaimSnapshotFileWriter {
 
     public byte[] write(List<ClaimSnapshotRecord> records) {
         try {
-            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(records);
+            return objectMapper.writeValueAsBytes(records);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Failed to serialise SDP claim snapshot", e);
         }

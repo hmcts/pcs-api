@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+import com.azure.core.http.rest.Response;
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.Context;
 import com.azure.storage.blob.BlobClient;
@@ -31,6 +32,9 @@ class BlobUploaderTest {
     @Mock
     private BlobClient blobClient;
 
+    @Mock
+    private Response<?> response;
+
     @Captor
     private ArgumentCaptor<BlobParallelUploadOptions> uploadOptionsCaptor;
 
@@ -39,6 +43,8 @@ class BlobUploaderTest {
         String blobName = "claim_snapshot_2026-10-13.json";
         byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
         when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
+        when(blobClient.uploadWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
+        when(response.getStatusCode()).thenReturn(201);
 
         new BlobUploader(blobContainerClient).upload(blobName, json);
 
@@ -60,5 +66,18 @@ class BlobUploaderTest {
         assertThatThrownBy(() -> new BlobUploader(blobContainerClient).upload(blobName, json))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("upload failed");
+    }
+
+    @Test
+    void shouldThrowWhenStatusIsNotSuccess() {
+        String blobName = "claim_snapshot_2026-10-13.json";
+        byte[] json = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
+        when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
+        when(blobClient.uploadWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
+        when(response.getStatusCode()).thenReturn(500);
+
+        assertThatThrownBy(() -> new BlobUploader(blobContainerClient).upload(blobName, json))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Failed to upload SDP claim snapshot to blob " + blobName + " status=500");
     }
 }
