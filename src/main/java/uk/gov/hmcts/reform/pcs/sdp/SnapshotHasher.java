@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.sdp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
@@ -15,13 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@AllArgsConstructor
 public class SnapshotHasher {
 
     private final ObjectMapper objectMapper;
-
-    public SnapshotHasher(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public String hash(ClaimSnapshot claim) {
         List<SnapshotParty> parties = claim.getParties().stream()

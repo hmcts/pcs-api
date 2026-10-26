@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
@@ -8,8 +11,10 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
 class SnapshotHasherTest {
 
@@ -32,12 +37,29 @@ class SnapshotHasherTest {
             .isEqualTo(hash);
     }
 
-    @Test
-    void shouldChangeHashWhenClaimDataChanges() {
+    @ParameterizedTest
+    @MethodSource("hashFieldChanges")
+    void shouldChangeHashWhenHashedFieldChanges(ClaimSnapshot changed) {
         String hash = snapshotHasher.hash(claim(List.of(party("1", "a@example.com"))));
 
-        assertThat(snapshotHasher.hash(claim(List.of(party("1", "changed@example.com")))))
-            .isNotEqualTo(hash);
+        assertThat(snapshotHasher.hash(changed)).isNotEqualTo(hash);
+    }
+
+    private static Stream<Arguments> hashFieldChanges() {
+        List<SnapshotParty> parties = List.of(party("1", "a@example.com"));
+        ClaimSnapshot changedReference = claim(parties);
+        changedReference.setClaimReference("9999");
+        ClaimSnapshot changedDimensions = claim(parties);
+        changedDimensions.setDimensions(SnapshotDimensions.builder().claimType("AAA3-PLD").language("eng").build());
+        ClaimSnapshot changedMilestones = claim(parties);
+        changedMilestones.setMilestones(
+            SnapshotMilestones.builder().claimSubmittedToSystemDate("2026-02-02").build());
+        return Stream.of(
+            argumentSet("claim reference", changedReference),
+            argumentSet("dimensions", changedDimensions),
+            argumentSet("milestones", changedMilestones),
+            argumentSet("parties", claim(List.of(party("1", "changed@example.com"))))
+        );
     }
 
     @Test
