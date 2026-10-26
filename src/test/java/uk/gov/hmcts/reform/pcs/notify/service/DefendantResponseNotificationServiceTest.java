@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -409,7 +410,7 @@ class DefendantResponseNotificationServiceTest {
 
         // Defendant is legally represented
         when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(partyId, caseReference))
-            .thenReturn(Optional.of(mock(uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity.class)));
+            .thenReturn(Optional.of(mock(OrganisationEntity.class)));
 
         underTest.sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
 
