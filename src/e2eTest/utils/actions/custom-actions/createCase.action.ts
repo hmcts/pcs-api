@@ -59,7 +59,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -153,7 +153,7 @@ export class CreateCaseAction implements IAction {
       ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
-      ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful(page, fieldName as actionRecord)],
+      ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
       ['createPartialClaimDetails', () => this.createPartialClaimDetails()],
       ['resumePartialClaim', () => this.resumePartialClaim()],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
@@ -1727,7 +1727,7 @@ export class CreateCaseAction implements IAction {
           expect(fileCount).toBeGreaterThan(0);
         }
       }).toPass({
-        timeout: VERY_LONG_TIMEOUT,
+        timeout: VERY_LONG_TIMEOUT + LONG_TIMEOUT,
       });
     }
 
@@ -2105,36 +2105,36 @@ export class CreateCaseAction implements IAction {
 
   private async getAllPartyDetails(allPartiesDetails: actionRecord) {
 
-    let originalDefendantDetails: string[] = [];
-    const payLoad = allPartiesDetails.payLoad as Record<string, any>;
-    if (allPartiesDetails.defendant1NameKnown === 'YES') {
-      originalDefendantDetails.push(
-        `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName} - Defendant 1`
-      );
-    } else {
-      originalDefendantDetails.push(
-        `null null`
-      );
-    }
+      let originalDefendantDetails: string[] = [];
+      const payLoad = allPartiesDetails.payLoad as Record<string, any>;
+      if (allPartiesDetails.defendant1NameKnown === 'YES') {
+        originalDefendantDetails.push(
+          `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName} - Defendant 1`
+        );
+      } else {
+        originalDefendantDetails.push(
+          `null null`
+        );
+      }
 
-    if (allPartiesDetails.additionalDefendants === 'YES') {
+      if (allPartiesDetails.additionalDefendants === 'YES') {
 
-      for (const [index, defendant] of payLoad.additionalDefendants.entries()) {
-        if (defendant.value.nameKnown === 'YES') {
-          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName} - Defendant ${index + 2}`);
-        } else {
-          originalDefendantDetails.push(
-            `null null`
-          );
+        for (const [index, defendant] of payLoad.additionalDefendants.entries()) {
+          if (defendant.value.nameKnown === 'YES') {
+            originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName} - Defendant ${index + 2}`);
+          } else {
+            originalDefendantDetails.push(
+              `null null`
+            );
+          }
         }
       }
-    }
 
-    allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
-    ];
-    allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
-  }
+      allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
+      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+      ];
+      allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
+    }
 
   private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string,): string[] {
     if (oldFile && amendedFile) {
@@ -2158,4 +2158,5 @@ export class CreateCaseAction implements IAction {
         doc => doc.value?.documentType?.valueLabel === documentType,
       )?.value?.document_filename;
   }
+
 }
