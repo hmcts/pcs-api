@@ -21,7 +21,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -235,6 +237,32 @@ class CaseTypeTest {
     }
 
     @Test
+    void shouldGiveNoTabExceptSupportARoleListSoNoUserSeesATabTwice() {
+        // Given
+        Map<String, TabBuilder<PCSCase, AccessProfile>> tabBuilders = new LinkedHashMap<>();
+        stubNonTabBuilders();
+        when(builder.tab(anyString(), anyString())).thenAnswer(invocation -> {
+            TabBuilder<PCSCase, AccessProfile> tabBuilder = TabBuilder.builder(PCSCase.class, utils);
+            tabBuilders.put(invocation.getArgument(0), tabBuilder);
+            return tabBuilder;
+        });
+
+        // When
+        caseType.configure(builder);
+
+        // Then
+        assertThat(tabBuilders).hasSizeGreaterThan(1).containsKey("support");
+        tabBuilders.forEach((tabId, tabBuilder) -> {
+            Tab<PCSCase, AccessProfile> tab = tabBuilder.build();
+            if ("support".equals(tabId)) {
+                assertThat(tab.getForRoles()).containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
+            } else {
+                assertThat(tab.getForRoles()).as("role list on tab %s", tabId).isEmpty();
+            }
+        });
+    }
+
+    @Test
     void shouldNotShutterServiceWhenShutterFlagDisabled() {
         // Given
         stubBuilderForConfigure();
@@ -245,6 +273,22 @@ class CaseTypeTest {
 
         // Then
         verify(builder, never()).shutterService();
+    }
+
+    private void stubNonTabBuilders() {
+        final Search.SearchBuilder<PCSCase, AccessProfile> searchBuilder =
+            Search.SearchBuilder.builder(PCSCase.class, utils);
+
+        when(builder.searchInputFields()).thenReturn(searchBuilder);
+        when(builder.searchCasesFields()).thenReturn(SearchCases.SearchCasesBuilder.builder(PCSCase.class, utils));
+        when(builder.searchResultFields()).thenReturn(searchBuilder);
+        when(builder.workBasketResultFields()).thenReturn(searchBuilder);
+        lenient().when(builder.accessType(anyString()))
+            .thenReturn(AccessType.AccessTypeBuilder.builder("accessTypeId"));
+        lenient().when(builder.accessTypeRole(anyString()))
+            .thenReturn(AccessTypeRole.AccessTypeRoleBuilder.builder("accessTypeId"));
+        when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
+            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
     }
 
     private void stubBuilderForConfigure() {
