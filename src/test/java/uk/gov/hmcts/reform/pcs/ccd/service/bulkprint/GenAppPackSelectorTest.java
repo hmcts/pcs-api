@@ -213,19 +213,15 @@ class GenAppPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Includes a with-notice legal representative gen app that names a firm")
-    void shouldIncludeLegalRepDefendantGenApps() {
+    @DisplayName("Excludes defendant ExUI GAs submitted with a firm name on the statement of truth")
+    void shouldExcludeDefendantExUiGenApps() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        GenAppEntity legalRepGa = defendantCuiWithNoticeGa(withNoticePdf, defendant);
-        legalRepGa.setStatementOfTruth(StatementOfTruthEntity.builder().firmName("Example Firm").build());
+        GenAppEntity exUiGa = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        exUiGa.setStatementOfTruth(StatementOfTruthEntity.builder().firmName("Example Firm").build());
 
-        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
-            List.of(legalRepGa), claimant, defendant));
-
-        assertThat(result).extracting(candidate -> candidate.recipient().getId())
-            .containsExactly(claimant.getId(), defendant.getId());
-        assertThat(result).allSatisfy(candidate -> assertThat(candidate.documents()).containsExactly(withNoticePdf));
+        assertThat(underTest.findGenAppPackCandidates(caseWith(
+            List.of(exUiGa), claimant, defendant))).isEmpty();
     }
 
     @Test
