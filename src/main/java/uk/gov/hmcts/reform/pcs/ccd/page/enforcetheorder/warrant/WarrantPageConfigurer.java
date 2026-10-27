@@ -25,9 +25,9 @@ public class WarrantPageConfigurer implements PageConfigurer {
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
+            .add(new NameAndAddressForEvictionPage())
             .add(new BreathingSpacePage())
             .add(new MissedPaymentsPage())
-            .add(new NameAndAddressForEvictionPage())
             .add(new ChangeNameAddressPage())
             .add(new ConfirmIfDOBKnownPage())
             .add(defendantsDOBPage)
