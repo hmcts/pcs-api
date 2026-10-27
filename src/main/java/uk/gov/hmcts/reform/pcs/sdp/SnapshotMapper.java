@@ -152,7 +152,13 @@ public class SnapshotMapper {
     }
 
     private String resolveLanguage(String languageUsed) {
-        return "WELSH".equals(languageUsed) ? "cym" : "eng";
+        if ("WELSH".equals(languageUsed)) {
+            return "cym";
+        }
+        if ("ENGLISH_AND_WELSH".equals(languageUsed)) {
+            return "engAndCym";
+        }
+        return "eng";
     }
 
     private String resolveTenancyType(String tenancyType) {

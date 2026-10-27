@@ -13,9 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -30,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
@@ -70,9 +67,6 @@ class ExportServiceTest {
     private ClaimRepository claimRepository;
 
     @Mock
-    private ClaimActivityLogRepository claimActivityLogRepository;
-
-    @Mock
     private SnapshotHasher snapshotHasher;
 
     @Mock
@@ -98,7 +92,6 @@ class ExportServiceTest {
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
         return new ExportService(
             claimRepository,
-            claimActivityLogRepository,
             new SnapshotMapper(),
             new ClaimSnapshotFileWriter(objectMapper),
             snapshotHasher,
@@ -112,14 +105,6 @@ class ExportServiceTest {
     @Test
     void shouldExtractClaimsFromDbAndWriteJsonFile() throws Exception {
         givenClaimWithHash();
-        when(claimActivityLogRepository.findAllByPcsCase_IdInAndActivityType(
-            List.of(CASE_ID), ClaimActivityType.DOCUMENTS_CREATED)).thenReturn(List.of(
-                ClaimActivityLogEntity.builder()
-                    .pcsCase(PcsCaseEntity.builder().id(CASE_ID).build())
-                    .activityType(ClaimActivityType.DOCUMENTS_CREATED)
-                    .createdAt(LocalDateTime.of(2026, 2, 5, 10, 0))
-                    .build()
-            ));
 
         ExportResult result = exportService.exportClaims();
 
@@ -139,7 +124,7 @@ class ExportServiceTest {
         assertThat(json).contains("\"recorded_date\":\"2026-02-01T14:30:00Z\"");
         assertThat(json).contains("\"environment\":\"dev\"");
         assertThat(json).contains("\"snapshot_version\":1");
-        assertThat(json).contains("\"published_date\":\"2026-02-05T10:00:00Z\"");
+        assertThat(json).contains("\"published_date\":\"2026-03-09T12:00:00Z\"");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
     }
 

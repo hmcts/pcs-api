@@ -54,6 +54,21 @@ class SnapshotMapperTest {
 
         assertThat(result.getClaimType()).isEqualTo("AAA3-TCM");
         assertThat(result.getClaimSubType()).isEqualTo("Possession");
+        assertThat(result.getLanguage()).isEqualTo("eng");
+    }
+
+    @Test
+    void shouldMapEnglishAndWelshLanguage() {
+        SnapshotDimensions result = claimSnapshotMapper.mapDimensions(
+            "PRIVATE_LANDLORD",
+            "NO",
+            "ENGLISH_AND_WELSH",
+            "ASSURED_TENANCY",
+            "45",
+            "ENGLAND"
+        );
+
+        assertThat(result.getLanguage()).isEqualTo("engAndCym");
     }
 
     @Test

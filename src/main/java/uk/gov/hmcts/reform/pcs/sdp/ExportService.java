@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -18,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
@@ -39,14 +36,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,7 +53,6 @@ import java.util.stream.Collectors;
 public class ExportService {
 
     private final ClaimRepository claimRepository;
-    private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SnapshotMapper claimSnapshotMapper;
     private final ClaimSnapshotFileWriter claimSnapshotFileWriter;
     private final SnapshotHasher snapshotHasher;
@@ -69,7 +63,6 @@ public class ExportService {
     private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
 
     public ExportService(ClaimRepository claimRepository,
-                         ClaimActivityLogRepository claimActivityLogRepository,
                          SnapshotMapper claimSnapshotMapper,
                          ClaimSnapshotFileWriter claimSnapshotFileWriter,
                          SnapshotHasher snapshotHasher,
@@ -78,7 +71,6 @@ public class ExportService {
                          @Qualifier("utcClock") Clock utcClock,
                          @Value("${sdp.export.environment}") String environment) {
         this.claimRepository = claimRepository;
-        this.claimActivityLogRepository = claimActivityLogRepository;
         this.claimSnapshotMapper = claimSnapshotMapper;
         this.claimSnapshotFileWriter = claimSnapshotFileWriter;
         this.snapshotHasher = snapshotHasher;
@@ -95,25 +87,25 @@ public class ExportService {
         Map<UUID, SdpClaimSnapshotEntity> stored = sdpClaimSnapshotRepository
             .findAllById(claims.stream().map(ClaimEntity::getId).toList()).stream()
             .collect(Collectors.toMap(SdpClaimSnapshotEntity::getClaimId, Function.identity()));
-        Map<UUID, LocalDateTime> publishedDates = findPublishedDates(claims);
+        final String publishedDate = Instant.now(utcClock).toString();
         LocalDateTime now = LocalDateTime.now(utcClock);
 
         List<ClaimSnapshotRecord> records = new ArrayList<>();
         List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
         for (ClaimEntity claim : claims) {
-            addIfChanged(claim, extractDate, publishedDates, stored, now, records, changed);
+            addIfChanged(claim, extractDate, publishedDate, stored, now, records, changed);
         }
         return writeAndUpload(extractDate, records, changed);
     }
 
     private void addIfChanged(ClaimEntity claim,
                               String extractDate,
-                              Map<UUID, LocalDateTime> publishedDates,
+                              String publishedDate,
                               Map<UUID, SdpClaimSnapshotEntity> stored,
                               LocalDateTime now,
                               List<ClaimSnapshotRecord> records,
                               List<SdpClaimSnapshotEntity> changed) {
-        ClaimSnapshotRecord snapshotRecord = mapClaim(claim, extractDate, publishedDates);
+        ClaimSnapshotRecord snapshotRecord = mapClaim(claim, extractDate, publishedDate);
         String hash = snapshotHasher.hash(snapshotRecord.getClaim());
         SdpClaimSnapshotEntity snapshot = stored.get(claim.getId());
         if (snapshot == null) {
@@ -155,8 +147,7 @@ public class ExportService {
         return new ExportResult(filename, records.size());
     }
 
-    private ClaimSnapshotRecord mapClaim(ClaimEntity claim, String extractDate,
-                                         Map<UUID, LocalDateTime> publishedDates) {
+    private ClaimSnapshotRecord mapClaim(ClaimEntity claim, String extractDate, String publishedDate) {
         PcsCaseEntity pcsCase = claim.getPcsCase();
         NoticeOfPossessionEntity notice = claim.getNoticeOfPossession();
         TenancyLicenceEntity tenancy = pcsCase != null ? pcsCase.getTenancyLicence() : null;
@@ -185,13 +176,11 @@ public class ExportService {
         String claimReference = caseReferenceFormatter
             .formatCaseReferenceWithDashes(pcsCase != null ? pcsCase.getCaseReference() : null);
 
-        UUID caseId = pcsCase != null ? pcsCase.getId() : null;
-
         return claimSnapshotMapper.mapRecord(
             environment,
             extractDate,
             UUID.randomUUID().toString(),
-            resolvePublishedDate(publishedDates.get(caseId)),
+            publishedDate,
             ClaimSnapshot.builder()
                 .claimReference(claimReference)
                 .snapshotVersion(0)
@@ -294,27 +283,6 @@ public class ExportService {
             .filter(Objects::nonNull)
             .min(LocalDateTime::compareTo)
             .orElse(null);
-    }
-
-    private Map<UUID, LocalDateTime> findPublishedDates(List<ClaimEntity> claims) {
-        List<UUID> caseIds = claims.stream()
-            .map(ClaimEntity::getPcsCase)
-            .filter(Objects::nonNull)
-            .map(PcsCaseEntity::getId)
-            .toList();
-        return claimActivityLogRepository
-            .findAllByPcsCase_IdInAndActivityType(caseIds, ClaimActivityType.DOCUMENTS_CREATED).stream()
-            .collect(Collectors.toMap(
-                logEntry -> logEntry.getPcsCase().getId(),
-                ClaimActivityLogEntity::getCreatedAt,
-                BinaryOperator.maxBy(Comparator.naturalOrder())
-            ));
-    }
-
-    private String resolvePublishedDate(LocalDateTime createdAt) {
-        return createdAt != null
-            ? createdAt.toInstant(ZoneOffset.UTC).toString()
-            : Instant.now(utcClock).toString();
     }
 
     private static String formatDateTime(LocalDateTime dateTime) {
