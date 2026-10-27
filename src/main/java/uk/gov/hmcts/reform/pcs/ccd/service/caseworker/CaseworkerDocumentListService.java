@@ -63,7 +63,7 @@ public class CaseworkerDocumentListService {
                                                          List<CounterClaimEntity> counterClaims,
                                                          DynamicStringList existingList) {
         List<RelatedSubmission> genAppSubmissions = getGenAppSubmissions(genApps);
-        List<RelatedSubmission> counterClaimSubmissions = getCounterClaimSubmissions(counterClaims, pcsCaseEntity);
+        List<RelatedSubmission> counterClaimSubmissions = getCounterClaimSubmissions(counterClaims);
 
         List<RelatedSubmission> relatedSubmissions = new ArrayList<>(genAppSubmissions);
         relatedSubmissions.addAll(counterClaimSubmissions);
