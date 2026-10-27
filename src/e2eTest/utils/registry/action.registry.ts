@@ -27,6 +27,7 @@ import {RecordAnswers} from "@utils/actions/custom-actions";
 import {RetryOnCallBackError} from '@utils/actions/element-actions/reTryOnCallBackError.action';
 import {YourSupportAction} from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
 import {RemoveFileAction} from '@utils/actions/element-actions/removeFile.action';
+import {FetchPINsAndValidateAccessCodeAPIAction} from '@utils/actions/custom-actions/fetchPINsAndValidateAccessCodeAPI.action';
 
 
 
@@ -45,7 +46,9 @@ export class ActionRegistry {
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
     ['createUserAndLogin', new LoginAction()],
+    ['createUser', new LoginAction()],
     ['login', new LoginAction()],
+    ['generateCitizenAccessToken', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
@@ -72,6 +75,10 @@ export class ActionRegistry {
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimCitizenAPI', new CreateCaseAPIAction()],
+    ['fetchPINsAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
+    ['validateAccessCodeAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
+    ['submitPossessionClaimResponseCitizenAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],

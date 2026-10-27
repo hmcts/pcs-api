@@ -27,12 +27,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.APPLICATIONS;
 
@@ -67,7 +69,7 @@ class SelectDocumentPageTest extends BasePageTest {
                 documentNameService,
                 partyService,
                 documentAssociationService,
-                new CaseworkerDocumentListService(partyService)
+                new CaseworkerDocumentListService(partyService, mock(FeatureToggleService.class))
             )
         ));
     }
