@@ -47,7 +47,6 @@ class CaseworkerDocumentListServiceTest {
             .build();
 
         DynamicStringList result = underTest.buildRelatedSubmissionsList(
-            PcsCaseEntity.builder().build(),
             List.of(ListValue.<GeneralApplication>builder()
                 .id(GEN_APP_ID)
                 .value(GeneralApplication.builder()
@@ -75,10 +74,7 @@ class CaseworkerDocumentListServiceTest {
             .claimSubmittedDate(LocalDateTime.of(2026, 8, 15, 10, 0))
             .build();
 
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-
         DynamicStringList result = underTest.buildRelatedSubmissionsList(
-            pcsCaseEntity,
             List.of(),
             List.of(counterClaim),
             null
