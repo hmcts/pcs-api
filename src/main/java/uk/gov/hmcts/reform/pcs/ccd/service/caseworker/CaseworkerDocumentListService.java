@@ -190,8 +190,7 @@ public class CaseworkerDocumentListService {
             || state == GenAppState.GEN_APP_ISSUED;
     }
 
-    private List<RelatedSubmission> getCounterClaimSubmissions(List<CounterClaimEntity> counterClaims,
-                                                               PcsCaseEntity pcsCaseEntity) {
+    private List<RelatedSubmission> getCounterClaimSubmissions(List<CounterClaimEntity> counterClaims) {
         return getOpenCounterClaims(counterClaims).stream()
             .map(counterClaimEntity -> {
                 Integer rank = counterClaimEntity.getRank();
