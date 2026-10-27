@@ -29,21 +29,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
-    static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
-        AccessProfile.CITIZEN,
-        AccessProfile.DEFENDANT,
-        AccessProfile.GA_DEFENDANT_SOLICITOR,
-        AccessProfile.CLAIMANT,
-        AccessProfile.PCS_SOLICITOR,
-        AccessProfile.GA_CLAIMANT_SOLICITOR,
-        AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE,
-        AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
-    };
     static final AccessProfile[] INTERNAL_TAB_ROLES = {
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
@@ -54,23 +39,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.WLU_ADMIN
     };
 
-    static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
-        AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE,
-        AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
-    };
-
-    static final AccessProfile[] JUDICIAL_NOTE_TAB_ROLES = {
-        AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE
-    };
-
     static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -78,19 +46,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     };
 
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
-
-    static final AccessProfile[] PAYMENT_HISTORY_TAB_ROLES = {
-        AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE,
-        AccessProfile.HEARING_CENTRE_TEAM_LEADER,
-        AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_TEAM_LEADER,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_TEAM_LEADER,
-        AccessProfile.WLU_ADMIN
-    };
 
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
@@ -160,6 +115,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildCaseListView(builder);
 
+        // Tabs carry no role list: field read access decides who sees them, and CCD drops a tab with no
+        // readable fields. forRoles writes one tab per profile, so a user holding two profiles sees the tab
+        // twice. Only Support keeps a role list, because its fields are readable more widely than the tab.
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
@@ -170,14 +128,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildCaseDetailsTab(builder);
 
         builder.tab("caseFileView", "Case File View")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
-            .forRoles(INTERNAL_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
 
@@ -189,19 +145,16 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getFeatureFlags);
 
         builder.tab("serviceRequest", "Service Request")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
         buildCaseNotesTab(builder);
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
         builder.tab("caseFlags", "Case flags")
-            .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
@@ -211,7 +164,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildJudicialNotesTab(builder);
       
         builder.tab("paymentHistory", "Payment History")
-            .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCasePaymentHistoryViewer);
 
@@ -242,7 +194,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
-            .forRoles(CASE_NOTE_TAB_ROLES)
             .label("caseReviewDatesMarkdownLabel", null, "${caseReviewDatesMarkdown}")
             .field("caseReviewDatesMarkdown", NEVER_SHOW)
             .field(PCSCase::getCaseNotes);
@@ -250,7 +201,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case parties", null, "# Case Parties")
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_ClaimantsDetails")
@@ -262,7 +212,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("summary", "Summary")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("summaryLegalRepresentativeMarkdownLabel", null,
                    "${summaryLegalRepresentativeMarkdown}")
             .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
@@ -302,7 +251,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseDetails", "Case Details")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case details", null, "# Case details")
             .field("detailsTab_ClaimDetails")
             .field("detailsTab_PropertyAddress")
@@ -385,7 +333,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("judicialNotes", "Judicial notes")
-            .forRoles(JUDICIAL_NOTE_TAB_ROLES)
             .label("judicialNotesMarkdownLabel", null, "${judicialNotesMarkdown}")
             .field("judicialNotesMarkdown", NEVER_SHOW);
     }

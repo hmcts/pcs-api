@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -164,8 +165,6 @@ class CaseTypeTest {
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
         assertThat(paymentHistoryTab.getFields()).extracting(TabField::getId)
             .containsExactly("casePaymentHistoryViewer");
-        assertThat(paymentHistoryTab.getForRoles())
-            .containsExactlyInAnyOrder(CaseType.PAYMENT_HISTORY_TAB_ROLES);
         assertThat(paymentHistoryTab.getShowCondition())
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
         assertThat(caseLinksTab.getFields()).extracting(TabField::getShowCondition)
@@ -177,16 +176,11 @@ class CaseTypeTest {
         assertThat(caseNotesTab.getFields()).extracting(TabField::getId).doesNotContain("caseReviewDates");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
-        assertThat(summaryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(casePartiesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseDetailsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseFileViewTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(serviceRequestTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseHistoryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.CASE_NOTE_TAB_ROLES);
-        assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(judicialNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.JUDICIAL_NOTE_TAB_ROLES);
+        // A role list writes one tab per profile, so a user holding two profiles would see the tab twice
+        assertThat(List.of(summaryTab, casePartiesTab, caseDetailsTab, caseFileViewTab, serviceRequestTab,
+                           caseHistoryTab, caseLinksTab, caseNotesTab, caseFlagsTab, judicialNotesTab,
+                           paymentHistoryTab))
+            .allSatisfy(tab -> assertThat(tab.getForRoles()).isEmpty());
         assertThat(judicialNotesTab.getShowCondition()).isNull();
         assertThat(supportTab.getForRoles())
             .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
@@ -205,7 +199,6 @@ class CaseTypeTest {
     @Test
     void shouldNotRepeatAnAccessProfileWithinATabRoleSet() {
         assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).doesNotHaveDuplicates();
-        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES).doesNotHaveDuplicates();
         assertThat(CaseType.INTERNAL_TAB_ROLES).doesNotHaveDuplicates();
     }
 
@@ -227,11 +220,6 @@ class CaseTypeTest {
             .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
     }
 
-    @Test
-    void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
-        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
-            .contains(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
-    }
 
     @Test
     void shouldShutterServiceWhenShutterFlagEnabled() {
