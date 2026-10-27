@@ -316,7 +316,6 @@ public class DocumentAmendService {
         details.setShowRelatedSubmissionsList(VerticalYesNo.from(showRelatedSubmissionsList));
         details.setRelatedSubmission(showRelatedSubmissionsList
             ? caseworkerDocumentListService.buildRelatedSubmissionsList(
-                pcsCase,
                 genApps,
                 counterClaims,
                 details.getRelatedSubmission())

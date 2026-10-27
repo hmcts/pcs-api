@@ -52,14 +52,12 @@ public class CaseworkerDocumentListService {
             || !getOpenCounterClaims(counterClaims).isEmpty();
     }
 
-    public DynamicStringList buildRelatedSubmissionsList(PcsCaseEntity pcsCaseEntity,
-                                                         List<ListValue<GeneralApplication>> genApps,
+    public DynamicStringList buildRelatedSubmissionsList(List<ListValue<GeneralApplication>> genApps,
                                                          List<CounterClaimEntity> counterClaims) {
-        return buildRelatedSubmissionsList(pcsCaseEntity, genApps, counterClaims, null);
+        return buildRelatedSubmissionsList(genApps, counterClaims, null);
     }
 
-    public DynamicStringList buildRelatedSubmissionsList(PcsCaseEntity pcsCaseEntity,
-                                                         List<ListValue<GeneralApplication>> genApps,
+    public DynamicStringList buildRelatedSubmissionsList(List<ListValue<GeneralApplication>> genApps,
                                                          List<CounterClaimEntity> counterClaims,
                                                          DynamicStringList existingList) {
         List<RelatedSubmission> genAppSubmissions = getGenAppSubmissions(genApps);
@@ -190,7 +188,7 @@ public class CaseworkerDocumentListService {
             || state == GenAppState.GEN_APP_ISSUED;
     }
 
-    private List<RelatedSubmission> getCounterClaimSubmissions(List<CounterClaimEntity> counterClaims) {
+    private static List<RelatedSubmission> getCounterClaimSubmissions(List<CounterClaimEntity> counterClaims) {
         return getOpenCounterClaims(counterClaims).stream()
             .map(counterClaimEntity -> {
                 Integer rank = counterClaimEntity.getRank();
