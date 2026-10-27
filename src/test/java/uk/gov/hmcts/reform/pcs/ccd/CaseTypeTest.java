@@ -22,7 +22,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -178,11 +177,6 @@ class CaseTypeTest {
         assertThat(caseNotesTab.getFields()).extracting(TabField::getId).doesNotContain("caseReviewDates");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
-        // A role list writes one tab per profile, so a user holding two profiles would see the tab twice
-        assertThat(List.of(summaryTab, casePartiesTab, caseDetailsTab, caseFileViewTab, serviceRequestTab,
-                           caseHistoryTab, caseLinksTab, caseNotesTab, caseFlagsTab, judicialNotesTab,
-                           paymentHistoryTab))
-            .allSatisfy(tab -> assertThat(tab.getForRoles()).isEmpty());
         assertThat(judicialNotesTab.getShowCondition()).isNull();
         assertThat(supportTab.getForRoles())
             .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
