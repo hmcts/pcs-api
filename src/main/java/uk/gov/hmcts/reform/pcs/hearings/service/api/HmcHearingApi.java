@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingValuesRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.GetHearingsResponse;
 
@@ -61,5 +62,13 @@ public interface HmcHearingApi {
         @RequestHeader(value = HMCTS_DEPLOYMENT_ID, required = false) String hmctsDeploymentId,
         @PathVariable(ID) String id,
         @RequestParam(name = "isValid", required = false) Boolean isValid
+    );
+
+    @PostMapping(value = HEARING_ENDPOINT + "/loadServiceHearingValues", consumes = MediaType.APPLICATION_JSON_VALUE)
+    HearingResponse loadServiceHearingValues(
+        @RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
+        @RequestHeader(value = HMCTS_DEPLOYMENT_ID, required = false) String hmctsDeploymentId,
+        @RequestBody HearingValuesRequest hearingPayload
     );
 }
