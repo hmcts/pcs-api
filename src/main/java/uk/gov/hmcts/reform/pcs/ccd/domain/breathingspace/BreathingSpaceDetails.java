@@ -33,7 +33,7 @@ public class BreathingSpaceDetails {
     private LocalDate startDate;
 
     @CCD(
-        label = "What type of Breathing Space is it?",
+        label = "Which type of breathing space is it?",
         hint = "Standard breathing space can only be used on a possession claim on the grounds of rent arrears"
     )
     private BreathingSpaceType type;
