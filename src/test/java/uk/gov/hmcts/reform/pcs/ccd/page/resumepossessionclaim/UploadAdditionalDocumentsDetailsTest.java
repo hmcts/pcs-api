@@ -37,6 +37,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         // Given
         AdditionalDocument doc = AdditionalDocument.builder()
                 .description("Valid description")
+                .document(Document.builder().filename("evidence.pdf").build())
                 .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -76,6 +77,21 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     void shouldReturnRequiredErrorWhenNoAdditionalDocumentUploaded() {
         // Given
         PCSCase caseData = PCSCase.builder().build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isEqualTo(ADDITIONAL_DOCUMENT_REQUIRED);
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenAdditionalDocumentRowHasNoFile() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder()
+                 .value(new AdditionalDocument()).build()))
+            .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
