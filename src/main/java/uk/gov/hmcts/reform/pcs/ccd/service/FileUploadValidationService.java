@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
  * Service for validating uploaded documents against the allowed file type allowlist.
  * Any file whose extension is not in {@link #ALLOWED_FILE_EXTENSIONS} is rejected.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileUploadValidationService {
@@ -138,6 +140,10 @@ public class FileUploadValidationService {
         }
         if (CollectionUtils.isEmpty(additionalDocuments)) {
             return List.of(requiredMessage);
+        }
+        if (ListValueUtils.unwrapListItems(additionalDocuments).stream()
+            .anyMatch(doc -> doc == null || doc.getDocument() == null)) {
+            log.info("Triggering extra validation checks: row found without an uploaded file");
         }
         return validateAdditionalDocuments(additionalDocuments);
     }
