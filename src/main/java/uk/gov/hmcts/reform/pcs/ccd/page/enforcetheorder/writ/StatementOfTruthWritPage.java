@@ -38,7 +38,7 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .label(
                 "statementOfTruthWrit-certification-details",
                 """
-                <div class="govuk-!-margin-left-8 govuk-!-margin-top-0">
+                <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
                     <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-0">
                         <li>
                             The details I have given are correct and that to my knowledge
