@@ -33,13 +33,10 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
             .pageLabel("Confirm if these documents relate to an existing application")
             .showCondition(fieldEquals("lrDocUpload_ShowExistingApplicationPage", VerticalYesNo.YES))
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .readonly(LegalRepDocumentUploadDetails::getShowExistingApplicationPage, NEVER_SHOW, true)
+            .readonly(LegalRepDocumentUploadDetails::getShowExistingApplicationPage, NEVER_SHOW)
             .done()
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", WITHOUT_NOTICE_APPLICATION_GUIDANCE)
-            .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .readonly(LegalRepDocumentUploadDetails::getExistingApplicationDocumentLinks, NEVER_SHOW, true)
-            .done()
             .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .label(pageKey + "-application-links",
                    "${lrDocUpload_ExistingApplicationDocumentLinks}",
