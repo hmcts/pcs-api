@@ -132,10 +132,20 @@ public class DefencePackSelector {
     private DocumentEntity counterClaimDocument(PcsCaseEntity pcsCase, PartyEntity defendant) {
         return pcsCase.getDocuments().stream()
             .filter(document -> document.getType() == DocumentType.COUNTERCLAIM)
-            .filter(document -> document.getParty() != null
-                && document.getParty().getId().equals(defendant.getId()))
+            .filter(document -> belongsToCounterClaimDefendant(document, defendant))
             .findFirst()
             .orElse(null);
+    }
+
+    // The form is linked through counter_claim_id. party_id is usually set as well, but a row that only
+    // has the counterclaim link must still go out on the follow-up pack.
+    private boolean belongsToCounterClaimDefendant(DocumentEntity document, PartyEntity defendant) {
+        if (document.getParty() != null && document.getParty().getId().equals(defendant.getId())) {
+            return true;
+        }
+        return document.getCounterClaim() != null
+            && document.getCounterClaim().getParty() != null
+            && document.getCounterClaim().getParty().getId().equals(defendant.getId());
     }
 
     private boolean belongsToDefendant(DocumentEntity document, PartyEntity defendant) {
