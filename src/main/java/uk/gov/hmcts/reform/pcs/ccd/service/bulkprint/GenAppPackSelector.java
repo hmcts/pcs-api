@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -22,13 +21,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects gen-app envelopes per recipient. Issued with-notice defendant CUI GAs with a submission PDF go to
- * every claim party whose contact preferences include post (or are unset). Without-notice GAs,
- * non-defendant-applicant GAs, ExUI/caseworker GAs produce no candidates.
+ * Selects gen-app envelopes per recipient. Issued with-notice defendant applications (citizen or legal
+ * representative) with a submission PDF go to every claim party whose contact preferences include post
+ * (or are unset). Without-notice GAs, non-defendant-applicant GAs and caseworker-entered GAs produce no
+ * candidates.
  */
 @Service
 public class GenAppPackSelector {
@@ -96,19 +95,16 @@ public class GenAppPackSelector {
     }
 
     private boolean isDefendantCuiWithNoticeAndDocument(GenAppEntity genApp, Set<UUID> defendantIds) {
-        return isIssuedWithNoticeAndDocument(genApp) && isDefendantCuiGenApp(genApp, defendantIds);
+        return isIssuedWithNoticeAndDocument(genApp) && isDefendantSubmittedGenApp(genApp, defendantIds);
     }
 
-    private boolean isDefendantCuiGenApp(GenAppEntity genApp, Set<UUID> defendantIds) {
+    private boolean isDefendantSubmittedGenApp(GenAppEntity genApp, Set<UUID> defendantIds) {
         PartyEntity applicant = genApp.getParty();
         if (applicant == null || !defendantIds.contains(applicant.getId())) {
             return false;
         }
-        if (genApp.getApplicationReceivedDate() != null) {
-            return false;
-        }
-        StatementOfTruthEntity statementOfTruth = genApp.getStatementOfTruth();
-        return statementOfTruth == null || !isPopulated(statementOfTruth.getFirmName());
+        // Caseworker entry sets a received date. Citizen and legal representative submissions do not.
+        return genApp.getApplicationReceivedDate() == null;
     }
 
     private boolean isIssuedWithNoticeAndDocument(GenAppEntity genApp) {
