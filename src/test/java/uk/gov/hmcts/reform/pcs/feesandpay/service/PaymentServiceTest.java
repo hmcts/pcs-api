@@ -169,11 +169,10 @@ class PaymentServiceTest {
             // Given
             FeeDetails feeDetails = createFeeDetails();
             paymentsClientDependencies(feeDetails);
-            PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
-
             when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
                 .thenReturn(createPaymentServiceResponse());
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+            PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
 
             // When
             underTest.createServiceRequest(feesAndPayTaskData);
@@ -183,9 +182,9 @@ class PaymentServiceTest {
             verify(feePaymentRepository).save(captor.capture());
             FeePaymentEntity saved = captor.getValue();
 
+            assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
-            assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
         }
 
         @Test
