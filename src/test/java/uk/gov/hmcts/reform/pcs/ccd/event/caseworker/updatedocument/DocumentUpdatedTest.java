@@ -39,7 +39,7 @@ class DocumentUpdatedTest extends BaseEventTest {
     void shouldRegisterSystemEventWithOnlyInternalAccess() {
         assertThat(configuredEvent.getId()).isEqualTo("DocumentUpdated");
         assertThat(getEventFieldIds()).isEmpty();
-        assertThat(configuredEvent.getGrants().keySet()).containsExactlyInAnyOrder(DOCUMENT_MOVE_ROLES);
+        assertThat(configuredEvent.getGrants().keySet()).containsExactlyInAnyOrderElementsOf(DOCUMENT_MOVE_ROLES);
         assertThat(configuredEvent.getGrants().values()).containsOnly(Permission.R);
     }
 

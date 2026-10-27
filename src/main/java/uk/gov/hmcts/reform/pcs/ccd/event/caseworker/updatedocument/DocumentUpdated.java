@@ -31,7 +31,7 @@ public class DocumentUpdated implements CCDConfig<PCSCase, State, UserRole> {
         configBuilder.decentralisedEvent(EventId.DocumentUpdated.name(), this::submit)
             .forAllStates()
             .name("Document updated")
-            .grantHistoryOnly(DOCUMENT_MOVE_ROLES);
+            .grantHistoryOnly(DOCUMENT_MOVE_ROLES.toArray(UserRole[]::new));
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {

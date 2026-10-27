@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
+import java.util.Set;
+
 public final class DocumentMoveRoles {
 
-    public static final UserRole[] DOCUMENT_MOVE_ROLES = {
+    public static final Set<UserRole> DOCUMENT_MOVE_ROLES = Set.of(
         UserRole.JUDGE,
         UserRole.FEE_PAID_JUDGE,
         UserRole.CIRCUIT_JUDGE,
@@ -13,7 +15,7 @@ public final class DocumentMoveRoles {
         UserRole.CTSC_TEAM_LEADER,
         UserRole.WLU_ADMIN,
         UserRole.WLU_TEAM_LEADER
-    };
+    );
 
     private DocumentMoveRoles() {
     }
