@@ -30,7 +30,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes, checkFullPartyDetails, makeAnOrder
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -88,6 +88,9 @@ export class CaseManagementAction implements IAction {
       ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
       ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
+      ['inputProvidedInRecitals',() => this.inputProvidedInRecitals(fieldName as actionRecord)],
+      ['verifySavedDraftOrderDetails', () => this.verifySavedDraftOrderDetails(page)],
+      ['makeAnOrderDetailsProvided', () => this.makeAnOrderDetailsProvided(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -909,6 +912,7 @@ export class CaseManagementAction implements IAction {
       `✅ ${judicialNotes.table} validation passed`
     );
   }
+
     private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
       let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
       const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
@@ -923,6 +927,52 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
+  private async inputProvidedInRecitals(inputData: actionRecord): Promise<void> {
+    let submitPayLoad = inputData.submitPayload as Record<string, any>;
+    await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
+    });
+    await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
+    await performAction('check', makeAnOrder.recitalCheckBox);
+    await performAction('inputText', inputData.label, CaseManagementCommonUtils.generateRandomString(inputData.recitalInput as number));
+    await performAction('clickButton', inputData.button);
+  }
+
+  private async verifySavedDraftOrderDetails(page: Page): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
+    });
+    await expect(
+      page.getByRole('checkbox', { name: makeAnOrder.recitalCheckBox })
+    ).toBeChecked();
+  }
+
+  private async makeAnOrderDetailsProvided (orderData: actionRecord ): Promise<void> {
+    let submitPayLoad = orderData.submitPayload as Record<string, any>;
+    await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
+    });
+    await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
+    await performAction('clickRadioButton', orderData.claimantRadioOption);
+    await performAction('clickRadioButton', orderData.defandantRadioOption);
+    await performAction('check', makeAnOrder.recitalCheckBox);
+    await performAction('inputText', orderData.label, CaseManagementCommonUtils.generateRandomString(orderData.recitalInput as number));
+    await performAction('clickRadioButton', { question: orderData.question, option: orderData.option });
+    await performAction('clickRadioButton', { question: orderData.question1, option: orderData.option1 });
+    await performAction('check', {question: orderData.question2, option: orderData.option2 });
+    await performAction('check', makeAnOrder.costCheckBox);
+    await performAction('clickRadioButton', { question: orderData.question3, option: orderData.option3 });
+    }
+
+  private async verifyPreviewSectionNumberedList(): Promise<void> {
+
+  }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
@@ -1271,7 +1321,7 @@ export class CaseManagementAction implements IAction {
 
   private async caseTabReviewDateTableData(page: Page, mainTable: string, subTable?: string) {
 
-    
+
     const summaryLocator =  `//h2[normalize-space()="${mainTable}"]
                              /ancestor::div[@class="govuk-summary-card"]
                              //dl[@class="govuk-summary-list"]`;
