@@ -32,10 +32,13 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
+import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
+import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.io.IOException;
@@ -56,7 +59,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(OrderAnnotation.class)
-class PostAndEmailNotificationsTest extends CftlibTest {
+class BulkPrintPacksTest extends CftlibTest {
 
     private static final long INITIAL_DRAFT_VERSION = 0L;
     @Autowired
@@ -69,6 +72,8 @@ class PostAndEmailNotificationsTest extends CftlibTest {
     private CaseDocumentService caseDocumentService;
     @Autowired
     private AccessCodeService accessCodeService;
+    @Autowired
+    private FeePaymentService feePaymentService;
     @Autowired
     private TestingSupportClient testingSupportClient;
     @Autowired
@@ -111,7 +116,7 @@ class PostAndEmailNotificationsTest extends CftlibTest {
                                                                             2
         );
         assertThat(defendantLetters)
-            .map(PostAndEmailNotificationsTest::getRecipientName)
+            .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
     }
 
@@ -134,7 +139,7 @@ class PostAndEmailNotificationsTest extends CftlibTest {
 
         List<Letter> letters = mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, 2);
         assertThat(letters)
-            .map(PostAndEmailNotificationsTest::getRecipientName)
+            .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
@@ -156,7 +161,7 @@ class PostAndEmailNotificationsTest extends CftlibTest {
     @Test
     @Order(3)
     void verifyResponsePackWithCounterClaim() throws IOException {
-        Instant testStart = Instant.now();
+        final Instant testStart = Instant.now();
 
         List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference, 2);
         PartyAccessCode partyAccessCode2 = partyAccessCodes.get(1);
@@ -172,6 +177,8 @@ class PostAndEmailNotificationsTest extends CftlibTest {
 
         submitDefendantResponse(emailAddress, counterClaim, defendant2Token);
 
+        payForCounterclaim();
+
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.DEFENDANT_RESPONSE, testStart, 1);
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.COUNTERCLAIM, testStart, 1);
 
@@ -179,7 +186,7 @@ class PostAndEmailNotificationsTest extends CftlibTest {
 
         List<Letter> letters = mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, 2);
         assertThat(letters)
-            .map(PostAndEmailNotificationsTest::getRecipientName)
+            .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
@@ -254,6 +261,14 @@ class PostAndEmailNotificationsTest extends CftlibTest {
             defendantToken
         );
     }
+
+    private void payForCounterclaim() {
+        List<FeePaymentSummary> feePaymentSummaries = feePaymentService
+            .waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE);
+
+        feePaymentService.simulatePayments(caseReference, feePaymentSummaries);
+    }
+
 
     private static PDDocument findPackPdf(String recipientName, List<Letter> letters) throws IOException {
         Letter packLetter = findLetterSentTo(recipientName, letters);
