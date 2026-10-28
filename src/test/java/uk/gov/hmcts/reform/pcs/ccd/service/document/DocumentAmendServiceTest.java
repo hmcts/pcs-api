@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -151,6 +153,30 @@ class DocumentAmendServiceTest {
         assertThat(amendDetails.getSelectedDocumentIssueDate()).isEqualTo(issueDate);
         assertThat(amendDetails.getIssueDate()).isEqualTo(issueDate);
         assertThat(amendDetails.getRelatedParty().getValue().getCode()).isEqualTo(PARTY_ID);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "Repair quote CC1 - Defendant 2.pdf, Repair quote",
+        "Repair quote 16042026 CC12 - Claimant 1.docx, Repair quote",
+        "Repair quote CC1 - Defendant 2, Repair quote",
+        "Repair quote CC1.pdf, Repair quote",
+        "Repair quote - Defendant 2.pdf, Repair quote",
+        "CC1 repair quote CC2 - Defendant 2.pdf, CC1 repair quote",
+        "Repair CC1 quote CC2 - Defendant 2.pdf, Repair CC1 quote",
+        "Repair quote GA2 - Defendant 2.pdf, Repair quote"
+    })
+    void shouldExcludeGeneratedSuffixesFromEditableFilename(String storedFilename, String editableFilename) {
+        documentEntity.setFileName(storedFilename);
+        DocumentAmendDetails details = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE, PCSCase.builder().documentAmendDetails(details).build());
+
+        assertThat(details.getSelectedDocumentBaseFileName()).isEqualTo(editableFilename);
+        assertThat(details.getAmendedFileName()).isEqualTo(editableFilename);
     }
 
     @Test
