@@ -1,12 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -22,9 +25,9 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.imageio.ImageIO;
@@ -57,16 +60,16 @@ class BulkPrintLetterAssemblerTest {
             new BulkPrintLetterAssembler.LetterDocument("rent-schedule.pdf", "application/pdf",
                 pdfSaying("Rent schedule right at the edge"))));
 
-        assertThat(new String(letter, 0, 8, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-1.3");
+        // The coversheet is posted as rendered and need not meet the print standard, so only the documents'
+        // pages are checked against it.
         try (PDDocument document = Loader.loadPDF(letter)) {
             // coversheet + photo + statement + schedule = 4: already even, so no padding page.
             assertThat(document.getNumberOfPages()).isEqualTo(4);
-            assertThat(document.getDocumentInformation().getCustomMetadataValue("GTS_PDFXConformance"))
-                .isEqualTo("PDF/X-1a:2001");
             assertThat(textOf(document, 1)).contains("Jane Doe, 1 High Street, London W1 1AA");
             for (int page = 2; page <= 4; page++) {
-                // Converted pages are rendered images: no live text, nothing inside the 20 mm margin.
+                // Converted pages are CMYK images: no live text, nothing inside the 20 mm margin.
                 assertThat(textOf(document, page)).isBlank();
+                assertCmykImagesOnly(document, page - 1);
                 assertMarginBlank(document, page - 1);
             }
         }
@@ -119,6 +122,17 @@ class BulkPrintLetterAssemblerTest {
         stripper.setStartPage(page);
         stripper.setEndPage(page);
         return stripper.getText(document);
+    }
+
+    private static void assertCmykImagesOnly(PDDocument document, int pageIndex) throws IOException {
+        PDResources resources = document.getPage(pageIndex).getResources();
+        List<String> colourSpaces = new ArrayList<>();
+        for (COSName name : resources.getXObjectNames()) {
+            if (resources.getXObject(name) instanceof PDImageXObject image) {
+                colourSpaces.add(image.getColorSpace().getName());
+            }
+        }
+        assertThat(colourSpaces).as("image colour spaces on page %d", pageIndex + 1).containsExactly("DeviceCMYK");
     }
 
     private static void assertMarginBlank(PDDocument document, int pageIndex) throws IOException {

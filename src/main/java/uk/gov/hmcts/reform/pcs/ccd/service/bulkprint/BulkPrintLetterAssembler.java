@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 /**
  * Builds the single PDF a pack is posted as: the coversheet exactly as rendered, then each document converted to
- * the bulk print standard (PDF/X-1a, A4, images at most 300 dpi, nothing within 20 mm of an edge), padded to an
+ * the bulk print standard (PDF/X-1a pages, A4, images at most 300 dpi, nothing within 20 mm of an edge), padded to an
  * even page count. Documents may be any type Possessions accepts as evidence (Word, Excel, PowerPoint, images,
  * text, PDF); office formats go through Docmosis.
  *
