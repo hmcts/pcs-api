@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -136,6 +137,12 @@ public class PcsCaseEntity {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    private String caseTypeKey;
+
+    private String caseSubtypeKey;
+
+    private LocalDateTime lastModifiedDatetime;
 
     public ClaimEntity getMainClaim() {
         return !claims.isEmpty() ? claims.getFirst() : null;
