@@ -40,6 +40,25 @@
     <cve>CVE-2026-41178</cve>
     <cve>CVE-2026-54285</cve>
   </suppress>
+  <suppress until="2026-11-15">
+    <notes><![CDATA[
+    HDPI-9061: false positive. CVE-2026-33117 concerns the Azure Key Vault Keys library
+    (fixed in 4.10.6); the azure_sdk_for_java CPE is matched against unrelated Azure SDK
+    modules. PCS uses only azure-messaging-servicebus and its core dependencies.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure/azure-(core|core-amqp|core-http-netty|json)@.*$</packageUrl>
+    <cve>CVE-2026-33117</cve>
+  </suppress>
+  <suppress until="2026-11-15">
+    <notes><![CDATA[
+    HDPI-9061: temporary. CVE-2026-47874 affects the Reactor Netty HTTP server (pipelined
+    request memory use). PCS uses reactor-netty only as the HTTP client of the Azure SDK and
+    serves HTTP through Tomcat. The fixed release 1.2.19 is not yet on Maven Central.
+    Remove when it is available.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.projectreactor\.netty/reactor-netty-(core|http)@.*$</packageUrl>
+    <cve>CVE-2026-47874</cve>
+  </suppress>
   <!--End of false positives section -->
 
   <suppress until="2026-11-15">
