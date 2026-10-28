@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CCDDefinitionGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.definition.TabCollapser;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLib;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLibConfigurer;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.rse.ccd.lib.api.CFTLibConfigurer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -68,6 +70,7 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         // Generate CCD definitions
         configWriter.generateAllCaseTypesToJSON(new File("build/definitions"));
+        TabCollapser.collapse(Path.of("build/definitions"));
 
         // Import CCD definitions
         lib.importJsonDefinition(new File("build/definitions/" + CaseType.getCaseType()));

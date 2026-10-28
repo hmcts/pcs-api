@@ -586,6 +586,17 @@ project.tasks.named("generateCCDConfig") {
   environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
   environment 'ENABLE_TESTING_SUPPORT', 'false'
   environment 'DB_SCHEDULER_EXECUTOR_ENABLED', 'false'
+  finalizedBy 'collapseCcdTabs'
+}
+
+// Collapse the per-role tab copies the SDK writes into one tab each; see TabCollapser.
+tasks.register('collapseCcdTabs', JavaExec) {
+  group = 'CCD tasks'
+  description = 'Collapses the per-role CaseTypeTab copies in the generated CCD definition into one tab each'
+  mainClass = 'uk.gov.hmcts.reform.pcs.ccd.definition.TabCollapser'
+  classpath = sourceSets.main.runtimeClasspath
+  args ccd.configDir.get().asFile.absolutePath
+  mustRunAfter 'generateCCDConfig'
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
