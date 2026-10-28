@@ -468,7 +468,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'send-letter-client', version: '5.1.1'
   // Bulk print: converts pack documents to PDF/X-1a. Pinned to a pre-release build of the CCD SDK's 7.x line
   // until the module is released; it has no dependency on the rest of the SDK.
-  implementation group: 'com.github.hmcts', name: 'document-conversion', version: 'document-conversion-7x-20261028-3'
+  implementation group: 'com.github.hmcts', name: 'document-conversion', version: 'document-conversion-7x-20261028-4'
   implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.8'
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'

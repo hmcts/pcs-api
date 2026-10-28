@@ -122,6 +122,27 @@ class BulkPrintLetterAssemblerTest {
         }
     }
 
+    @Test
+    @DisplayName("Compares letter documents by their content, and never logs it")
+    void shouldCompareLetterDocumentsByContent() {
+        BulkPrintLetterAssembler.LetterDocument document =
+            new BulkPrintLetterAssembler.LetterDocument("claim.pdf", "application/pdf", "claim".getBytes());
+        BulkPrintLetterAssembler.LetterDocument sameContent =
+            new BulkPrintLetterAssembler.LetterDocument("claim.pdf", "application/pdf", "claim".getBytes());
+        BulkPrintLetterAssembler.LetterDocument otherContent =
+            new BulkPrintLetterAssembler.LetterDocument("claim.pdf", "application/pdf", "other".getBytes());
+
+        assertThat(document).isEqualTo(sameContent).hasSameHashCodeAs(sameContent)
+            .isNotEqualTo(otherContent)
+            .isNotEqualTo(new BulkPrintLetterAssembler.LetterDocument("other.pdf", "application/pdf",
+                "claim".getBytes()))
+            .isNotEqualTo(new BulkPrintLetterAssembler.LetterDocument("claim.pdf", "image/png", "claim".getBytes()))
+            .isNotEqualTo("claim.pdf");
+        assertThat(document).hasToString("LetterDocument[fileName=claim.pdf, contentType=application/pdf, 5 bytes]");
+        assertThat(new BulkPrintLetterAssembler.LetterDocument(null, null, null))
+            .hasToString("LetterDocument[fileName=null, contentType=null, 0 bytes]");
+    }
+
     private DocumentConverter converterWithDocmosis() {
         DocmosisRenderService docmosis = (source, fileName, mediaType) -> {
             docmosisCalls.add(fileName + " " + mediaType);

@@ -92,10 +92,10 @@ public class BulkPrintLetterAssembler {
 
         @Override
         public boolean equals(Object other) {
-            return other instanceof LetterDocument that
-                && Objects.equals(fileName, that.fileName)
-                && Objects.equals(contentType, that.contentType)
-                && Arrays.equals(content, that.content);
+            return other instanceof LetterDocument(String otherName, String otherType, byte[] otherContent)
+                && Objects.equals(fileName, otherName)
+                && Objects.equals(contentType, otherType)
+                && Arrays.equals(content, otherContent);
         }
 
         @Override
