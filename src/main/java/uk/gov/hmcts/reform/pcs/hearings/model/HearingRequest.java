@@ -12,7 +12,7 @@ public class HearingRequest {
 
     private HearingDetails hearingDetails;
 
-    private ServiceHearingValues caseDetails;
+    private HmcCaseDetails caseDetails;
 
     private List<PartyDetails> partyDetails;
 
