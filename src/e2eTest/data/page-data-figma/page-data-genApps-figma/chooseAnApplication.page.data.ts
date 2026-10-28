@@ -16,4 +16,11 @@ export const chooseAnApplication = {
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
+  errorValidation: `YES`,//set it to `NO` before raising a PR
+  errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`, five: `moneyFieldAndRadioOption` },
+  errorValidationField: {
+    errorRadioOption: [
+      { type: `none`, input: ``, errInlineMessage: `Field is required`,errMessage:`What do you want to apply for? is required` },
+    ],
+  },
 };

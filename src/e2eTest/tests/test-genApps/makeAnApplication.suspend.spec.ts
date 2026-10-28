@@ -13,10 +13,9 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  askTheCourtToMakeAnOrder, askTheCourtToSuspendAnOrder, checkYourAnswersGenApps, chooseAnApplication,
+  askTheCourtToSuspendAnOrder, checkYourAnswersGenApps, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
-  hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
+  helpPayingTheFee, selectParty,
   statementOfTruth, uploadDocumentsToSupportDefendantsApplication, whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
@@ -70,6 +69,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
+    //await performAction('errorValidationChooseAnApplicationPage', chooseAnApplication.errorValidation);
     await performAction('chooseAnApplication', {
       question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
       option: chooseAnApplication.suspendTheEvictionRadioOption,
