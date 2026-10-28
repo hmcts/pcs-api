@@ -35,7 +35,7 @@ public class BreathingSpaceApplicationPage implements CcdPageConfiguration {
             .complex(PCSCase::getBreathingSpaceDetails)
             .optional(BreathingSpaceDetails::getReferenceNumber)
             .optional(BreathingSpaceDetails::getStartDate)
-            .mandatory(BreathingSpaceDetails::getType)
+            .optional(BreathingSpaceDetails::getType)
             .optional(BreathingSpaceDetails::getExpectedEndDate,
                       fieldEquals("breathingSpace_Type", BreathingSpaceType.STANDARD))
             .done();
