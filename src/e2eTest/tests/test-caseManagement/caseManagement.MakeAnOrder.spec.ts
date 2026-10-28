@@ -45,13 +45,13 @@ test.use({ storageState: undefined })
           tag: ['@CM, @regression'],
           annotation: [
             {type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-7447`},
-            {type: 'ac', description: 'AC1 to AC7'},
+            {type: 'ac', description: 'AC1 and AC2'},
           ],
         },
         async () => {
           await test.step(`Given the user selects the "Make an Order" event from the event dropdown`, async () => {
             await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
-            await performValidation('mainHeader', makeAnOder.mainHeader);
+            await  performValidation('mainHeader', makeAnOder.mainHeader);
           });
 
           await test.step(`When the user provides input in Recitals section and click Save and Draft button`, async () => {
