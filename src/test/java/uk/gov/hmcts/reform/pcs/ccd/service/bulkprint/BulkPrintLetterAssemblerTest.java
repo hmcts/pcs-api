@@ -96,12 +96,30 @@ class BulkPrintLetterAssemblerTest {
         BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(
             DocumentConverter.builder().tempDirectory(tempDir).build());
         byte[] coversheet = pdfSaying("Coversheet");
+        List<BulkPrintLetterAssembler.LetterDocument> documents = List.of(
+            new BulkPrintLetterAssembler.LetterDocument("statement.docx", DOCX, "docx".getBytes()));
 
-        assertThatThrownBy(() -> underTest.assemble("GEN-00-IN0 1234-5678-9012-3456", coversheet, List.of(
-            new BulkPrintLetterAssembler.LetterDocument("statement.docx", DOCX, "docx".getBytes()))))
+        assertThatThrownBy(() -> underTest.assemble("GEN-00-IN0 1234-5678-9012-3456", coversheet, documents))
             .isInstanceOf(BulkPrintMergeException.class)
             .hasMessageContaining("statement.docx")
             .hasCauseInstanceOf(ConversionException.class);
+    }
+
+    @Test
+    @DisplayName("Converts a document stored without a file name, as the defendant access code letter is")
+    void shouldConvertADocumentWithNoFileName() throws IOException {
+        BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(converterWithDocmosis());
+
+        byte[] letter = underTest.assemble("CPD-01-IN1 1234-5678-9012-3456", pdfSaying("Coversheet"), List.of(
+            new BulkPrintLetterAssembler.LetterDocument(null, "application/pdf", pdfSaying("Your access code")),
+            new BulkPrintLetterAssembler.LetterDocument(" ", null, pdfSaying("Claim form"))));
+
+        try (PDDocument document = Loader.loadPDF(letter)) {
+            // coversheet + access code + claim, padded to 4.
+            assertThat(document.getNumberOfPages()).isEqualTo(4);
+            assertCmykImagesOnly(document, 1);
+            assertCmykImagesOnly(document, 2);
+        }
     }
 
     private DocumentConverter converterWithDocmosis() {
