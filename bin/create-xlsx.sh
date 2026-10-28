@@ -20,11 +20,9 @@ for case_dir in "$run_dir"/build/definitions/*/; do
 
   ccd_definition_file="CCD_Definition_${case_type}_${env}.xlsx"
 
-if [ -n "${CI}" ]; then
-  export AZURE_CONFIG_DIR=/opt/jenkins/.azure-nonprod
-  az login --identity >/dev/null
-fi
-
+#comment out two lines below to run locally without Azure login
+export AZURE_CONFIG_DIR=/opt/jenkins/.azure-nonprod
+az login --identity >/dev/null
 az acr login --name hmctsprod --subscription DCD-CNP-PROD
 
 docker run --rm --name "json2xlsx" \
