@@ -415,3 +415,5 @@ To override a flag in CftLib tests only, set the **system** property for that ta
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+<!-- DO NOT MERGE: dummy preview for pcs-frontend PR 2091 (HDPI-8226 footer links) -->
