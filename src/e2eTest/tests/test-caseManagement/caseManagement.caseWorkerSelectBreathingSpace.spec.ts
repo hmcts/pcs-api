@@ -62,10 +62,6 @@ test.describe('Case management - Case worker selects Breathing Space', () => {
         await performAction('clickButton', caseSummary.go);
       });
 
-      await test.step('Then the user is taken to the Enter Breathing Space page', async () => {
-        await performValidation('mainHeader', enterBreathingSpace.mainHeader);
-      });
-
       await test.step('Then the user is directed to the "Enter breathing space" screen', async () => {
         await performValidation('mainHeader', enterBreathingSpace.mainHeader);
         await performAction(
