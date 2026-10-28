@@ -90,10 +90,16 @@ withNightlyPipeline(type, product, component) {
   handleEnvironmentSetting()
   loadVaultSecrets(["pcs-${env.ENVIRONMENT}": pcsE2eVaultSecrets])
   enableFortifyScan()
+  enableE2eTest()
+  env.SKIP_LIBRARY_E2E = 'true'
+
+  afterAlways('E2eTest') {
+    runE2eMatrix()
+  }
 
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    runE2eMatrix()
+
   }
 }
 
