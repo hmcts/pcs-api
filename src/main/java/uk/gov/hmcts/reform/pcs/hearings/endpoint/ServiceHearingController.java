@@ -7,6 +7,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +19,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingValuesRequest;
-import uk.gov.hmcts.reform.pcs.hearings.model.CaseDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 //import uk.gov.hmcts.reform.civil.service.hearings.HearingValuesService;
+import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 @Tag(name = "Hearing Values Controller")
 @Slf4j
 @RestController
 @AllArgsConstructor
-public class HearingValuesController {
+public class ServiceHearingController {
 
     //private final HearingValuesService hearingValuesService;
 
@@ -35,31 +41,33 @@ public class HearingValuesController {
         @ApiResponse(responseCode = "401", description = "Incorrect authorisation"),
         @ApiResponse(responseCode = "400", description = "Bad Request")
     })
-    public ResponseEntity<CaseDetails> getHearingValues(
+    public ResponseEntity<ServiceHearingValues> getHearingValues(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @NonNull @RequestBody HearingValuesRequest requestDetails) throws Exception {
 
-        log.info(
-            "\n\n\n\n\n\nReceived serviceHearingValues request from XUI: caseReference={}, hearingId={}\n\n\n\n\n\n",
-            requestDetails.getCaseReference(),
-            requestDetails.getHearingId()
-        );
+        //TODO: populate the data
+        ServiceHearingValues hearingValues = new ServiceHearingValues();
 
-        System.out.print(
-            "\n\n\n\n\n\nReceived serviceHearingValues request from XUI: caseReference=" 
-            + requestDetails.getCaseReference() + ", hearingId=" + requestDetails.getHearingId() + "\n\n\n\n\n\n"
-        );
+        return new ResponseEntity<>(hearingValues, HttpStatus.OK);
+    }
 
-        CaseDetails hearingValues = new CaseDetails();
 
-        log.info(
-            "\n\n\n\n\n\nReturning serviceHearingValues response: caseReference={}\n\n\n\n\n\n",
-            requestDetails.getCaseReference()
-        );
-        System.out.println(
-            "\n\n\n\n\n\nReturning serviceHearingValues response: caseReference=" 
-            + requestDetails.getCaseReference() + "\n\n\n\n\n\n"
-        );
+    @PostMapping(path = {
+        "/serviceLinkedCases"
+    })
+    @Operation(summary = "Get linked cases for a Case and it's Hearing")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Incorrect authorisation"),
+        @ApiResponse(responseCode = "400", description = "Bad Request")
+    })
+    public ResponseEntity<List<ServiceLinkedCases>> getLinkedCases(
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+        @NonNull @RequestBody ServiceHearingRequest requestDetails) throws Exception {
+
+        //TODO: populate the data
+        List<ServiceLinkedCases> hearingValues = new ArrayList<>();
+
         return new ResponseEntity<>(hearingValues, HttpStatus.OK);
     }
 }

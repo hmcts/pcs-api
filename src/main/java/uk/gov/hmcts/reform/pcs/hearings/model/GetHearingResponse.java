@@ -16,7 +16,7 @@ public class GetHearingResponse {
 
     private RequestDetails requestDetails;
     private HearingDetails hearingDetails;
-    private CaseDetails caseDetails;
+    private ServiceHearingValues caseDetails;
     private List<PartyDetails> partyDetails;
     private HearingResponse hearingResponse;
 }

@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class IndividualDetails {
 
-    private String title;
-
     private String firstName;
 
     private String lastName;
@@ -25,7 +23,6 @@ public class IndividualDetails {
     private String vulnerabilityDetails;
 
     private List<String> hearingChannelEmail;
-
 
     private List<String> hearingChannelPhone;
 
