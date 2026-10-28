@@ -30,7 +30,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes, checkFullPartyDetails, makeAnOder
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes, checkFullPartyDetails, makeAnOrder
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -933,7 +933,7 @@ export class CaseManagementAction implements IAction {
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
     });
     await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
-    await performAction('check', makeAnOder.recitalCheckBox);
+    await performAction('check', makeAnOrder.recitalCheckBox);
     await performAction('inputText', inputData.label, CaseManagementCommonUtils.generateRandomString(inputData.recitalInput as number));
     await performAction('clickButton', inputData.button);
   }
@@ -945,7 +945,7 @@ export class CaseManagementAction implements IAction {
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
     });
     await expect(
-      page.getByRole('checkbox', { name: makeAnOder.recitalCheckBox })
+      page.getByRole('checkbox', { name: makeAnOrder.recitalCheckBox })
     ).toBeChecked();
   }
 

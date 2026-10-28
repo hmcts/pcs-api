@@ -1,4 +1,4 @@
-export const makeAnOder = {
+export const makeAnOrder = {
   mainHeader: `Make an order`,
   attendanceHeader: `Attendance`,
   recitalsHeader: `Recitals`,

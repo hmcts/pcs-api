@@ -6,7 +6,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import {caseSummary, user} from '@data/page-data';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
 import {
-  makeAnOder,
+  makeAnOrder,
 } from "@data/page-data-figma/page-data-caseManagement-figma";
 
 
@@ -44,27 +44,27 @@ test.use({ storageState: undefined })
         {
           tag: ['@CM, @regression'],
           annotation: [
-            {type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-7447`},
+            {type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-7032`},
             {type: 'ac', description: 'AC1 and AC2'},
           ],
         },
         async () => {
           await test.step(`Given the user selects the "Make an Order" event from the event dropdown`, async () => {
             await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
-            await  performValidation('mainHeader', makeAnOder.mainHeader);
+            await  performValidation('mainHeader', makeAnOrder.mainHeader);
           });
 
           await test.step(`When the user provides input in Recitals section and click Save and Draft button`, async () => {
               await performAction('inputProvidedInRecitals', {
                 submitPayload: submitCaseApiData.submitCasePayloadDefault(),
-                label: makeAnOder.recitalParagraphTextLabel,
-                recitalInput: makeAnOder.recitalParagraphTextInput,
-                button: makeAnOder.saveAsDraftButton
+                label: makeAnOrder.recitalParagraphTextLabel,
+                recitalInput: makeAnOrder.recitalParagraphTextInput,
+                button: makeAnOrder.saveAsDraftButton
               });
           });
           await test.step(`And the user selects the "Make an Order" event from the event dropdown`, async () => {
             await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
-            await performValidation('mainHeader', makeAnOder.mainHeader);
+            await performValidation('mainHeader', makeAnOrder.mainHeader);
           });
 
           await test.step(`And the user verify saved draft order reloads automaticallyS`, async () => {

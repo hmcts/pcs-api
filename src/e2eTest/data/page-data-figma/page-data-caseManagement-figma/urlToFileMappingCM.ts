@@ -1,4 +1,3 @@
-import {makeAnOder} from "@data/page-data-figma/page-data-caseManagement-figma/makeAnOder.page.data";
 
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
@@ -36,5 +35,5 @@ export default {
   'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
   'addJudicialNote/confirm': 'confirmJudicialNotes',
   'managePartiesremovePartyDetails': 'checkFullPartyDetails',
-  'make-order' : 'makeAnOder'
+  'make-order' : 'makeAnOrder'
 };
