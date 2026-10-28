@@ -31,4 +31,5 @@ export const uploadAdditionalDocuments = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
+  // Regression testing
 };
