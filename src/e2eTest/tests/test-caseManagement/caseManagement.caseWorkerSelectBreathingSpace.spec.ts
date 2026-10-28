@@ -46,9 +46,9 @@ test.afterEach(async () => {
 });
 
 
-test.describe('Case management - Case worker selects Breathing Space', () => {
+test.describe('case management - case worker selects Breathing Space', () => {
   test(
-    'Caseworker selects event to "enter breathing space" and navigates to the breathing space page',
+    'caseworker selects event to "enter breathing space" and navigates to the breathing space page',
     {
       tag: ['@CM', '@regression'],
       annotation: [
