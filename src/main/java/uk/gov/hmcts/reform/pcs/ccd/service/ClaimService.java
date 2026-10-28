@@ -15,11 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -137,4 +139,11 @@ public class ClaimService {
             .build();
     }
 
+    public ClaimEntity loadClaim(long caseReference) {
+        Optional<ClaimEntity> claimEntity = this.claimRepository.findClaimByCaseReference(caseReference);
+        if (claimEntity.isEmpty()) {
+            throw new ClaimNotFoundException(caseReference);
+        }
+        return claimEntity.get();
+    }
 }

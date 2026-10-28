@@ -7,20 +7,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.breathingspace.BreathingSpaceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 
 @Service
 @AllArgsConstructor
 public class BreathingSpaceService {
 
-    private final PcsCaseService pcsCaseService;
+    private final ClaimService claimService;
     private final BreathingSpaceRepository breathingSpaceRepository;
 
     public void createBreathingSpace(long caseReference, BreathingSpaceDetails breathingSpaceDetails) {
-        ClaimEntity claimEntity = this.pcsCaseService.retrieveClaimEntity(caseReference);
-        if (claimEntity == null) {
-            throw new IllegalArgumentException("Claim not found for case reference: " + caseReference);
-        }
+        ClaimEntity claimEntity = this.claimService.loadClaim(caseReference);
         BreathingSpaceEntity breathingSpaceEntity = this.createBreathingSpaceEntity(breathingSpaceDetails, claimEntity);
         this.breathingSpaceRepository.save(breathingSpaceEntity);
     }

@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.breathingspace.BreathingSpaceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDate;
 
@@ -33,7 +33,8 @@ class BreathingSpaceServiceTest {
     private static final LocalDate EXPECTED_END_DATE = LocalDate.of(2026, 11, 30);
 
     @Mock
-    private PcsCaseService pcsCaseService;
+    private ClaimService claimService;
+
     @Mock
     private BreathingSpaceRepository breathingSpaceRepository;
 
@@ -47,7 +48,7 @@ class BreathingSpaceServiceTest {
     void shouldSaveBreathingSpaceAgainstClaim() {
         // Given
         ClaimEntity claimEntity = new ClaimEntity();
-        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(claimEntity);
+        when(claimService.loadClaim(CASE_REFERENCE)).thenReturn(claimEntity);
 
         BreathingSpaceDetails breathingSpaceDetails = stub();
 
@@ -66,30 +67,16 @@ class BreathingSpaceServiceTest {
     }
 
     @Test
-    void shouldNotSaveBreathingSpaceWhenCaseNotFound() {
+    void shouldNotSaveBreathingSpaceWhenClaimNotFound() {
         // Given
-        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE))
-            .thenThrow(new CaseNotFoundException(CASE_REFERENCE));
+        when(claimService.loadClaim(CASE_REFERENCE))
+            .thenThrow(new ClaimNotFoundException(CASE_REFERENCE));
 
         BreathingSpaceDetails breathingSpaceDetails = stub();
 
         // When
         assertThatThrownBy(() -> underTest.createBreathingSpace(CASE_REFERENCE, breathingSpaceDetails))
-            .isInstanceOf(CaseNotFoundException.class);
-
-        // Then
-        verify(breathingSpaceRepository, never()).save(any());
-    }
-
-    @Test
-    void shouldNotSaveBreathingSpaceWhenCaseHasNoClaim() {
-        // Given
-        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(null);
-        BreathingSpaceDetails breathingSpaceDetails = stub();
-
-        // When
-        assertThatThrownBy(() -> underTest.createBreathingSpace(CASE_REFERENCE, breathingSpaceDetails))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(ClaimNotFoundException.class);
 
         // Then
         verify(breathingSpaceRepository, never()).save(any());
