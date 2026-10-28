@@ -29,5 +29,6 @@ export const caseSummary = {
   enterAGenApp: 'Enter a general application',
   manageParties: 'Manage parties',
   manageHearing: 'Manage hearing',
+  deleteDraftResponse: 'Delete draft response',
   addJudicialNote: 'Add a judicial note'
 }
