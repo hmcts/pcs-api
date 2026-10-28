@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
 
 import java.util.UUID;
@@ -24,7 +23,6 @@ public class DefendantResponseNotificationService {
     private final DefendantResponseRepository defendantResponseRepository;
     private final CounterClaimRepository counterClaimRepository;
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
-    private final OrganisationRepository organisationRepository;
 
     @Transactional
     public void sendDefendantResponseReceived(Integer defendantResponseId) {
@@ -57,17 +55,6 @@ public class DefendantResponseNotificationService {
         if (counterClaimEntity == null) {
             log.info("Defendant response {} has no counterclaim. Not sending email notification",
                      defendantResponse.getId());
-            return;
-        }
-
-        boolean defendantRepresented = organisationRepository
-            .findByPartyLinkedToOrganisationAndCaseAndActive(
-                defendantResponse.getParty().getId(), defendantResponse.getPcsCase().getCaseReference())
-            .isPresent();
-
-        if (defendantRepresented) {
-            log.info("Defendant response {} has Legal Representation. Not sending email notification",
-                defendantResponse.getId());
             return;
         }
 
