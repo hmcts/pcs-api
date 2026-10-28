@@ -95,10 +95,10 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
       option: isTheCourtHearingInTheNext14Days.yesRadioOption,
     });
-    await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performValidation('mainHeader', helpPayingTheFee('LR').mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
-      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee.yesRadioOption,
+      question: helpPayingTheFee('LR').doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee('LR').yesRadioOption,
     });
     await performAction('confirmYouHaveAppliedForFeeHelp', {
       question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
@@ -168,10 +168,10 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No]',
     question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
     option: isTheCourtHearingInTheNext14Days.yesRadioOption,
   });
-  await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+  await performValidation('mainHeader', helpPayingTheFee('LR').mainHeader);
   await performAction('doYouNeedHelpPayingFee', {
-    question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-    option: helpPayingTheFee.noRadioOption,
+    question: helpPayingTheFee('LR').doYouNeedHelpPayingTheFeeQuestion,
+    option: helpPayingTheFee('LR').noRadioOption,
   });
   await performValidation('mainHeader',hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
   await performAction('confirmOtherPartiesAgreed', {

@@ -13,7 +13,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  askTheCourtToMakeAnOrder, checkYourAnswersGenApps, chooseAnApplication,
+  askTheCourtToMakeAnOrder, askTheCourtToSuspendAnOrder, checkYourAnswersGenApps, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
@@ -66,35 +66,26 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Something else @regression @smoke', async () => {
+  test('Select an Application - Suspend @regression @smoke @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
     await performAction('chooseAnApplication', {
-      question: chooseAnApplication.whichTypeOfApplicationQuestion,
+      question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
       option: chooseAnApplication.suspendTheEvictionRadioOption,
     });
-    await performValidation('mainHeader', askTheCourtToMakeAnOrder.mainHeader1);
-    await performAction('clickButton', askTheCourtToMakeAnOrder.continueButton);
+    await performValidation('mainHeader', askTheCourtToSuspendAnOrder.mainHeader);
+    await performAction('clickButton', askTheCourtToSuspendAnOrder.continueButton);
     await performValidation('mainHeader', selectParty.mainHeader);
     await performAction('selectApplicant', {
       question: selectParty.partyMakingApplicationQuestion,
       option: defendantDetails[1],
     });
-    await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performValidation('mainHeader', helpPayingTheFee('LR').mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
-      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee.yesRadioOption,
-    });
-    await performAction('confirmYouHaveAppliedForFeeHelp', {
-      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
-      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
-      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
-      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
-    });
-    await performAction('confirmOtherPartiesAgreed', {
-      question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
-      option: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.yesRadioOption,
+      question: helpPayingTheFee('LR').doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee('LR').noRadioOption,
+      claimType: 'LR',
     });
     await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
     await performAction('confirmOrderDoYouWant', {
@@ -129,7 +120,6 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('verifyApplicationSubmitted');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
+    await performAction('payClaimFeeGenApps', { clickLink: false , claimType : 'LR'});
   });
 });
