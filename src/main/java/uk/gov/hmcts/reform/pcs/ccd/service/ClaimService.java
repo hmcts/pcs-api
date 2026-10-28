@@ -140,10 +140,7 @@ public class ClaimService {
     }
 
     public ClaimEntity loadClaim(long caseReference) {
-        Optional<ClaimEntity> claimEntity = this.claimRepository.findClaimByCaseReference(caseReference);
-        if (claimEntity.isEmpty()) {
-            throw new ClaimNotFoundException(caseReference);
-        }
-        return claimEntity.get();
+        return claimRepository.findClaimByCaseReference(caseReference)
+            .orElseThrow(() -> new ClaimNotFoundException(caseReference));
     }
 }

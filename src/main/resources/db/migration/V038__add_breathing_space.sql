@@ -4,7 +4,7 @@ CREATE TABLE breathing_space (
     claim_id uuid NOT NULL,
     reference_number VARCHAR(14),
     start_date DATE,
-    type TEXT NOT NULL CHECK (type IN ('MENTAL_HEALTH_CRISIS_MORATORIUM', 'STANDARD')),
+    type VARCHAR(50),
     expected_end_date DATE
 );
 
