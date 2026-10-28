@@ -17,7 +17,7 @@ test.beforeEach(async ({page, context}) => {
   initializeCMExecutor(page);
   await test.step(`Given the user creates a case and completes the payment via API,`, async () => {
     await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayloadCaseDetails()});
+    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayloadDefault()});
     await performAction('getAddressInfo', {data: createCaseApiData.createCasePayload});
     await performAction('updatePaymentAPI');
   });
@@ -56,7 +56,7 @@ test.describe('Case management - As a Judge resumes draft order @nightly', async
 
       await test.step(`When the user provides input in Recitals section and click Save and Draft button`, async () => {
         await performAction('inputProvidedInRecitals', {
-          submitPayload: submitCaseApiData.submitCasePayloadCaseDetails(),
+          submitPayload: submitCaseApiData.submitCasePayloadDefault(),
           label: makeAnOrder.recitalParagraphTextLabel,
           recitalInput: makeAnOrder.recitalParagraphTextInput,
           button: makeAnOrder.saveAsDraftButton
@@ -93,18 +93,17 @@ test.describe('Case management - As a Judge resumes draft order @nightly', async
           defendantRadioOption: makeAnOrder.defendantRadioOption[1],
           label: makeAnOrder.recitalParagraphTextLabel,
           recitalInput: makeAnOrder.recitalParagraphTextInput,
-          question: makeAnOrder.possessionParagraph,
+          question: makeAnOrder.possessionLabel,
           option: makeAnOrder.forthwithRadioOption,
-          question1:makeAnOrder.groundsParagraph,
+          question1:makeAnOrder.groundsLabel,
           option1:makeAnOrder.mandatoryRadioOption,
-          question2: makeAnOrder.additionOrderParagraph,
+          question2: makeAnOrder.additionOrderLabel,
           option2: makeAnOrder.transferToHighCourtCheckBox,
           question3: makeAnOrder.costHeader,
           option3: makeAnOrder.costRadioOption[4],
         });
-
-        await test.step(`And the user verify order preview section is in numbered lists sequentially`, async () => {
-          await performAction('verifyPreviewSectionNumberedList');
+        await test.step(`And the user verify order preview section displays the expected numbered list in sequence`, async () => {
+         await performAction('verifyPreviewSectionNumberedList');
         });
 
       });

@@ -91,6 +91,7 @@ export class CaseManagementAction implements IAction {
       ['inputProvidedInRecitals',() => this.inputProvidedInRecitals(fieldName as actionRecord)],
       ['verifySavedDraftOrderDetails', () => this.verifySavedDraftOrderDetails(page)],
       ['makeAnOrderDetailsProvided', () => this.makeAnOrderDetailsProvided(fieldName as actionRecord)],
+      ['verifyPreviewSectionNumberedList',() => this.verifyPreviewSectionNumberedList(page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -959,8 +960,8 @@ export class CaseManagementAction implements IAction {
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
     });
     await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
-    await performAction('clickRadioButton', orderData.claimantRadioOption);
-    await performAction('clickRadioButton', orderData.defandantRadioOption);
+    await performAction('clickRadioButton', { question: makeAnOrder.claimantLabel, option: orderData.claimantRadioOption});
+    await performAction('clickRadioButton', { question: makeAnOrder.defendantLabel, option: orderData.defendantRadioOption});
     await performAction('check', makeAnOrder.recitalCheckBox);
     await performAction('inputText', orderData.label, CaseManagementCommonUtils.generateRandomString(orderData.recitalInput as number));
     await performAction('clickRadioButton', { question: orderData.question, option: orderData.option });
@@ -970,9 +971,24 @@ export class CaseManagementAction implements IAction {
     await performAction('clickRadioButton', { question: orderData.question3, option: orderData.option3 });
     }
 
-  private async verifyPreviewSectionNumberedList(): Promise<void> {
+  private async verifyPreviewSectionNumberedList(page: Page): Promise<void> {
+    const orderedList = page
+      .getByRole('textbox', { name: makeAnOrder.orderTextBox })
+      .locator('ol');
 
+    const listItems = orderedList.locator('li');
+    const expectedContent = makeAnOrder.expectedNumberedListContent;
+
+    await expect(orderedList).toBeVisible();
+
+    await expect(orderedList).toHaveAttribute('start', '1');
+    await expect(listItems).toHaveCount(expectedContent.length);
+    for (const [index, expectedText] of expectedContent.entries()) {
+      await expect(listItems.nth(index)).toContainText(expectedText);
+    }
+    await expect(orderedList.locator('li[value]')).toHaveCount(0);
   }
+
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
