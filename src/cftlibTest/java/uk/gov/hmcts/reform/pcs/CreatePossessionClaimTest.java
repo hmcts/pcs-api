@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -38,11 +39,14 @@ import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
 import uk.gov.hmcts.reform.pcs.service.CaseStateService;
+import uk.gov.hmcts.reform.pcs.service.DmStoreStub;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -72,6 +76,8 @@ class CreatePossessionClaimTest extends CftlibTest {
     private ObjectMapper objectMapper;
     @Autowired
     private MockSendLetterServer mockSendLetterServer;
+    @Autowired
+    private DmStoreStub dmStoreStub;
 
     private String solicitorToken;
     private Long caseReference;
@@ -160,17 +166,32 @@ class CreatePossessionClaimTest extends CftlibTest {
         feePaymentService.simulatePayments(caseReference, feePaymentSummaries);
         caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
 
-        caseDocumentService.waitForDocumentType(caseReference, DocumentType.CLAIM);
-        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
+        // Bulk print downloads each document through CDAM as PCS's system user. With the documents attached to
+        // the case, CDAM serves one only if CCD shows it to that user, which systemDocuments is there for.
+        List<UUID> claimForms = caseDocumentService.waitForDocumentIds(caseReference, DocumentType.CLAIM, 1);
+        List<UUID> accessCodeLetters =
+            caseDocumentService.waitForDocumentIds(caseReference, DocumentType.DEFENDANT_ACCESS_CODE, 2);
+        List<StubMapping> attached = Stream.concat(claimForms.stream(), accessCodeLetters.stream())
+            .map(documentId -> dmStoreStub.attachToCase(documentId, caseReference))
+            .toList();
+        try {
+            testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
 
-        List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK, 1);
-        Letter claimantLetter = claimantLetters.getFirst();
-        assertThat(getRecipientName(claimantLetter)).isEqualTo("CftLibTest Claimant");
+            List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK, 1);
+            Letter claimantLetter = claimantLetters.getFirst();
+            assertThat(getRecipientName(claimantLetter)).isEqualTo("CftLibTest Claimant");
 
-        List<Letter> defendantLetters = mockSendLetterServer.getSentLetters(caseReference, DEFENDANT_CLAIM_PACK, 2);
-        assertThat(defendantLetters)
-            .map(CreatePossessionClaimTest::getRecipientName)
-            .containsExactlyInAnyOrder("Danny Defendant", "Delia Jones");
+            List<Letter> defendantLetters =
+                mockSendLetterServer.getSentLetters(caseReference, DEFENDANT_CLAIM_PACK, 2);
+            assertThat(defendantLetters)
+                .map(CreatePossessionClaimTest::getRecipientName)
+                .containsExactlyInAnyOrder("Danny Defendant", "Delia Jones");
+            assertThat(attached)
+                .as("CDAM read each pack document's case-attached metadata, so checked access through CCD")
+                .allSatisfy(stub -> assertThat(dmStoreStub.requestsServedBy(stub)).isPositive());
+        } finally {
+            attached.forEach(dmStoreStub::remove);
+        }
     }
 
     private DefendantDetails createDefendant(String firstname, String lastName) {
