@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.StatementOfTruthService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WritDetailsMapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +34,7 @@ class WritStrategyTest {
 
     private EnforcementOrder enforcementOrder;
     private EnforcementOrderEntity enforcementOrderEntity;
+    private WritEntity writEntity;
     private StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement;
 
     @BeforeEach
@@ -50,7 +52,7 @@ class WritStrategyTest {
                 .build();
         enforcementOrder = EnforcementOrder.builder().writDetails(writDetails).build();
         enforcementOrderEntity = new EnforcementOrderEntity();
-        WritEntity writEntity = new WritEntity();
+        writEntity = new WritEntity();
 
         // Given
         when(writDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity)).thenReturn(writEntity);
@@ -63,6 +65,7 @@ class WritStrategyTest {
 
         // Then
         verify(writDetailsMapper).toEntity(enforcementOrder, enforcementOrderEntity);
+        assertThat(enforcementOrderEntity.getWritDetails()).isSameAs(writEntity);
     }
 
     @Test
