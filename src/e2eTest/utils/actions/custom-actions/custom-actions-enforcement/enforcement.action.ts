@@ -421,6 +421,7 @@ export class EnforcementAction implements IAction {
     await performAction('check', claimantSOT.option1);
     await performAction('clickRadioButton', { option:claimantSOT.option } );
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
+      await performAction('check', claimantSOT.option1);
       await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('check', claimantSOT.iBelieveCheckBox);

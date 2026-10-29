@@ -4,12 +4,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class StatementOfTruthPage implements CcdPageConfiguration {
@@ -28,37 +26,6 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
-                        .label("statementOfTruth-cert-suspended",
-                            """
-                            <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered (*and that the whole or part
-                                of any instalments due under the judgment or order have not been paid) ( †and the
-                                balance now due is as shown)</li>
-                                <li>notice has been given in accordance with The Dwelling Houses (Execution of
-                                Possession Orders by Mortgagees) Regulations 2010.</li>
-                                <li>a statement of the payments due and made under the judgment or order is attached to
-                                this request.††</li>
-                            </ul>
-                            """,
-                            "warrantIsSuspendedOrder=\"YES\""
-                        )
-                        .label("statementOfTruth-cert-not-suspended",
-                            """
-                            <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered (*and that the whole or part
-                                of any instalments due under the judgment or order have not been paid) (†and the
-                                balance now due is as shown)</li>
-                                <li>notice has been given in accordance with The Dwelling Houses (Execution of
-                                Possession Orders by Mortgagees) Regulations 2010.</li>
-                            </ul>
-                            """,
-                            "warrantIsSuspendedOrder=\"NO\""
-                        )
-                    .done()
-                    .complex(WarrantDetails::getRepaymentCosts)
-                        .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
-                        .label("statementOfTruth-payments-table",
-                            "${warrantStatementOfTruthRepaymentSummaryMarkdown}")
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
