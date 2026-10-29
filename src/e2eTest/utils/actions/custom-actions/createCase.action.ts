@@ -1874,6 +1874,7 @@ export class CreateCaseAction implements IAction {
       await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
       const tabs = await tabLoc.allTextContents();
       expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));
+      expect(new Set(tabs).size, `duplicate tabs: ${tabs.join(', ')}`).toBe(tabs.length);
     });
   }
 

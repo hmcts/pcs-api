@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -164,8 +165,6 @@ class CaseTypeTest {
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
         assertThat(paymentHistoryTab.getFields()).extracting(TabField::getId)
             .containsExactly("casePaymentHistoryViewer");
-        assertThat(paymentHistoryTab.getForRoles())
-            .containsExactlyInAnyOrder(CaseType.PAYMENT_HISTORY_TAB_ROLES);
         assertThat(paymentHistoryTab.getShowCondition())
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
         assertThat(caseLinksTab.getFields()).extracting(TabField::getShowCondition)
@@ -177,17 +176,18 @@ class CaseTypeTest {
         assertThat(caseNotesTab.getFields()).extracting(TabField::getId).doesNotContain("caseReviewDates");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
-        assertThat(summaryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(casePartiesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseDetailsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseFileViewTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(serviceRequestTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseHistoryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.CASE_NOTE_TAB_ROLES);
-        assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(judicialNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.JUDICIAL_NOTE_TAB_ROLES);
         assertThat(judicialNotesTab.getShowCondition()).isNull();
+        // One tab per topic: field permissions decide who sees it, so no tab but Support names roles.
+        for (Tab<PCSCase, AccessProfile> tab : List.of(nextStepsTab, summaryTab, caseHistoryTab, hiddenTab,
+            serviceRequestTab, paymentHistoryTab, caseLinksTab, casePartiesTab, caseFileViewTab, caseDetailsTab,
+            caseNotesTab, caseFlagsTab, judicialNotesTab)) {
+            assertThat(tab.getForRoles()).as(tab.getTabID()).isEmpty();
+        }
+        verify(builder).tabsRespectDeclaredFieldAccess();
+        assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("Summary", "Claimant details");
+        assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("Case details", "Claimant details");
+        assertThat(judicialNotesTab.getFields()).extracting(TabField::getId)
+            .containsExactly("judicialNotesMarkdownLabel", "judicialNotesMarkdown");
         assertThat(supportTab.getForRoles())
             .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
@@ -205,7 +205,6 @@ class CaseTypeTest {
     @Test
     void shouldNotRepeatAnAccessProfileWithinATabRoleSet() {
         assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).doesNotHaveDuplicates();
-        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES).doesNotHaveDuplicates();
         assertThat(CaseType.INTERNAL_TAB_ROLES).doesNotHaveDuplicates();
     }
 
@@ -225,12 +224,6 @@ class CaseTypeTest {
                             AccessProfile.CLAIMANT_SOLICITOR,
                             AccessProfile.PCS_SOLICITOR)
             .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
-    }
-
-    @Test
-    void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
-        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
-            .contains(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
     }
 
     @Test
