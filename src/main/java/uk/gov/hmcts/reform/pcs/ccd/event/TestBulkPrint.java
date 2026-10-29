@@ -62,6 +62,8 @@ public class TestBulkPrint implements CCDConfig<PCSCase, State, UserRole> {
             .description("Post uploaded documents to the claimant by bulk print")
             .showSummary()
             .grant(Permission.CRU, UserRole.PCS_SOLICITOR)
+            // A solicitor holds this case role once the claim is submitted.
+            .grant(Permission.CRU, UserRole.GA_CLAIMANT_SOLICITOR)
             .grant(Permission.CRU, UserRole.CLAIMANT)
             .grant(Permission.CRU, CASEWORKER_ROLES);
         new PageBuilder(eventBuilder).add(new TestBulkPrintDocumentsPage());

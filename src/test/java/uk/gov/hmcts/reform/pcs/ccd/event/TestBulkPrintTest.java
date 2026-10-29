@@ -63,6 +63,7 @@ class TestBulkPrintTest {
         verify(configBuilder).decentralisedEvent(eq(testBulkPrint.name()), any());
         verify(eventBuilder).name(EVENT_NAME);
         verify(eventBuilder).grant(Permission.CRU, UserRole.PCS_SOLICITOR);
+        verify(eventBuilder).grant(Permission.CRU, UserRole.GA_CLAIMANT_SOLICITOR);
         verify(fields).mandatory(any());
     }
 
