@@ -457,17 +457,19 @@ export class EnforcementAction implements IAction{
 
   private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {
     await this.addFieldsToMap(claimantSOT);
-    await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
+    await performAction('check', claimantSOT.option1);
+    await performAction('clickRadioButton', { option:claimantSOT.option } );
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantSOT.option1);
       await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
+      await performAction('check', claimantSOT.iBelieveCheckBox);
     }
     if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
-      await performAction('check', claimantSOT.option1);
       await performAction('inputText', claimantSOT.label, claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('inputText', claimantSOT.label2, claimantSOT.input2);
+      await performAction('check', claimantSOT.claimantBelieveCheckBox);
     }
     await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantSOT.nextPage as string);
   }
@@ -546,9 +548,13 @@ export class EnforcementAction implements IAction{
 
             case 'radioOptions':
               await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+              if ('isSOT' in validationArr) {
+                await performAction('clickRadioButton', { option: validationArr.option });
+              } else {
+                await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+              }
               break;
 
             case 'moneyField':

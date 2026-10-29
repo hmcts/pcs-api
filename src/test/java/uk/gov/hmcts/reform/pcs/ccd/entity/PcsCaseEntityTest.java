@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -72,6 +74,45 @@ class PcsCaseEntityTest {
     }
 
     @Test
+    void shouldAddCaseReviewDateEntityAndSetCaseLevelRank() {
+        // Given
+        CaseReviewDateEntity reviewDateEntity1 = mock(CaseReviewDateEntity.class);
+        CaseReviewDateEntity reviewDateEntity2 = mock(CaseReviewDateEntity.class);
+        CaseReviewDateEntity reviewDateEntity3 = mock(CaseReviewDateEntity.class);
+
+        // When
+        underTest.addCaseReviewDate(reviewDateEntity1);
+        underTest.addCaseReviewDate(reviewDateEntity2);
+        underTest.addCaseReviewDate(reviewDateEntity3);
+
+        // Then
+        verify(reviewDateEntity1).setReviewDateNumber(1);
+        verify(reviewDateEntity1).setPcsCase(underTest);
+
+        verify(reviewDateEntity2).setReviewDateNumber(2);
+        verify(reviewDateEntity2).setPcsCase(underTest);
+
+        verify(reviewDateEntity3).setReviewDateNumber(3);
+        verify(reviewDateEntity3).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldContinueCaseReviewDateCaseLevelRankFromExistingReviewDates() {
+        // Given
+        for (int i = 0; i < 5; i++) {
+            underTest.getReviewDates().add(mock(CaseReviewDateEntity.class));
+        }
+        CaseReviewDateEntity reviewDateEntity = mock(CaseReviewDateEntity.class);
+
+        // When
+        underTest.addCaseReviewDate(reviewDateEntity);
+
+        // Then
+        verify(reviewDateEntity).setReviewDateNumber(6);
+        verify(reviewDateEntity).setPcsCase(underTest);
+    }
+
+    @Test
     void shouldAddHearing() {
         // Given
         HearingEntity hearingEntity = mock(HearingEntity.class);
@@ -85,4 +126,45 @@ class PcsCaseEntityTest {
         verify(hearingEntity).setPcsCase(underTest);
     }
 
+    @Test
+    void shouldAddJudicialNote() {
+        // Given
+        JudicialNoteEntity judicialNoteEntity = mock(JudicialNoteEntity.class);
+
+        // When
+        underTest.addJudicialNote(judicialNoteEntity);
+
+        // Then
+        assertThat(underTest.getJudicialNotes()).hasSize(1);
+        assertThat(underTest.getJudicialNotes().getFirst()).isEqualTo(judicialNoteEntity);
+        verify(judicialNoteEntity).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldNotRequireModelKeysOrLastModifiedForExistingCases() {
+        // When
+        PcsCaseEntity legacyCase = PcsCaseEntity.builder().caseReference(1234L).build();
+
+        // Then
+        assertThat(legacyCase.getCaseReference()).isEqualTo(1234L);
+        assertThat(legacyCase.getCaseTypeKey()).isNull();
+        assertThat(legacyCase.getCaseSubtypeKey()).isNull();
+        assertThat(legacyCase.getLastModifiedDatetime()).isNull();
+    }
+
+    @Test
+    void shouldHoldCaseTypeKeysAndLastModifiedDatetime() {
+        // Given
+        LocalDateTime modified = LocalDateTime.of(2026, 10, 27, 9, 30);
+
+        // When
+        underTest.setCaseTypeKey("AAA3-RA-PL");
+        underTest.setCaseSubtypeKey("AAA3-RA-PL");
+        underTest.setLastModifiedDatetime(modified);
+
+        // Then
+        assertThat(underTest.getCaseTypeKey()).isEqualTo("AAA3-RA-PL");
+        assertThat(underTest.getCaseSubtypeKey()).isEqualTo("AAA3-RA-PL");
+        assertThat(underTest.getLastModifiedDatetime()).isEqualTo(modified);
+    }
 }
