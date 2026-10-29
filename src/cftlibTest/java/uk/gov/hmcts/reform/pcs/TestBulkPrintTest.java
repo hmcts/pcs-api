@@ -65,10 +65,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.TEST_SUPP
 import static uk.gov.hmcts.reform.pcs.testingsupport.bulkprint.TestBulkPrintTaskComponent.TEST_BULK_PRINT_TASK_NAME;
 
 /**
- * The test support bulk print event end to end: documents of several types are uploaded to a case, the event posts
- * them, and the letter Send Letter receives must be one PDF that meets the bulk print standard. Everything between
- * runs for real (CCD, CDAM, the coversheet, the conversion and the Send Letter client); only the document store,
- * Docmosis and Send Letter are stubbed.
+ * The test support bulk print event end to end: a solicitor issues a case, then a caseworker uploads documents of
+ * several types to it and the event posts them. The letter Send Letter receives must be one PDF that meets the bulk
+ * print standard. Everything between runs for real (CCD, CDAM, the coversheet, the conversion and the Send Letter
+ * client); only the document store, Docmosis and Send Letter are stubbed.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -92,10 +92,12 @@ class TestBulkPrintTest extends CftlibTest {
     private MockDocumentStore mockDocumentStore;
 
     private String solicitorToken;
+    private String caseworkerToken;
 
     @BeforeAll
     void setup() {
         solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        caseworkerToken = idamClient.getAccessToken("caseworker@pcs.com", "password");
     }
 
     @AfterAll
@@ -117,7 +119,7 @@ class TestBulkPrintTest extends CftlibTest {
             upload("rent-schedule.csv", "text/csv",
                 "date,amount\n2026-01-01,450.00\n".getBytes(StandardCharsets.UTF_8)));
         ccdClient.updateCase(testBulkPrint, caseReference,
-            PCSCase.builder().testBulkPrintDocuments(uploads).build(), solicitorToken);
+            PCSCase.builder().testBulkPrintDocuments(uploads).build(), caseworkerToken);
         testingSupportClient.executeFutureDbSchedulerTasks(TEST_BULK_PRINT_TASK_NAME, Duration.ofMinutes(1));
 
         Letter letter = mockSendLetterServer.getSentLetters(caseReference, TEST_SUPPORT_PACK, 1).getFirst();

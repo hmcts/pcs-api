@@ -30,9 +30,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORK
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.testBulkPrint;
 
 /**
- * Non-production event that posts uploaded documents to the claimant through bulk print, so testers can check what
- * each file type looks like once converted to the print standard. The letter is sent by a background task, after
- * CCD has attached the uploads to the case in CDAM.
+ * Non-production caseworker event that posts uploaded documents to the claimant through bulk print, so testers can
+ * check what each file type looks like once converted to the print standard. The letter is sent by a background
+ * task, after CCD has attached the uploads to the case in CDAM.
  */
 @Component
 @Slf4j
@@ -61,10 +61,7 @@ public class TestBulkPrint implements CCDConfig<PCSCase, State, UserRole> {
             .name(EVENT_NAME)
             .description("Post uploaded documents to the claimant by bulk print")
             .showSummary()
-            .grant(Permission.CRU, UserRole.PCS_SOLICITOR)
-            // A solicitor holds this case role once the claim is submitted.
-            .grant(Permission.CRU, UserRole.GA_CLAIMANT_SOLICITOR)
-            .grant(Permission.CRU, UserRole.CLAIMANT)
+            // Posting to a party is a caseworker action.
             .grant(Permission.CRU, CASEWORKER_ROLES);
         new PageBuilder(eventBuilder).add(new TestBulkPrintDocumentsPage());
     }

@@ -35,6 +35,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.testBulkPrint;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestBulkPrint.EVENT_NAME;
 
@@ -62,8 +63,7 @@ class TestBulkPrintTest {
 
         verify(configBuilder).decentralisedEvent(eq(testBulkPrint.name()), any());
         verify(eventBuilder).name(EVENT_NAME);
-        verify(eventBuilder).grant(Permission.CRU, UserRole.PCS_SOLICITOR);
-        verify(eventBuilder).grant(Permission.CRU, UserRole.GA_CLAIMANT_SOLICITOR);
+        verify(eventBuilder).grant(Permission.CRU, CASEWORKER_ROLES);
         verify(fields).mandatory(any());
     }
 
