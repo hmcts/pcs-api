@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -106,6 +107,10 @@ public class CounterClaimEntity {
 
     @Enumerated(EnumType.STRING)
     private CounterClaimState status;
+
+    // Whether its documents were in case file view when loaded; CaseBundleChangeListener compares on update.
+    @Transient
+    private Boolean visibleWhenLoaded;
 
     private LocalDateTime claimSubmittedDate;
 

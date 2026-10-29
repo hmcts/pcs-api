@@ -14,15 +14,10 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentPolicy;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.SelectedCaseBundle;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -132,19 +127,10 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
             && StringUtils.isNotBlank(document.getBinaryUrl());
     }
 
-    // What an internal user sees in case file view: keep in step with DocumentsView. An entity read
-    // here needs CaseBundleChangeListener, or changes to it leave the bundle stale.
+    // An entity DocumentsView reads to decide this needs CaseBundleChangeListener, or changes to it
+    // leave the bundle stale.
     private static boolean isVisibleToInternalReaders(DocumentEntity document) {
-        if (document.getDocumentId() == null || document.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
-            return false;
-        }
-        GenAppEntity genApp = document.getGeneralApplication();
-        if (genApp != null && genApp.getWithoutNotice() != VerticalYesNo.YES
-            && genApp.getState() != GenAppState.GEN_APP_ISSUED) {
-            return false;
-        }
-        CounterClaimEntity counterClaim = document.getCounterClaim();
-        return counterClaim == null || counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
+        return document.getDocumentId() != null && DocumentsView.isVisibleToInternalReaders(document);
     }
 
     private static String title(DocumentEntity document) {

@@ -45,8 +45,8 @@ public class BundleTabView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
         CaseBundles managed = bundles.getIfAvailable();
-        if (managed == null || !JudgeBundleAccess.isJudge(roles.getCurrentUserCaseRoles(
-            entity.getCaseReference()).roles())) {
+        // The judge roles are all organisational, so no case-level lookup is needed.
+        if (managed == null || !JudgeBundleAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
             return;
         }
         CaseBundleView view = managed.view(CaseBundleDefinition.NAME, entity.getId().toString());

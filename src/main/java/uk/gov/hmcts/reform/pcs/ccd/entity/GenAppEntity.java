@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -102,6 +103,10 @@ public class GenAppEntity {
     private VerticalYesNo withoutNotice;
 
     private String withoutNoticeReason;
+
+    // Whether its documents were in case file view when loaded; CaseBundleChangeListener compares on update.
+    @Transient
+    private Boolean visibleWhenLoaded;
 
     private String whatOrderWanted;
 

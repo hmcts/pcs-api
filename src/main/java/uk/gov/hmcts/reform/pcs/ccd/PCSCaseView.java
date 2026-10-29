@@ -104,14 +104,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
 
-    // The SDK calls this overload, whose default calls getCase(request) on this instance, bypassing its
-    // transaction. Without one, the bundle status query takes a second pooled connection.
-    @Override
-    @Transactional(readOnly = true)
-    public PCSCase getCase(CaseViewRequest<State> request, PCSCase blobCase) {
-        return getCase(request);
-    }
-
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state

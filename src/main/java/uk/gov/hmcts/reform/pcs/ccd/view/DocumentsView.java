@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -32,11 +34,35 @@ public class DocumentsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
-        // CDAM only serves a document attached to a case to a user who can see it in the case. Background tasks such
-        // as bulk print and bundling download documents as PCS's IDAM system account, so it sees every document.
+        // CDAM only serves a document attached to a case to a user who can see it in the case. Bulk print and
+        // bundling download documents as PCS's IDAM system account, so it sees what they send: access code letters
+        // and what an internal user sees in case file view.
         if (securityContextService.isIdamSystemUser()) {
-            pcsCase.setSystemDocuments(pcsCaseEntity.getDocuments().stream().map(this::toListValue).toList());
+            pcsCase.setSystemDocuments(pcsCaseEntity.getDocuments().stream()
+                .filter(document -> document.getType() == DocumentType.DEFENDANT_ACCESS_CODE
+                    || isVisibleToInternalReaders(document))
+                .map(this::toListValue)
+                .toList());
         }
+    }
+
+    /** What an internal user sees in case file view. The case bundle holds the same documents. */
+    public static boolean isVisibleToInternalReaders(DocumentEntity document) {
+        if (document.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
+            return false;
+        }
+        GenAppEntity genApp = document.getGeneralApplication();
+        CounterClaimEntity counterClaim = document.getCounterClaim();
+        return (genApp == null || isVisibleToInternalReaders(genApp))
+            && (counterClaim == null || isVisibleToInternalReaders(counterClaim));
+    }
+
+    public static boolean isVisibleToInternalReaders(GenAppEntity genApp) {
+        return genApp.getWithoutNotice() == VerticalYesNo.YES || genApp.getState() == GenAppState.GEN_APP_ISSUED;
+    }
+
+    public static boolean isVisibleToInternalReaders(CounterClaimEntity counterClaim) {
+        return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
     }
 
     private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
