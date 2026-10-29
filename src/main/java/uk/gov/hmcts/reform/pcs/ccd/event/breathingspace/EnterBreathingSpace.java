@@ -41,7 +41,8 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
                 .name("Enter breathing space")
                 .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
-                .showSummary();
+                .showSummary()
+                .endButtonLabel("Submit");
         breathingSpacePageConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
@@ -61,10 +62,10 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Breathing space has been entered</span><br>
-            <span class="govuk-panel__body">Case number #%s</span><br>
-            <span class="govuk-panel__body">%s</span><br>
-            <span class="govuk-panel__body">%s</span>
+            <span class="govuk-panel__title govuk-!-font-size-32">Breathing space has been entered</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">Case number #%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
             </div>
 
             <h3 class="govuk-heading-s">What happens next</h3>
