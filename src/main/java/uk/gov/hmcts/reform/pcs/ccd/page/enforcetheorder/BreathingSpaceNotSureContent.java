@@ -57,7 +57,7 @@ public class BreathingSpaceNotSureContent {
             <p class="govuk-body">
                 Use the
                 <a class="govuk-link"
-                   href="https://www.gov.uk/find-court-tribunal"
+                   href="https://www.find-court-tribunal.service.gov.uk/"
                    target="_blank"
                    rel="noopener noreferrer">
                     find a court or tribunal service (opens in new tab)
