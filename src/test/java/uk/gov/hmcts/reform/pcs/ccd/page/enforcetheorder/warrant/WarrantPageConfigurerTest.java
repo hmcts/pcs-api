@@ -81,6 +81,7 @@ class WarrantPageConfigurerTest extends BasePageTest {
         AtomicInteger verificationCount = new AtomicInteger(0);
 
         verifyAndCount(inOrder, pageBuilder, BreathingSpacePage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, BreathingSpaceNotSurePage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, MissedPaymentsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressPage.class, verificationCount);
