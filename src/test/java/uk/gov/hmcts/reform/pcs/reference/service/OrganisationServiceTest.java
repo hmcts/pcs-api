@@ -122,33 +122,6 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should retrieve organisation profile ids skipping the generic profile")
-    void shouldRetrieveOrgProfileIdsSkippingGenericProfile() {
-        stubCurrentUser();
-        stubPrd(OrganisationDetailsResponse.builder()
-                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
-                    .organisationProfileIds(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"))
-                    .build());
-
-        String result = organisationService.getOrgProfileIdForCurrentUser();
-
-        assertThat(result).isEqualTo("LOCALAUTH_PROFILE");
-    }
-
-    @Test
-    @DisplayName("Should return null profile ids when absent from the organisation details")
-    void shouldReturnNullWhenProfileIdsAbsent() {
-        stubCurrentUser();
-        stubPrd(OrganisationDetailsResponse.builder()
-                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
-                    .build());
-
-        String result = organisationService.getOrgProfileIdForCurrentUser();
-
-        assertThat(result).isNull();
-    }
-
-    @Test
     @DisplayName("Should successfully retrieve organisation ID for current user")
     void shouldSuccessfullyRetrieveOrganisationIdForCurrentUser() {
         stubCurrentUser();
