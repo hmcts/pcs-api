@@ -46,7 +46,7 @@ export const user = {
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
   localAuthorityOrg1Usr1:  {
-    email: 'pcs.local.auth1user1@test.com',
+    email: 'pcs_other_accfood_user01@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
   localAuthorityOrg1Usr2:  {
