@@ -701,6 +701,9 @@ cftlibTest {
   // Use wiremock spun up by tests (9400) for email and bulk print, so it is isolated and can be queried easily
   environment 'NOTIFY_URL', 'http://localhost:9400'
   environment 'SEND_LETTER_URL', 'http://localhost:9400'
+  // ...and for Docmosis, which converts office documents for bulk print
+  environment 'DOCMOSIS_CONVERT_ENDPOINT', 'http://localhost:9400/rs/convert'
+  environment 'DOCMOSIS_ACCESS_KEY', 'cftlib-docmosis-key'
 
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
