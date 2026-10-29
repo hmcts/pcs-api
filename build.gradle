@@ -315,7 +315,7 @@ def getCheckedOutGitCommitHash() {
 def integrationTestsEnabled = System.getenv('INTEGRATION_TESTS_ENABLED') != 'false'
 
 jacoco {
-  toolVersion = '0.8.15'
+  toolVersion = '0.8.16'
 }
 
 jacocoTestReport {
