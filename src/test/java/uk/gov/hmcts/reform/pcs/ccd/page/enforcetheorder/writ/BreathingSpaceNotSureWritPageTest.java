@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.BreathingSpaceNotSureCon
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("BreathingSpaceNotSureWritPage tests")
-class BreathingSpaceNotSureWritPageTest extends BasePageTest{
+class BreathingSpaceNotSureWritPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
