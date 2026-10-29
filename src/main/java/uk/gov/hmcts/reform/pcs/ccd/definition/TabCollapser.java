@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.definition;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -25,6 +26,7 @@ import java.util.stream.Stream;
  * collapsed tab reaches the same users as before. Tabs named in the keep set are left as role copies because other
  * profiles can read their fields.
  */
+@Slf4j
 public final class TabCollapser {
 
     static final Set<String> KEEP_ROLE_COPIES = Set.of("support");
@@ -105,8 +107,7 @@ public final class TabCollapser {
             }
             Path output = tabDir.resolve(kept.displayOrder() + "_" + baseTabId + ".json");
             MAPPER.writeValue(output.toFile(), rows);
-            System.out.printf("Collapsed %d copies of tab %s into %s%n", copies.size(), baseTabId,
-                              output.getFileName());
+            log.info("Collapsed {} copies of tab {} into {}", copies.size(), baseTabId, output.getFileName());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
