@@ -93,8 +93,8 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         run(key);
         var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
         PCSCase judge = view(reference, "judge");
-        // The bundle Document is write-only (see BundleTab), so reading the view back leaves it out.
         assertThat(judge.getBundleTab().getPages()).isEqualTo(first.pageCount());
+        assertThat(judge.getBundleTab().getBundle().getUrl()).isEqualTo(first.stored().orElseThrow().url());
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
             .doesNotContain(first.stored().orElseThrow().url());
         assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
