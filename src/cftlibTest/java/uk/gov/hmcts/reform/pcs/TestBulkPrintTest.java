@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -69,6 +70,7 @@ import static uk.gov.hmcts.reform.pcs.testingsupport.bulkprint.TestBulkPrintTask
  * runs for real (CCD, CDAM, the coversheet, the conversion and the Send Letter client); only the document store,
  * Docmosis and Send Letter are stubbed.
  */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TestBulkPrintTest extends CftlibTest {
 
