@@ -32,8 +32,10 @@ public enum EventId {
     removeDocument,
     legalRepDocumentUpload,
     manageParties,
+    reindexCases,
     defendantPaperResponse,
     legalRepresentativeContactDetails,
+    addJudicialNote,
     resumeEnforcementOrder,
     deleteDraftApplication
 }
