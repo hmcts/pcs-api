@@ -33,6 +33,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,7 +64,8 @@ class ClaimPackSelectorTest {
         underTest = new ClaimPackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
-            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null),
+                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)));
     }
 
     private final PartyEntity claimant = party();

@@ -31,6 +31,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +44,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PackSkipRulesTest {
 
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 29, 12, 0);
+    private static final Clock UTC_CLOCK = Clock.fixed(NOW.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+
     @Mock
     private FeatureToggleService featureToggleService;
 
@@ -48,7 +55,7 @@ class PackSkipRulesTest {
     @BeforeEach
     void setUp() {
         underTest = new PackSkipRules(
-            featureToggleService, new CaseFlagService(null, null, null, null, null));
+            featureToggleService, new CaseFlagService(null, null, null, null, null), UTC_CLOCK, Duration.ofHours(24));
     }
 
     @Test
@@ -345,6 +352,40 @@ class PackSkipRulesTest {
         assertThat(underTest.shouldSkipGenAppPack(pcsCase, genApp)).isTrue();
     }
 
+    @Test
+    @DisplayName("Skips the claim pack when a gen app is expected and the claim was issued under 24 hours ago")
+    void shouldSkipClaimPackWhenGenAppExpectedWithinHoldPeriod() {
+        enableRelease13();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(23));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack when a gen app is expected and 24 hours have passed since issue")
+    void shouldNotSkipClaimPackWhenGenAppHoldPeriodExpired() {
+        enableRelease13();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Still skips the claim pack for translation after the gen app hold period has expired")
+    void shouldSkipClaimPackWhenTranslationRequiredAfterGenAppHoldPeriodExpired() {
+        enableRelease13();
+        ClaimEntity claim = ClaimEntity.builder()
+            .languageUsed(LanguageUsed.WELSH)
+            .genAppExpected(VerticalYesNo.YES)
+            .claimIssuedDate(NOW.minusHours(25))
+            .build();
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
     private void enableRelease13() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
     }
@@ -413,5 +454,13 @@ class PackSkipRulesTest {
         flag.setFlagRefData(FlagRefDataEntity.builder()
             .flagCode("PF0026")
             .build());
+    }
+
+    private ClaimEntity englishClaimExpectingGenApp(LocalDateTime claimIssuedDate) {
+        return ClaimEntity.builder()
+            .languageUsed(LanguageUsed.ENGLISH)
+            .genAppExpected(VerticalYesNo.YES)
+            .claimIssuedDate(claimIssuedDate)
+            .build();
     }
 }
