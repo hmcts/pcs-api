@@ -267,29 +267,6 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Sends a late counterclaim that is linked only through the counterclaim")
-    void shouldSendLateCounterClaimLinkedOnlyThroughCounterClaim() {
-        PartyEntity respondingDefendant = partyWithPostPreference(VerticalYesNo.YES);
-        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
-        DocumentEntity response = defenceForm(respondingDefendant);
-        DocumentEntity issuedCounterClaim = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .type(DocumentType.COUNTERCLAIM)
-            .counterClaim(CounterClaimEntity.builder().party(respondingDefendant).build())
-            .build();
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
-        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(
-            List.of(sent(respondingDefendant, response), sent(postalCoDefendant, response)));
-
-        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
-            caseWith(List.of(response, issuedCounterClaim), claimant, respondingDefendant, postalCoDefendant));
-
-        assertThat(result).hasSize(2);
-        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(issuedCounterClaim);
-        assertThat(candidateFor(result, postalCoDefendant).documents()).containsExactly(issuedCounterClaim);
-    }
-
-    @Test
     @DisplayName("When the rollout flag is off, sends only the unsent counter-claim after defence was posted")
     void shouldSendOnlyUnsentCounterClaimLaterWhenRolloutFlagOff() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);

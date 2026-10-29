@@ -74,11 +74,10 @@ public class DefencePackSelector {
                 eligibleRecipients.forEach(
                     party -> addPending(recipients, documentsByRecipient, party, defenceForm));
             }
-            DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
-            if (counterClaimForm != null) {
-                eligibleRecipients.forEach(
-                    party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
-            }
+        }
+        for (DocumentEntity counterClaimForm : counterClaimDocuments(pcsCase)) {
+            eligibleRecipients.forEach(
+                party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
         }
 
         List<DefencePackCandidate> candidates = new ArrayList<>();
@@ -129,23 +128,10 @@ public class DefencePackSelector {
             .orElse(null);
     }
 
-    private DocumentEntity counterClaimDocument(PcsCaseEntity pcsCase, PartyEntity defendant) {
+    private List<DocumentEntity> counterClaimDocuments(PcsCaseEntity pcsCase) {
         return pcsCase.getDocuments().stream()
             .filter(document -> document.getType() == DocumentType.COUNTERCLAIM)
-            .filter(document -> belongsToCounterClaimDefendant(document, defendant))
-            .findFirst()
-            .orElse(null);
-    }
-
-    // The form is linked through counter_claim_id. party_id is usually set as well, but a row that only
-    // has the counterclaim link must still go out on the follow-up pack.
-    private boolean belongsToCounterClaimDefendant(DocumentEntity document, PartyEntity defendant) {
-        if (document.getParty() != null && document.getParty().getId().equals(defendant.getId())) {
-            return true;
-        }
-        return document.getCounterClaim() != null
-            && document.getCounterClaim().getParty() != null
-            && document.getCounterClaim().getParty().getId().equals(defendant.getId());
+            .toList();
     }
 
     private boolean belongsToDefendant(DocumentEntity document, PartyEntity defendant) {
