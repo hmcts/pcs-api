@@ -39,7 +39,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.testBulkPrint;
 @RequiredArgsConstructor
 public class TestBulkPrint implements CCDConfig<PCSCase, State, UserRole> {
 
-    static final String EVENT_NAME = "Test Support: Bulk Print Documents";
+    // CCD caps event names at 30 characters and descriptions at 65.
+    static final String EVENT_NAME = "Test Support: Bulk Print";
 
     private final SchedulerClient schedulerClient;
     private final DocumentIdExtractor documentIdExtractor;
@@ -58,7 +59,7 @@ public class TestBulkPrint implements CCDConfig<PCSCase, State, UserRole> {
             .decentralisedEvent(testBulkPrint.name(), this::submit)
             .forAllStates()
             .name(EVENT_NAME)
-            .description("Convert uploaded documents for bulk print and post them to the claimant")
+            .description("Post uploaded documents to the claimant by bulk print")
             .showSummary()
             .grant(Permission.CRU, UserRole.PCS_SOLICITOR)
             .grant(Permission.CRU, UserRole.CLAIMANT)
