@@ -49,9 +49,7 @@ public class WarrantDetails {
 
     @CCD(
         label = "Are you alleging that the defendant has failed to make payments "
-           + "which are a condition of the suspension of the order for possession?",
-        hint = "These are payments outlined in the suspended order for possession.  "
-              + "They were ordered to make these payments by the judge."
+           + "which are a condition of the suspension of the order for possession?"
     )
     private VerticalYesNo defendantMissedPayments;
 
