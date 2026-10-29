@@ -9,9 +9,12 @@ import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotFeeParty;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotRequestedFee;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -162,7 +165,50 @@ class SnapshotMapperTest {
         assertThat(result.getPostalClaimReceivedByCourtDate()).isEqualTo("2026-01-10");
         assertThat(result.getClaimSubmittedToSystemDate()).isEqualTo("2026-02-01T14:30:00Z");
         assertThat(result.getClaimFeePaidDate()).isEqualTo("2026-02-03T10:00:00Z");
-        assertThat(result.getIssueClaimDate()).isEqualTo("2026-02-05T09:00:00Z");
+        assertThat(result.getClaimIssuedToDefendantDate()).isEqualTo("2026-02-05T09:00:00Z");
+    }
+
+    @Test
+    void shouldMapPropertyAddress() {
+        assertThat(claimSnapshotMapper.mapPropertyAddress("1 High Street, Cambridge", "cb5 8bl"))
+            .singleElement()
+            .satisfies(address -> {
+                assertThat(address.getAddress()).isEqualTo("1 High Street, Cambridge");
+                assertThat(address.getPostcode()).isEqualTo("CB5 8BL");
+            });
+        assertThat(claimSnapshotMapper.mapPropertyAddress(null, null)).isEmpty();
+    }
+
+    @Test
+    void shouldMapRequestedFee() {
+        SnapshotRequestedFee result = claimSnapshotMapper.mapRequestedFee(
+            "fee-id",
+            "RC-1234",
+            "fee-type-id",
+            "CLAIM",
+            new BigDecimal("355.00"),
+            "PAID",
+            "party-1",
+            "2026-02-03T10:00:00Z"
+        );
+
+        assertThat(result.getFeeId()).isEqualTo("fee-id");
+        assertThat(result.getFeeReference()).isEqualTo("RC-1234");
+        assertThat(result.getFeeTypeId()).isEqualTo("fee-type-id");
+        assertThat(result.getFeeTypeDescription()).isEqualTo("CLAIM");
+        assertThat(result.getFeeAmount()).isEqualByComparingTo("355.00");
+        assertThat(result.getFeeStatus()).isEqualTo("Fully Paid");
+        assertThat(result.getFeeRequestedOfTheseParties()).singleElement()
+            .extracting(SnapshotFeeParty::getPartyId)
+            .isEqualTo("party-1");
+        assertThat(result.getFeeRequestedDate()).isEqualTo("2026-02-03T10:00:00Z");
+        assertThat(result.getResponsiblePartyId()).isEqualTo("party-1");
+        assertThat(claimSnapshotMapper.mapRequestedFee(
+            "id", null, null, null, null, "NOT_PAID", null, null
+        ).getFeeStatus()).isEqualTo("Requested Not Paid");
+        assertThat(claimSnapshotMapper.mapRequestedFee(
+            "id", null, null, null, null, "PARTIALLY_PAID", null, null
+        ).getFeeStatus()).isEqualTo("Partially Paid");
     }
 
     @Test
@@ -173,6 +219,15 @@ class SnapshotMapperTest {
         assertThat(result.getPartyRole()).isEqualTo("Defendant");
         assertThat(result.getPartyType()).isNull();
         assertThat(result.getPartyRepresented()).isEqualTo("No");
+        assertThat(result.getPartyLanguage()).isNull();
+    }
+
+    @Test
+    void shouldMapPartyLanguage() {
+        SnapshotParty result = claimSnapshotMapper.mapParty(
+            "party-1", "DEFENDANT", "PRIVATE_LANDLORD", false, "ENGLISH_AND_WELSH");
+
+        assertThat(result.getPartyLanguage()).isEqualTo("engAndCym");
     }
 
     @Test
@@ -270,7 +325,7 @@ class SnapshotMapperTest {
                 .build()
         );
 
-        assertThat(result.getContractVersion()).isEqualTo("4.1.0");
+        assertThat(result.getContractVersion()).isEqualTo("4.2.0");
         assertThat(result.getProducer().getSystem()).isEqualTo("possessions-ccd");
         assertThat(result.getProducer().getEnvironment()).isEqualTo("test");
         assertThat(result.getExtractDate()).isEqualTo("2026-03-09");

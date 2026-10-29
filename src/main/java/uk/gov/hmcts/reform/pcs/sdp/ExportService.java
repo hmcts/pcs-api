@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -18,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
@@ -26,9 +27,10 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
-import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotRequestedFee;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,6 +46,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Extracts claim data from the PCS database, maps it to the SDP contract, and uploads JSON.
@@ -60,7 +63,6 @@ public class ExportService {
     private final Optional<BlobUploader> blobUploader;
     private final Clock utcClock;
     private final String environment;
-    private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
 
     public ExportService(ClaimRepository claimRepository,
                          SnapshotMapper claimSnapshotMapper,
@@ -162,6 +164,11 @@ public class ExportService {
                 : null,
             pcsCase != null ? enumName(pcsCase.getLegislativeCountry()) : null
         );
+        AddressEntity propertyAddress = pcsCase != null ? pcsCase.getPropertyAddress() : null;
+        dimensions.setPropertyAddress(claimSnapshotMapper.mapPropertyAddress(
+            formatAddress(propertyAddress),
+            propertyAddress != null ? propertyAddress.getPostcode() : null
+        ));
 
         SnapshotMilestones milestones = claimSnapshotMapper.mapMilestones(
             notice != null ? enumName(notice.getServingMethod()) : null,
@@ -171,10 +178,11 @@ public class ExportService {
             formatDateTime(firstPaidFeeDate(claim.getFeePayments()))
         );
 
-        List<SnapshotParty> parties = mapParties(claim.getClaimParties(), enumName(claim.getClaimantType()));
-
-        String claimReference = caseReferenceFormatter
-            .formatCaseReferenceWithDashes(pcsCase != null ? pcsCase.getCaseReference() : null);
+        List<SnapshotParty> parties = mapParties(
+            claim.getClaimParties(),
+            enumName(claim.getClaimantType()),
+            enumName(claim.getLanguageUsed())
+        );
 
         return claimSnapshotMapper.mapRecord(
             environment,
@@ -182,20 +190,22 @@ public class ExportService {
             UUID.randomUUID().toString(),
             publishedDate,
             ClaimSnapshot.builder()
-                .claimReference(claimReference)
+                .claimReference(formatClaimReference(pcsCase != null ? pcsCase.getCaseReference() : null))
                 .snapshotVersion(0)
                 .recordedDate(formatDateTime(claim.getClaimSubmittedDate()))
                 .dimensions(dimensions)
                 .milestones(milestones)
                 .parties(parties)
-                .paymentReferences(mapPayments(claim.getFeePayments()))
+                .requestedFees(mapRequestedFees(claim.getFeePayments()))
                 .grounds(mapGrounds(claim.getClaimGrounds()))
                 .responses(mapResponses(pcsCase != null ? pcsCase.getDefendantResponses() : null, claim.getId()))
                 .build()
         );
     }
 
-    private List<SnapshotParty> mapParties(List<ClaimPartyEntity> claimParties, String claimantType) {
+    private List<SnapshotParty> mapParties(List<ClaimPartyEntity> claimParties,
+                                           String claimantType,
+                                           String languageUsed) {
         if (claimParties == null || claimParties.isEmpty()) {
             return List.of();
         }
@@ -209,24 +219,33 @@ public class ExportService {
                 party.getId() != null ? party.getId().toString() : null,
                 enumName(claimParty.getRole()),
                 claimantType,
-                isRepresented(party)
+                isRepresented(party),
+                languageUsed
             ));
         }
         return parties;
     }
 
-    private List<SnapshotPaymentReference> mapPayments(List<FeePaymentEntity> feePayments) {
+    private List<SnapshotRequestedFee> mapRequestedFees(List<FeePaymentEntity> feePayments) {
         if (feePayments == null || feePayments.isEmpty()) {
             return List.of();
         }
-        List<SnapshotPaymentReference> payments = new ArrayList<>();
+        List<SnapshotRequestedFee> fees = new ArrayList<>();
         for (FeePaymentEntity feePayment : feePayments) {
-            if (feePayment.getExternalReference() == null || feePayment.getExternalReference().isBlank()) {
-                continue;
-            }
-            payments.add(claimSnapshotMapper.mapPayment(feePayment.getExternalReference()));
+            PartyEntity party = feePayment.getParty();
+            PaymentCallbackHandlerType handlerType = feePayment.getPaymentCallbackHandlerType();
+            fees.add(claimSnapshotMapper.mapRequestedFee(
+                nameUuid("fee-payment-" + feePayment.getId()),
+                firstNonBlank(feePayment.getServiceRequestReference(), feePayment.getExternalReference()),
+                handlerType != null ? nameUuid("fee-type-" + handlerType.name()) : null,
+                handlerType != null ? handlerType.name() : null,
+                feePayment.getAmount(),
+                enumName(feePayment.getPaymentStatus()),
+                party != null && party.getId() != null ? party.getId().toString() : null,
+                formatDateTime(feePayment.getRequestDate())
+            ));
         }
-        return payments;
+        return fees;
     }
 
     private List<SnapshotGround> mapGrounds(Set<ClaimGroundEntity> claimGrounds) {
@@ -287,6 +306,39 @@ public class ExportService {
 
     private static String formatDateTime(LocalDateTime dateTime) {
         return dateTime == null ? null : dateTime.toInstant(ZoneOffset.UTC).toString();
+    }
+
+    private static String formatClaimReference(Long caseReference) {
+        return caseReference == null ? null : String.format("%016d", caseReference);
+    }
+
+    private static String formatAddress(AddressEntity address) {
+        if (address == null) {
+            return null;
+        }
+        List<String> parts = Stream.of(
+            address.getAddressLine1(),
+            address.getAddressLine2(),
+            address.getAddressLine3(),
+            address.getPostTown(),
+            address.getCounty(),
+            address.getCountry()
+        ).filter(part -> part != null && !part.isBlank()).toList();
+        return parts.isEmpty() ? null : String.join(", ", parts);
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        if (first != null && !first.isBlank()) {
+            return first;
+        }
+        if (second != null && !second.isBlank()) {
+            return second;
+        }
+        return null;
+    }
+
+    private static String nameUuid(String value) {
+        return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     private static String enumName(Enum<?> value) {

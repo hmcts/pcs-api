@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
-import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotRequestedFee;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
 import java.util.List;
@@ -60,8 +60,8 @@ class SnapshotHasherTest {
         ClaimSnapshot changedGrounds = claim(parties);
         changedGrounds.setGrounds(List.of(SnapshotGround.builder().groundsCode("8").build()));
         ClaimSnapshot changedPayments = claim(parties);
-        changedPayments.setPaymentReferences(
-            List.of(SnapshotPaymentReference.builder().paymentReference("RC-1").build()));
+        changedPayments.setRequestedFees(
+            List.of(SnapshotRequestedFee.builder().feeId("fee-1").build()));
         ClaimSnapshot changedResponses = claim(parties);
         changedResponses.setResponses(List.of(SnapshotResponse.builder().responseId("12").build()));
         return Stream.of(

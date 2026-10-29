@@ -5,11 +5,16 @@ import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.Producer;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotFeeParty;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
-import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPropertyAddress;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotRequestedFee;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Maps PCS claim source values into SDP snapshot model fields.
@@ -17,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 @Component
 public class SnapshotMapper {
 
-    private static final String CONTRACT_VERSION = "4.1.0";
+    private static final String CONTRACT_VERSION = "4.2.0";
     private static final String PRODUCER_SYSTEM = "possessions-ccd";
     private static final String SUBMITTED_TYPE_DIGITAL = "Digital";
 
@@ -58,25 +63,44 @@ public class SnapshotMapper {
             .build();
     }
 
+    public List<SnapshotPropertyAddress> mapPropertyAddress(String address, String postcode) {
+        if (isBlank(address) && isBlank(postcode)) {
+            return List.of();
+        }
+        return List.of(SnapshotPropertyAddress.builder()
+            .address(isBlank(address) ? null : address)
+            .postcode(isBlank(postcode) ? null : postcode.trim().toUpperCase())
+            .build());
+    }
+
     public SnapshotMilestones mapMilestones(String servingMethod,
                                             String noticeDate,
                                             String claimSubmittedDate,
-                                            String claimIssuedDate,
+                                            String claimIssuedToDefendantDate,
                                             String claimFeePaidDate) {
         return SnapshotMilestones.builder()
             .postalClaimReceivedByCourtDate(resolvePostalReceivedDate(servingMethod, noticeDate))
             .claimSubmittedToSystemDate(claimSubmittedDate)
             .claimFeePaidDate(claimFeePaidDate)
-            .issueClaimDate(claimIssuedDate)
+            .claimIssuedToDefendantDate(claimIssuedToDefendantDate)
             .build();
     }
 
     public SnapshotParty mapParty(String partyId, String role, String claimantType, boolean represented) {
+        return mapParty(partyId, role, claimantType, represented, null);
+    }
+
+    public SnapshotParty mapParty(String partyId,
+                                  String role,
+                                  String claimantType,
+                                  boolean represented,
+                                  String languageUsed) {
         return SnapshotParty.builder()
             .partyId(partyId)
             .partyType("CLAIMANT".equals(role) ? resolvePartyType(claimantType) : null)
             .partyRole(resolvePartyRole(role))
             .partyRepresented(represented ? "Yes" : "No")
+            .partyLanguage(languageUsed == null ? null : resolveLanguage(languageUsed))
             .build();
     }
 
@@ -88,9 +112,26 @@ public class SnapshotMapper {
             .build();
     }
 
-    public SnapshotPaymentReference mapPayment(String paymentReference) {
-        return SnapshotPaymentReference.builder()
-            .paymentReference(paymentReference)
+    public SnapshotRequestedFee mapRequestedFee(String feeId,
+                                                String feeReference,
+                                                String feeTypeId,
+                                                String feeTypeDescription,
+                                                BigDecimal feeAmount,
+                                                String paymentStatus,
+                                                String partyId,
+                                                String feeRequestedDate) {
+        return SnapshotRequestedFee.builder()
+            .feeId(feeId)
+            .feeReference(feeReference)
+            .feeTypeId(feeTypeId)
+            .feeTypeDescription(feeTypeDescription)
+            .feeAmount(feeAmount)
+            .feeStatus(resolveFeeStatus(paymentStatus))
+            .feeRequestedOfTheseParties(partyId == null
+                ? List.of()
+                : List.of(SnapshotFeeParty.builder().partyId(partyId).build()))
+            .feeRequestedDate(feeRequestedDate)
+            .responsiblePartyId(partyId)
             .build();
     }
 
@@ -234,5 +275,22 @@ public class SnapshotMapper {
             return "Discretionary";
         }
         return category;
+    }
+
+    private String resolveFeeStatus(String paymentStatus) {
+        if ("PAID".equals(paymentStatus)) {
+            return "Fully Paid";
+        }
+        if ("PARTIALLY_PAID".equals(paymentStatus)) {
+            return "Partially Paid";
+        }
+        if (paymentStatus == null) {
+            return null;
+        }
+        return "Requested Not Paid";
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }
