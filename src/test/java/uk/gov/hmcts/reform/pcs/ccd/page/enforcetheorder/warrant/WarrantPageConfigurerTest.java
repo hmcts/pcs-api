@@ -86,6 +86,7 @@ class WarrantPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, UploadStatementPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, GenAppHoldingPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmIfDOBKnownPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, defendantsDOBPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedPage.class, verificationCount);
