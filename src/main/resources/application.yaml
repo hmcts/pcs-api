@@ -304,6 +304,8 @@ access-code:
 
 bulk-print:
   schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  # Claim packs for claims where the claimant said a gen app would follow are held for this long after issue.
+  gen-app-expected-hold: ${BULK_PRINT_GEN_APP_EXPECTED_HOLD:24h}
   blank-forms:
     defence-form: classpath:forms/ONC-002R-defence-form.pdf
     counterclaim-form: classpath:forms/ONC-003-counterclaim.pdf

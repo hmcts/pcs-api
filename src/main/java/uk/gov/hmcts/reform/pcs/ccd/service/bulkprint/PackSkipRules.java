@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -17,6 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +32,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopu
 
 /**
  * Selector-time skip rules for bulk-print packs. When {@link FeatureFlag#RELEASE_1_DOT_3} is on, packs that
- * need translation, a follow-on gen app, or an issued counterclaim HWF reference are held back silently —
+ * need translation, a follow-on gen app (until its hold period after claim issue ends), or an issued counterclaim
+ * HWF reference are held back silently —
  * no {@code PACK_SENT} or {@code PACK_FAILED} row is written. Flag off keeps current send behaviour.
  */
 @Service
@@ -38,10 +44,17 @@ public class PackSkipRules {
 
     private final FeatureToggleService featureToggleService;
     private final CaseFlagService caseFlagService;
+    private final Clock utcClock;
+    private final Duration genAppExpectedHold;
 
-    public PackSkipRules(FeatureToggleService featureToggleService, CaseFlagService caseFlagService) {
+    public PackSkipRules(FeatureToggleService featureToggleService,
+                         CaseFlagService caseFlagService,
+                         @Qualifier("utcClock") Clock utcClock,
+                         @Value("${bulk-print.gen-app-expected-hold}") Duration genAppExpectedHold) {
         this.featureToggleService = featureToggleService;
         this.caseFlagService = caseFlagService;
+        this.utcClock = utcClock;
+        this.genAppExpectedHold = genAppExpectedHold;
     }
 
     public boolean shouldSkipClaimPack(PcsCaseEntity pcsCase, ClaimEntity claim) {
@@ -67,7 +80,7 @@ public class PackSkipRules {
 
     private Optional<String> claimPackSkipReason(PcsCaseEntity pcsCase, ClaimEntity claim) {
         boolean translation = requiresTranslation(claim.getLanguageUsed()) || hasActiveTranslationFlag(pcsCase);
-        boolean genAppExpected = claim.getGenAppExpected() == VerticalYesNo.YES;
+        boolean genAppExpected = claim.getGenAppExpected() == VerticalYesNo.YES && withinGenAppHoldPeriod(claim);
         if (translation && genAppExpected) {
             return Optional.of(TRANSLATION_REQUIRED + " and gen app expected");
         }
@@ -78,6 +91,12 @@ public class PackSkipRules {
             return Optional.of("gen app expected");
         }
         return Optional.empty();
+    }
+
+    private boolean withinGenAppHoldPeriod(ClaimEntity claim) {
+        LocalDateTime issuedDate = claim.getClaimIssuedDate();
+        return issuedDate == null
+            || LocalDateTime.now(utcClock).isBefore(issuedDate.plus(genAppExpectedHold));
     }
 
     private Optional<String> defencePackSkipReason(PcsCaseEntity pcsCase) {
