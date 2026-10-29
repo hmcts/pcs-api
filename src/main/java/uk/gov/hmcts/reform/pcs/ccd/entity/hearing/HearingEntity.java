@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.hearing;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,15 +13,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SourceType;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingListingStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -30,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -94,6 +101,60 @@ public class HearingEntity {
     private Boolean cancelled;
 
     private String cancellationReason;
+
+    private String hearingTypeKey;
+
+    private String hearingCaseTypeKey;
+
+    private String hearingCaseSubtypeKey;
+
+    private String hearingPriorityKey;
+
+    private String hearingChannelKey;
+
+    private String hearingSubchannelKey;
+
+    private String listingStatusKey;
+
+    private String changeReasonKey;
+
+    private String autoListChangeReasonsKey;
+
+    private String caseManagementCancellationReasonKey;
+
+    private String actualCancellationReasonKey;
+
+    private String actualPartHeardReasonKey;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private HearingListingStatus listingStatus;
+
+    private LocalDateTime date;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo noticeIssued;
+
+    private UUID noticeParties;
+
+    private UUID pcsCaseId;
+
+    private Integer hearingVenueId;
+
+    @CreationTimestamp(source = SourceType.DB)
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdDate;
+
+    private LocalDateTime lastModifiedDate;
+
+    @PrePersist
+    @PreUpdate
+    void syncModelColumns() {
+        date = hearingDate;
+        noticeIssued = issueNotice;
+        pcsCaseId = pcsCase == null ? null : pcsCase.getId();
+    }
 
     public void addParty(PartyEntity party) {
         HearingNoticePartyEntity hearingNoticePartyEntity = HearingNoticePartyEntity.builder()
