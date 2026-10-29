@@ -316,11 +316,6 @@ xui-mo-webapp:
       SERVICES_MCA_PROXY_API: http://${SERVICE_NAME}-aac-manage-case-assignment
       FEATURE_OGD_UPDATE_REFRESH_USER_ENABLED: true
       CASE_TYPES: PCS
-    keyVaults:
-      rpx:
-        resourceGroup: rpx
-        secrets:
-          - mo-webapp-redis6-connection-string
 
 ccd-case-document-am-api:
   enabled: true
