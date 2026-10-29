@@ -26,7 +26,7 @@ class BreathingSpaceNotSurePageTest extends BasePageTest {
     class MidEventCallbackTests {
 
         @Test
-        @DisplayName("Should return error to block progression when breathing space status is not sure")
+        @DisplayName("Should return error to block progression when breathing space status is not sure.")
         void shouldReturnErrorWhenBreathingSpaceNotSure() {
             // Given
             PCSCase caseData = PCSCase.builder()
