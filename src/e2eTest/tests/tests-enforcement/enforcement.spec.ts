@@ -49,7 +49,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants()});
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('getDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
@@ -270,7 +270,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantRadioOption,
         option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
         label: statementOfTruth.fullNameHiddenTextLabel,
@@ -386,7 +386,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruth', {
       selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByLabel,
+      question: statementOfTruth.completedByParagraph,
       option: statementOfTruth.claimantLegalRepresentativeRadioOption,
       option1: statementOfTruth.signThisStatementHiddenCheckbox,
       label: statementOfTruth.fullNameHiddenTextLabel,
@@ -507,7 +507,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruth', {
       selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByLabel,
+      question: statementOfTruth.completedByParagraph,
       option: statementOfTruth.claimantRadioOption,
       option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
       label: statementOfTruth.fullNameHiddenTextLabel,
@@ -667,7 +667,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         option1: statementOfTruth.signThisStatementHiddenCheckbox,
         label: statementOfTruth.fullNameHiddenTextLabel,
@@ -783,7 +783,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         option1: statementOfTruth.signThisStatementHiddenCheckbox,
         label: statementOfTruth.fullNameHiddenTextLabel,
