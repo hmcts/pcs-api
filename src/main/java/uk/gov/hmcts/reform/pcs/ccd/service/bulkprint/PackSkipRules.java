@@ -80,23 +80,24 @@ public class PackSkipRules {
 
     private Optional<String> claimPackSkipReason(PcsCaseEntity pcsCase, ClaimEntity claim) {
         boolean translation = requiresTranslation(claim.getLanguageUsed()) || hasActiveTranslationFlag(pcsCase);
-        boolean genAppExpected = claim.getGenAppExpected() == VerticalYesNo.YES && withinGenAppHoldPeriod(claim);
-        if (translation && genAppExpected) {
+        boolean holdForGenApp = claim.getGenAppExpected() == VerticalYesNo.YES && !genAppHoldExpired(claim);
+        if (translation && holdForGenApp) {
             return Optional.of(TRANSLATION_REQUIRED + " and gen app expected");
         }
         if (translation) {
             return Optional.of(TRANSLATION_REQUIRED);
         }
-        if (genAppExpected) {
+        if (holdForGenApp) {
             return Optional.of("gen app expected");
         }
         return Optional.empty();
     }
 
-    private boolean withinGenAppHoldPeriod(ClaimEntity claim) {
+    private boolean genAppHoldExpired(ClaimEntity claim) {
         LocalDateTime issuedDate = claim.getClaimIssuedDate();
-        return issuedDate == null
-            || LocalDateTime.now(utcClock).isBefore(issuedDate.plus(genAppExpectedHold));
+        return release14Enabled()
+            && issuedDate != null
+            && !LocalDateTime.now(utcClock).isBefore(issuedDate.plus(genAppExpectedHold));
     }
 
     private Optional<String> defencePackSkipReason(PcsCaseEntity pcsCase) {
@@ -133,6 +134,10 @@ public class PackSkipRules {
 
     private boolean release13Enabled() {
         return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3);
+    }
+
+    private boolean release14Enabled() {
+        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
     }
 
     private boolean hasSubmittedDefenceNeedingTranslation(PcsCaseEntity pcsCase) {

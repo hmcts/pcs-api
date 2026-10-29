@@ -356,6 +356,7 @@ class PackSkipRulesTest {
     @DisplayName("Skips the claim pack when a gen app is expected and the claim was issued under 24 hours ago")
     void shouldSkipClaimPackWhenGenAppExpectedWithinHoldPeriod() {
         enableRelease13();
+        enableRelease14();
         ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(23));
         PcsCaseEntity pcsCase = caseWith(claim);
 
@@ -366,6 +367,7 @@ class PackSkipRulesTest {
     @DisplayName("Releases the claim pack when a gen app is expected and 24 hours have passed since issue")
     void shouldNotSkipClaimPackWhenGenAppHoldPeriodExpired() {
         enableRelease13();
+        enableRelease14();
         ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
         PcsCaseEntity pcsCase = caseWith(claim);
 
@@ -386,8 +388,22 @@ class PackSkipRulesTest {
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
     }
 
+    @Test
+    @DisplayName("Keeps holding the claim pack after 24 hours when release 1.4 is off")
+    void shouldSkipClaimPackAfterGenAppHoldPeriodWhenRelease14Off() {
+        enableRelease13();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
     private void enableRelease13() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+    }
+
+    private void enableRelease14() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
     }
 
     private PcsCaseEntity caseWith(ClaimEntity claim) {
