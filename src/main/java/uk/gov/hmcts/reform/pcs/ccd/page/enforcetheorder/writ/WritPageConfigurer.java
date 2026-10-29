@@ -18,6 +18,7 @@ public class WritPageConfigurer implements PageConfigurer {
             .add(new BreathingSpaceWritPage())
             .add(new BreathingSpaceNotSureWritPage())
             .add(new MissedPaymentsWritPage())
+            .add(new UploadStatementWritPage())
             .add(new ConfirmHCEOfficerPage())
             .add(new HCEOfficerDetailsPage())
             .add(new EnforcementOfficerSelectionPage())

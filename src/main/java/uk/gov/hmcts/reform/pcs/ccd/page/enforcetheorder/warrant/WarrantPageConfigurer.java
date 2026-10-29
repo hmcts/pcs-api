@@ -28,6 +28,7 @@ public class WarrantPageConfigurer implements PageConfigurer {
             .add(new BreathingSpacePage())
             .add(new BreathingSpaceNotSurePage())
             .add(new MissedPaymentsPage())
+            .add(new UploadStatementPage())
             .add(new NameAndAddressForEvictionPage())
             .add(new ChangeNameAddressPage())
             .add(new ConfirmIfDOBKnownPage())
