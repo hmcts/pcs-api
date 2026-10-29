@@ -4,6 +4,7 @@ package uk.gov.hmcts.reform.pcs;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -39,7 +40,7 @@ import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
 import uk.gov.hmcts.reform.pcs.service.CaseStateService;
-import uk.gov.hmcts.reform.pcs.service.DmStoreStub;
+import uk.gov.hmcts.reform.pcs.service.DocumentServiceStubs;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -77,14 +78,22 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Autowired
     private MockSendLetterServer mockSendLetterServer;
     @Autowired
-    private DmStoreStub dmStoreStub;
+    private DocumentServiceStubs documentServiceStubs;
 
     private String solicitorToken;
     private Long caseReference;
+    private StubMapping renditions;
 
     @BeforeAll
     void setup() {
         solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        // So that CDAM's check for each pack document can only pass on that document.
+        renditions = documentServiceStubs.giveEachRenditionItsOwnId();
+    }
+
+    @AfterAll
+    void tearDown() {
+        documentServiceStubs.remove(renditions);
     }
 
     @Test
@@ -172,7 +181,7 @@ class CreatePossessionClaimTest extends CftlibTest {
         List<UUID> accessCodeLetters =
             caseDocumentService.waitForDocumentIds(caseReference, DocumentType.DEFENDANT_ACCESS_CODE, 2);
         List<StubMapping> attached = Stream.concat(claimForms.stream(), accessCodeLetters.stream())
-            .map(documentId -> dmStoreStub.attachToCase(documentId, caseReference))
+            .map(documentId -> documentServiceStubs.attachToCase(documentId, caseReference))
             .toList();
         try {
             testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
@@ -188,9 +197,9 @@ class CreatePossessionClaimTest extends CftlibTest {
                 .containsExactlyInAnyOrder("Danny Defendant", "Delia Jones");
             assertThat(attached)
                 .as("CDAM read each pack document's case-attached metadata, so checked access through CCD")
-                .allSatisfy(stub -> assertThat(dmStoreStub.requestsServedBy(stub)).isPositive());
+                .allSatisfy(stub -> assertThat(documentServiceStubs.requestsServedBy(stub)).isPositive());
         } finally {
-            attached.forEach(dmStoreStub::remove);
+            attached.forEach(documentServiceStubs::remove);
         }
     }
 
