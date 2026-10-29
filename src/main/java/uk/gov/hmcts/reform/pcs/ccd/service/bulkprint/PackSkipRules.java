@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -26,9 +28,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
  * Selector-time skip rules for bulk-print packs. When {@link FeatureFlag#RELEASE_1_DOT_3} is on, packs that
@@ -80,7 +84,7 @@ public class PackSkipRules {
 
     private Optional<String> claimPackSkipReason(PcsCaseEntity pcsCase, ClaimEntity claim) {
         boolean translation = requiresTranslation(claim.getLanguageUsed()) || hasActiveTranslationFlag(pcsCase);
-        boolean holdForGenApp = claim.getGenAppExpected() == VerticalYesNo.YES && !genAppHoldExpired(claim);
+        boolean holdForGenApp = claim.getGenAppExpected() == VerticalYesNo.YES && genAppHoldActive(pcsCase, claim);
         if (translation && holdForGenApp) {
             return Optional.of(TRANSLATION_REQUIRED + " and gen app expected");
         }
@@ -93,11 +97,23 @@ public class PackSkipRules {
         return Optional.empty();
     }
 
-    private boolean genAppHoldExpired(ClaimEntity claim) {
-        LocalDateTime issuedDate = claim.getClaimIssuedDate();
-        return release14Enabled()
-            && issuedDate != null
-            && !LocalDateTime.now(utcClock).isBefore(issuedDate.plus(genAppExpectedHold));
+    private boolean genAppHoldActive(PcsCaseEntity pcsCase, ClaimEntity claim) {
+        if (!release14Enabled()) {
+            return true;
+        }
+        return LocalDateTime.now(utcClock).isBefore(claim.getClaimIssuedDate().plus(genAppExpectedHold))
+            || hasIssuedClaimantGenApp(pcsCase, claim);
+    }
+
+    private boolean hasIssuedClaimantGenApp(PcsCaseEntity pcsCase, ClaimEntity claim) {
+        List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
+        if (claimants.isEmpty()) {
+            return false;
+        }
+        UUID claimantId = claimants.getFirst().getId();
+        return pcsCase.getGenApps().stream()
+            .anyMatch(genApp -> genApp.getState() == GenAppState.GEN_APP_ISSUED
+                && claimantId.equals(genApp.getParty().getId()));
     }
 
     private Optional<String> defencePackSkipReason(PcsCaseEntity pcsCase) {

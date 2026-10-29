@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
@@ -36,6 +37,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -398,6 +400,39 @@ class PackSkipRulesTest {
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
     }
 
+    @Test
+    @DisplayName("Keeps holding the claim pack after 24 hours when the claimant has an issued gen app")
+    void shouldSkipClaimPackAfterGenAppHoldPeriodWhenClaimantGenAppIssued() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.GEN_APP_ISSUED);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack after 24 hours when the claimant gen app is not yet issued")
+    void shouldNotSkipClaimPackAfterGenAppHoldPeriodWhenClaimantGenAppPending() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.PENDING_GEN_APP_ISSUED);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack after 24 hours when only a defendant has an issued gen app")
+    void shouldNotSkipClaimPackAfterGenAppHoldPeriodWhenOnlyDefendantGenAppIssued() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWithGenApp(claim, PartyRole.DEFENDANT, GenAppState.GEN_APP_ISSUED);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
     private void enableRelease13() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
     }
@@ -470,6 +505,17 @@ class PackSkipRulesTest {
         flag.setFlagRefData(FlagRefDataEntity.builder()
             .flagCode("PF0026")
             .build());
+    }
+
+    private PcsCaseEntity caseWithGenApp(ClaimEntity claim, PartyRole applicantRole, GenAppState state) {
+        PartyEntity applicant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        claim.setClaimParties(List.of(claimParty(applicant, applicantRole)));
+        GenAppEntity genApp = GenAppEntity.builder().party(applicant).state(state).build();
+        return PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .claims(List.of(claim))
+            .genApps(Set.of(genApp))
+            .build();
     }
 
     private ClaimEntity englishClaimExpectingGenApp(LocalDateTime claimIssuedDate) {
