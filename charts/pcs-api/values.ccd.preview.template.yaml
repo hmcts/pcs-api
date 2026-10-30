@@ -344,7 +344,7 @@ ccd-case-document-am-api:
             alias: CASE_DOCUMENT_AM_API_S2S_SECRET
 
 # TODO HDPI-6947: REMOVE BEFORE MERGE - preview ORM grants org roles from this PR's access types into the
-# preview RAS. No PRM cron: bin/seed-preview-ras.sh runs P1 before smoke, and a cron would hold its lock.
+# preview RAS. No PRM cron: P1 is run by hand when the preview is seeded, and a cron would hold its lock.
 am-org-role-mapping-service:
   enabled: true
   java:
