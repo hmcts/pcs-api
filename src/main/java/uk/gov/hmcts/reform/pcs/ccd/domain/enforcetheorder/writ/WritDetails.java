@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
@@ -17,7 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
+
+import java.util.List;
 
 @Builder
 @Data
@@ -83,7 +86,9 @@ public class WritDetails {
     )
     private YesOrNo wasGeneralApplicationToTransferToHighCourtSuccessful;
 
-    @JsonUnwrapped
-    @CCD
-    private StatementOfTruthDetailsEnforcement statementOfTruth;
+    @CCD(
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "StatementOfTruthAgreement"
+    )
+    private List<StatementOfTruthAgreement> certification;
 }
