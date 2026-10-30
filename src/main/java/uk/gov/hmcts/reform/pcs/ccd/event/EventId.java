@@ -36,5 +36,6 @@ public enum EventId {
     defendantPaperResponse,
     legalRepresentativeContactDetails,
     addJudicialNote,
-    resumeEnforcementOrder
+    resumeEnforcementOrder,
+    enforcementPayment
 }

@@ -128,5 +128,6 @@ public enum State {
         label = "Closed",
         hint = "${caseTitleMarkdown}"
     )
-    CLOSED
+    CLOSED,
+
 }
