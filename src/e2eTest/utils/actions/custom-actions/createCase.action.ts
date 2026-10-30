@@ -1872,8 +1872,10 @@ export class CreateCaseAction implements IAction {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.getByRole('tab');
       await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
-      const tabs = await tabLoc.allTextContents();
-      expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));
+      const tabs = (await tabLoc.allTextContents()).map(t => t.trim());
+      // HDPI-9534 testing only, remove before merge: exact match fails on duplicates and on leaked tabs alike.
+      expect(tabs.slice().sort(), `tabs seen: ${tabs.join(' | ')}`)
+        .toEqual((tab.tabs as string[]).slice().sort());
     });
   }
 

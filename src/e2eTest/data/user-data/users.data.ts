@@ -15,13 +15,13 @@ export const users = [{
   user: 'Defendant Solicitor',
   email: 'pcs-org1-solicitor2@test.com',
   password: process.env.IDAM_PCS_USER_PASSWORD,
-  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
+  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support']
 },
 {
   user: 'County Court Judge',
   email: 'DDJ.Randell.Lesch@ejudiciary.net',
   password: process.env.IDAM_PCS_USER_PASSWORD,
-  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History']
+  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History', 'Judicial notes']
 },
 {
   user: 'CTSC Team Leader',
@@ -51,7 +51,7 @@ export const users = [{
     user: 'High Court Judge',
     email: 'ChiefICCJudge.Nichols@ejudiciary.net',
     password: process.env.IDAM_PCS_USER_PASSWORD,
-    tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History']
+    tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History', 'Judicial notes']
   },
   {
     user: 'Hearing Centre Team Leader',
