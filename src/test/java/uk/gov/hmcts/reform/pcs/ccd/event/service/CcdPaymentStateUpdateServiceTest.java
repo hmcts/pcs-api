@@ -16,12 +16,15 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.event.action.ClaimPaymentAction;
+import uk.gov.hmcts.reform.pcs.ccd.event.action.EnforcementPaymentAction;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -35,6 +38,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -62,6 +66,12 @@ class CcdPaymentStateUpdateServiceTest {
     private ObjectMapper objectMapper;
     @Mock
     private SchedulerClient schedulerClient;
+    @Mock
+    private SystemEventExecutor systemEventExecutor;
+    @Mock
+    private ClaimPaymentAction claimPaymentAction;
+    @Mock
+    private EnforcementPaymentAction enforcementPaymentAction;
     @Captor
     private ArgumentCaptor<SchedulableInstance<PaymentStateTaskData>> schedulableInstanceCaptor;
 
@@ -146,16 +156,6 @@ class CcdPaymentStateUpdateServiceTest {
     @MethodSource("eventIds")
     void shouldUpdateCcd(EventId eventId) {
         // Given
-        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_BEARER);
-        when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_BEARER);
-        StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_BEARER).build();
-        when(coreCaseDataApi.startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), eventId.name()))
-            .thenReturn(startEventResponse);
-
-        CaseResource expectedCaseResource = new CaseResource();
-        when(coreCaseDataApi.createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
-                                         any(CaseDataContent.class))).thenReturn(expectedCaseResource);
-        when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
         PaymentStateTaskData taskData = PaymentStateTaskData.builder().eventId(eventId)
             .caseReference(CASE_ID).build();
 
@@ -163,13 +163,7 @@ class CcdPaymentStateUpdateServiceTest {
         underTest.updateCcd(taskData);
 
         // Then
-        verify(coreCaseDataApi).startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), eventId.name());
-        ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
-        verify(coreCaseDataApi).createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
-                                            contentCaptor.capture());
-        CaseDataContent submitted = contentCaptor.getValue();
-        assertThat(submitted.getEventToken()).isEqualTo(IDAM_BEARER);
-        assertThat(submitted.getEvent().getId()).isEqualTo(eventId.name());
+        verify(systemEventExecutor).execute(anyLong(), any(), any());
     }
 
     private static Stream<Arguments> eventIds() {

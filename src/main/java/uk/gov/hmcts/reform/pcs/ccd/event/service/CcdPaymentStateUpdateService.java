@@ -51,7 +51,7 @@ public class CcdPaymentStateUpdateService {
         log.info("Updating the CCD State for Case: {} in Event: {} and PaymentReference: {}",
                  taskData.getCaseReference(), taskData.getEventId(), taskData.getPaymentReference());
         SystemEventExecutionResult result = systemEventExecutor.execute(taskData.getCaseReference(),
-           taskData.getIdempotencyKey(), context ->
+            taskData.getIdempotencyKey(), context ->
                 paymentSuccessActions.get(taskData.getEventId()).apply(taskData));
         log.info("System Event from Payment Callback event resulted in : {}", result);
     }

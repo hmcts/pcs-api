@@ -104,9 +104,9 @@ class ClaimPaymentActionTest {
         verify(schedulerClient, org.mockito.Mockito.times(2))
             .scheduleIfNotExists(schedulableInstanceCaptor.capture());
         List<SchedulableInstance<AccessCodeTaskData>> scheduled = schedulableInstanceCaptor.getAllValues();
-        assertThat(scheduled).hasSize(2);
         assertScheduledForDefendant(scheduled.get(0), firstDefendantId, before, after);
         assertScheduledForDefendant(scheduled.get(1), secondDefendantId, before, after);
+        assertThat(scheduled).hasSize(2);
     }
 
     @SuppressWarnings("unchecked")
