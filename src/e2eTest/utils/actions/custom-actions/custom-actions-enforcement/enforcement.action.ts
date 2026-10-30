@@ -167,7 +167,7 @@ export class EnforcementAction implements IAction{
       );
     } else {
       originalDefendantDetails.push(
-        `null null`
+        `Person unknown`
       );
     }
 
@@ -178,13 +178,13 @@ export class EnforcementAction implements IAction{
           originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
         } else {
           originalDefendantDetails.push(
-            `null null`
+            `Person unknown`
           );
         };
       };
     }
-    defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim() !== "Person unknown")),
+    ...originalDefendantDetails.filter(n => n.trim() === "Person unknown")
     ];
 
   }
@@ -212,11 +212,9 @@ export class EnforcementAction implements IAction{
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
     }
-
     defendantDetails = defendantDetails.map(fullName =>
-      fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
+      fullName?.trim() === 'Person unknown' ? 'Name not known' : fullName
     );
-
     await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
