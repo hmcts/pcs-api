@@ -86,10 +86,12 @@ wait_healthy "$ORM"
 echo "Loading access types into the preview ORM"
 loaded=false
 for i in 1 2 3 4 5; do
-  if as_system -X POST "$ORM/am/testing-support/prm/findAndUpdateCaseDefinitionChanges" \
-       | jq -e '.endStatus == "SUCCESS"' >/dev/null 2>&1; then
+  # GET: this testing-support endpoint rejects POST
+  p1=$(as_system "$ORM/am/testing-support/prm/findAndUpdateCaseDefinitionChanges" 2>&1)
+  if jq -e '.endStatus == "SUCCESS"' >/dev/null 2>&1 <<<"$p1"; then
     loaded=true; break
   fi
+  echo "Attempt $i: ${p1:0:300}"
   sleep 30
 done
 [ "$loaded" = true ] || { echo "ORM could not load access types from the preview definition store" >&2; exit 1; }
