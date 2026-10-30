@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -101,6 +102,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
+    private final EnforcementOrderView enforcementOrderView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -132,6 +134,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
+
+        enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
 
         caseFieldsView.setCaseFields(pcsCase);
 
