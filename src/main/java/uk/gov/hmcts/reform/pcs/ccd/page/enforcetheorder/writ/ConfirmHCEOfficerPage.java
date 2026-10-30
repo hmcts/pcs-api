@@ -14,7 +14,7 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                     <details class="govuk-details">
                         <summary class="govuk-details__summary">
                             <span class="govuk-details__summary-text">
-                                I do not know if I need to hire a High Court enforcement officer
+                                I do not know if I need to hire a High Court Enforcement Officer
                             </span>
                         </summary>
                         <div class="govuk-details__text">
@@ -71,7 +71,7 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("confirmHCEOfficer")
-            .pageLabel("Confirm if you have already hired a High Court enforcement officer")
+            .pageLabel("Confirm if you have already hired a High Court Enforcement Officer")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("confirmHCEOfficer-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
