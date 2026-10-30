@@ -122,7 +122,7 @@ tasks.withType(Test).configureEach {
 test {
   failFast = true
   useJUnitPlatform {
-    excludeTags 'enforcement-domain-entity-alignment'
+    excludeTags 'enforcement-domain-entity-alignment', 'ccd-definition'
   }
 }
 
@@ -167,6 +167,19 @@ tasks.register('enforcementValidation', Test) {
     showStandardStreams = true  // Shows the console output with missing fields
   }
 }
+
+tasks.register('definitionTest', Test) {
+  description = "Checks the generated CCD definition: one tab per topic, declared field access respected"
+  group = "verification"
+  dependsOn 'generateCCDConfig'
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
+  useJUnitPlatform {
+    includeTags 'ccd-definition'
+  }
+}
+check.dependsOn definitionTest
 
 tasks.register('functional', Test) {
   description = "Runs functional tests"

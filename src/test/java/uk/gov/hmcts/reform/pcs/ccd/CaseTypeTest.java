@@ -186,6 +186,12 @@ class CaseTypeTest {
         verify(builder).tabsRespectDeclaredFieldAccess();
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("Summary", "Claimant details");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("Case details", "Claimant details");
+        assertThat(showCondition(summaryTab, "Claimant details")).isEqualTo("summaryTab_ClaimantDetails!=\"\"");
+        assertThat(showCondition(summaryTab, "Defendant details")).isEqualTo("summaryTab_DefendantDetails!=\"\"");
+        assertThat(showCondition(caseDetailsTab, "Claimant details"))
+            .isEqualTo("detailsTab_ClaimantInformation!=\"\"");
+        assertThat(showCondition(caseDetailsTab, "Defendant details"))
+            .isEqualTo("detailsTab_DefendantInformationDetails!=\"\"");
         assertThat(judicialNotesTab.getFields()).extracting(TabField::getId)
             .containsExactly("judicialNotesMarkdownLabel", "judicialNotesMarkdown");
         assertThat(supportTab.getForRoles())
@@ -282,5 +288,13 @@ class CaseTypeTest {
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
+    }
+
+    private static String showCondition(Tab<PCSCase, AccessProfile> tab, String fieldId) {
+        return tab.getFields().stream()
+            .filter(field -> field.getId().equals(fieldId))
+            .map(TabField::getShowCondition)
+            .findFirst()
+            .orElseThrow();
     }
 }
