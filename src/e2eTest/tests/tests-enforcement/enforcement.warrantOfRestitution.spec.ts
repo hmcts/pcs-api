@@ -23,14 +23,14 @@ test.beforeEach(async ({ page }, testInfo) => {
   defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
-  
+
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('getDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadNoDefendants()
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
     });
   } else if (testInfo.title.includes('@onlyMain')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -46,7 +46,7 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('getDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload()
+      payLoad: submitCaseApiData.submitCasePayload
     });
   }
     await performAction('updatePaymentAPI');
@@ -55,8 +55,8 @@ test.beforeEach(async ({ page }, testInfo) => {
     } else if (testInfo.title.includes('@allNO')) {
       await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayloadNoJourney });
     }
-  
-  
+
+
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
