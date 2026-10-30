@@ -1,7 +1,12 @@
 package uk.gov.hmcts.reform.pcs.hearings.messaging;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.azure.core.util.BinaryData;
 import com.azure.messaging.servicebus.ServiceBusErrorContext;
+import com.azure.messaging.servicebus.ServiceBusErrorSource;
+import com.azure.messaging.servicebus.ServiceBusException;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessage;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessageContext;
 import com.azure.messaging.servicebus.models.DeadLetterOptions;
@@ -9,6 +14,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.FeignException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,12 +23,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.hearings.model.HmcHearingResponse;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -61,10 +67,21 @@ class HmcHearingNotificationListenerTest {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private HmcHearingNotificationListener listener;
+    private Logger listenerLogger;
+    private ListAppender<ILoggingEvent> logAppender;
 
     @BeforeEach
     void setUp() {
         listener = new HmcHearingNotificationListener(objectMapper, handler, "", "AAA3");
+        listenerLogger = (Logger) LoggerFactory.getLogger(HmcHearingNotificationListener.class);
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        listenerLogger.addAppender(logAppender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        listenerLogger.detachAppender(logAppender);
     }
 
     @Test
@@ -152,8 +169,7 @@ class HmcHearingNotificationListenerTest {
         // then
         ArgumentCaptor<DeadLetterOptions> captor = ArgumentCaptor.forClass(DeadLetterOptions.class);
         verify(context).deadLetter(captor.capture());
-        assertThat(captor.getValue().getDeadLetterReason())
-            .isEqualTo(HmcHearingNotificationListener.UNREADABLE_REASON);
+        assertThat(captor.getValue().getDeadLetterReason()).isEqualTo("UnreadableHmcNotification");
         verifyNoInteractions(handler);
         verify(context, never()).complete();
         verify(context, never()).abandon();
@@ -170,8 +186,7 @@ class HmcHearingNotificationListenerTest {
         // then
         ArgumentCaptor<DeadLetterOptions> captor = ArgumentCaptor.forClass(DeadLetterOptions.class);
         verify(context).deadLetter(captor.capture());
-        assertThat(captor.getValue().getDeadLetterReason())
-            .isEqualTo(HmcHearingNotificationListener.INVALID_NOTIFICATION_REASON);
+        assertThat(captor.getValue().getDeadLetterReason()).isEqualTo("InvalidHmcNotification");
         verifyNoInteractions(handler);
         verify(context, never()).complete();
     }
@@ -200,8 +215,7 @@ class HmcHearingNotificationListenerTest {
         // then
         ArgumentCaptor<DeadLetterOptions> captor = ArgumentCaptor.forClass(DeadLetterOptions.class);
         verify(context).deadLetter(captor.capture());
-        assertThat(captor.getValue().getDeadLetterReason())
-            .isEqualTo(HmcHearingNotificationListener.INVALID_NOTIFICATION_REASON);
+        assertThat(captor.getValue().getDeadLetterReason()).isEqualTo("InvalidHmcNotification");
         verifyNoInteractions(handler);
         verify(context, never()).complete();
     }
@@ -217,8 +231,7 @@ class HmcHearingNotificationListenerTest {
         // then
         ArgumentCaptor<DeadLetterOptions> captor = ArgumentCaptor.forClass(DeadLetterOptions.class);
         verify(context).deadLetter(captor.capture());
-        assertThat(captor.getValue().getDeadLetterReason())
-            .isEqualTo(HmcHearingNotificationListener.UNREADABLE_REASON);
+        assertThat(captor.getValue().getDeadLetterReason()).isEqualTo("UnreadableHmcNotification");
         verifyNoInteractions(handler);
         verify(context, never()).complete();
     }
@@ -234,8 +247,9 @@ class HmcHearingNotificationListenerTest {
         // then
         ArgumentCaptor<DeadLetterOptions> captor = ArgumentCaptor.forClass(DeadLetterOptions.class);
         verify(context).deadLetter(captor.capture());
-        assertThat(captor.getValue().getDeadLetterReason())
-            .isEqualTo(HmcHearingNotificationListener.UNEXPECTED_SERVICE_REASON);
+        assertThat(captor.getValue().getDeadLetterReason()).isEqualTo("UnexpectedHmctsServiceCode");
+        assertThat(captor.getValue().getDeadLetterErrorDescription())
+            .isEqualTo("Expected service code AAA3 but received BBA3");
         verifyNoInteractions(handler);
         verify(context, never()).complete();
     }
@@ -253,8 +267,7 @@ class HmcHearingNotificationListenerTest {
         // then
         ArgumentCaptor<DeadLetterOptions> captor = ArgumentCaptor.forClass(DeadLetterOptions.class);
         verify(context).deadLetter(captor.capture());
-        assertThat(captor.getValue().getDeadLetterReason())
-            .isEqualTo(HmcHearingNotificationListener.HMC_REJECTED_REASON);
+        assertThat(captor.getValue().getDeadLetterReason()).isEqualTo("HmcRejectedRequest");
         verify(context, never()).abandon();
         verify(context, never()).complete();
     }
@@ -274,14 +287,40 @@ class HmcHearingNotificationListenerTest {
     }
 
     @Test
-    void shouldNotThrowWhenReportingServiceBusError() {
+    void shouldLogServiceBusFailureReasonWithoutExceptionWhenReportingError() {
+        // given
+        ServiceBusErrorContext errorContext = mock(ServiceBusErrorContext.class);
+        when(errorContext.getEntityPath()).thenReturn("hmc-to-cft-aat/subscriptions/pcs");
+        when(errorContext.getException()).thenReturn(
+            new ServiceBusException(new IllegalStateException("connection lost"), ServiceBusErrorSource.RECEIVE));
+
+        // when
+        listener.onError(errorContext);
+
+        // then
+        ILoggingEvent event = logAppender.list.getFirst();
+        assertThat(event.getFormattedMessage())
+            .contains("hmc-to-cft-aat/subscriptions/pcs")
+            .contains("GENERAL_ERROR")
+            .doesNotContain("connection lost");
+        assertThat(event.getThrowableProxy()).isNull();
+    }
+
+    @Test
+    void shouldLogExceptionTypeWithoutExceptionWhenReportingNonServiceBusError() {
         // given
         ServiceBusErrorContext errorContext = mock(ServiceBusErrorContext.class);
         when(errorContext.getException()).thenReturn(new IllegalStateException("connection lost"));
 
         // when
+        listener.onError(errorContext);
+
         // then
-        assertThatCode(() -> listener.onError(errorContext)).doesNotThrowAnyException();
+        ILoggingEvent event = logAppender.list.getFirst();
+        assertThat(event.getFormattedMessage())
+            .contains("IllegalStateException")
+            .doesNotContain("connection lost");
+        assertThat(event.getThrowableProxy()).isNull();
     }
 
     private void verifyNotSettled() {

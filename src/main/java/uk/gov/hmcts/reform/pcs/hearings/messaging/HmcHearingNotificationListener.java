@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.hearings.messaging;
 
 import com.azure.messaging.servicebus.ServiceBusErrorContext;
+import com.azure.messaging.servicebus.ServiceBusException;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessage;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessageContext;
 import com.azure.messaging.servicebus.models.DeadLetterOptions;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.hearings.model.HmcHearingResponse;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.springframework.util.StringUtils.hasText;
@@ -24,11 +26,11 @@ import static org.springframework.util.StringUtils.hasText;
 @ConditionalOnProperty(name = "hmc.service-bus.enabled", havingValue = "true")
 public class HmcHearingNotificationListener {
 
-    static final String HMCTS_DEPLOYMENT_ID = "hmctsDeploymentId";
-    static final String UNREADABLE_REASON = "UnreadableHmcNotification";
-    static final String INVALID_NOTIFICATION_REASON = "InvalidHmcNotification";
-    static final String UNEXPECTED_SERVICE_REASON = "UnexpectedHmctsServiceCode";
-    static final String HMC_REJECTED_REASON = "HmcRejectedRequest";
+    private static final String HMCTS_DEPLOYMENT_ID = "hmctsDeploymentId";
+    private static final String UNREADABLE_REASON = "UnreadableHmcNotification";
+    private static final String INVALID_NOTIFICATION_REASON = "InvalidHmcNotification";
+    private static final String UNEXPECTED_SERVICE_REASON = "UnexpectedHmctsServiceCode";
+    private static final String HMC_REJECTED_REASON = "HmcRejectedRequest";
 
     private static final Set<Integer> RETRYABLE_CLIENT_ERRORS = Set.of(
         HttpStatus.UNAUTHORIZED.value(),
@@ -72,28 +74,24 @@ public class HmcHearingNotificationListener {
             return;
         }
 
-        if (notification == null) {
-            log.error("Dead-lettering empty HMC notification {}", message.getMessageId());
-            context.deadLetter(deadLetterOptions(UNREADABLE_REASON, "Notification body is empty"));
+        Optional<DeadLetterOptions> rejection = validate(notification);
+        if (rejection.isPresent()) {
+            log.error("Dead-lettering HMC notification {} with reason {}", message.getMessageId(),
+                      rejection.get().getDeadLetterReason());
+            context.deadLetter(rejection.get());
             return;
         }
 
-        if (!Objects.equals(serviceId, notification.getHmctsServiceCode())) {
-            log.error("Dead-lettering HMC notification {} for service code {}", message.getMessageId(),
-                      notification.getHmctsServiceCode());
-            context.deadLetter(deadLetterOptions(UNEXPECTED_SERVICE_REASON,
-                                                 "Expected service code " + serviceId));
-            return;
-        }
+        process(context, message, notification);
+    }
 
-        if (!hasText(notification.getHearingID()) || !hasText(notification.getCaseRef())) {
-            log.error("Dead-lettering HMC notification {} without a hearing id or case reference",
-                      message.getMessageId());
-            context.deadLetter(deadLetterOptions(INVALID_NOTIFICATION_REASON,
-                                                 "Notification needs hearingID and caseRef"));
-            return;
-        }
+    public void onError(ServiceBusErrorContext context) {
+        log.error("HMC Service Bus error from {} during {}: {}", context.getEntityPath(), context.getErrorSource(),
+                  failureReason(context.getException()));
+    }
 
+    private void process(ServiceBusReceivedMessageContext context, ServiceBusReceivedMessage message,
+                         HmcHearingResponse notification) {
         try {
             handler.handle(notification);
         } catch (FeignException e) {
@@ -113,9 +111,26 @@ public class HmcHearingNotificationListener {
         context.complete();
     }
 
-    public void onError(ServiceBusErrorContext context) {
-        log.error("HMC Service Bus error from {} during {}", context.getEntityPath(), context.getErrorSource(),
-                  context.getException());
+    private Optional<DeadLetterOptions> validate(HmcHearingResponse notification) {
+        if (notification == null) {
+            return Optional.of(deadLetterOptions(UNREADABLE_REASON, "Notification body is empty"));
+        }
+        if (!Objects.equals(serviceId, notification.getHmctsServiceCode())) {
+            return Optional.of(deadLetterOptions(UNEXPECTED_SERVICE_REASON,
+                                                 "Expected service code " + serviceId + " but received "
+                                                     + notification.getHmctsServiceCode()));
+        }
+        if (!hasText(notification.getHearingID()) || !hasText(notification.getCaseRef())) {
+            return Optional.of(deadLetterOptions(INVALID_NOTIFICATION_REASON,
+                                                 "Notification needs hearingID and caseRef"));
+        }
+        return Optional.empty();
+    }
+
+    private static String failureReason(Throwable exception) {
+        return exception instanceof ServiceBusException serviceBusException
+            ? String.valueOf(serviceBusException.getReason())
+            : exception.getClass().getSimpleName();
     }
 
     private void leaveForRedelivery(ServiceBusReceivedMessage message, HmcHearingResponse notification,
