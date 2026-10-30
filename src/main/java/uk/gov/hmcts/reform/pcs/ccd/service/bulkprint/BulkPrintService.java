@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Assembles one pack — coversheet then documents, merged into a single PDF by {@link PdfMerger} — into a
- * Send Letter letter and posts it. Recording the outcome is the caller's job.
+ * Assembles one pack — coversheet then documents, made into a single print-ready PDF by
+ * {@link BulkPrintLetterAssembler} — into a Send Letter letter and posts it. Recording the outcome is the caller's job.
  */
 @Service
 public class BulkPrintService {
@@ -33,20 +33,20 @@ public class BulkPrintService {
 
     private final CoversheetProvider coversheetProvider;
     private final LetterDocumentFetcher letterDocumentFetcher;
-    private final PdfMerger pdfMerger;
+    private final BulkPrintLetterAssembler letterAssembler;
     private final SendLetterApi sendLetterApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseReferenceFormatter caseReferenceFormatter;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
                             LetterDocumentFetcher letterDocumentFetcher,
-                            PdfMerger pdfMerger,
+                            BulkPrintLetterAssembler letterAssembler,
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter) {
         this.coversheetProvider = coversheetProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
-        this.pdfMerger = pdfMerger;
+        this.letterAssembler = letterAssembler;
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
         this.caseReferenceFormatter = caseReferenceFormatter;
@@ -57,10 +57,14 @@ public class BulkPrintService {
         requirePostalAddress(address, recipient);
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
 
-        List<byte[]> pdfs = new ArrayList<>();
-        pdfs.add(coversheetProvider.render(recipientName, address, caseReference));
-        documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));
-        Document mergedLetter = new Document(Base64.getEncoder().encodeToString(pdfMerger.merge(pdfs)), SINGLE_COPY);
+        byte[] coversheet = coversheetProvider.render(recipientName, address, caseReference);
+        List<BulkPrintLetterAssembler.LetterDocument> letterDocuments = new ArrayList<>();
+        documents.forEach(document -> letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
+            document.getFileName(), document.getContentType(),
+            letterDocumentFetcher.fetchBytes(document.getDocumentId()))));
+        byte[] letterPdf = letterAssembler.assemble(
+            letterType.getCode() + " " + caseReference, coversheet, letterDocuments);
+        Document mergedLetter = new Document(Base64.getEncoder().encodeToString(letterPdf), SINGLE_COPY);
 
         LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
             additionalData(caseReference, recipientName, address));

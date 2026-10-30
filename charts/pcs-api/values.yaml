@@ -34,6 +34,8 @@ java:
           alias: ELASTIC_SEARCH_HOSTS
         - name: launchdarkly-sdk-key
           alias: LAUNCHDARKLY_SDK_KEY
+        - name: docmosis-access-key
+          alias: DOCMOSIS_ACCESS_KEY
   environment:
     PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin
@@ -66,6 +68,8 @@ java:
       {"PCS": {"webUrl": "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net", "nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
     PCS_FRONTEND_URL: "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net"
     MANAGE_CASE_BASE_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net"
+    # Bulk print converts office documents through the shared Docmosis; prod overrides the host in flux.
+    DOCMOSIS_CONVERT_ENDPOINT: "https://docmosis.{{ .Values.global.environment }}.platform.hmcts.net/rs/convert"
 servicebus:
   enabled: false
 ccd:

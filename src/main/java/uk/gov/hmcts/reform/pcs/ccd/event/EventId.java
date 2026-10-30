@@ -11,6 +11,7 @@ public enum EventId {
     makeAnApplication,
     claimantMakeAnApplication,
     createTestCase,
+    testBulkPrint,
     createCaseLink,
     maintainCaseLink,
     dashboardView,
