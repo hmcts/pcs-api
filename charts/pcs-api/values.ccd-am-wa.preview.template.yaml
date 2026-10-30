@@ -131,6 +131,7 @@ ccd:
         CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend,xui_webapp"
         UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: "PCS"
         ENABLE_CASE_GROUP_ACCESS_FILTERING: true
+        OIDC_ALLOWED_ISSUERS: "https://idam-web-public.aat.platform.hmcts.net/o,https://hmcts-access.aat.platform.hmcts.net/o,https://forgerock-am.service.core-compute-idam-aat2.internal:8443/openam/oauth2/realms/root/realms/hmcts"
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -153,6 +154,8 @@ ccd:
       environment:
         PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
         ALLOW_CONFIG_MUTATIONS: true
+        IDAM_WEB_PUBLIC_URL: https://idam-web-public.aat.platform.hmcts.net
+        IDAM_HMCTS_ACCESS_URL: https://hmcts-access.aat.platform.hmcts.net
       ingressHost: gateway-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -170,6 +173,9 @@ ccd:
         ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
         ADMINWEB_ELASTIC_CASE_TYPES_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/case-types
         ALLOW_CONFIG_MUTATIONS: true
+        IDAM_WEB_PUBLIC_URL: https://idam-web-public.aat.platform.hmcts.net
+        IDAM_HMCTS_ACCESS_URL: https://hmcts-access.aat.platform.hmcts.net
+        IDAM_S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
       keyVaults:
         ccd:
           secrets:
