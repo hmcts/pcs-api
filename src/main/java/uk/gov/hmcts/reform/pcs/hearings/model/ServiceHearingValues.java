@@ -4,11 +4,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ServiceHearingValues {
 
@@ -16,7 +21,7 @@ public class ServiceHearingValues {
     private String hmctsServiceID;
     private String hmctsInternalCaseName;
     private String publicCaseName;
-    private Boolean caseAdditionalSecurityFlag = false;
+    private Boolean caseAdditionalSecurityFlag;
     private List<CaseCategory> caseCategories;
     private String caseDeepLink;
     @JsonProperty("caserestrictedFlag")

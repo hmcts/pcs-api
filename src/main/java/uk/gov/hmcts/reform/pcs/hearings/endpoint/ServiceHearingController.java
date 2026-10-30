@@ -18,7 +18,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingLocation;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingValuesRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.PanelRequirements;
+import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 //import uk.gov.hmcts.reform.civil.service.hearings.HearingValuesService;
@@ -46,7 +51,36 @@ public class ServiceHearingController {
         @NonNull @RequestBody HearingValuesRequest requestDetails) throws Exception {
 
         //TODO: populate the data
-        ServiceHearingValues hearingValues = new ServiceHearingValues();
+
+        // set defaults
+        List<PartyDetails> parties = List.of(
+            PartyDetails.builder()
+                .individualDetails(IndividualDetails.builder()
+                    .preferredHearingChannel("INTER")
+                    .build()
+            ).build()
+        );
+
+        ServiceHearingValues hearingValues = ServiceHearingValues.builder()
+            .caseId(requestDetails.getCaseReference() + "")
+            .hmctsServiceID("AAA3")
+            .caseAdditionalSecurityFlag(false)
+            .caseRestrictedFlag(false)
+            .autoListFlag(false)
+            .hearingInWelshFlag(false)
+            .privateHearingRequiredFlag(false)
+            .hearingIsLinkedFlag(false)
+            .hearingLocations(List.of(
+                HearingLocation.builder()
+                    .locationType("Court")
+                    .build()
+            ))
+            .panelRequirements(PanelRequirements.builder()
+                .roleType(List.of("24", "45")) // 24 = District Judge, 45 = Deputy District Judge- Fee-Paid
+                .build() 
+            )
+            .parties(parties)
+            .build();
 
         return new ResponseEntity<>(hearingValues, HttpStatus.OK);
     }
@@ -66,8 +100,16 @@ public class ServiceHearingController {
         @NonNull @RequestBody ServiceHearingRequest requestDetails) throws Exception {
 
         //TODO: populate the data
-        List<ServiceLinkedCases> hearingValues = new ArrayList<>();
 
-        return new ResponseEntity<>(hearingValues, HttpStatus.OK);
+        //ServiceLinkedCases linkedCase = new ServiceLinkedCases();
+        //linkedCase.setCaseName("A vs B");
+        //linkedCase.setCaseReference("1793287276819762");
+        //linkedCase.setReasonsForLink(List.of("2nd hearing"));
+
+        List<ServiceLinkedCases> linkedCases = new ArrayList<>();
+
+        //linkedCases.add(linkedCase);
+
+        return new ResponseEntity<>(linkedCases, HttpStatus.OK);
     }
 }
