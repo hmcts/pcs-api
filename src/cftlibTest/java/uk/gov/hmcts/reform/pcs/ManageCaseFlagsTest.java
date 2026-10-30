@@ -105,7 +105,7 @@ class ManageCaseFlagsTest extends CftlibTest {
         StartEventResponse start = startEvent(caseReference, "createFlags");
         Map<String, Object> data = eventFieldsOnly(start.getCaseDetails().getData());
 
-        Map<String, Object> party = listOf(data.get("parties")).getFirst();
+        Map<String, Object> party = listOf(data.get("allDefendants")).getFirst();
         String partyId = (String) party.get("id");
         assertThat(partyId).as("party projected with a collection id").isNotNull();
 

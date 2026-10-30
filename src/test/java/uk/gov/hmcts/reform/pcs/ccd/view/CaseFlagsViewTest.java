@@ -856,6 +856,32 @@ class CaseFlagsViewTest {
             .noneMatch(listValue -> "YPERQ40".equals(listValue.getId()));
     }
 
+    @Test
+    void shouldMapComplexPartyFlagFieldsForAllDefendants() {
+        PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(createMockCasePartyFlagsEntity()));
+
+        Set<PartyEntity> partyEntities = Set.of(defendantEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(partyEntities);
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setDefendantsCaseFlags(pcsCase, pcsCaseEntity);
+
+        assertNotNull(pcsCase.getAllDefendants());
+        assertEquals(1, pcsCase.getAllDefendants().size());
+
+        Party mappedDefendant = pcsCase.getAllDefendants().getFirst().getValue();
+        assertNotNull(mappedDefendant.getDefendantFlags());
+        assertEquals(1, mappedDefendant.getDefendantFlags().getDetails().size());
+        assertEquals("PF0015",
+                     mappedDefendant.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
+    }
+
     private ListValue<Party> findPartyListValueById(PCSCase pcsCase, UUID partyId) {
         return pcsCase.getParties().stream()
             .filter(listValue -> partyId.toString().equals(listValue.getValue().getId()))
