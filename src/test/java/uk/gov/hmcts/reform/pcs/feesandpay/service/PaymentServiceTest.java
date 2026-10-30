@@ -157,7 +157,7 @@ class PaymentServiceTest {
         void shouldCreateServiceRequest_NoPCSCase() {
             // Given
             FeeDetails feeDetails = Instancio.create(FeeDetails.class);
-            when(pcsCaseService.loadCase(anyLong())).thenThrow(new CaseNotFoundException(222L));
+            when(pcsCaseService.retrieveClaimEntity(anyLong())).thenThrow(new CaseNotFoundException(222L));
 
             // When
             assertThatThrownBy(() -> underTest.createServiceRequest(createFeesAndPayTaskData(feeDetails)))
@@ -169,11 +169,10 @@ class PaymentServiceTest {
             // Given
             FeeDetails feeDetails = createFeeDetails();
             paymentsClientDependencies(feeDetails);
-            PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
-            when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
             when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
                 .thenReturn(createPaymentServiceResponse());
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+            PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
 
             // When
             underTest.createServiceRequest(feesAndPayTaskData);
@@ -183,9 +182,9 @@ class PaymentServiceTest {
             verify(feePaymentRepository).save(captor.capture());
             FeePaymentEntity saved = captor.getValue();
 
+            assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
-            assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
         }
 
         @Test
@@ -730,8 +729,7 @@ class PaymentServiceTest {
 
     private void stubPcsCaseEntity() {
         ClaimPartyEntity claimPartyEntity = claimPartyEntity();
-        PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        setupPcsCase(claimPartyEntity);
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {
@@ -745,6 +743,7 @@ class PaymentServiceTest {
     private PcsCaseEntity setupPcsCase(ClaimPartyEntity claimPartyEntity) {
         ClaimEntity claimEntity = ClaimEntity.builder()
                 .claimParties(List.of(claimPartyEntity)).build();
+        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(claimEntity);
         return PcsCaseEntity.builder()
             .claims(List.of(claimEntity)).build();
     }
