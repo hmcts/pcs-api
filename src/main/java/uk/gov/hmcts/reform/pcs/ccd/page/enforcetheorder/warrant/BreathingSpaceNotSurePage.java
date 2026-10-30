@@ -21,7 +21,7 @@ public class BreathingSpaceNotSurePage implements CcdPageConfiguration {
             .pageLabel(BreathingSpaceNotSureContent.HEADING)
             .showCondition(
                 ShowConditions.and(ShowConditionsEnforcementType.WARRANT_FLOW,
-                     " AND warrantDefendantInBreathingSpace=\"NOT_SURE\""))
+                     "warrantDefendantInBreathingSpace=\"NOT_SURE\""))
 
             .label("breathingSpaceNotSure-separator", "---")
             .label(

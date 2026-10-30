@@ -23,7 +23,7 @@ public class GenAppHoldingWritPage implements CcdPageConfiguration {
             .page("genAppHoldingWritPage", this::midEvent)
             .pageLabel("General application")
             .showCondition(ShowConditions.and(ShowConditionsEnforcementType.WRIT_FLOW,
-                                              " AND writShowChangeNameAddressPage=\"Yes\""))
+                                              "writShowChangeNameAddressPage=\"Yes\""))
             .label("genAppHoldingWritPage-line-separator", "---")
             .label("genAppHoldingWritPage-save-and-return", SAVE_AND_RETURN);
     }

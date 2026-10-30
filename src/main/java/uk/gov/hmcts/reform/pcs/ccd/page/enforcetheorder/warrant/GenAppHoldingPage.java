@@ -22,7 +22,7 @@ public class GenAppHoldingPage implements CcdPageConfiguration {
             .page("genAppHoldingPage", this::midEvent)
             .pageLabel("General application")
             .showCondition(ShowConditions.and(ShowConditionsEnforcementType.WARRANT_FLOW,
-                                              " AND warrantShowChangeNameAddressPage=\"Yes\""))
+                                              "warrantShowChangeNameAddressPage=\"Yes\""))
             .label("genAppHoldingPage-line-separator", "---")
             .label("genAppHoldingPage-save-and-return", SAVE_AND_RETURN);
     }

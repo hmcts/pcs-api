@@ -20,7 +20,7 @@ public class BreathingSpaceNotSureWritPage implements CcdPageConfiguration {
             .pageLabel(BreathingSpaceNotSureContent.HEADING)
             .showCondition(
                 ShowConditions.and(ShowConditionsEnforcementType.WRIT_FLOW,
-                                   " AND writDefendantInBreathingSpace=\"NOT_SURE\""))
+                                   "writDefendantInBreathingSpace=\"NOT_SURE\""))
             .label("breathingSpaceNotSureWrit-separator", "---")
             .label(
                 "breathingSpaceNotSureWrit-information",
