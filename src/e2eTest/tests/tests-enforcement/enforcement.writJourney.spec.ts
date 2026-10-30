@@ -14,7 +14,19 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { changeNameAddress, confirmHCEOfficer, enforcementApplication, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, repayments, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
+import {
+  changeNameAddress,
+  confirmHCEOfficer,
+  defendantInBreathingSpace,
+  enforcementApplication,
+  landRegistryFees,
+  languageUsed,
+  legalCosts, missedPayments,
+  moneyOwed,
+  nameAndAddressForEviction,
+  repayments,
+  statementOfTruth
+} from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -88,8 +100,12 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-        nextPage: confirmHCEOfficer.mainHeader
+        nextPage: defendantInBreathingSpace.mainHeader
       });
+      await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
+      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+      await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
       await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
@@ -147,8 +163,10 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-      nextPage: confirmHCEOfficer.mainHeader
+      nextPage: defendantInBreathingSpace.mainHeader
     });
+    await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,
@@ -199,8 +217,10 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-      nextPage: confirmHCEOfficer.mainHeader
+      nextPage: defendantInBreathingSpace.mainHeader
     });
+    await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,

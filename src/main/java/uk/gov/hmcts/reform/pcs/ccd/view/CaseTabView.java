@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.LitigationFriendTabDetail
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.OrganisationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.ArrayList;
@@ -46,17 +47,17 @@ public class CaseTabView {
     private final CaseSummaryTabView caseSummaryTabView;
     private final CaseDetailsTabView caseDetailsTabView;
 
-    public void setCaseTabFields(PCSCase pcsCase) {
+    public void setCaseTabFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean isSubmitted = pcsCase.getDateSubmitted() != null;
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
         SummaryTab summaryTab = caseSummaryTabView.buildSummaryTab(pcsCase);
-        CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, isSubmitted);
+        CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, pcsCaseEntity, isSubmitted);
         pcsCase.setCasePartiesTab(casePartiesTab);
         pcsCase.setSummaryTab(summaryTab);
         pcsCase.setCaseDetailsTab(detailsTab);
     }
 
-    public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
+    public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData, PcsCaseEntity pcsCaseEntity) {
         if (draftCaseData.getDefendant1() != null) {
             draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
         }
@@ -90,7 +91,7 @@ public class CaseTabView {
             claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
         draftCaseData.setClaimGroundSummaries(draftGrounds);
 
-        setCaseTabFields(draftCaseData);
+        setCaseTabFields(draftCaseData, pcsCaseEntity);
         pcsCase.setSummaryTab(draftCaseData.getSummaryTab());
         pcsCase.setCaseDetailsTab(draftCaseData.getCaseDetailsTab());
     }

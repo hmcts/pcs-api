@@ -27,10 +27,18 @@ public class WritDetailsMapper {
         entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
         entity.setLanguageUsed(writDetails.getLanguageUsed());
 
-
+        breathingSpace(entity, writDetails);
+        missedPayments(entity, writDetails);
         return entity;
     }
 
+    private void breathingSpace(WritEntity writEntity, WritDetails writDetails) {
+        writEntity.setDefendantInBreathingSpace(writDetails.getDefendantInBreathingSpace());
+    }
+
+    private void missedPayments(WritEntity writEntity, WritDetails writDetails) {
+        writEntity.setDefendantMissedPayments(writDetails.getDefendantMissedPayments());
+    }
 
     private void mapNameAndAddressForEviction(NameAndAddressForEviction nameAndAddress,
                                               WritEntity entity) {
