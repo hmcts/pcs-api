@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -13,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -193,6 +196,25 @@ class StartEventHandlerTest {
 
         // Then
         assertThat(caseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(VerticalYesNo.YES);
+        assertThat(caseData.getXuiGenAppRequest().getAdjournFeeConsentText()).isEqualTo("away");
+    }
+
+    @ParameterizedTest
+    @EnumSource(VerticalYesNo.class)
+    @NullSource
+    void shouldSetAdjournFeeConsentTextBasedOnGenAppCuiSetAside(VerticalYesNo feeUpdateEnabled) {
+        PCSCase caseData = PCSCase.builder()
+            .featureFlags(FeatureFlags.builder().genAppCuiSetAsideEnabled(feeUpdateEnabled).build())
+            .xuiGenAppRequest(XuiGenAppRequest.builder().adjournFeeConsentText("old value").build())
+            .build();
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
+            .thenReturn(DynamicList.builder().listItems(List.of()).build());
+
+        underTest.start(eventPayload(caseData));
+
+        assertThat(caseData.getXuiGenAppRequest().getAdjournFeeConsentText())
+            .isEqualTo(feeUpdateEnabled == VerticalYesNo.YES
+                ? "away and all the other parties have agreed to it" : "away");
     }
 
     private static EventPayload<PCSCase, State> eventPayload(PCSCase caseData) {

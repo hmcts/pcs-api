@@ -1,9 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -20,12 +24,22 @@ class HearingInNext14DaysTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = VerticalYesNo.class)
-    void shouldSetShowHwfScreens(VerticalYesNo hearingWithinNext14Days) {
+    @CsvSource(value = {
+        "YES, YES, YES",
+        "YES, NO, YES",
+        "NO, YES, YES",
+        "NO, NO, NO",
+        "null, YES, YES",
+        "null, NO, NO"
+    }, nullValues = "null")
+    void shouldShowHwfScreensBasedOnGenAppCuiSetAsideAndHearingDate(VerticalYesNo feeUpdateEnabled,
+                                                          VerticalYesNo within14Days,
+                                                          VerticalYesNo expectedShowHwfScreens) {
         // Given
         PCSCase caseData = PCSCase.builder()
+            .featureFlags(FeatureFlags.builder().genAppCuiSetAsideEnabled(feeUpdateEnabled).build())
             .xuiGenAppRequest(XuiGenAppRequest.builder()
-                                  .within14Days(hearingWithinNext14Days)
+                                  .within14Days(within14Days)
                                   .build())
             .build();
 
@@ -34,7 +48,28 @@ class HearingInNext14DaysTest extends BasePageTest {
 
         // Then
         PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(hearingWithinNext14Days);
+        assertThat(updatedCaseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(expectedShowHwfScreens);
+    }
+
+    @ParameterizedTest
+    @EnumSource(VerticalYesNo.class)
+    void shouldUseProductionHwfRoutingWhenFeatureFlagsAreMissing(VerticalYesNo within14Days) {
+        PCSCase caseData = PCSCase.builder()
+            .xuiGenAppRequest(XuiGenAppRequest.builder().within14Days(within14Days).build())
+            .build();
+
+        PCSCase updatedCaseData = callMidEventHandler(caseData).getData();
+
+        assertThat(updatedCaseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(within14Days);
+    }
+
+    @Test
+    void shouldOnlyShowOtherPartiesExplanationWhenGenAppCuiSetAsideEnabled() {
+        assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
+            .filteredOn(field -> "hearingInNext14Days-info".equals(field.getId()))
+            .singleElement()
+            .satisfies(field -> assertThat(field.getShowCondition())
+                .isEqualTo("featureFlags.genAppCuiSetAsideEnabled=\"YES\""));
     }
 
 }

@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Optional;
 
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class GenAppFeeCalculator {
 
     private final FeeService feeService;
+    private final FeatureToggleService featureToggleService;
 
     public Optional<FeeDetails> getApplicationFeeDetails(GenAppRequest genAppRequest) {
 
@@ -45,11 +48,13 @@ public class GenAppFeeCalculator {
         return Optional.of(feeService.getFee(feeType));
     }
 
-    private static boolean doesFeeApply(GenAppRequest genAppRequest) {
+    private boolean doesFeeApply(GenAppRequest genAppRequest) {
         GenAppType applicationType = genAppRequest.getApplicationType();
 
         return (applicationType != GenAppType.ADJOURN)
-            || (genAppRequest.getWithin14Days() == VerticalYesNo.YES);
+            || (genAppRequest.getWithin14Days() == VerticalYesNo.YES)
+            || (featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)
+                && (genAppRequest.getOtherPartiesAgreed() == VerticalYesNo.NO));
     }
 
     private static boolean isHwfReferenceProvided(GenAppRequest genAppRequest) {

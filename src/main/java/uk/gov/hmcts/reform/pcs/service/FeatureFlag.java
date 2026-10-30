@@ -15,6 +15,7 @@ public enum FeatureFlag {
     RELEASE_1_DOT_2("release-1.2-enabled", true),
     RELEASE_1_DOT_3("release-1.3-enabled", true),
     RELEASE_1B("release-1b-enabled", false),
+    GENAPP_CUI_SET_ASIDE("genapp-cui-set-aside", false),
     RELEASE_1_DOT_4("release-1.4-enabled", false),
     WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false),
     CASEWORKER_WA("caseworker-wa-enabled", true),

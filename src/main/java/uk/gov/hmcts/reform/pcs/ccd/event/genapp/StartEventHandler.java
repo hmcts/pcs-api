@@ -31,6 +31,11 @@ public class StartEventHandler implements Start<PCSCase, State> {
         applyApplicationFeeAmounts(caseData);
 
         caseData.getXuiGenAppRequest().setShowHwfScreens(VerticalYesNo.YES);
+        boolean feeUpdateEnabled = caseData.getFeatureFlags() != null
+            && caseData.getFeatureFlags().getGenAppCuiSetAsideEnabled() == VerticalYesNo.YES;
+        caseData.getXuiGenAppRequest().setAdjournFeeConsentText(
+            feeUpdateEnabled ? "away and all the other parties have agreed to it" : "away"
+        );
 
         return caseData;
     }
