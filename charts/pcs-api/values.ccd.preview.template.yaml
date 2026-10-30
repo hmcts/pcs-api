@@ -249,7 +249,7 @@ xui-webapp:
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       HEARINGS_JURISDICTIONS: SSCS,PRIVATELAW,CIVIL,IA,EMPLOYMENT,ST_CIC,PCS
-      SERVICES_HEARINGS_COMPONENT_API_PCS: https://pcs-api-pr-3132.preview.platform.hmcts.net/
+      SERVICES_HEARINGS_COMPONENT_API_PCS: https://pcs-api-pr-3132.preview.platform.hmcts.net
       JURISDICTIONS: PCS
       WA_SUPPORTED_JURISDICTIONS: PCS
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
