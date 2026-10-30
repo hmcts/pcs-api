@@ -209,6 +209,22 @@ withPipeline(type, product, component) {
     archiveSmokeTestReports()
   }
 
+  afterSuccess('dbmigrate:demo') {
+    runDemoSmokeTests(builder, secrets, product)
+  }
+
+  afterAlways('dbmigrate:demo') {
+    archiveSmokeTestReports()
+  }
+
+  afterSuccess('dbmigrate:ithc') {
+    runIthcSmokeTests(builder, secrets, product)
+  }
+
+  afterAlways('dbmigrate:ithc') {
+    archiveSmokeTestReports()
+  }
+
   afterSuccess('akschartsinstall') {
     onPR {
       if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
@@ -353,10 +369,52 @@ def setDemoEnvVars() {
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
 }
 
+def runDemoSmokeTests(builder, Map secrets, String product) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  stageWithEnvironmentAgent('Smoke Test - demo', product, 'demo') {
+    withTeamSecrets(vaultConfig, 'demo', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-demo.service.core-compute-demo.internal",
+      "ENVIRONMENT_NAME=demo",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-demo.service.core-compute-demo.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-demo.service.core-compute-demo.internal",
+      "IDAM_API_URL=https://idam-api.demo.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
+}
+}
+
 def setIthcEnvVars() {
   env.ENVIRONMENT= "ithc"
   env.CAMUNDA_BASE_URL = "http://camunda-api-ithc.service.core-compute-ithc.internal"
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal"
+}
+
+def runIthcSmokeTests(builder, Map secrets, String product) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  stageWithEnvironmentAgent('Smoke Test - ithc', product, 'ithc') {
+    withTeamSecrets(vaultConfig, 'ithc', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-ithc.service.core-compute-ithc.internal",
+      "ENVIRONMENT_NAME=ithc",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-ithc.service.core-compute-ithc.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal",
+      "IDAM_API_URL=https://idam-api.ithc.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
+}
 }
 
 def setPerftestEnvVars() {
