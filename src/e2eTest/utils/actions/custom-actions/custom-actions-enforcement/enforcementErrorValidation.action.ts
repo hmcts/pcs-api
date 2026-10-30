@@ -56,6 +56,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationMissedPaymentsPage', () => this.errorValidationMissedPaymentsPage(errorFlag as string)],
       ['errorValidationCannotApplyForWarrantPage', () => this.errorValidationCannotApplyForWarrantPage(errorFlag as string)],
     ]); 
+    ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
