@@ -54,7 +54,7 @@ public class PackSkipRules {
     public PackSkipRules(FeatureToggleService featureToggleService,
                          CaseFlagService caseFlagService,
                          @Qualifier("utcClock") Clock utcClock,
-                         @Value("${bulk-print.gen-app-expected-hold}") Duration genAppExpectedHold) {
+                         @Value("${bulk-print.claim-pack-gen-app-expected-hold}") Duration genAppExpectedHold) {
         this.featureToggleService = featureToggleService;
         this.caseFlagService = caseFlagService;
         this.utcClock = utcClock;
@@ -101,6 +101,7 @@ public class PackSkipRules {
         if (!release14Enabled()) {
             return true;
         }
+        // If the claimant has not issued a gen app within the 24-hour hold, the claim pack is released
         return LocalDateTime.now(utcClock).isBefore(claim.getClaimIssuedDate().plus(genAppExpectedHold))
             || hasIssuedClaimantGenApp(pcsCase, claim);
     }
@@ -113,7 +114,7 @@ public class PackSkipRules {
         UUID claimantId = claimants.getFirst().getId();
         return pcsCase.getGenApps().stream()
             .anyMatch(genApp -> genApp.getState() == GenAppState.GEN_APP_ISSUED
-                && claimantId.equals(genApp.getParty().getId()));
+                && genApp.getParty().getId().equals(claimantId));
     }
 
     private Optional<String> defencePackSkipReason(PcsCaseEntity pcsCase) {

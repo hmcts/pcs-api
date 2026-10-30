@@ -423,12 +423,25 @@ class PackSkipRulesTest {
     }
 
     @Test
-    @DisplayName("Releases the claim pack after 24 hours when only a defendant has an issued gen app")
-    void shouldNotSkipClaimPackAfterGenAppHoldPeriodWhenOnlyDefendantGenAppIssued() {
+    @DisplayName("Releases the claim pack after 24 hours when only other claimants or defendants have issued gen apps")
+    void shouldNotSkipClaimPackAfterGenAppHoldPeriodWhenOnlyOtherPartiesHaveIssuedGenApps() {
         enableRelease13();
         enableRelease14();
+        PartyEntity claimCreator = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity secondClaimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
-        PcsCaseEntity pcsCase = caseWithGenApp(claim, PartyRole.DEFENDANT, GenAppState.GEN_APP_ISSUED);
+        claim.setClaimParties(List.of(
+            claimParty(claimCreator, PartyRole.CLAIMANT),
+            ClaimPartyEntity.builder().party(secondClaimant).role(PartyRole.CLAIMANT).rank(2).build(),
+            claimParty(defendant, PartyRole.DEFENDANT)));
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .claims(List.of(claim))
+            .genApps(Set.of(
+                GenAppEntity.builder().party(secondClaimant).state(GenAppState.GEN_APP_ISSUED).build(),
+                GenAppEntity.builder().party(defendant).state(GenAppState.GEN_APP_ISSUED).build()))
+            .build();
 
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
     }
