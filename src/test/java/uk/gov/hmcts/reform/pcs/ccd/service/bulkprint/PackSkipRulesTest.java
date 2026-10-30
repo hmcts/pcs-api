@@ -261,8 +261,8 @@ class PackSkipRulesTest {
     }
 
     @Test
-    @DisplayName("Does not skip a payment-pending counterclaim that has an HWF reference")
-    void shouldNotSkipPaymentPendingCounterClaimWithHwf() {
+    @DisplayName("Skips the defence pack when a counterclaim awaiting its HWF decision has an HWF reference")
+    void shouldSkipPendingCounterClaimWithHwf() {
         enableRelease13();
         CounterClaimEntity pending = CounterClaimEntity.builder()
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
@@ -276,7 +276,26 @@ class PackSkipRulesTest {
             .counterClaims(List.of(pending))
             .build();
 
-        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isFalse();
+        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Skips the defence pack when a counterclaim awaiting its HWF decision needs translation")
+    void shouldSkipPendingCounterClaimNeedingTranslation() {
+        enableRelease13();
+        CounterClaimEntity pending = CounterClaimEntity.builder()
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .languageUsed(LanguageUsed.WELSH)
+            .hwfReferenceNumber("HWF-123")
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .claims(List.of(ClaimEntity.builder().build()))
+            .defendantResponses(List.of(submittedDefence(LanguageUsed.ENGLISH)))
+            .counterClaims(List.of(pending))
+            .build();
+
+        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isTrue();
     }
 
     @ParameterizedTest
