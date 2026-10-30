@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
 
@@ -37,13 +35,9 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
             .done()
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", WITHOUT_NOTICE_APPLICATION_GUIDANCE)
-            .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .readonly(LegalRepDocumentUploadDetails::getExistingApplicationDocumentLinks, NEVER_SHOW)
-            .done()
             .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .label(pageKey + "-application-links",
-                   "${lrDocUpload_ExistingApplicationDocumentLinks}",
-                   featureFlagsEnabled(RELEASE_1_DOT_4))
+                   "${lrDocUpload_ExistingApplicationDocumentLinks}")
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
             .mandatory(LegalRepDocumentUploadDetails::getValidCategories)
             .done();
