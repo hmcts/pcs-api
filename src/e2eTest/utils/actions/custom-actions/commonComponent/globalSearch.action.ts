@@ -171,13 +171,10 @@ export class GlobalSearchCaseAction implements IAction {
     await expect(challengedAccessLink).toBeVisible();
     await expect(challengedAccessLink).toBeEnabled();
     await challengedAccessLink.click();
-
-    await expect(
-      page.getByRole('heading', {
-        name: challengedCaseDetails.caseDetailsSubHeader,
-        exact: true
-      })
-    ).toBeVisible();
+     await performValidation('text', {
+          "text": challengedCaseDetails.caseDetailsSubHeader,
+          "elementType": "subHeading"
+        });
 
     await performAction('clickButton', challengedCaseDetails.requestAccessbutton);
 
