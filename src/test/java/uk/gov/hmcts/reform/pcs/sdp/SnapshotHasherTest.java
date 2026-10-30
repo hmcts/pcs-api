@@ -1,0 +1,106 @@
+package uk.gov.hmcts.reform.pcs.sdp;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
+import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
+
+class SnapshotHasherTest {
+
+    private final SnapshotHasher snapshotHasher = new SnapshotHasher(new JacksonConfiguration().getMapper());
+
+    @Test
+    void shouldReturnSameHashForSameClaim() {
+        String hash = snapshotHasher.hash(claim(List.of(party("1"), party("2"))));
+
+        assertThat(hash).hasSize(64);
+        assertThat(snapshotHasher.hash(claim(List.of(party("1"), party("2")))))
+            .isEqualTo(hash);
+    }
+
+    @Test
+    void shouldIgnorePartyOrder() {
+        String hash = snapshotHasher.hash(claim(List.of(party("1"), party("2"))));
+
+        assertThat(snapshotHasher.hash(claim(List.of(party("2"), party("1")))))
+            .isEqualTo(hash);
+    }
+
+    @ParameterizedTest
+    @MethodSource("hashFieldChanges")
+    void shouldChangeHashWhenHashedFieldChanges(ClaimSnapshot changed) {
+        String hash = snapshotHasher.hash(claim(List.of(party("1"))));
+
+        assertThat(snapshotHasher.hash(changed)).isNotEqualTo(hash);
+    }
+
+    private static Stream<Arguments> hashFieldChanges() {
+        List<SnapshotParty> parties = List.of(party("1"));
+        ClaimSnapshot changedReference = claim(parties);
+        changedReference.setClaimReference("9999");
+        ClaimSnapshot changedDimensions = claim(parties);
+        changedDimensions.setDimensions(SnapshotDimensions.builder().claimType("AAA3-PLD").language("eng").build());
+        ClaimSnapshot changedMilestones = claim(parties);
+        changedMilestones.setMilestones(
+            SnapshotMilestones.builder().claimSubmittedToSystemDate("2026-02-02").build());
+        ClaimSnapshot changedGrounds = claim(parties);
+        changedGrounds.setGrounds(List.of(SnapshotGround.builder().groundsCode("8").build()));
+        ClaimSnapshot changedPayments = claim(parties);
+        changedPayments.setPaymentReferences(
+            List.of(SnapshotPaymentReference.builder().paymentReference("RC-1").build()));
+        ClaimSnapshot changedResponses = claim(parties);
+        changedResponses.setResponses(List.of(SnapshotResponse.builder().responseId("12").build()));
+        return Stream.of(
+            argumentSet("claim reference", changedReference),
+            argumentSet("dimensions", changedDimensions),
+            argumentSet("milestones", changedMilestones),
+            argumentSet("parties", claim(List.of(party("changed")))),
+            argumentSet("grounds", changedGrounds),
+            argumentSet("payments", changedPayments),
+            argumentSet("responses", changedResponses)
+        );
+    }
+
+    @Test
+    void shouldIgnoreSnapshotVersionAndRecordedDate() {
+        ClaimSnapshot claim = claim(List.of(party("1")));
+        String hash = snapshotHasher.hash(claim);
+
+        claim.setSnapshotVersion(5);
+        claim.setRecordedDate("2026-03-01 10:00:00");
+
+        assertThat(snapshotHasher.hash(claim)).isEqualTo(hash);
+    }
+
+    private static ClaimSnapshot claim(List<SnapshotParty> parties) {
+        return ClaimSnapshot.builder()
+            .claimReference("1234567890123456")
+            .snapshotVersion(1)
+            .recordedDate("2026-02-01 14:30")
+            .dimensions(SnapshotDimensions.builder().claimType("AAA3-SLD").language("eng").build())
+            .milestones(SnapshotMilestones.builder().claimSubmittedToSystemDate("2026-02-01").build())
+            .parties(parties)
+            .build();
+    }
+
+    private static SnapshotParty party(String partyId) {
+        return SnapshotParty.builder()
+            .partyId(partyId)
+            .partyRole("Defendant")
+            .build();
+    }
+}
