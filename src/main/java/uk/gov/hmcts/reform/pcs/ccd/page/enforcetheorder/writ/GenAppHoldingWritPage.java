@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -21,7 +22,8 @@ public class GenAppHoldingWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("genAppHoldingWritPage", this::midEvent)
             .pageLabel("General application")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW + " AND writShowChangeNameAddressPage=\"Yes\"")
+            .showCondition(ShowConditions.and(ShowConditionsEnforcementType.WRIT_FLOW,
+                                              " AND writShowChangeNameAddressPage=\"Yes\""))
             .label("genAppHoldingWritPage-line-separator", "---")
             .label("genAppHoldingWritPage-save-and-return", SAVE_AND_RETURN);
     }

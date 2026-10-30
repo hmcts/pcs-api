@@ -4,6 +4,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,9 +19,8 @@ public class BreathingSpaceNotSureWritPage implements CcdPageConfiguration {
             .page("breathingSpaceNotSureWrit", this::midEvent)
             .pageLabel(BreathingSpaceNotSureContent.HEADING)
             .showCondition(
-                ShowConditionsEnforcementType.WRIT_FLOW
-                    + " AND writDefendantInBreathingSpace=\"NOT_SURE\""
-            )
+                ShowConditions.and(ShowConditionsEnforcementType.WRIT_FLOW,
+                                   " AND writDefendantInBreathingSpace=\"NOT_SURE\""))
             .label("breathingSpaceNotSureWrit-separator", "---")
             .label(
                 "breathingSpaceNotSureWrit-information",
