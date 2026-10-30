@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
@@ -762,6 +763,11 @@ class NotificationPersonalisationFactoryTest {
         defendantParty.setNameKnown(nameKnown);
         when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
         return defendantParty;
+    }
+
+    @Test
+    void shouldUseThePortalUrlAsTheHearingNoticeLoginLink() {
+        assertThat(factory.hearingNotice().toMap()).containsExactly(entry("loginUrl", "frontEndUrl"));
     }
 
     private PartyEntity createParty(String firstName, String lastName) {

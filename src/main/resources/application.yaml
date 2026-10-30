@@ -172,6 +172,7 @@ notify:
     notice-of-change-complete-legal-rep: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP:b121bc29-d5f7-4ed4-9cbc-89fdc13c977c}
     notice-of-change-no-longer-representing: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING:b5223559-6419-4849-a609-aac606b17a86}
     notice-of-change-other-party-represented: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED:f7963e8e-c868-42fe-9367-0038552ca851}
+    notice-of-hearing: ${NOTIFY_TEMPLATE_NOTICE_OF_HEARING:f2025c6f-0287-4d9d-a447-d7815d33f608}
   legacy-templates:
     response-no-counterclaim: 8ecf44d2-860f-44e3-a891-c82745f79645
     response-no-counterclaim-legal-rep: 0abc7358-20a7-4d96-b0ab-95c2e40879de
@@ -354,6 +355,11 @@ gen-app-form:
   request:
     max-retries: ${GEN_APP_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${GEN_APP_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+hearing-notice:
+  request:
+    max-retries: ${HEARING_NOTICE_MAX_RETRIES:5}
+    backoff-delay-seconds: ${HEARING_NOTICE_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:

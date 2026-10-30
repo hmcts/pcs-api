@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.HearingNoticePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
@@ -213,6 +214,12 @@ public class NotificationPersonalisationFactory {
             .caseName(release14Enabled() ? getFormattedCaseName(pcsCaseEntity) : "")
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
+            .build();
+    }
+
+    public HearingNoticePersonalisation hearingNotice() {
+        return HearingNoticePersonalisation.builder()
+            .loginUrl(frontendUrl)
             .build();
     }
 

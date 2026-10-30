@@ -15,4 +15,6 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID> 
 
     boolean existsByCounterClaim_IdAndType(UUID counterClaimId, DocumentType type);
 
+    boolean existsByHearing_IdAndType(Integer hearingId, DocumentType type);
+
 }
