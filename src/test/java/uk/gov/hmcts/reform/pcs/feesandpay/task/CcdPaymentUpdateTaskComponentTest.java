@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CcdPaymentStateUpdateTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 
 import java.time.Duration;
 
@@ -33,7 +33,7 @@ class CcdPaymentUpdateTaskComponentTest {
     @Mock
     private CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     @Mock
-    private TaskInstance<CcdPaymentStateUpdateTaskData> taskInstance;
+    private TaskInstance<PaymentStateTaskData> taskInstance;
     @Mock
     private ExecutionContext executionContext;
     @Mock
@@ -50,7 +50,7 @@ class CcdPaymentUpdateTaskComponentTest {
     @Test
     void shouldExposeTaskDescriptor() {
         assertThat(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getTaskName()).isEqualTo("ccd-payment-update-task");
-        assertThat(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getDataClass()).isEqualTo(CcdPaymentStateUpdateTaskData.class);
+        assertThat(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getDataClass()).isEqualTo(PaymentStateTaskData.class);
     }
 
     @Test
@@ -61,14 +61,14 @@ class CcdPaymentUpdateTaskComponentTest {
     @Test
     void shouldUpdateCcdAndRemoveTaskOnSuccess() {
         // Given
-        CcdPaymentStateUpdateTaskData taskData = mock(CcdPaymentStateUpdateTaskData.class);
+        PaymentStateTaskData taskData = mock(PaymentStateTaskData.class);
         when(taskInstance.getData()).thenReturn(taskData);
 
         // When
-        CustomTask<CcdPaymentStateUpdateTaskData> task = underTest.ccdPaymentUpdateTask();
+        CustomTask<PaymentStateTaskData> task = underTest.ccdPaymentUpdateTask();
 
         // Then
-        CompletionHandler<CcdPaymentStateUpdateTaskData> result = task.execute(taskInstance, executionContext);
+        CompletionHandler<PaymentStateTaskData> result = task.execute(taskInstance, executionContext);
         verify(ccdPaymentStateUpdateService).updateCcd(taskData);
         assertThat(result).isInstanceOf(OnCompleteRemove.class);
     }
@@ -76,14 +76,14 @@ class CcdPaymentUpdateTaskComponentTest {
     @Test
     void shouldRethrowExceptionWhenCcdUpdateFails() {
         // Given
-        CcdPaymentStateUpdateTaskData taskData = mock(CcdPaymentStateUpdateTaskData.class);
+        PaymentStateTaskData taskData = mock(PaymentStateTaskData.class);
         RuntimeException exception = new RuntimeException("CCD update failed");
         when(taskInstance.getData()).thenReturn(taskData);
         org.mockito.Mockito.doThrow(exception)
             .when(ccdPaymentStateUpdateService).updateCcd(taskData);
 
         // When
-        CustomTask<CcdPaymentStateUpdateTaskData> task = underTest.ccdPaymentUpdateTask();
+        CustomTask<PaymentStateTaskData> task = underTest.ccdPaymentUpdateTask();
 
         // Then
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext)).isSameAs(exception);
@@ -92,7 +92,7 @@ class CcdPaymentUpdateTaskComponentTest {
     @Test
     void shouldConfigureMaxRetriesFailureHandler() {
         // Given // When
-        CustomTask<CcdPaymentStateUpdateTaskData> task = underTest.ccdPaymentUpdateTask();
+        CustomTask<PaymentStateTaskData> task = underTest.ccdPaymentUpdateTask();
 
         // Then
         assertThat(task.getFailureHandler()).isInstanceOf(FailureHandler.MaxRetriesFailureHandler.class);

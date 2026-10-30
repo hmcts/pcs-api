@@ -29,7 +29,8 @@ public abstract class AbstractCcdPaymentCallbackHandler implements PaymentCallba
         FeesAndPayTaskData taskData = toFeesAndPayTaskData(feePaymentEntity);
         feePaymentEntity.setParty(getResponsibleParty(taskData));
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            ccdPaymentStateUpdateService.submitPaymentSuccess(taskData.getCaseReference(), successEventId());
+            ccdPaymentStateUpdateService.submitPaymentSuccess(taskData.getCaseReference(), successEventId(),
+                                                              paymentStatusCallback);
         } else {
             log.warn("The {} was not successful [{}] for case: {}",
                      successEventId(), feePaymentEntity.getPaymentStatus(), taskData.getCaseReference());

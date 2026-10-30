@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,11 +22,14 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CcdPaymentStateUpdateTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +50,7 @@ class CcdPaymentStateUpdateServiceTest {
     private static final long CASE_ID = 1234L;
     private static final String IDAM_BEARER = "Bearer idam";
     private static final String S2S_BEARER = "Bearer s2s";
+    private UUID paymentReference;
 
     @Mock
     private IdamTokenProvider systemUpdateUserTokenProvider;
@@ -58,10 +63,15 @@ class CcdPaymentStateUpdateServiceTest {
     @Mock
     private SchedulerClient schedulerClient;
     @Captor
-    private ArgumentCaptor<SchedulableInstance<CcdPaymentStateUpdateTaskData>> schedulableInstanceCaptor;
+    private ArgumentCaptor<SchedulableInstance<PaymentStateTaskData>> schedulableInstanceCaptor;
 
     @InjectMocks
     private CcdPaymentStateUpdateService underTest;
+
+    @BeforeEach
+    void beforeEach() {
+        paymentReference = UUID.randomUUID();
+    }
 
     @ParameterizedTest
     @MethodSource("eventIds")
@@ -70,14 +80,14 @@ class CcdPaymentStateUpdateServiceTest {
         Instant before = Instant.now();
 
         // When
-        underTest.submitPaymentSuccess(CASE_ID, eventId);
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
 
         // Then
         Instant after = Instant.now();
         verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
-        SchedulableInstance<CcdPaymentStateUpdateTaskData> scheduled = schedulableInstanceCaptor.getValue();
-        TaskInstance<CcdPaymentStateUpdateTaskData> taskInstance = scheduled.getTaskInstance();
+        SchedulableInstance<PaymentStateTaskData> scheduled = schedulableInstanceCaptor.getValue();
+        TaskInstance<PaymentStateTaskData> taskInstance = scheduled.getTaskInstance();
         assertThat(scheduled.getNextExecutionTime(Instant.now())).isBetween(before, after);
         assertThat(taskInstance.getTaskName()).isEqualTo(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getTaskName());
         assertThat(taskInstance.getId()).isEqualTo(eventId + "-" + CASE_ID);
@@ -90,7 +100,7 @@ class CcdPaymentStateUpdateServiceTest {
     @MethodSource("eventIds")
     void shouldStartEventAndSubmitPaymentSuccessfully(EventId eventId) {
         // Given // When
-        underTest.submitPaymentSuccess(CASE_ID, eventId);
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
 
         // Then
         verify(schedulerClient).scheduleIfNotExists(any());
@@ -100,8 +110,8 @@ class CcdPaymentStateUpdateServiceTest {
     @MethodSource("eventIds")
     void shouldUseSameInstanceIdWhenSubmittedMultipleTimesForSamePayment(EventId eventId) {
         // Given // When
-        underTest.submitPaymentSuccess(CASE_ID, eventId);
-        underTest.submitPaymentSuccess(CASE_ID, eventId);
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
 
         // Then
         verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
@@ -119,13 +129,13 @@ class CcdPaymentStateUpdateServiceTest {
     @Test
     void shouldUseDifferentInstanceIdsForDifferentEvents() {
         // Given // When
-        underTest.submitPaymentSuccess(CASE_ID, claimIssuePayment);
-        underTest.submitPaymentSuccess(CASE_ID, enforcementPayment);
+        underTest.submitPaymentSuccess(CASE_ID, claimIssuePayment, paymentStatusCallback());
+        underTest.submitPaymentSuccess(CASE_ID, enforcementPayment, paymentStatusCallback());
 
         // Then
         verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
-        var instanceIds = schedulableInstanceCaptor.getAllValues().stream()
+        List<String> instanceIds = schedulableInstanceCaptor.getAllValues().stream()
             .map(scheduled -> scheduled.getTaskInstance().getId())
             .toList();
 
@@ -144,10 +154,9 @@ class CcdPaymentStateUpdateServiceTest {
 
         CaseResource expectedCaseResource = new CaseResource();
         when(coreCaseDataApi.createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
-                                         any(CaseDataContent.class)))
-            .thenReturn(expectedCaseResource);
+                                         any(CaseDataContent.class))).thenReturn(expectedCaseResource);
         when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
-        CcdPaymentStateUpdateTaskData taskData = CcdPaymentStateUpdateTaskData.builder().eventId(eventId)
+        PaymentStateTaskData taskData = PaymentStateTaskData.builder().eventId(eventId)
             .caseReference(CASE_ID).build();
 
         // When
@@ -168,6 +177,11 @@ class CcdPaymentStateUpdateServiceTest {
             argumentSet(claimIssuePayment.name(), claimIssuePayment),
             argumentSet(enforcementPayment.name(), enforcementPayment)
         );
+    }
+
+    private PaymentStatusCallback paymentStatusCallback() {
+        return PaymentStatusCallback.builder().payment(Payment.builder()
+            .paymentReference(paymentReference.toString()).build()).build();
     }
 
 }

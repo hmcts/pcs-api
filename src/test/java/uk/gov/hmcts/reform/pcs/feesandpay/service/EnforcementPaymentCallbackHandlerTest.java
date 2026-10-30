@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -55,14 +56,16 @@ class EnforcementPaymentCallbackHandlerTest {
         when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(party);
         FeePaymentEntity feePayment = FeePaymentEntity.builder().taskData("task data").paymentStatus(paymentStatus)
             .build();
+        PaymentStatusCallback paymentStatusCallback = paymentStatusCallback();
 
         // When
-        underTest.handle(PaymentStatusCallback.builder().build(), feePayment);
+        underTest.handle(paymentStatusCallback, feePayment);
 
         // Then
         assertThat(feePayment.getParty()).isSameAs(party);
         if (paymentStatus == PaymentStatus.PAID) {
-            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(CASE_REFERENCE, enforcementPayment);
+            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(CASE_REFERENCE, enforcementPayment,
+                                                                      paymentStatusCallback);
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
         }
@@ -70,6 +73,11 @@ class EnforcementPaymentCallbackHandlerTest {
 
     private static Stream<PaymentStatus> paymentStatuses() {
         return Stream.of(PaymentStatus.values());
+    }
+
+    private PaymentStatusCallback paymentStatusCallback() {
+        return PaymentStatusCallback.builder().payment(Payment.builder()
+            .paymentReference(UUID.randomUUID().toString()).build()).build();
     }
 
 }

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CcdPaymentStateUpdateTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 
 import java.time.Duration;
 
@@ -20,8 +20,8 @@ public class CcdPaymentUpdateTaskComponent {
 
     private static final String CCD_PAYMENT_UPDATE_TASK = "ccd-payment-update-task";
 
-    public static final TaskDescriptor<CcdPaymentStateUpdateTaskData> CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR =
-        TaskDescriptor.of(CCD_PAYMENT_UPDATE_TASK, CcdPaymentStateUpdateTaskData.class);
+    public static final TaskDescriptor<PaymentStateTaskData> CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR =
+        TaskDescriptor.of(CCD_PAYMENT_UPDATE_TASK, PaymentStateTaskData.class);
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final int maxRetriesCcdPaymentUpdate;
@@ -36,13 +36,13 @@ public class CcdPaymentUpdateTaskComponent {
     }
 
     @Bean
-    public CustomTask<CcdPaymentStateUpdateTaskData> ccdPaymentUpdateTask() {
+    public CustomTask<PaymentStateTaskData> ccdPaymentUpdateTask() {
         return Tasks.custom(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(maxRetriesCcdPaymentUpdate,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(ccdPaymentUpdateBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                CcdPaymentStateUpdateTaskData taskData = taskInstance.getData();
+                PaymentStateTaskData taskData = taskInstance.getData();
                 log.debug("Executing CCD Payment Update for case: {} and event: {}",
                           taskData.getCaseReference(), taskData.getEventId());
                 try {
