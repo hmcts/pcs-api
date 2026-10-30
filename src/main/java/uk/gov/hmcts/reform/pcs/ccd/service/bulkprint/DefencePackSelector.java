@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -25,11 +26,10 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects defence-phase envelopes per recipient. Defence packs go to every defendant who opted into postal
- * contact, including the defendant the response was submitted for and a represented defendant who still
- * wants post. Claimants are not included. The current rollout flag gates that rule and, while off, keeps
- * the previous all-party fan-out. Only documents not covered by a {@code PACK_SENT} success row are
- * included, so late counter-claims follow without re-sending.
+ * Selects defence-phase envelopes per recipient. Defence packs go to defendants who opted into postal contact;
+ * claimants are not included. The current rollout flag gates that rule and, while off, keeps the previous
+ * all-party fan-out. Only documents not covered by a {@code PACK_SENT} success row are included, so late
+ * counter-claims follow without re-sending.
  */
 @Service
 public class DefencePackSelector {
@@ -71,13 +71,16 @@ public class DefencePackSelector {
         for (PartyEntity defendant : defendants) {
             DocumentEntity defenceForm = defenceFormDocument(pcsCase, defendant);
             if (defenceForm != null) {
-                eligibleRecipients.forEach(
+                recipientsOf(defenceForm, defendant, eligibleRecipients).forEach(
                     party -> addPending(recipients, documentsByRecipient, party, defenceForm));
             }
         }
         for (DocumentEntity counterClaimForm : counterClaimDocuments(pcsCase)) {
-            eligibleRecipients.forEach(
-                party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
+            PartyEntity owner = counterClaimOwner(counterClaimForm);
+            List<PartyEntity> targets = owner == null
+                ? eligibleRecipients
+                : recipientsOf(counterClaimForm, owner, eligibleRecipients);
+            targets.forEach(party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
         }
 
         List<DefencePackCandidate> candidates = new ArrayList<>();
@@ -94,16 +97,32 @@ public class DefencePackSelector {
         return candidates;
     }
 
+    // Skip the defendant whose legal representative filed this form.
+    private List<PartyEntity> recipientsOf(DocumentEntity form, PartyEntity owner, List<PartyEntity> eligible) {
+        if (!LegalRepResponseDocuments.isFromLegalRepResponse(form)) {
+            return eligible;
+        }
+        return eligible.stream()
+            .filter(party -> !party.getId().equals(owner.getId()))
+            .toList();
+    }
+
     private List<PartyEntity> eligibleRecipients(List<PartyEntity> claimants, List<PartyEntity> defendants) {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
             return defendants.stream()
                 .filter(this::wantsPost)
+                .filter(defendant -> !isRepresented(defendant))
                 .toList();
         }
 
         List<PartyEntity> allParties = new ArrayList<>(claimants);
         allParties.addAll(defendants);
         return allParties;
+    }
+
+    private boolean isRepresented(PartyEntity party) {
+        return party.getClaimPartyOrganisationList().stream()
+            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
     }
 
     private boolean wantsPost(PartyEntity party) {
@@ -132,6 +151,16 @@ public class DefencePackSelector {
         return pcsCase.getDocuments().stream()
             .filter(document -> document.getType() == DocumentType.COUNTERCLAIM)
             .toList();
+    }
+
+    private PartyEntity counterClaimOwner(DocumentEntity document) {
+        if (document.getParty() != null) {
+            return document.getParty();
+        }
+        if (document.getCounterClaim() != null) {
+            return document.getCounterClaim().getParty();
+        }
+        return null;
     }
 
     private boolean belongsToDefendant(DocumentEntity document, PartyEntity defendant) {

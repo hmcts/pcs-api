@@ -79,8 +79,7 @@ public class PackRecipientResolver {
         PartyRole role = candidate.recipientType();
         return new ResolvedRecipient(pcsCase, recipient, claimLetterType(role), candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
-            postalAddress(recipient, role, pcsCase.getPropertyAddress()),
-            1);
+            postalAddress(recipient, role, pcsCase.getPropertyAddress()));
     }
 
     private ResolvedRecipient resolveDefenceRecipient(PcsCaseEntity pcsCase, DefencePackCandidate candidate) {
@@ -89,8 +88,7 @@ public class PackRecipientResolver {
         List<DocumentEntity> documents = candidate.documents();
         return new ResolvedRecipient(pcsCase, recipient, defenceLetterType(documents), documents,
             recipientAddressResolver.resolveDisplayName(recipient),
-            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()),
-            PackLetterSequences.defendantNumber(pcsCase, recipient));
+            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
     }
 
     // DEF-01-IN1 when any form comes from a legal representative's response.
@@ -105,8 +103,7 @@ public class PackRecipientResolver {
         PartyRole role = candidate.role();
         return new ResolvedRecipient(pcsCase, recipient, LetterType.GEN_APP_PACK, candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
-            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()),
-            PackLetterSequences.genAppNumber(pcsCase, recipient, role));
+            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
     }
 
     private AddressUK correspondenceAddress(PartyEntity recipient, PartyRole role, AddressEntity propertyAddress) {

@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
 
@@ -205,6 +206,45 @@ class PackSendRecorderTest {
             assertThat(ref.self()).isTrue();
             assertThat(ref.defendantNumber()).isEqualTo(1);
             assertThat(ref.type()).isEqualTo(DocumentType.DEFENDANT_RESPONSE);
+        });
+
+        verify(accessCodeActivityLogService)
+            .recordPackSent(eq(caseWithClaim), eq(claimant), packDetailsCaptor.capture());
+        assertThat(packDetailsCaptor.getValue().documents()).singleElement().satisfies(ref -> {
+            assertThat(ref.self()).isFalse();
+            assertThat(ref.defendantNumber()).isEqualTo(1);
+        });
+    }
+
+    @Test
+    @DisplayName("Marks the counterclaim self=true when ownership is only on the counterclaim entity")
+    void shouldResolveCounterClaimOwnershipViaCounterClaimEntity() {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity claim = ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).build(),
+                ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build()))
+            .build();
+        PcsCaseEntity caseWithClaim = PcsCaseEntity.builder()
+            .caseReference(1234567890123456L).claims(List.of(claim)).build();
+        DocumentEntity counterClaimForm = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.COUNTERCLAIM)
+            .counterClaim(CounterClaimEntity.builder().party(defendant).build())
+            .build();
+
+        underTest.sendAndRecord(caseWithClaim, defendant, LetterType.DEFENCE_PACK,
+            List.of(counterClaimForm), UUID::randomUUID);
+        underTest.sendAndRecord(caseWithClaim, claimant, LetterType.DEFENCE_PACK,
+            List.of(counterClaimForm), UUID::randomUUID);
+
+        verify(accessCodeActivityLogService)
+            .recordPackSent(eq(caseWithClaim), eq(defendant), packDetailsCaptor.capture());
+        assertThat(packDetailsCaptor.getValue().documents()).singleElement().satisfies(ref -> {
+            assertThat(ref.self()).isTrue();
+            assertThat(ref.defendantNumber()).isEqualTo(1);
+            assertThat(ref.type()).isEqualTo(DocumentType.COUNTERCLAIM);
         });
 
         verify(accessCodeActivityLogService)

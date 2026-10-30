@@ -11,11 +11,9 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -30,7 +28,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -231,39 +228,6 @@ class PackRecipientResolverTest {
             assertThat(recipient.address()).isEqualTo(addressUk);
             assertThat(recipient.documents()).containsExactly(defenceForm);
         });
-    }
-
-    @Test
-    @DisplayName("Numbers defence packs by defendant rank and keeps gen-app claimant copies distinct")
-    void shouldNumberLettersFromPartyRank() {
-        PartyEntity secondDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
-        pcsCase.setClaims(List.of(ClaimEntity.builder().claimParties(List.of(
-            ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
-            ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build(),
-            ClaimPartyEntity.builder().party(secondDefendant).role(PartyRole.DEFENDANT).rank(2).build()
-        )).build()));
-        AddressUK addressUk = AddressUK.builder().addressLine1("1 High Street").build();
-        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(defencePackSelector.findDefencePackCandidates(pcsCase)).thenReturn(List.of(
-            new DefencePackCandidate(PartyRole.DEFENDANT, secondDefendant, List.of(defenceForm))));
-        when(genAppPackSelector.findGenAppPackCandidates(pcsCase)).thenReturn(List.of(
-            new GenAppPackCandidate(PartyRole.DEFENDANT, secondDefendant, List.of(defenceForm)),
-            new GenAppPackCandidate(PartyRole.CLAIMANT, claimant, List.of(defenceForm))));
-        when(recipientAddressResolver.resolveDisplayName(secondDefendant)).thenReturn("Second");
-        when(recipientAddressResolver.resolveDisplayName(claimant)).thenReturn("Claimant");
-        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(
-            secondDefendant, pcsCase.getPropertyAddress())).thenReturn(addressUk);
-        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(
-            claimant, pcsCase.getPropertyAddress())).thenReturn(addressUk);
-
-        assertThat(underTest.resolveDefenceRecipients(CASE_ID)).singleElement().satisfies(recipient -> {
-            assertThat(recipient.letterSequence()).isEqualTo(2);
-            assertThat(recipient.letterType().codeFor(recipient.letterSequence())).isEqualTo("DEF-02-IN0");
-        });
-        assertThat(underTest.resolveGenAppRecipients(CASE_ID))
-            .extracting(ResolvedRecipient::letterSequence,
-                recipient -> recipient.letterType().codeFor(recipient.letterSequence()))
-            .containsExactly(tuple(2, "GEN-02-IN0"), tuple(3, "GEN-03-IN0"));
     }
 
     @Test

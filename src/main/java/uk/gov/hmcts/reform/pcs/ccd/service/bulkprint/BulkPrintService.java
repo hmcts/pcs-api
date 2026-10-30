@@ -63,11 +63,6 @@ public class BulkPrintService {
 
     public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
                          String recipientName, AddressUK address, List<DocumentEntity> documents) {
-        return sendPack(pcsCase, recipient, letterType, 1, recipientName, address, documents);
-    }
-
-    public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType, int letterSequence,
-                         String recipientName, AddressUK address, List<DocumentEntity> documents) {
         requirePostalAddress(address, recipient);
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
 
@@ -80,7 +75,7 @@ public class BulkPrintService {
         documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));
         Document mergedLetter = new Document(Base64.getEncoder().encodeToString(pdfMerger.merge(pdfs)), SINGLE_COPY);
 
-        LetterV3 letter = new LetterV3(letterType.codeFor(letterSequence), List.of(mergedLetter),
+        LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
             additionalData(caseReference, recipientName, address));
         return sendLetterApi.sendLetter(authTokenGenerator.generate(), letter).letterId;
     }

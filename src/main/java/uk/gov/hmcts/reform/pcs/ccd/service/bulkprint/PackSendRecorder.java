@@ -44,12 +44,6 @@ public class PackSendRecorder {
 
     public void sendAndRecord(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
                               List<DocumentEntity> documents, Supplier<UUID> sendAction) {
-        sendAndRecord(pcsCase, recipient, letterType, documents, 1, sendAction);
-    }
-
-    public void sendAndRecord(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
-                              List<DocumentEntity> documents, int letterSequence, Supplier<UUID> sendAction) {
-        String letterCode = letterType.codeFor(letterSequence);
         MDC.put(MDC_CASE_REFERENCE, String.valueOf(pcsCase.getCaseReference()));
         MDC.put(MDC_PARTY_ID, String.valueOf(recipient.getId()));
         MDC.put(MDC_LETTER_TYPE, letterType.name());
@@ -59,13 +53,13 @@ public class PackSendRecorder {
             accessCodeActivityLogService.recordPackSent(pcsCase, recipient,
                 PackDetails.sent(letterType, packDocumentRefs(pcsCase, recipient, documents), letterId));
             log.info("Pack sent - case: {}, party: {}, letterType: {}, letterId: {}, documents: {}",
-                pcsCase.getCaseReference(), recipient.getId(), letterCode, letterId,
+                pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(), letterId,
                 documentSummary(documents));
-            documents.forEach(document -> logDocumentSent(pcsCase, recipient, document, letterCode, letterId));
+            documents.forEach(document -> logDocumentSent(pcsCase, recipient, document, letterType, letterId));
         } catch (MissingPostalAddressException e) {
-            recordFailure(pcsCase, recipient, letterType, letterCode, documents, e, true);
+            recordFailure(pcsCase, recipient, letterType, documents, e, true);
         } catch (Exception e) {
-            recordFailure(pcsCase, recipient, letterType, letterCode, documents, e, false);
+            recordFailure(pcsCase, recipient, letterType, documents, e, false);
         } finally {
             MDC.remove(MDC_CASE_REFERENCE);
             MDC.remove(MDC_PARTY_ID);
@@ -77,27 +71,27 @@ public class PackSendRecorder {
     }
 
     private void recordFailure(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
-                               String letterCode, List<DocumentEntity> documents, Exception cause, boolean terminal) {
+                               List<DocumentEntity> documents, Exception cause, boolean terminal) {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
         accessCodeActivityLogService.recordPackFailed(pcsCase, recipient,
             PackDetails.failed(letterType, packDocumentRefs(pcsCase, recipient, documents), cause));
         if (terminal) {
             log.error("Pack send failed (terminal) - case: {}, party: {}, letterType: {}, documents: {}: {}",
-                pcsCase.getCaseReference(), recipient.getId(), letterCode,
+                pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
                 documentSummary(documents), cause.getMessage(), cause);
         } else {
             log.warn("Pack send failed (will retry) - case: {}, party: {}, letterType: {}, documents: {}: {}",
-                pcsCase.getCaseReference(), recipient.getId(), letterCode,
+                pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
                 documentSummary(documents), cause.getMessage());
         }
     }
 
     private void logDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,
-                                 String letterCode, UUID letterId) {
+                                 LetterType letterType, UUID letterId) {
         log.info("Document sent - case: {}, party: {}, documentType: {}, documentId: {}, letterType: {}, letterId: {}",
             pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
-            letterCode, letterId);
+            letterType.getCode(), letterId);
     }
 
     private List<PackDocumentRef> packDocumentRefs(PcsCaseEntity pcsCase, PartyEntity recipient,
@@ -115,7 +109,7 @@ public class PackSendRecorder {
     // The party a document belongs to: on the document directly (access code, counter-claim), via the
     // counterclaim entity when party_id was not copied onto the document, via the defence response
     // (the defence form carries no direct party_id), via the general application (the applicant), or
-    // the main claimant for the claim form (stored case-level, but it is the claimant's own filing —
+    // the main claimant for the claim form (stored case-level, but it is the claimant's own filing,
     // so their pack gets self=true).
     private PartyEntity owningParty(PcsCaseEntity pcsCase, DocumentEntity document) {
         if (document.getParty() != null) {

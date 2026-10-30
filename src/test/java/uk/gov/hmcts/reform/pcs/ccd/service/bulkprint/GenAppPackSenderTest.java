@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -63,13 +62,12 @@ class GenAppPackSenderTest {
     void shouldPostRecipientAndRecordPackSent() {
         when(packRecipientResolver.resolveGenAppRecipients(CASE_ID)).thenReturn(List.of(
             new ResolvedRecipient(pcsCase, recipient, LetterType.GEN_APP_PACK,
-                List.of(gaForm), "Acme Ltd", address, 3)));
-        when(bulkPrintService.sendPack(any(), any(), any(), anyInt(), any(), any(), any()))
-            .thenReturn(UUID.randomUUID());
+                List.of(gaForm), "Acme Ltd", address)));
+        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any())).thenReturn(UUID.randomUUID());
 
         underTest.sendGenAppPacks(CASE_ID);
 
-        verify(bulkPrintService).sendPack(pcsCase, recipient, LetterType.GEN_APP_PACK, 3, "Acme Ltd", address,
+        verify(bulkPrintService).sendPack(pcsCase, recipient, LetterType.GEN_APP_PACK, "Acme Ltd", address,
             List.of(gaForm));
         verify(accessCodeActivityLogService).recordPackSent(eq(pcsCase), eq(recipient), any(PackDetails.class));
     }
@@ -79,8 +77,8 @@ class GenAppPackSenderTest {
     void shouldRecordFailureWhenSendThrowsMissingAddress() {
         when(packRecipientResolver.resolveGenAppRecipients(CASE_ID)).thenReturn(List.of(
             new ResolvedRecipient(pcsCase, recipient, LetterType.GEN_APP_PACK, List.of(gaForm),
-                "Acme Ltd", address, 1)));
-        when(bulkPrintService.sendPack(any(), any(), any(), anyInt(), any(), any(), any()))
+                "Acme Ltd", address)));
+        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
             .thenThrow(new MissingPostalAddressException("no address"));
 
         underTest.sendGenAppPacks(CASE_ID);

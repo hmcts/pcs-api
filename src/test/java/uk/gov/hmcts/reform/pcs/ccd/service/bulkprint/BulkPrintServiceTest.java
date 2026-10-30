@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.list;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -108,7 +107,7 @@ class BulkPrintServiceTest {
         "CLAIMANT_CLAIM_PACK, CPC-01-IN0",
         "DEFENCE_PACK, DEF-01-IN0",
         "DEFENCE_PACK_LEGAL_REP, DEF-01-IN1",
-        "GEN_APP_PACK, GEN-01-IN0"
+        "GEN_APP_PACK, GEN-00-IN0"
     })
     @DisplayName("Sends renamed IN0 letter type codes for claim and defence packs")
     void shouldSendRenamedLetterTypeCode(LetterType letterType, String expectedLetterType) {
@@ -163,32 +162,6 @@ class BulkPrintServiceTest {
 
         verify(pdfMerger).merge(List.of(coversheetBytes, documentBytes));
         verifyNoInteractions(coveringLetterProvider);
-    }
-
-    @Test
-    @DisplayName("Numbers a later defendant's defence pack and general-application pack")
-    void shouldNumberLetterCodesByRecipientSequence() {
-        when(authTokenGenerator.generate()).thenReturn("s2s");
-        when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
-        byte[] coversheetBytes = "coversheet".getBytes();
-        when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
-        byte[] documentBytes = "document".getBytes();
-        when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
-        byte[] mergedBytes = "merged-pdf".getBytes();
-        when(pdfMerger.merge(List.of(coversheetBytes, documentBytes))).thenReturn(mergedBytes);
-        when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
-
-        DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
-        AddressUK address = AddressUK.builder()
-            .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
-
-        underTest.sendPack(pcsCase, recipient, LetterType.DEFENCE_PACK, 2, "Jane Doe", address, List.of(document));
-        underTest.sendPack(pcsCase, recipient, LetterType.GEN_APP_PACK, 3, "Jane Doe", address, List.of(document));
-
-        verify(sendLetterApi, times(2)).sendLetter(eq("s2s"), letterCaptor.capture());
-        assertThat(letterCaptor.getAllValues()).extracting(letter -> letter.type)
-            .containsExactly("DEF-02-IN0", "GEN-03-IN0");
     }
 
     @Test
