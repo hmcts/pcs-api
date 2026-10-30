@@ -14,13 +14,15 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormDocumentGenerator.expectedClaimFormFilename;
-import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormDocumentGenerator.counterClaimFormFilename;
 import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormPersistenceService.defendantNumber;
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormDocumentGenerator.expectedDefenceFormFilename;
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormPersistenceService.defendantNumber;
@@ -34,6 +36,7 @@ public class TranslationWAService {
     private final TaskDescriptionService taskDescriptionService;
     private final PartyService partyService;
     private final DocumentNameService documentNameService;
+    private final FeatureToggleService featureToggleService;
 
     public void createTranslateDefendantSubmittedDocumentTask(PcsCaseEntity pcsCaseEntity, PartyEntity party,
                                                       List<DocumentEntity> documents) {
@@ -146,7 +149,11 @@ public class TranslationWAService {
                 && counterClaim.getParty().getId().equals(party.getId()))
             .findFirst()
             .map(counterClaim -> DocumentEntity.builder()
-                .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaim)) + GENERATED_DOC_EXTENSION)
+                .fileName(counterClaimFormFilename(
+                    featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4),
+                    counterClaim.getRank(),
+                    defendantNumber(counterClaim)
+                ) + GENERATED_DOC_EXTENSION)
                 .build());
     }
 

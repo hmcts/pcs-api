@@ -1726,11 +1726,26 @@ export class CreateCaseAction implements IAction {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
+    await expect(async () => {
+      expect(await fileLocator.count(), `Files have not rendered for "${folderName}"`).toBeGreaterThan(0);
+    }).toPass({
+      timeout: MEDIUM_TIMEOUT,
+    });
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
-    expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+    const expectedFiles = caseFile.expectedFiles as string[] | undefined;
+    const fileArray = expectedFiles
+      ? (await fileLocator.allTextContents()).map(text => text
+        .replace(/\s*\d{1,2} [A-Za-z]{3} \d{4} \d{1,2}:\d{2}\s*$/, '')
+        .trim())
+      : this.cleanFilesArray(await fileLocator.allTextContents());
+    const expectedFileArray = expectedFiles ?? userInputFiles;
+    if (expectedFiles) {
+      expect(fileArray, `validating files for "${folderName}"`).toEqual(expect.arrayContaining(expectedFiles));
+    } else {
+      expect(expectedFileArray.sort(), `validating files for "${folderName}"`).toEqual(fileArray.sort());
+    }
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
     if ((await folder.getAttribute('aria-expanded')) === 'true') {
