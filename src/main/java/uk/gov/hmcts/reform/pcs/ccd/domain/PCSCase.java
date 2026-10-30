@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
@@ -774,7 +773,7 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
-    @CCD(access = DocumentAccess.class)
+    @CCD(access = {DocumentAccess.class, SystemDocumentAccess.class})
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
@@ -790,7 +789,7 @@ public class PCSCase {
     private CaseDetailsTab caseDetailsTab;
 
     @JsonUnwrapped(prefix = "bundleTab_")
-    @CCD(searchable = false, access = {JudgeBundleAccess.class})
+    @CCD(searchable = false, access = {JudicialReadAccess.class})
     private BundleTab bundleTab;
 
     @CCD(

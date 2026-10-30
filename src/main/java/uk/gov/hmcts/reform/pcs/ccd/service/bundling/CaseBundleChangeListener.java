@@ -4,6 +4,7 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
@@ -16,8 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import java.util.Objects;
 
 /**
- * All document writes, including cascades, plus application and counterclaim changes that show or
- * hide their documents. Other application and counterclaim writes leave the bundle as it is.
+ * Writes to documents in the bundle, including cascades, plus application and counterclaim changes
+ * that show or hide their documents. Other writes leave the bundle as it is, so are not re-rendered.
  */
 @Component
 public class CaseBundleChangeListener {
@@ -36,14 +37,14 @@ public class CaseBundleChangeListener {
     public void persisted(Object entity) {
         remember(entity);
         // A new application's or counterclaim's documents are persisted too, and queue the bundle themselves.
-        if (entity instanceof DocumentEntity) {
+        if (entity instanceof DocumentEntity document && mayBeInBundle(document)) {
             changed(entity);
         }
     }
 
     @PostUpdate
     public void updated(Object entity) {
-        boolean affectsBundle = entity instanceof DocumentEntity
+        boolean affectsBundle = entity instanceof DocumentEntity document && mayBeInBundle(document)
             || entity instanceof GenAppEntity application && !Objects.equals(application.getVisibleWhenLoaded(),
                 DocumentsView.isVisibleToInternalReaders(application))
             || entity instanceof CounterClaimEntity counterClaim && !Objects.equals(
@@ -56,7 +57,24 @@ public class CaseBundleChangeListener {
 
     @PostRemove
     public void removed(Object entity) {
-        changed(entity);
+        boolean affectsBundle = switch (entity) {
+            case DocumentEntity document -> mayBeInBundle(document);
+            case GenAppEntity application -> DocumentsView.isVisibleToInternalReaders(application);
+            case CounterClaimEntity counterClaim -> DocumentsView.isVisibleToInternalReaders(counterClaim);
+            default -> false;
+        };
+        if (affectsBundle) {
+            changed(entity);
+        }
+    }
+
+    // A document's application or counterclaim is only checked if already loaded, as loading it
+    // during flush is not allowed. A document that moves into or out of the bundle when its
+    // application or counterclaim is issued is queued by that entity's update.
+    private static boolean mayBeInBundle(DocumentEntity document) {
+        return !Hibernate.isInitialized(document.getGeneralApplication())
+            || !Hibernate.isInitialized(document.getCounterClaim())
+            || CaseBundleDefinition.isInBundle(document);
     }
 
     private static void remember(Object entity) {

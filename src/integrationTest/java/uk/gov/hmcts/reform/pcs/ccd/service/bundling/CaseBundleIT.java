@@ -122,7 +122,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void issuingACounterclaimInvalidatesItsPreviouslyHiddenDocuments() throws Exception {
+    void issuingACounterclaimQueuesItsPreviouslyHiddenDocuments() throws Exception {
         long reference = cases.issue();
         UUID key = caseKey(reference);
         UUID claimId = transaction.execute(status -> {
@@ -135,14 +135,14 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             pcsCase.addDocuments(List.of(source));
             return pcsCases.saveAndFlush(pcsCase).getCounterClaims().getFirst().getId();
         });
-        run(key);
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
-            .request().allDocuments()).isEmpty();
+        // A document outside the bundle does not queue a render.
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
+            .isEqualTo(CaseBundleView.Lifecycle.NONE);
         transaction.executeWithoutResult(status -> pcsCases.findByCaseReference(reference).orElseThrow()
             .getCounterClaims().stream().filter(claim -> claim.getId().equals(claimId)).findFirst().orElseThrow()
             .setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED));
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
-            .isEqualTo(CaseBundleView.Lifecycle.UPDATING);
+            .isEqualTo(CaseBundleView.Lifecycle.PREPARING);
         run(key);
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
             .request().allDocuments()).extracting(source -> source.title())

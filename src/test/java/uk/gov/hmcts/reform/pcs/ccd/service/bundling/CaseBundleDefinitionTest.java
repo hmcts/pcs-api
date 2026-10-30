@@ -84,17 +84,6 @@ class CaseBundleDefinitionTest {
     }
 
     @Test
-    void shouldLinkToAudioRatherThanFetchIt() {
-        DocumentEntity recording = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
-        recording.setContentType("audio/mpeg");
-
-        BundleRequest request = CaseBundleDefinition.build(caseWith(recording));
-
-        assertThat(section(request, "Hearing documents").documents().getFirst().media()).hasValueSatisfying(
-            media -> assertThat(media.accessUrl()).isEqualTo(recording.getBinaryUrl()));
-    }
-
-    @Test
     void shouldTitleAnUnnamedDocumentByItsType() {
         DocumentEntity typed = document(" ", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         typed.setType(DocumentType.WITNESS_STATEMENT);
@@ -129,14 +118,13 @@ class CaseBundleDefinitionTest {
     }
 
     @Test
-    void shouldFetchARecordingItCannotLinkTo() {
-        DocumentEntity unlinked = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
-        unlinked.setContentType("audio/mpeg");
-        unlinked.setBinaryUrl(" ");
-        DocumentEntity unsupported = document("inspection.mov", CaseFileCategory.HEARING_DOCUMENTS, null);
-        unsupported.setContentType("video/quicktime");
+    void shouldFetchRecordingsRatherThanLinkToDmStore() {
+        DocumentEntity audio = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
+        audio.setContentType("audio/mpeg");
+        DocumentEntity video = document("inspection.mov", CaseFileCategory.HEARING_DOCUMENTS, null);
+        video.setContentType("video/quicktime");
 
-        BundleRequest request = CaseBundleDefinition.build(caseWith(unlinked, unsupported));
+        BundleRequest request = CaseBundleDefinition.build(caseWith(audio, video));
 
         // Fetched, so an unsupported recording becomes a missing-document page rather than failing the bundle.
         assertThat(section(request, "Hearing documents").documents())

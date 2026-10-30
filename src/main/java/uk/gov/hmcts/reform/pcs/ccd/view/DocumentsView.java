@@ -7,8 +7,6 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -33,16 +31,17 @@ public class DocumentsView {
     private final SecurityContextService securityContextService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
         // CDAM only serves a document attached to a case to a user who can see it in the case. Bulk print and
         // bundling download documents as PCS's IDAM system account, so it sees what they send: access code letters
-        // and what an internal user sees in case file view.
+        // and what an internal user sees in case file view. It cannot read allDocuments, so that is not built.
         if (securityContextService.isIdamSystemUser()) {
             pcsCase.setSystemDocuments(pcsCaseEntity.getDocuments().stream()
                 .filter(document -> document.getType() == DocumentType.DEFENDANT_ACCESS_CODE
                     || isVisibleToInternalReaders(document))
                 .map(this::toListValue)
                 .toList());
+        } else {
+            pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
         }
     }
 
@@ -58,9 +57,10 @@ public class DocumentsView {
     }
 
     public static boolean isVisibleToInternalReaders(GenAppEntity genApp) {
-        return genApp.getWithoutNotice() == VerticalYesNo.YES || genApp.getState() == GenAppState.GEN_APP_ISSUED;
+        return GenAppVisibilityService.isGenAppDocumentVisibleToInternalUsers(genApp);
     }
 
+    /** Every user sees an issued counterclaim's documents, and none sees an unissued one's. */
     public static boolean isVisibleToInternalReaders(CounterClaimEntity counterClaim) {
         return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
     }
@@ -119,7 +119,7 @@ public class DocumentsView {
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
         if (counterClaim != null) {
-            return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
+            return isVisibleToInternalReaders(counterClaim);
         }
 
         return true;

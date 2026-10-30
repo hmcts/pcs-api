@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -195,6 +196,9 @@ class DocumentsViewTest {
         assertThat(pcsCase.getSystemDocuments())
             .extracting(document -> document.getValue().getFilename())
             .containsExactly("access-code-letter.pdf", "issued-counter-claim.pdf", "without-notice.pdf");
+        // CCD strips allDocuments for the system user, so it is not built and no case roles are looked up.
+        assertThat(pcsCase.getAllDocuments()).isNull();
+        verifyNoInteractions(userRoleService);
     }
 
     @Test

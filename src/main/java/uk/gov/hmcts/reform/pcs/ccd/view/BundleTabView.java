@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundleView;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.MissingBundleDocument;
@@ -46,7 +46,7 @@ public class BundleTabView {
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
         CaseBundles managed = bundles.getIfAvailable();
         // The judge roles are all organisational, so no case-level lookup is needed.
-        if (managed == null || !JudgeBundleAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
+        if (managed == null || !JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
             return;
         }
         CaseBundleView view = managed.view(CaseBundleDefinition.NAME, entity.getId().toString());

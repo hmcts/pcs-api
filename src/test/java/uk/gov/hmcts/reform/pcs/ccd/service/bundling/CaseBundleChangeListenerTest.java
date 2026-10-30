@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.lenient;
@@ -46,13 +48,37 @@ class CaseBundleChangeListenerTest {
 
     @Test
     void shouldQueueTheBundleWhenADocumentIsPersistedUpdatedOrRemoved() {
-        DocumentEntity document = DocumentEntity.builder().pcsCase(pcsCase).build();
+        DocumentEntity document = DocumentEntity.builder().pcsCase(pcsCase).documentId(UUID.randomUUID()).build();
 
         underTest.persisted(document);
         underTest.updated(document);
         underTest.removed(document);
 
         verify(bundles, times(3)).changed(CaseBundleDefinition.NAME, CASE_ID.toString());
+    }
+
+    @Test
+    void shouldNotQueueTheBundleForDocumentsLeftOutOfIt() {
+        DocumentEntity accessCodeLetter = DocumentEntity.builder().pcsCase(pcsCase).documentId(UUID.randomUUID())
+            .type(DocumentType.DEFENDANT_ACCESS_CODE).build();
+        DocumentEntity unissuedApplicationDocument = DocumentEntity.builder().pcsCase(pcsCase)
+            .documentId(UUID.randomUUID())
+            .generalApplication(GenAppEntity.builder().state(GenAppState.PENDING_GEN_APP_ISSUED)
+                                    .withoutNotice(VerticalYesNo.NO).build())
+            .build();
+        DocumentEntity unissuedCounterclaimDocument = DocumentEntity.builder().pcsCase(pcsCase)
+            .documentId(UUID.randomUUID())
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED).build())
+            .build();
+
+        for (DocumentEntity document
+            : List.of(accessCodeLetter, unissuedApplicationDocument, unissuedCounterclaimDocument)) {
+            underTest.persisted(document);
+            underTest.updated(document);
+            underTest.removed(document);
+        }
+
+        verifyNoInteractions(bundles);
     }
 
     @Test
@@ -91,8 +117,8 @@ class CaseBundleChangeListenerTest {
     }
 
     @Test
-    void shouldQueueTheBundleWhenAnApplicationIsRemoved() {
-        GenAppEntity application = GenAppEntity.builder().pcsCase(pcsCase).build();
+    void shouldQueueTheBundleWhenAnIssuedApplicationIsRemoved() {
+        GenAppEntity application = GenAppEntity.builder().pcsCase(pcsCase).state(GenAppState.GEN_APP_ISSUED).build();
 
         underTest.removed(application);
 
@@ -103,7 +129,7 @@ class CaseBundleChangeListenerTest {
     void shouldDoNothingWhenCaseBundlesAreOff() {
         when(provider.getIfAvailable()).thenReturn(null);
 
-        underTest.persisted(DocumentEntity.builder().pcsCase(pcsCase).build());
+        underTest.persisted(DocumentEntity.builder().pcsCase(pcsCase).documentId(UUID.randomUUID()).build());
 
         verifyNoInteractions(bundles);
     }

@@ -3,13 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.bundling.api.BuiltInMediaTypes;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleRequest;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
 import uk.gov.hmcts.ccd.sdk.bundling.api.DocumentReference;
 import uk.gov.hmcts.ccd.sdk.bundling.api.EmptySectionPolicy;
-import uk.gov.hmcts.ccd.sdk.bundling.api.MediaPlaceholder;
 import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentPolicy;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.SelectedCaseBundle;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
@@ -63,7 +61,7 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
 
     static BundleRequest build(PcsCaseEntity pcsCase) {
         Map<CaseFileCategory, List<DocumentEntity>> byFolder = pcsCase.getDocuments().stream()
-            .filter(CaseBundleDefinition::isVisibleToInternalReaders)
+            .filter(CaseBundleDefinition::isInBundle)
             .collect(Collectors.groupingBy(CaseBundleDefinition::folder));
 
         BundleSection.Builder root = BundleSection.builder(BUNDLE_TITLE);
@@ -105,31 +103,20 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
             .thenComparing(DocumentEntity::getSubmittedDate, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(document -> document.getId().toString());
 
+    // A recording is fetched like any other document and, being unsupported, becomes a missing-document page.
+    // The bundle does not link to it: the stored URL is dm-store's internal one, which a judge cannot open.
     private static BundleDocument toBundleDocument(DocumentEntity document) {
-        BundleDocument.Builder builder = BundleDocument.builder()
+        return BundleDocument.builder()
             .id(document.getId().toString())
             .title(title(document))
             .reference(new DocumentReference(CDAM_PROVIDER, document.getDocumentId().toString()))
-            .date(date(document));
-        // A recording is not fetched: the bundle gets a page linking to it. Any other recording is
-        // fetched like a document and, being unsupported, becomes a missing-document page.
-        if (isLinkableRecording(document)) {
-            builder.media(MediaPlaceholder.builder()
-                .mediaType(document.getContentType())
-                .accessUrl(document.getBinaryUrl())
-                .build());
-        }
-        return builder.build();
-    }
-
-    private static boolean isLinkableRecording(DocumentEntity document) {
-        return document.getContentType() != null && BuiltInMediaTypes.MEDIA.contains(document.getContentType())
-            && StringUtils.isNotBlank(document.getBinaryUrl());
+            .date(date(document))
+            .build();
     }
 
     // An entity DocumentsView reads to decide this needs CaseBundleChangeListener, or changes to it
     // leave the bundle stale.
-    private static boolean isVisibleToInternalReaders(DocumentEntity document) {
+    static boolean isInBundle(DocumentEntity document) {
         return document.getDocumentId() != null && DocumentsView.isVisibleToInternalReaders(document);
     }
 
