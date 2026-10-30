@@ -6,32 +6,43 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeDetailsBuilderTest {
 
     private final String noAnswer = " ";
 
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
+
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
+
     @InjectMocks
-    private NoticeDetailsBuilder noticeDetailsBuilder = new NoticeDetailsBuilder();
+    private NoticeDetailsBuilder noticeDetailsBuilder;
 
     @Test
     void shouldHandleNullNoticeServed() {
@@ -41,7 +52,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeServed()).isEqualTo(" ");
@@ -54,11 +65,13 @@ class NoticeDetailsBuilderTest {
         // Given
         PCSCase pcsCase = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(null)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(null)
+                        .build())
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod()).isEqualTo(" ");
@@ -73,7 +86,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod()).isEqualTo(" ");
@@ -92,7 +105,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod())
@@ -113,7 +126,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod())
@@ -135,7 +148,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod())
@@ -158,7 +171,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod())
@@ -180,7 +193,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod())
@@ -203,7 +216,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod())
@@ -226,7 +239,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeUploaded()).isEqualTo("No");
@@ -248,7 +261,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeUploaded()).isEqualTo("Yes");
@@ -270,7 +283,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeMethod()).isEqualTo(expectedMethod);
@@ -285,7 +298,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeServed()).isEqualTo(" ");
@@ -307,7 +320,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeServed()).isEqualTo("No");
@@ -323,7 +336,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         assertThat(noticeTabDetails.getNoticeServed()).isEqualTo("No");
         assertThat(noticeTabDetails.getNoticeDate()).isEqualTo(noAnswer);
@@ -343,7 +356,7 @@ class NoticeDetailsBuilderTest {
                 .build();
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(noticeTabDetails.getNoticeServed()).isEqualTo("No");
@@ -352,54 +365,33 @@ class NoticeDetailsBuilderTest {
     }
 
     @Test
-    void shouldRetainNoticeDocumentsIfCaseIsSubmitted() {
+    void shouldBuildNoticeDocumentsFromPersistedCase() {
         // Given
-        List<ListValue<Document>> noticeDocuments = List.of(
-            ListValue.<Document>builder().value(Document.builder().build()).build()
-        );
+        UUID documentId = UUID.randomUUID();
+        DocumentEntity noticeDocument = DocumentEntity.builder()
+            .id(documentId)
+            .type(DocumentType.POSSESSION_NOTICE)
+            .fileName("notice.pdf")
+            .url("notice-url")
+            .build();
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
             .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-            .documents(noticeDocuments)
             .build();
-
         PCSCase pcsCase = PCSCase.builder()
             .noticeServed(YesOrNo.YES)
             .noticeServedDetails(noticeServedDetails)
             .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(noticeDocument));
 
         // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, true);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
 
         // Then
-        // The notice document is kept on the party-readable notice_Documents field so that
-        // defendant/citizen/legal-rep read paths (e.g. the confirmation-of-notice-date page)
-        // can resolve it, as well as being surfaced on the case-details tab.
-        assertThat(noticeTabDetails.getNoticeDocuments()).isEqualTo(noticeDocuments);
-        assertThat(noticeServedDetails.getDocuments()).isEqualTo(noticeDocuments);
-    }
-
-    @Test
-    void shouldNotUnsetNoticeDocumentsIfCaseIsInDraft() {
-        // Given
-        List<ListValue<Document>> noticeDocuments = List.of(
-            ListValue.<Document>builder().value(Document.builder().build()).build()
-        );
-        NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
-            .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-            .documents(noticeDocuments)
-            .build();
-
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(noticeServedDetails)
-            .build();
-
-        // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false);
-
-        // Then
-        assertThat(noticeTabDetails.getNoticeDocuments()).isEqualTo(noticeDocuments);
-        assertThat(noticeServedDetails.getDocuments()).isEqualTo(noticeDocuments);
+        assertThat(noticeTabDetails.getNoticeDocuments()).singleElement().satisfies(document -> {
+            assertThat(document.getId()).isEqualTo(documentId.toString());
+            assertThat(document.getValue().getFilename()).isEqualTo("notice.pdf");
+            assertThat(document.getValue().getUrl()).isEqualTo("notice-url");
+        });
     }
 
     private static Stream<Arguments> noticeServiceMethodWithNullDatesProvider() {

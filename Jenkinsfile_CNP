@@ -120,6 +120,9 @@ withPipeline(type, product, component) {
     else if (hasLabel(githubApi, "enable_e2e_CM_test")) {
       env.E2E_SUITE = "caseManagement"
     }
+    else if (hasLabel(githubApi, "enable_e2e_enforcement_test")) {
+      env.E2E_SUITE = "enforcement"
+    }
     else if (hasLabel(githubApi, "enable_e2e_NOC_test")) {
       env.E2E_SUITE = "noticeOfChange"
     }
