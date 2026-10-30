@@ -55,6 +55,7 @@ export class ActionEnforcementRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
@@ -92,6 +93,7 @@ export class ActionEnforcementRegistry {
     ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
   ]);
 
   static getAction(actionName: string): IAction {
