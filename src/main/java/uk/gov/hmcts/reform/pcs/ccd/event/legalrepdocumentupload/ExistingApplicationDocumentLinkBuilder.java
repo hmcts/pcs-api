@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -27,18 +26,9 @@ public class ExistingApplicationDocumentLinkBuilder {
         if (links.isEmpty()) {
             return "";
         }
-
-        String listItems = links.stream()
-            .map(link -> "<li class=\"govuk-!-margin-bottom-1\">" + link + "</li>")
-            .collect(Collectors.joining());
-
-        return """
-            <div class="govuk-inset-text">
-                <ul class="govuk-list">
-                    %s
-                </ul>
-            </div>
-            """.formatted(listItems);
+        return links.stream()
+            .map(link -> "* " + link)
+            .collect(Collectors.joining("\n"));
     }
 
     public String applicationLabel(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
@@ -52,13 +42,7 @@ public class ExistingApplicationDocumentLinkBuilder {
         }
 
         String linkText = "%s (opens in new tab)".formatted(applicationLabel(pcsCaseEntity, genApp));
-
-        return """
-            <a href="%s" target="_blank" rel="noopener noreferrer" class="govuk-link">%s</a>
-            """.formatted(
-                HtmlUtils.htmlEscape(documentLink),
-                HtmlUtils.htmlEscape(linkText)
-            );
+        return "[%s](%s)".formatted(linkText, documentLink);
     }
 
     private String documentLink(DocumentEntity documentEntity) {
