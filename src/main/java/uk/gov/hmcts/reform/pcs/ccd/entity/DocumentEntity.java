@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -120,6 +121,10 @@ public class DocumentEntity {
     private String removalReason;
 
     private LocalDateTime removedAt;
+
+    // Whether it may have been in the case bundle when loaded; CaseBundleChangeListener compares on update.
+    @Transient
+    private Boolean inBundleWhenLoaded;
 
     @PrePersist
     void prePersist() {

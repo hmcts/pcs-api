@@ -44,7 +44,8 @@ public class CaseBundleChangeListener {
 
     @PostUpdate
     public void updated(Object entity) {
-        boolean affectsBundle = entity instanceof DocumentEntity document && mayBeInBundle(document)
+        boolean affectsBundle = entity instanceof DocumentEntity document
+                && (Boolean.TRUE.equals(document.getInBundleWhenLoaded()) || mayBeInBundle(document))
             || entity instanceof GenAppEntity application && !Objects.equals(application.getVisibleWhenLoaded(),
                 DocumentsView.isVisibleToInternalReaders(application))
             || entity instanceof CounterClaimEntity counterClaim && !Objects.equals(
@@ -78,7 +79,9 @@ public class CaseBundleChangeListener {
     }
 
     private static void remember(Object entity) {
-        if (entity instanceof GenAppEntity application) {
+        if (entity instanceof DocumentEntity document) {
+            document.setInBundleWhenLoaded(mayBeInBundle(document));
+        } else if (entity instanceof GenAppEntity application) {
             application.setVisibleWhenLoaded(DocumentsView.isVisibleToInternalReaders(application));
         } else if (entity instanceof CounterClaimEntity counterClaim) {
             counterClaim.setVisibleWhenLoaded(DocumentsView.isVisibleToInternalReaders(counterClaim));

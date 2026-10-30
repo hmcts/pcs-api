@@ -82,6 +82,17 @@ class CaseBundleChangeListenerTest {
     }
 
     @Test
+    void shouldQueueTheBundleWhenAnUpdateTakesADocumentOutOfIt() {
+        DocumentEntity document = DocumentEntity.builder().pcsCase(pcsCase).documentId(UUID.randomUUID()).build();
+        underTest.loaded(document);
+
+        document.setType(DocumentType.DEFENDANT_ACCESS_CODE);
+        underTest.updated(document);
+
+        verify(bundles).changed(CaseBundleDefinition.NAME, CASE_ID.toString());
+    }
+
+    @Test
     void shouldNotQueueTheBundleWhenAnApplicationChangesWithoutChangingItsVisibility() {
         GenAppEntity application = GenAppEntity.builder().pcsCase(pcsCase).state(GenAppState.GEN_APP_ISSUED).build();
         underTest.loaded(application);
