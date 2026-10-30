@@ -6,3 +6,5 @@ java:
     ENABLE_TESTING_SUPPORT: true
     CASE_TYPE_SUFFIX: "staging"
     LAUNCHDARKLY_ENV: "staging"
+    SDP_EXPORT_ENABLED: true
+    SDP_EXPORT_UPLOAD_ENABLED: true
