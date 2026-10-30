@@ -907,7 +907,7 @@ public class PCSCase {
 
     @JsonProperty("Documents you've uploaded")
     @CCD(
-        label = "## Documents you’ve uploaded",
+        label = "## Documents you've uploaded",
         typeOverride = Label,
         searchable = false,
         access = {PartyVisibleTabAccess.class}
