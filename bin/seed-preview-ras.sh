@@ -98,8 +98,11 @@ done
 FRONTEND_USERS=$(curl --silent --max-time 30 "$FRONTEND_USERS_URL" || true)
 [ -n "$FRONTEND_USERS" ] || echo "WARNING: could not fetch pcs-frontend's user data, its extra users are not seeded"
 
+# Logged in as by the smoke and API tests but not listed in the user data files.
+EXTRA_PROFESSIONAL_EMAILS="pcs-solicitor-automation@test.com ${IDAM_PCS_USER_EMAIL:-}"
+
 professional_emails() {
-  { cat "$DATA"/*.ts; printf '%s\n' "$FRONTEND_USERS"; } \
+  { cat "$DATA"/*.ts; printf '%s\n' "$FRONTEND_USERS" $EXTRA_PROFESSIONAL_EMAILS; } \
     | grep -v '^\s*//' | grep -ohE "[A-Za-z0-9._%+-]+@test\.com" | tr 'A-Z' 'a-z' | sort -u
 }
 
