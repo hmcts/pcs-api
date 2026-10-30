@@ -8,23 +8,19 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
-import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
 import uk.gov.hmcts.reform.pcs.notification.CapturedNotification;
 import uk.gov.hmcts.reform.pcs.notification.MockNotificationServer;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
-import uk.gov.hmcts.reform.pcs.service.CaseStateService;
-import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -47,10 +43,6 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     @Autowired
     private CaseCreationService caseCreationService;
     @Autowired
-    private CaseStateService caseStateService;
-    @Autowired
-    private FeePaymentService feePaymentService;
-    @Autowired
     private AccessCodeService accessCodeService;
     @Autowired
     private TestingSupportClient testingSupportClient;
@@ -68,16 +60,9 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
 
     @Test
     void makeAnApplication() {
-        long caseReference = caseCreationService.createMinimalCase(solicitorToken);
+        long caseReference = caseCreationService.createAndIssueCase(solicitorToken, LanguageUsed.ENGLISH);
 
-        List<FeePaymentSummary> feePaymentSummaries
-            = feePaymentService.waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.CLAIM);
-
-        feePaymentService.simulatePayments(caseReference, feePaymentSummaries);
-
-        caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
-
-        List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference);
+        List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference, 1);
         PartyAccessCode partyAccessCode = partyAccessCodes.getFirst();
         accessCodeService.linkUserToCase(caseReference, partyAccessCode.getAccessCode(), citizenToken);
 

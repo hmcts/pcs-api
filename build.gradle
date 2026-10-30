@@ -696,19 +696,24 @@ cftlibTest {
   environment 'ENABLE_CASE_GROUP_ACCESS', 'true'
   environment 'ENABLE_CASE_GROUP_ACCESS_FILTERING', 'true'
 
-  // To match the fake document URLs returned by the shared Wiremock
-  environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:8083/documents/[A-Za-z0-9-]+.*'
+  // To match the fake document URLs returned by the wiremock spun up by tests (9400)
+  environment 'CCD_DOCUMENT_URL_PATTERN', 'http://localhost:9400/documents/[A-Za-z0-9-]+.*'
 
-  // Use shared wiremock (8083) for the document services in CftLib tests
-  environment 'DM_STORE_BASE_URL', 'http://localhost:8083'
-  environment 'DOC_ASSEMBLY_URL', 'http://localhost:8083'
+  // Use wiremock spun up by tests (9400) for the dm-store so we can write and read the test documents in tests
+  environment 'DM_STORE_BASE_URL', 'http://localhost:9400'
+  environment 'DM_STORE_APP_URL', 'http://localhost:9400' // Used by doc assembly
 
   // Use wiremock spun up by tests (9400) for email and bulk print, so it is isolated and can be queried easily
   environment 'NOTIFY_URL', 'http://localhost:9400'
   environment 'SEND_LETTER_URL', 'http://localhost:9400'
 
+  // Also use wiremock spun up by tests (9400) for doc generation so we can more easily stub dynamic PDF placeholders
+  environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:9400/api/render'
+
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
+
+  systemProperty 'logging.level.root', 'INFO'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
@@ -723,7 +728,7 @@ tasks.register('e2eTest') {
   }
 }
 
- 
+
 // Ensure a local check covers Cftlib dev & test. See integrationTestsEnabled above.
 if (integrationTestsEnabled) {
   check.dependsOn cftlibTest
