@@ -129,7 +129,7 @@ public class FileUploadValidationService {
 
     /**
      * Validates a required additional-document upload. Returns the given {@code requiredMessage} when no
-     * document has been uploaded, otherwise applies the standard disallowed-file-type validation.
+     * document has been uploaded or type is missing, otherwise applies the standard disallowed-file-type validation.
      */
     public List<String> validateRequiredAdditionalDocuments(
         List<ListValue<AdditionalDocument>> additionalDocuments, String requiredMessage) {
@@ -139,7 +139,16 @@ public class FileUploadValidationService {
         if (CollectionUtils.isEmpty(additionalDocuments)) {
             return List.of(requiredMessage);
         }
-        return validateAdditionalDocuments(additionalDocuments);
+        List<String> errors = new ArrayList<>();
+        if (ListValueUtils.unwrapListItems(additionalDocuments).stream()
+            .anyMatch(doc -> doc == null
+                        || doc.getDocument() == null
+                        || doc.getDocumentType() == null
+                        || doc.getDocumentType().getValue() == null)) {
+            errors.add(requiredMessage);
+        }
+        errors.addAll(validateAdditionalDocuments(additionalDocuments));
+        return errors;
     }
 
     private boolean isDisallowed(String filename) {
