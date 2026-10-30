@@ -53,7 +53,7 @@ public class GenAppFeeCalculator {
 
         return (applicationType != GenAppType.ADJOURN)
             || (genAppRequest.getWithin14Days() == VerticalYesNo.YES)
-            || (featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)
+            || (featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)
                 && (genAppRequest.getOtherPartiesAgreed() == VerticalYesNo.NO));
     }
 

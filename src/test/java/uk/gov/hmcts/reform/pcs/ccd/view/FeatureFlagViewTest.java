@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.GENAPP_CUI_SET_ASIDE;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
@@ -43,6 +44,7 @@ class FeatureFlagViewTest {
         RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled,
         RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled,
         RELEASE_1B, FeatureFlags::getRelease1bEnabled,
+        GENAPP_CUI_SET_ASIDE, FeatureFlags::getGenAppCuiSetAsideEnabled,
         RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled,
         WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
         CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,

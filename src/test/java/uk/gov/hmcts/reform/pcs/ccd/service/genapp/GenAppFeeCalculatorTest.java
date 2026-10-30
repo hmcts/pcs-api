@@ -54,14 +54,14 @@ class GenAppFeeCalculatorTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void shouldHaveNoFeeForAdjournWhenHearingMoreThan14DaysAwayAndOtherPartiesAgreed(boolean release1bEnabled) {
+    void shouldHaveNoFeeForAdjournWhenHearingMoreThan14DaysAwayAndOtherPartiesAgreed(boolean feeUpdateEnabled) {
         // Given
         XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
             .applicationType(GenAppType.ADJOURN)
             .within14Days(VerticalYesNo.NO)
             .otherPartiesAgreed(VerticalYesNo.YES)
             .build();
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(release1bEnabled);
+        when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(feeUpdateEnabled);
 
         // When
         Optional<FeeDetails> feeDetails = underTest.getApplicationFeeDetails(genAppRequest);
@@ -73,7 +73,7 @@ class GenAppFeeCalculatorTest {
 
     @ParameterizedTest
     @EnumSource(VerticalYesNo.class)
-    void shouldHaveNoFeeForAdjournBeyond14DaysWithoutConsentWhenRelease1bDisabled(VerticalYesNo withoutNotice) {
+    void shouldHaveNoFeeForAdjournBeyond14DaysWithoutConsentWhenGenAppCuiSetAsideDisabled(VerticalYesNo withoutNotice) {
         XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
             .applicationType(GenAppType.ADJOURN)
             .within14Days(VerticalYesNo.NO)
@@ -88,8 +88,8 @@ class GenAppFeeCalculatorTest {
 
     @ParameterizedTest
     @EnumSource(VerticalYesNo.class)
-    void shouldHaveNoFeeForAdjournBeyond14DaysWithHwfWhenRelease1bEnabled(VerticalYesNo withoutNotice) {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+    void shouldHaveNoFeeForAdjournBeyond14DaysWithHwfWhenGenAppCuiSetAsideEnabled(VerticalYesNo withoutNotice) {
+        when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(true);
         XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
             .applicationType(GenAppType.ADJOURN)
             .within14Days(VerticalYesNo.NO)
@@ -105,11 +105,11 @@ class GenAppFeeCalculatorTest {
     }
 
     @ParameterizedTest
-    @MethodSource("adjournRelease1bScenarios")
-    void shouldGateAdjournFeesForProfessionalAndCitizenRequests(boolean release1bEnabled,
+    @MethodSource("adjournFeeUpdateScenarios")
+    void shouldGateAdjournFeesForProfessionalAndCitizenRequests(boolean feeUpdateEnabled,
                                                                GenAppRequest request,
                                                                FeeType expectedFeeType) {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(release1bEnabled);
+        when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(feeUpdateEnabled);
         FeeDetails expectedFee = FeeDetails.builder().build();
         if (expectedFeeType != null) {
             when(feeService.getFee(expectedFeeType)).thenReturn(expectedFee);
@@ -126,8 +126,8 @@ class GenAppFeeCalculatorTest {
         }
     }
 
-    private static Stream<Arguments> adjournRelease1bScenarios() {
-        return Stream.of(false, true).flatMap(release1bEnabled ->
+    private static Stream<Arguments> adjournFeeUpdateScenarios() {
+        return Stream.of(false, true).flatMap(feeUpdateEnabled ->
             Stream.of(VerticalYesNo.values()).flatMap(withoutNotice ->
                 Stream.of("no help with fees", "not yet applied", "reference provided").flatMap(hwfStatus -> {
                     boolean needHwf = !"no help with fees".equals(hwfStatus);
@@ -150,12 +150,12 @@ class GenAppFeeCalculatorTest {
                         .appliedForHwf(professionalRequest.getAppliedForHwf())
                         .hwfReference(professionalRequest.getHwfReference())
                         .build();
-                    FeeType expectedFeeType = !release1bEnabled || hasReference ? null
+                    FeeType expectedFeeType = !feeUpdateEnabled || hasReference ? null
                         : withoutNotice == VerticalYesNo.YES ? FeeType.GEN_APP_STANDARD_FEE : FeeType.GEN_APP_MAX_FEE;
                     return Stream.of(professionalRequest, citizenRequest).map(request -> argumentSet(
-                        "release1b=" + release1bEnabled + ", " + request.getClass().getSimpleName()
+                        "genapp-cui-set-aside=" + feeUpdateEnabled + ", " + request.getClass().getSimpleName()
                             + ", withoutNotice=" + withoutNotice + ", " + hwfStatus,
-                        release1bEnabled, request, expectedFeeType
+                        feeUpdateEnabled, request, expectedFeeType
                     ));
                 })
             )
@@ -225,7 +225,7 @@ class GenAppFeeCalculatorTest {
         final BigDecimal expectedFeeAmount = stubFeeService();
         if (genAppRequest.getApplicationType() == GenAppType.ADJOURN
             && genAppRequest.getWithin14Days() == VerticalYesNo.NO) {
-            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+            when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(true);
         }
 
         // When

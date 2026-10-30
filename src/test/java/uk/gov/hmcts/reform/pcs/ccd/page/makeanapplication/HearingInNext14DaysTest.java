@@ -32,12 +32,12 @@ class HearingInNext14DaysTest extends BasePageTest {
         "null, YES, YES",
         "null, NO, NO"
     }, nullValues = "null")
-    void shouldShowHwfScreensBasedOnRelease1bAndHearingDate(VerticalYesNo release1bEnabled,
+    void shouldShowHwfScreensBasedOnGenAppCuiSetAsideAndHearingDate(VerticalYesNo feeUpdateEnabled,
                                                           VerticalYesNo within14Days,
                                                           VerticalYesNo expectedShowHwfScreens) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .featureFlags(FeatureFlags.builder().release1bEnabled(release1bEnabled).build())
+            .featureFlags(FeatureFlags.builder().genAppCuiSetAsideEnabled(feeUpdateEnabled).build())
             .xuiGenAppRequest(XuiGenAppRequest.builder()
                                   .within14Days(within14Days)
                                   .build())
@@ -64,12 +64,12 @@ class HearingInNext14DaysTest extends BasePageTest {
     }
 
     @Test
-    void shouldOnlyShowOtherPartiesExplanationWhenRelease1bEnabled() {
+    void shouldOnlyShowOtherPartiesExplanationWhenGenAppCuiSetAsideEnabled() {
         assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
             .filteredOn(field -> "hearingInNext14Days-info".equals(field.getId()))
             .singleElement()
             .satisfies(field -> assertThat(field.getShowCondition())
-                .isEqualTo("featureFlags.release1bEnabled=\"YES\""));
+                .isEqualTo("featureFlags.genAppCuiSetAsideEnabled=\"YES\""));
     }
 
 }

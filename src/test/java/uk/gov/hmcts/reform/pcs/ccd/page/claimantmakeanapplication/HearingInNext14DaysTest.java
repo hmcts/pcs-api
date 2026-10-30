@@ -9,14 +9,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HearingInNext14DaysTest extends BasePageTest {
 
     @Test
-    void shouldOnlyShowOtherPartiesExplanationWhenRelease1bEnabled() {
+    void shouldOnlyShowOtherPartiesExplanationWhenGenAppCuiSetAsideEnabled() {
         setPageUnderTest(new HearingInNext14Days());
 
         assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
             .filteredOn(field -> "cma-hearingInNext14Days-info".equals(field.getId()))
             .singleElement()
             .satisfies(field -> assertThat(field.getShowCondition())
-                .isEqualTo("featureFlags.release1bEnabled=\"YES\""));
+                .isEqualTo("featureFlags.genAppCuiSetAsideEnabled=\"YES\""));
     }
 
 }

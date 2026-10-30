@@ -66,6 +66,7 @@ public class ShowConditions {
             case RELEASE_1_DOT_2 -> "release1dot2Enabled";
             case RELEASE_1_DOT_3 -> "release1dot3Enabled";
             case RELEASE_1B -> "release1bEnabled";
+            case GENAPP_CUI_SET_ASIDE -> "genAppCuiSetAsideEnabled";
             case RELEASE_1_DOT_4 -> "release1dot4Enabled";
             case CASEWORKER_EVENTS -> "caseWorkerEventsEnabled";
             case WALES_MAKE_A_CLAIM -> "walesMakeAClaimEnabled";

@@ -202,9 +202,9 @@ class StartEventHandlerTest {
     @ParameterizedTest
     @EnumSource(VerticalYesNo.class)
     @NullSource
-    void shouldSetAdjournFeeConsentTextBasedOnRelease1b(VerticalYesNo release1bEnabled) {
+    void shouldSetAdjournFeeConsentTextBasedOnGenAppCuiSetAside(VerticalYesNo feeUpdateEnabled) {
         PCSCase caseData = PCSCase.builder()
-            .featureFlags(FeatureFlags.builder().release1bEnabled(release1bEnabled).build())
+            .featureFlags(FeatureFlags.builder().genAppCuiSetAsideEnabled(feeUpdateEnabled).build())
             .xuiGenAppRequest(XuiGenAppRequest.builder().adjournFeeConsentText("old value").build())
             .build();
         when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
@@ -213,7 +213,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload(caseData));
 
         assertThat(caseData.getXuiGenAppRequest().getAdjournFeeConsentText())
-            .isEqualTo(release1bEnabled == VerticalYesNo.YES
+            .isEqualTo(feeUpdateEnabled == VerticalYesNo.YES
                 ? "away and all the other parties have agreed to it" : "away");
     }
 
