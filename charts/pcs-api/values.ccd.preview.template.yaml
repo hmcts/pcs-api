@@ -206,8 +206,10 @@ ccd:
     logstashJavaOpts: "-Xmx1g -Xms512M"
   am-role-assignment-service:
     java:
+      # TODO HDPI-6947: REMOVE BEFORE MERGE - restore nameOverride; releaseNameOverride gives the service the
+      # ${SERVICE_NAME}-am-role-assignment-service host that everything above points at
       releaseNameOverride: ${SERVICE_NAME}-am-role-assignment-service
-      image: 'hmctsprod.azurecr.io/am/role-assignment-service:latest'
+      image: "hmctsprod.azurecr.io/am/role-assignment-service:latest"
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
       autoscaling:
         enabled: false
