@@ -6,6 +6,7 @@ public enum EventId {
     createPossessionClaim,
     resumePossessionClaim,
     enforceTheOrder,
+    enterBreathingSpace,
     respondPossessionClaim,
     submitDefendantResponse,
     makeAnApplication,
