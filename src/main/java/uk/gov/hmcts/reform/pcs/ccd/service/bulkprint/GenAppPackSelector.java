@@ -1,13 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -22,13 +22,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects gen-app envelopes per recipient. Issued with-notice defendant CUI GAs with a submission PDF go to
- * every claim party whose contact preferences include post (or are unset). Without-notice GAs,
- * non-defendant-applicant GAs, ExUI/caseworker GAs produce no candidates.
+ * Selects gen-app envelopes per recipient. Issued with-notice defendant self-serve GAs (made through
+ * pcs-frontend by the defendant or their legal rep) with a submission PDF go to every claim party whose
+ * contact preferences include post (or are unset), except the applicant and any LR-represented defendant,
+ * who are served digitally through their legal rep. Without-notice GAs, non-defendant-applicant GAs and
+ * caseworker-entered GAs (those with an application received date) produce no candidates.
  */
 @Service
 public class GenAppPackSelector {
@@ -69,13 +70,15 @@ public class GenAppPackSelector {
             sentPackDocuments.sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
 
         List<GenAppPackCandidate> candidates = new ArrayList<>();
-        for (GenAppEntity genApp : defendantCuiWithNoticeGenApps(pcsCase, defendantIds)) {
+        for (GenAppEntity genApp : defendantSelfServeWithNoticeGenApps(pcsCase, defendantIds)) {
             if (packSkipRules.shouldSkipGenAppPack(pcsCase, genApp)) {
                 continue;
             }
             DocumentEntity document = genApp.getSubmissionDocument();
+            PartyEntity applicant = genApp.getParty();
             for (PartyEntity party : allParties) {
-                if (!wantsPost(party) || sent.contains(key(party, document))) {
+                if (isExcludedRecipient(party, applicant, roleByPartyId)
+                    || !wantsPost(party) || sent.contains(key(party, document))) {
                     continue;
                 }
                 candidates.add(new GenAppPackCandidate(
@@ -85,36 +88,57 @@ public class GenAppPackSelector {
         return candidates;
     }
 
-    private List<GenAppEntity> defendantCuiWithNoticeGenApps(PcsCaseEntity pcsCase, Set<UUID> defendantIds) {
+    private List<GenAppEntity> defendantSelfServeWithNoticeGenApps(PcsCaseEntity pcsCase, Set<UUID> defendantIds) {
         if (pcsCase.getGenApps() == null || pcsCase.getGenApps().isEmpty()) {
             return List.of();
         }
         return pcsCase.getGenApps().stream()
-            .filter(genApp -> isDefendantCuiWithNoticeAndDocument(genApp, defendantIds))
+            .filter(genApp -> isDefendantSelfServeWithNoticeAndDocument(genApp, defendantIds))
             .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Integer::compareTo)))
             .toList();
     }
 
-    private boolean isDefendantCuiWithNoticeAndDocument(GenAppEntity genApp, Set<UUID> defendantIds) {
-        return isIssuedWithNoticeAndDocument(genApp) && isDefendantCuiGenApp(genApp, defendantIds);
+    private boolean isDefendantSelfServeWithNoticeAndDocument(GenAppEntity genApp, Set<UUID> defendantIds) {
+        return isIssuedWithNoticeAndDocument(genApp) && isDefendantSelfServeGenApp(genApp, defendantIds);
     }
 
-    private boolean isDefendantCuiGenApp(GenAppEntity genApp, Set<UUID> defendantIds) {
+    /**
+     * A GA counts as defendant self-serve when a defendant made it through pcs-frontend. This covers both the
+     * citizen defendant and their legal rep (who shares the same journey but populates a firm name on the
+     * statement of truth), so firm name is intentionally not a discriminator here. Caseworker-entered GAs are
+     * excluded via the application received date.
+     */
+    private boolean isDefendantSelfServeGenApp(GenAppEntity genApp, Set<UUID> defendantIds) {
         PartyEntity applicant = genApp.getParty();
         if (applicant == null || !defendantIds.contains(applicant.getId())) {
             return false;
         }
-        if (genApp.getApplicationReceivedDate() != null) {
-            return false;
-        }
-        StatementOfTruthEntity statementOfTruth = genApp.getStatementOfTruth();
-        return statementOfTruth == null || !isPopulated(statementOfTruth.getFirmName());
+        return genApp.getApplicationReceivedDate() == null;
     }
 
     private boolean isIssuedWithNoticeAndDocument(GenAppEntity genApp) {
         return genApp.getState() == GenAppState.GEN_APP_ISSUED
             && genApp.getSubmissionDocument() != null
             && genApp.getWithoutNotice() != VerticalYesNo.YES;
+    }
+
+    /**
+     * The applicant (the defendant whose LR made the application, or the self-serve defendant) and any
+     * LR-represented defendant are served digitally through their legal rep, never by post, so they are
+     * never pack recipients. Every other postal party on the claim is notified.
+     */
+    private boolean isExcludedRecipient(PartyEntity party, PartyEntity applicant,
+                                        Map<UUID, PartyRole> roleByPartyId) {
+        if (applicant != null && party.getId().equals(applicant.getId())) {
+            return true;
+        }
+        return roleByPartyId.get(party.getId()) == PartyRole.DEFENDANT && isRepresented(party);
+    }
+
+    private boolean isRepresented(PartyEntity party) {
+        return party.getClaimPartyOrganisationList() != null
+            && party.getClaimPartyOrganisationList().stream()
+                .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
     }
 
     private boolean wantsPost(PartyEntity party) {
