@@ -55,4 +55,6 @@ export default {
   'booking': 'workAccess',
   'noresults': 'noResultFound',
   'results': 'searchResults',
+  'whyDoYouNeedToAccessThisCase': 'challenged-access-request',
+  'challengedAccessSuccess': 'success'
 };
