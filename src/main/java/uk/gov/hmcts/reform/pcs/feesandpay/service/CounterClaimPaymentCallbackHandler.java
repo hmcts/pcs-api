@@ -83,6 +83,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
             counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+            assignRankIfMissing(counterClaimEntity);
             scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
             counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
 
@@ -141,7 +142,8 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         // The counterclaim form is scheduled for generation so we reference it by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
-            .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaimEntity)) + GENERATED_DOC_EXTENSION)
+            .fileName(expectedCounterClaimFormFilename(counterClaimEntity.getRank(),
+                defendantNumber(counterClaimEntity)) + GENERATED_DOC_EXTENSION)
             .build());
 
         documents.addAll(counterClaimEntity.getPcsCase().getDocuments().stream()
@@ -151,5 +153,22 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             .toList());
 
         return documents;
+    }
+
+    private void assignRankIfMissing(CounterClaimEntity counterClaimEntity) {
+        if (counterClaimEntity.getRank() != null) {
+            return;
+        }
+        if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getCounterClaims() != null
+            && !counterClaimEntity.getPcsCase().getCounterClaims().isEmpty()) {
+            counterClaimEntity.getPcsCase().assignCounterClaimRank(counterClaimEntity);
+        } else if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getId() != null) {
+            int nextRank = counterClaimRepository.countByPcsCase_IdAndStatus(
+                counterClaimEntity.getPcsCase().getId(), CounterClaimState.COUNTER_CLAIM_ISSUED
+            ) + 1;
+            counterClaimEntity.setRank(nextRank);
+        } else {
+            counterClaimEntity.setRank(1);
+        }
     }
 }

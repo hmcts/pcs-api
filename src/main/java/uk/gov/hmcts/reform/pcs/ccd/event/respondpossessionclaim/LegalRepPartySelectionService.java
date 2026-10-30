@@ -55,9 +55,12 @@ public class LegalRepPartySelectionService {
                                 legalRepresentativeOrganisationId);
     }
 
+    public List<PartyEntity> getRepresentedDefendants(PcsCaseEntity caseEntity, String organisationId) {
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId);
+    }
+
     public List<PartyEntity> getDefendantsAwaitingResponse(PcsCaseEntity caseEntity, String organisationId) {
-        List<PartyEntity> representedDefendants =
-            legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId);
+        List<PartyEntity> representedDefendants = getRepresentedDefendants(caseEntity, organisationId);
         return filterDefendantsAwaitingResponse(caseEntity.getCaseReference(), representedDefendants);
     }
 

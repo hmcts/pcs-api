@@ -146,7 +146,8 @@ public class TranslationWAService {
                 && counterClaim.getParty().getId().equals(party.getId()))
             .findFirst()
             .map(counterClaim -> DocumentEntity.builder()
-                .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaim)) + GENERATED_DOC_EXTENSION)
+                .fileName(expectedCounterClaimFormFilename(counterClaim.getRank(), defendantNumber(counterClaim))
+                    + GENERATED_DOC_EXTENSION)
                 .build());
     }
 

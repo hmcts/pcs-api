@@ -43,7 +43,7 @@ public class StartHandler implements Start<PCSCase, State> {
         );
 
         DynamicStringList relatedSubmissionsList = showRelatedSubmissionsList
-            ? caseworkerDocumentListService.buildRelatedSubmissionsList(pcsCaseEntity, genApps, counterClaims) : null;
+            ? caseworkerDocumentListService.buildRelatedSubmissionsList(genApps, counterClaims) : null;
 
         DynamicStringList documentTypeList = caseworkerDocumentListService
             .buildDocumentTypeList(caseData.getLegislativeCountry());

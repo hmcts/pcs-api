@@ -193,7 +193,6 @@ class DocumentAmendServiceTest {
             .thenReturn(rebuiltPartyList);
         when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
         when(caseworkerDocumentListService.buildRelatedSubmissionsList(
-            pcsCaseEntity,
             null,
             List.of(),
             carriedSubmission
@@ -260,7 +259,6 @@ class DocumentAmendServiceTest {
             .thenReturn(DynamicList.builder().build());
         when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
         when(caseworkerDocumentListService.buildRelatedSubmissionsList(
-            eq(pcsCaseEntity),
             eq(null),
             eq(List.of()),
             any(DynamicStringList.class)
@@ -315,7 +313,6 @@ class DocumentAmendServiceTest {
             .thenReturn(DynamicList.builder().build());
         when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
         when(caseworkerDocumentListService.buildRelatedSubmissionsList(
-            eq(pcsCaseEntity),
             eq(null),
             eq(List.of()),
             any(DynamicStringList.class)
@@ -348,7 +345,6 @@ class DocumentAmendServiceTest {
         )).thenReturn(dynamicList(PARTY_ID));
         when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
         when(caseworkerDocumentListService.buildRelatedSubmissionsList(
-            eq(pcsCaseEntity),
             eq(null),
             eq(List.of()),
             any(DynamicStringList.class)
@@ -422,7 +418,6 @@ class DocumentAmendServiceTest {
             .thenReturn(DynamicList.builder().build());
         when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
         when(caseworkerDocumentListService.buildRelatedSubmissionsList(
-            eq(pcsCaseEntity),
             eq(null),
             eq(List.of()),
             any(DynamicStringList.class)
@@ -615,7 +610,8 @@ class DocumentAmendServiceTest {
             .build();
 
         when(counterClaimRepository.getReferenceById(COUNTERCLAIM_ID)).thenReturn(counterClaimEntity);
-        when(documentNameService.appendCounterClaimPostfix("counterclaim evidence.pdf", mainClaim, PARTY_ID))
+        when(documentNameService.appendCounterClaimPostfix(
+            "counterclaim evidence.pdf", counterClaimEntity, mainClaim, PARTY_ID))
             .thenReturn("counterclaim evidence - Defendant 1.pdf");
 
         underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE);
