@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -7,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.Collections;
@@ -15,7 +17,10 @@ import java.util.Optional;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class DefendantPartyExtractor {
+
+    private final PartyRepository partyRepository;
 
     public List<PartyEntity> extractDefendants(PcsCaseEntity caseEntity, long caseReference) {
         ClaimEntity mainClaim = caseEntity.getClaims().stream()
@@ -41,6 +46,11 @@ public class DefendantPartyExtractor {
 
         return mainClaim.map(this::extractDefendantParties).orElse(Collections.emptyList());
 
+    }
+
+    public List<PartyEntity> extractDefendantsRepresentedBy(PcsCaseEntity caseEntity, String organisationId) {
+        return partyRepository.findAllPartiesByOrganisationIdAndCaseReference(
+            organisationId, caseEntity.getCaseReference());
     }
 
     private List<PartyEntity> extractDefendantParties(ClaimEntity mainClaim) {
