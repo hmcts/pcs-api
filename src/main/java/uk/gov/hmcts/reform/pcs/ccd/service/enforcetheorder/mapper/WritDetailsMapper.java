@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 
 @Component
@@ -14,20 +16,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 @AllArgsConstructor
 public class WritDetailsMapper {
 
-    public WritEntity toEntity(WritDetails writDetails) {
-        WritEntity entity = new WritEntity();
-
-        // Map NameAndAddressForEviction fields
-        mapNameAndAddressForEviction(writDetails.getNameAndAddressForEviction(), entity);
-
-        // Map direct fields
-        entity.setHasHiredHighCourtEnforcementOfficer(
-            convertToVerticalYesNo(writDetails.getHasHiredHighCourtEnforcementOfficer()));
-        entity.setHceoDetails(writDetails.getHceoDetails());
-        entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
-        entity.setLanguageUsed(writDetails.getLanguageUsed());
-
-
+    public WritEntity toEntity(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
+        WritEntity entity = WritEntity.builder()
+                .enforcementOrder(enforcementOrderEntity).build();
+        if (enforcementOrder.getWritDetails() != null) {
+            WritDetails writDetails = enforcementOrder.getWritDetails();
+            mapNameAndAddressForEviction(writDetails.getNameAndAddressForEviction(), entity);
+            entity.setHasHiredHighCourtEnforcementOfficer(
+                    convertToVerticalYesNo(writDetails.getHasHiredHighCourtEnforcementOfficer()));
+            entity.setHceoDetails(writDetails.getHceoDetails());
+            entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
+            entity.setLanguageUsed(writDetails.getLanguageUsed());
+        }
         return entity;
     }
 

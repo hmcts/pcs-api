@@ -9,8 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +27,10 @@ class WritDetailsMapperTest {
     private WritDetails writDetails;
     private NameAndAddressForEviction nameAndAddressForEviction;
 
+    private EnforcementOrderEntity enforcementOrderEntity;
+    private EnforcementOrder enforcementOrder;
+
+
     @BeforeEach
     void setUp() {
         nameAndAddressForEviction = NameAndAddressForEviction.builder()
@@ -38,12 +44,17 @@ class WritDetailsMapperTest {
             .hceoDetails("John Smith, Enforcement Ltd")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
             .build();
+
+        enforcementOrderEntity = new EnforcementOrderEntity();
+        enforcementOrder = EnforcementOrder.builder()
+                .writDetails(writDetails)
+                .build();
     }
 
     @Test
     void shouldMapAllFieldsSuccessfully() {
         // When
-        WritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.YES);
@@ -58,14 +69,12 @@ class WritDetailsMapperTest {
         writDetails.setNameAndAddressForEviction(null);
 
         // When
-        WritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isNull();
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
     }
-
-
 
     @Test
     void shouldHandleAllNullCompositeObjects() {
@@ -76,7 +85,7 @@ class WritDetailsMapperTest {
         writDetails.setMoneyOwedByDefendants(null);
 
         // When
-        WritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         assertThat(entity.getCorrectNameAndAddress()).isNull();
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
@@ -95,15 +104,16 @@ class WritDetailsMapperTest {
             .hasClaimTransferredToHighCourt(YesOrNo.NO)
             .build();
 
+        enforcementOrder.setWritDetails(noWritDetails);
+
         // When
-        WritEntity entity = underTest.toEntity(noWritDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.NO);
     }
-
 
     @Test
     void shouldMapWithMaxLengthHceoDetails() {
@@ -112,7 +122,7 @@ class WritDetailsMapperTest {
         writDetails.setHceoDetails(maxLengthHceoDetails);
 
         // When
-        WritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getHceoDetails()).hasSize(120);
@@ -125,22 +135,11 @@ class WritDetailsMapperTest {
         writDetails.setHceoDetails(null);
 
         // When
-        WritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getHceoDetails()).isNull();
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @Test
-    void shouldCreateNewEntityInstanceOnEachCall() {
-        // When
-        WritEntity entity1 = underTest.toEntity(writDetails);
-        WritEntity entity2 = underTest.toEntity(writDetails);
-
-        // Then
-        assertThat(entity1).isNotSameAs(entity2);
-        assertThat(entity1.getHceoDetails()).isEqualTo(entity2.getHceoDetails());
     }
 
     @Test
@@ -150,9 +149,9 @@ class WritDetailsMapperTest {
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
             .build();
-
+        enforcementOrder.setWritDetails(partialWritDetails);
         // When
-        WritEntity entity = underTest.toEntity(partialWritDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
@@ -166,11 +165,9 @@ class WritDetailsMapperTest {
         writDetails.setLanguageUsed(LanguageUsed.ENGLISH);
 
         // When
-        WritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
     }
-
-
 }
