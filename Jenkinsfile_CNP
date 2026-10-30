@@ -49,11 +49,6 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 GradleBuilder builder = new GradleBuilder(this, product)
 
-// Checks whether the current PR branch has a matching label.
-boolean hasLabel(githubApi, String label) {
-  return githubApi.getLabelsbyPattern(env.BRANCH_NAME, label).size() > 0
-}
-
 // Shutters the PCS case type across all environments (bakes shutterService() into the generated
 // CCD definition). While shuttered, cases cannot be created, so the e2e suite is not run.
 def shutterService = false
@@ -89,40 +84,39 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
     setPreviewEnvVars(githubApi)
-    // pr-values:ccd-am is a standalone alternative to pr-values:ccd (brings its own full CCD
-    // stack plus RAS/ORM) — apply only one of the two labels to a PR, never both.
-    if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am") || hasLabel(githubApi, "pr-values:ccd-am-wa")) {
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } else {
       env.CCD_ENABLED = "false"
     }
-    // Work Allocation preview (pr-values:wa or pr-values:ccd-am-wa) — WA pods and Camunda
+    // Work Allocation preview (pr-values:wa) — WA pods and Camunda
     env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-    if (hasLabel(githubApi, "pr-values:wa") || hasLabel(githubApi, "pr-values:ccd-am-wa")) {
+    def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
+    if (waPRLabels.contains("pr-values:wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
-    if (hasLabel(githubApi, "enable_e2e_full_regression")) {
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
-    else if (hasLabel(githubApi, "enable_e2e_healthCheck")) {
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_healthCheck").size() > 0) {
       env.E2E_SUITE = "healthCheck"
     }
-    else if (hasLabel(githubApi, "enable_e2e_regression")) {
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
     }
-    else if (hasLabel(githubApi, "enable_e2e_makeAClaim_test")) {
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_makeAClaim_test").size() > 0) {
       env.E2E_SUITE = "makeAClaim"
     }
-    else if (hasLabel(githubApi, "enable_e2e_CC_test")) {
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CC_test").size() > 0) {
       env.E2E_SUITE = "commonComponent"
     }
-    else if (hasLabel(githubApi, "enable_e2e_CM_test")) {
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
       env.E2E_SUITE = "caseManagement"
     }
-    else if (hasLabel(githubApi, "enable_e2e_NOC_test")) {
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
       env.E2E_SUITE = "noticeOfChange"
     }
   }
@@ -200,15 +194,12 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:preview') {
-    if (hasLabel(githubApi, "pr-values:ccd-am-wa")) {
-      withEnv([
-        "ORG_ROLE_MAPPING_SERVICE_URL=https://am-org-role-mapping-service-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
-        "ROLE_ASSIGNMENT_SERVICE_URL=https://am-role-assignment-service-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      ]) {
-        sh 'bash ./bin/setup-professional-role-assignments.sh'
-      }
+    // TODO HDPI-6947: REMOVE BEFORE MERGE - with pr-values:ccd + pr-values:wa this PR's preview runs its
+    // own RAS and ORM, which start empty. Give every e2e user their roles before anything logs in.
+    if (env.CCD_ENABLED == "true" && githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").contains("pr-values:wa")) {
+      sh "./bin/seed-preview-ras.sh"
     }
-    if (env.CCD_ENABLED == "true") {
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       sh "./bin/trigger-global-search-index.sh"
     }
   }
@@ -228,7 +219,7 @@ withPipeline(type, product, component) {
 
   afterSuccess('akschartsinstall') {
     onPR {
-      if (hasLabel(githubApi, "pr-values:wa")) {
+      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
         env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
         // This install creates Camunda's ingress, so its hostname can take a few minutes to resolve.
