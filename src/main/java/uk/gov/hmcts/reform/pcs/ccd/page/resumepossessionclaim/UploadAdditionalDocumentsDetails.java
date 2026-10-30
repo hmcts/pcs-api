@@ -48,7 +48,11 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
-            .optional(PCSCase::getAdditionalDocuments)
+            .list(PCSCase::getAdditionalDocuments)
+                .mandatory(AdditionalDocument::getDocumentType)
+                .mandatory(AdditionalDocument::getDocument)
+                .mandatory(AdditionalDocument::getDescription)
+            .done()
             .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
