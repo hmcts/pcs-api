@@ -406,7 +406,8 @@ class PackSkipRulesTest {
         enableRelease13();
         enableRelease14();
         ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
-        PcsCaseEntity pcsCase = caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.GEN_APP_ISSUED);
+        PcsCaseEntity pcsCase =
+            caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.GEN_APP_ISSUED, NOW.minusHours(1));
 
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
     }
@@ -417,7 +418,20 @@ class PackSkipRulesTest {
         enableRelease13();
         enableRelease14();
         ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
-        PcsCaseEntity pcsCase = caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.PENDING_GEN_APP_ISSUED);
+        PcsCaseEntity pcsCase =
+            caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.PENDING_GEN_APP_ISSUED, NOW.minusHours(1));
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack when the claimant gen app was submitted after the 24 hour hold ended")
+    void shouldNotSkipClaimPackWhenClaimantGenAppSubmittedAfterHoldPeriod() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(25));
+        PcsCaseEntity pcsCase =
+            caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.GEN_APP_ISSUED, NOW.minusMinutes(30));
 
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
     }
@@ -520,10 +534,15 @@ class PackSkipRulesTest {
             .build());
     }
 
-    private PcsCaseEntity caseWithGenApp(ClaimEntity claim, PartyRole applicantRole, GenAppState state) {
+    private PcsCaseEntity caseWithGenApp(ClaimEntity claim, PartyRole applicantRole, GenAppState state,
+                                         LocalDateTime submittedDate) {
         PartyEntity applicant = PartyEntity.builder().id(UUID.randomUUID()).build();
         claim.setClaimParties(List.of(claimParty(applicant, applicantRole)));
-        GenAppEntity genApp = GenAppEntity.builder().party(applicant).state(state).build();
+        GenAppEntity genApp = GenAppEntity.builder()
+            .party(applicant)
+            .state(state)
+            .applicationSubmittedDate(submittedDate)
+            .build();
         return PcsCaseEntity.builder()
             .id(UUID.randomUUID())
             .claims(List.of(claim))

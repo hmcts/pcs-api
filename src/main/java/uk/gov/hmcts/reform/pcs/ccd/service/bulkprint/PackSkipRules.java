@@ -112,9 +112,11 @@ public class PackSkipRules {
             return false;
         }
         UUID claimantId = claimants.getFirst().getId();
+        LocalDateTime holdDeadline = claim.getClaimIssuedDate().plus(genAppExpectedHold);
         return pcsCase.getGenApps().stream()
-            .anyMatch(genApp -> genApp.getState() == GenAppState.GEN_APP_ISSUED
-                && genApp.getParty().getId().equals(claimantId));
+            .filter(genApp -> genApp.getState() == GenAppState.GEN_APP_ISSUED)
+            .filter(genApp -> genApp.getParty().getId().equals(claimantId))
+            .anyMatch(genApp -> genApp.getApplicationSubmittedDate().isBefore(holdDeadline));
     }
 
     private Optional<String> defencePackSkipReason(PcsCaseEntity pcsCase) {
