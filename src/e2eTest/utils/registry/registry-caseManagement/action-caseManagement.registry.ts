@@ -100,7 +100,10 @@ export class ActionCMRegistry {
     ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
     ['validateFullPartyDetails', new CaseManagementAction()],
     ['confirmRemoveParty', new CaseManagementAction()],
-
+    ['inputProvidedInRecitals', new CaseManagementAction()],
+    ['verifySavedDraftOrderDetails', new CaseManagementAction()],
+    ['makeAnOrderDetailsProvided', new CaseManagementAction()],
+    ['verifyPreviewSectionNumberedList', new CaseManagementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

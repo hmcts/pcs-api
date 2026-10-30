@@ -29,5 +29,6 @@ export const caseSummary = {
   enterAGenApp: 'Enter a general application',
   manageParties: 'Manage parties',
   manageHearing: 'Manage hearing',
-  addJudicialNote: 'Add a judicial note'
+  addJudicialNote: 'Add a judicial note',
+  makeAnOrder: 'Make an order',
 }
