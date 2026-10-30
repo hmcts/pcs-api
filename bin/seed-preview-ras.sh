@@ -87,11 +87,18 @@ echo "Loading access types into the preview ORM"
 loaded=false
 for i in 1 2 3 4 5; do
   # GET: this testing-support endpoint rejects POST
-  p1=$(as_system "$ORM/am/testing-support/prm/findAndUpdateCaseDefinitionChanges" 2>&1)
+  p1=$(as_system -w '\n%{http_code}' "$ORM/am/testing-support/prm/findAndUpdateCaseDefinitionChanges" 2>&1)
+  code=${p1##*$'\n'}; p1=${p1%$'\n'*}
   if jq -e '.endStatus == "SUCCESS"' >/dev/null 2>&1 <<<"$p1"; then
     loaded=true; break
   fi
-  echo "Attempt $i: ${p1:0:300}"
+  # 200 with no body: the run's lock is still held because it ran in the last few minutes, so the
+  # access types are already loaded. The per-user checks below still catch anything missing.
+  if [ "$code" = "200" ] && [ -z "${p1//[[:space:]]/}" ]; then
+    echo "Access types were loaded in the last few minutes (lock held), carrying on"
+    loaded=true; break
+  fi
+  echo "Attempt $i: HTTP $code ${p1:0:300}"
   sleep 30
 done
 [ "$loaded" = true ] || { echo "ORM could not load access types from the preview definition store" >&2; exit 1; }
