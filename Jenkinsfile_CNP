@@ -31,10 +31,7 @@ def secrets = [
     secret('launchdarkly-sdk-key', 'LAUNCHDARKLY_SDK_KEY'),
   ],
   'ccd-${env}': [
-    secret('session-keys', 'SESSION_KEYS'),
-    secret('idam-data-store-system-user-username', 'IDAM_DATA_STORE_SYSTEM_USER_USERNAME'),
-    secret('idam-data-store-system-user-password', 'IDAM_DATA_STORE_SYSTEM_USER_PASSWORD'),
-    secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_IDAM_CLIENT_SECRET')
+    secret('session-keys', 'SESSION_KEYS')
   ]
 ]
 
@@ -194,11 +191,6 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:preview') {
-    // TODO HDPI-6947: REMOVE BEFORE MERGE - with pr-values:ccd + pr-values:wa this PR's preview runs its
-    // own RAS and ORM, which start empty. Give every e2e user their roles before anything logs in.
-    if (env.CCD_ENABLED == "true" && githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").contains("pr-values:wa")) {
-      sh "./bin/seed-preview-ras.sh"
-    }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       sh "./bin/trigger-global-search-index.sh"
     }
