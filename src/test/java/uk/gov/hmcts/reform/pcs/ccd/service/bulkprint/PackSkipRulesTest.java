@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -371,6 +372,8 @@ class PackSkipRulesTest {
         enableRelease13();
         enableRelease14();
         ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        claim.setClaimParties(List.of(claimParty(PartyEntity.builder().id(UUID.randomUUID()).build(),
+            PartyRole.CLAIMANT)));
         PcsCaseEntity pcsCase = caseWith(claim);
 
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
@@ -458,6 +461,19 @@ class PackSkipRulesTest {
             .build();
 
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Throws IllegalStateException when checking the gen app hold for a claim with no claimants")
+    void shouldThrowExceptionWhenClaimHasNoClaimants() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThatThrownBy(() -> underTest.shouldSkipClaimPack(pcsCase, claim))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageStartingWith("No claimants found for claim");
     }
 
     private void enableRelease13() {

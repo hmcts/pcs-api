@@ -109,7 +109,7 @@ public class PackSkipRules {
     private boolean hasIssuedClaimantGenApp(PcsCaseEntity pcsCase, ClaimEntity claim) {
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         if (claimants.isEmpty()) {
-            return false;
+            throw new IllegalStateException("No claimants found for claim " + claim.getId());
         }
         UUID claimantId = claimants.getFirst().getId();
         LocalDateTime holdDeadline = claim.getClaimIssuedDate().plus(genAppExpectedHold);
