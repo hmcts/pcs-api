@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.NEWLINE_DELIMITER;
 
 @Service
 @Slf4j
@@ -116,7 +116,7 @@ public class LegalRepresentativePageService {
 
     private String formatContactAddress(AddressUK address) {
         return address != null
-            ? addressFormatter.formatMediumAddress(address, BR_DELIMITER) : null;
+            ? addressFormatter.formatMediumAddress(address, NEWLINE_DELIMITER) : null;
     }
 
     private AddressUK mapAddressEntityToAddressUk(AddressEntity address) {

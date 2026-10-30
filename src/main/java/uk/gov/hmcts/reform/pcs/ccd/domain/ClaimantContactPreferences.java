@@ -21,7 +21,7 @@ public class ClaimantContactPreferences {
     @CCD
     private YesOrNo orgAddressFound;
 
-    @CCD(typeOverride = FieldType.Email)
+    @CCD(label = "Your My HMCTS registered email address is:", typeOverride = FieldType.Email)
     private String claimantContactEmail;
 
     @CCD(label = "Do you want to use this email address for notifications?")
@@ -33,6 +33,7 @@ public class ClaimantContactPreferences {
     )
     private String overriddenClaimantContactEmail;
 
+    @CCD(label = "Your organisation’s My HMCTS registered address is:", typeOverride = FieldType.TextArea)
     private String formattedClaimantContactAddress;
 
     @CCD(label = "Do you want documents to be sent to this address?")

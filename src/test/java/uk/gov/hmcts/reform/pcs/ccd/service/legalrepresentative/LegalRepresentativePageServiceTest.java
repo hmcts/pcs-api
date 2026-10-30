@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.NEWLINE_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class LegalRepresentativePageServiceTest {
@@ -413,7 +413,7 @@ class LegalRepresentativePageServiceTest {
         // then
         assertEquals(email, actual.getOriginalEmailAddress());
         verify(securityContextService, never()).getCurrentUserDetails();
-        verify(addressFormatter).formatMediumAddress(addressUK, BR_DELIMITER);
+        verify(addressFormatter).formatMediumAddress(addressUK, NEWLINE_DELIMITER);
     }
 
     @Test
@@ -451,7 +451,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(email, actual.getOriginalEmailAddress());
-        verify(addressFormatter).formatMediumAddress(addressUK, BR_DELIMITER);
+        verify(addressFormatter).formatMediumAddress(addressUK, NEWLINE_DELIMITER);
     }
 
     @Test
@@ -489,7 +489,7 @@ class LegalRepresentativePageServiceTest {
         // then
         assertEquals(YesOrNo.YES, actual.getOrganisationAddressFound());
         verify(securityContextService, never()).getCurrentUserDetails();
-        verify(addressFormatter).formatMediumAddress(addressUK, BR_DELIMITER);
+        verify(addressFormatter).formatMediumAddress(addressUK, NEWLINE_DELIMITER);
     }
 
 
@@ -522,7 +522,7 @@ class LegalRepresentativePageServiceTest {
         // then
         assertEquals(YesOrNo.NO, actual.getOrganisationAddressFound());
         verify(securityContextService, never()).getCurrentUserDetails();
-        verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), eq(BR_DELIMITER));
+        verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), eq(NEWLINE_DELIMITER));
         verify(addressMapper, never()).toAddressUK(any(AddressEntity.class));
     }
 
@@ -553,7 +553,7 @@ class LegalRepresentativePageServiceTest {
         // then
         assertEquals(YesOrNo.NO, actual.getOrganisationAddressFound());
         verify(securityContextService, never()).getCurrentUserDetails();
-        verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), eq(BR_DELIMITER));
+        verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), eq(NEWLINE_DELIMITER));
     }
 
     @Test
