@@ -45,6 +45,8 @@ public class TenancyLicenceEntity {
     @Enumerated(EnumType.STRING)
     private CombinedLicenceType type;
 
+    private String tenancyTypeKey;
+
     private String otherTypeDetails;
 
     private LocalDate startDate;

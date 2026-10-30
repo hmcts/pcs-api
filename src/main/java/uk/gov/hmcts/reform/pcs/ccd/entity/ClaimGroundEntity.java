@@ -48,6 +48,10 @@ public class ClaimGroundEntity {
 
     private Boolean isRentArrears;
 
+    private String groundsTypeKey;
+
+    private String groundsSubtypeKey;
+
 }
 
 

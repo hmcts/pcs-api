@@ -71,6 +71,8 @@ public class ClaimEntity {
     @Enumerated(EnumType.STRING)
     private ClaimantType claimantType;
 
+    private String claimTypeKey;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo againstTrespassers;
