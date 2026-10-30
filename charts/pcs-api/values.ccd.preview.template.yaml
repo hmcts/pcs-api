@@ -230,7 +230,7 @@ xui-webapp:
   nodejs:
     imagePullPolicy: Always
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
-    image: hmctsprod.azurecr.io/xui/webapp:latest
+    image: hmctsprod.azurecr.io/xui/webapp:pr-5598
     ingressHost: xui-${SERVICE_FQDN}
     devmemoryRequests: 2Gi
     devcpuRequests: 500m
@@ -248,6 +248,8 @@ xui-webapp:
       SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
+      HEARINGS_JURISDICTIONS: SSCS,PRIVATELAW,CIVIL,IA,EMPLOYMENT,ST_CIC,PCS
+      SERVICES_HEARINGS_COMPONENT_API_PCS: http://pcs-api-aat.service.core-compute-aat.internal
       JURISDICTIONS: PCS
       WA_SUPPORTED_JURISDICTIONS: PCS
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS

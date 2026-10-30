@@ -83,8 +83,6 @@ java:
     # a safety mechanism in case the feature flag config is incorrect for a preview environment.
     WA_WORKFLOW_API: http://localhost/should-not-be-called
     TASK_MANAGEMENT_API_URL: http://localhost/should-not-be-called
-    HEARINGS_JURISDICTIONS: SSCS,PRIVATELAW,CIVIL,IA,EMPLOYMENT,ST_CIC,PCS
-    SERVICES_HEARINGS_COMPONENT_API_PCS: http://pcs-api-aat.service.core-compute-aat.internal
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
