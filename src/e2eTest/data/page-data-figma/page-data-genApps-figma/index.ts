@@ -20,3 +20,4 @@ export * from './confirmGenApps.page.data';
 export * from './paymentDetails.page.data';
 export * from './confirmYourPaymentGenApps.page.data';
 export * from './serviceRequestGenApps.page.data';
+export * from './askTheCourtToSuspendAnOrder.page.data';

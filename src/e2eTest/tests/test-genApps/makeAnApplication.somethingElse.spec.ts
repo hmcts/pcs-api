@@ -89,10 +89,10 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: selectParty.partyMakingApplicationQuestion,
       option: defendantDetails[1],
     });
-    await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performValidation('mainHeader', helpPayingTheFee().mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
-      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee.yesRadioOption,
+      question: helpPayingTheFee().doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee().yesRadioOption,
     });
     await performAction('confirmYouHaveAppliedForFeeHelp', {
       question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
