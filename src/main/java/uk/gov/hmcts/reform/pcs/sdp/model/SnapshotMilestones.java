@@ -13,5 +13,5 @@ public class SnapshotMilestones {
     private String postalClaimReceivedByCourtDate;
     private String claimSubmittedToSystemDate;
     private String claimFeePaidDate;
-    private String issueClaimDate;
+    private String claimIssuedToDefendantDate;
 }

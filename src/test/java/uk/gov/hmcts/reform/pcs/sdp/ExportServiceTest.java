@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -27,11 +28,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
@@ -112,15 +115,21 @@ class ExportServiceTest {
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
 
         String json = uploadedJson();
-        assertThat(json).contains("\"contract_version\":\"4.1.0\"");
-        assertThat(json).contains("\"claim_reference\":\"1234-5678-9012-3456\"");
+        assertThat(json).contains("\"contract_version\":\"4.2.0\"");
+        assertThat(json).contains("\"claim_reference\":\"1234567890123456\"");
         assertThat(json).contains("\"claim_type\":\"AAA3-SLD\"");
         assertThat(json).contains("\"claim_sub_type\":\"Social\"");
         assertThat(json).contains("\"party_role\":\"Defendant\"");
         assertThat(json).contains("\"party_represented\":\"No\"");
+        assertThat(json).contains("\"party_language\":\"eng\"");
+        assertThat(json).contains("\"claim_issued_to_defendant_date\":\"2026-02-05T09:00:00Z\"");
+        assertThat(json).contains("\"address\":\"1 High Street, Cambridge\"");
+        assertThat(json).contains("\"postcode\":\"CB5 8BL\"");
         assertThat(json).contains("\"grounds\":[]");
-        assertThat(json).contains("\"payment_references\":[]");
+        assertThat(json).contains("\"requested_fees\":[]");
         assertThat(json).contains("\"responses\":[]");
+        assertThat(json).doesNotContain("\"payment_references\"");
+        assertThat(json).doesNotContain("\"issue_claim_date\"");
         assertThat(json).contains("\"recorded_date\":\"2026-02-01T14:30:00Z\"");
         assertThat(json).contains("\"environment\":\"dev\"");
         assertThat(json).contains("\"snapshot_version\":1");
@@ -302,11 +311,16 @@ class ExportServiceTest {
         ));
         claimWithDetails.setFeePayments(List.of(
             FeePaymentEntity.builder()
+                .id(1)
+                .party(party)
                 .externalReference("RC-1234")
+                .amount(new BigDecimal("355.00"))
                 .paymentStatus(PaymentStatus.PAID)
+                .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
                 .requestDate(LocalDateTime.of(2026, 2, 3, 10, 0))
                 .build(),
             FeePaymentEntity.builder()
+                .id(2)
                 .externalReference(" ")
                 .paymentStatus(PaymentStatus.NOT_PAID)
                 .build()
@@ -332,7 +346,10 @@ class ExportServiceTest {
         assertThat(result.recordCount()).isEqualTo(1);
         String json = uploadedJson();
         assertThat(json).contains("\"grounds_code\":\"SERIOUS_RENT_ARREARS_GROUND8\"");
-        assertThat(json).contains("\"payment_reference\":\"RC-1234\"");
+        assertThat(json).contains("\"fee_reference\":\"RC-1234\"");
+        assertThat(json).contains("\"fee_status\":\"Fully Paid\"");
+        assertThat(json).contains("\"fee_type_description\":\"CLAIM\"");
+        assertThat(json).contains("\"fee_status\":\"Requested Not Paid\"");
         assertThat(json).contains("\"response_id\":\"12\"");
         assertThat(json).contains("\"response_type\":\"Defence\"");
         assertThat(json).contains("\"party_represented\":\"Yes\"");
@@ -402,6 +419,11 @@ class ExportServiceTest {
             .id(CASE_ID)
             .caseReference(1234567890123456L)
             .caseManagementLocation(45)
+            .propertyAddress(AddressEntity.builder()
+                .addressLine1("1 High Street")
+                .postTown("Cambridge")
+                .postcode("cb5 8bl")
+                .build())
             .tenancyLicence(tenancy)
             .build();
 

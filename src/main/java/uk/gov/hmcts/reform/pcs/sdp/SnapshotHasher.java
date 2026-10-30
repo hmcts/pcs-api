@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
-import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotRequestedFee;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
 import java.security.MessageDigest;
@@ -31,8 +31,8 @@ public class SnapshotHasher {
         content.put("dimensions", claim.getDimensions());
         content.put("milestones", claim.getMilestones());
         content.put("parties", sorted(claim.getParties(), SnapshotParty::getPartyId));
-        content.put("payment_references",
-            sorted(claim.getPaymentReferences(), SnapshotPaymentReference::getPaymentReference));
+        content.put("requested_fees",
+            sorted(claim.getRequestedFees(), SnapshotRequestedFee::getFeeId));
         content.put("grounds", sorted(claim.getGrounds(), SnapshotGround::getGroundsCode));
         content.put("responses", sorted(claim.getResponses(), SnapshotResponse::getResponseId));
 

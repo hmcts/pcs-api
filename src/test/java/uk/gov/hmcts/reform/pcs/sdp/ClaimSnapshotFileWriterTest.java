@@ -25,7 +25,7 @@ class ClaimSnapshotFileWriterTest {
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
         ClaimSnapshotFileWriter fileWriter = new ClaimSnapshotFileWriter(objectMapper);
         ClaimSnapshotRecord snapshotRecord = ClaimSnapshotRecord.builder()
-            .contractVersion("4.1.0")
+            .contractVersion("4.2.0")
             .producer(Producer.builder()
                 .system("possessions-ccd")
                 .environment("aat")
@@ -50,7 +50,7 @@ class ClaimSnapshotFileWriterTest {
 
         assertThat(root.isArray()).isTrue();
         assertThat(root).hasSize(1);
-        assertThat(root.get(0).get("contract_version").asText()).isEqualTo("4.1.0");
+        assertThat(root.get(0).get("contract_version").asText()).isEqualTo("4.2.0");
         assertThat(root.get(0).get("producer").get("system").asText()).isEqualTo("possessions-ccd");
         assertThat(root.get(0).get("claim").get("claim_reference").asText()).isEqualTo("PCS-1001");
         assertThat(root.get(0).get("claim").get("dimensions").get("claim_type").asText())

@@ -14,4 +14,5 @@ public class SnapshotParty {
     private String partyType;
     private String partyRole;
     private String partyRepresented;
+    private String partyLanguage;
 }
