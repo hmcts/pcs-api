@@ -121,6 +121,37 @@ class GeneratedDefinitionTest {
     }
 
     @Test
+    void historyTabHoldsOnlyTheHistoryViewer() {
+        assertThat(tabs.get("CaseHistory")).extracting(row -> row.get("CaseFieldID").asText())
+            .containsExactly("caseHistory");
+    }
+
+    /**
+     * A field with no declared access on a role-less tab is readable by every profile and would surface
+     * the tab to all of them. Only these four are meant to be.
+     */
+    @Test
+    void onlyKnownFieldsOnRoleLessTabsAreReadableByEveryProfile() {
+        // featureFlags declares no access, so its readers are exactly the profiles the SDK grants to undeclared fields.
+        Set<String> everyProfile = readers.get("featureFlags");
+        assertThat(everyProfile).hasSizeGreaterThan(PARTY_VISIBLE_PROFILES.size());
+        List<String> everyoneReadable = new ArrayList<>();
+        tabs.forEach((tabId, tabRows) -> {
+            boolean roleLess = tabRows.stream().allMatch(row -> row.path("UserRole").asText("").isEmpty());
+            if (roleLess) {
+                tabRows.stream()
+                    .map(row -> row.get("CaseFieldID").asText())
+                    .filter(fieldId -> readers.getOrDefault(fieldId, Set.of()).containsAll(everyProfile))
+                    .forEach(fieldId -> everyoneReadable.add(tabId + "/" + fieldId));
+            }
+        });
+        assertThat(everyoneReadable).containsExactlyInAnyOrder(
+            "nextSteps/nextStepsMarkdown", "nextSteps/nextStepsMarkdownLabel",
+            "hidden/caseTitleMarkdown", "hidden/featureFlags"
+        );
+    }
+
+    @Test
     void headingsCarryTheAccessOfTheSectionTheyHead() {
         assertThat(readers.get("Case details")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
         assertThat(readers.get("Claimant details")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
