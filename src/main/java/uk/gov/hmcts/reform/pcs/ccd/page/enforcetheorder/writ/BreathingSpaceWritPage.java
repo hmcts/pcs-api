@@ -15,7 +15,7 @@ public class BreathingSpaceWritPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("defendantInBreathingSpaceWrit")
-            .pageLabel("Is the defendant in a breathing space moratorium?")
+            .pageLabel("Breathing Space")
             .label("defendantInBreathingSpaceWrit-line-separator", "---")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .complex(PCSCase::getEnforcementOrder)

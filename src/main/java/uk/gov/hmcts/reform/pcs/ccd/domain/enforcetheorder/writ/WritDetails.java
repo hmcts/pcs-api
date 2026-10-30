@@ -33,14 +33,13 @@ public class WritDetails {
     private NameAndAddressForEviction nameAndAddressForEviction;
 
     @CCD (
-        label = "Is the defendant currently in a breathing space?"
+        label = "Is the defendant currently in a breathing space moratorium?"
     )
     private YesNoNotSure defendantInBreathingSpace;
 
     @CCD(
-        label = "Have the defendants missed any payments?",
-        hint = "These are payments outlined in the suspended order for possession.  "
-            + "They were ordered to make these payments by the judge."
+        label = "Are you alleging that the defendant has failed to make payments "
+           + "which are a condition of the suspension of the order for possession?"
     )
     private VerticalYesNo defendantMissedPayments;
 
