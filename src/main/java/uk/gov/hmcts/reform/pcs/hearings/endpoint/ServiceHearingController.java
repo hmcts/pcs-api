@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.hearings.model.PanelRequirements;
 import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
-//import uk.gov.hmcts.reform.civil.service.hearings.HearingValuesService;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 @Tag(name = "Hearing Values Controller")
@@ -34,8 +33,6 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 @RestController
 @AllArgsConstructor
 public class ServiceHearingController {
-
-    //private final HearingValuesService hearingValuesService;
 
     @PostMapping(path = {
         "/serviceHearingValues"
@@ -49,8 +46,6 @@ public class ServiceHearingController {
     public ResponseEntity<ServiceHearingValues> getHearingValues(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @NonNull @RequestBody HearingValuesRequest requestDetails) throws Exception {
-
-        //TODO: populate the data
 
         // set defaults
         List<PartyDetails> parties = List.of(
@@ -99,16 +94,9 @@ public class ServiceHearingController {
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @NonNull @RequestBody ServiceHearingRequest requestDetails) throws Exception {
 
-        //TODO: populate the data
-
-        //ServiceLinkedCases linkedCase = new ServiceLinkedCases();
-        //linkedCase.setCaseName("A vs B");
-        //linkedCase.setCaseReference("1793287276819762");
-        //linkedCase.setReasonsForLink(List.of("2nd hearing"));
+        // Need to load linked cases from PCS
 
         List<ServiceLinkedCases> linkedCases = new ArrayList<>();
-
-        //linkedCases.add(linkedCase);
 
         return new ResponseEntity<>(linkedCases, HttpStatus.OK);
     }
