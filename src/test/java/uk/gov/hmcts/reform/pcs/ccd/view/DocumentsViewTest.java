@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -32,6 +33,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -150,24 +152,53 @@ class DocumentsViewTest {
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+        assertThat(pcsCase.getSystemDocuments()).isNull();
     }
 
     @Test
-    void shouldShowAccessCodeLettersToTheSystemUser() {
+    void shouldGiveTheSystemUserAccessCodeLettersAndInternallyVisibleDocumentsInSystemDocuments() {
         DocumentEntity accessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("access-code-letter.pdf")
             .url("pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter));
+        DocumentEntity issuedCounterClaimDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("issued-counter-claim.pdf")
+            .url("issued-counter-claim-url")
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.COUNTER_CLAIM_ISSUED).build())
+            .build();
+        DocumentEntity unissuedCounterClaimDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("counter-claim.pdf")
+            .url("counter-claim-url")
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED).build())
+            .build();
+        DocumentEntity withoutNoticeApplicationDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without-notice.pdf")
+            .url("without-notice-url")
+            .generalApplication(GenAppEntity.builder().withoutNotice(VerticalYesNo.YES).build())
+            .build();
+        DocumentEntity unissuedApplicationDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("unissued-application.pdf")
+            .url("unissued-application-url")
+            .generalApplication(GenAppEntity.builder().withoutNotice(VerticalYesNo.NO).build())
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter, issuedCounterClaimDocument,
+            unissuedCounterClaimDocument, withoutNoticeApplicationDocument, unissuedApplicationDocument));
         when(securityContextService.isIdamSystemUser()).thenReturn(true);
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
-        assertThat(pcsCase.getAllDocuments()).singleElement()
-            .satisfies(document -> assertThat(document.getValue().getFilename())
-                .isEqualTo("access-code-letter.pdf"));
+        assertThat(pcsCase.getSystemDocuments())
+            .extracting(document -> document.getValue().getFilename())
+            .containsExactly("access-code-letter.pdf", "issued-counter-claim.pdf", "without-notice.pdf");
+        // CCD strips allDocuments for the system user, so it is not built and no case roles are looked up.
+        assertThat(pcsCase.getAllDocuments()).isNull();
+        verifyNoInteractions(userRoleService);
     }
 
     @Test

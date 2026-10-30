@@ -1,0 +1,168 @@
+package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
+
+import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
+import uk.gov.hmcts.ccd.sdk.bundling.api.BundleRequest;
+import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
+import uk.gov.hmcts.ccd.sdk.bundling.api.EmptySectionPolicy;
+import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentPolicy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CaseBundleDefinitionTest {
+
+    @Test
+    void shouldMakeOneFolderPerCaseFileCategoryInDisplayOrder() {
+        BundleRequest request = CaseBundleDefinition.build(caseWith());
+
+        assertThat(request.fileName()).isEqualTo("1234567812345678-case-bundle.pdf");
+        assertThat(request.root().sections()).extracting(BundleSection::title)
+            .containsExactlyElementsOf(Arrays.stream(CaseFileCategory.values())
+                .sorted(Comparator.comparingInt(CaseFileCategory::getDisplayOrder))
+                .map(CaseFileCategory::getLabel)
+                .toList());
+        assertThat(request.root().sections()).extracting(BundleSection::emptySectionPolicy)
+            .containsOnly(EmptySectionPolicy.INCLUDE_PLACEHOLDER);
+        assertThat(request.missingDocuments()).isEqualTo(MissingDocumentPolicy.PLACEHOLDER);
+    }
+
+    @Test
+    void shouldOrderDocumentsChronologicallyWithinTheirFolder() {
+        DocumentEntity late = document("late.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 3, 1));
+        DocumentEntity early = document("early.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        DocumentEntity undated = document("undated.pdf", CaseFileCategory.EVIDENCE, null);
+        undated.setSubmittedDate(Instant.parse("2026-02-01T10:00:00Z"));
+        DocumentEntity claim = document("claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 5, 1));
+
+        BundleRequest request = CaseBundleDefinition.build(caseWith(late, early, undated, claim));
+
+        assertThat(titles(request, "Evidence")).containsExactly("early.pdf", "undated.pdf", "late.pdf");
+        assertThat(titles(request, "Statements of case")).containsExactly("claim.pdf");
+        BundleDocument first = section(request, "Evidence").documents().getFirst();
+        assertThat(first.reference().provider()).isEqualTo(CaseBundleDefinition.CDAM_PROVIDER);
+        assertThat(first.reference().id()).isEqualTo(early.getDocumentId().toString());
+    }
+
+    @Test
+    void shouldLeaveOutAccessCodeAndNonCdamDocuments() {
+        final DocumentEntity kept = document("kept.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        DocumentEntity accessCode = document("code.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        accessCode.setType(DocumentType.DEFENDANT_ACCESS_CODE);
+
+        DocumentEntity nonCdam = document("external.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        nonCdam.setDocumentId(null);
+
+        BundleRequest request = CaseBundleDefinition.build(caseWith(kept, accessCode, nonCdam));
+
+        assertThat(request.allDocuments()).extracting(BundleDocument::title).containsExactly("kept.pdf");
+    }
+
+    @Test
+    void shouldFileAnUnknownCategoryAsUncategorised() {
+        DocumentEntity stray = document("stray.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        stray.setCategoryId("somethingElse");
+
+        BundleRequest request = CaseBundleDefinition.build(caseWith(stray));
+
+        assertThat(titles(request, "Uncategorised documents")).containsExactly("stray.pdf");
+    }
+
+    @Test
+    void shouldTitleAnUnnamedDocumentByItsType() {
+        DocumentEntity typed = document(" ", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        typed.setType(DocumentType.WITNESS_STATEMENT);
+        DocumentEntity untyped = document(null, CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 2));
+
+        BundleRequest request = CaseBundleDefinition.build(caseWith(typed, untyped));
+
+        assertThat(titles(request, "Evidence")).containsExactly("Witness statement", "Document");
+    }
+
+    @Test
+    void shouldLeaveOutDocumentsOfUnissuedApplicationsAndCounterclaims() {
+        DocumentEntity issuedApp = document("issued-app.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 1, 1));
+        issuedApp.setGeneralApplication(genApp(GenAppState.GEN_APP_ISSUED, VerticalYesNo.NO));
+        DocumentEntity pendingApp =
+            document("pending-app.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 1, 2));
+        pendingApp.setGeneralApplication(genApp(GenAppState.PENDING_GEN_APP_ISSUED, VerticalYesNo.NO));
+        DocumentEntity withoutNotice = document("without-notice.pdf", CaseFileCategory.APPLICATIONS,
+                                                LocalDate.of(2026, 1, 3));
+        withoutNotice.setGeneralApplication(genApp(GenAppState.PENDING_GEN_APP_ISSUED, VerticalYesNo.YES));
+        DocumentEntity draftCounterclaim = document("counterclaim.pdf", CaseFileCategory.STATEMENTS_OF_CASE,
+                                                    LocalDate.of(2026, 1, 4));
+        CounterClaimEntity counterClaim = new CounterClaimEntity();
+        counterClaim.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        draftCounterclaim.setCounterClaim(counterClaim);
+
+        BundleRequest request =
+            CaseBundleDefinition.build(caseWith(issuedApp, pendingApp, withoutNotice, draftCounterclaim));
+
+        assertThat(request.allDocuments()).extracting(BundleDocument::title)
+            .containsExactly("issued-app.pdf", "without-notice.pdf");
+    }
+
+    @Test
+    void shouldFetchRecordingsRatherThanLinkToDmStore() {
+        DocumentEntity audio = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
+        audio.setContentType("audio/mpeg");
+        DocumentEntity video = document("inspection.mov", CaseFileCategory.HEARING_DOCUMENTS, null);
+        video.setContentType("video/quicktime");
+
+        BundleRequest request = CaseBundleDefinition.build(caseWith(audio, video));
+
+        // Fetched, so an unsupported recording becomes a missing-document page rather than failing the bundle.
+        assertThat(section(request, "Hearing documents").documents())
+            .hasSize(2).allSatisfy(document -> assertThat(document.media()).isEmpty());
+    }
+
+    private static PcsCaseEntity caseWith(DocumentEntity... documents) {
+        PcsCaseEntity pcsCase = new PcsCaseEntity();
+        pcsCase.setCaseReference(1234567812345678L);
+        pcsCase.addDocuments(List.of(documents));
+        return pcsCase;
+    }
+
+    private static DocumentEntity document(String fileName, CaseFileCategory category, LocalDate issueDate) {
+        UUID cdamId = UUID.randomUUID();
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .documentId(cdamId)
+            .fileName(fileName)
+            .categoryId(category.getId())
+            .binaryUrl("http://cdam/cases/documents/" + cdamId + "/binary")
+            .issueDate(issueDate)
+            .submittedDate(Instant.parse("2026-01-01T00:00:00Z"))
+            .build();
+    }
+
+    private static BundleSection section(BundleRequest request, String title) {
+        return request.root().sections().stream().filter(s -> s.title().equals(title)).findFirst().orElseThrow();
+    }
+
+    private static List<String> titles(BundleRequest request, String folder) {
+        return section(request, folder).documents().stream().map(BundleDocument::title).toList();
+    }
+
+    private static GenAppEntity genApp(GenAppState state, VerticalYesNo withoutNotice) {
+        GenAppEntity genApp = new GenAppEntity();
+        genApp.setState(state);
+        genApp.setWithoutNotice(withoutNotice);
+        return genApp;
+    }
+}

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleChangeListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -41,6 +44,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
+@EntityListeners(CaseBundleChangeListener.class)
 @Table(name = "counter_claim")
 @Getter
 @Setter
@@ -103,6 +107,10 @@ public class CounterClaimEntity {
 
     @Enumerated(EnumType.STRING)
     private CounterClaimState status;
+
+    // Whether its documents were in case file view when loaded; CaseBundleChangeListener compares on update.
+    @Transient
+    private Boolean visibleWhenLoaded;
 
     private LocalDateTime claimSubmittedDate;
 

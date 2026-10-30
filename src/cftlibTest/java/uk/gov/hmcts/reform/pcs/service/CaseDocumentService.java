@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.UUID;
+
+import static org.hamcrest.Matchers.hasSize;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +26,34 @@ public class CaseDocumentService {
             .pollInterval(Duration.ofMillis(1000))
             .ignoreExceptions()
             .until(() -> caseDocumentExists(caseReference, documentType));
+    }
+
+    /**
+     * The dm-store ids of a case's documents of one type, once there are {@code count} of them.
+     */
+    public List<UUID> waitForDocumentIds(long caseReference, DocumentType documentType, int count) {
+        return Awaitility.await("%d documents of type %s exist for case".formatted(count, documentType))
+            .atMost(Duration.ofSeconds(180))
+            .pollInterval(Duration.ofMillis(1000))
+            .until(() -> documentIds(caseReference, documentType), hasSize(count));
+    }
+
+    private List<UUID> documentIds(long caseReference, DocumentType documentType) {
+        SqlParameterSource namedParameters = new MapSqlParameterSource()
+            .addValue("caseReference", caseReference)
+            .addValue("documentType", documentType.name());
+
+        return jdbcTemplate.queryForList(
+            """
+                SELECT d.document_id FROM document d
+                JOIN pcs_case pcs ON pcs.id = d.case_id
+                WHERE pcs.case_reference = :caseReference
+                AND d.type = :documentType
+                AND d.removed = false
+                """,
+            namedParameters,
+            UUID.class
+        );
     }
 
     private boolean caseDocumentExists(long caseReference, DocumentType documentType) {
