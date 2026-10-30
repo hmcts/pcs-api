@@ -166,7 +166,6 @@ done < <(professional_emails)
 
 # Accounts the smoke tests use by id only. ORM refresh is their only route.
 [ -n "${PCS_SOLICITOR_AUTOMATION_UID:-}" ] && refresh_professional "solicitor-automation (uid)" "$PCS_SOLICITOR_AUTOMATION_UID"
-[ -n "${PCS_LOCAL_AUTH_AUTOMATION_UID:-}" ] && refresh_professional "local-auth-automation (uid)" "$PCS_LOCAL_AUTH_AUTOMATION_UID"
 
 # --- 3. staff and judicial users: copy from AAT -----------------------------------------------------
 staff_emails() {
