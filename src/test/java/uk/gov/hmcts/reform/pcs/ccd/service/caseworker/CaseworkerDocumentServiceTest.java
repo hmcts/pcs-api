@@ -229,6 +229,9 @@ class CaseworkerDocumentServiceTest {
         // Then
         DocumentEntity savedDocumentEntity = getSavedDocumentEntity();
         assertThat(savedDocumentEntity.getType()).isEqualTo(expectedDocumentType);
+        // A without notice order is for its party alone.
+        assertThat(savedDocumentEntity.getAudience())
+            .hasSize(expectedDocumentType == DocumentType.WITHOUT_NOTICE_ORDER ? 1 : 0);
     }
 
     @Test

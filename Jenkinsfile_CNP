@@ -325,11 +325,12 @@ def setPreviewEnvVars(githubApi) {
     env.PCS_FRONTEND_CHANGE_ID = frontendLabels[0].replace("pcs-frontend-pr:", "")
   }
 
-  // pr-values:ccd deploys the frontend into this preview, so link to it rather than to AAT.
-  if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
-    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-  } else if (env.PCS_FRONTEND_CHANGE_ID) {
+  // A paired pcs-frontend PR's preview is the frontend under test; otherwise pr-values:ccd deploys master's
+  // frontend into this preview, so link to it rather than to AAT.
+  if (env.PCS_FRONTEND_CHANGE_ID) {
     env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${env.PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+  } else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   } else {
     env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
   }

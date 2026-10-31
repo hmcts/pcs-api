@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -514,6 +515,8 @@ class DocumentAmendServiceTest {
     @Test
     void shouldUpdateDocumentDetailsAndRegenerateFilenameWhenNotRelatedToSubmission() {
         LocalDate issueDate = LocalDate.of(2021, 4, 16);
+        // It was a without notice order, for its party alone.
+        documentEntity.getAudience().add(partyEntity);
         DocumentAmendDetails amendDetails = baseDetails()
             .amendedFileName("rent statement.docx")
             .issueDate(issueDate)
@@ -542,10 +545,49 @@ class DocumentAmendServiceTest {
         assertThat(savedDocument.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
         assertThat(savedDocument.getIssueDate()).isEqualTo(issueDate);
         assertThat(savedDocument.getParty()).isSameAs(partyEntity);
+        assertThat(savedDocument.getAudience()).as("a rent statement follows the case file's rules").isEmpty();
         assertThat(savedDocument.getGeneralApplication()).isNull();
         assertThat(savedDocument.getCounterClaim()).isNull();
         assertThat(amendedDocument.fileName()).isEqualTo("rent statement 16042021");
         assertThat(amendedDocument.partyName()).isEqualTo("Defendant One");
+    }
+
+    @Test
+    void shouldKeepTheServedPartiesOfAWithoutNoticeOrderThatStaysWithoutNotice() {
+        // Served on two other defendants, while staff pick a party it was not served on.
+        PartyEntity secondDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity thirdDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        documentEntity.setType(DocumentType.WITHOUT_NOTICE_ORDER);
+        documentEntity.getAudience().addAll(Set.of(secondDefendant, thirdDefendant));
+
+        DocumentEntity savedDocument = amendToWithoutNoticeOrder();
+
+        assertThat(savedDocument.getAudience()).containsExactlyInAnyOrder(secondDefendant, thirdDefendant);
+    }
+
+    @Test
+    void shouldLimitADocumentThatBecomesAWithoutNoticeOrderToItsParty() {
+        documentEntity.setType(DocumentType.ORDER);
+
+        DocumentEntity savedDocument = amendToWithoutNoticeOrder();
+
+        assertThat(savedDocument.getAudience()).containsExactly(partyEntity);
+    }
+
+    private DocumentEntity amendToWithoutNoticeOrder() {
+        DocumentAmendDetails amendDetails = baseDetails()
+            .amendedFileName("order.pdf")
+            .showRelatedSubmissionsList(VerticalYesNo.NO)
+            .standaloneDocumentType(dynamicStringList(CaseworkerDocumentType.WITHOUT_NOTICE_ORDER.name()))
+            .build();
+        when(documentService.mapCaseworkerDocumentTypeToDocumentType(CaseworkerDocumentType.WITHOUT_NOTICE_ORDER))
+            .thenReturn(DocumentType.WITHOUT_NOTICE_ORDER);
+        lenient().when(documentNameService.appendPartyPostfix(any(), any(), any())).thenReturn("order");
+
+        underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE);
+
+        verify(documentRepository).save(documentCaptor.capture());
+        return documentCaptor.getValue();
     }
 
     @Test

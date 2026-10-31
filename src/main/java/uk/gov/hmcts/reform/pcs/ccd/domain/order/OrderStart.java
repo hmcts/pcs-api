@@ -3,8 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,44 +18,67 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What the frontend is sent when an order event starts: the order, the case it is made on, and the
- * hearing it is made for, if any.
+ * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
+ * made for, if any, and the application the judge's task asks them to decide, if it asks them to decide one.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) {
-
-    public OrderStart(Order order, CaseContext caseContext) {
-        this(order, caseContext, null);
-    }
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
 
     /**
-     * No id means the judge has no draft on the case yet. The version is the latest step's id, sent back
-     * with a change to the order.
+     * No id means the judge has no draft for the hearing, or made without one, yet. The version is the latest
+     * step's id, sent back with a change to the order.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,
-                        OrderState state,
                         long version,
                         OrderType orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot,
                         String queryFromCaseworker) {
 
-        public static final Order NONE = new Order(null, OrderState.DRAFT, 0, null, Map.of(), null, null);
+        public static final Order NONE = new Order(null, 0, null, Map.of(), null, null);
 
         /** An order as its latest step left it, with the query it was returned with if it was. */
         public static Order of(OrderEntity order, OrderStepEntity latest, String queryFromCaseworker) {
-            return new Order(order.getId(), order.getState(), latest.getId(), latest.getOrderType(),
+            return new Order(order.getId(), latest.getId(), latest.getOrderType(),
                 latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker);
         }
     }
 
-    /** Open means issued: nothing yet closes a counterclaim or an application. */
+    /**
+     * Open means issued: nothing yet closes a counterclaim. The applications are every one the order can decide,
+     * in the order they were made.
+     */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
                               List<Party> claimants,
                               List<Party> defendants,
                               boolean openCounterclaim,
-                              boolean openApplication) {
+                              List<Application> applications) {
+    }
+
+    /**
+     * The general application an order decides, as the judge deciding it reads it: what was applied for,
+     * by whom, the applicant's answers, the order they asked for, and their documents. The id names its answers on
+     * the make order form. An application to suspend the warrant of possession is decided by suspending the
+     * warrant on conditions or saying when the eviction may go ahead.
+     */
+    public record Application(UUID id,
+                              boolean warrantSuspension,
+                              String reference,
+                              String type,
+                              String somethingElseDetails,
+                              String applicant,
+                              LocalDate submittedOn,
+                              VerticalYesNo within14Days,
+                              VerticalYesNo otherPartiesAgreed,
+                              VerticalYesNo withoutNotice,
+                              String withoutNoticeReason,
+                              String whatOrderWanted,
+                              List<ApplicationDocument> documents) {
+    }
+
+    /** A document filed with an application; the id is the document's id in the document store. */
+    public record ApplicationDocument(UUID id, String fileName) {
     }
 
     /** The claim gives the first six; a judge records the rest at a hearing. */
@@ -84,6 +110,14 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
                           Recorded recorded,
                           String note,
                           List<JudicialNote> earlierNotes) {
+
+        /** The order's hearing as court staff reviewing it see it: when it was, without what the judge records. */
+        public static Hearing ofOrder(OrderEntity order) {
+            HearingEntity hearing = order.getHearing();
+            return hearing == null ? null : new Hearing(hearing.getId(), hearing.getHearingDate(),
+                order.getPcsCase().getLegislativeCountry() == LegislativeCountry.WALES, null, null, null, null,
+                List.of());
+        }
     }
 
     /** Who last updated the facts, and when. */

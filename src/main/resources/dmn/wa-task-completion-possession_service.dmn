@@ -186,6 +186,30 @@
           <text></text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_msgqylttg0">
+        <description>Replying to or closing a message</description>
+        <inputEntry id="UnaryTests_msg2b393ke">
+          <text>"sendReplyMessage"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msg585byc3">
+          <text>"ReviewMessageJudge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgzo5l0cs">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_msgh0kqwae">
+        <description>Replying to or closing a message</description>
+        <inputEntry id="UnaryTests_msgm0rfoe2">
+          <text>"sendReplyMessage"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_msgfxisrsj">
+          <text>"ReviewMessageStaff"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_msgv92k2zb">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
     </decisionTable>
   </decision>
   <dmndi:DMNDI>

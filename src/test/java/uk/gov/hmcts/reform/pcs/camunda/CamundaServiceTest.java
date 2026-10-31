@@ -467,6 +467,25 @@ public class CamundaServiceTest {
     }
 
     @Test
+    void shouldCancelOnlyOneSidesTaskAboutAMessage() {
+        when(authTokenGenerator.generate()).thenReturn("authToken");
+        stubWaFeatureFlag(true);
+        UUID messageId = UUID.randomUUID();
+
+        camundaService.handleRequest(CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(CASE_REFERENCE)
+            .messageId(messageId.toString())
+            .taskType(TaskType.REVIEW_MESSAGE_JUDGE)
+            .build());
+
+        ArgumentCaptor<SendMessageRequest> request = ArgumentCaptor.forClass(SendMessageRequest.class);
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), request.capture());
+        assertThat(request.getValue().getCorrelationKeys()).containsOnlyKeys("caseId",
+            "__processCategory__message_" + messageId, "__processCategory__ReviewMessageJudge");
+    }
+
+    @Test
     void shouldSkipCancellingTaskIfWaIsNotEnabled() {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;

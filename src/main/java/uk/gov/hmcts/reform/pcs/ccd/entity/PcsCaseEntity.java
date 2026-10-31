@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -85,6 +86,11 @@ public class PcsCaseEntity {
     @Builder.Default
     @JsonManagedReference
     private List<CaseNoteEntity> caseNotes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<CaseMessageEntity> messages = new ArrayList<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
@@ -165,6 +171,11 @@ public class PcsCaseEntity {
         claim.setPcsCase(this);
     }
 
+    /** The case's general application with the id, if it has one. */
+    public Optional<GenAppEntity> findGenApp(UUID genAppId) {
+        return genApps.stream().filter(genApp -> genApp.getId().equals(genAppId)).findFirst();
+    }
+
     public void addGenApp(GenAppEntity genApp) {
         int rank = genApps.size() + 1;
         genApp.setRank(rank);
@@ -201,6 +212,11 @@ public class PcsCaseEntity {
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);
         caseNote.setPcsCase(this);
+    }
+
+    public void addMessage(CaseMessageEntity message) {
+        messages.add(message);
+        message.setPcsCase(this);
     }
 
     public void addJudicialNote(JudicialNoteEntity judicialNote) {
