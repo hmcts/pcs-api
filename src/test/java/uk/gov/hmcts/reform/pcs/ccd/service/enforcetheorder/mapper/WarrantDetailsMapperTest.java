@@ -372,9 +372,9 @@ class WarrantDetailsMapperTest {
         statementOfTruth.setFirmNameLegalRep("Smith & Co");
         statementOfTruth.setPositionLegalRep("Solicitor");
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantDetails(WarrantDetails.builder().build())
-            .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
-            .build();
+                .warrantDetails(WarrantDetails.builder().build())
+                .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
+                .build();
 
         // When
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
@@ -395,9 +395,9 @@ class WarrantDetailsMapperTest {
         StatementOfTruthDetails statementOfTruth = new StatementOfTruthDetails();
         statementOfTruth.setAgreementClaimant(agreements);
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantDetails(WarrantDetails.builder().build())
-            .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
-            .build();
+                .warrantDetails(WarrantDetails.builder().build())
+                .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
+                .build();
 
         // When
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
@@ -412,9 +412,9 @@ class WarrantDetailsMapperTest {
         StatementOfTruthDetails statementOfTruth = new StatementOfTruthDetails();
         statementOfTruth.setAgreementClaimant(Collections.emptyList());
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantDetails(WarrantDetails.builder().build())
-            .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
-            .build();
+                .warrantDetails(WarrantDetails.builder().build())
+                .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
+                .build();
 
         // When
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
@@ -430,9 +430,9 @@ class WarrantDetailsMapperTest {
         StatementOfTruthDetails statementOfTruth = new StatementOfTruthDetails();
         statementOfTruth.setAgreementClaimantLegalRep(agreements);
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantDetails(WarrantDetails.builder().build())
-            .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
-            .build();
+                .warrantDetails(WarrantDetails.builder().build())
+                .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
+                .build();
 
         // When
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
@@ -516,9 +516,9 @@ class WarrantDetailsMapperTest {
             .build();
 
         return EnforcementOrder.builder()
-            .warrantDetails(warrantDetails)
-            .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
-            .build();
+                .warrantDetails(warrantDetails)
+                .rawWarrantDetails(RawWarrantDetails.builder().warrantStatementOfTruth(statementOfTruth).build())
+                .build();
     }
 
     private static @NotNull StatementOfTruthDetails getStatementOfTruthDetails() {

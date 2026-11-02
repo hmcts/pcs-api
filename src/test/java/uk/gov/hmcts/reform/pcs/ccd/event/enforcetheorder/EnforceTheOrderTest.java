@@ -73,7 +73,6 @@ class EnforceTheOrderTest extends BaseEventTest {
     private static final int FEE_AMOUNT = 1000;
     private static final BigDecimal WARRANT_FEE_AMOUNT = new BigDecimal("123.40");
 
-
     @Mock
     private AddressFormatter addressFormatter;
     @Mock
@@ -192,20 +191,20 @@ class EnforceTheOrderTest extends BaseEventTest {
 
     @ParameterizedTest
     @EnumSource(value = SelectEnforcementType.class,
-        names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
+            names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
     void shouldThrowExceptionForUnimplementedEnforcementTypes(SelectEnforcementType enforcementType) {
         // Given
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .chooseEnforcementType(DynamicStringList.builder()
-                .value(DynamicStringListElement.builder().code(enforcementType.name()).build())
-                .build())
-            .build();
+                .chooseEnforcementType(DynamicStringList.builder()
+                        .value(DynamicStringListElement.builder().code(enforcementType.name()).build())
+                        .build())
+                .build();
         PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 
         // When / Then
         assertThatThrownBy(() -> callSubmitHandler(pcsCase))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Unimplemented enforcement type: " + enforcementType);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Unimplemented enforcement type: " + enforcementType);
     }
 
     @Nested

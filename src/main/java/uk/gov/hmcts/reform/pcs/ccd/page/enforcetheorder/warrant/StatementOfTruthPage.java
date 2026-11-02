@@ -16,9 +16,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 public class StatementOfTruthPage implements CcdPageConfiguration {
 
     private static final String WARRANT_COMPLETED_BY_CLAIMANT =
-        "warrantStatementOfTruth.completedBy=\"CLAIMANT\"";
+            "warrantStatementOfTruth.completedBy=\"CLAIMANT\"";
     private static final String WARRANT_COMPLETED_BY_LEGAL_REP =
-        "warrantStatementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"";
+            "warrantStatementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -66,19 +66,19 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .complex(RawWarrantDetails::getWarrantStatementOfTruth)
                         .mandatory(StatementOfTruthDetails::getCompletedBy)
                         .mandatory(StatementOfTruthDetails::getAgreementClaimant,
-                            WARRANT_COMPLETED_BY_CLAIMANT)
+                                WARRANT_COMPLETED_BY_CLAIMANT)
                         .mandatory(StatementOfTruthDetails::getFullNameParty,
-                            WARRANT_COMPLETED_BY_CLAIMANT)
+                                WARRANT_COMPLETED_BY_CLAIMANT)
                         .mandatory(StatementOfTruthDetails::getPositionParty,
-                            WARRANT_COMPLETED_BY_CLAIMANT)
+                                WARRANT_COMPLETED_BY_CLAIMANT)
                         .mandatory(StatementOfTruthDetails::getAgreementClaimantLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
+                                WARRANT_COMPLETED_BY_LEGAL_REP)
                         .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
+                                WARRANT_COMPLETED_BY_LEGAL_REP)
                         .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
+                                WARRANT_COMPLETED_BY_LEGAL_REP)
                         .mandatory(StatementOfTruthDetails::getPositionLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
+                                WARRANT_COMPLETED_BY_LEGAL_REP)
                     .done()
                 .done()
             .done()

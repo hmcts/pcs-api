@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgree
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
@@ -71,7 +72,8 @@ public class WarrantDetailsMapper {
         }
     }
 
-    private void certification(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+    private void certification(WarrantEntity warrantEntity,
+                               WarrantDetails warrantDetails) {
         List<StatementOfTruthAgreement> certification = warrantDetails.getCertification();
         if (certification != null && !certification.isEmpty()) {
             warrantEntity.setCertification(

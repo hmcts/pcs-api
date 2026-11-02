@@ -91,10 +91,10 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private static void excludeNeverShownFieldsFromSummary(FieldCollection fieldCollection) {
         fieldCollection.getFields().stream()
-            .filter(field -> NEVER_SHOW.equals(field.build().getShowCondition()))
-            .forEach(field -> field.showSummary(false));
+                .filter(field -> NEVER_SHOW.equals(field.build().getShowCondition()))
+                .forEach(field -> field.showSummary(false));
         fieldCollection.getComplexFields()
-            .forEach(complexField -> excludeNeverShownFieldsFromSummary(complexField.build()));
+                .forEach(complexField -> excludeNeverShownFieldsFromSummary(complexField.build()));
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -170,8 +170,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 getFeeTypeForEnforcementType(selectEnforcementType));
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
-            .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
-            .build();
+                .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
+                .build();
     }
 
     private FeeType getFeeTypeForEnforcementType(SelectEnforcementType enforcementType) {
@@ -180,7 +180,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
             case WRIT -> FeeType.ENFORCEMENT_WRIT_FEE;
             case WARRANT_OF_RESTITUTION,
                  WRIT_OF_RESTITUTION ->
-                throw new IllegalArgumentException("Unimplemented enforcement type: " + enforcementType);
+                    throw new IllegalArgumentException("Unimplemented enforcement type: " + enforcementType);
         };
     }
 
