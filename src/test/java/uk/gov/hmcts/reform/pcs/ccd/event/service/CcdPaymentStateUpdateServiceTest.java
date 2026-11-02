@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
@@ -16,15 +15,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.action.ClaimPaymentAction;
 import uk.gov.hmcts.reform.pcs.ccd.event.action.EnforcementPaymentAction;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.Instant;
 import java.util.List;
@@ -45,18 +41,8 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskCompon
 class CcdPaymentStateUpdateServiceTest {
 
     private static final long CASE_ID = 1234L;
-    private static final String IDAM_BEARER = "Bearer idam";
-    private static final String S2S_BEARER = "Bearer s2s";
     private UUID paymentReference;
 
-    @Mock
-    private IdamTokenProvider systemUpdateUserTokenProvider;
-    @Mock
-    private AuthTokenGenerator s2sAuthTokenGenerator;
-    @Mock
-    private CoreCaseDataApi coreCaseDataApi;
-    @Mock
-    private ObjectMapper objectMapper;
     @Mock
     private SchedulerClient schedulerClient;
     @Mock
