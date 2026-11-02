@@ -7,17 +7,18 @@ import {
   yourHCEO,
   theNICEWillChoose,
   youCannotApplyForWrit,
-  checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { changeNameAddress, confirmHCEOfficer, enforcementApplication, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, repayments, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
+import { changeNameAddress, confirmHCEOfficer, enforcementApplication, languageUsed, nameAndAddressForEviction, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
 import { checkYourAnswersEnforcement } from '@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data';
 import { payTheClaimFeeConfirm } from '@data/page-data-figma/page-data-enforcement-figma/payTheClaimFeeConfirm.page.data';
 
+let payClaimFeeWrit: ReturnType<typeof payTheClaimFeeConfirm>;
+let sotWrit: ReturnType<typeof statementOfTruth>;
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -58,6 +59,9 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+
+  payClaimFeeWrit = payTheClaimFeeConfirm(test.info().title);
+  sotWrit = statementOfTruth(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -150,35 +154,36 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.englishRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWrit.mainHeader
       });
-      await performAction('errorValidationSOTWritPage', statementOfTruth.errorValidation);
+      await performAction('errorValidationSOTWritPage', sotWrit.errorValidation);
       await test.step(`Then enter the details on the SOT page, verify the CYA page`, async () => {
         await performAction('selectStatementOfTruthWrit', {
-          question: statementOfTruth.completedByParagraph,
-          option: statementOfTruth.claimantRadioOption,
-          option1: statementOfTruth.iCertifyCheckboxDynamic,
-          label: statementOfTruth.fullNameHiddenTextLabel,
-          input: statementOfTruth.fullNameHiddenTextInput,
-          label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-          input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-          label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-          input2: statementOfTruth.nameOfFirmHiddenTextInput,
-          nextPage: checkYourAnswersEnforcement.mainHeader,
-          iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+          question: sotWrit.completedByParagraph,
+          option: sotWrit.claimantRadioOption,
+          option1: sotWrit.iCertifyCheckboxDynamic,
+          label: sotWrit.fullNameHiddenTextLabel,
+          input: sotWrit.fullNameHiddenTextInput,
+          label1: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+          input1: sotWrit.positionOrOfficeHeldHiddenTextInput,
+          label2: sotWrit.nameOfFirmHiddenTextLabel,
+          input2: sotWrit.nameOfFirmHiddenTextInput,
+          nextPage: sotWrit.mainHeader,
+          iBelieveCheckBox: sotWrit.iBelieveTheFactsHiddenCheckbox,
+          continueButton: sotWrit.continueButton
         });
       });
 
       await test.step(`And continue to the pay the claim fee page`, async () => {
         await performAction('continueFromCYAPage', {
-          nextPage: payTheClaimFeeConfirm().mainHeader
+          nextPage: payClaimFeeWrit.mainHeader
         });
       });
 
       await test.step(`And verify the pay the claim fee page content`, async () => {
         await performAction('selectPayClaimFee', {
-          payText: payTheClaimFeeConfirm().payHMCTSTextLabel,
-          link: payTheClaimFeeConfirm().payYourApplicationFeeLink
+          payText: payClaimFeeWrit.payHMCTSTextLabel,
+          link: payClaimFeeWrit.payYourApplicationFeeLink
         });
       });
 
@@ -219,20 +224,20 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.welshRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWrit.mainHeader
     });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruth.iCertifyCheckboxDynamic,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruth.nameOfFirmHiddenTextInput,
-      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswersEnforcement.mainHeader,
-      claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox
+      question: sotWrit.completedByParagraph,
+      option: sotWrit.claimantLegalRepresentativeRadioOption,
+      option1: sotWrit.iCertifyCheckboxDynamic,
+      label: sotWrit.fullNameHiddenTextLabel,
+      input: sotWrit.fullNameHiddenTextInput,
+      label1: sotWrit.nameOfFirmHiddenTextLabel,
+      input1: sotWrit.nameOfFirmHiddenTextInput,
+      label2: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+      input2: sotWrit.positionOrOfficeHeldHiddenTextInput,
+      nextPage: sotWrit.mainHeader,
+      claimantBelieveCheckBox: sotWrit.theClaimantBelievesHiddenCheckBox
     });
   });
 
@@ -272,20 +277,21 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.englishAndWelshRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWrit.mainHeader
     });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantRadioOption,
-      option1: statementOfTruth.iCertifyCheckboxDynamic,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input2: statementOfTruth.nameOfFirmHiddenTextInput,
+      question: sotWrit.completedByParagraph,
+      option: sotWrit.claimantRadioOption,
+      option1: sotWrit.iCertifyCheckboxDynamic,
+      label: sotWrit.fullNameHiddenTextLabel,
+      input: sotWrit.fullNameHiddenTextInput,
+      label1: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+      input1: sotWrit.positionOrOfficeHeldHiddenTextInput,
+      label2: sotWrit.nameOfFirmHiddenTextLabel,
+      input2: sotWrit.nameOfFirmHiddenTextInput,
       nextPage: checkYourAnswersEnforcement.mainHeader,
-      iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      iBelieveCheckBox: sotWrit.iBelieveTheFactsHiddenCheckbox,
+      continueButton: sotWrit.continueButton,
     });
   });
 

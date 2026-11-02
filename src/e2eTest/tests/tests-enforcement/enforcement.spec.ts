@@ -42,7 +42,8 @@ import {
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import {checkYourAnswersEnforcement} from "@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data";
 import {payTheClaimFeeConfirm} from "@data/page-data-figma/page-data-enforcement-figma/payTheClaimFeeConfirm.page.data";
-
+let payClaimFeeWarrant: ReturnType<typeof payTheClaimFeeConfirm>;
+let sotWarrant: ReturnType<typeof statementOfTruth>;
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -82,6 +83,8 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  payClaimFeeWarrant = payTheClaimFeeConfirm(test.info().title);
+  sotWarrant = statementOfTruth(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -305,35 +308,36 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.yesRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWarrant.mainHeader
       });
 
     await test.step(`Then enter the details on the SOT page, verify the CYA page`, async () => {
-      await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
+      await performAction('errorValidationSOT1Page', sotWarrant.errorValidation);
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantRadioOption,
-        option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruth.nameOfFirmHiddenTextInput,
-        nextPage: checkYourAnswersEnforcement.mainHeader
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantRadioOption,
+        option1: sotWarrant.iBelieveTheFactsHiddenCheckbox,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+        label2: sotWarrant.nameOfFirmHiddenTextLabel,
+        input2: sotWarrant.nameOfFirmHiddenTextInput,
+        nextPage: checkYourAnswersEnforcement.mainHeader,
+        continueButton: sotWarrant.continueButton,
       });
     });
 
     await test.step(`And continue to the pay the claim fee page`, async () => {
         await performAction('continueFromCYAPage', {
-        nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
+        nextPage: payClaimFeeWarrant.mainHeader
       });
     });
 
     await test.step(`And verify the pay the claim fee page content`, async () => {
      await performAction('selectPayClaimFee', {
-       link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
+       link: payClaimFeeWarrant.payYourApplicationFeeLink
      });
     });
   });
@@ -435,27 +439,27 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.noRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWarrant.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruth.signThisStatementHiddenCheckbox,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruth.nameOfFirmHiddenTextInput,
-      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+      selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+      question: sotWarrant.completedByParagraph,
+      option: sotWarrant.claimantLegalRepresentativeRadioOption,
+      option1: sotWarrant.signThisStatementHiddenCheckbox,
+      label: sotWarrant.fullNameHiddenTextLabel,
+      input: sotWarrant.fullNameHiddenTextInput,
+      label1: sotWarrant.nameOfFirmHiddenTextLabel,
+      input1: sotWarrant.nameOfFirmHiddenTextInput,
+      label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+      input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswersEnforcement.mainHeader
     });
     await performAction('continueFromCYAPage', {
-      nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
+      nextPage: payClaimFeeWarrant.mainHeader
     });
     await performAction('selectPayClaimFee', {
-      link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
+      link: payClaimFeeWarrant.payYourApplicationFeeLink
     });
   });
 
@@ -562,27 +566,27 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.yesRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWarrant.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantRadioOption,
-      option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input2: statementOfTruth.nameOfFirmHiddenTextInput,
+      selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+      question: sotWarrant.completedByParagraph,
+      option: sotWarrant.claimantRadioOption,
+      option1: sotWarrant.iBelieveTheFactsHiddenCheckbox,
+      label: sotWarrant.fullNameHiddenTextLabel,
+      input: sotWarrant.fullNameHiddenTextInput,
+      label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+      input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+      label2: sotWarrant.nameOfFirmHiddenTextLabel,
+      input2: sotWarrant.nameOfFirmHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
     });
     await performAction('continueFromCYAPage', {
-      nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
+      nextPage: payClaimFeeWarrant.mainHeader
     });
     await performAction('selectPayClaimFee', {
-      link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
+      link: payClaimFeeWarrant.payYourApplicationFeeLink
     });
   });
 
@@ -728,27 +732,27 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWarrant.mainHeader
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruth.signThisStatementHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruth.nameOfFirmHiddenTextInput,
-        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantLegalRepresentativeRadioOption,
+        option1: sotWarrant.signThisStatementHiddenCheckbox,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.nameOfFirmHiddenTextLabel,
+        input1: sotWarrant.nameOfFirmHiddenTextInput,
+        label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
       });
       await performAction('continueFromCYAPage', {
-        nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
+        nextPage: payClaimFeeWarrant.mainHeader
       });
       await performAction('selectPayClaimFee', {
-        link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
+        link: payClaimFeeWarrant.payYourApplicationFeeLink
       });
     });
 
@@ -850,20 +854,20 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruth.mainHeader,
+        nextPage: sotWarrant.mainHeader,
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruth.signThisStatementHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruth.nameOfFirmHiddenTextInput,
-        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantLegalRepresentativeRadioOption,
+        option1: sotWarrant.signThisStatementHiddenCheckbox,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.nameOfFirmHiddenTextLabel,
+        input1: sotWarrant.nameOfFirmHiddenTextInput,
+        label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader,
       });
     });

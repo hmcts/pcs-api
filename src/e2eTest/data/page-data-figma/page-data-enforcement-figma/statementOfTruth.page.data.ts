@@ -1,4 +1,4 @@
-export const statementOfTruth = {
+export const statementOfTruth  = (testTitle: string) => ({
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Statement of truth`,
   iCertifyCheckboxDynamic: `I certify that:`,
@@ -14,8 +14,12 @@ export const statementOfTruth = {
   claimantRadioOption: `Claimant`,
   claimantLegalRepresentativeRadioOption: `Claimant’s legal representative (as defined by CPR 2.3 (1))`,
   iBelieveTheFactsHiddenCheckbox: `I believe that the facts stated in this claim form are true.`,
-  detailsGivenAreCorrectListItem: `The details I have given are correct and that to my knowledge there is no application or other procedure pending.`,
-  requestAnOrderOfEnforcementListItem: `I request an order for enforcement in the High Court by Writ of Possession.`,
+  detailsGivenAreCorrectListItem: testTitle.includes('Warrant')
+    ? ``
+    : `The details I have given are correct and that to my knowledge there is no application or other procedure pending.`,
+  requestAnOrderOfEnforcementListItem: testTitle.includes('Warrant')
+    ? ``
+    : `I request an order for enforcement in the High Court by Writ of Possession.`,
   factsStatedAreTrueListItem: `I believe that the facts stated in this form are true.`,
   fullNameHiddenTextLabel: `Full name`,
   nameOfFirmHiddenTextLabel: `Name of firm`,
@@ -54,4 +58,4 @@ export const statementOfTruth = {
     ]
   },
   cancelLink: `Cancel`
-}
+});
