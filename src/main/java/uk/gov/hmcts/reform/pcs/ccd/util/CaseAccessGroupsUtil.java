@@ -75,7 +75,7 @@ public final class CaseAccessGroupsUtil {
             .peek(caseAccessGroupId ->
                       log.info("Found defendant case access group: {}", caseAccessGroupId))
             .forEach(caseAccessGroupId ->
-                         caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));;
+                         caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));
 
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)

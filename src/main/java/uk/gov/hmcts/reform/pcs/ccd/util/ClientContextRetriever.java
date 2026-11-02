@@ -57,6 +57,17 @@ public class ClientContextRetriever {
         }
     }
 
+    /** The hearing named in the Client-Context header. */
+    public Optional<Integer> getHearingId() {
+        ClientContext clientContext = getClientContext();
+        try {
+            return Optional.ofNullable(clientContext == null ? null : clientContext.getHearingId())
+                .map(Integer::valueOf);
+        } catch (NumberFormatException e) {
+            throw ExternalRejection.because("The link to the hearing is not valid");
+        }
+    }
+
     private HttpServletRequest getRequest() {
         return ((ServletRequestAttributes)
             Objects.requireNonNull(requestAttributesSupplier.get())
