@@ -32,7 +32,7 @@ class HearingInNext14DaysTest extends BasePageTest {
         "null, YES, YES",
         "null, NO, NO"
     }, nullValues = "null")
-    void shouldShowHwfScreensBasedOnGenAppCuiSetAsideAndHearingDate(VerticalYesNo feeUpdateEnabled,
+    void shouldShowHwfScreensBasedOnCuiGenAppSetAsideAndHearingDate(VerticalYesNo feeUpdateEnabled,
                                                           VerticalYesNo within14Days,
                                                           VerticalYesNo expectedShowHwfScreens) {
         // Given

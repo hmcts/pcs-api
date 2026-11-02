@@ -73,7 +73,7 @@ class GenAppFeeCalculatorTest {
 
     @ParameterizedTest
     @EnumSource(VerticalYesNo.class)
-    void shouldHaveNoFeeForAdjournBeyond14DaysWithoutConsentWhenGenAppCuiSetAsideDisabled(VerticalYesNo withoutNotice) {
+    void shouldHaveNoFeeForAdjournBeyond14DaysWithoutConsentWhenCuiGenAppSetAsideDisabled(VerticalYesNo withoutNotice) {
         XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
             .applicationType(GenAppType.ADJOURN)
             .within14Days(VerticalYesNo.NO)
@@ -88,7 +88,7 @@ class GenAppFeeCalculatorTest {
 
     @ParameterizedTest
     @EnumSource(VerticalYesNo.class)
-    void shouldHaveNoFeeForAdjournBeyond14DaysWithHwfWhenGenAppCuiSetAsideEnabled(VerticalYesNo withoutNotice) {
+    void shouldHaveNoFeeForAdjournBeyond14DaysWithHwfWhenCuiGenAppSetAsideEnabled(VerticalYesNo withoutNotice) {
         when(featureToggleService.isEnabled(FeatureFlag.CUI_GENAPP_SET_ASIDE)).thenReturn(true);
         XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
             .applicationType(GenAppType.ADJOURN)

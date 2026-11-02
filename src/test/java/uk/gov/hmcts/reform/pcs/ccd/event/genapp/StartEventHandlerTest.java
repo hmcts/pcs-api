@@ -202,7 +202,7 @@ class StartEventHandlerTest {
     @ParameterizedTest
     @EnumSource(VerticalYesNo.class)
     @NullSource
-    void shouldSetAdjournFeeConsentTextBasedOnGenAppCuiSetAside(VerticalYesNo feeUpdateEnabled) {
+    void shouldSetAdjournFeeConsentTextBasedOnCuiGenAppSetAside(VerticalYesNo feeUpdateEnabled) {
         PCSCase caseData = PCSCase.builder()
             .featureFlags(FeatureFlags.builder().cuiSetGenAppAsideEnabled(feeUpdateEnabled).build())
             .xuiGenAppRequest(XuiGenAppRequest.builder().adjournFeeConsentText("old value").build())
