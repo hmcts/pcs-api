@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.time.Clock;
 import java.time.Instant;
@@ -52,7 +54,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -80,16 +82,22 @@ class ExportServiceTest {
     @Mock
     private BlobUploader blobUploader;
 
+    @Mock
+    private EntityManager entityManager;
+
     @Captor
     private ArgumentCaptor<List<SdpClaimSnapshotEntity>> savedCaptor;
 
-    @Captor
-    private ArgumentCaptor<byte[]> uploadedJsonCaptor;
+    private String uploadedJsonContent;
 
     private ExportService exportService;
 
     @BeforeEach
     void setUp() {
+        lenient().doAnswer(invocation -> {
+            uploadedJsonContent = Files.readString(invocation.getArgument(1));
+            return null;
+        }).when(blobUploader).upload(any(), any(Path.class));
         exportService = exportService(Optional.of(blobUploader));
     }
 
@@ -102,6 +110,7 @@ class ExportServiceTest {
             snapshotHasher,
             sdpClaimSnapshotRepository,
             uploader,
+            entityManager,
             FIXED_CLOCK,
             "local"
         );
@@ -130,7 +139,7 @@ class ExportServiceTest {
         assertThat(json).contains("\"environment\":\"dev\"");
         assertThat(json).contains("\"snapshot_version\":1");
         assertThat(json).contains("\"published_date\":\"2026-03-09T12:00:00Z\"");
-        verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
+        verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(Path.class));
     }
 
     @Test
@@ -142,7 +151,7 @@ class ExportServiceTest {
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
         assertThat(uploadedJson()).contains("\"snapshot_version\":1");
-        verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(byte[].class));
+        verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(Path.class));
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getClaimId()).isEqualTo(CLAIM_ID);
@@ -217,14 +226,14 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldNotSaveSnapshotsWhenUploadFails() {
+    void shouldFailWhenUploadFails() {
         givenClaimWithHash();
         doThrow(new IllegalStateException("upload failed"))
-            .when(blobUploader).upload(any(), any(byte[].class));
+            .when(blobUploader).upload(any(), any(Path.class));
 
         assertThatThrownBy(() -> exportService.exportClaims())
             .isInstanceOf(IllegalStateException.class);
-        verify(sdpClaimSnapshotRepository, never()).saveAll(anyList());
+        verify(sdpClaimSnapshotRepository).saveAll(anyList());
     }
 
     @Test
@@ -379,6 +388,9 @@ class ExportServiceTest {
 
         assertThat(result.recordCount()).isEqualTo(claimCount);
         verify(claimRepository, times(2)).findAllForSdpSnapshotExportById(any());
+        verify(sdpClaimSnapshotRepository, times(2)).saveAll(anyList());
+        verify(entityManager, times(2)).flush();
+        verify(entityManager, times(2)).clear();
     }
 
     @Test
@@ -406,8 +418,8 @@ class ExportServiceTest {
     }
 
     private String uploadedJson() {
-        verify(blobUploader).upload(any(), uploadedJsonCaptor.capture());
-        return new String(uploadedJsonCaptor.getValue(), StandardCharsets.UTF_8);
+        verify(blobUploader).upload(any(), any(Path.class));
+        return uploadedJsonContent;
     }
 
     private void givenClaimWithHash() {

@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
+
 @Slf4j
 @Component
 @ConditionalOnProperty(prefix = "sdp.export", name = "upload-enabled", havingValue = "true")
@@ -24,14 +26,14 @@ public class BlobUploader {
         this.blobContainerClient = blobContainerClient;
     }
 
-    public void upload(String blobName, byte[] json) {
+    public void upload(String blobName, Path file) {
         try {
             BlobClient blobClient = blobContainerClient.getBlobClient(blobName);
-            BlobParallelUploadOptions options = new BlobParallelUploadOptions(BinaryData.fromBytes(json))
+            BlobParallelUploadOptions options = new BlobParallelUploadOptions(BinaryData.fromFile(file))
                 .setHeaders(new BlobHttpHeaders().setContentType(CONTENT_TYPE));
             Response<?> response = blobClient.uploadWithResponse(options, null, Context.NONE);
             log.info("Uploaded SDP claim snapshot to blob {} status={}", blobName, response.getStatusCode());
-            
+
             int status = response.getStatusCode();
             if (status < 200 || status >= 300) {
                 throw new IllegalStateException(
