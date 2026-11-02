@@ -30,4 +30,27 @@ class AccessCodeFormPayloadTest {
 
         assertThat(json).contains(SECRET_CODE);
     }
+
+    @Test
+    void jsonOmitsCourtNameWhenNotPopulated() throws Exception {
+        AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
+            .courtName(null)
+            .build();
+
+        String json = new ObjectMapper().writeValueAsString(payload);
+
+        assertThat(new ObjectMapper().readTree(json).has("courtName")).isFalse();
+    }
+
+    @Test
+    void jsonIncludesCourtNameWhenPopulated() throws Exception {
+        AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
+            .courtName("Central London County Court")
+            .build();
+
+        String json = new ObjectMapper().writeValueAsString(payload);
+
+        assertThat(new ObjectMapper().readTree(json).get("courtName").asText())
+            .isEqualTo("Central London County Court");
+    }
 }
