@@ -62,7 +62,7 @@ export class GenAppsAction implements IAction {
       ['retrieveCYATableData', () => this.retrieveCYATableData(page, fieldName as actionRecord)],
       ['validateCYA', () => this.validateCYA()],
       ['reviewCYA', () => this.reviewCYA(page, fieldName as actionData)],
-      ['reviewAndUpdateCYA', () => this.reviewAndUpdateCYA(page, fieldName as actionRecord, (fieldName as actionRecord).claimType as string | undefined)],
+      ['reviewAndUpdateCYA', () => this.reviewAndUpdateCYA(page, fieldName as actionRecord)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
       ['selectApplicant', () => this.selectApplicant(fieldName as actionRecord)],
       ['verifyApplicationSubmitted', () => this.verifyApplicationSubmitted()],
@@ -154,10 +154,6 @@ export class GenAppsAction implements IAction {
   }
 
   private async doYouNeedHelpPayingFee(feeHelp: actionRecord) {
-    const { question, option, claimType } = feeHelp;
-    const pageData = helpPayingTheFee(
-      claimType as string | undefined
-    );
     await performValidation('text', {
       elementType: 'paragraph',
       text: 'Case number: ' + caseInfo.fid,
@@ -167,42 +163,13 @@ export class GenAppsAction implements IAction {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`,
     });
 
-    await performAction('recordUserEntry', { question, option });
+    await performAction('recordUserEntry', feeHelp);
     await performAction('clickRadioButton', {
-      question,
-      option,
+      question: feeHelp.question,
+      option: feeHelp.option,
     });
 
-    if( claimType != 'LR'){
-      await performValidation('text', {
-        elementType: 'paragraph',
-        text: `It usually costs £126 to apply. The fee will increase to £321 if:`
-      });
-
-      await performValidation('text', {
-        elementType: 'listItem',
-        text: helpPayingTheFee().youHaveAlreadyToldListHidden
-      });
-
-      await performValidation('text', {
-        elementType: 'listItem',
-        text: helpPayingTheFee().theOtherPartyDidNotAgreeListHidden
-      });
-
-      await performValidation('text', {
-        elementType: 'paragraph',
-        text: helpPayingTheFee().youSeeFinalApplicationFeeParagraphHidden
-      });
-    }
-
-    if( claimType === 'LR') {
-      await performValidation('text', {
-        elementType: 'paragraph',
-        text: `It costs £16 to apply.`
-      });
-    }
-
-    await performAction('clickButton', pageData.continueButton);
+    await performAction('clickButton', feeHelp.continueButton);
 
   }
 
@@ -583,7 +550,8 @@ export class GenAppsAction implements IAction {
     await expect(page).toHaveURL(/check-your-answers/);
   }
 
-  private async reviewAndUpdateCYA(page: Page, review: actionRecord, claimType?: string) {
+  private async reviewAndUpdateCYA(page: Page, review: actionRecord) {
+    const feePage = review.feeData as ReturnType<typeof helpPayingTheFee>;
     const rows = page.locator('.govuk-summary-list__row');
     const rowCount = await rows.count();
 
@@ -599,7 +567,7 @@ export class GenAppsAction implements IAction {
         break;
       }
     }
-    await this.updatePreviouslyAnsweredPage(page, claimType);
+    await this.updatePreviouslyAnsweredPage(page, feePage);
     const pagesForThisQuestion = journeys[String(review.journey)] ?? defaultJourney;
 
     await this.followJourneyBackToCya(page, pagesForThisQuestion);
@@ -607,8 +575,7 @@ export class GenAppsAction implements IAction {
     await expect(page).toHaveURL(/check-your-answers/);
   }
 
-  private async updatePreviouslyAnsweredPage(page: Page,  claimType?: string) {
-    const feePageData = helpPayingTheFee(claimType);
+  private async updatePreviouslyAnsweredPage(page: Page, testPage: actionRecord) {
     const currentPage = stringToCamelCase(
       await page
         .locator(
@@ -629,16 +596,16 @@ export class GenAppsAction implements IAction {
           option: option1,
         });
         if (option1 === 'Yes') {
-          await performValidation('mainHeader', feePageData.mainHeader);
+          await performValidation('mainHeader', testPage.mainHeader);
           await performAction('doYouNeedHelpPayingFee', {
-            question: feePageData.doYouNeedHelpPayingTheFeeQuestion,
-            option: feePageData.noRadioOption,
-            ...(claimType ? { claimType } : {}),
+            question: testPage.doYouNeedHelpPayingTheFeeQuestion,
+            option: testPage.noRadioOption,
+            continueButton: testPage.continueButton,
           });
         } else {
           await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
           FieldsStore.deleteKeys([
-            feePageData.doYouNeedHelpPayingTheFeeQuestion,
+            testPage.doYouNeedHelpPayingTheFeeQuestion as string,
             haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
             'What is your Help with Fees reference number?',
           ]);
@@ -648,14 +615,14 @@ export class GenAppsAction implements IAction {
       }
       case 'doYouNeedHelpPayingTheFeeForThisApplication': {
         const feeOption1 =
-          FieldsStore.get(feePageData.doYouNeedHelpPayingTheFeeQuestion as string) ===
+          FieldsStore.get(testPage.doYouNeedHelpPayingTheFeeQuestion as string) ===
             'I need help paying the fee'
-            ? helpPayingTheFee().noRadioOption
-            : helpPayingTheFee().yesRadioOption;
+            ? testPage.noRadioOption
+            : testPage.yesRadioOption;
         await performAction('doYouNeedHelpPayingFee', {
-          question: feePageData.doYouNeedHelpPayingTheFeeQuestion,
+          question: testPage.doYouNeedHelpPayingTheFeeQuestion,
           option: feeOption1,
-          ...(claimType ? { claimType } : {}),
+          continueButton: testPage.continueButton,
         });
         if (feeOption1 !== 'I need help paying the fee') {
           FieldsStore.deleteKeys([

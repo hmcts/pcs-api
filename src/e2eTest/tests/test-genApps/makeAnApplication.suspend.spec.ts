@@ -24,7 +24,7 @@ import { home } from '@data/page-data';
 
 
 test.use({ storageState: undefined });
-
+let doYouNeedHelpPayingTheFeeSuspend: ReturnType<typeof helpPayingTheFee>;
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -54,6 +54,8 @@ test.beforeEach(async ({ page, context }) => {
   await page.waitForLoadState();
   await page.locator('.spinner-container').waitFor({ state: 'detached' });
   await performValidation('mainHeader', home.caseSummary);
+
+  doYouNeedHelpPayingTheFeeSuspend = helpPayingTheFee(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -65,7 +67,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test(`As a Legal Representative I am applying online to suspend hearing on behalf of my client so it can be submitted to courts and viewed by case workers and judges`,
+  test(`As an LR I am applying online to suspend hearing on behalf of my client so it can be submitted to courts and viewed by case workers and judges`,
     {
       tag: ['@smoke', '@regression'],
       annotation: [
@@ -102,11 +104,11 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       });
 
       await test.step(`And indicates that they do not need help paying the fee`, async () => {
-        await performValidation('mainHeader', helpPayingTheFee('LR').mainHeader);
+        await performValidation('mainHeader', doYouNeedHelpPayingTheFeeSuspend.mainHeader);
         await performAction('doYouNeedHelpPayingFee', {
-          question: helpPayingTheFee('LR').doYouNeedHelpPayingTheFeeQuestion,
-          option: helpPayingTheFee('LR').noRadioOption,
-          claimType: 'LR',
+          question: doYouNeedHelpPayingTheFeeSuspend.doYouNeedHelpPayingTheFeeQuestion,
+          option: doYouNeedHelpPayingTheFeeSuspend.noRadioOption,
+          continueButton: doYouNeedHelpPayingTheFeeSuspend.continueButton
         });
       });
 
