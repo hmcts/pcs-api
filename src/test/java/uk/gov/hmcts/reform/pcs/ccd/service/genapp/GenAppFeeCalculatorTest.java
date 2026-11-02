@@ -153,7 +153,7 @@ class GenAppFeeCalculatorTest {
                     FeeType expectedFeeType = !feeUpdateEnabled || hasReference ? null
                         : withoutNotice == VerticalYesNo.YES ? FeeType.GEN_APP_STANDARD_FEE : FeeType.GEN_APP_MAX_FEE;
                     return Stream.of(professionalRequest, citizenRequest).map(request -> argumentSet(
-                        "genapp-cui-set-aside=" + feeUpdateEnabled + ", " + request.getClass().getSimpleName()
+                        "cui-genapp-set-aside=" + feeUpdateEnabled + ", " + request.getClass().getSimpleName()
                             + ", withoutNotice=" + withoutNotice + ", " + hwfStatus,
                         feeUpdateEnabled, request, expectedFeeType
                     ));
