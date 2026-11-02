@@ -313,13 +313,6 @@ class DocumentServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(AdditionalDocumentType.class)
-    void shouldMapAdditionalDocumentTypeEnumToDocumentType(AdditionalDocumentType additionalDocumentType) {
-        assertThat(underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
-            .isEqualTo(DocumentType.valueOf(additionalDocumentType.name()));
-    }
-    
-    @ParameterizedTest
     @EnumSource(AdditionalDocumentTypeEngland.class)
     void shouldMapAllAdditionalDocumentTypesForEngland(AdditionalDocumentTypeEngland additionalDocumentType) {
         PCSCase pcsCase = mock(PCSCase.class);
@@ -1650,15 +1643,6 @@ class DocumentServiceTest {
             .hasMessageContaining(String.valueOf(CASE_REFERENCE));
 
         verify(documentRepository, never()).saveAll(anyList());
-    }
-
-    @Test
-    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
-        // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
-
-        // Then
-        assertThat(actualDocumentType).isNull();
     }
 
     private static Stream<Arguments> documentCategoryScenarios() {

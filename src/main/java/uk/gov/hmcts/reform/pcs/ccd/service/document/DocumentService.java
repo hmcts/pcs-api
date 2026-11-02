@@ -9,11 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -181,26 +184,46 @@ public class DocumentService {
 
     private DocumentType getAdditionalDocumentType(AdditionalDocument document,
                                                      LegislativeCountry legislativeCountry) {
-        Enum<?> documentType;
+        
+        DocumentType countryDocumentType = getDocumentTypeForCountry(document, legislativeCountry);
 
-        if (legislativeCountry == LegislativeCountry.WALES) {
-            documentType = document.getDocumentTypeWales();
-            document.setDocumentTypeWales(null);
-        } else {
-            documentType = document.getDocumentTypeEngland();
-            document.setDocumentTypeEngland(null);
-        }
-
-        if (documentType != null) {
-            return DocumentType.valueOf(documentType.name());
+        if (countryDocumentType != null) {
+            return countryDocumentType;
         }
 
         if (document.getDocumentType() == null || document.getDocumentType().getValue() == null) {
             return null;
         }
 
+        return getLegacyDocumentType(document);
+
+    }
+
+    private DocumentType getDocumentTypeForCountry(AdditionalDocument document, LegislativeCountry legislativeCountry)
+    {
+        if (legislativeCountry == LegislativeCountry.WALES) {
+            AdditionalDocumentTypeWales documentType = document.getDocumentTypeWales();
+            document.setDocumentTypeWales(null);
+
+            return documentType == null ? null : DocumentType.valueOf(documentType.name());
+        } 
+
+        AdditionalDocumentTypeEngland documentType = document.getDocumentTypeEngland();
+        document.setDocumentTypeEngland(null);
+
+        return documentType == null ? null : DocumentType.valueOf(documentType.name());
+        
+    }
+
+    private DocumentType getLegacyDocumentType(AdditionalDocument document) {
+        DynamicList documentType = document.getDocumentType();
+
+        if (documentType == null || documentType.getValue() == null) {
+            return null;
+        }
+
         AdditionalDocumentType legacyDocumentType = AdditionalDocumentType.getValueFromLabel(
-            document.getDocumentType().getValueLabel()
+            documentType.getValueLabel()
         );
         return documentTypeMapper.mapToDocumentType(legacyDocumentType);
     }
@@ -246,32 +269,7 @@ public class DocumentService {
 
     }
 
-    public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
-        if (additionalType == null) {
-            return null;
-        }
-
-        return switch (additionalType) {
-            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
-            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
-            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
-            case ENERGY_PERFORMANCE_CERTIFICATE -> DocumentType.ENERGY_PERFORMANCE_CERTIFICATE;
-            case GAS_SAFETY_CERTIFICATE -> DocumentType.GAS_SAFETY_CERTIFICATE;
-            case EICR_REPORT -> DocumentType.EICR_REPORT;
-            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
-            case CERTIFICATE_OF_SERVICE -> DocumentType.CERTIFICATE_OF_SERVICE;
-            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
-            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
-            case POSSESSION_NOTICE -> DocumentType.POSSESSION_NOTICE;
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION;
-            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
-            case INSPECTION_OR_REPORT -> DocumentType.INSPECTION_OR_REPORT;
-            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
-            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
-            case OTHER -> DocumentType.OTHER;
-        };
-    }
-
+    
     public List<DocumentEntity> linkAdditionalDocumentsToCase(
         List<ListValue<UploadedDocument>> uploadedDocuments,
         PcsCaseEntity pcsCase,
