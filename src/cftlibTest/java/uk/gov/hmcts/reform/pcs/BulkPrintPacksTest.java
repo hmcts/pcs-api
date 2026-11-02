@@ -104,13 +104,6 @@ class BulkPrintPacksTest extends CftlibTest {
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.CLAIM, testStart, 1);
         testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
 
-        List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK,
-                                                                           testStart,
-                                                                           1
-        );
-        Letter claimantLetter = claimantLetters.getFirst();
-        assertThat(getRecipientName(claimantLetter)).isEqualTo("CftLibTest Claimant");
-
         List<Letter> defendantLetters = mockSendLetterServer.getSentLetters(caseReference, DEFENDANT_CLAIM_PACK,
                                                                             testStart,
                                                                             2
@@ -118,6 +111,14 @@ class BulkPrintPacksTest extends CftlibTest {
         assertThat(defendantLetters)
             .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
+
+        // Rely on the fact that claimant letters would be sent before defendant letters, so
+        // we can assert that none have been sent without waiting any longer here.
+        List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK,
+                                                                           testStart,
+                                                                           0
+        );
+        assertThat(claimantLetters).isEmpty();
     }
 
     @Test
