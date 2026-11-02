@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.GENAPP_CUI_SET_ASIDE;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_GENAPP_SET_ASIDE;
 
 @Slf4j
 @AllArgsConstructor
@@ -34,7 +34,7 @@ public class HearingInNext14Days implements CcdPageConfiguration {
             .pageLabel("Is the defendant’s court hearing in the next 14 days?")
             .showCondition(fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
             .label("hearingInNext14Days-lineSeparator", "---")
-            .label("hearingInNext14Days-info", INFO_MARKDOWN, featureFlagsEnabled(GENAPP_CUI_SET_ASIDE))
+            .label("hearingInNext14Days-info", INFO_MARKDOWN, featureFlagsEnabled(CUI_GENAPP_SET_ASIDE))
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWithin14Days)
             .done();
@@ -47,7 +47,7 @@ public class HearingInNext14Days implements CcdPageConfiguration {
         XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
 
         boolean feeUpdateEnabled = caseData.getFeatureFlags() != null
-            && caseData.getFeatureFlags().getGenAppCuiSetAsideEnabled() == VerticalYesNo.YES;
+            && caseData.getFeatureFlags().getCuiSetGenAppAsideEnabled() == VerticalYesNo.YES;
         xuiGenAppRequest.setShowHwfScreens(feeUpdateEnabled ? VerticalYesNo.YES : xuiGenAppRequest.getWithin14Days());
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

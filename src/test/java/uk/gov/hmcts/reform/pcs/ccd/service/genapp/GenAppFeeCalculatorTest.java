@@ -61,7 +61,7 @@ class GenAppFeeCalculatorTest {
             .within14Days(VerticalYesNo.NO)
             .otherPartiesAgreed(VerticalYesNo.YES)
             .build();
-        when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(feeUpdateEnabled);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_GENAPP_SET_ASIDE)).thenReturn(feeUpdateEnabled);
 
         // When
         Optional<FeeDetails> feeDetails = underTest.getApplicationFeeDetails(genAppRequest);
@@ -89,7 +89,7 @@ class GenAppFeeCalculatorTest {
     @ParameterizedTest
     @EnumSource(VerticalYesNo.class)
     void shouldHaveNoFeeForAdjournBeyond14DaysWithHwfWhenGenAppCuiSetAsideEnabled(VerticalYesNo withoutNotice) {
-        when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_GENAPP_SET_ASIDE)).thenReturn(true);
         XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
             .applicationType(GenAppType.ADJOURN)
             .within14Days(VerticalYesNo.NO)
@@ -109,7 +109,7 @@ class GenAppFeeCalculatorTest {
     void shouldGateAdjournFeesForProfessionalAndCitizenRequests(boolean feeUpdateEnabled,
                                                                GenAppRequest request,
                                                                FeeType expectedFeeType) {
-        when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(feeUpdateEnabled);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_GENAPP_SET_ASIDE)).thenReturn(feeUpdateEnabled);
         FeeDetails expectedFee = FeeDetails.builder().build();
         if (expectedFeeType != null) {
             when(feeService.getFee(expectedFeeType)).thenReturn(expectedFee);
@@ -225,7 +225,7 @@ class GenAppFeeCalculatorTest {
         final BigDecimal expectedFeeAmount = stubFeeService();
         if (genAppRequest.getApplicationType() == GenAppType.ADJOURN
             && genAppRequest.getWithin14Days() == VerticalYesNo.NO) {
-            when(featureToggleService.isEnabled(FeatureFlag.GENAPP_CUI_SET_ASIDE)).thenReturn(true);
+            when(featureToggleService.isEnabled(FeatureFlag.CUI_GENAPP_SET_ASIDE)).thenReturn(true);
         }
 
         // When
