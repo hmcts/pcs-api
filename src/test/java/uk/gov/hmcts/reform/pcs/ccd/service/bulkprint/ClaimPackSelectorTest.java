@@ -299,7 +299,7 @@ class ClaimPackSelectorTest {
         assertThat(result).extracting(ClaimPackCandidate::party)
             .containsExactlyElementsOf(release14Enabled ? List.of(defendantA) : List.of(claimant, defendantA));
         assertThat(result.getLast().recipientType()).isEqualTo(PartyRole.DEFENDANT);
-        assertThat(result.getLast().documents()).containsExactly(claimForm, pcsCase.getDocuments().getFirst());
+        assertThat(result.getLast().documents()).containsExactly(pcsCase.getDocuments().getFirst(), claimForm);
     }
 
     private PcsCaseEntity readyClaimCase() {
