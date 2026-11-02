@@ -163,9 +163,8 @@ class CreatePossessionClaimTest extends CftlibTest {
         caseDocumentService.waitForDocumentType(caseReference, DocumentType.CLAIM);
         testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
 
-        List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK, 1);
-        Letter claimantLetter = claimantLetters.getFirst();
-        assertThat(getRecipientName(claimantLetter)).isEqualTo("CftLibTest Claimant");
+        List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK, 0);
+        assertThat(claimantLetters).isEmpty();
 
         List<Letter> defendantLetters = mockSendLetterServer.getSentLetters(caseReference, DEFENDANT_CLAIM_PACK, 2);
         assertThat(defendantLetters)
