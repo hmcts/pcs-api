@@ -204,7 +204,7 @@ class StartEventHandlerTest {
     @NullSource
     void shouldSetAdjournFeeConsentTextBasedOnCuiGenAppSetAside(VerticalYesNo feeUpdateEnabled) {
         PCSCase caseData = PCSCase.builder()
-            .featureFlags(FeatureFlags.builder().cuiSetGenAppAsideEnabled(feeUpdateEnabled).build())
+            .featureFlags(FeatureFlags.builder().cuiGenAppSetAsideEnabled(feeUpdateEnabled).build())
             .xuiGenAppRequest(XuiGenAppRequest.builder().adjournFeeConsentText("old value").build())
             .build();
         when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))

@@ -44,7 +44,7 @@ class FeatureFlagViewTest {
         RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled,
         RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled,
         RELEASE_1B, FeatureFlags::getRelease1bEnabled,
-        CUI_GENAPP_SET_ASIDE, FeatureFlags::getCuiSetGenAppAsideEnabled,
+        CUI_GENAPP_SET_ASIDE, FeatureFlags::getCuiGenAppSetAsideEnabled,
         RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled,
         WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
         CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,

@@ -47,7 +47,7 @@ public class HearingInNext14Days implements CcdPageConfiguration {
         XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
 
         boolean feeUpdateEnabled = caseData.getFeatureFlags() != null
-            && caseData.getFeatureFlags().getCuiSetGenAppAsideEnabled() == VerticalYesNo.YES;
+            && caseData.getFeatureFlags().getCuiGenAppSetAsideEnabled() == VerticalYesNo.YES;
         xuiGenAppRequest.setShowHwfScreens(feeUpdateEnabled ? VerticalYesNo.YES : xuiGenAppRequest.getWithin14Days());
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

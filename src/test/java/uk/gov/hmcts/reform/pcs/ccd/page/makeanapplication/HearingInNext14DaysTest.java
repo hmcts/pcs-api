@@ -37,7 +37,7 @@ class HearingInNext14DaysTest extends BasePageTest {
                                                           VerticalYesNo expectedShowHwfScreens) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .featureFlags(FeatureFlags.builder().cuiSetGenAppAsideEnabled(feeUpdateEnabled).build())
+            .featureFlags(FeatureFlags.builder().cuiGenAppSetAsideEnabled(feeUpdateEnabled).build())
             .xuiGenAppRequest(XuiGenAppRequest.builder()
                                   .within14Days(within14Days)
                                   .build())
