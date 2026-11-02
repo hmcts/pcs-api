@@ -27,8 +27,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 
 /**
  * Selects gen-app envelopes per recipient. Issued with-notice defendant CUI GAs with a submission PDF go to
- * every claim party whose contact preferences include post (or are unset). Without-notice GAs,
- * non-defendant-applicant GAs, ExUI/caseworker GAs produce no candidates.
+ * every claim party whose contact preferences include post (or are unset), excluding claimants when release 1.4 flag
+ * is enabled. Without-notice GAs, non-defendant-applicant GAs, ExUI/caseworker GAs produce no candidates.
  */
 @Service
 public class GenAppPackSelector {
@@ -52,9 +52,12 @@ public class GenAppPackSelector {
         ClaimEntity claim = pcsCase.getClaims().getFirst();
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
-        List<PartyEntity> allParties = new ArrayList<>(claimants);
-        allParties.addAll(defendants);
-        if (allParties.isEmpty()) {
+        List<PartyEntity> candidateParties = new ArrayList<>();
+        if (!packSkipRules.shouldExcludeClaimant()) {
+            candidateParties.addAll(claimants);
+        }
+        candidateParties.addAll(defendants);
+        if (candidateParties.isEmpty()) {
             return List.of();
         }
 
@@ -74,7 +77,7 @@ public class GenAppPackSelector {
                 continue;
             }
             DocumentEntity document = genApp.getSubmissionDocument();
-            for (PartyEntity party : allParties) {
+            for (PartyEntity party : candidateParties) {
                 if (!wantsPost(party) || sent.contains(key(party, document))) {
                     continue;
                 }

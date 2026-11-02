@@ -80,6 +80,8 @@ class WarrantPageConfigurerTest extends BasePageTest {
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
 
+        verifyAndCount(inOrder, pageBuilder, BreathingSpacePage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, MissedPaymentsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmIfDOBKnownPage.class, verificationCount);
