@@ -42,10 +42,9 @@ export const enforcementApplication = {
   errorValidation: `NO`,//set it to `NO` before raising a PR
   errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`, five: `moneyFieldAndRadioOption` },
   errorValidationField: {
-    errorRadioOption: [
-        //updated the error message from `What do you want to apply for? is required`  to Field is required as per current application behaviour and reported the mismatch in HDPI-5199 scenario 6
-      { type: `none`, input: ``, errInlineMessage: `Field is required`,errMessage:`What do you want to apply for? is required` },
-    ],
+   errorRadioOption: [
+    { type: `none`, input: ``, errMessage: `What do you want to apply for? is required`, errInlineMessage: `Field is required` },
+  ],
   },
   yesRadioOptionHidden: `Yes`,
   noRadioOptionHidden: `No`,
