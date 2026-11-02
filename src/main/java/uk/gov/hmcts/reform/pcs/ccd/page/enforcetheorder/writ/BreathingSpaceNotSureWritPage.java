@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.BreathingSpaceNotSureCon
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 public class BreathingSpaceNotSureWritPage implements CcdPageConfiguration {
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
