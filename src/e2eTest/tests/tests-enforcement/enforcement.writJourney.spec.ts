@@ -171,14 +171,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
 
       await test.step(`And continue to the pay the claim fee page`, async () => {
         await performAction('continueFromCYAPage', {
-          nextPage: payTheClaimFeeConfirm.mainHeader
+          nextPage: payTheClaimFeeConfirm().mainHeader
         });
       });
 
       await test.step(`And verify the pay the claim fee page content`, async () => {
         await performAction('selectPayClaimFee', {
-          payText: payTheClaimFeeConfirm.payWritHMCTSTextLabel,
-          link: payTheClaimFeeConfirm.payYourApplicationFeeLink
+          payText: payTheClaimFeeConfirm().payHMCTSTextLabel,
+          link: payTheClaimFeeConfirm().payYourApplicationFeeLink
         });
       });
 

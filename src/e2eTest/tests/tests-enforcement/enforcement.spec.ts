@@ -327,13 +327,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
 
     await test.step(`And continue to the pay the claim fee page`, async () => {
         await performAction('continueFromCYAPage', {
-        nextPage: payTheClaimFeeConfirm.mainHeader
+        nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
       });
     });
 
     await test.step(`And verify the pay the claim fee page content`, async () => {
      await performAction('selectPayClaimFee', {
-       link: payTheClaimFeeConfirm.payYourApplicationFeeLink
+       link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
      });
     });
   });
@@ -452,10 +452,10 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nextPage: checkYourAnswersEnforcement.mainHeader
     });
     await performAction('continueFromCYAPage', {
-      nextPage: payTheClaimFeeConfirm.mainHeader
+      nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
     });
     await performAction('selectPayClaimFee', {
-      link: payTheClaimFeeConfirm.payYourApplicationFeeLink
+      link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
     });
   });
 
@@ -579,10 +579,10 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nextPage: checkYourAnswers.mainHeader
     });
     await performAction('continueFromCYAPage', {
-      nextPage: payTheClaimFeeConfirm.mainHeader
+      nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
     });
     await performAction('selectPayClaimFee', {
-      link: payTheClaimFeeConfirm.payYourApplicationFeeLink
+      link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
     });
   });
 
@@ -745,10 +745,10 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: checkYourAnswers.mainHeader
       });
       await performAction('continueFromCYAPage', {
-        nextPage: payTheClaimFeeConfirm.mainHeader
+        nextPage: payTheClaimFeeConfirm('Warrant').mainHeader
       });
       await performAction('selectPayClaimFee', {
-        link: payTheClaimFeeConfirm.payYourApplicationFeeLink
+        link: payTheClaimFeeConfirm('Warrant').payYourApplicationFeeLink
       });
     });
 
