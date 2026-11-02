@@ -25,7 +25,7 @@ import { home } from '@data/page-data';
 
 
 test.use({ storageState: undefined });
-
+let doYouNeedHelpPayingTheFeeSomethingelse: ReturnType<typeof helpPayingTheFee>;
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -63,6 +63,7 @@ test.beforeEach(async ({ page, context }) => {
   await page.waitForLoadState();
   await page.locator('.spinner-container').waitFor({ state: 'detached' });
   await performValidation('mainHeader', home.caseSummary);
+  doYouNeedHelpPayingTheFeeSomethingelse = helpPayingTheFee(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -89,10 +90,10 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: selectParty.partyMakingApplicationQuestion,
       option: defendantDetails[1],
     });
-    await performValidation('mainHeader', helpPayingTheFee().mainHeader);
+    await performValidation('mainHeader', doYouNeedHelpPayingTheFeeSomethingelse.mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
-      question: helpPayingTheFee().doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee().yesRadioOption,
+      question: doYouNeedHelpPayingTheFeeSomethingelse.doYouNeedHelpPayingTheFeeQuestion,
+      option: doYouNeedHelpPayingTheFeeSomethingelse.yesRadioOption,
     });
     await performAction('confirmYouHaveAppliedForFeeHelp', {
       question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
