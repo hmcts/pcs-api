@@ -60,6 +60,8 @@ public class ExportService {
     private final Optional<BlobUploader> blobUploader;
     private final Clock utcClock;
     private final String environment;
+    static final int EXPORT_CHUNK_SIZE = 200;
+
     private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
 
     public ExportService(ClaimRepository claimRepository,
@@ -83,17 +85,26 @@ public class ExportService {
     @Transactional
     public ExportResult exportClaims() {
         String extractDate = LocalDate.now(utcClock).minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        List<ClaimEntity> claims = claimRepository.findAllForSdpSnapshotExport();
-        Map<UUID, SdpClaimSnapshotEntity> stored = sdpClaimSnapshotRepository
-            .findAllById(claims.stream().map(ClaimEntity::getId).toList()).stream()
-            .collect(Collectors.toMap(SdpClaimSnapshotEntity::getClaimId, Function.identity()));
+        List<UUID> ids = claimRepository.findAllIdsForSdpSnapshotExport();
+        log.info("SDP claim snapshot export started: {} claim(s)", ids.size());
         final String publishedDate = Instant.now(utcClock).toString();
         LocalDateTime now = LocalDateTime.now(utcClock);
 
         List<ClaimSnapshotRecord> records = new ArrayList<>();
         List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
-        for (ClaimEntity claim : claims) {
-            addIfChanged(claim, extractDate, publishedDate, stored, now, records, changed);
+        for (int i = 0; i < ids.size(); i += EXPORT_CHUNK_SIZE) {
+            List<UUID> chunk = ids.subList(i, Math.min(i + EXPORT_CHUNK_SIZE, ids.size()));
+            List<ClaimEntity> claims = claimRepository.findAllForSdpSnapshotExportById(chunk);
+            Map<UUID, SdpClaimSnapshotEntity> stored = sdpClaimSnapshotRepository.findAllById(chunk).stream()
+                .collect(Collectors.toMap(SdpClaimSnapshotEntity::getClaimId, Function.identity()));
+            for (ClaimEntity claim : claims) {
+                addIfChanged(claim, extractDate, publishedDate, stored, now, records, changed);
+            }
+            log.info(
+                "SDP claim snapshot export progress: {}/{} claim(s)",
+                Math.min(i + EXPORT_CHUNK_SIZE, ids.size()),
+                ids.size()
+            );
         }
         return writeAndUpload(extractDate, records, changed);
     }

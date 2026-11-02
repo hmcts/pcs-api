@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,12 +22,21 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
     Optional<ClaimEntity> findClaimByCaseReference(@Param("caseReference") long caseReference);
 
     @Query("""
+        SELECT c.id FROM ClaimEntity c
+        LEFT JOIN SdpClaimSnapshotEntity s ON s.claimId = c.id
+        WHERE s.claimId IS NULL OR c.lastModified > s.exportedAt
+        ORDER BY c.id
+        """)
+    List<UUID> findAllIdsForSdpSnapshotExport();
+
+    @Query("""
         SELECT DISTINCT c FROM ClaimEntity c
         JOIN FETCH c.pcsCase pc
         LEFT JOIN FETCH pc.tenancyLicence
         LEFT JOIN FETCH c.noticeOfPossession
         LEFT JOIN FETCH c.claimParties cp
         LEFT JOIN FETCH cp.party
+        WHERE c.id IN :ids
         """)
-    List<ClaimEntity> findAllForSdpSnapshotExport();
+    List<ClaimEntity> findAllForSdpSnapshotExportById(@Param("ids") Collection<UUID> ids);
 }

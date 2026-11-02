@@ -33,15 +33,18 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,9 +53,11 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.sdp.ExportService.EXPORT_CHUNK_SIZE;
 
 @ExtendWith(MockitoExtension.class)
 class ExportServiceTest {
@@ -168,7 +173,7 @@ class ExportServiceTest {
         ClaimEntity changedClaim = claim();
         ClaimEntity unchangedClaim = claim();
         unchangedClaim.setId(unchangedId);
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(changedClaim, unchangedClaim));
+        stubClaimsForExport(changedClaim, unchangedClaim);
         when(snapshotHasher.hash(any())).thenReturn(HASH);
         when(sdpClaimSnapshotRepository.findAllById(anyList())).thenReturn(List.of(
             SdpClaimSnapshotEntity.builder()
@@ -225,7 +230,7 @@ class ExportServiceTest {
     @Test
     void shouldSkipUploadWhenBlobUploaderIsNotAvailable() {
         exportService = exportService(Optional.empty());
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of());
+        stubClaimsForExport();
 
         ExportResult result = exportService.exportClaims();
 
@@ -238,7 +243,7 @@ class ExportServiceTest {
     void shouldExportClaimWhenTenancyLicenceIsMissing() throws Exception {
         ClaimEntity claimWithoutTenancy = claim();
         claimWithoutTenancy.getPcsCase().setTenancyLicence(null);
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithoutTenancy));
+        stubClaimsForExport(claimWithoutTenancy);
         when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
@@ -251,7 +256,7 @@ class ExportServiceTest {
     void shouldExportClaimWhenNoticeOfPossessionIsMissing() throws Exception {
         ClaimEntity claimWithoutNotice = claim();
         claimWithoutNotice.setNoticeOfPossession(null);
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithoutNotice));
+        stubClaimsForExport(claimWithoutNotice);
         when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
@@ -264,7 +269,7 @@ class ExportServiceTest {
     void shouldExportClaimWhenPartiesAreMissing() throws Exception {
         ClaimEntity claimWithoutParties = claim();
         claimWithoutParties.setClaimParties(null);
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithoutParties));
+        stubClaimsForExport(claimWithoutParties);
         when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
@@ -277,7 +282,7 @@ class ExportServiceTest {
     void shouldExportClaimWhenPartiesAreEmpty() throws Exception {
         ClaimEntity claimWithEmptyParties = claim();
         claimWithEmptyParties.setClaimParties(List.of());
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithEmptyParties));
+        stubClaimsForExport(claimWithEmptyParties);
         when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
@@ -324,7 +329,7 @@ class ExportServiceTest {
                 .claim(ClaimEntity.builder().id(UUID.randomUUID()).build())
                 .build()
         ));
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithDetails));
+        stubClaimsForExport(claimWithDetails);
         when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
@@ -346,7 +351,7 @@ class ExportServiceTest {
         claimWithNullParty.setClaimParties(List.of(
             ClaimPartyEntity.builder().role(PartyRole.DEFENDANT).build()
         ));
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claimWithNullParty));
+        stubClaimsForExport(claimWithNullParty);
         when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
@@ -355,14 +360,67 @@ class ExportServiceTest {
         assertThat(uploadedJson()).contains("\"parties\":[]");
     }
 
+    @Test
+    void shouldLoadClaimsInChunks() {
+        int claimCount = EXPORT_CHUNK_SIZE + 1;
+        List<UUID> ids = IntStream.range(0, claimCount).mapToObj(i -> UUID.randomUUID()).toList();
+        when(claimRepository.findAllIdsForSdpSnapshotExport()).thenReturn(ids);
+        when(claimRepository.findAllForSdpSnapshotExportById(any())).thenAnswer(invocation -> {
+            Collection<UUID> chunkIds = invocation.getArgument(0);
+            return chunkIds.stream().map(id -> {
+                ClaimEntity claim = claim();
+                claim.setId(id);
+                return claim;
+            }).toList();
+        });
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(claimCount);
+        verify(claimRepository, times(2)).findAllForSdpSnapshotExportById(any());
+    }
+
+    @Test
+    void shouldProcessOnlyIdsReturnedByDeltaQuery() {
+        ClaimEntity included = claim();
+        stubClaimsForExport(included);
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        verify(claimRepository).findAllIdsForSdpSnapshotExport();
+        verify(claimRepository).findAllForSdpSnapshotExportById(List.of(CLAIM_ID));
+    }
+
+    @Test
+    void shouldNotMarkLastModifiedWhenExporting() {
+        ClaimEntity claim = claim();
+        stubClaimsForExport(claim);
+        when(snapshotHasher.hash(any())).thenReturn(HASH);
+
+        exportService.exportClaims();
+
+        assertThat(claim.getLastModified()).isNull();
+    }
+
     private String uploadedJson() {
         verify(blobUploader).upload(any(), uploadedJsonCaptor.capture());
         return new String(uploadedJsonCaptor.getValue(), StandardCharsets.UTF_8);
     }
 
     private void givenClaimWithHash() {
-        when(claimRepository.findAllForSdpSnapshotExport()).thenReturn(List.of(claim()));
+        stubClaimsForExport(claim());
         when(snapshotHasher.hash(any())).thenReturn(HASH);
+    }
+
+    private void stubClaimsForExport(ClaimEntity... claims) {
+        List<UUID> ids = Arrays.stream(claims).map(ClaimEntity::getId).toList();
+        when(claimRepository.findAllIdsForSdpSnapshotExport()).thenReturn(ids);
+        if (!ids.isEmpty()) {
+            when(claimRepository.findAllForSdpSnapshotExportById(any())).thenReturn(List.of(claims));
+        }
     }
 
     private void givenStoredSnapshot(int version, String hash) {

@@ -39,7 +39,10 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +66,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENG
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(Instant.parse("2026-03-09T12:00:00Z"), ZoneOffset.UTC);
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -109,7 +113,8 @@ class PcsCaseServiceTest {
             postCodeCourtService,
             locationReferenceService,
             securityContextService,
-            defendantSupportEligibilityResolver
+            defendantSupportEligibilityResolver,
+            FIXED_UTC_CLOCK
         );
     }
 
@@ -468,6 +473,25 @@ class PcsCaseServiceTest {
         // Then
         verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
         assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
+    }
+
+    @Test
+    void shouldStampClaimsWhenPersistedCaseManagementLocationIsAllocated() {
+        int epimsId = 123456;
+        AddressEntity addressEntity = AddressEntity.builder().postcode("SW1A 1AA").build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .propertyAddress(addressEntity)
+            .legislativeCountry(ENGLAND)
+            .claims(List.of(claimEntity))
+            .build();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(postCodeCourtService.getCourtManagementLocation("SW1A 1AA", ENGLAND)).thenReturn(epimsId);
+
+        underTest.allocateCaseManagementLocation(CASE_REFERENCE);
+
+        assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(epimsId);
+        assertThat(claimEntity.getLastModified()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
     }
 
     @Test

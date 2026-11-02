@@ -101,6 +101,7 @@ public class LegalRepresentativePartyLinkService {
         }
         legalRepOrg.addParty(defendantPartyEntity);
         organisationRepository.save(legalRepOrg);
+        caseEntity.getClaims().getFirst().markLastModified(utcClock);
         notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
         outgoingRepresentative.ifPresent(outgoing -> notificationService
             .sendNoticeOfChangeNoLongerRepresentingEmailNotification(outgoing, defendantPartyEntity));

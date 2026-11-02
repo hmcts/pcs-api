@@ -85,6 +85,8 @@ class ClaimServiceTest {
                                         noticeOfPossessionService, statementOfTruthService, utcClock);
         lenient().when(claimRepository.save(any(ClaimEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
+        lenient().when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
     }
 
     @Test
@@ -110,6 +112,7 @@ class ClaimServiceTest {
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
+        assertThat(createdClaimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         assertThat(createdClaimEntity.getAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getDueToRentArrears()).isEqualTo(YesOrNo.NO);
         assertThat(createdClaimEntity.getPreActionProtocolFollowed()).isEqualTo(VerticalYesNo.YES);
@@ -443,13 +446,12 @@ class ClaimServiceTest {
     void shouldSetClaimIssuedDate() {
         // Given
         ClaimEntity claimEntity = ClaimEntity.builder().build();
-        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
 
         // When
         claimService.setClaimIssuedDate(claimEntity);
         verify(claimRepository, times(1)).save(claimEntity);
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
+        assertThat(claimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
     }
     
     private static Stream<Arguments> claimantTypeScenarios() {

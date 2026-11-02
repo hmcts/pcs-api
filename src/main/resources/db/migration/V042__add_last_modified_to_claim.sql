@@ -1,0 +1,2 @@
+ALTER TABLE public.claim
+    ADD COLUMN last_modified TIMESTAMP WITHOUT TIME ZONE;

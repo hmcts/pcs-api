@@ -21,6 +21,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.util.RevokeAccessHelper;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +43,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemoveP
 class RemovePartyServiceTest {
 
     private static final long TEST_CASE_REFERENCE = 1234L;
+    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(Instant.parse("2026-03-09T12:00:00Z"), ZoneOffset.UTC);
 
     @Mock
     private PartyService partyService;
@@ -56,7 +61,8 @@ class RemovePartyServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new RemovePartyService(
-            partyService, partyRepository, genAppRepository, counterClaimRepository, revokeAccessHelper);
+            partyService, partyRepository, genAppRepository, counterClaimRepository, revokeAccessHelper,
+            FIXED_UTC_CLOCK);
     }
 
     @Test
@@ -91,6 +97,7 @@ class RemovePartyServiceTest {
         assertThat(result.partyName()).isEqualTo("Billy Wright");
         assertThat(result.partyRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(result.partyLabel()).isEqualTo("Defendant 1");
+        assertThat(mainClaim.getLastModified()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(partyRepository).save(partyToRemove);
     }
 

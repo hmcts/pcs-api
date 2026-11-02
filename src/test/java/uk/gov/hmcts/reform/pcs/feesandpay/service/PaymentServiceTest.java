@@ -56,6 +56,9 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -88,6 +91,7 @@ class PaymentServiceTest {
     private static final String SERVICE_REQUEST_REFERENCE = "SR-123";
     private static final String CALLBACK_URL = "https://etc:123/service-request-update";
     private static final String HMCTS_ORG_ID = "TEST_ORG";
+    private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDateTime.of(2026, 3, 9, 12, 0);
 
     @Mock
     private PaymentsClient paymentsClient;
@@ -109,6 +113,8 @@ class PaymentServiceTest {
     private User user;
     @Mock
     private UserInfo userDetails;
+    @Mock
+    private Clock utcClock;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -125,6 +131,8 @@ class PaymentServiceTest {
     @BeforeEach
     void setUp() {
         lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_BEARER);
+        lenient().when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
 
         setPrivateField(underTest, "callbackUrl", CALLBACK_URL);
         setPrivateField(underTest, "hmctsOrgId", HMCTS_ORG_ID);
@@ -186,6 +194,7 @@ class PaymentServiceTest {
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
             assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
+            assertThat(saved.getClaim().getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         }
 
         @Test
@@ -220,7 +229,9 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(status.getValue())
                 .payment(payment).build();
 
+            ClaimEntity claimEntity = new ClaimEntity();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+                .claim(claimEntity)
                 .paymentStatus(status)
                 .serviceRequestReference(requestReference)
                 .externalReference(paymentReference)
@@ -244,6 +255,7 @@ class PaymentServiceTest {
             assertThat(paymentEntity.getServiceRequestReference()).isEqualTo(requestReference);
             assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
+            assertThat(claimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         }
 
         @Test
@@ -275,8 +287,12 @@ class PaymentServiceTest {
             PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
-            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
-                .serviceRequestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
+            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+                .claim(new ClaimEntity())
+                .paymentStatus(PaymentStatus.PAID)
+                .serviceRequestReference(requestReference)
+                .paymentCallbackHandlerType(CLAIM)
+                .build();
             when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
@@ -299,8 +315,11 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID).serviceRequestReference(requestReference)
-                .paymentCallbackHandlerType(CLAIM).build();
+                .claim(new ClaimEntity())
+                .paymentStatus(PaymentStatus.PAID)
+                .serviceRequestReference(requestReference)
+                .paymentCallbackHandlerType(CLAIM)
+                .build();
             when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
@@ -334,6 +353,7 @@ class PaymentServiceTest {
             FeePaymentEntity saved = captor.getValue();
 
             assertThat(saved.getClaim()).isSameAs(claimEntity);
+            assertThat(claimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         }

@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,6 +55,7 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
     private final IdamAuthenticator idamAuthenticator;
+    private final Clock utcClock;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -66,7 +68,8 @@ public class PaymentService {
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
                           OrganisationService organisationService,
-                          IdamAuthenticator idamAuthenticator) {
+                          IdamAuthenticator idamAuthenticator,
+                          @Qualifier("utcClock") Clock utcClock) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -76,6 +79,7 @@ public class PaymentService {
         this.objectMapper = objectMapper;
         this.organisationService = organisationService;
         this.idamAuthenticator = idamAuthenticator;
+        this.utcClock = utcClock;
     }
 
     /**
@@ -225,6 +229,7 @@ public class PaymentService {
 
                     callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity);
 
+                    feePaymentEntity.getClaim().markLastModified(utcClock);
                     feePaymentRepository.save(feePaymentEntity);
                 });
     }
@@ -256,6 +261,7 @@ public class PaymentService {
             .taskData(feesAndPayTaskDataAsString)
             .relatedEntityId(feesAndPayTaskData.getRelatedEntityId())
             .build();
+        claimEntity.markLastModified(utcClock);
         feePaymentRepository.save(feePaymentEntity);
     }
 
