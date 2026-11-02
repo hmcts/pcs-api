@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.BreathingSpaceNotSureContent;
 
@@ -30,7 +32,11 @@ class BreathingSpaceNotSureWritPageTest extends BasePageTest {
         void shouldReturnErrorWhenBreathingSpaceNotSure() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementOrder.builder().build())
+                .enforcementOrder(EnforcementOrder.builder()
+                                      .writDetails(WritDetails.builder()
+                                                       .defendantInBreathingSpace(YesNoNotSure.NOT_SURE)
+                                                       .build())
+                                      .build())
                 .build();
 
             // When
