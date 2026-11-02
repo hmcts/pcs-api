@@ -169,4 +169,20 @@ public class EventStates {
             State.ALL_FINAL_ORDERS_ISSUED
         };
     }
+
+    public static State[] recordWarrantOutcome() {
+        return new State[] {
+            State.CASE_PROGRESSION,
+            State.AWAITING_BAILIFF_ALLOCATION,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.AWAITING_SCHEDULING,
+            State.AWAITING_PROPERTY_VISIT,
+            State.AWAITING_ENFORCEMENT_OUTCOME,
+            State.CASE_STAYED,
+            State.BREATHING_SPACE,
+            State.CLOSED
+        };
+    }
 }
