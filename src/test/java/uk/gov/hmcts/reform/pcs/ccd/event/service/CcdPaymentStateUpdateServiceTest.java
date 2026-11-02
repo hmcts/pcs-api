@@ -11,7 +11,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
@@ -33,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforcementPayment;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR;
@@ -54,12 +54,15 @@ class CcdPaymentStateUpdateServiceTest {
     @Captor
     private ArgumentCaptor<SchedulableInstance<PaymentStateTaskData>> schedulableInstanceCaptor;
 
-    @InjectMocks
     private CcdPaymentStateUpdateService underTest;
 
     @BeforeEach
     void beforeEach() {
         paymentReference = UUID.randomUUID();
+        when(claimPaymentAction.eventId()).thenReturn(claimIssuePayment);
+        when(enforcementPaymentAction.eventId()).thenReturn(enforcementPayment);
+        underTest = new CcdPaymentStateUpdateService(schedulerClient, systemEventExecutor,
+                                                     List.of(claimPaymentAction, enforcementPaymentAction));
     }
 
     @ParameterizedTest

@@ -6,16 +6,16 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.event.action.ClaimPaymentAction;
-import uk.gov.hmcts.reform.pcs.ccd.event.action.EnforcementPaymentAction;
 import uk.gov.hmcts.reform.pcs.ccd.event.action.PaymentSuccessAction;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR;
 
@@ -29,13 +29,11 @@ public class CcdPaymentStateUpdateService {
 
     public CcdPaymentStateUpdateService(SchedulerClient schedulerClient,
                                         SystemEventExecutor systemEventExecutor,
-                                        ClaimPaymentAction claimPaymentAction,
-                                        EnforcementPaymentAction enforcementPaymentAction) {
+                                        List<PaymentSuccessAction> paymentSuccessActions) {
         this.schedulerClient = schedulerClient;
         this.systemEventExecutor = systemEventExecutor;
-        this.paymentSuccessActions = new HashMap<>();
-        this.paymentSuccessActions.put(claimPaymentAction.eventId(), claimPaymentAction);
-        this.paymentSuccessActions.put(enforcementPaymentAction.eventId(), enforcementPaymentAction);
+        this.paymentSuccessActions = paymentSuccessActions.stream()
+            .collect(Collectors.toUnmodifiableMap(PaymentSuccessAction::eventId, Function.identity()));
     }
 
     public void submitPaymentSuccess(long caseId, EventId eventId, PaymentStatusCallback paymentStatusCallback) {
