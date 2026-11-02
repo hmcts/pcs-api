@@ -113,6 +113,9 @@ withPipeline(type, product, component) {
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
       env.E2E_SUITE = "caseManagement"
     }
+     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement_test").size() > 0) {
+      env.E2E_SUITE = "enforcement"
+    }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
       env.E2E_SUITE = "noticeOfChange"
     }
@@ -214,6 +217,8 @@ withPipeline(type, product, component) {
       if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
         env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
+        // This install creates Camunda's ingress, so its hostname can take a few minutes to resolve.
+        sh "timeout 600 bash -c 'until curl -sfo /dev/null ${env.CAMUNDA_BASE_URL}/engine-rest/version; do sleep 15; done'"
         uploadDmnDiagrams()
         uploadBpmnDiagram()
       }

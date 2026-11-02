@@ -23,13 +23,13 @@ test.beforeEach(async ({ page }, testInfo) => {
   defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
-  
+
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
       payLoad: submitCaseApiData.submitCasePayloadNoDefendants
     });
   } else if (testInfo.title.includes('@onlyMain')) {
@@ -44,8 +44,8 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
       payLoad: submitCaseApiData.submitCasePayload
     });
     if (testInfo.title.includes('@allYES')) {

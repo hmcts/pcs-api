@@ -122,6 +122,7 @@ class TaskDescriptionServiceTest {
             return Stream.of(
                 Arguments.arguments(GenAppType.ADJOURN, "review-adjourn-gen-app"),
                 Arguments.arguments(GenAppType.SET_ASIDE, "review-set-aside-gen-app"),
+                Arguments.arguments(GenAppType.SUSPEND, "review-gen-app"),
                 Arguments.arguments(GenAppType.SOMETHING_ELSE, "review-gen-app")
             );
         }
