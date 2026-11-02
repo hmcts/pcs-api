@@ -85,21 +85,7 @@ withPipeline(type, product, component) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } 
-    else {
-
-      def hmcLabels = githubApi.getLabelsbyPattern(
-        env.BRANCH_NAME,
-        "pr-values:hmc-integration"
-      )
-
-      echo "BRANCH_NAME=${env.BRANCH_NAME}"
-      echo "HMC integration labels=${hmcLabels}"
-
-      if (hmcLabels.size() > 0) {
-        echo "Enabling high-level data setup for HMC integration"
-        enableHighLevelDataSetup()
-      }
-      
+    else {    
       env.CCD_ENABLED = "false"
     }
     // Work Allocation preview (pr-values:wa) — WA pods and Camunda
@@ -167,17 +153,9 @@ withPipeline(type, product, component) {
     env.SHUTTER_SERVICE = shutterService
 
     onPR{
+      env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:hmc-integration").size() > 0) {
-        env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
-        env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
-        env.CASE_TYPE_SUFFIX="pr ${CHANGE_ID}"
-        generateDefinitions(builder)
-        env.CASE_TYPE_SUFFIX=""
-      } else { 
-        env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-        env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      }
+      env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     }
     onMaster{
       if(env.ENVIRONMENT == "prod") {
