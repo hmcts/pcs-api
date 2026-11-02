@@ -1,6 +1,6 @@
 export const caseSummary = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'Case Summary',
+  mainHeader: 'Summary',
   nextStepEventList: 'Next step',
   amendRepresentativeDetails: 'Amend representative’s details',
   linkCaseEvent: 'Link cases',
@@ -29,5 +29,7 @@ export const caseSummary = {
   enterAGenApp: 'Enter a general application',
   manageParties: 'Manage parties',
   manageHearing: 'Manage hearing',
+  deleteDraftApplicationEvent: 'Delete draft application',
+  resumeDraftApplicationEvent: 'Resume draft application'
   addJudicialNote: 'Add a judicial note'
 }

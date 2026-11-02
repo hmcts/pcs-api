@@ -35,6 +35,7 @@ export class ActionEnforcementRegistry {
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['validateWritOrWarrantFeeAmount', new EnforcementAction()],
     ['validateGetQuoteFromBailiffLink', new EnforcementAction()],
+    ['deleteDraftApplication', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['confirmClaimTransferredToHighCourt', new EnforcementAction()],
     ['selectHaveHiredHCEO', new EnforcementAction()],
@@ -94,6 +95,7 @@ export class ActionEnforcementRegistry {
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['resumeDraftApplication', new EnforcementAction()]
   ]);
 
   static getAction(actionName: string): IAction {
