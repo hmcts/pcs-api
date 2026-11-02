@@ -8,7 +8,7 @@ public class BreathingSpaceNotSureContent {
         "You will not be able to submit this application if the "
             + "defendants are using the Breathing Space scheme";
 
-    public static final String ERROR_MESSAGE =
+    public static final String CANNOT_PROCEED_MESSAGE =
         "You cannot continue with this application while the "
             + "defendants are using the Breathing Space scheme.";
 
@@ -62,17 +62,17 @@ public class BreathingSpaceNotSureContent {
                    rel="noopener noreferrer">
                     find a court or tribunal service (opens in new tab)
                 </a>
-                to get your local court's email address.
+                to get your local court’s email address.
             </p>
 
             <p class="govuk-body">
-                If you're applying for a warrant and you do not know the name
+                If you’re applying for a warrant and you do not know the name
                 of your local court, select the 'Money' category and then
                 the 'Housing' category to find it.
             </p>
 
             <p class="govuk-body">
-                If you're applying for a writ and you do not know the name
+                If you’re applying for a writ and you do not know the name
                 of your local court, select the 'High Court district
                 registries' to find it.
             </p>

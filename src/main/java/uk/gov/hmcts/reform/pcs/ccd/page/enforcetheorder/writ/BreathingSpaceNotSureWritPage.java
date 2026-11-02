@@ -34,7 +34,7 @@ public class BreathingSpaceNotSureWritPage implements CcdPageConfiguration {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(
-                BreathingSpaceNotSureContent.ERROR_MESSAGE
+                BreathingSpaceNotSureContent.CANNOT_PROCEED_MESSAGE
             )
             .build();
     }

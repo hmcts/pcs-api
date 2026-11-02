@@ -39,7 +39,7 @@ class BreathingSpaceNotSurePageTest extends BasePageTest {
 
             // Then
             assertThat(response.getErrorMessageOverride())
-                .isEqualTo(BreathingSpaceNotSureContent.ERROR_MESSAGE);
+                .isEqualTo(BreathingSpaceNotSureContent.CANNOT_PROCEED_MESSAGE);
         }
     }
 

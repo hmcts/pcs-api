@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
@@ -12,9 +13,10 @@ public class UploadStatementPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("uploadStatementPage")
-            .pageLabel("Upload statement of payments due " + "and made under the judgment or order")
+            .pageLabel("Upload statement of payments due and made under the judgment or order")
             .label("uploadStatementPage-line-separator", "---")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW + " AND warrantDefendantMissedPayments=\"YES\"")
+            .showCondition(ShowConditions.and(ShowConditionsEnforcementType.WARRANT_FLOW,
+                                              "warrantDefendantMissedPayments=\"YES\""))
             .label("uploadStatementPage-save-and-return", SAVE_AND_RETURN);
     }
 
