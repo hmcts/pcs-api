@@ -35,6 +35,13 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 @AllArgsConstructor
 public class DeleteDraftResponse implements CCDConfig<PCSCase, State, UserRole> {
 
+    private static final String CONFIRMATION_BODY = """
+         ---
+         <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+         <span class="govuk-panel__title govuk-!-font-size-36">Your draft response has been deleted</span>
+         </div>
+        """;
+
     private final PcsCaseService pcsCaseService;
     private final OrganisationService organisationService;
     private final DefendantPartyExtractor defendantPartyExtractor;
@@ -77,7 +84,7 @@ public class DeleteDraftResponse implements CCDConfig<PCSCase, State, UserRole> 
         log.info("Deleted draft response for case {} and organisation {}", caseReference, organisationId);
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(getDraftDeletedConfirmationMarkdown())
+            .confirmationBody(CONFIRMATION_BODY)
             .build();
     }
 
@@ -92,14 +99,5 @@ public class DeleteDraftResponse implements CCDConfig<PCSCase, State, UserRole> 
         } else {
             throw new MultiplePartiesException("Deleting a draft response for multiple parties is not supported");
         }
-    }
-
-    private static String getDraftDeletedConfirmationMarkdown() {
-        return """
-             ---
-             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-             <span class="govuk-panel__title govuk-!-font-size-36">Your draft response has been deleted</span>
-             </div>
-            """;
     }
 }

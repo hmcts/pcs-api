@@ -96,7 +96,7 @@ class ClaimPackSelectorTest {
         assertThat(result.getFirst().documents()).containsExactly(claimForm);
         assertThat(result.get(1).recipientType()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(result.get(1).party()).isEqualTo(defendantA);
-        assertThat(result.get(1).documents()).containsExactly(claimForm, pinA);
+        assertThat(result.get(1).documents()).containsExactly(pinA, claimForm);
     }
 
     @Test
@@ -144,7 +144,7 @@ class ClaimPackSelectorTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().party()).isEqualTo(defendantA);
-        assertThat(result.getFirst().documents()).containsExactly(claimForm, pinA);
+        assertThat(result.getFirst().documents()).containsExactly(pinA, claimForm);
     }
 
     @Test
@@ -299,7 +299,7 @@ class ClaimPackSelectorTest {
         assertThat(result).extracting(ClaimPackCandidate::party)
             .containsExactlyElementsOf(release14Enabled ? List.of(defendantA) : List.of(claimant, defendantA));
         assertThat(result.getLast().recipientType()).isEqualTo(PartyRole.DEFENDANT);
-        assertThat(result.getLast().documents()).containsExactly(claimForm, pcsCase.getDocuments().getFirst());
+        assertThat(result.getLast().documents()).containsExactly(pcsCase.getDocuments().getFirst(), claimForm);
     }
 
     private PcsCaseEntity readyClaimCase() {
