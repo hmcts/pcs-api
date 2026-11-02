@@ -19,7 +19,7 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("hCEOfficerDetails")
-            .pageLabel("Your High Court enforcement officer")
+            .pageLabel("Your High Court Enforcement Officer")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
                                + " AND writHasHiredHighCourtEnforcementOfficer=\"YES\"")
             .label("hCEOfficerDetails-line-separator", "---")
