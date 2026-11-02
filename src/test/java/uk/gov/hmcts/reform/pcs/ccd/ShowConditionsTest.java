@@ -32,7 +32,7 @@ class ShowConditionsTest {
         RELEASE_1_DOT_2, "featureFlags.release1dot2Enabled",
         RELEASE_1_DOT_3, "featureFlags.release1dot3Enabled",
         RELEASE_1B, "featureFlags.release1bEnabled",
-            CUI_GENAPP_SET_ASIDE, "featureFlags.genAppCuiSetAsideEnabled",
+        CUI_GENAPP_SET_ASIDE, "featureFlags.cuiGenAppSetAsideEnabled",
         RELEASE_1_DOT_4, "featureFlags.release1dot4Enabled",
         CASEWORKER_EVENTS, "featureFlags.caseWorkerEventsEnabled",
         WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled",

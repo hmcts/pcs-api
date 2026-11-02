@@ -64,12 +64,12 @@ class HearingInNext14DaysTest extends BasePageTest {
     }
 
     @Test
-    void shouldOnlyShowOtherPartiesExplanationWhenGenAppCuiSetAsideEnabled() {
+    void shouldOnlyShowOtherPartiesExplanationWhenCuiGenAppSetAsideEnabledEnabled() {
         assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
             .filteredOn(field -> "hearingInNext14Days-info".equals(field.getId()))
             .singleElement()
             .satisfies(field -> assertThat(field.getShowCondition())
-                .isEqualTo("featureFlags.genAppCuiSetAsideEnabled=\"YES\""));
+                .isEqualTo("featureFlags.cuiGenAppSetAsideEnabled=\"YES\""));
     }
 
 }
