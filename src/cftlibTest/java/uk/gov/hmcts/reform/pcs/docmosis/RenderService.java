@@ -28,12 +28,10 @@ public class RenderService {
         log.info("Creating placeholder PDF for %s with output name %s"
                      .formatted(renderRequest.getTemplateName(), renderRequest.getOutputName()));
 
-        PDDocument document = new PDDocument();
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
 
-        PDPage page = new PDPage();
-        document.addPage(page);
-
-        try {
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
             PDRectangle mediaBox = page.getMediaBox();
 
@@ -49,17 +47,17 @@ public class RenderService {
             contentStream.showText("Data:");
             contentStream.newLineAtOffset(10, -20);
             renderRequest.getData().forEach(
-                    (key, value) -> {
-                        try {
-                            String renderValue = String.valueOf(value)
-                                    .replaceAll("\n", " ")
-                                    .replaceAll("\r", " ");
-                            contentStream.showText("%s: %s".formatted(key, renderValue));
-                            contentStream.newLineAtOffset(0, -18);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                (key, value) -> {
+                    try {
+                        String renderValue = String.valueOf(value)
+                            .replaceAll("\n", " ")
+                            .replaceAll("\r", " ");
+                        contentStream.showText("%s: %s".formatted(key, renderValue));
+                        contentStream.newLineAtOffset(0, -18);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
+                }
             );
 
             contentStream.endText();
@@ -68,7 +66,6 @@ public class RenderService {
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             document.save(outputStream);
-            document.close();
 
             return outputStream;
         } catch (IOException ioException) {

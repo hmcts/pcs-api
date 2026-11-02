@@ -24,7 +24,7 @@ public class WiremockConfiguration {
     @Bean
     public Path wiremockWorkingDirectory() throws IOException {
         Path wiremockWorkingDirectory = Files.createTempDirectory("cftlibtests").toAbsolutePath();
-        log.info("Wiremock working directory is " + wiremockWorkingDirectory);
+        log.info("Wiremock working directory is {}", wiremockWorkingDirectory);
         return wiremockWorkingDirectory;
     }
 
