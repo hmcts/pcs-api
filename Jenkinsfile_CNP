@@ -87,7 +87,16 @@ withPipeline(type, product, component) {
     } 
     else {
 
-      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:hmc-integration").size() > 0) {
+      def hmcLabels = githubApi.getLabelsbyPattern(
+        env.BRANCH_NAME,
+        "pr-values:hmc-integration"
+      )
+
+      echo "BRANCH_NAME=${env.BRANCH_NAME}"
+      echo "HMC integration labels=${hmcLabels}"
+
+      if (hmcLabels.size() > 0) {
+        echo "Enabling high-level data setup for HMC integration"
         enableHighLevelDataSetup()
       }
       
