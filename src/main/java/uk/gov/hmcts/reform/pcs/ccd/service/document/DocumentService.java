@@ -199,8 +199,7 @@ public class DocumentService {
 
     }
 
-    private DocumentType getDocumentTypeForCountry(AdditionalDocument document, LegislativeCountry legislativeCountry)
-    {
+    private DocumentType getDocumentTypeForCountry(AdditionalDocument document, LegislativeCountry legislativeCountry) {
         if (legislativeCountry == LegislativeCountry.WALES) {
             AdditionalDocumentTypeWales documentType = document.getDocumentTypeWales();
             document.setDocumentTypeWales(null);
