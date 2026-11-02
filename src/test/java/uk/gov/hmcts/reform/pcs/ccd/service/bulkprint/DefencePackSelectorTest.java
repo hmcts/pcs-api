@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,6 +70,7 @@ class DefencePackSelectorTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
         underTest = new DefencePackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
