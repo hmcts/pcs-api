@@ -473,6 +473,7 @@ class DocumentServiceTest {
         underTest.createAllDocuments(pcsCase);
 
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        verify(documentTypeMapper).mapToDocumentType(AdditionalDocumentType.TENANCY_AGREEMENT);
         assertThat(documentEntityListCaptor.getValue())
             .extracting(DocumentEntity::getType)
             .containsExactly(DocumentType.TENANCY_AGREEMENT);
@@ -503,6 +504,7 @@ class DocumentServiceTest {
         underTest.createAllDocuments(pcsCase);
 
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        verify(documentTypeMapper).mapToDocumentType(AdditionalDocumentType.OCCUPATION_LICENCE);
         assertThat(documentEntityListCaptor.getValue())
             .extracting(DocumentEntity::getType)
             .containsExactly(DocumentType.OCCUPATION_LICENCE);

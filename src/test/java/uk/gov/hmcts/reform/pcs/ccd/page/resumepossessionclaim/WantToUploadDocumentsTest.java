@@ -220,6 +220,36 @@ class WantToUploadDocumentsTest extends BasePageTest {
     }
 
     @Test
+    void shouldLeaveAdditionalDocumentsUnchangedWhenDraftCaseDataIsEmpty() {
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .description("Existing document")
+            .build();
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+            ListValue.<AdditionalDocument>builder()
+                .value(additionalDocument)
+                .build()
+        );
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .wantToUploadDocuments(VerticalYesNo.YES)
+            .additionalDocuments(additionalDocuments)
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(
+            TEST_CASE_REFERENCE,
+            EventId.resumePossessionClaim
+        )).thenReturn(Optional.empty());
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        assertThat(response.getData().getAdditionalDocuments()).isSameAs(additionalDocuments);
+        verify(draftCaseDataService).getUnsubmittedCaseData(
+            TEST_CASE_REFERENCE,
+            EventId.resumePossessionClaim
+        );
+    }
+
+    @Test
     void shouldMapAdditionalDocumentsToAdditionalDocumentsEnglandDocumentsWhenAdditionalDocumentsIsPresent() {
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.ENGLAND)

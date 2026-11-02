@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -41,7 +42,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     }
 
     @Test
-    void shouldNotReturnErrorsWhenEnglandDescriptionIsCorrectLength() {
+    void shouldNotReturnErrorsWhenEnglandDescriptionIsWithinLengthLimit() {
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
             .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
             .document(Document.builder().filename("evidence.pdf").build())
@@ -132,11 +133,12 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
             .contains("more than the maximum number of characters");
     }
 
-    @Test
-    void shouldCopyEnglandDocumentTypeOnSubmit() {
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentTypeEngland.class)
+    void shouldCopyEnglandDocumentTypeOnSubmit(AdditionalDocumentTypeEngland documentType) {
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
-            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
-            .document(Document.builder().filename("tenancy-agreement.pdf").build())
+            .documentTypeEngland(documentType)
+            .document(Document.builder().filename("evidence.pdf").build())
             .description("Valid description")
             .build();
 
@@ -152,11 +154,11 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
         AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(returnedDocument.getDocumentType().getValueLabel())
-            .isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT.getLabel());
+            .isEqualTo(documentType.getLabel());
     }
 
     @Test
-    void shouldNotReturnErrorsWhenWalesDescriptionIsCorrectLength() {
+    void shouldNotReturnErrorsWhenWalesDescriptionIsWithinLengthLimit() {
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
             .documentTypeWales(AdditionalDocumentTypeWales.WITNESS_STATEMENT)
             .document(Document.builder().filename("evidence.pdf").build())
@@ -200,11 +202,12 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
             .contains("more than the maximum number of characters");
     }
 
-    @Test
-    void shouldCopyWalesDocumentTypeOnSubmit() {
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentTypeWales.class)
+    void shouldCopyWalesDocumentTypeOnSubmit(AdditionalDocumentTypeWales documentType) {
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
-            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
-            .document(Document.builder().filename("occupation-licence.pdf").build())
+            .documentTypeWales(documentType)
+            .document(Document.builder().filename("evidence.pdf").build())
             .description("Valid description")
             .build();
 
@@ -220,7 +223,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
         AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(returnedDocument.getDocumentType().getValueLabel())
-            .isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE.getLabel());
+            .isEqualTo(documentType.getLabel());
     }
 
     @Test
