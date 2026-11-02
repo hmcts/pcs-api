@@ -5,7 +5,10 @@ import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolici
 import { CheckAction, ClickButtonAction, ClickRadioButtonAction, ClickTabAction, InputTextAction, SelectAction, UploadFileAction } from "@utils/actions/element-actions";
 import { ClickLinkAction } from "@utils/actions/element-actions/clickLink.action";
 import { ClickSummaryAction } from "@utils/actions/element-actions/clickSummary.action";
-import { IAction } from "@utils/interfaces";
+import {actionRecord, IAction} from "@utils/interfaces";
+import {
+  ErrorValidationAction
+} from "@utils/actions/custom-actions/custom-actions-genApps/genAppsErrorValidation.action";
 
 
 export class ActionGenAppsRegistry {
@@ -60,6 +63,9 @@ export class ActionGenAppsRegistry {
     ['navigateToSummaryPage', new GenAppsAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
+    ['inputErrorValidation', new GenAppsAction()],
+    ['errorValidationChooseAnApplicationPage', new ErrorValidationAction()]
+
   ]);
 
   static getAction(actionName: string): IAction {

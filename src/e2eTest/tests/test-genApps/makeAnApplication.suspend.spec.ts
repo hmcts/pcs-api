@@ -81,7 +81,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
 
       await test.step(`When the user selects the Suspend the Eviction option`, async () => {
         await performValidation('mainHeader', chooseAnApplication.mainHeader);
-        //await performAction('errorValidationChooseAnApplicationPage', chooseAnApplication.errorValidation);
+        await performAction('errorValidationChooseAnApplicationPage', chooseAnApplication.errorValidation);
         await performAction('chooseAnApplication', {
           question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
           option: chooseAnApplication.suspendTheEvictionRadioOption,
