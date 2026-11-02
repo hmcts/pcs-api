@@ -114,18 +114,19 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         SubmittedCase submittedCase = getSubmittedCase(caseReference, state);
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+        PcsCaseEntity pcsCaseEntity = submittedCase.pcsCaseEntity();
 
         if (hasUnsubmittedCaseData) {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
                     draft -> {
-                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
+                        caseTabView.setDraftCaseTabFields(pcsCase, draft, pcsCaseEntity);
                         },
-                    () -> caseTabView.setCaseTabFields(pcsCase)
+                    () -> caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity)
                 );
         } else {
-            caseTabView.setCaseTabFields(pcsCase);
+            caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity);
         }
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
@@ -242,7 +243,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                                class="govuk-button">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
@@ -258,7 +259,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                                class="govuk-button">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
