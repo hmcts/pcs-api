@@ -72,7 +72,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       tag: ['@smoke', '@regression'],
       annotation: [
         { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9114` },
-        { type: 'ac', description: 'AC1, AC3-AC9' },
+        { type: 'ac', description: 'AC1-AC9' },
       ],
     },
     async () => {

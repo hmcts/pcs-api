@@ -88,6 +88,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('doYouNeedHelpPayingFee', {
       question: doYouNeedHelpPayingTheFeeSetaside.doYouNeedHelpPayingTheFeeQuestion,
       option: doYouNeedHelpPayingTheFeeSetaside.noRadioOption,
+      continueButton: doYouNeedHelpPayingTheFeeSetaside.continueButton
     });
     await performAction('confirmOtherPartiesAgreed', {
       question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
