@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
@@ -30,6 +31,18 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
+
+    @CCD (
+        label = "Is the defendant currently in a breathing space?"
+    )
+    private YesNoNotSure defendantInBreathingSpace;
+
+    @CCD(
+        label = "Have the defendants missed any payments?",
+        hint = "These are payments outlined in the suspended order for possession.  "
+            + "They were ordered to make these payments by the judge."
+    )
+    private VerticalYesNo defendantMissedPayments;
 
     @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
