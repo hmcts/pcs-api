@@ -674,12 +674,14 @@ class DraftCaseDataServiceTest {
         PCSCase draftCaseData = mock(PCSCase.class);
         PossessionClaimResponse possessionClaimResponse = mock(PossessionClaimResponse.class);
 
+        DefendantResponses defendantResponses = mock(DefendantResponses.class);
+
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
             CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(draftJson);
         when(objectMapper.readValue(draftJson, PCSCase.class)).thenReturn(draftCaseData);
         when(draftCaseData.getPossessionClaimResponse()).thenReturn(possessionClaimResponse);
-        when(possessionClaimResponse.getDefendantResponses()).thenReturn(mock(DefendantResponses.class));
+        when(possessionClaimResponse.getDefendantResponses()).thenReturn(defendantResponses);
 
         // When
         boolean hasMeaningfulRespondDraft =
