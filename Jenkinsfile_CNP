@@ -152,9 +152,15 @@ withPipeline(type, product, component) {
     env.SHUTTER_SERVICE = shutterService
 
     onPR{
-      env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:hmc-integration").size() > 0) {
+        env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
+        env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+        env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
+      } else { 
+        env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+        env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      }
     }
     onMaster{
       if(env.ENVIRONMENT == "prod") {
