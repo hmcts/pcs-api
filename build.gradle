@@ -360,7 +360,8 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
       // Covered by MakeOrderIT, which runs in the integration suite rather than before this scan.
       "**/uk/gov/hmcts/reform/pcs/ccd/event/order/**/*.java"
-    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
+    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/entity/enforcetheorder/WarrantEntity.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentamend/DocumentAmendDetails.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentremoval/DocumentRemovalDetails.java,"
@@ -399,7 +400,7 @@ ext {
   lombokVersion = "1.18.48"
   springSecurityVersion = "6.5.11"
   pactVersion = "4.7.6"
-  tomcatEmbedVersion = "11.0.26"
+  tomcatEmbedVersion = "11.0.27"
   nettyVersion = "4.1.137.Final"
   httpClient5Version = "5.6.5"
   httpCore5Version = "5.4.3"
