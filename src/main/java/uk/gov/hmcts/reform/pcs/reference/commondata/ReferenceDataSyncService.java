@@ -24,6 +24,7 @@ import java.util.Set;
 public class ReferenceDataSyncService {
 
     private static final String ACTIVE_FLAG = "Y";
+    private static final char NON_BREAKING_SPACE = '\u00A0';
 
     private final CommonDataApi commonDataApi;
     private final AuthTokenGenerator authTokenGenerator;
@@ -156,7 +157,18 @@ public class ReferenceDataSyncService {
         if (value == null) {
             return null;
         }
-        String trimmed = value.replaceAll("^[\\s\\u00A0]+|[\\s\\u00A0]+$", "");
-        return trimmed.isEmpty() ? null : trimmed;
+        int start = 0;
+        int end = value.length();
+        while (start < end && isPadding(value.charAt(start))) {
+            start++;
+        }
+        while (end > start && isPadding(value.charAt(end - 1))) {
+            end--;
+        }
+        return start == end ? null : value.substring(start, end);
+    }
+
+    private boolean isPadding(char character) {
+        return Character.isWhitespace(character) || character == NON_BREAKING_SPACE;
     }
 }

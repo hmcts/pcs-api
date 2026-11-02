@@ -1,9 +1,15 @@
 package uk.gov.hmcts.reform.pcs.reference.commondata;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,5 +48,36 @@ class ReferenceDataSourceTest {
 
         // then
         assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void shouldOnlyReferenceTablesCreatedByFlywayWithKeyAndActiveColumns() throws IOException {
+        // given
+        String migrations = readMigrations();
+
+        // when / then
+        for (ReferenceDataSource source : ReferenceDataSource.values()) {
+            Matcher definition = Pattern
+                .compile("CREATE TABLE public\\." + Pattern.quote(source.getTableName()) + "\\s*\\((.*?)\\);",
+                         Pattern.DOTALL)
+                .matcher(migrations);
+
+            assertThat(definition.find())
+                .as("Flyway creates table %s", source.getTableName())
+                .isTrue();
+            assertThat(definition.group(1))
+                .as("table %s columns", source.getTableName())
+                .containsPattern("(?m)^\\s*key\\s")
+                .containsPattern("(?m)^\\s*active\\s");
+        }
+    }
+
+    private String readMigrations() throws IOException {
+        StringBuilder migrations = new StringBuilder();
+        for (Resource migration : new PathMatchingResourcePatternResolver()
+            .getResources("classpath:db/migration/*.sql")) {
+            migrations.append(migration.getContentAsString(StandardCharsets.UTF_8)).append('\n');
+        }
+        return migrations.toString();
     }
 }

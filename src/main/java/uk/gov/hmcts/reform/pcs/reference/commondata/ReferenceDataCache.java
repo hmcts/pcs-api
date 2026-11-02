@@ -25,11 +25,11 @@ public class ReferenceDataCache {
         return table;
     }
 
-    public Optional<ReferenceRecord> find(ReferenceDataSource source, String key) {
+    Optional<ReferenceRecord> find(ReferenceDataSource source, String key) {
         return Optional.ofNullable(tables.get(source)).map(table -> table.records().get(key));
     }
 
-    public Map<String, ReferenceRecord> records(ReferenceDataSource source) {
+    Map<String, ReferenceRecord> records(ReferenceDataSource source) {
         ReferenceTable table = tables.get(source);
         return table == null ? Map.of() : table.records();
     }
