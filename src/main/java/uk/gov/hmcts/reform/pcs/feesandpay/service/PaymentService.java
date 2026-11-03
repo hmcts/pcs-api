@@ -229,7 +229,7 @@ public class PaymentService {
 
                     callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity);
 
-                    feePaymentEntity.getClaim().markLastModified(utcClock);
+                    feePaymentEntity.markLastModified(utcClock);
                     feePaymentRepository.save(feePaymentEntity);
                 });
     }
@@ -261,7 +261,7 @@ public class PaymentService {
             .taskData(feesAndPayTaskDataAsString)
             .relatedEntityId(feesAndPayTaskData.getRelatedEntityId())
             .build();
-        claimEntity.markLastModified(utcClock);
+        feePaymentEntity.markLastModified(utcClock);
         feePaymentRepository.save(feePaymentEntity);
     }
 

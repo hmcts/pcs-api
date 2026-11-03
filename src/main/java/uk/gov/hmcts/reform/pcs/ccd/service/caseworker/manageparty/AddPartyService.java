@@ -43,7 +43,10 @@ public class AddPartyService {
         partyRepository.save(partyToAdd);
 
         claimEntity.addParty(partyToAdd, toPartyRole(partyType), actingForParty);
-        claimEntity.markLastModified(utcClock);
+        var claimParties = claimEntity.getClaimParties();
+        if (claimParties != null && !claimParties.isEmpty()) {
+            claimParties.getLast().markLastModified(utcClock);
+        }
         claimRepository.save(claimEntity);
     }
 

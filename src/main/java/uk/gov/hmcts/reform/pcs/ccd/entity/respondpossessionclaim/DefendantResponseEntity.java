@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -173,6 +174,12 @@ public class DefendantResponseEntity {
     private String channel;
 
     private String ingestionSource;
+
+    private LocalDateTime lastModified;
+
+    public void markLastModified(Clock clock) {
+        this.lastModified = LocalDateTime.now(clock);
+    }
 
     public void setHouseholdCircumstances(HouseholdCircumstancesEntity householdCircumstances) {
         if (this.householdCircumstances != null) {

@@ -16,6 +16,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+
 @Entity
 @Builder
 @Getter
@@ -50,5 +53,11 @@ public class ClaimPartyEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "acting_for_party_id")
     private PartyEntity actingForParty;
+
+    private LocalDateTime lastModified;
+
+    public void markLastModified(Clock clock) {
+        this.lastModified = LocalDateTime.now(clock);
+    }
 
 }

@@ -181,7 +181,7 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getStatus()).isEqualTo(DefendantResponseStatus.SUBMITTED);
         assertThat(savedResponse.getResponseSubmittedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
-        verify(claimEntity).markLastModified(FIXED_UTC_CLOCK);
+        verify(claimEntity, never()).markLastModified(FIXED_UTC_CLOCK);
 
     }
 

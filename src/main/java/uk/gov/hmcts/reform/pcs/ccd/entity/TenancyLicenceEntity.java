@@ -22,7 +22,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -69,4 +71,10 @@ public class TenancyLicenceEntity {
     private VerticalYesNo hasCopyOfTenancyLicence;
 
     private String reasonsForNoTenancyLicence;
+
+    private LocalDateTime lastModified;
+
+    public void markLastModified(Clock clock) {
+        this.lastModified = LocalDateTime.now(clock);
+    }
 }

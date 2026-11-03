@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -82,5 +83,11 @@ public class FeePaymentEntity {
     private String taskData;
 
     private UUID relatedEntityId;
+
+    private LocalDateTime lastModified;
+
+    public void markLastModified(Clock clock) {
+        this.lastModified = LocalDateTime.now(clock);
+    }
 
 }

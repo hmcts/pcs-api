@@ -190,7 +190,7 @@ public class DefendantResponseService {
 
         buildStatementOfTruth(responses, responseEntity, journeyType);
 
-        claimRef.markLastModified(utcClock);
+        responseEntity.markLastModified(utcClock);
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
         List<DocumentEntity> uploadedDocuments = documentService.createDefendantUploadedDocuments(

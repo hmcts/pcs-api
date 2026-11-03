@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -143,6 +144,10 @@ public class PcsCaseEntity {
     private String caseSubtypeKey;
 
     private LocalDateTime lastModifiedDatetime;
+
+    public void markLastModified(Clock clock) {
+        this.lastModifiedDatetime = LocalDateTime.now(clock);
+    }
 
     public ClaimEntity getMainClaim() {
         return !claims.isEmpty() ? claims.getFirst() : null;

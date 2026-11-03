@@ -24,7 +24,34 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
     @Query("""
         SELECT c.id FROM ClaimEntity c
         LEFT JOIN SdpClaimSnapshotEntity s ON s.claimId = c.id
-        WHERE s.claimId IS NULL OR c.lastModified > s.exportedAt
+        LEFT JOIN c.pcsCase pc
+        LEFT JOIN pc.tenancyLicence tl
+        LEFT JOIN c.noticeOfPossession n
+        WHERE s.claimId IS NULL
+           OR c.lastModified > s.exportedAt
+           OR pc.lastModifiedDatetime > s.exportedAt
+           OR tl.lastModified > s.exportedAt
+           OR n.lastModified > s.exportedAt
+           OR EXISTS (
+                SELECT 1 FROM FeePaymentEntity fp
+                WHERE fp.claim = c AND fp.lastModified > s.exportedAt
+           )
+           OR EXISTS (
+                SELECT 1 FROM ClaimPartyEntity cp
+                WHERE cp.claim = c AND cp.lastModified > s.exportedAt
+           )
+           OR EXISTS (
+                SELECT 1 FROM ClaimPartyOrganisationEntity o, ClaimPartyEntity cp
+                WHERE o.party = cp.party AND cp.claim = c AND o.lastModified > s.exportedAt
+           )
+           OR EXISTS (
+                SELECT 1 FROM ClaimGroundEntity g
+                WHERE g.claim = c AND g.lastModified > s.exportedAt
+           )
+           OR EXISTS (
+                SELECT 1 FROM DefendantResponseEntity r
+                WHERE r.claim = c AND r.lastModified > s.exportedAt
+           )
         ORDER BY c.id
         """)
     List<UUID> findAllIdsForSdpSnapshotExport();

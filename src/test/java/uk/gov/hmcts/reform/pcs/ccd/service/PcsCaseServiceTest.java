@@ -491,7 +491,8 @@ class PcsCaseServiceTest {
         underTest.allocateCaseManagementLocation(CASE_REFERENCE);
 
         assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(epimsId);
-        assertThat(claimEntity.getLastModified()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
+        assertThat(claimEntity.getLastModified()).isNull();
+        assertThat(pcsCaseEntity.getLastModifiedDatetime()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
     }
 
     @Test

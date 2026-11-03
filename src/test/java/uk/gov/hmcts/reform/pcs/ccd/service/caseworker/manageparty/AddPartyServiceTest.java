@@ -82,7 +82,6 @@ class AddPartyServiceTest {
 
         verify(partyRepository).save(createdParty);
         verify(claimEntity).addParty(createdParty, PartyRole.CLAIMANT, null);
-        verify(claimEntity).markLastModified(FIXED_UTC_CLOCK);
         verify(claimRepository).save(claimEntity);
         verify(partyRepository, never()).findById(any());
     }

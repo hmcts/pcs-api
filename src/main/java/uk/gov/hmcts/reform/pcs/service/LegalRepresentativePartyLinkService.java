@@ -100,8 +100,12 @@ public class LegalRepresentativePartyLinkService {
             legalRepOrg = createNewLegalRepresentative(orgId, legalRepEmail, orgDetails, caseEntity);
         }
         legalRepOrg.addParty(defendantPartyEntity);
+        if (defendantPartyEntity.getClaimPartyOrganisationList() != null) {
+            defendantPartyEntity.getClaimPartyOrganisationList().stream()
+                .filter(link -> link.getLastModified() == null)
+                .forEach(link -> link.markLastModified(utcClock));
+        }
         organisationRepository.save(legalRepOrg);
-        caseEntity.getClaims().getFirst().markLastModified(utcClock);
         notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
         outgoingRepresentative.ifPresent(outgoing -> notificationService
             .sendNoticeOfChangeNoLongerRepresentingEmailNotification(outgoing, defendantPartyEntity));

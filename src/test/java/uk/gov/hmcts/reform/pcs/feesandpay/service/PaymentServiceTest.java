@@ -194,7 +194,8 @@ class PaymentServiceTest {
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
             assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
-            assertThat(saved.getClaim().getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
+            assertThat(saved.getClaim().getLastModified()).isNull();
+            assertThat(saved.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         }
 
         @Test
@@ -255,7 +256,8 @@ class PaymentServiceTest {
             assertThat(paymentEntity.getServiceRequestReference()).isEqualTo(requestReference);
             assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
-            assertThat(claimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
+            assertThat(claimEntity.getLastModified()).isNull();
+            assertThat(paymentEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         }
 
         @Test
@@ -353,7 +355,8 @@ class PaymentServiceTest {
             FeePaymentEntity saved = captor.getValue();
 
             assertThat(saved.getClaim()).isSameAs(claimEntity);
-            assertThat(claimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
+            assertThat(claimEntity.getLastModified()).isNull();
+            assertThat(saved.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         }
