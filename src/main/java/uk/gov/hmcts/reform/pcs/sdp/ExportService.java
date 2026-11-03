@@ -130,7 +130,7 @@ public class ExportService {
                     .collect(Collectors.toMap(SdpClaimSnapshotEntity::getClaimId, Function.identity()));
                 List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
                 for (SdpClaimSnapshotHeader header : headers) {
-                    writeIfChanged(
+                    writeClaim(
                         header,
                         parties.getOrDefault(header.claimId(), List.of()),
                         payments.getOrDefault(header.claimId(), List.of()),
@@ -161,7 +161,7 @@ public class ExportService {
         }
     }
 
-    private void writeIfChanged(SdpClaimSnapshotHeader header,
+    private void writeClaim(SdpClaimSnapshotHeader header,
                                 List<SdpClaimSnapshotParty> parties,
                                 List<SdpClaimSnapshotPayment> payments,
                                 List<SdpClaimSnapshotGround> grounds,
