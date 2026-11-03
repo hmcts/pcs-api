@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
@@ -350,6 +351,38 @@ class WarrantDetailsMapperTest {
         // Then
         assertThat(result.getDefendantsDOBKnown()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getDefendantsDOBDetails()).isNull();
+    }
+
+    @ParameterizedTest
+    @EnumSource(YesNoNotSure.class)
+    void shouldMapDefendantInBreathingSpace(YesNoNotSure defendantInBreathingSpace) {
+        // Given
+        WarrantDetails warrantDetails = WarrantDetails.builder()
+            .defendantInBreathingSpace(defendantInBreathingSpace)
+            .build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
+
+        // When
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
+
+        // Then
+        assertThat(result.getDefendantInBreathingSpace()).isEqualTo(defendantInBreathingSpace);
+    }
+
+    @ParameterizedTest
+    @EnumSource(VerticalYesNo.class)
+    void shouldMapDefendantsMissedPayments(VerticalYesNo defendantMissedPayments) {
+        // Given
+        WarrantDetails warrantDetails = WarrantDetails.builder()
+            .defendantMissedPayments(defendantMissedPayments)
+            .build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
+
+        // When
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
+
+        // Then
+        assertThat(result.getDefendantMissedPayments()).isEqualTo(defendantMissedPayments);
     }
 
     @Test

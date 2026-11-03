@@ -55,6 +55,7 @@ export class ActionEnforcementRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
@@ -92,7 +93,14 @@ export class ActionEnforcementRegistry {
     ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
+    ['isDefendantInBreathingSpace', new EnforcementAction()],
+    ['missedPayments', new EnforcementAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['getCaseAPI', new CreateCaseAPIAction()],
+    ['errorValidationIsDefendantInBreathingSpacePage', new ErrorValidationAction()],
+    ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
+    ['cannotApplyForWarrantInfo', new EnforcementAction()],
+    ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {
