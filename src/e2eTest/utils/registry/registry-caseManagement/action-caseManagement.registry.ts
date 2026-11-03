@@ -100,7 +100,7 @@ export class ActionCMRegistry {
     ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
     ['validateFullPartyDetails', new CaseManagementAction()],
     ['confirmRemoveParty', new CaseManagementAction()],
-    ['inputProvidedInRecitals', new CaseManagementAction()],
+    ['makeAnOrderDetailsProvided', new CaseManagementAction()],
     ['verifySavedDraftOrderDetails', new CaseManagementAction()],
   ]);
 

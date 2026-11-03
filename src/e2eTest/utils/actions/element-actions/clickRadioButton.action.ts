@@ -10,6 +10,7 @@ export class ClickRadioButtonAction implements IAction {
     const option = params.option as string;
 
     const patterns = [
+      () => this.radioPattern6(page, question, option, idx),
       () => this.radioPattern1(page, question, option, idx),
       () => this.radioPattern2(page, question, option, idx),
       () => this.radioPattern4(page, question, option, idx),
@@ -23,6 +24,7 @@ export class ClickRadioButtonAction implements IAction {
     if (question) {
       await waitForInteractive(
         anyOf(
+          this.radioPattern6(page, question, option, idx),
           this.radioPattern1(page, question, option, idx),
           this.radioPattern2(page, question, option, idx),
           this.radioPattern4(page, question, option, idx),
@@ -85,6 +87,16 @@ export class ClickRadioButtonAction implements IAction {
 
   private radioPattern5(page: Page, question: string, option: string, idx: number) {
     return page.getByLabel(option, { exact: true });
+  }
+
+  private radioPattern6(page: Page, question: string, option: string, idx: number) {
+    return page.locator('[data-attendance-row]')
+      .filter({ has: page.getByText(question, { exact: true }) })
+      .nth(idx)
+      .locator('.govuk-radios__item')
+      .filter({ has: page.locator('label').getByText(option, { exact: true }) })
+      .locator('input[type="radio"]');
+
   }
 }
 

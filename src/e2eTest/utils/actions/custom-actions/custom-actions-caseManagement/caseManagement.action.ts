@@ -88,8 +88,8 @@ export class CaseManagementAction implements IAction {
       ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
       ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
-      ['inputProvidedInRecitals',() => this.inputProvidedInRecitals(fieldName as actionRecord)],
-      ['verifySavedDraftOrderDetails', () => this.verifySavedDraftOrderDetails(page)],
+      ['makeAnOrderDetailsProvided', () => this.makeAnOrderDetailsProvided(fieldName as actionRecord)],
+      ['verifySavedDraftOrderDetails', () => this.verifySavedDraftOrderDetails(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -925,28 +925,83 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
-  private async inputProvidedInRecitals(inputData: actionRecord): Promise<void> {
-    let submitPayLoad = inputData.submitPayload as Record<string, any>;
+
+  private async makeAnOrderDetailsProvided (orderData: actionRecord ): Promise<void> {
+    let submitPayLoad = orderData.submitPayload as Record<string, any>;
     await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
     });
+    const claimantName = submitPayLoad.claimantName;
+    const firstName = submitPayLoad.defendant1.firstName;
+    const lastName = submitPayLoad.defendant1.lastName;
+    const claimantLabel = `${makeAnOrder.claimantLabel} ${claimantName}`;
+    const defendantLabel = `${makeAnOrder.defendantLabel} ${firstName} ${lastName}`;
     await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
+    await performAction('clickRadioButton', {question: claimantLabel, option: orderData.claimantRadioOption});
+    await performAction('clickRadioButton', {question: defendantLabel, option: orderData.defendantRadioOption});
     await performAction('check', makeAnOrder.recitalCheckBox);
-    await performAction('inputText', inputData.label, CaseManagementCommonUtils.generateRandomString(inputData.recitalInput as number));
-    await performAction('clickButton', inputData.button);
+    await performAction('inputText', orderData.label, orderData.recitalInput);
+    await performAction('clickRadioButton', { question: orderData.question, option: orderData.option });
+    await performAction('clickRadioButton', { question: orderData.question1, option: orderData.option1 });
+    await performAction('check', {question: orderData.question2, option: orderData.option2 });
+    await performAction('check', makeAnOrder.costCheckBox);
+    await performAction('clickRadioButton', { question: orderData.question3, option: orderData.option3 });
+    await performAction('clickButton', orderData.button);
   }
 
-  private async verifySavedDraftOrderDetails(page: Page): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
-    });
-    await expect(
-      page.getByRole('checkbox', { name: makeAnOrder.recitalCheckBox })
-    ).toBeChecked();
+  private async verifySavedDraftOrderDetails(page: Page, prePopulatedData: actionRecord): Promise<void> {
+    const items = Array.isArray(prePopulatedData.inputData)
+      ? prePopulatedData.inputData
+      : [prePopulatedData.inputData];
+
+    for (const item of items) {
+      switch (item.type) {
+        case 'radio': {
+          const attendanceRow = page.locator('[data-attendance-row]').filter({has: page.getByText(item.inputRadioQuestion, {exact: true})});
+
+          if (await attendanceRow.count() > 0) {
+            const selectedRadio = attendanceRow.locator('input[type="radio"]:checked');
+            await expect(selectedRadio).toHaveCount(1);
+            const selectedValue = await selectedRadio.getAttribute('value');
+            const selectedLabel = await selectedRadio.locator('xpath=following-sibling::label').textContent();
+
+            expect(
+              selectedLabel?.trim().includes(item.expectedAnswer),
+              `Expected ${item.expectedAnswer}, but selected value was ${selectedValue}`
+            ).toBe(true);
+
+          } else {
+            await performValidation(
+              'validateRadioButtonValues',
+              {question: item.inputRadioQuestion},
+              {expected: item.expectedAnswer}
+            );
+          }
+          break;
+        }
+        case 'inputText': {
+          await performValidation(
+            'validateInputTextValues',
+            {textLabel: item.inputTextLabel, locatorType: item.locatorType},
+            {expected: item.expectedAnswer}
+          );
+          break;
+        }
+
+        case 'checkBox': {
+          await performValidation(
+            'validateCheckBoxSelection',
+            {question: item.inputCheckBoxQuestion, locatorType: item.locatorType},
+            {expected: item.expectedAnswer},
+          );
+          break;
+        }
+        default:
+          throw new Error(`Unsupported pre-populated data type: ${item.type}`);
+      }
+    }
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
