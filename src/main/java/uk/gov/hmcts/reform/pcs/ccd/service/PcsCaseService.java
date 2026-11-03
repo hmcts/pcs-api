@@ -8,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -83,6 +84,10 @@ public class PcsCaseService {
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
+        patchCaseFlags(caseReference, pcsCase, pcsCase.getParties());
+    }
+
+    public void patchCaseFlags(long caseReference, PCSCase pcsCase, List<ListValue<Party>> parties) {
         if (pcsCase == null) {
             throw new IllegalArgumentException("PCSCase cannot be null");
         }
@@ -90,14 +95,14 @@ public class PcsCaseService {
 
         if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null) {
             List<CaseFlagEntity> mergedFlagDetails = caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(),
-                pcsCaseEntity);
+                                                                                    pcsCaseEntity);
 
             pcsCaseEntity.getCaseFlags().clear();
             pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
         }
 
-        if (pcsCase.getParties() != null) {
-            caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity.getParties());
+        if (parties != null) {
+            caseFlagService.mergePartyFlags(parties, pcsCaseEntity.getParties());
         }
     }
 
