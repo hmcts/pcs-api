@@ -83,11 +83,11 @@ public class ClaimPackSelector {
                 continue;
             }
             List<DocumentEntity> unsent = new ArrayList<>();
-            if (!sent.contains(key(defendant, claimForm))) {
-                unsent.add(claimForm);
-            }
             if (!sent.contains(key(defendant, accessCode))) {
                 unsent.add(accessCode);
+            }
+            if (!sent.contains(key(defendant, claimForm))) {
+                unsent.add(claimForm);
             }
             if (!unsent.isEmpty()) {
                 candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent));
