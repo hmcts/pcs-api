@@ -363,7 +363,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
           label2: sotWarrant.nameOfFirmHiddenTextLabel,
           input2: sotWarrant.nameOfFirmHiddenTextInput,
-          nextPage: checkYourAnswersEnforcement.mainHeader
+          nextPage: checkYourAnswersEnforcement.mainHeader,
+          continueButton: sotWarrant.continueButton
         });
       });
 
@@ -494,7 +495,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input1: sotWarrant.nameOfFirmHiddenTextInput,
       label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
       input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswersEnforcement.mainHeader
+      nextPage: checkYourAnswersEnforcement.mainHeader,
+      continueButton: sotWarrant.continueButton
     });
     await performAction('continueFromCYAPage', {
       nextPage: payClaimFeeWarrant.mainHeader
@@ -623,7 +625,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
       label2: sotWarrant.nameOfFirmHiddenTextLabel,
       input2: sotWarrant.nameOfFirmHiddenTextInput,
-      nextPage: checkYourAnswersEnforcement.mainHeader
+      nextPage: checkYourAnswersEnforcement.mainHeader,
+      continueButton: sotWarrant.continueButton
     });
     await performAction('continueFromCYAPage', {
       nextPage: payClaimFeeWarrant.mainHeader
@@ -795,7 +798,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input1: sotWarrant.nameOfFirmHiddenTextInput,
         label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
         input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
-        nextPage: checkYourAnswersEnforcement.mainHeader
+        nextPage: checkYourAnswersEnforcement.mainHeader,
+        continueButton: sotWarrant.continueButton
       });
       await performAction('continueFromCYAPage', {
         nextPage: payClaimFeeWarrant.mainHeader
@@ -920,6 +924,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
         input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswersEnforcement.mainHeader,
+        continueButton: sotWarrant.continueButton
       });
     });
 
