@@ -111,6 +111,7 @@ class ExportServiceTest {
             sdpClaimSnapshotRepository,
             uploader,
             entityManager,
+            objectMapper,
             FIXED_CLOCK,
             "local"
         );

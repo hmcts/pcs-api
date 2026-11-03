@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,8 +33,11 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -64,6 +68,7 @@ public class ExportService {
     private final SdpClaimSnapshotRepository sdpClaimSnapshotRepository;
     private final Optional<BlobUploader> blobUploader;
     private final EntityManager entityManager;
+    private final ObjectMapper objectMapper;
     private final Clock utcClock;
     private final String environment;
     static final int EXPORT_CHUNK_SIZE = 200;
@@ -77,6 +82,7 @@ public class ExportService {
                          SdpClaimSnapshotRepository sdpClaimSnapshotRepository,
                          Optional<BlobUploader> blobUploader,
                          EntityManager entityManager,
+                         ObjectMapper objectMapper,
                          @Qualifier("utcClock") Clock utcClock,
                          @Value("${sdp.export.environment}") String environment) {
         this.claimRepository = claimRepository;
@@ -86,6 +92,7 @@ public class ExportService {
         this.sdpClaimSnapshotRepository = sdpClaimSnapshotRepository;
         this.blobUploader = blobUploader;
         this.entityManager = entityManager;
+        this.objectMapper = objectMapper;
         this.utcClock = utcClock;
         this.environment = environment;
     }
@@ -116,7 +123,9 @@ public class ExportService {
                                   String extractDate,
                                   String publishedDate,
                                   LocalDateTime now) {
-        try (JsonGenerator generator = claimSnapshotFileWriter.openArray(Files.newOutputStream(snapshotFile))) {
+        try (OutputStream out = Files.newOutputStream(snapshotFile);
+             JsonGenerator generator = objectMapper.getFactory().createGenerator(out)) {
+            claimSnapshotFileWriter.writeStartArray(generator);
             int recordCount = 0;
             for (int i = 0; i < ids.size(); i += EXPORT_CHUNK_SIZE) {
                 List<UUID> chunk = ids.subList(i, Math.min(i + EXPORT_CHUNK_SIZE, ids.size()));
@@ -183,7 +192,11 @@ public class ExportService {
 
     private static Path createSnapshotFile() {
         try {
-            return Files.createTempFile("sdp-claim-snapshot-", ".json");
+            Path snapshotFile = Files.createTempFile("sdp-claim-snapshot-", ".json");
+            if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+                Files.setPosixFilePermissions(snapshotFile, PosixFilePermissions.fromString("rw-------"));
+            }
+            return snapshotFile;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create SDP claim snapshot file", e);
         }

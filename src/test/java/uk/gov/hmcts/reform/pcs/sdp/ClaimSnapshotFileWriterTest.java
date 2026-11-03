@@ -42,7 +42,8 @@ class ClaimSnapshotFileWriterTest {
             .build();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (JsonGenerator generator = fileWriter.openArray(out)) {
+        try (JsonGenerator generator = objectMapper.getFactory().createGenerator(out)) {
+            fileWriter.writeStartArray(generator);
             fileWriter.writeRecord(generator, snapshotRecord);
             fileWriter.finishArray(generator);
         }

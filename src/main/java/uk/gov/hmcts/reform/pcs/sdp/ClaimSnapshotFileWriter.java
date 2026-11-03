@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 @Component
 public class ClaimSnapshotFileWriter {
@@ -17,10 +16,8 @@ public class ClaimSnapshotFileWriter {
         this.objectMapper = objectMapper;
     }
 
-    JsonGenerator openArray(OutputStream out) throws IOException {
-        JsonGenerator generator = objectMapper.getFactory().createGenerator(out);
+    void writeStartArray(JsonGenerator generator) throws IOException {
         generator.writeStartArray();
-        return generator;
     }
 
     void writeRecord(JsonGenerator generator, ClaimSnapshotRecord record) throws IOException {
