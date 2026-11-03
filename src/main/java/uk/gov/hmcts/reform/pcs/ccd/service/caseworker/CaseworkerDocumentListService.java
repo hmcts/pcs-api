@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
@@ -53,18 +52,16 @@ public class CaseworkerDocumentListService {
             || !getOpenCounterClaims(counterClaims).isEmpty();
     }
 
-    public DynamicStringList buildRelatedSubmissionsList(PcsCaseEntity pcsCaseEntity,
-                                                         List<ListValue<GeneralApplication>> genApps,
+    public DynamicStringList buildRelatedSubmissionsList(List<ListValue<GeneralApplication>> genApps,
                                                          List<CounterClaimEntity> counterClaims) {
-        return buildRelatedSubmissionsList(pcsCaseEntity, genApps, counterClaims, null);
+        return buildRelatedSubmissionsList(genApps, counterClaims, null);
     }
 
-    public DynamicStringList buildRelatedSubmissionsList(PcsCaseEntity pcsCaseEntity,
-                                                         List<ListValue<GeneralApplication>> genApps,
+    public DynamicStringList buildRelatedSubmissionsList(List<ListValue<GeneralApplication>> genApps,
                                                          List<CounterClaimEntity> counterClaims,
                                                          DynamicStringList existingList) {
         List<RelatedSubmission> genAppSubmissions = getGenAppSubmissions(genApps);
-        List<RelatedSubmission> counterClaimSubmissions = getCounterClaimSubmissions(counterClaims, pcsCaseEntity);
+        List<RelatedSubmission> counterClaimSubmissions = getCounterClaimSubmissions(counterClaims);
 
         List<RelatedSubmission> relatedSubmissions = new ArrayList<>(genAppSubmissions);
         relatedSubmissions.addAll(counterClaimSubmissions);
@@ -191,14 +188,13 @@ public class CaseworkerDocumentListService {
             || state == GenAppState.GEN_APP_ISSUED;
     }
 
-    private List<RelatedSubmission> getCounterClaimSubmissions(List<CounterClaimEntity> counterClaims,
-                                                               PcsCaseEntity pcsCaseEntity) {
+    private static List<RelatedSubmission> getCounterClaimSubmissions(List<CounterClaimEntity> counterClaims) {
         return getOpenCounterClaims(counterClaims).stream()
             .map(counterClaimEntity -> {
-                UUID counterclaimPartyId = counterClaimEntity.getParty().getId();
-                String partyLabel = partyService.getPartyLabel(pcsCaseEntity.getMainClaim(), counterclaimPartyId);
-
-                String displayLabel = "Counter claim %s".formatted(counterClaimReference(partyLabel));
+                Integer rank = counterClaimEntity.getRank();
+                String displayLabel = (rank != null)
+                    ? "Counter claim CC%d".formatted(rank)
+                    : "Counter claim"; // Fallback for legacy data
 
                 LocalDateTime submittedDate = counterClaimEntity.getClaimSubmittedDate();
                 displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
@@ -232,15 +228,6 @@ public class CaseworkerDocumentListService {
             .code(partyEntity.getId())
             .label(label)
             .build();
-    }
-
-    private static String counterClaimReference(String partyLabel) {
-        if (partyLabel == null) {
-            return "CC";
-        }
-
-        String rank = partyLabel.replaceAll("\\D+", "");
-        return rank.isBlank() ? "CC" : "CC" + rank;
     }
 
     @Builder

@@ -49,6 +49,19 @@ public class CounterClaimFormTestingSupportController {
         if (counterClaim.getClaimIssuedDate() == null) {
             counterClaim.setClaimIssuedDate(LocalDateTime.now(utcClock));
         }
+        if (counterClaim.getRank() == null) {
+            if (counterClaim.getPcsCase() != null && counterClaim.getPcsCase().getCounterClaims() != null
+                && !counterClaim.getPcsCase().getCounterClaims().isEmpty()) {
+                counterClaim.getPcsCase().assignCounterClaimRank(counterClaim);
+            } else if (counterClaim.getPcsCase() != null && counterClaim.getPcsCase().getId() != null) {
+                int nextRank = counterClaimRepository.countByPcsCase_IdAndStatus(
+                    counterClaim.getPcsCase().getId(), CounterClaimState.COUNTER_CLAIM_ISSUED
+                ) + 1;
+                counterClaim.setRank(nextRank);
+            } else {
+                counterClaim.setRank(1);
+            }
+        }
         counterClaimRepository.save(counterClaim);
         counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
         return ResponseEntity.accepted().body(counterClaimId);
