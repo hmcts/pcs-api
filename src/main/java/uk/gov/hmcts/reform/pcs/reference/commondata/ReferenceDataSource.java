@@ -24,7 +24,13 @@ public enum ReferenceDataSource {
     INTERPRETER_LANGUAGE("interpreter_language", "InterpreterLanguage"),
     HEARING_SUBCHANNEL("hearing_subchannel", "HearingSubChannel"),
     CUSTODY_STATUS("custody_status", "CustodyStatus"),
-    PARTY_RELATIONSHIP_TYPE("party_relationship_type", "PartyRelationshipType");
+    PARTY_RELATIONSHIP_TYPE("party_relationship_type", "PartyRelationshipType"),
+    CLAIMANT_TYPE("claimant_type", "claimantType"),
+    CLAIM_TYPE("claim_type", "claimType"),
+    GROUND_TYPE("ground_type", "GroundsType"),
+    GROUND_SUBTYPE("ground_subtype", "GroundsSubType"),
+    TENANCY_TYPE("tenancy_type", "tenancyType"),
+    ENTITY_ROLE_CODE("entity_role_code", "EntityRoleCode");
 
     private final String tableName;
     private final String categoryId;

@@ -196,6 +196,75 @@ class ReferenceDataSyncServiceTest {
     }
 
     @Test
+    void shouldPersistGroundSubtypeWithItsParentGroundType() {
+        // given
+        ReferenceDataSource subtype = ReferenceDataSource.GROUND_SUBTYPE;
+        stubUpstream(subtype, lov("AAA3-sub-grounds-001", "Rent arrears", null, null, "GroundsType",
+                                  "AAA3-grounds-017", "Y"));
+        ReferenceTable table = stubTable(subtype, existing(), ReferenceColumn.VALUE_EN, ReferenceColumn.VALUE_CY,
+                                         ReferenceColumn.PARENT_CATEGORY, ReferenceColumn.PARENT_KEY);
+
+        // when
+        underTest.synchronise();
+
+        // then
+        assertThat(applied(table).inserts()).containsExactly(
+            record("AAA3-sub-grounds-001", "Rent arrears", null, null, "GroundsType", "AAA3-grounds-017", true)
+        );
+    }
+
+    @Test
+    void shouldNotPersistLovOrderForClaimantTypeBecauseTheTableDoesNotStoreIt() {
+        // given
+        ReferenceDataSource claimant = ReferenceDataSource.CLAIMANT_TYPE;
+        stubUpstream(claimant, lov("AAA3-PLD", "Private Landlord", "Landlord Preifat", 1L, null, null, "Y"));
+        ReferenceTable table = stubTable(claimant, existing(), ReferenceColumn.VALUE_EN, ReferenceColumn.VALUE_CY);
+
+        // when
+        underTest.synchronise();
+
+        // then
+        assertThat(applied(table).inserts()).containsExactly(
+            record("AAA3-PLD", "Private Landlord", "Landlord Preifat", null, null, null, true)
+        );
+    }
+
+    @Test
+    void shouldPersistTenancyTypeOrderAndWelshValue() {
+        // given
+        ReferenceDataSource tenancy = ReferenceDataSource.TENANCY_TYPE;
+        stubUpstream(tenancy, lov("AAA3-ATY", "Assured tenancy", "Tenantiaeth sicr", 1L, null, null, "Y"));
+        ReferenceTable table = stubTable(tenancy, existing());
+
+        // when
+        underTest.synchronise();
+
+        // then
+        assertThat(applied(table).inserts()).containsExactly(
+            record("AAA3-ATY", "Assured tenancy", "Tenantiaeth sicr", 1, null, null, true)
+        );
+    }
+
+    @Test
+    void shouldIgnoreDeletedGenericEntityRoleWhenServiceRowIsActive() {
+        // given
+        ReferenceDataSource role = ReferenceDataSource.ENTITY_ROLE_CODE;
+        stubUpstream(role,
+                     lov("CLAI", "Claimant", null, null, null, null, "D"),
+                     lov("CLAI", "Claimant", "Hawlydd", null, null, null, "Y"));
+        ReferenceTable table = stubTable(role, existing(), ReferenceColumn.VALUE_EN, ReferenceColumn.VALUE_CY,
+                                         ReferenceColumn.PARENT_CATEGORY, ReferenceColumn.PARENT_KEY);
+
+        // when
+        underTest.synchronise();
+
+        // then
+        assertThat(applied(table).inserts()).containsExactly(
+            record("CLAI", "Claimant", "Hawlydd", null, null, null, true)
+        );
+    }
+
+    @Test
     void shouldIgnoreUpstreamAttributesTheTableDoesNotStore() {
         // given
         stubUpstream(SOURCE, lov("A", "Alpha", "Alffa", 7L, "Parent", "P", "Y"));

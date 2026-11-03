@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ReferenceDataSourceTest {
 
     @Test
-    void shouldMapEveryHearingReferenceTableToItsCategory() {
+    void shouldMapEveryReferenceTableToItsCategory() {
         // given
         Map<String, String> expected = Map.ofEntries(
             Map.entry("judge_type", "JudgeType"),
@@ -39,7 +39,13 @@ class ReferenceDataSourceTest {
             Map.entry("interpreter_language", "InterpreterLanguage"),
             Map.entry("hearing_subchannel", "HearingSubChannel"),
             Map.entry("custody_status", "CustodyStatus"),
-            Map.entry("party_relationship_type", "PartyRelationshipType")
+            Map.entry("party_relationship_type", "PartyRelationshipType"),
+            Map.entry("claimant_type", "claimantType"),
+            Map.entry("claim_type", "claimType"),
+            Map.entry("ground_type", "GroundsType"),
+            Map.entry("ground_subtype", "GroundsSubType"),
+            Map.entry("tenancy_type", "tenancyType"),
+            Map.entry("entity_role_code", "EntityRoleCode")
         );
 
         // when
