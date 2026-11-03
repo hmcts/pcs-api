@@ -779,7 +779,6 @@ public class PCSCase {
     )
     private String confirmEvictionSummaryMarkupLabel;
 
-    @JsonProperty("Case parties")
     @CCD(
         label = "# Case Parties",
         typeOverride = Label,
@@ -788,7 +787,6 @@ public class PCSCase {
     )
     private String casePartiesHeading;
 
-    @JsonProperty("Summary")
     @CCD(
         label = "# Summary",
         typeOverride = Label,
@@ -797,7 +795,6 @@ public class PCSCase {
     )
     private String summaryHeading;
 
-    @JsonProperty("Case details")
     @CCD(
         label = "# Case details",
         typeOverride = Label,
@@ -806,7 +803,6 @@ public class PCSCase {
     )
     private String caseDetailsHeading;
 
-    @JsonProperty("Claimant details")
     @CCD(
         label = "## Claimant details",
         typeOverride = Label,
@@ -815,7 +811,6 @@ public class PCSCase {
     )
     private String claimantDetailsHeading;
 
-    @JsonProperty("Defendant details")
     @CCD(
         label = "## Defendant details",
         typeOverride = Label,
@@ -824,7 +819,6 @@ public class PCSCase {
     )
     private String defendantDetailsHeading;
 
-    @JsonProperty("Rent arrears")
     @CCD(
         label = "## Rent arrears",
         typeOverride = Label,
@@ -833,7 +827,6 @@ public class PCSCase {
     )
     private String rentArrearsHeading;
 
-    @JsonProperty("Tenancy or occupation contract or licence")
     @CCD(
         label = "## Tenancy, occupation contract or licence",
         typeOverride = Label,
@@ -842,7 +835,6 @@ public class PCSCase {
     )
     private String tenancyOrOccupationContractOrLicenceHeading;
 
-    @JsonProperty("Occupation contract or licence")
     @CCD(
         label = "## Occupation contract or licence",
         typeOverride = Label,
@@ -851,7 +843,6 @@ public class PCSCase {
     )
     private String occupationContractOrLicenceHeading;
 
-    @JsonProperty("Notice")
     @CCD(
         label = "## Notice",
         typeOverride = Label,
@@ -860,7 +851,6 @@ public class PCSCase {
     )
     private String noticeHeading;
 
-    @JsonProperty("Underlessee or mortgagee")
     @CCD(
         label = "## Underlessee or mortgagee entitled to claim relief against forfeiture",
         typeOverride = Label,
@@ -869,7 +859,6 @@ public class PCSCase {
     )
     private String underlesseeOrMortgageeHeading;
 
-    @JsonProperty("Demotion of tenancy")
     @CCD(
         label = "## Demotion of tenancy",
         typeOverride = Label,
@@ -878,7 +867,6 @@ public class PCSCase {
     )
     private String demotionOfTenancyHeading;
 
-    @JsonProperty("Suspension of right to buy")
     @CCD(
         label = "## Suspension of right to buy",
         typeOverride = Label,
@@ -887,7 +875,6 @@ public class PCSCase {
     )
     private String suspensionOfRightToBuyHeading;
 
-    @JsonProperty("Prohibited conduct standard contract")
     @CCD(
         label = "## Prohibited conduct standard contract",
         typeOverride = Label,
@@ -896,7 +883,6 @@ public class PCSCase {
     )
     private String prohibitedConductStandardContractHeading;
 
-    @JsonProperty("Required Documents")
     @CCD(
         label = "## Required Documents",
         typeOverride = Label,
@@ -905,7 +891,6 @@ public class PCSCase {
     )
     private String requiredDocumentsHeading;
 
-    @JsonProperty("Documents you've uploaded")
     @CCD(
         label = "## Documents you've uploaded",
         typeOverride = Label,

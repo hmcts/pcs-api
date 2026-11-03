@@ -153,8 +153,8 @@ class GeneratedDefinitionTest {
 
     @Test
     void headingsCarryTheAccessOfTheSectionTheyHead() {
-        assertThat(readers.get("Case details")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
-        assertThat(readers.get("Claimant details")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
+        assertThat(readers.get("caseDetailsHeading")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
+        assertThat(readers.get("claimantDetailsHeading")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
         assertThat(readers.get("judicialNotesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(JUDICIAL_PROFILES);
         assertThat(readers.get("caseReviewDatesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
     }

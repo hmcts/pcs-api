@@ -184,13 +184,15 @@ class CaseTypeTest {
             assertThat(tab.getForRoles()).as(tab.getTabID()).isEmpty();
         }
         verify(builder).tabsRespectDeclaredFieldAccess();
-        assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("Summary", "Claimant details");
-        assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("Case details", "Claimant details");
-        assertThat(showCondition(summaryTab, "Claimant details")).isEqualTo("summaryTab_ClaimantDetails!=\"\"");
-        assertThat(showCondition(summaryTab, "Defendant details")).isEqualTo("summaryTab_DefendantDetails!=\"\"");
-        assertThat(showCondition(caseDetailsTab, "Claimant details"))
+        assertThat(summaryTab.getFields()).extracting(TabField::getId)
+            .contains("summaryHeading", "claimantDetailsHeading");
+        assertThat(caseDetailsTab.getFields()).extracting(TabField::getId)
+            .contains("caseDetailsHeading", "claimantDetailsHeading");
+        assertThat(showCondition(summaryTab, "claimantDetailsHeading")).isEqualTo("summaryTab_ClaimantDetails!=\"\"");
+        assertThat(showCondition(summaryTab, "defendantDetailsHeading")).isEqualTo("summaryTab_DefendantDetails!=\"\"");
+        assertThat(showCondition(caseDetailsTab, "claimantDetailsHeading"))
             .isEqualTo("detailsTab_ClaimantInformation!=\"\"");
-        assertThat(showCondition(caseDetailsTab, "Defendant details"))
+        assertThat(showCondition(caseDetailsTab, "defendantDetailsHeading"))
             .isEqualTo("detailsTab_DefendantInformationDetails!=\"\"");
         assertThat(judicialNotesTab.getFields()).extracting(TabField::getId)
             .containsExactly("judicialNotesMarkdownLabel", "judicialNotesMarkdown");
