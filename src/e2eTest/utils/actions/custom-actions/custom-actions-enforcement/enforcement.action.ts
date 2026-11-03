@@ -7,12 +7,8 @@ import {
   evidenceUpload
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import {
-  createCaseApiData,
-  paymentApiData,
-  submitCaseApiData
-} from '@data/api-data';
-import {actionRetries, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT} from 'playwright.config';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 import {
   propertyAccessDetails,
@@ -33,10 +29,11 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo,
-  cannotApplyForWarrantInfo
+  confirmHCEOfficer
 } from '@data/page-data-figma/page-data-enforcement-figma';
-import Axios from "axios";
+import {
+  checkYourAnswersEnforcement
+} from "@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data";
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -49,13 +46,12 @@ export let defendantDetails: string[] = [];
 export const moneyMap = new Map<string, number>();
 export const fieldsMap = new Map<string, string>();
 
-export class EnforcementAction implements IAction{
+export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
-      ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
-      ['cannotApplyForWarrantInfo', () => this.validateCannotApplyForWarrant(fieldName as actionRecord)],
+      ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord, page)],
       ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord, page)],
       ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord, page)],
@@ -84,8 +80,8 @@ export class EnforcementAction implements IAction{
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
-      ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
-      ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
+      ['continueFromCYAPage', () => this.continueFromCYAPage(fieldName as actionRecord)],
+      ['selectPayClaimFee', () => this.selectPayClaimFee(fieldName as actionRecord, page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -102,7 +98,8 @@ export class EnforcementAction implements IAction{
       ? enforcementApplication.typeofFee.warrantOfPossessionFee
       : enforcementApplication.typeofFee.writOfPossessionFee;
 
-    let writOrWarrantFeeAmt = warrantJourney ? EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text1 as string) : EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text2 as string);
+    const writOrWarrantFeeAmt = warrantJourney ? EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text1 as string) : EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text2 as string);
+
     moneyMap.set(feeType, writOrWarrantFeeAmt);
   }
 
@@ -112,7 +109,7 @@ export class EnforcementAction implements IAction{
     await performAction('expandSummary', bailiffQuote.type);
   }
 
-  private async selectApplicationType(applicationType: actionRecord, page: Page) {
+  private async selectApplicationType(applicationType: actionRecord) {
     await this.addFieldsToMap(applicationType);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -125,37 +122,6 @@ export class EnforcementAction implements IAction{
     }
 
   }
-
-  private async isDefendantInBreathingSpace(breathingSpaceData: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion, option: breathingSpaceData.option });
-    await performAction('reTryOnCallBackError', defendantInBreathingSpace.continueButton, breathingSpaceData.nextPage as string);
-    await performAction('clickButton', defendantInBreathingSpace.continueButton);
-  }
-
-  private async missedPayments(missedPaymentsData: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('expandSummary', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
-    await performValidation('text', { elementType: 'paragraph', text: missedPayments.thisWillSaveHiddenParagraph });
-    await performValidation('text', { elementType: 'listItem', text: missedPayments.cancelHiddenListItem });
-    await performValidation('text', { elementType: 'listItem', text: missedPayments.chooseHiddenListItem });
-    await performValidation('text', { elementType: 'containerText', text: missedPayments.ifYouWantToSaveHiddenText });
-    await performAction('expandSummary', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
-    await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
-    await performAction('reTryOnCallBackError', missedPayments.continueButton, missedPaymentsData.nextPage as string);
-  }
-
-  private async validateCannotApplyForWarrant(cannotApplyForWarrantData: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performValidation('text', { elementType: 'paragraph', text: cannotApplyForWarrantInfo.permissionExplanationParagraph });
-    await performValidation('text', { elementType: 'paragraph', text: cannotApplyForWarrantInfo.differentTermHeader });
-    await performValidation('text', { elementType: 'paragraph', text: cannotApplyForWarrantInfo.differentTermParagraph });
-    await performValidation('text', { elementType: 'link', text: cannotApplyForWarrantInfo.askTheJudgeLink });
-  }
-
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
@@ -202,7 +168,7 @@ export class EnforcementAction implements IAction{
       };
     }
     defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
 
   }
@@ -337,6 +303,7 @@ export class EnforcementAction implements IAction{
     if (userInput.option === 'Yes') {
       const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, userInput.label as string, userInput.input as number);
       await performAction('inputText', userInput.label, testInput);
+      console.log( `Test input - `+ testInput);
       fieldsMap.set(userInput.label as string, testInput);
     };
     await performAction('reTryOnCallBackError', !userInput?.button ? userInput.button = 'Continue' : userInput.button as string, userInput.nextPage as string);
@@ -441,37 +408,48 @@ export class EnforcementAction implements IAction{
     await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
-    if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
+    if (claimantDetails.option === 'Claimant') {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
-    if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
+    if (claimantDetails.option === 'Claimant’s legal representative (as defined by CPR 2.3 (1))') {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
       await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
-    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantDetails.nextPage as string);
+    await performAction('reTryOnCallBackError', claimantDetails.continueButton, claimantDetails.nextPage as string);
+  }
+
+  private async continueFromCYAPage(cyaPageData: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('reTryOnCallBackError', checkYourAnswersEnforcement.submitApplication, cyaPageData.nextPage as string);
+  }
+
+  private async selectPayClaimFee(payClaimFeeDetails: actionRecord, page: Page) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'link', text: payClaimFeeDetails.link });
   }
 
   private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {
     await this.addFieldsToMap(claimantSOT);
     await performAction('check', claimantSOT.option1);
     await performAction('clickRadioButton', { option:claimantSOT.option } );
-    if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
-      await performAction('check', claimantSOT.option1);
+    if (claimantSOT.option === 'Claimant') {
       await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('check', claimantSOT.iBelieveCheckBox);
     }
-    if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
+    if (claimantSOT.option === 'Claimant’s legal representative (as defined by CPR 2.3 (1))') {
       await performAction('inputText', claimantSOT.label, claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('inputText', claimantSOT.label2, claimantSOT.input2);
       await performAction('check', claimantSOT.claimantBelieveCheckBox);
     }
-    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantSOT.nextPage as string);
+    await performAction('reTryOnCallBackError', claimantSOT.continueButton, claimantSOT.nextPage as string);
   }
 
   private async uploadEvidenceThatDefendantsAreAtProperty(uploadEvidence: actionRecord, page: Page) {
@@ -495,7 +473,7 @@ export class EnforcementAction implements IAction{
 
   private async validatePrePopulatedData(prePopulatedData: actionRecord) {
 
-     await test.step(`PrePopulated data validation`, async () => {
+    await test.step(`PrePopulated data validation`, async () => {
       const page = prePopulatedData?.testPage ?? 'Unknown';
       const count = Array.isArray(prePopulatedData?.inputData)
         ? prePopulatedData.inputData.length
@@ -530,125 +508,114 @@ export class EnforcementAction implements IAction{
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
 
-      if (Array.isArray(validationArr.inputArray)) {
-        for (const item of validationArr.inputArray) {
-          switch (validationArr.validationType) {
-            case 'moneyFieldAndRadioOption':
+    if (Array.isArray(validationArr.inputArray)) {
+      for (const item of validationArr.inputArray) {
+        switch (validationArr.validationType) {
+          case 'moneyFieldAndRadioOption':
+            await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+            await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(repayments.totalTableHeader) as number) + 10) : item.input);
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              // await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
+              await performValidation('inputError', validationArr.label, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
+            break;
+
+          case 'radioOptions':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            if ('isSOT' in validationArr) {
+              await performAction('clickRadioButton', { option: validationArr.option });
+            } else {
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-              await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(repayments.totalTableHeader) as number) + 10) : item.input);
-              await expect(async () => {
-                await performAction('clickButton', validationArr.button);
-                // await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
-                await performValidation('inputError', validationArr.label, item.errMessage);
-              }).toPass({
-                timeout: VERY_LONG_TIMEOUT,
-              });
-              await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
-              break;
+            }
+            break;
 
-            case 'radioOptions':
+          case 'moneyField':
+            await performAction('inputText', validationArr.label, item.input);
+            await expect(async () => {
               await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              if ('isSOT' in validationArr) {
-                await performAction('clickRadioButton', { option: validationArr.option });
+              //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
+              await performValidation('inputError', validationArr.label, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
+          case 'textField':
+            await performAction('inputText', validationArr.label, await EnforcementCommonUtils.generateMoreThanMaxString(page, validationArr.label as string, item.input));
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              if (item.type === 'moreThanMax') {
+                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
               } else {
-                await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-              }
-              break;
-
-            case 'moneyField':
-              await performAction('inputText', validationArr.label, item.input);
-              await expect(async () => {
-                await performAction('clickButton', validationArr.button);
-                //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
                 await performValidation('inputError', validationArr.label, item.errMessage);
-              }).toPass({
-                timeout: VERY_LONG_TIMEOUT,
-              });
-              break;
+                await performValidation('errorMessage', validationArr.label, item.errMessage);
+              }
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
 
-            case 'textField':
-              await performAction('inputText', validationArr.label, await EnforcementCommonUtils.generateMoreThanMaxString(page, validationArr.label as string, item.input));
-              await expect(async () => {
-                await performAction('clickButton', validationArr.button);
-                if (item.type === 'moreThanMax') {
-                  await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
-                } else {
-                  await performValidation('inputError', validationArr.label, item.errMessage);
-                  await performValidation('errorMessage', validationArr.label, item.errMessage);
-                }
-              }).toPass({
-                timeout: VERY_LONG_TIMEOUT,
-              });
-              break;
+          case 'checkBox':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('check', validationArr.checkBox);
+            break;
 
-            case 'checkBox':
-              await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              await performAction('check', validationArr.checkBox);
-              break;
+          case 'checkBoxPageLevel':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('check', validationArr.checkBox);
+            break;
 
-            case 'checkBoxPageLevel':
+          case 'addDocument':
+            await expect(async () => {
               await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              await performAction('check', validationArr.checkBox);
-              break;
-              
-            case 'pageLevel':
-              await expect(async () => {
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            await performAction('clickButton', 'Add new');
+            break;
+
+          case 'dropDown':
+            await performAction('clickButton', validationArr.button);
+            await expect(async () => {
               await performAction('clickButton', validationArr.button);
-              await performValidation('text', {
-                  elementType: 'subHeader',
-                  text: (validationArr.header ?? 'There is a problem') as string,
-                });
-              await performValidation('text', { elementType: 'paragraph', text: item.errMessage });
-              }).toPass({ timeout: VERY_LONG_TIMEOUT });
-              break;
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            await performAction('select', validationArr.docType, validationArr.type);
+            break;
 
-             case 'addDocument':
-              await expect(async () => {
-                await performAction('clickButton', validationArr.button);
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              }).toPass({
-                timeout: VERY_LONG_TIMEOUT,
-              });
-              await performAction('clickButton', 'Add new');
-              break;
-
-            case 'dropDown':
+          case 'upLoad':
+            await expect(async () => {
               await performAction('clickButton', validationArr.button);
-              await expect(async () => {
-                await performAction('clickButton', validationArr.button);
+              if (item.type === 'invalid') {
+                const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+                const filePath = path.resolve(__dirname, '../../../../data/inputFiles', item.file);
+                await fileInput.last().setInputFiles(filePath);
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              } else {
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              }).toPass({
-                timeout: VERY_LONG_TIMEOUT,
-              });
-              await performAction('select', validationArr.docType, validationArr.type);
-              break;
+              }
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
 
-            case 'upLoad':
-              await expect(async () => {
-                await performAction('clickButton', validationArr.button);
-                if (item.type === 'invalid') {
-                  const fileInput = page.locator('input[type="file"].form-control.bottom-30');
-                  const filePath = path.resolve(__dirname, '../../../../data/inputFiles', item.file);
-                  await fileInput.last().setInputFiles(filePath);
-                  await performValidation('inputError', validationArr.label, item.errMessage);
-                } else {
-                  await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-                }
-              }).toPass({
-                timeout: VERY_LONG_TIMEOUT,
-              });
-              break;
-
-            default:
-              throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
-          };
-        }
+          default:
+            throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
+        };
       }
+    }
     if (validationArr.buttonRemove) {
       await performAction('removeFile');
       await page.waitForTimeout(6000);
