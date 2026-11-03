@@ -14,20 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
@@ -35,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,7 +32,6 @@ import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -55,6 +42,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -66,11 +54,14 @@ class ExportServiceTest {
 
     private static final Instant FIXED_INSTANT = Instant.parse("2026-03-09T12:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
-    private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID CLAIM_ID = UUID.randomUUID();
+    private static final UUID PARTY_ID = UUID.randomUUID();
 
     @Mock
     private ClaimRepository claimRepository;
+
+    @Mock
+    private SdpClaimSnapshotReadRepository sdpClaimSnapshotReadRepository;
 
     @Mock
     private SdpClaimSnapshotRepository sdpClaimSnapshotRepository;
@@ -101,6 +92,7 @@ class ExportServiceTest {
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
         return new ExportService(
             claimRepository,
+            sdpClaimSnapshotReadRepository,
             new SnapshotMapper(),
             new ClaimSnapshotFileWriter(objectMapper),
             sdpClaimSnapshotRepository,
@@ -114,7 +106,7 @@ class ExportServiceTest {
 
     @Test
     void shouldExtractClaimsFromDbAndWriteJsonFile() throws Exception {
-        stubClaimsForExport(claim());
+        stubDefaultClaim();
 
         ExportResult result = exportService.exportClaims();
 
@@ -140,7 +132,7 @@ class ExportServiceTest {
 
     @Test
     void shouldExportNewClaimAsVersionOne() throws Exception {
-        stubClaimsForExport(claim());
+        stubDefaultClaim();
 
         ExportResult result = exportService.exportClaims();
 
@@ -157,7 +149,7 @@ class ExportServiceTest {
 
     @Test
     void shouldIncrementVersionWhenClaimWasPreviouslyExported() throws Exception {
-        stubClaimsForExport(claim());
+        stubDefaultClaim();
         givenStoredSnapshot(2);
 
         ExportResult result = exportService.exportClaims();
@@ -173,10 +165,13 @@ class ExportServiceTest {
     @Test
     void shouldExportAllSelectedClaimsAndIncrementEachVersion() throws Exception {
         UUID secondId = UUID.randomUUID();
-        ClaimEntity firstClaim = claim();
-        ClaimEntity secondClaim = claim();
-        secondClaim.setId(secondId);
-        stubClaimsForExport(firstClaim, secondClaim);
+        stubClaimsForExport(
+            List.of(header(), header(secondId)),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of()
+        );
         when(sdpClaimSnapshotRepository.findAllById(anyList())).thenReturn(List.of(
             SdpClaimSnapshotEntity.builder()
                 .claimId(CLAIM_ID)
@@ -201,7 +196,7 @@ class ExportServiceTest {
 
     @Test
     void shouldFailWhenUploadFails() {
-        stubClaimsForExport(claim());
+        stubDefaultClaim();
         doThrow(new IllegalStateException("upload failed"))
             .when(blobUploader).upload(any(), any(Path.class));
 
@@ -213,7 +208,7 @@ class ExportServiceTest {
     @Test
     void shouldSkipUploadWhenBlobUploaderIsNotAvailable() {
         exportService = exportService(Optional.empty());
-        stubClaimsForExport();
+        stubClaimsForExport(List.of(), List.of(), List.of(), List.of(), List.of());
 
         ExportResult result = exportService.exportClaims();
 
@@ -224,9 +219,21 @@ class ExportServiceTest {
 
     @Test
     void shouldExportClaimWhenTenancyLicenceIsMissing() throws Exception {
-        ClaimEntity claimWithoutTenancy = claim();
-        claimWithoutTenancy.getPcsCase().setTenancyLicence(null);
-        stubClaimsForExport(claimWithoutTenancy);
+        SdpClaimSnapshotHeader headerWithoutTenancy = new SdpClaimSnapshotHeader(
+            CLAIM_ID,
+            ClaimantType.PROVIDER_OF_SOCIAL_HOUSING.name(),
+            VerticalYesNo.NO.name(),
+            LanguageUsed.ENGLISH.name(),
+            LocalDateTime.of(2026, 2, 1, 14, 30),
+            LocalDateTime.of(2026, 2, 5, 9, 0),
+            1234567890123456L,
+            45,
+            null,
+            null,
+            NoticeServiceMethod.FIRST_CLASS_POST.name(),
+            LocalDate.of(2026, 1, 10)
+        );
+        stubClaimsForExport(List.of(headerWithoutTenancy), List.of(), List.of(), List.of(), List.of());
 
         ExportResult result = exportService.exportClaims();
 
@@ -236,9 +243,21 @@ class ExportServiceTest {
 
     @Test
     void shouldExportClaimWhenNoticeOfPossessionIsMissing() throws Exception {
-        ClaimEntity claimWithoutNotice = claim();
-        claimWithoutNotice.setNoticeOfPossession(null);
-        stubClaimsForExport(claimWithoutNotice);
+        SdpClaimSnapshotHeader headerWithoutNotice = new SdpClaimSnapshotHeader(
+            CLAIM_ID,
+            ClaimantType.PROVIDER_OF_SOCIAL_HOUSING.name(),
+            VerticalYesNo.NO.name(),
+            LanguageUsed.ENGLISH.name(),
+            LocalDateTime.of(2026, 2, 1, 14, 30),
+            LocalDateTime.of(2026, 2, 5, 9, 0),
+            1234567890123456L,
+            45,
+            null,
+            CombinedLicenceType.SECURE_TENANCY.name(),
+            null,
+            null
+        );
+        stubClaimsForExport(List.of(headerWithoutNotice), List.of(), List.of(), List.of(), List.of());
 
         ExportResult result = exportService.exportClaims();
 
@@ -248,9 +267,7 @@ class ExportServiceTest {
 
     @Test
     void shouldExportClaimWhenPartiesAreMissing() throws Exception {
-        ClaimEntity claimWithoutParties = claim();
-        claimWithoutParties.setClaimParties(null);
-        stubClaimsForExport(claimWithoutParties);
+        stubClaimsForExport(List.of(header()), List.of(), List.of(), List.of(), List.of());
 
         ExportResult result = exportService.exportClaims();
 
@@ -260,9 +277,7 @@ class ExportServiceTest {
 
     @Test
     void shouldExportClaimWhenPartiesAreEmpty() throws Exception {
-        ClaimEntity claimWithEmptyParties = claim();
-        claimWithEmptyParties.setClaimParties(List.of());
-        stubClaimsForExport(claimWithEmptyParties);
+        stubClaimsForExport(List.of(header()), List.of(), List.of(), List.of(), List.of());
 
         ExportResult result = exportService.exportClaims();
 
@@ -272,43 +287,26 @@ class ExportServiceTest {
 
     @Test
     void shouldExportGroundsPaymentsResponsesAndRepresentation() throws Exception {
-        ClaimEntity claimWithDetails = claim();
-        PartyEntity party = claimWithDetails.getClaimParties().get(0).getParty();
-        party.setClaimPartyOrganisationList(List.of(
-            ClaimPartyOrganisationEntity.builder().active(YesOrNo.YES).build()
-        ));
-        claimWithDetails.setClaimGrounds(Set.of(
-            ClaimGroundEntity.builder()
-                .code("SERIOUS_RENT_ARREARS_GROUND8")
-                .description("Serious rent arrears")
-                .category(ClaimGroundCategory.ASSURED_MANDATORY)
-                .build()
-        ));
-        claimWithDetails.setFeePayments(List.of(
-            FeePaymentEntity.builder()
-                .externalReference("RC-1234")
-                .paymentStatus(PaymentStatus.PAID)
-                .requestDate(LocalDateTime.of(2026, 2, 3, 10, 0))
-                .build(),
-            FeePaymentEntity.builder()
-                .externalReference(" ")
-                .paymentStatus(PaymentStatus.NOT_PAID)
-                .build()
-        ));
-        claimWithDetails.getPcsCase().setDefendantResponses(List.of(
-            DefendantResponseEntity.builder()
-                .id(12)
-                .party(party)
-                .claim(claimWithDetails)
-                .makeCounterClaim(VerticalYesNo.NO)
-                .responseSubmittedDate(LocalDateTime.of(2026, 3, 1, 10, 0))
-                .build(),
-            DefendantResponseEntity.builder()
-                .id(13)
-                .claim(ClaimEntity.builder().id(UUID.randomUUID()).build())
-                .build()
-        ));
-        stubClaimsForExport(claimWithDetails);
+        stubClaimsForExport(
+            List.of(header()),
+            List.of(new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), true)),
+            List.of(
+                new SdpClaimSnapshotPayment(
+                    CLAIM_ID, "RC-1234", PaymentStatus.PAID.name(), LocalDateTime.of(2026, 2, 3, 10, 0)),
+                new SdpClaimSnapshotPayment(CLAIM_ID, " ", PaymentStatus.NOT_PAID.name(), null)
+            ),
+            List.of(new SdpClaimSnapshotGround(
+                CLAIM_ID,
+                "SERIOUS_RENT_ARREARS_GROUND8",
+                "Serious rent arrears",
+                ClaimGroundCategory.ASSURED_MANDATORY.name()
+            )),
+            List.of(
+                new SdpClaimSnapshotResponse(
+                    CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(), LocalDateTime.of(2026, 3, 1, 10, 0)),
+                new SdpClaimSnapshotResponse(UUID.randomUUID(), 13, null, null, null)
+            )
+        );
 
         ExportResult result = exportService.exportClaims();
 
@@ -325,11 +323,13 @@ class ExportServiceTest {
 
     @Test
     void shouldSkipClaimPartyWhenPartyIsMissing() throws Exception {
-        ClaimEntity claimWithNullParty = claim();
-        claimWithNullParty.setClaimParties(List.of(
-            ClaimPartyEntity.builder().role(PartyRole.DEFENDANT).build()
-        ));
-        stubClaimsForExport(claimWithNullParty);
+        stubClaimsForExport(
+            List.of(header()),
+            List.of(new SdpClaimSnapshotParty(CLAIM_ID, null, PartyRole.DEFENDANT.name(), false)),
+            List.of(),
+            List.of(),
+            List.of()
+        );
 
         ExportResult result = exportService.exportClaims();
 
@@ -342,19 +342,23 @@ class ExportServiceTest {
         int claimCount = EXPORT_CHUNK_SIZE + 1;
         List<UUID> ids = IntStream.range(0, claimCount).mapToObj(i -> UUID.randomUUID()).toList();
         when(claimRepository.findAllIdsForSdpSnapshotExport()).thenReturn(ids);
-        when(claimRepository.findAllForSdpSnapshotExportById(any())).thenAnswer(invocation -> {
+        when(sdpClaimSnapshotReadRepository.findHeadersByClaimId(any())).thenAnswer(invocation -> {
             Collection<UUID> chunkIds = invocation.getArgument(0);
-            return chunkIds.stream().map(id -> {
-                ClaimEntity claim = claim();
-                claim.setId(id);
-                return claim;
-            }).toList();
+            return chunkIds.stream().map(ExportServiceTest::header).toList();
         });
+        when(sdpClaimSnapshotReadRepository.findPartiesByClaimId(any())).thenReturn(List.of());
+        when(sdpClaimSnapshotReadRepository.findPaymentsByClaimId(any())).thenReturn(List.of());
+        when(sdpClaimSnapshotReadRepository.findGroundsByClaimId(any())).thenReturn(List.of());
+        when(sdpClaimSnapshotReadRepository.findResponsesByClaimId(any())).thenReturn(List.of());
 
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(claimCount);
-        verify(claimRepository, times(2)).findAllForSdpSnapshotExportById(any());
+        verify(sdpClaimSnapshotReadRepository, times(2)).findHeadersByClaimId(any());
+        verify(sdpClaimSnapshotReadRepository, times(2)).findPartiesByClaimId(any());
+        verify(sdpClaimSnapshotReadRepository, times(2)).findPaymentsByClaimId(any());
+        verify(sdpClaimSnapshotReadRepository, times(2)).findGroundsByClaimId(any());
+        verify(sdpClaimSnapshotReadRepository, times(2)).findResponsesByClaimId(any());
         verify(sdpClaimSnapshotRepository, times(2)).saveAll(anyList());
         verify(entityManager, times(2)).flush();
         verify(entityManager, times(2)).clear();
@@ -362,24 +366,27 @@ class ExportServiceTest {
 
     @Test
     void shouldProcessOnlyIdsReturnedByDeltaQuery() {
-        ClaimEntity included = claim();
-        stubClaimsForExport(included);
+        stubDefaultClaim();
 
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
         verify(claimRepository).findAllIdsForSdpSnapshotExport();
-        verify(claimRepository).findAllForSdpSnapshotExportById(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotReadRepository).findHeadersByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotReadRepository).findPartiesByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotReadRepository).findPaymentsByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotReadRepository).findGroundsByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotReadRepository).findResponsesByClaimId(List.of(CLAIM_ID));
     }
 
     @Test
-    void shouldNotMarkLastModifiedWhenExporting() {
-        ClaimEntity claim = claim();
-        stubClaimsForExport(claim);
+    void shouldNotSaveClaimsWhenExporting() {
+        stubDefaultClaim();
 
         exportService.exportClaims();
 
-        assertThat(claim.getLastModified()).isNull();
+        verify(claimRepository, never()).save(any());
+        verify(claimRepository, never()).saveAll(any());
     }
 
     private String uploadedJson() {
@@ -387,11 +394,29 @@ class ExportServiceTest {
         return uploadedJsonContent;
     }
 
-    private void stubClaimsForExport(ClaimEntity... claims) {
-        List<UUID> ids = Arrays.stream(claims).map(ClaimEntity::getId).toList();
+    private void stubDefaultClaim() {
+        stubClaimsForExport(
+            List.of(header()),
+            List.of(new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), false)),
+            List.of(),
+            List.of(),
+            List.of()
+        );
+    }
+
+    private void stubClaimsForExport(List<SdpClaimSnapshotHeader> headers,
+                                     List<SdpClaimSnapshotParty> parties,
+                                     List<SdpClaimSnapshotPayment> payments,
+                                     List<SdpClaimSnapshotGround> grounds,
+                                     List<SdpClaimSnapshotResponse> responses) {
+        List<UUID> ids = headers.stream().map(SdpClaimSnapshotHeader::claimId).toList();
         when(claimRepository.findAllIdsForSdpSnapshotExport()).thenReturn(ids);
         if (!ids.isEmpty()) {
-            when(claimRepository.findAllForSdpSnapshotExportById(any())).thenReturn(List.of(claims));
+            when(sdpClaimSnapshotReadRepository.findHeadersByClaimId(any())).thenReturn(headers);
+            when(sdpClaimSnapshotReadRepository.findPartiesByClaimId(any())).thenReturn(parties);
+            when(sdpClaimSnapshotReadRepository.findPaymentsByClaimId(any())).thenReturn(payments);
+            when(sdpClaimSnapshotReadRepository.findGroundsByClaimId(any())).thenReturn(grounds);
+            when(sdpClaimSnapshotReadRepository.findResponsesByClaimId(any())).thenReturn(responses);
         }
     }
 
@@ -405,45 +430,24 @@ class ExportServiceTest {
         ));
     }
 
-    private static ClaimEntity claim() {
-        PartyEntity party = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .firstName("Jane")
-            .lastName("Doe")
-            .emailAddress("jane@example.com")
-            .build();
+    private static SdpClaimSnapshotHeader header() {
+        return header(CLAIM_ID);
+    }
 
-        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
-            .party(party)
-            .role(PartyRole.DEFENDANT)
-            .build();
-
-        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
-            .servingMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-            .noticeDate(LocalDate.of(2026, 1, 10))
-            .build();
-
-        TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
-            .type(CombinedLicenceType.SECURE_TENANCY)
-            .build();
-
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
-            .id(CASE_ID)
-            .caseReference(1234567890123456L)
-            .caseManagementLocation(45)
-            .tenancyLicence(tenancy)
-            .build();
-
-        return ClaimEntity.builder()
-            .id(CLAIM_ID)
-            .pcsCase(pcsCase)
-            .claimantType(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING)
-            .againstTrespassers(VerticalYesNo.NO)
-            .languageUsed(LanguageUsed.ENGLISH)
-            .claimSubmittedDate(LocalDateTime.of(2026, 2, 1, 14, 30))
-            .claimIssuedDate(LocalDateTime.of(2026, 2, 5, 9, 0))
-            .noticeOfPossession(notice)
-            .claimParties(List.of(claimParty))
-            .build();
+    private static SdpClaimSnapshotHeader header(UUID claimId) {
+        return new SdpClaimSnapshotHeader(
+            claimId,
+            ClaimantType.PROVIDER_OF_SOCIAL_HOUSING.name(),
+            VerticalYesNo.NO.name(),
+            LanguageUsed.ENGLISH.name(),
+            LocalDateTime.of(2026, 2, 1, 14, 30),
+            LocalDateTime.of(2026, 2, 5, 9, 0),
+            1234567890123456L,
+            45,
+            null,
+            CombinedLicenceType.SECURE_TENANCY.name(),
+            NoticeServiceMethod.FIRST_CLASS_POST.name(),
+            LocalDate.of(2026, 1, 10)
+        );
     }
 }
