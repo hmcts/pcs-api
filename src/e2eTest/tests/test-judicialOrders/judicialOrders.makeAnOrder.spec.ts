@@ -6,8 +6,9 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import {caseSummary, user} from '@data/page-data';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
 import {
-  makeAnOrder,
-} from "@data/page-data-figma/page-data-caseManagement-figma";
+  CaseManagementCommonUtils
+} from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
+import {makeAnOrder} from "@data/page-data-figma/page-data-judicialOrders-figma";
 
 
 test.use({ storageState: undefined })
@@ -39,26 +40,38 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('Case management - As a Judge resumes draft order @nightly', async () => {
-  test('Case management - Verify the Judge user can save an order as a draft',
+test.describe('Judicial Orders - As a Judge resumes draft order @nightly', async () => {
+  test('Judicial Orders - Verify the Judge user can save an order as a draft',
     {
-      tag: ['@CM, @regression'],
+      tag: ['@Judicial, @regression'],
       annotation: [
         {type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-7032`},
-        {type: 'ac', description: 'AC1 to AC2'},
+        {type: 'ac', description: 'AC1 and AC2'},
       ],
     },
     async () => {
+      const recitalTextInput = CaseManagementCommonUtils.generateRandomString(makeAnOrder.recitalParagraphHiddenTextInput);
+      const submitPayload = submitCaseApiData.submitCasePayloadCaseDetails();
       await test.step(`Given the user selects the "Make an Order" event from the event dropdown`, async () => {
         await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
         await  performValidation('mainHeader', makeAnOrder.mainHeader);
       });
 
-      await test.step(`When the user provides input in Recitals section and click Save and Draft button`, async () => {
-        await performAction('inputProvidedInRecitals', {
-          submitPayload: submitCaseApiData.submitCasePayloadDefault(),
-          label: makeAnOrder.recitalParagraphTextLabel,
-          recitalInput: makeAnOrder.recitalParagraphTextInput,
+      await test.step(`When the user provides input details and click Save and Draft button`, async () => {
+        await performAction('makeAnOrderDetailsProvided', {
+          submitPayload: submitCaseApiData.submitCasePayloadCaseDetails(),
+          claimantRadioOption: makeAnOrder.claimantRadioOption[0],
+          defendantRadioOption: makeAnOrder.defendantRadioOption[1],
+          label: makeAnOrder.recitalParagraphHiddenTextLabel,
+          recitalInput: recitalTextInput,
+          question: makeAnOrder.possessionLabel,
+          option: makeAnOrder.forthwithRadioOption,
+          question1:makeAnOrder.groundsLabel,
+          option1:makeAnOrder.mandatoryRadioOption,
+          question2: makeAnOrder.additionOrderLabel,
+          option2: makeAnOrder.transferToHighCourtCheckBox,
+          question3: makeAnOrder.costHeader,
+          option3: makeAnOrder.costRadioOption[4],
           button: makeAnOrder.saveAsDraftButton
         });
       });
@@ -68,19 +81,58 @@ test.describe('Case management - As a Judge resumes draft order @nightly', async
       });
 
       await test.step(`And the user verify saved draft order reloads automaticallyS`, async () => {
-        await performAction('verifySavedDraftOrderDetails');
+        await performAction('verifySavedDraftOrderDetails',{
+          inputData: [
+            {
+              type: 'radio',
+              inputRadioQuestion: makeAnOrder.claimantLabel(submitPayload.claimantName),
+              expectedAnswer: makeAnOrder.claimantRadioOption[0],
+            },
+            {
+              type: 'radio',
+              inputRadioQuestion: makeAnOrder.defendantLabel(submitPayload.defendant1.firstName, submitPayload.defendant1.lastName),
+              expectedAnswer: makeAnOrder.defendantRadioOption[1],
+            },
+            {
+              type: 'checkBox',
+              locatorType: 'label',
+              inputCheckBoxQuestion: makeAnOrder.recitalsHeader,
+              expectedAnswer: makeAnOrder.recitalCheckBox,
+
+            },
+            {
+              type: 'inputText',
+              locatorType: 'label',
+              inputTextLabel: makeAnOrder.recitalParagraphHiddenTextLabel,
+              expectedAnswer: recitalTextInput,
+            },
+            {
+              type: 'radio',
+              inputRadioQuestion: makeAnOrder.possessionLabel,
+              expectedAnswer: makeAnOrder.forthwithRadioOption
+            },
+            {
+              type: 'checkBox',
+              locatorType: 'label',
+              inputCheckBoxQuestion: makeAnOrder.costHeader,
+              expectedAnswer: makeAnOrder.costCheckBox
+            },
+          ]
+        });
       });
     });
 
-  test('Case management - Verify the Judge user creates multiple numbered lists sequentially',
+
+  test('Judicial Orders - Verify the Judge user creates multiple numbered lists sequentially',
     {
-      tag: ['@CM, @regression'],
+      tag: ['@Judicial, @regression'],
       annotation: [
         {type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-7447`},
         {type: 'ac', description: 'AC1 and AC2'},
       ],
     },
     async () => {
+      const recitalTextInput = CaseManagementCommonUtils.generateRandomString(makeAnOrder.recitalParagraphHiddenTextInput);
       await test.step(`Given the user selects the "Make an Order" event from the event dropdown`, async () => {
         await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
         await  performValidation('mainHeader', makeAnOrder.mainHeader);
@@ -91,8 +143,8 @@ test.describe('Case management - As a Judge resumes draft order @nightly', async
           submitPayload: submitCaseApiData.submitCasePayloadCaseDetails(),
           claimantRadioOption: makeAnOrder.claimantRadioOption[0],
           defendantRadioOption: makeAnOrder.defendantRadioOption[1],
-          label: makeAnOrder.recitalParagraphTextLabel,
-          recitalInput: makeAnOrder.recitalParagraphTextInput,
+          label: makeAnOrder.recitalParagraphHiddenTextLabel,
+          recitalInput: recitalTextInput,
           question: makeAnOrder.possessionLabel,
           option: makeAnOrder.forthwithRadioOption,
           question1:makeAnOrder.groundsLabel,
@@ -109,3 +161,5 @@ test.describe('Case management - As a Judge resumes draft order @nightly', async
       });
     });
 });
+
+

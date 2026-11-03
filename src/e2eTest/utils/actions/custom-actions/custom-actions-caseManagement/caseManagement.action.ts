@@ -30,13 +30,14 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes, checkFullPartyDetails, makeAnOrder
+  confirmCancelHearing, checkFullPartyDetails, confirmJudicialNotes, addJudicialNotes
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
 import {manageHearingApiData} from "@data/api-data";
+import {makeAnOrder} from "@data/page-data-figma/page-data-judicialOrders-figma";
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -88,8 +89,7 @@ export class CaseManagementAction implements IAction {
       ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
       ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
-      ['inputProvidedInRecitals',() => this.inputProvidedInRecitals(fieldName as actionRecord)],
-      ['verifySavedDraftOrderDetails', () => this.verifySavedDraftOrderDetails(page)],
+      ['verifySavedDraftOrderDetails', () => this.verifySavedDraftOrderDetails(page, fieldName as actionRecord)],
       ['makeAnOrderDetailsProvided', () => this.makeAnOrderDetailsProvided(fieldName as actionRecord)],
       ['verifyPreviewSectionNumberedList',() => this.verifyPreviewSectionNumberedList(page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
@@ -928,52 +928,98 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
-  private async inputProvidedInRecitals(inputData: actionRecord): Promise<void> {
-    let submitPayLoad = inputData.submitPayload as Record<string, any>;
-    await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
-    });
-    await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
-    await performAction('check', makeAnOrder.recitalCheckBox);
-    await performAction('inputText', inputData.label, CaseManagementCommonUtils.generateRandomString(inputData.recitalInput as number));
-    await performAction('clickButton', inputData.button);
-  }
-
-  private async verifySavedDraftOrderDetails(page: Page): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
-    });
-    await expect(
-      page.getByRole('checkbox', { name: makeAnOrder.recitalCheckBox })
-    ).toBeChecked();
-  }
-
   private async makeAnOrderDetailsProvided (orderData: actionRecord ): Promise<void> {
     let submitPayLoad = orderData.submitPayload as Record<string, any>;
+    const claimantName = submitPayLoad.claimantName;
+    const firstName = submitPayLoad.defendant1.firstName;
+    const lastName = submitPayLoad.defendant1.lastName;
     await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
     });
-    await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
-    await performAction('clickRadioButton', { question: makeAnOrder.claimantLabel, option: orderData.claimantRadioOption});
-    await performAction('clickRadioButton', { question: makeAnOrder.defendantLabel, option: orderData.defendantRadioOption});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `${claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`,
+    });
+    await performAction('clickRadioButton', {
+      question: makeAnOrder.claimantLabel(claimantName),
+      option: orderData.claimantRadioOption,
+    });
+    await performAction('clickRadioButton', {
+      question: makeAnOrder.defendantLabel(firstName, lastName),
+      option: orderData.defendantRadioOption,
+    });
     await performAction('check', makeAnOrder.recitalCheckBox);
-    await performAction('inputText', orderData.label, CaseManagementCommonUtils.generateRandomString(orderData.recitalInput as number));
+    await performAction('inputText', orderData.label, orderData.recitalInput);
     await performAction('clickRadioButton', { question: orderData.question, option: orderData.option });
     await performAction('clickRadioButton', { question: orderData.question1, option: orderData.option1 });
     await performAction('check', {question: orderData.question2, option: orderData.option2 });
     await performAction('check', makeAnOrder.costCheckBox);
     await performAction('clickRadioButton', { question: orderData.question3, option: orderData.option3 });
+    if (orderData.button) {
+      await performAction('clickButton', orderData.button);
     }
+  }
+
+  private async verifySavedDraftOrderDetails(page: Page, prePopulatedData: actionRecord): Promise<void> {
+    const items = Array.isArray(prePopulatedData.inputData)
+      ? prePopulatedData.inputData
+      : [prePopulatedData.inputData];
+
+    for (const item of items) {
+      switch (item.type) {
+        case 'radio': {
+          const attendanceRow = page.locator('[data-attendance-row]').filter({has: page.getByText(item.inputRadioQuestion, {exact: true})});
+
+          if (await attendanceRow.count() > 0) {
+            const selectedRadio = attendanceRow.locator('input[type="radio"]:checked');
+            await expect(selectedRadio).toHaveCount(1);
+            const selectedValue = await selectedRadio.getAttribute('value');
+            const selectedLabel = await selectedRadio.locator('xpath=following-sibling::label').textContent();
+
+            expect(
+              selectedLabel?.trim().includes(item.expectedAnswer),
+              `Expected ${item.expectedAnswer}, but selected value was ${selectedValue}`
+            ).toBe(true);
+
+          } else {
+            await performValidation(
+              'validateRadioButtonValues',
+              {question: item.inputRadioQuestion},
+              {expected: item.expectedAnswer}
+            );
+          }
+          break;
+        }
+        case 'inputText': {
+          await performValidation(
+            'validateInputTextValues',
+            {textLabel: item.inputTextLabel, locatorType: item.locatorType},
+            {expected: item.expectedAnswer}
+          );
+          break;
+        }
+
+        case 'checkBox': {
+          await performValidation(
+            'validateCheckBoxSelection',
+            {question: item.inputCheckBoxQuestion, locatorType: item.locatorType},
+            {expected: item.expectedAnswer},
+          );
+          break;
+        }
+        default:
+          throw new Error(`Unsupported pre-populated data type: ${item.type}`);
+      }
+    }
+  }
+
+
 
   private async verifyPreviewSectionNumberedList(page: Page): Promise<void> {
     const orderedList = page
-      .getByRole('textbox', { name: makeAnOrder.orderTextBox })
+      .getByRole('textbox', { name: 'Order' })
       .locator('ol');
 
     const listItems = orderedList.locator('li');

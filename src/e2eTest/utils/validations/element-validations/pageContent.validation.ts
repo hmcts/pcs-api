@@ -188,6 +188,9 @@ export class PageContentValidation implements IValidation {
       else if(page.url().includes("legalRepDocumentUpload")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
+      else if(page.url().includes("make-order")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-judicialOrders-figma/urlToFileMappingJudicialOrders.ts');
+      }
       else if(
       ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote"].some(str =>
         page.url().includes(str)
@@ -256,6 +259,8 @@ export class PageContentValidation implements IValidation {
         filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma', `${fileName}.page.data.ts`);
     } else if (page.url().includes("legalRepDocumentUpload")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.page.data.ts`);
+    }else if (page.url().includes("make-order")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-judicialOrders-figma', `${fileName}.page.data.ts`);
     }
     else if (page.url().includes("globalSearch")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
@@ -405,6 +410,8 @@ export class PageContentValidation implements IValidation {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       } else if(url.includes("claimantMakeAnApplication")) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma/urlToFileMappingGenAppsClaimant.ts');
+      } else if(url.includes("make-order")) {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-judicialOrders/urlToFileMappingJudicialOrders.ts');
       } else if (
         ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote"].some(str =>
           url.includes(str)
