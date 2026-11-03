@@ -23,8 +23,7 @@ import {
   statementOfTruth,
   suspendedOrder,
   violentAggressiveRisk,
-  vulnerableAdultsChildren,
-  
+  vulnerableAdultsChildren
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export class ErrorValidationAction implements IAction {
@@ -55,7 +54,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationIsDefendantInBreathingSpacePage', () => this.errorValidationIsDefendantInBreathingSpacePage(errorFlag as string)],
       ['errorValidationMissedPaymentsPage', () => this.errorValidationMissedPaymentsPage(errorFlag as string)],
       ['errorValidationCannotApplyForWarrantPage', () => this.errorValidationCannotApplyForWarrantPage(errorFlag as string)],
-    ]); 
+    ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();

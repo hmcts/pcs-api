@@ -1622,11 +1622,11 @@ export class CreateCaseAction implements IAction {
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
 
-   const folderName = caseFile.folder as string;
+    const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
-    const file = (caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload)?.toString();
+    const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload;
 
     switch (folderName) {
       case 'Property documents':
@@ -1638,10 +1638,10 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
         if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles.push(...(Array.isArray(caseFile.caseWorkerAmend) ? caseFile.caseWorkerAmend : [caseFile.caseWorkerAmend]));
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1653,9 +1653,9 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
         if (caseFile.caseWorkerAmend) {
           const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
-          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1669,9 +1669,9 @@ export class CreateCaseAction implements IAction {
           this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments)
         if (caseFile.caseWorkerAmend) {
           const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
-          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1870,7 +1870,7 @@ export class CreateCaseAction implements IAction {
 
   public async validateTabAccess(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
-      const tabLoc = page.locator('div.mat-tab-label-content');
+      const tabLoc = page.getByRole('tab');
       await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
       const tabs = await tabLoc.allTextContents();
       expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));

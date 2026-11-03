@@ -45,5 +45,6 @@ public enum EventId {
     rescheduleEviction,
     markNoticeOfEvictionServed,
     recordWarrantReturn,
+    deleteDraftResponse,
     addJudicialNote
 }
