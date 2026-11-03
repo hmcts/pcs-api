@@ -65,10 +65,8 @@ withPipeline(type, product, component) {
   // so there is no smoketest:/functionalTest: stage to hang this off.
   afterSuccess('checkout') {
     if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
-      withSubscription('nonprod') {
-        uploadDmnDiagrams()
-        uploadBpmnDiagram()
-      }
+      uploadDmnDiagrams()
+      uploadBpmnDiagram()
     }
   }
 

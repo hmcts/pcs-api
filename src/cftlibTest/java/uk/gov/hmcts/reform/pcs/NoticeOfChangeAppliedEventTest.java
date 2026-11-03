@@ -63,10 +63,10 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             idamClient.getAccessToken("pcs-solicitor1@test.com", "password")
         );
         Map<String, Object> caseParameters = Map.of("caseReference", caseReference);
-        UUID defendantId = defendantPartyId(caseParameters);
+        UUID defendant1Id = getFirstDefendantPartyId(caseParameters);
 
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
-            .partyId(defendantId.toString())
+            .partyId(defendant1Id.toString())
             .organisationDetailsResponse(testOrganisation())
             .userId(ACTING_SOLICITOR_ID)
             .email(LEGAL_REP_EMAIL)
@@ -115,7 +115,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
 
         JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
-        assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
+        assertThat(countActiveOrganisationLinks(defendant1Id)).isEqualTo(1);
 
         long caseDataId = jdbcTemplate.queryForObject(
             "select id from ccd.case_data where reference = :caseReference",
@@ -143,10 +143,10 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             Map.of("caseReference", caseReference, "eventId", EVENT_ID),
             Integer.class
         )).isEqualTo(1);
-        assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
+        assertThat(countActiveOrganisationLinks(defendant1Id)).isEqualTo(1);
     }
 
-    private UUID defendantPartyId(Map<String, Object> caseParameters) {
+    private UUID getFirstDefendantPartyId(Map<String, Object> caseParameters) {
         return jdbcTemplate.queryForObject(
             """
                 select cp.party_id
@@ -155,6 +155,8 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
                   join claim_party cp on cp.claim_id = c.id
                  where pc.case_reference = :caseReference
                    and cp.role = 'DEFENDANT'
+                   order by cp.rank
+                   limit 1
                 """,
             caseParameters,
             UUID.class
