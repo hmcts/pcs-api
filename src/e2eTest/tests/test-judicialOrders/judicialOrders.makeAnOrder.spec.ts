@@ -41,10 +41,10 @@ test.use({ storageState: undefined })
       PageContentValidation.finaliseTest();
     });
 
-    test.describe('Case management - As a Judge resumes draft order @nightly', async () => {
-      test('Case management - Verify the Judge user can save an order as a draft',
+    test.describe('Judicial Orders - As a Judge resumes draft order @nightly', async () => {
+      test('Judicial Orders - Verify the Judge user can save an order as a draft',
         {
-          tag: ['@CM, @regression'],
+          tag: ['@Judicial, @regression'],
           annotation: [
             {type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-7032`},
             {type: 'ac', description: 'AC1 and AC2'},
