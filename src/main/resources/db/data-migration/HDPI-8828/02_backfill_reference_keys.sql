@@ -1,7 +1,3 @@
--- HDPI-8828 one-time backfill of reference-data keys. Not a Flyway migration: run manually after the reference tables are populated.
--- Run 01_validation.sql before and after. Replace COMMIT with ROLLBACK for a dry run. Safe to re-run.
--- Only rows whose key is NULL, whose legacy value has a crosswalk entry and whose reference row exists are updated.
-
 BEGIN;
 
 WITH updated AS (

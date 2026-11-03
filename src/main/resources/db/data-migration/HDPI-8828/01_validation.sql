@@ -1,6 +1,3 @@
--- HDPI-8828 read-only validation. Run before and after 02_backfill_reference_keys.sql and compare the results.
-
--- 1. Per mapping: legacy rows, already populated, candidates, expected updates and rows that cannot be matched.
 WITH crosswalk (target, legacy_value, ref_key) AS (
   VALUES
     ('claim_party.claimant_type_key', 'PRIVATE_LANDLORD', 'AAA3-PLD'),
@@ -68,7 +65,6 @@ FROM classified
 GROUP BY target
 ORDER BY target;
 
--- 2. Legacy values that will not be migrated, for DA investigation.
 WITH crosswalk (target, legacy_value) AS (
   VALUES
     ('claim_party.claimant_type_key', 'PRIVATE_LANDLORD'),
@@ -117,7 +113,6 @@ WHERE crosswalk.legacy_value IS NULL
 GROUP BY source_rows.target, source_rows.legacy_value
 ORDER BY source_rows.target, row_count DESC, source_rows.legacy_value;
 
--- 3. Mapped reference keys missing from the reference tables (expected to be empty once reference data is loaded).
 SELECT expected.target, expected.ref_key
 FROM (
   VALUES
@@ -153,7 +148,6 @@ WHERE NOT EXISTS (
 )
 ORDER BY expected.target, expected.ref_key;
 
--- 4. Populated key columns that do not resolve to a reference row (expected 0 for every column).
 SELECT 'claim_party.claimant_type_key' AS target, count(*) AS invalid_keys
 FROM public.claim_party cp
 WHERE cp.claimant_type_key IS NOT NULL
@@ -174,7 +168,6 @@ FROM public.hearing h
 WHERE h.hearing_type_key IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM public.hearing_type r WHERE r.key = h.hearing_type_key);
 
--- 5. Row counts and a checksum of every column except the key columns. Identical before and after the backfill.
 SELECT 'claim_party' AS table_name, count(*) AS row_count,
        md5(coalesce(string_agg(j::text, '' ORDER BY j::text), '')) AS checksum_excluding_keys
 FROM (SELECT to_jsonb(t) - 'entity_role_code_key' - 'claimant_type_key' AS j FROM public.claim_party t) x
@@ -191,7 +184,6 @@ UNION ALL
 SELECT 'claim_ground', count(*), md5(coalesce(string_agg(j::text, '' ORDER BY j::text), ''))
 FROM (SELECT to_jsonb(t) AS j FROM public.claim_ground t) x;
 
--- 6. Reference table sizes.
 SELECT 'claimant_type' AS reference_table, count(*) AS row_count FROM public.claimant_type
 UNION ALL SELECT 'entity_role_code', count(*) FROM public.entity_role_code
 UNION ALL SELECT 'tenancy_type', count(*) FROM public.tenancy_type
@@ -201,14 +193,12 @@ UNION ALL SELECT 'ground_type', count(*) FROM public.ground_type
 UNION ALL SELECT 'ground_subtype', count(*) FROM public.ground_subtype
 ORDER BY reference_table;
 
--- 7. Triggers on the tables the backfill updates (review before running; none expected to modify other columns).
 SELECT event_object_table AS table_name, trigger_name, event_manipulation, action_timing
 FROM information_schema.triggers
 WHERE event_object_schema = 'public'
   AND event_object_table IN ('claim_party', 'tenancy_licence', 'hearing')
 ORDER BY event_object_table, trigger_name;
 
--- 8. Claim grounds still awaiting a DA-approved crosswalk (claim_ground.code to grounds_type_key and grounds_subtype_key).
 SELECT category, code, count(*) AS row_count,
        count(*) FILTER (WHERE grounds_type_key IS NOT NULL) AS grounds_type_populated,
        count(*) FILTER (WHERE grounds_subtype_key IS NOT NULL) AS grounds_subtype_populated
