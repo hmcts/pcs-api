@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("ccd-definition")
 class GeneratedDefinitionTest {
 
-    private static final Path DEFINITION_DIR = Path.of("build/definitions/PCS");
+    private static final Path DEFINITION_DIR = Path.of("build/definitions", CaseType.getCaseType());
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final Set<String> INTERNAL_PROFILES = Set.of(

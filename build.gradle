@@ -172,6 +172,8 @@ tasks.register('definitionTest', Test) {
   description = "Checks the generated CCD definition: one tab per topic, declared field access respected"
   group = "verification"
   dependsOn 'generateCCDConfig'
+  inputs.dir(layout.buildDirectory.dir('definitions'))
+  inputs.property('caseTypeSuffix', providers.environmentVariable('CASE_TYPE_SUFFIX').orElse(''))
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
 
@@ -599,6 +601,10 @@ tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
 }
 
 project.tasks.named("generateCCDConfig") {
+  // the suffix changes the output directory, so a change must rerun the generator
+  inputs.property('caseTypeSuffix', providers.environmentVariable('CASE_TYPE_SUFFIX').orElse(''))
+  // random port, so generating never clashes with a running pcs-api or bootWithCCD
+  environment 'SERVER_PORT', '0'
   environment 'SPRING_PROFILES_ACTIVE', 'config-gen'
   environment 'SPRING_FLYWAY_ENABLED', 'false'
   environment 'PCS_DB_USER_NAME', 'postgres'
