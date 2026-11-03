@@ -48,7 +48,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
 
         // Always return an error to block progression
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(List.of(ERROR_MESSAGE))
+                .errorMessageOverride(ERROR_MESSAGE)
                 .build();
     }
 }
