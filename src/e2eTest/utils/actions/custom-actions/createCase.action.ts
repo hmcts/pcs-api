@@ -1626,7 +1626,7 @@ export class CreateCaseAction implements IAction {
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
-    const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload;
+    const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload ?? caseFile.caseWorkerHearing;
 
     switch (folderName) {
       case 'Property documents':
@@ -1684,6 +1684,12 @@ export class CreateCaseAction implements IAction {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
+      
+      case 'Orders and Notice of Hearings':
+        if (file) {
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
+        }
+        break;
 
       default:
         break;
@@ -1728,8 +1734,8 @@ export class CreateCaseAction implements IAction {
     await folder.click();
     const actualFileCount = await fileLocator.count();
 
-    expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
+    expect(actualFileCount, 'File count matching').toEqual(fileCount);
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents(),!!caseFile.caseWorkerHearing );
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
@@ -1739,12 +1745,18 @@ export class CreateCaseAction implements IAction {
     }
   }
 
-  public  cleanFilesArray(filesArray: string[]): string[] {
-    const uniqueFiles = [...new Set(filesArray.map(f =>
-      f.replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
-        .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
-        .trim()
-    ))];
+  public  cleanFilesArray(filesArray: string[],formatting?:boolean): string[] {
+
+    const uniqueFiles = formatting
+      ? [...new Set(filesArray.map(text => text.trim()))]
+      : [...new Set(
+        filesArray.map(f =>
+          f
+            .replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
+            .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
+            .trim()
+        )
+      )];
 
     return uniqueFiles;
   }
