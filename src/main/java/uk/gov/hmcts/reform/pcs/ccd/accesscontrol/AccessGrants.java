@@ -44,6 +44,13 @@ final class AccessGrants {
         WLU_ADMIN
     };
 
+    static final UserRole[] JUDICIAL_READ_ROLES = {
+        JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE
+    };
+
     static final UserRole[] INTERNAL_READ_ROLES = {
         JUDGE,
         FEE_PAID_JUDGE,
@@ -74,6 +81,10 @@ final class AccessGrants {
         return readAccess(PARTY_VISIBLE_ROLES);
     }
 
+    static SetMultimap<HasRole, Permission> judicialReadAccess() {
+        return readAccess(JUDICIAL_READ_ROLES);
+    }
+
     static SetMultimap<HasRole, Permission> internalReadAccess() {
         return readAccess(INTERNAL_READ_ROLES);
     }
@@ -96,6 +107,7 @@ final class AccessGrants {
         // a case to a user who can read it in the case.
         grants.put(SYSTEM_USER, Permission.R);
         addReadAccess(grants, INTERNAL_READ_ROLES);
+        grants.putAll(new InternalDocumentMoveAccess().getGrants());
         return grants;
     }
 
