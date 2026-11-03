@@ -1711,7 +1711,7 @@ export class CreateCaseAction implements IAction {
       return;
     }
 
-    if (!caseFile.allowEmptyFolder && fileCount === 0) {
+    if (!caseFile.allowEmptyFolder && (fileCount === 0 || (Array.isArray(file) && fileCount < file.length))) {
       await expect(async () => {
         await performAction('clickTab', home.caseSummary);
         await performAction('clickTab', home.caseFileView);
