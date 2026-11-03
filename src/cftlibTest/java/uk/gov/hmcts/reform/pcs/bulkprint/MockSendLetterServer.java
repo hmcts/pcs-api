@@ -18,6 +18,7 @@ import wiremock.com.fasterxml.jackson.databind.node.ObjectNode;
 import wiremock.com.fasterxml.jackson.databind.node.TextNode;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,40 +44,55 @@ public class MockSendLetterServer {
         stubSendLetterEndpoints();
     }
 
-    public List<Letter> getSentLetters(long caseReference, LetterType letterType, int minLetterCount) {
+    public List<Letter> getSentLetters(long caseReference,
+                                       LetterType letterType,
+                                       Instant sentSince,
+                                       int minLetterCount) {
+
         log.info("Waiting for {} letters of type {}", minLetterCount, letterType);
 
-        waitForMinLetterCount(caseReference, letterType, minLetterCount);
+        waitForMinLetterCount(caseReference, letterType, sentSince, minLetterCount);
 
-        return getLoggedSendLetterRequests(caseReference, letterType).stream()
+        return getLoggedSendLetterRequests(caseReference, letterType, sentSince).stream()
             .map(this::toLetter)
             .toList();
     }
 
-    private void waitForMinLetterCount(long caseReference, LetterType letterType, int minLetterCount) {
-        await("At least %d letter(s) of type %s sent".formatted(minLetterCount, letterType))
+    private void waitForMinLetterCount(long caseReference,
+                                       LetterType letterType,
+                                       Instant sentSince,
+                                       int minLetterCount) {
+
+        await("At least %d letter(s) of type %s sent since %s".formatted(minLetterCount, letterType, sentSince))
             .atMost(Duration.ofSeconds(20))
             .pollInterval(Duration.ofMillis(500))
             .ignoreExceptions()
-            .until(() -> getSentLetterCount(caseReference, letterType), greaterThanOrEqualTo(minLetterCount));
+            .until(
+                () -> getSentLetterCount(caseReference, letterType, sentSince), greaterThanOrEqualTo(minLetterCount)
+            );
     }
 
-    private int getSentLetterCount(long caseReference, LetterType letterType) {
-        return getLoggedSendLetterRequests(caseReference, letterType).size();
+    private int getSentLetterCount(long caseReference, LetterType letterType, Instant sentSince) {
+        return getLoggedSendLetterRequests(caseReference, letterType, sentSince).size();
     }
 
-    private List<LoggedRequest> getLoggedSendLetterRequests(long caseReference, LetterType letterType) {
+    private List<LoggedRequest> getLoggedSendLetterRequests(long caseReference,
+                                                            LetterType letterType,
+                                                            Instant sentSince) {
+
         String caseReferenceWithDashes = caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference);
 
-        return wireMockServer
+        List<LoggedRequest> loggedRequests = wireMockServer
             .findAll(RequestPatternBuilder
                          .newRequestPattern(POST, urlPathEqualTo("/letters"))
                          .withRequestBody(
                              matchingJsonPath("$.additional_data.caseReference", equalTo(caseReferenceWithDashes))
-                              .and(matchingJsonPath("$.type", equalTo(letterType.getCode())))
-                         )
-            );
+                                 .and(matchingJsonPath("$.type", equalTo(letterType.getCode())))
+                         ));
 
+        return loggedRequests.stream()
+            .filter(loggedRequest -> loggedRequest.getLoggedDate().toInstant().isAfter(sentSince))
+            .toList();
     }
 
     private Letter toLetter(LoggedRequest loggedRequest) {
