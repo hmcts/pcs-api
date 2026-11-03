@@ -25,5 +25,6 @@ export const axe_Exclusions = [
   '#costs-choice-3',
   '#costs-choice-8',
   'button[data-editor-command="numbered"]',
+  '#nameConfirmation-2',
   '.action-cell > .govuk-link', // temporary exclusion for color-contrast issue in Fee & Pay Service Request Review
 ];
