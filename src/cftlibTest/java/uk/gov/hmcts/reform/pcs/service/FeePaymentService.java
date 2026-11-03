@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static uk.gov.hmcts.reform.pcs.auth.ServiceAuthorizationGenerator.generateTestS2SToken;
 
 @Service
+@Slf4j
 public class FeePaymentService {
 
     private static final String PCS_API_HOST = "http://localhost:3206";
@@ -40,7 +42,7 @@ public class FeePaymentService {
 
     public List<FeePaymentSummary> waitForFeePaymentRequests(long caseReference,
                                                              PaymentCallbackHandlerType paymentType) {
-        return Awaitility.await()
+        return Awaitility.await("Service request created for %s on case %d".formatted(paymentType, caseReference))
             .atMost(Duration.ofSeconds(30))
             .pollInterval(Duration.ofMillis(1000))
             .until(() -> getFeePaymentsForCase(caseReference, paymentType), not(empty()));
@@ -60,6 +62,8 @@ public class FeePaymentService {
 
     private void makePaymentCallback(long caseReference,
                                      FeePaymentSummary feePaymentSummary) {
+
+        log.info("About to pay for fee {}", feePaymentSummary);
 
         RestClient restClient = RestClient
             .create(PCS_API_HOST);
