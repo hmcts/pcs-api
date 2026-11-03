@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@2.4.9")
+@Library("Infrastructure@2.13.4")
 
 import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
@@ -70,10 +70,8 @@ withPipeline(type, product, component) {
   // so there is no smoketest:/functionalTest: stage to hang this off.
   afterSuccess('checkout') {
     if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
-      withSubscription('nonprod') {
-        uploadDmnDiagrams()
-        uploadBpmnDiagram()
-      }
+      uploadDmnDiagrams()
+      uploadBpmnDiagram()
     }
   }
 
@@ -333,7 +331,7 @@ def setPreviewEnvVars(githubApi) {
   }
 
   // pr-values:ccd deploys the frontend into this preview, so link to it rather than to AAT.
-  if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+  if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
     env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   } else if (env.PCS_FRONTEND_CHANGE_ID) {
     env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${env.PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
