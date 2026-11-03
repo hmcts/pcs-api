@@ -25,6 +25,8 @@ public class WarrantDetailsMapper {
         if (enforcementOrder.getWarrantDetails() != null) {
             WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
             warrantEntity.setLanguageUsed(warrantDetails.getLanguageUsed());
+            breathingSpace(warrantEntity, warrantDetails);
+            missedPayments(warrantEntity, warrantDetails);
             additionalInformation(warrantDetails, warrantEntity);
             nameAndAddressForEviction(warrantDetails, warrantEntity);
             propertyAccessDetails(warrantDetails, warrantEntity);
@@ -83,6 +85,14 @@ public class WarrantDetailsMapper {
                     .collect(Collectors.joining(","))
             );
         }
+    }
+
+    private void breathingSpace(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+        warrantEntity.setDefendantInBreathingSpace(warrantDetails.getDefendantInBreathingSpace());
+    }
+
+    private void missedPayments(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+        warrantEntity.setDefendantMissedPayments(warrantDetails.getDefendantMissedPayments());
     }
 
     private void nameAndAddressForEviction(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
