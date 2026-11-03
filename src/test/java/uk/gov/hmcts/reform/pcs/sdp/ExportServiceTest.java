@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,8 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.nio.file.Files;
@@ -42,7 +39,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -58,19 +54,10 @@ class ExportServiceTest {
     private static final UUID PARTY_ID = UUID.randomUUID();
 
     @Mock
-    private ClaimRepository claimRepository;
-
-    @Mock
-    private SdpClaimSnapshotReadRepository sdpClaimSnapshotReadRepository;
-
-    @Mock
-    private SdpClaimSnapshotRepository sdpClaimSnapshotRepository;
+    private SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository;
 
     @Mock
     private BlobUploader blobUploader;
-
-    @Mock
-    private EntityManager entityManager;
 
     @Captor
     private ArgumentCaptor<List<SdpClaimSnapshotEntity>> savedCaptor;
@@ -91,13 +78,10 @@ class ExportServiceTest {
     private ExportService exportService(Optional<BlobUploader> uploader) {
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
         return new ExportService(
-            claimRepository,
-            sdpClaimSnapshotReadRepository,
+            sdpClaimSnapshotJdbcRepository,
             new SnapshotMapper(),
             new ClaimSnapshotFileWriter(objectMapper),
-            sdpClaimSnapshotRepository,
             uploader,
-            entityManager,
             objectMapper,
             FIXED_CLOCK,
             "local"
@@ -140,7 +124,7 @@ class ExportServiceTest {
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
         assertThat(uploadedJson()).contains("\"snapshot_version\":1");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(Path.class));
-        verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
+        verify(sdpClaimSnapshotJdbcRepository).upsertSnapshots(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getClaimId()).isEqualTo(CLAIM_ID);
             assertThat(saved.getSnapshotVersion()).isEqualTo(1);
@@ -149,14 +133,19 @@ class ExportServiceTest {
 
     @Test
     void shouldIncrementVersionWhenClaimWasPreviouslyExported() throws Exception {
-        stubDefaultClaim();
-        givenStoredSnapshot(2);
+        stubClaimsForExport(
+            List.of(header(CLAIM_ID, 2)),
+            List.of(new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), false)),
+            List.of(),
+            List.of(),
+            List.of()
+        );
 
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
         assertThat(uploadedJson()).contains("\"snapshot_version\":3");
-        verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
+        verify(sdpClaimSnapshotJdbcRepository).upsertSnapshots(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getSnapshotVersion()).isEqualTo(3);
         });
@@ -166,30 +155,18 @@ class ExportServiceTest {
     void shouldExportAllSelectedClaimsAndIncrementEachVersion() throws Exception {
         UUID secondId = UUID.randomUUID();
         stubClaimsForExport(
-            List.of(header(), header(secondId)),
+            List.of(header(CLAIM_ID, 1), header(secondId, 1)),
             List.of(),
             List.of(),
             List.of(),
             List.of()
         );
-        when(sdpClaimSnapshotRepository.findAllById(anyList())).thenReturn(List.of(
-            SdpClaimSnapshotEntity.builder()
-                .claimId(CLAIM_ID)
-                .snapshotVersion(1)
-                .exportedAt(LocalDateTime.of(2026, 3, 9, 2, 0))
-                .build(),
-            SdpClaimSnapshotEntity.builder()
-                .claimId(secondId)
-                .snapshotVersion(1)
-                .exportedAt(LocalDateTime.of(2026, 3, 9, 2, 0))
-                .build()
-        ));
 
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(2);
         assertThat(uploadedJson()).contains("\"snapshot_version\":2");
-        verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
+        verify(sdpClaimSnapshotJdbcRepository).upsertSnapshots(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).hasSize(2)
             .allSatisfy(saved -> assertThat(saved.getSnapshotVersion()).isEqualTo(2));
     }
@@ -202,7 +179,7 @@ class ExportServiceTest {
 
         assertThatThrownBy(() -> exportService.exportClaims())
             .isInstanceOf(IllegalStateException.class);
-        verify(sdpClaimSnapshotRepository).saveAll(anyList());
+        verify(sdpClaimSnapshotJdbcRepository).upsertSnapshots(anyList());
     }
 
     @Test
@@ -231,7 +208,8 @@ class ExportServiceTest {
             null,
             null,
             NoticeServiceMethod.FIRST_CLASS_POST.name(),
-            LocalDate.of(2026, 1, 10)
+            LocalDate.of(2026, 1, 10),
+            null
         );
         stubClaimsForExport(List.of(headerWithoutTenancy), List.of(), List.of(), List.of(), List.of());
 
@@ -254,6 +232,7 @@ class ExportServiceTest {
             45,
             null,
             CombinedLicenceType.SECURE_TENANCY.name(),
+            null,
             null,
             null
         );
@@ -341,27 +320,25 @@ class ExportServiceTest {
     void shouldLoadClaimsInChunks() {
         int claimCount = EXPORT_CHUNK_SIZE + 1;
         List<UUID> ids = IntStream.range(0, claimCount).mapToObj(i -> UUID.randomUUID()).toList();
-        when(claimRepository.findAllIdsForSdpSnapshotExport()).thenReturn(ids);
-        when(sdpClaimSnapshotReadRepository.findHeadersByClaimId(any())).thenAnswer(invocation -> {
+        when(sdpClaimSnapshotJdbcRepository.findIdsForExport()).thenReturn(ids);
+        when(sdpClaimSnapshotJdbcRepository.findHeadersByClaimId(any())).thenAnswer(invocation -> {
             Collection<UUID> chunkIds = invocation.getArgument(0);
             return chunkIds.stream().map(ExportServiceTest::header).toList();
         });
-        when(sdpClaimSnapshotReadRepository.findPartiesByClaimId(any())).thenReturn(List.of());
-        when(sdpClaimSnapshotReadRepository.findPaymentsByClaimId(any())).thenReturn(List.of());
-        when(sdpClaimSnapshotReadRepository.findGroundsByClaimId(any())).thenReturn(List.of());
-        when(sdpClaimSnapshotReadRepository.findResponsesByClaimId(any())).thenReturn(List.of());
+        when(sdpClaimSnapshotJdbcRepository.findPartiesByClaimId(any())).thenReturn(List.of());
+        when(sdpClaimSnapshotJdbcRepository.findPaymentsByClaimId(any())).thenReturn(List.of());
+        when(sdpClaimSnapshotJdbcRepository.findGroundsByClaimId(any())).thenReturn(List.of());
+        when(sdpClaimSnapshotJdbcRepository.findResponsesByClaimId(any())).thenReturn(List.of());
 
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(claimCount);
-        verify(sdpClaimSnapshotReadRepository, times(2)).findHeadersByClaimId(any());
-        verify(sdpClaimSnapshotReadRepository, times(2)).findPartiesByClaimId(any());
-        verify(sdpClaimSnapshotReadRepository, times(2)).findPaymentsByClaimId(any());
-        verify(sdpClaimSnapshotReadRepository, times(2)).findGroundsByClaimId(any());
-        verify(sdpClaimSnapshotReadRepository, times(2)).findResponsesByClaimId(any());
-        verify(sdpClaimSnapshotRepository, times(2)).saveAll(anyList());
-        verify(entityManager, times(2)).flush();
-        verify(entityManager, times(2)).clear();
+        verify(sdpClaimSnapshotJdbcRepository, times(2)).findHeadersByClaimId(any());
+        verify(sdpClaimSnapshotJdbcRepository, times(2)).findPartiesByClaimId(any());
+        verify(sdpClaimSnapshotJdbcRepository, times(2)).findPaymentsByClaimId(any());
+        verify(sdpClaimSnapshotJdbcRepository, times(2)).findGroundsByClaimId(any());
+        verify(sdpClaimSnapshotJdbcRepository, times(2)).findResponsesByClaimId(any());
+        verify(sdpClaimSnapshotJdbcRepository).upsertSnapshots(anyList());
     }
 
     @Test
@@ -371,22 +348,12 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        verify(claimRepository).findAllIdsForSdpSnapshotExport();
-        verify(sdpClaimSnapshotReadRepository).findHeadersByClaimId(List.of(CLAIM_ID));
-        verify(sdpClaimSnapshotReadRepository).findPartiesByClaimId(List.of(CLAIM_ID));
-        verify(sdpClaimSnapshotReadRepository).findPaymentsByClaimId(List.of(CLAIM_ID));
-        verify(sdpClaimSnapshotReadRepository).findGroundsByClaimId(List.of(CLAIM_ID));
-        verify(sdpClaimSnapshotReadRepository).findResponsesByClaimId(List.of(CLAIM_ID));
-    }
-
-    @Test
-    void shouldNotSaveClaimsWhenExporting() {
-        stubDefaultClaim();
-
-        exportService.exportClaims();
-
-        verify(claimRepository, never()).save(any());
-        verify(claimRepository, never()).saveAll(any());
+        verify(sdpClaimSnapshotJdbcRepository).findIdsForExport();
+        verify(sdpClaimSnapshotJdbcRepository).findHeadersByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotJdbcRepository).findPartiesByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotJdbcRepository).findPaymentsByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotJdbcRepository).findGroundsByClaimId(List.of(CLAIM_ID));
+        verify(sdpClaimSnapshotJdbcRepository).findResponsesByClaimId(List.of(CLAIM_ID));
     }
 
     private String uploadedJson() {
@@ -410,24 +377,14 @@ class ExportServiceTest {
                                      List<SdpClaimSnapshotGround> grounds,
                                      List<SdpClaimSnapshotResponse> responses) {
         List<UUID> ids = headers.stream().map(SdpClaimSnapshotHeader::claimId).toList();
-        when(claimRepository.findAllIdsForSdpSnapshotExport()).thenReturn(ids);
+        when(sdpClaimSnapshotJdbcRepository.findIdsForExport()).thenReturn(ids);
         if (!ids.isEmpty()) {
-            when(sdpClaimSnapshotReadRepository.findHeadersByClaimId(any())).thenReturn(headers);
-            when(sdpClaimSnapshotReadRepository.findPartiesByClaimId(any())).thenReturn(parties);
-            when(sdpClaimSnapshotReadRepository.findPaymentsByClaimId(any())).thenReturn(payments);
-            when(sdpClaimSnapshotReadRepository.findGroundsByClaimId(any())).thenReturn(grounds);
-            when(sdpClaimSnapshotReadRepository.findResponsesByClaimId(any())).thenReturn(responses);
+            when(sdpClaimSnapshotJdbcRepository.findHeadersByClaimId(any())).thenReturn(headers);
+            when(sdpClaimSnapshotJdbcRepository.findPartiesByClaimId(any())).thenReturn(parties);
+            when(sdpClaimSnapshotJdbcRepository.findPaymentsByClaimId(any())).thenReturn(payments);
+            when(sdpClaimSnapshotJdbcRepository.findGroundsByClaimId(any())).thenReturn(grounds);
+            when(sdpClaimSnapshotJdbcRepository.findResponsesByClaimId(any())).thenReturn(responses);
         }
-    }
-
-    private void givenStoredSnapshot(int version) {
-        when(sdpClaimSnapshotRepository.findAllById(List.of(CLAIM_ID))).thenReturn(List.of(
-            SdpClaimSnapshotEntity.builder()
-                .claimId(CLAIM_ID)
-                .snapshotVersion(version)
-                .exportedAt(LocalDateTime.of(2026, 3, 1, 2, 0))
-                .build()
-        ));
     }
 
     private static SdpClaimSnapshotHeader header() {
@@ -435,6 +392,10 @@ class ExportServiceTest {
     }
 
     private static SdpClaimSnapshotHeader header(UUID claimId) {
+        return header(claimId, null);
+    }
+
+    private static SdpClaimSnapshotHeader header(UUID claimId, Integer snapshotVersion) {
         return new SdpClaimSnapshotHeader(
             claimId,
             ClaimantType.PROVIDER_OF_SOCIAL_HOUSING.name(),
@@ -447,7 +408,8 @@ class ExportServiceTest {
             null,
             CombinedLicenceType.SECURE_TENANCY.name(),
             NoticeServiceMethod.FIRST_CLASS_POST.name(),
-            LocalDate.of(2026, 1, 10)
+            LocalDate.of(2026, 1, 10),
+            snapshotVersion
         );
     }
 }

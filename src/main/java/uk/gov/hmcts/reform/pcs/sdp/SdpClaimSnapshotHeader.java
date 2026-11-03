@@ -16,6 +16,7 @@ public record SdpClaimSnapshotHeader(
     String legislativeCountry,
     String tenancyType,
     String servingMethod,
-    LocalDate noticeDate
+    LocalDate noticeDate,
+    Integer snapshotVersion
 ) {
 }

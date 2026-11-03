@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class SdpClaimSnapshotReadRepositoryTest {
+class SdpClaimSnapshotJdbcRepositoryTest {
 
     private static final UUID CLAIM_ID = UUID.randomUUID();
     private static final UUID PARTY_ID = UUID.randomUUID();
@@ -35,11 +35,11 @@ class SdpClaimSnapshotReadRepositoryTest {
     @Mock
     private ResultSet resultSet;
 
-    private SdpClaimSnapshotReadRepository repository;
+    private SdpClaimSnapshotJdbcRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new SdpClaimSnapshotReadRepository(jdbcTemplate);
+        repository = new SdpClaimSnapshotJdbcRepository(jdbcTemplate);
     }
 
     @Test
@@ -63,11 +63,12 @@ class SdpClaimSnapshotReadRepositoryTest {
         when(resultSet.getString("tenancy_type")).thenReturn("SECURE");
         when(resultSet.getString("serving_method")).thenReturn("POST");
         when(resultSet.getObject("notice_date", LocalDate.class)).thenReturn(LocalDate.of(2026, 1, 10));
+        when(resultSet.getObject("snapshot_version", Integer.class)).thenReturn(null);
 
         assertThat(repository.findHeadersByClaimId(List.of(CLAIM_ID))).containsExactly(
             new SdpClaimSnapshotHeader(
                 CLAIM_ID, "TYPE", "NO", "ENGLISH", SUBMITTED, null, 1L, 45, "ENGLAND",
-                "SECURE", "POST", LocalDate.of(2026, 1, 10)
+                "SECURE", "POST", LocalDate.of(2026, 1, 10), null
             )
         );
     }
@@ -123,6 +124,12 @@ class SdpClaimSnapshotReadRepositoryTest {
         assertThat(repository.findResponsesByClaimId(List.of(CLAIM_ID))).containsExactly(
             new SdpClaimSnapshotResponse(CLAIM_ID, 12, PARTY_ID, "NO", SUBMITTED)
         );
+    }
+
+    @Test
+    void shouldNotUpsertWhenSnapshotsAreEmpty() {
+        repository.upsertSnapshots(List.of());
+        verifyNoInteractions(jdbcTemplate);
     }
 
     @SuppressWarnings("unchecked")

@@ -2,15 +2,12 @@ package uk.gov.hmcts.reform.pcs.sdp;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
@@ -49,13 +46,10 @@ import java.util.stream.Collectors;
 @Service
 public class ExportService {
 
-    private final ClaimRepository claimRepository;
-    private final SdpClaimSnapshotReadRepository sdpClaimSnapshotReadRepository;
+    private final SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository;
     private final SnapshotMapper claimSnapshotMapper;
     private final ClaimSnapshotFileWriter claimSnapshotFileWriter;
-    private final SdpClaimSnapshotRepository sdpClaimSnapshotRepository;
     private final Optional<BlobUploader> blobUploader;
-    private final EntityManager entityManager;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
     private final String environment;
@@ -63,23 +57,17 @@ public class ExportService {
 
     private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
 
-    public ExportService(ClaimRepository claimRepository,
-                         SdpClaimSnapshotReadRepository sdpClaimSnapshotReadRepository,
+    public ExportService(SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository,
                          SnapshotMapper claimSnapshotMapper,
                          ClaimSnapshotFileWriter claimSnapshotFileWriter,
-                         SdpClaimSnapshotRepository sdpClaimSnapshotRepository,
                          Optional<BlobUploader> blobUploader,
-                         EntityManager entityManager,
                          ObjectMapper objectMapper,
                          @Qualifier("utcClock") Clock utcClock,
                          @Value("${sdp.export.environment}") String environment) {
-        this.claimRepository = claimRepository;
-        this.sdpClaimSnapshotReadRepository = sdpClaimSnapshotReadRepository;
+        this.sdpClaimSnapshotJdbcRepository = sdpClaimSnapshotJdbcRepository;
         this.claimSnapshotMapper = claimSnapshotMapper;
         this.claimSnapshotFileWriter = claimSnapshotFileWriter;
-        this.sdpClaimSnapshotRepository = sdpClaimSnapshotRepository;
         this.blobUploader = blobUploader;
-        this.entityManager = entityManager;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
         this.environment = environment;
@@ -88,7 +76,7 @@ public class ExportService {
     @Transactional
     public ExportResult exportClaims() {
         String extractDate = LocalDate.now(utcClock).minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        List<UUID> ids = claimRepository.findAllIdsForSdpSnapshotExport();
+        List<UUID> ids = sdpClaimSnapshotJdbcRepository.findIdsForExport();
         log.info("SDP claim snapshot export started: {} claim(s)", ids.size());
         final String publishedDate = Instant.now(utcClock).toString();
         LocalDateTime now = LocalDateTime.now(utcClock);
@@ -115,20 +103,18 @@ public class ExportService {
              JsonGenerator generator = objectMapper.getFactory().createGenerator(out)) {
             claimSnapshotFileWriter.writeStartArray(generator);
             int recordCount = 0;
+            List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
             for (int i = 0; i < ids.size(); i += EXPORT_CHUNK_SIZE) {
                 List<UUID> chunk = ids.subList(i, Math.min(i + EXPORT_CHUNK_SIZE, ids.size()));
-                List<SdpClaimSnapshotHeader> headers = sdpClaimSnapshotReadRepository.findHeadersByClaimId(chunk);
+                List<SdpClaimSnapshotHeader> headers = sdpClaimSnapshotJdbcRepository.findHeadersByClaimId(chunk);
                 Map<UUID, List<SdpClaimSnapshotParty>> parties = groupByClaimId(
-                    sdpClaimSnapshotReadRepository.findPartiesByClaimId(chunk), SdpClaimSnapshotParty::claimId);
+                    sdpClaimSnapshotJdbcRepository.findPartiesByClaimId(chunk), SdpClaimSnapshotParty::claimId);
                 Map<UUID, List<SdpClaimSnapshotPayment>> payments = groupByClaimId(
-                    sdpClaimSnapshotReadRepository.findPaymentsByClaimId(chunk), SdpClaimSnapshotPayment::claimId);
+                    sdpClaimSnapshotJdbcRepository.findPaymentsByClaimId(chunk), SdpClaimSnapshotPayment::claimId);
                 Map<UUID, List<SdpClaimSnapshotGround>> grounds = groupByClaimId(
-                    sdpClaimSnapshotReadRepository.findGroundsByClaimId(chunk), SdpClaimSnapshotGround::claimId);
+                    sdpClaimSnapshotJdbcRepository.findGroundsByClaimId(chunk), SdpClaimSnapshotGround::claimId);
                 Map<UUID, List<SdpClaimSnapshotResponse>> responses = groupByClaimId(
-                    sdpClaimSnapshotReadRepository.findResponsesByClaimId(chunk), SdpClaimSnapshotResponse::claimId);
-                Map<UUID, SdpClaimSnapshotEntity> stored = sdpClaimSnapshotRepository.findAllById(chunk).stream()
-                    .collect(Collectors.toMap(SdpClaimSnapshotEntity::getClaimId, Function.identity()));
-                List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
+                    sdpClaimSnapshotJdbcRepository.findResponsesByClaimId(chunk), SdpClaimSnapshotResponse::claimId);
                 for (SdpClaimSnapshotHeader header : headers) {
                     writeClaim(
                         header,
@@ -138,22 +124,19 @@ public class ExportService {
                         responses.getOrDefault(header.claimId(), List.of()),
                         extractDate,
                         publishedDate,
-                        stored,
                         now,
                         generator,
                         changed
                     );
                     recordCount++;
                 }
-                sdpClaimSnapshotRepository.saveAll(changed);
-                entityManager.flush();
-                entityManager.clear();
                 log.info(
                     "SDP claim snapshot export progress: {}/{} claim(s)",
                     Math.min(i + EXPORT_CHUNK_SIZE, ids.size()),
                     ids.size()
                 );
             }
+            sdpClaimSnapshotJdbcRepository.upsertSnapshots(changed);
             claimSnapshotFileWriter.finishArray(generator);
             return recordCount;
         } catch (IOException e) {
@@ -168,25 +151,18 @@ public class ExportService {
                                 List<SdpClaimSnapshotResponse> responses,
                                 String extractDate,
                                 String publishedDate,
-                                Map<UUID, SdpClaimSnapshotEntity> stored,
                                 LocalDateTime now,
                                 JsonGenerator generator,
                                 List<SdpClaimSnapshotEntity> changed) throws IOException {
         ClaimSnapshotRecord snapshotRecord = mapClaim(header, parties, payments, grounds, responses,
             extractDate, publishedDate);
-        SdpClaimSnapshotEntity snapshot = stored.get(header.claimId());
-        if (snapshot == null) {
-            snapshot = SdpClaimSnapshotEntity.builder()
-                .claimId(header.claimId())
-                .snapshotVersion(1)
-                .exportedAt(now)
-                .build();
-        } else {
-            snapshot.setSnapshotVersion(snapshot.getSnapshotVersion() + 1);
-            snapshot.setExportedAt(now);
-        }
-        changed.add(snapshot);
-        snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
+        int version = header.snapshotVersion() == null ? 1 : header.snapshotVersion() + 1;
+        changed.add(SdpClaimSnapshotEntity.builder()
+            .claimId(header.claimId())
+            .snapshotVersion(version)
+            .exportedAt(now)
+            .build());
+        snapshotRecord.getClaim().setSnapshotVersion(version);
         claimSnapshotFileWriter.writeRecord(generator, snapshotRecord);
     }
 
