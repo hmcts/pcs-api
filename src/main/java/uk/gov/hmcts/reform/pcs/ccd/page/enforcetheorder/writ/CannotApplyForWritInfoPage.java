@@ -8,8 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import java.util.List;
-
 public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
 
     static final String ERROR_MESSAGE =
