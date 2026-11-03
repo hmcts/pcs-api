@@ -154,11 +154,12 @@ test.describe('Judicial Orders - As a Judge resumes draft order @nightly', async
           question3: makeAnOrder.costHeader,
           option3: makeAnOrder.costRadioOption[4],
         });
-        await test.step(`And the user verify order preview section displays the expected numbered list in sequence`, async () => {
+      });
+      await test.step(`And the user verify order preview section displays the expected numbered list in sequence`, async () => {
          await performAction('verifyPreviewSectionNumberedList');
         });
       });
-    });
+
 });
 
 
