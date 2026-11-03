@@ -30,13 +30,14 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes, checkFullPartyDetails, makeAnOrder
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes, checkFullPartyDetails
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
 import {manageHearingApiData} from "@data/api-data";
+import {makeAnOrder} from "@data/page-data-figma/page-data-judicialOrders-figma";
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -925,22 +926,28 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
-
   private async makeAnOrderDetailsProvided (orderData: actionRecord ): Promise<void> {
     let submitPayLoad = orderData.submitPayload as Record<string, any>;
+    const claimantName = submitPayLoad.claimantName;
+    const firstName = submitPayLoad.defendant1.firstName;
+    const lastName = submitPayLoad.defendant1.lastName;
     await performValidation('text', { elementType: 'paragraph', text: 'Case reference: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}, ${addressInfo.country}`
     });
-    const claimantName = submitPayLoad.claimantName;
-    const firstName = submitPayLoad.defendant1.firstName;
-    const lastName = submitPayLoad.defendant1.lastName;
-    const claimantLabel = `${makeAnOrder.claimantLabel} ${claimantName}`;
-    const defendantLabel = `${makeAnOrder.defendantLabel} ${firstName} ${lastName}`;
-    await performValidation('text', { elementType: 'paragraph', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`});
-    await performAction('clickRadioButton', {question: claimantLabel, option: orderData.claimantRadioOption});
-    await performAction('clickRadioButton', {question: defendantLabel, option: orderData.defendantRadioOption});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `${claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`,
+    });
+    await performAction('clickRadioButton', {
+      question: makeAnOrder.claimantLabel(claimantName),
+      option: orderData.claimantRadioOption,
+    });
+    await performAction('clickRadioButton', {
+      question: makeAnOrder.defendantLabel(firstName, lastName),
+      option: orderData.defendantRadioOption,
+    });
     await performAction('check', makeAnOrder.recitalCheckBox);
     await performAction('inputText', orderData.label, orderData.recitalInput);
     await performAction('clickRadioButton', { question: orderData.question, option: orderData.option });
@@ -948,7 +955,9 @@ export class CaseManagementAction implements IAction {
     await performAction('check', {question: orderData.question2, option: orderData.option2 });
     await performAction('check', makeAnOrder.costCheckBox);
     await performAction('clickRadioButton', { question: orderData.question3, option: orderData.option3 });
-    await performAction('clickButton', orderData.button);
+    if (orderData.button) {
+      await performAction('clickButton', orderData.button);
+    }
   }
 
   private async verifySavedDraftOrderDetails(page: Page, prePopulatedData: actionRecord): Promise<void> {

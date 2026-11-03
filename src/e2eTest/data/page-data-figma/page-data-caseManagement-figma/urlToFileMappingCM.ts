@@ -35,5 +35,4 @@ export default {
   'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
   'addJudicialNote/confirm': 'confirmJudicialNotes',
   'managePartiesremovePartyDetails': 'checkFullPartyDetails',
-  'make-order' : 'makeAnOrder'
 };

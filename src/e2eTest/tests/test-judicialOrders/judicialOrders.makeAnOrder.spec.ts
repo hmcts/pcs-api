@@ -5,12 +5,11 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {caseSummary, user} from '@data/page-data';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import {
-  makeAnOrder,
-} from "@data/page-data-figma/page-data-caseManagement-figma";
+
 import {
   CaseManagementCommonUtils
 } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
+import {makeAnOrder} from "@data/page-data-figma/page-data-judicialOrders-figma";
 
 
 test.use({ storageState: undefined })
@@ -52,7 +51,7 @@ test.use({ storageState: undefined })
           ],
         },
         async () => {
-        const recitalTextInput = CaseManagementCommonUtils.generateRandomString(makeAnOrder.recitalParagraphTextInput);
+        const recitalTextInput = CaseManagementCommonUtils.generateRandomString(makeAnOrder.recitalParagraphHiddenTextInput);
         const submitPayload = submitCaseApiData.submitCasePayloadCaseDetails();
           await test.step(`Given the user selects the "Make an Order" event from the event dropdown`, async () => {
             await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
@@ -62,9 +61,9 @@ test.use({ storageState: undefined })
           await test.step(`When the user provides input details and click Save and Draft button`, async () => {
             await performAction('makeAnOrderDetailsProvided', {
               submitPayload: submitCaseApiData.submitCasePayloadCaseDetails(),
-              claimantRadioOption: makeAnOrder.claimantRadioOption[0],
-              defendantRadioOption: makeAnOrder.defendantRadioOption[1],
-              label: makeAnOrder.recitalParagraphTextLabel,
+              claimantRadioOption: makeAnOrder.radioOptions[0],
+              defendantRadioOption: makeAnOrder.radioOptions[1],
+              label: makeAnOrder.recitalParagraphHiddenTextLabel,
               recitalInput: recitalTextInput,
               question: makeAnOrder.possessionLabel,
               option: makeAnOrder.forthwithRadioOption,
@@ -82,18 +81,18 @@ test.use({ storageState: undefined })
             await performValidation('mainHeader', makeAnOrder.mainHeader);
           });
 
-          await test.step(`And the user verify saved draft order reloads automaticallyS`, async () => {
+          await test.step(`And the user verify saved draft order reloads automatically`, async () => {
             await performAction('verifySavedDraftOrderDetails',{
               inputData: [
                 {
                   type: 'radio',
-                  inputRadioQuestion: `${makeAnOrder.claimantLabel} ${submitPayload.claimantName}`,
-                  expectedAnswer: makeAnOrder.claimantRadioOption[0],
+                  inputRadioQuestion: makeAnOrder.claimantLabel(submitPayload.claimantName),
+                  expectedAnswer: makeAnOrder.radioOptions[0],
                 },
                 {
                   type: 'radio',
-                  inputRadioQuestion: `${makeAnOrder.defendantLabel} ${submitPayload.defendant1.firstName} ${submitPayload.defendant1.lastName}`,
-                  expectedAnswer: makeAnOrder.defendantRadioOption[1],
+                  inputRadioQuestion: makeAnOrder.defendantLabel(submitPayload.defendant1.firstName, submitPayload.defendant1.lastName),
+                  expectedAnswer: makeAnOrder.radioOptions[1],
                 },
                 {
                   type: 'checkBox',
@@ -105,7 +104,7 @@ test.use({ storageState: undefined })
                 {
                   type: 'inputText',
                   locatorType: 'label',
-                  inputTextLabel: makeAnOrder.recitalParagraphTextLabel,
+                  inputTextLabel: makeAnOrder.recitalParagraphHiddenTextLabel,
                   expectedAnswer: recitalTextInput,
                 },
                 {

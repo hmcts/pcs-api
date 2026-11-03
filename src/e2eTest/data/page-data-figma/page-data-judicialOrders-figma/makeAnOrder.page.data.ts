@@ -1,15 +1,15 @@
 export const makeAnOrder = {
   mainHeader: `Make an order`,
   attendanceHeader: `Attendance`,
-  claimantLabel: `Claimant 1:`,
-  defendantLabel: `Defendant 1:`,
-  claimantRadioOption : ['Csl', 'Sol', 'S/A', 'H/O', 'LiP', 'Ltr', 'Not present'],
-  defendantRadioOption : ['Csl', 'Sol', 'S/A', 'H/O', 'LiP', 'Ltr', 'Not present'],
+  claimantLabel: (claimantName: string) => `Claimant 1: ${claimantName}`,
+  defendantLabel: (firstName: string, lastName: string) =>
+    `Defendant 1: ${firstName} ${lastName}`,
+  radioOptions: ['Csl', 'Sol', 'S/A', 'H/O', 'LiP', 'Ltr', 'Not present'],
   recitalsHeader: `Recitals`,
   recitalCheckBox: `Recitals`,
-  recitalParagraphTextLabel: `Recital paragraphs`,
-  recitalParagraphTextInput: 10,
-  orderTypeHeader: `Order Type`,
+  recitalParagraphHiddenTextLabel: `Recital paragraphs`,
+  recitalParagraphHiddenTextInput: 10,
+  orderTypeHeader: `Order type`,
   outrightPossessionHeader:`Outright possession`,
   possessionLabel: `Possession`,
   forthwithRadioOption: `Possession forthwith`,
@@ -35,7 +35,6 @@ export const makeAnOrder = {
   costOrderHiddenTextInput: `50`,
   sendOrderToCaseworkerForReviewButton: `Send order to caseworker for review`,
   orderPreviewHeader: `Order preview`,
-  orderTextBox: `Order`,
   expectedNumberedListContent: [
     'The defendant(s) must give up possession of',
     'This order for possession was made on',
@@ -43,8 +42,7 @@ export const makeAnOrder = {
     'The order for possession is transferred to the High Court solely for the purpose of enforcement.',
   ],
   staffMessageCheckBox: `Staff message`,
-  messageForCourtStaffTextLabel: `Message for court staff`,
-  messageForCourtStaffTextInput: 20,
+  messageForCourtStaffHiddenTextLabel: `Message for court staff`,
+  messageForCourtStaffHiddenTextInput: 20,
   saveAsDraftButton: `Save as draft`,
-
 };
