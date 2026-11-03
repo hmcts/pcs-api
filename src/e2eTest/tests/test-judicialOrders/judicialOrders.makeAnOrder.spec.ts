@@ -157,7 +157,6 @@ test.describe('Judicial Orders - As a Judge resumes draft order @nightly', async
         await test.step(`And the user verify order preview section displays the expected numbered list in sequence`, async () => {
          await performAction('verifyPreviewSectionNumberedList');
         });
-
       });
     });
 });
