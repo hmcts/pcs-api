@@ -60,8 +60,8 @@ test.describe('Judicial Orders - As a Judge resumes draft order @nightly', async
       await test.step(`When the user provides input details and click Save and Draft button`, async () => {
         await performAction('makeAnOrderDetailsProvided', {
           submitPayload: submitCaseApiData.submitCasePayloadCaseDetails(),
-          claimantRadioOption: makeAnOrder.claimantRadioOption[0],
-          defendantRadioOption: makeAnOrder.defendantRadioOption[1],
+          claimantRadioOption: makeAnOrder.radioOptions[0],
+          defendantRadioOption: makeAnOrder.radioOptions[1],
           label: makeAnOrder.recitalParagraphHiddenTextLabel,
           recitalInput: recitalTextInput,
           question: makeAnOrder.possessionLabel,
@@ -80,18 +80,18 @@ test.describe('Judicial Orders - As a Judge resumes draft order @nightly', async
         await performValidation('mainHeader', makeAnOrder.mainHeader);
       });
 
-      await test.step(`And the user verify saved draft order reloads automaticallyS`, async () => {
+      await test.step(`And the user verify saved draft order reloads automatically`, async () => {
         await performAction('verifySavedDraftOrderDetails',{
           inputData: [
             {
               type: 'radio',
               inputRadioQuestion: makeAnOrder.claimantLabel(submitPayload.claimantName),
-              expectedAnswer: makeAnOrder.claimantRadioOption[0],
+              expectedAnswer: makeAnOrder.radioOptions[0],
             },
             {
               type: 'radio',
               inputRadioQuestion: makeAnOrder.defendantLabel(submitPayload.defendant1.firstName, submitPayload.defendant1.lastName),
-              expectedAnswer: makeAnOrder.defendantRadioOption[1],
+              expectedAnswer: makeAnOrder.radioOptions[1],
             },
             {
               type: 'checkBox',
@@ -141,8 +141,8 @@ test.describe('Judicial Orders - As a Judge resumes draft order @nightly', async
       await test.step(`When the user provides input in make an order `, async () => {
         await performAction('makeAnOrderDetailsProvided', {
           submitPayload: submitCaseApiData.submitCasePayloadCaseDetails(),
-          claimantRadioOption: makeAnOrder.claimantRadioOption[0],
-          defendantRadioOption: makeAnOrder.defendantRadioOption[1],
+          claimantRadioOption: makeAnOrder.radioOptions[0],
+          defendantRadioOption: makeAnOrder.radioOptions[1],
           label: makeAnOrder.recitalParagraphHiddenTextLabel,
           recitalInput: recitalTextInput,
           question: makeAnOrder.possessionLabel,

@@ -4,8 +4,7 @@ export const makeAnOrder = {
   claimantLabel: (claimantName: string) => `Claimant 1: ${claimantName}`,
   defendantLabel: (firstName: string, lastName: string) =>
     `Defendant 1: ${firstName} ${lastName}`,
-  claimantRadioOption : ['Csl', 'Sol', 'S/A', 'H/O', 'LiP', 'Ltr', 'Not present'],
-  defendantRadioOption : ['Csl', 'Sol', 'S/A', 'H/O', 'LiP', 'Ltr', 'Not present'],
+  radioOptions: ['Csl', 'Sol', 'S/A', 'H/O', 'LiP', 'Ltr', 'Not present'],
   recitalsHeader: `Recitals`,
   recitalCheckBox: `Recitals`,
   recitalParagraphHiddenTextLabel: `Recital paragraphs`,
