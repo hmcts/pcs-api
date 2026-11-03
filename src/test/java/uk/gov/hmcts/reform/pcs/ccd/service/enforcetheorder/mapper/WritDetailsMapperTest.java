@@ -180,7 +180,7 @@ class WritDetailsMapperTest {
         writDetails.setRepaymentCosts(null);
 
         // When
-        WritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(entity.getRepaymentChoice()).isNull();
@@ -195,7 +195,7 @@ class WritDetailsMapperTest {
         writDetails.setDefendantInBreathingSpace(defendantInBreathingSpace);
 
         // When
-        WritEntity result = underTest.toEntity(writDetails);
+        WritEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getDefendantInBreathingSpace()).isEqualTo(defendantInBreathingSpace);
@@ -208,7 +208,7 @@ class WritDetailsMapperTest {
         writDetails.setDefendantMissedPayments(defendantMissedPayments);
 
         // When
-        WritEntity result = underTest.toEntity(writDetails);
+        WritEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getDefendantMissedPayments()).isEqualTo(defendantMissedPayments);
