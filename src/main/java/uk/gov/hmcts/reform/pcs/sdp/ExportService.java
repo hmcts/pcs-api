@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -193,11 +192,11 @@ public class ExportService {
 
     private static Path createSnapshotFile() {
         try {
-            Path snapshotFile = Files.createTempFile("sdp-claim-snapshot-", ".json");
-            if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
-                Files.setPosixFilePermissions(snapshotFile, PosixFilePermissions.fromString("rw-------"));
-            }
-            return snapshotFile;
+            return Files.createTempFile(
+                "sdp-claim-snapshot-",
+                ".json",
+                PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))
+            );
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create SDP claim snapshot file", e);
         }
