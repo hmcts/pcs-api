@@ -52,6 +52,7 @@ public class ClaimGroundEntity {
     private String groundsTypeKey;
 
     private String groundsSubtypeKey;
+
     private LocalDateTime lastModified;
 
     public void markLastModified(Clock clock) {
