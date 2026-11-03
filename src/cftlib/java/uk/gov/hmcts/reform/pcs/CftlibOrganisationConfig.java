@@ -1,9 +1,10 @@
 package uk.gov.hmcts.reform.pcs;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -34,24 +35,30 @@ public class CftlibOrganisationConfig {
             public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
                 OrganisationDetailsResponse response = new OrganisationDetailsResponse();
                 response.setOrganisationIdentifier(TEST_ORG_ID);
-                response.setOrganisationProfileIds(List.of(OrganisationProfile.SOLICITOR_PROFILE.getId()));
+                response.setOrganisationProfileIds(List.of(SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId()));
                 response.setName("Test Organisation");
-                response.setContactInformation(List.of());
+                response.setContactInformation(List.of(
+                    OrganisationDetailsResponse.ContactInformation.builder()
+                                                           .addressLine1("10 Org Street")
+                                                           .townCity("Cardiff")
+                                                           .postCode("CF24 5JT")
+                                                           .build())
+                );
                 return response;
             }
 
             @Override
-            public String getOrganisationName(OrganisationDetailsResponse orgDetails) {
-                return "Test Organisation";
-            }
-
-            @Override
-            public uk.gov.hmcts.ccd.sdk.type.AddressUK getOrganisationAddress(OrganisationDetailsResponse orgDetails) {
-                return null;
+            public OrganisationDetailsResponse getOrganisationDetails(String userId) {
+                return getOrganisationDetailsForCurrentUser();
             }
 
             @Override
             public String getOrganisationIdForCurrentUser() {
+                return TEST_ORG_ID;
+            }
+
+            @Override
+            public String getOrganisationIdentifier(String userId) {
                 return TEST_ORG_ID;
             }
 
@@ -61,18 +68,13 @@ public class CftlibOrganisationConfig {
             }
 
             @Override
-            public String getOrgProfileIdForCurrentUser() {
-                return OrganisationProfile.SOLICITOR_PROFILE.getId();
-            }
-
-            @Override
             public String getOrganisationNameForCurrentUser() {
                 return "Test Organisation";
             }
 
             @Override
-            public uk.gov.hmcts.ccd.sdk.type.AddressUK getOrganisationAddressForCurrentUser() {
-                return null;
+            public String getOrganisationName(String userId) {
+                return getOrganisationNameForCurrentUser();
             }
         };
     }

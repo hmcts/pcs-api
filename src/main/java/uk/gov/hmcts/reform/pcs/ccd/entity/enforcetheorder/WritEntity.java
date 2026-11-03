@@ -19,6 +19,8 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -38,17 +40,40 @@ public class WritEntity {
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesNoNotSure defendantInBreathingSpace;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo defendantMissedPayments;
+
     // NameAndAddressForEviction
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correctNameAndAddress;
 
-    // LandRegistryFees
+    // Land Registry fees
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @SuppressWarnings("java:S1133")
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo haveLandRegistryFeesBeenPaid;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @SuppressWarnings("java:S1133")
+    @Deprecated
     private BigDecimal amountOfLandRegistryFees;
+
 
     // Direct fields
     @Enumerated(EnumType.STRING)
@@ -58,6 +83,13 @@ public class WritEntity {
     private String hceoDetails;
 
     // LegalCosts
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @SuppressWarnings("java:S1133")
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo areLegalCostsToBeClaimed;
@@ -79,10 +111,30 @@ public class WritEntity {
     @Column(updatable = false, nullable = false)
     private Instant created;
 
+    //Payment fields
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated These fields are retained only for backwards compatibility.
+     */
+    @SuppressWarnings("java:S1133")
+    @Deprecated
     private String repaymentChoice;
-
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @SuppressWarnings("java:S1133")
+    @Deprecated
     private BigDecimal amountOfRepaymentCosts;
-
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @SuppressWarnings("java:S1133")
+    @Deprecated
     private String repaymentSummaryMarkdown;
 
 }
