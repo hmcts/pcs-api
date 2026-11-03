@@ -64,10 +64,7 @@ public class RemovePartyService {
 
         partyEntity.setRemoved(true);
         partyEntity.getClaimPartyOrganisationList()
-            .forEach(organisation -> {
-                organisation.setActive(YesOrNo.NO);
-                organisation.markLastModified(utcClock);
-            });
+            .forEach(organisation -> organisation.setActive(YesOrNo.NO));
         partyRepository.save(partyEntity);
 
         ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();

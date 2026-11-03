@@ -168,8 +168,6 @@ class LegalRepresentativePartyLinkServiceTest {
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertThat(pcsCaseEntity.getClaims().getFirst().getLastModified()).isNull();
-        assertThat(actual.getClaimPartyOrganisationList().getFirst().getLastModified())
-            .isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         assertThat(actual.getCreatedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
 
         ClaimPartyContactDetailsEntity actualContactDetails =

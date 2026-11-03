@@ -56,9 +56,6 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -91,7 +88,6 @@ class PaymentServiceTest {
     private static final String SERVICE_REQUEST_REFERENCE = "SR-123";
     private static final String CALLBACK_URL = "https://etc:123/service-request-update";
     private static final String HMCTS_ORG_ID = "TEST_ORG";
-    private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDateTime.of(2026, 3, 9, 12, 0);
 
     @Mock
     private PaymentsClient paymentsClient;
@@ -113,8 +109,6 @@ class PaymentServiceTest {
     private User user;
     @Mock
     private UserInfo userDetails;
-    @Mock
-    private Clock utcClock;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -131,8 +125,6 @@ class PaymentServiceTest {
     @BeforeEach
     void setUp() {
         lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_BEARER);
-        lenient().when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
 
         setPrivateField(underTest, "callbackUrl", CALLBACK_URL);
         setPrivateField(underTest, "hmctsOrgId", HMCTS_ORG_ID);
@@ -195,7 +187,6 @@ class PaymentServiceTest {
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
             assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
             assertThat(saved.getClaim().getLastModified()).isNull();
-            assertThat(saved.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         }
 
         @Test
@@ -257,7 +248,6 @@ class PaymentServiceTest {
             assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
             assertThat(claimEntity.getLastModified()).isNull();
-            assertThat(paymentEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         }
 
         @Test
@@ -356,7 +346,6 @@ class PaymentServiceTest {
 
             assertThat(saved.getClaim()).isSameAs(claimEntity);
             assertThat(claimEntity.getLastModified()).isNull();
-            assertThat(saved.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         }

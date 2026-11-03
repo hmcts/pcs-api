@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -53,12 +54,7 @@ public class ClaimGroundEntity {
 
     private String groundsSubtypeKey;
 
-    private LocalDateTime lastModified;
-
-    public void markLastModified(Clock clock) {
-        this.lastModified = LocalDateTime.now(clock);
-    }
-
+    @UpdateTimestamp
     private LocalDateTime lastModified;
 
 }

@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
@@ -26,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -84,10 +84,7 @@ public class FeePaymentEntity {
 
     private UUID relatedEntityId;
 
+    @UpdateTimestamp
     private LocalDateTime lastModified;
-
-    public void markLastModified(Clock clock) {
-        this.lastModified = LocalDateTime.now(clock);
-    }
 
 }

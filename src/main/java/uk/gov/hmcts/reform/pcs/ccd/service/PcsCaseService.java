@@ -76,13 +76,7 @@ public class PcsCaseService {
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
-        if (claimEntity.getClaimParties() != null) {
-            claimEntity.getClaimParties().forEach(claimParty -> claimParty.markLastModified(utcClock));
-        }
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
-        if (pcsCaseEntity.getTenancyLicence() != null) {
-            pcsCaseEntity.getTenancyLicence().markLastModified(utcClock);
-        }
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());

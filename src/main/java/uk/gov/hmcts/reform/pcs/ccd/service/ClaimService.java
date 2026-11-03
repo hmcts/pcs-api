@@ -90,10 +90,6 @@ public class ClaimService {
         claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));
         claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
         claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
-        if (claimEntity.getNoticeOfPossession() != null) {
-            claimEntity.getNoticeOfPossession().markLastModified(utcClock);
-        }
-        claimEntity.getClaimGrounds().forEach(ground -> ground.markLastModified(utcClock));
         claimEntity.markLastModified(utcClock);
 
         return claimRepository.save(claimEntity);

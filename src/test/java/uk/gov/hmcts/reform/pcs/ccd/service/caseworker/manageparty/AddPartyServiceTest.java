@@ -21,9 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,13 +49,11 @@ class AddPartyServiceTest {
     @Captor
     private ArgumentCaptor<PartyEntity> partyEntityCaptor;
 
-    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(Instant.parse("2026-03-09T12:00:00Z"), ZoneOffset.UTC);
-
     private AddPartyService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new AddPartyService(partyRepository, claimRepository, addressMapper, FIXED_UTC_CLOCK);
+        underTest = new AddPartyService(partyRepository, claimRepository, addressMapper);
     }
 
     @Test

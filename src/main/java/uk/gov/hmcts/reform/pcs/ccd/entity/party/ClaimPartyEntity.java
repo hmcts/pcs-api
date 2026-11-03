@@ -14,9 +14,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
-import java.time.Clock;
 import java.time.LocalDateTime;
 
 @Entity
@@ -54,10 +54,7 @@ public class ClaimPartyEntity {
     @JoinColumn(name = "acting_for_party_id")
     private PartyEntity actingForParty;
 
+    @UpdateTimestamp
     private LocalDateTime lastModified;
-
-    public void markLastModified(Clock clock) {
-        this.lastModified = LocalDateTime.now(clock);
-    }
 
 }

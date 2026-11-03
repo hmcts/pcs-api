@@ -16,13 +16,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -72,9 +72,6 @@ public class TenancyLicenceEntity {
 
     private String reasonsForNoTenancyLicence;
 
+    @UpdateTimestamp
     private LocalDateTime lastModified;
-
-    public void markLastModified(Clock clock) {
-        this.lastModified = LocalDateTime.now(clock);
-    }
 }

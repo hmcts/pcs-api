@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
-import java.time.Clock;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -27,7 +26,6 @@ public class AddPartyService {
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final AddressMapper addressMapper;
-    private final Clock utcClock;
 
     @Transactional
     public void addParty(AddPartyDetails addPartyDetails, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
@@ -43,10 +41,6 @@ public class AddPartyService {
         partyRepository.save(partyToAdd);
 
         claimEntity.addParty(partyToAdd, toPartyRole(partyType), actingForParty);
-        var claimParties = claimEntity.getClaimParties();
-        if (claimParties != null && !claimParties.isEmpty()) {
-            claimParties.getLast().markLastModified(utcClock);
-        }
         claimRepository.save(claimEntity);
     }
 

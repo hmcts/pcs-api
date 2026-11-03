@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -32,7 +33,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -175,11 +175,8 @@ public class DefendantResponseEntity {
 
     private String ingestionSource;
 
+    @UpdateTimestamp
     private LocalDateTime lastModified;
-
-    public void markLastModified(Clock clock) {
-        this.lastModified = LocalDateTime.now(clock);
-    }
 
     public void setHouseholdCircumstances(HouseholdCircumstancesEntity householdCircumstances) {
         if (this.householdCircumstances != null) {
