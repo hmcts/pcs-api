@@ -42,6 +42,18 @@ public class WarrantDetails {
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
+    @CCD(
+        label = "Is the defendant currently in a breathing space?"
+    )
+    private YesNoNotSure defendantInBreathingSpace;
+
+    @CCD(
+        label = "Have the defendants missed any payments?",
+        hint = "These are payments outlined in the suspended order for possession.  "
+              + "They were ordered to make these payments by the judge."
+    )
+    private VerticalYesNo defendantMissedPayments;
+
     @JsonUnwrapped
     @CCD
     private PeopleToEvict peopleToEvict;
@@ -111,7 +123,7 @@ public class WarrantDetails {
             label = "Is your order a suspended order?",
             hint = "If your order is suspended, you will see a different version of the statement of truth on the "
                     + "next page. If you do not know if your order is suspended: save your application as a draft, "
-                    + "return to the case summary page, and then check the tab named 'Case File View'"
+                    + "return to the case summary page, and then check the tab named ‘Case File View’"
     )
     private VerticalYesNo isSuspendedOrder;
 
