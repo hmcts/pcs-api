@@ -185,7 +185,7 @@ export class PageContentValidation implements IValidation {
       else if(page.url().includes("claimantMakeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma/urlToFileMappingGenAppsClaimant.ts');
       }
-      else if(page.url().includes("legalRepDocumentUpload")){
+      else if (page.url().includes("legalRepDocumentUpload")  || page.url().includes("deleteDraftResponse")) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else if(
@@ -254,7 +254,7 @@ export class PageContentValidation implements IValidation {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
     }else if (page.url().includes("claimantMakeAnApplication")) {
         filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma', `${fileName}.page.data.ts`);
-    } else if (page.url().includes("legalRepDocumentUpload")) {
+    } else if (page.url().includes("legalRepDocumentUpload")  || page.url().includes("deleteDraftResponse")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.page.data.ts`);
     }
     else if (page.url().includes("globalSearch")) {
@@ -411,7 +411,7 @@ export class PageContentValidation implements IValidation {
         )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
-      else if (url.includes("legalRepDocumentUpload")) {
+      else if (url.includes('legalRepDocumentUpload') || url.includes('deleteDraftResponse')) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else {
