@@ -42,6 +42,7 @@ public class BulkPrintService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final FeatureToggleService featureToggleService;
+    private final BlankClaimPackFormsProvider blankClaimPackFormsProvider;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
                             CoveringLetterProvider coveringLetterProvider,
@@ -50,7 +51,8 @@ public class BulkPrintService {
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter,
-                            FeatureToggleService featureToggleService) {
+                            FeatureToggleService featureToggleService,
+                            BlankClaimPackFormsProvider blankClaimPackFormsProvider) {
         this.coversheetProvider = coversheetProvider;
         this.coveringLetterProvider = coveringLetterProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
@@ -59,6 +61,7 @@ public class BulkPrintService {
         this.authTokenGenerator = authTokenGenerator;
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.featureToggleService = featureToggleService;
+        this.blankClaimPackFormsProvider = blankClaimPackFormsProvider;
     }
 
     public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
@@ -73,6 +76,10 @@ public class BulkPrintService {
             pdfs.add(coveringLetterProvider.render(pcsCase, recipient, recipientName, address, caseReference));
         }
         documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));
+        if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
+            pdfs.add(blankClaimPackFormsProvider.getBlankResponseForm());
+            pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimForm());
+        }
         Document mergedLetter = new Document(Base64.getEncoder().encodeToString(pdfMerger.merge(pdfs)), SINGLE_COPY);
 
         LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
