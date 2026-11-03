@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.action.EnforcementPaymentAction;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,17 +31,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforcementPayment;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.system.SystemAction.ENFORCEMENT_PAYMENT;
 
 @ExtendWith(MockitoExtension.class)
 class CcdPaymentStateUpdateServiceTest {
 
     private static final long CASE_ID = 1234L;
+    private static final SystemAction systemAction = SystemAction.CLAIM_ISSUED_PAYMENT;
     private UUID paymentReference;
 
     @Mock
@@ -59,8 +63,10 @@ class CcdPaymentStateUpdateServiceTest {
     @BeforeEach
     void beforeEach() {
         paymentReference = UUID.randomUUID();
-        when(claimPaymentAction.eventId()).thenReturn(claimIssuePayment);
-        when(enforcementPaymentAction.eventId()).thenReturn(enforcementPayment);
+        lenient().when(claimPaymentAction.eventId()).thenReturn(claimIssuePayment);
+        lenient().when(enforcementPaymentAction.eventId()).thenReturn(enforcementPayment);
+        when(claimPaymentAction.systemAction()).thenReturn(systemAction);
+        when(enforcementPaymentAction.systemAction()).thenReturn(ENFORCEMENT_PAYMENT);
         underTest = new CcdPaymentStateUpdateService(schedulerClient, systemEventExecutor,
                                                      List.of(claimPaymentAction, enforcementPaymentAction));
     }
@@ -70,9 +76,10 @@ class CcdPaymentStateUpdateServiceTest {
     void shouldScheduleCcdPaymentUpdateTask(EventId eventId) {
         // Given
         Instant before = Instant.now();
+        PaymentStatusCallback paymentStatusCallback = paymentStatusCallback();
 
         // When
-        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback, systemAction);
 
         // Then
         Instant after = Instant.now();
@@ -82,17 +89,17 @@ class CcdPaymentStateUpdateServiceTest {
         TaskInstance<PaymentStateTaskData> taskInstance = scheduled.getTaskInstance();
         assertThat(scheduled.getNextExecutionTime(Instant.now())).isBetween(before, after);
         assertThat(taskInstance.getTaskName()).isEqualTo(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR.getTaskName());
-        assertThat(taskInstance.getId()).isEqualTo(eventId + "-" + CASE_ID);
+        assertThat(taskInstance.getId()).isEqualTo(systemAction + "-" + paymentStatusCallback.getPaymentReference());
         assertThat(taskInstance.getData().getCaseReference()).isEqualTo(CASE_ID);
+        assertThat(taskInstance.getData().getSystemAction()).isEqualTo(systemAction);
         assertThat(taskInstance.getData().getEventId()).isEqualTo(eventId);
-
     }
 
     @ParameterizedTest
     @MethodSource("eventIds")
     void shouldStartEventAndSubmitPaymentSuccessfully(EventId eventId) {
         // Given // When
-        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback(), systemAction);
 
         // Then
         verify(schedulerClient).scheduleIfNotExists(any());
@@ -102,8 +109,9 @@ class CcdPaymentStateUpdateServiceTest {
     @MethodSource("eventIds")
     void shouldUseSameInstanceIdWhenSubmittedMultipleTimesForSamePayment(EventId eventId) {
         // Given // When
-        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
-        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback());
+        PaymentStatusCallback paymentStatusCallback = paymentStatusCallback();
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback, systemAction);
+        underTest.submitPaymentSuccess(CASE_ID, eventId, paymentStatusCallback, systemAction);
 
         // Then
         verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
@@ -113,16 +121,16 @@ class CcdPaymentStateUpdateServiceTest {
             .toList();
 
         assertThat(instanceIds).containsExactly(
-            eventId.name() + "-" + CASE_ID,
-            eventId.name() + "-" + CASE_ID
+            systemAction.name() + "-" + paymentStatusCallback.getPaymentReference(),
+            systemAction.name() + "-" + paymentStatusCallback.getPaymentReference()
         );
     }
 
     @Test
     void shouldUseDifferentInstanceIdsForDifferentEvents() {
         // Given // When
-        underTest.submitPaymentSuccess(CASE_ID, claimIssuePayment, paymentStatusCallback());
-        underTest.submitPaymentSuccess(CASE_ID, enforcementPayment, paymentStatusCallback());
+        underTest.submitPaymentSuccess(CASE_ID, claimIssuePayment, paymentStatusCallback(), systemAction);
+        underTest.submitPaymentSuccess(CASE_ID, enforcementPayment, paymentStatusCallback(), ENFORCEMENT_PAYMENT);
 
         // Then
         verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
@@ -138,8 +146,7 @@ class CcdPaymentStateUpdateServiceTest {
     @MethodSource("eventIds")
     void shouldUpdateCcd(EventId eventId) {
         // Given
-        PaymentStateTaskData taskData = PaymentStateTaskData.builder().eventId(eventId)
-            .caseReference(CASE_ID).build();
+        PaymentStateTaskData taskData = PaymentStateTaskData.builder().eventId(eventId).caseReference(CASE_ID).build();
 
         // When
         underTest.updateCcd(taskData);

@@ -5,6 +5,7 @@ import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
 
 import java.util.UUID;
 
@@ -23,7 +24,16 @@ class EnforcementPaymentActionTest {
         EventId eventId = underTest.eventId();
 
         // Then
-        assertThat(eventId).isEqualTo(EventId.enforcementPayment);
+        assertThat(eventId).isEqualTo(EventId.enforceTheOrder);
+    }
+
+    @Test
+    void shouldReturnEnforcementPaymentSystemAction() {
+        // Given ... When
+        SystemAction systemAction = underTest.systemAction();
+
+        // Then
+        assertThat(systemAction).isEqualTo(SystemAction.ENFORCEMENT_PAYMENT);
     }
 
     @Test

@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -70,6 +71,15 @@ class ClaimPaymentActionTest {
 
         // Then
         assertThat(eventId).isEqualTo(EventId.claimIssuePayment);
+    }
+
+    @Test
+    void shouldReturnEnforcementPaymentSystemAction() {
+        // Given ... When
+        SystemAction systemAction = underTest.systemAction();
+
+        // Then
+        assertThat(systemAction).isEqualTo(SystemAction.CLAIM_ISSUED_PAYMENT);
     }
 
     @Test

@@ -5,8 +5,10 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforcementPayment;
+import static uk.gov.hmcts.reform.pcs.system.SystemAction.ENFORCEMENT_PAYMENT;
 
 @Component
 public class EnforcementPaymentCallbackHandler extends AbstractCcdPaymentCallbackHandler {
@@ -19,6 +21,11 @@ public class EnforcementPaymentCallbackHandler extends AbstractCcdPaymentCallbac
     @Override
     protected EventId successEventId() {
         return enforcementPayment;
+    }
+
+    @Override
+    protected SystemAction actionId() {
+        return ENFORCEMENT_PAYMENT;
     }
 
 }

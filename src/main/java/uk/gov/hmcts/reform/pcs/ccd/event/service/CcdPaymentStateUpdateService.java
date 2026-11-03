@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.action.PaymentSuccessAction;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -25,7 +26,7 @@ public class CcdPaymentStateUpdateService {
 
     private final SchedulerClient schedulerClient;
     private final SystemEventExecutor systemEventExecutor;
-    private final Map<EventId, PaymentSuccessAction> paymentSuccessActions;
+    private final Map<SystemAction, PaymentSuccessAction> paymentSuccessActions;
 
     public CcdPaymentStateUpdateService(SchedulerClient schedulerClient,
                                         SystemEventExecutor systemEventExecutor,
@@ -33,14 +34,18 @@ public class CcdPaymentStateUpdateService {
         this.schedulerClient = schedulerClient;
         this.systemEventExecutor = systemEventExecutor;
         this.paymentSuccessActions = paymentSuccessActions.stream()
-            .collect(Collectors.toUnmodifiableMap(PaymentSuccessAction::eventId, Function.identity()));
+            .collect(Collectors.toUnmodifiableMap(PaymentSuccessAction::systemAction, Function.identity()));
     }
 
-    public void submitPaymentSuccess(long caseId, EventId eventId, PaymentStatusCallback paymentStatusCallback) {
+    public void submitPaymentSuccess(long caseId, EventId eventId, PaymentStatusCallback paymentStatusCallback,
+                                     SystemAction systemAction) {
         PaymentStateTaskData taskData = PaymentStateTaskData.builder()
-            .caseReference(caseId).eventId(eventId).paymentReference(paymentStatusCallback.getPaymentReference())
+            .caseReference(caseId)
+            .eventId(eventId)
+            .systemAction(systemAction)
+            .paymentReference(paymentStatusCallback.getPaymentReference())
             .idempotencyKey(UUID.randomUUID()).build();
-        String instanceId = eventId.name() + "-" + caseId;
+        String instanceId = systemAction.name() + "-" + paymentStatusCallback.getPaymentReference();
         schedulerClient.scheduleIfNotExists(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR
                 .instance(instanceId).data(taskData).scheduledTo(Instant.now()));
     }
@@ -50,8 +55,10 @@ public class CcdPaymentStateUpdateService {
                  taskData.getCaseReference(), taskData.getEventId(), taskData.getPaymentReference());
         SystemEventExecutionResult result = systemEventExecutor.execute(taskData.getCaseReference(),
             taskData.getIdempotencyKey(), context ->
-                paymentSuccessActions.get(taskData.getEventId()).apply(taskData));
+                paymentSuccessActions.get(taskData.getSystemAction()).apply(taskData));
         log.info("System Event from Payment Callback event resulted in : {}", result);
     }
+
+
 
 }

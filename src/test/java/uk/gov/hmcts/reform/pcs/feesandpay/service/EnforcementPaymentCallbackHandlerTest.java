@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforcementPayment;
+import static uk.gov.hmcts.reform.pcs.system.SystemAction.ENFORCEMENT_PAYMENT;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementPaymentCallbackHandlerTest {
@@ -65,7 +66,7 @@ class EnforcementPaymentCallbackHandlerTest {
         assertThat(feePayment.getParty()).isSameAs(party);
         if (paymentStatus == PaymentStatus.PAID) {
             verify(ccdPaymentStateUpdateService).submitPaymentSuccess(CASE_REFERENCE, enforcementPayment,
-                                                                      paymentStatusCallback);
+                                                                      paymentStatusCallback, ENFORCEMENT_PAYMENT);
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
         }

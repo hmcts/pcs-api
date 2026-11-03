@@ -12,12 +12,14 @@ import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 
 import java.time.Instant;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.system.SystemAction.CLAIM_ISSUED_PAYMENT;
 
 @Component
 @Slf4j
@@ -32,6 +34,11 @@ public class ClaimPaymentAction implements PaymentSuccessAction {
     @Override
     public EventId eventId() {
         return EventId.claimIssuePayment;
+    }
+
+    @Override
+    public SystemAction systemAction() {
+        return CLAIM_ISSUED_PAYMENT;
     }
 
     @Override

@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -24,13 +25,15 @@ public abstract class AbstractCcdPaymentCallbackHandler implements PaymentCallba
 
     protected abstract EventId successEventId();
 
+    protected abstract SystemAction actionId();
+
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
         FeesAndPayTaskData taskData = toFeesAndPayTaskData(feePaymentEntity);
         feePaymentEntity.setParty(getResponsibleParty(taskData));
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             ccdPaymentStateUpdateService.submitPaymentSuccess(taskData.getCaseReference(), successEventId(),
-                                                              paymentStatusCallback);
+                                                              paymentStatusCallback, actionId());
         } else {
             log.warn("The {} was not successful [{}] for case: {}",
                      successEventId(), feePaymentEntity.getPaymentStatus(), taskData.getCaseReference());
