@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -66,6 +67,8 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Mock
     private TranslationWAService translationWAService;
     @Mock
+    private FeatureToggleService featureToggleService;
+    @Mock
     private ObjectMapper objectMapper;
     @Captor
     private ArgumentCaptor<SchedulableInstance<CounterClaimTaskData>> taskInstanceCaptor;
@@ -82,10 +85,10 @@ class CounterClaimPaymentCallbackHandlerTest {
     void setUp() {
         underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository,
                                                            schedulerClient, counterClaimFormScheduler,
-                                                           translationWAService,
+                                                           translationWAService, featureToggleService,
                                                            objectMapper, FIXED_UTC_CLOCK);
     }
-
+    
     @Test
     void shouldSetCounterClaimIssuedWhenPaymentIsPaid() throws Exception {
         UUID counterClaimId = UUID.randomUUID();
