@@ -17,6 +17,8 @@ import java.util.UUID;
 @Repository
 public class SdpClaimSnapshotReadRepository {
 
+    private static final String CLAIM_ID = "claim_id";
+
     private static final String HEADER_SQL = """
         SELECT c.id AS claim_id,
                c.claimant_type,
@@ -113,7 +115,7 @@ public class SdpClaimSnapshotReadRepository {
 
     private SdpClaimSnapshotHeader mapHeader(ResultSet rs, int rowNum) throws SQLException {
         return new SdpClaimSnapshotHeader(
-            rs.getObject("claim_id", UUID.class),
+            rs.getObject(CLAIM_ID, UUID.class),
             rs.getString("claimant_type"),
             rs.getString("against_trespassers"),
             rs.getString("language_used"),
@@ -130,7 +132,7 @@ public class SdpClaimSnapshotReadRepository {
 
     private SdpClaimSnapshotParty mapParty(ResultSet rs, int rowNum) throws SQLException {
         return new SdpClaimSnapshotParty(
-            rs.getObject("claim_id", UUID.class),
+            rs.getObject(CLAIM_ID, UUID.class),
             rs.getObject("party_id", UUID.class),
             rs.getString("role"),
             rs.getBoolean("represented")
@@ -139,7 +141,7 @@ public class SdpClaimSnapshotReadRepository {
 
     private SdpClaimSnapshotPayment mapPayment(ResultSet rs, int rowNum) throws SQLException {
         return new SdpClaimSnapshotPayment(
-            rs.getObject("claim_id", UUID.class),
+            rs.getObject(CLAIM_ID, UUID.class),
             rs.getString("external_reference"),
             rs.getString("status"),
             toLocalDateTime(rs, "request_date")
@@ -148,7 +150,7 @@ public class SdpClaimSnapshotReadRepository {
 
     private SdpClaimSnapshotGround mapGround(ResultSet rs, int rowNum) throws SQLException {
         return new SdpClaimSnapshotGround(
-            rs.getObject("claim_id", UUID.class),
+            rs.getObject(CLAIM_ID, UUID.class),
             rs.getString("code"),
             rs.getString("description"),
             rs.getString("category")
@@ -157,7 +159,7 @@ public class SdpClaimSnapshotReadRepository {
 
     private SdpClaimSnapshotResponse mapResponse(ResultSet rs, int rowNum) throws SQLException {
         return new SdpClaimSnapshotResponse(
-            rs.getObject("claim_id", UUID.class),
+            rs.getObject(CLAIM_ID, UUID.class),
             rs.getObject("response_id", Integer.class),
             rs.getObject("party_id", UUID.class),
             rs.getString("make_counter_claim"),
