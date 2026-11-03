@@ -68,13 +68,9 @@ class ExportServiceTest {
     private static final Clock FIXED_CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID CLAIM_ID = UUID.randomUUID();
-    private static final String HASH = "current-hash";
 
     @Mock
     private ClaimRepository claimRepository;
-
-    @Mock
-    private SnapshotHasher snapshotHasher;
 
     @Mock
     private SdpClaimSnapshotRepository sdpClaimSnapshotRepository;
@@ -107,7 +103,6 @@ class ExportServiceTest {
             claimRepository,
             new SnapshotMapper(),
             new ClaimSnapshotFileWriter(objectMapper),
-            snapshotHasher,
             sdpClaimSnapshotRepository,
             uploader,
             entityManager,
@@ -119,7 +114,7 @@ class ExportServiceTest {
 
     @Test
     void shouldExtractClaimsFromDbAndWriteJsonFile() throws Exception {
-        givenClaimWithHash();
+        stubClaimsForExport(claim());
 
         ExportResult result = exportService.exportClaims();
 
@@ -145,7 +140,7 @@ class ExportServiceTest {
 
     @Test
     void shouldExportNewClaimAsVersionOne() throws Exception {
-        givenClaimWithHash();
+        stubClaimsForExport(claim());
 
         ExportResult result = exportService.exportClaims();
 
@@ -157,14 +152,13 @@ class ExportServiceTest {
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getClaimId()).isEqualTo(CLAIM_ID);
             assertThat(saved.getSnapshotVersion()).isEqualTo(1);
-            assertThat(saved.getSnapshotHash()).isEqualTo(HASH);
         });
     }
 
     @Test
-    void shouldIncrementVersionWhenClaimHasChanged() throws Exception {
-        givenClaimWithHash();
-        givenStoredSnapshot(2, "old-hash");
+    void shouldIncrementVersionWhenClaimWasPreviouslyExported() throws Exception {
+        stubClaimsForExport(claim());
+        givenStoredSnapshot(2);
 
         ExportResult result = exportService.exportClaims();
 
@@ -173,29 +167,25 @@ class ExportServiceTest {
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
         assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
             assertThat(saved.getSnapshotVersion()).isEqualTo(3);
-            assertThat(saved.getSnapshotHash()).isEqualTo(HASH);
         });
     }
 
     @Test
-    void shouldKeepUnchangedClaimExportedTodayWhenAnotherClaimChanges() throws Exception {
-        UUID unchangedId = UUID.randomUUID();
-        ClaimEntity changedClaim = claim();
-        ClaimEntity unchangedClaim = claim();
-        unchangedClaim.setId(unchangedId);
-        stubClaimsForExport(changedClaim, unchangedClaim);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
+    void shouldExportAllSelectedClaimsAndIncrementEachVersion() throws Exception {
+        UUID secondId = UUID.randomUUID();
+        ClaimEntity firstClaim = claim();
+        ClaimEntity secondClaim = claim();
+        secondClaim.setId(secondId);
+        stubClaimsForExport(firstClaim, secondClaim);
         when(sdpClaimSnapshotRepository.findAllById(anyList())).thenReturn(List.of(
             SdpClaimSnapshotEntity.builder()
                 .claimId(CLAIM_ID)
                 .snapshotVersion(1)
-                .snapshotHash("old-hash")
                 .exportedAt(LocalDateTime.of(2026, 3, 9, 2, 0))
                 .build(),
             SdpClaimSnapshotEntity.builder()
-                .claimId(unchangedId)
+                .claimId(secondId)
                 .snapshotVersion(1)
-                .snapshotHash(HASH)
                 .exportedAt(LocalDateTime.of(2026, 3, 9, 2, 0))
                 .build()
         ));
@@ -203,32 +193,15 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(2);
-        String json = uploadedJson();
-        assertThat(json).contains("\"snapshot_version\":2");
-        assertThat(json).contains("\"snapshot_version\":1");
+        assertThat(uploadedJson()).contains("\"snapshot_version\":2");
         verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
-        assertThat(savedCaptor.getValue()).singleElement().satisfies(saved -> {
-            assertThat(saved.getClaimId()).isEqualTo(CLAIM_ID);
-            assertThat(saved.getSnapshotVersion()).isEqualTo(2);
-        });
-    }
-
-    @Test
-    void shouldSkipUnchangedClaimAndNotUpload() {
-        givenClaimWithHash();
-        givenStoredSnapshot(2, HASH);
-
-        ExportResult result = exportService.exportClaims();
-
-        assertThat(result.recordCount()).isZero();
-        verifyNoInteractions(blobUploader);
-        verify(sdpClaimSnapshotRepository).saveAll(savedCaptor.capture());
-        assertThat(savedCaptor.getValue()).isEmpty();
+        assertThat(savedCaptor.getValue()).hasSize(2)
+            .allSatisfy(saved -> assertThat(saved.getSnapshotVersion()).isEqualTo(2));
     }
 
     @Test
     void shouldFailWhenUploadFails() {
-        givenClaimWithHash();
+        stubClaimsForExport(claim());
         doThrow(new IllegalStateException("upload failed"))
             .when(blobUploader).upload(any(), any(Path.class));
 
@@ -254,7 +227,6 @@ class ExportServiceTest {
         ClaimEntity claimWithoutTenancy = claim();
         claimWithoutTenancy.getPcsCase().setTenancyLicence(null);
         stubClaimsForExport(claimWithoutTenancy);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -267,7 +239,6 @@ class ExportServiceTest {
         ClaimEntity claimWithoutNotice = claim();
         claimWithoutNotice.setNoticeOfPossession(null);
         stubClaimsForExport(claimWithoutNotice);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -280,7 +251,6 @@ class ExportServiceTest {
         ClaimEntity claimWithoutParties = claim();
         claimWithoutParties.setClaimParties(null);
         stubClaimsForExport(claimWithoutParties);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -293,7 +263,6 @@ class ExportServiceTest {
         ClaimEntity claimWithEmptyParties = claim();
         claimWithEmptyParties.setClaimParties(List.of());
         stubClaimsForExport(claimWithEmptyParties);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -340,7 +309,6 @@ class ExportServiceTest {
                 .build()
         ));
         stubClaimsForExport(claimWithDetails);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -362,7 +330,6 @@ class ExportServiceTest {
             ClaimPartyEntity.builder().role(PartyRole.DEFENDANT).build()
         ));
         stubClaimsForExport(claimWithNullParty);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -383,7 +350,6 @@ class ExportServiceTest {
                 return claim;
             }).toList();
         });
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -398,7 +364,6 @@ class ExportServiceTest {
     void shouldProcessOnlyIdsReturnedByDeltaQuery() {
         ClaimEntity included = claim();
         stubClaimsForExport(included);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         ExportResult result = exportService.exportClaims();
 
@@ -411,7 +376,6 @@ class ExportServiceTest {
     void shouldNotMarkLastModifiedWhenExporting() {
         ClaimEntity claim = claim();
         stubClaimsForExport(claim);
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
 
         exportService.exportClaims();
 
@@ -423,11 +387,6 @@ class ExportServiceTest {
         return uploadedJsonContent;
     }
 
-    private void givenClaimWithHash() {
-        stubClaimsForExport(claim());
-        when(snapshotHasher.hash(any())).thenReturn(HASH);
-    }
-
     private void stubClaimsForExport(ClaimEntity... claims) {
         List<UUID> ids = Arrays.stream(claims).map(ClaimEntity::getId).toList();
         when(claimRepository.findAllIdsForSdpSnapshotExport()).thenReturn(ids);
@@ -436,12 +395,11 @@ class ExportServiceTest {
         }
     }
 
-    private void givenStoredSnapshot(int version, String hash) {
+    private void givenStoredSnapshot(int version) {
         when(sdpClaimSnapshotRepository.findAllById(List.of(CLAIM_ID))).thenReturn(List.of(
             SdpClaimSnapshotEntity.builder()
                 .claimId(CLAIM_ID)
                 .snapshotVersion(version)
-                .snapshotHash(hash)
                 .exportedAt(LocalDateTime.of(2026, 3, 1, 2, 0))
                 .build()
         ));

@@ -64,7 +64,6 @@ public class ExportService {
     private final ClaimRepository claimRepository;
     private final SnapshotMapper claimSnapshotMapper;
     private final ClaimSnapshotFileWriter claimSnapshotFileWriter;
-    private final SnapshotHasher snapshotHasher;
     private final SdpClaimSnapshotRepository sdpClaimSnapshotRepository;
     private final Optional<BlobUploader> blobUploader;
     private final EntityManager entityManager;
@@ -78,7 +77,6 @@ public class ExportService {
     public ExportService(ClaimRepository claimRepository,
                          SnapshotMapper claimSnapshotMapper,
                          ClaimSnapshotFileWriter claimSnapshotFileWriter,
-                         SnapshotHasher snapshotHasher,
                          SdpClaimSnapshotRepository sdpClaimSnapshotRepository,
                          Optional<BlobUploader> blobUploader,
                          EntityManager entityManager,
@@ -88,7 +86,6 @@ public class ExportService {
         this.claimRepository = claimRepository;
         this.claimSnapshotMapper = claimSnapshotMapper;
         this.claimSnapshotFileWriter = claimSnapshotFileWriter;
-        this.snapshotHasher = snapshotHasher;
         this.sdpClaimSnapshotRepository = sdpClaimSnapshotRepository;
         this.blobUploader = blobUploader;
         this.entityManager = entityManager;
@@ -134,9 +131,8 @@ public class ExportService {
                     .collect(Collectors.toMap(SdpClaimSnapshotEntity::getClaimId, Function.identity()));
                 List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
                 for (ClaimEntity claim : claims) {
-                    if (writeIfChanged(claim, extractDate, publishedDate, stored, now, generator, changed)) {
-                        recordCount++;
-                    }
+                    writeIfChanged(claim, extractDate, publishedDate, stored, now, generator, changed);
+                    recordCount++;
                 }
                 sdpClaimSnapshotRepository.saveAll(changed);
                 entityManager.flush();
@@ -154,40 +150,28 @@ public class ExportService {
         }
     }
 
-    private boolean writeIfChanged(ClaimEntity claim,
-                                   String extractDate,
-                                   String publishedDate,
-                                   Map<UUID, SdpClaimSnapshotEntity> stored,
-                                   LocalDateTime now,
-                                   JsonGenerator generator,
-                                   List<SdpClaimSnapshotEntity> changed) throws IOException {
+    private void writeIfChanged(ClaimEntity claim,
+                                String extractDate,
+                                String publishedDate,
+                                Map<UUID, SdpClaimSnapshotEntity> stored,
+                                LocalDateTime now,
+                                JsonGenerator generator,
+                                List<SdpClaimSnapshotEntity> changed) throws IOException {
         ClaimSnapshotRecord snapshotRecord = mapClaim(claim, extractDate, publishedDate);
-        String hash = snapshotHasher.hash(snapshotRecord.getClaim());
         SdpClaimSnapshotEntity snapshot = stored.get(claim.getId());
         if (snapshot == null) {
             snapshot = SdpClaimSnapshotEntity.builder()
                 .claimId(claim.getId())
                 .snapshotVersion(1)
-                .snapshotHash(hash)
                 .exportedAt(now)
                 .build();
-            changed.add(snapshot);
-        } else if (!snapshot.getSnapshotHash().equals(hash)) {
-            snapshot.setSnapshotVersion(snapshot.getSnapshotVersion() + 1);
-            snapshot.setSnapshotHash(hash);
-            snapshot.setExportedAt(now);
-            changed.add(snapshot);
-        } else if (snapshot.getExportedAt() != null
-            && snapshot.getExportedAt().toLocalDate().equals(now.toLocalDate())) {
-            snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
-            claimSnapshotFileWriter.writeRecord(generator, snapshotRecord);
-            return true;
         } else {
-            return false;
+            snapshot.setSnapshotVersion(snapshot.getSnapshotVersion() + 1);
+            snapshot.setExportedAt(now);
         }
+        changed.add(snapshot);
         snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
         claimSnapshotFileWriter.writeRecord(generator, snapshotRecord);
-        return true;
     }
 
     private static Path createSnapshotFile() {
