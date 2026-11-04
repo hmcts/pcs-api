@@ -89,7 +89,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldExtractClaimsFromDbAndWriteJsonFile() throws Exception {
+    void shouldExtractClaimsFromDbAndWriteJsonFile() {
         stubDefaultClaim();
 
         ExportResult result = exportService.exportClaims();
@@ -115,7 +115,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldExportNewClaimAsVersionOne() throws Exception {
+    void shouldExportNewClaimAsVersionOne() {
         stubDefaultClaim();
 
         ExportResult result = exportService.exportClaims();
@@ -132,7 +132,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldIncrementVersionWhenClaimWasPreviouslyExported() throws Exception {
+    void shouldIncrementVersionWhenClaimWasPreviouslyExported() {
         stubClaimsForExport(
             List.of(header(CLAIM_ID, 2)),
             List.of(new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), false)),
@@ -152,7 +152,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldExportAllSelectedClaimsAndIncrementEachVersion() throws Exception {
+    void shouldExportAllSelectedClaimsAndIncrementEachVersion() {
         UUID secondId = UUID.randomUUID();
         stubClaimsForExport(
             List.of(header(CLAIM_ID, 1), header(secondId, 1)),
@@ -195,7 +195,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldExportClaimWhenTenancyLicenceIsMissing() throws Exception {
+    void shouldExportClaimWhenTenancyLicenceIsMissing() {
         SdpClaimSnapshotHeader headerWithoutTenancy = new SdpClaimSnapshotHeader(
             CLAIM_ID,
             ClaimantType.PROVIDER_OF_SOCIAL_HOUSING.name(),
@@ -220,7 +220,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldExportClaimWhenNoticeOfPossessionIsMissing() throws Exception {
+    void shouldExportClaimWhenNoticeOfPossessionIsMissing() {
         SdpClaimSnapshotHeader headerWithoutNotice = new SdpClaimSnapshotHeader(
             CLAIM_ID,
             ClaimantType.PROVIDER_OF_SOCIAL_HOUSING.name(),
@@ -245,7 +245,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldExportClaimWhenPartiesAreMissing() throws Exception {
+    void shouldExportClaimWhenPartiesAreMissing() {
         stubClaimsForExport(List.of(header()), List.of(), List.of(), List.of(), List.of());
 
         ExportResult result = exportService.exportClaims();
@@ -255,17 +255,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldExportClaimWhenPartiesAreEmpty() throws Exception {
-        stubClaimsForExport(List.of(header()), List.of(), List.of(), List.of(), List.of());
-
-        ExportResult result = exportService.exportClaims();
-
-        assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).contains("\"parties\":[]");
-    }
-
-    @Test
-    void shouldExportGroundsPaymentsResponsesAndRepresentation() throws Exception {
+    void shouldExportGroundsPaymentsResponsesAndRepresentation() {
         stubClaimsForExport(
             List.of(header()),
             List.of(new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), true)),
@@ -301,7 +291,7 @@ class ExportServiceTest {
     }
 
     @Test
-    void shouldSkipClaimPartyWhenPartyIsMissing() throws Exception {
+    void shouldSkipClaimPartyWhenPartyIsMissing() {
         stubClaimsForExport(
             List.of(header()),
             List.of(new SdpClaimSnapshotParty(CLAIM_ID, null, PartyRole.DEFENDANT.name(), false)),

@@ -66,8 +66,9 @@ class BlobUploaderTest {
         when(blobClient.uploadFromFileWithResponse(any(), isNull(), eq(Context.NONE)))
             .thenThrow(new IllegalStateException("upload failed"));
 
+        BlobUploader uploader = new BlobUploader(blobContainerClient);
         try {
-            assertThatThrownBy(() -> new BlobUploader(blobContainerClient).upload(blobName, file))
+            assertThatThrownBy(() -> uploader.upload(blobName, file))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("upload failed");
         } finally {
@@ -83,8 +84,9 @@ class BlobUploaderTest {
         when(blobClient.uploadFromFileWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
         when(response.getStatusCode()).thenReturn(500);
 
+        BlobUploader uploader = new BlobUploader(blobContainerClient);
         try {
-            assertThatThrownBy(() -> new BlobUploader(blobContainerClient).upload(blobName, file))
+            assertThatThrownBy(() -> uploader.upload(blobName, file))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Failed to upload SDP claim snapshot to blob " + blobName + " status=500");
         } finally {

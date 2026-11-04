@@ -20,8 +20,8 @@ public class ClaimSnapshotFileWriter {
         generator.writeStartArray();
     }
 
-    void writeRecord(JsonGenerator generator, ClaimSnapshotRecord record) throws IOException {
-        objectMapper.writeValue(generator, record);
+    void writeRecord(JsonGenerator generator, ClaimSnapshotRecord snapshotRecord) throws IOException {
+        objectMapper.writeValue(generator, snapshotRecord);
     }
 
     void finishArray(JsonGenerator generator) throws IOException {
