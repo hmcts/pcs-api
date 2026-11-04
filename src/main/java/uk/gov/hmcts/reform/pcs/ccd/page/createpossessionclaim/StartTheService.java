@@ -27,7 +27,7 @@ public class StartTheService implements CcdPageConfiguration {
             .page("startTheService")
             .readonly(PCSCase::getFeeAmount, NEVER_SHOW, true)
             .label("mainContentTop",
-               "<h1 class=\"" + HEADING_L + "\">Make a housing possession claim online</h1>"
+               "<h2 class=\"" + HEADING_L + "\">Make a housing possession claim online</h2>"
                    + "<p class=\"" + BODY + "\">You can use this online service if you’re a registered provider of "
                    + "social housing or a community landlord and the property you want to claim possession of is in "
                    + "England or Wales.</p>"
@@ -51,7 +51,7 @@ public class StartTheService implements CcdPageConfiguration {
                 "<p class=\"" + BODY + "\">Your claim will be saved as you answer the questions, so you’ll be "
                    + "able to close and return to your draft. Before you submit, you must complete a statement of "
                    + "truth. This certifies that you believe the information you’ve provided is true.</p>"
-                   + "<h2 class=\"" + HEADING_M + " " + PADDING_TOP_0 + "\">What you’ll need</h2>"
+                   + "<h3 class=\"" + HEADING_M + " " + PADDING_TOP_0 + "\">What you’ll need</h3>"
                    + "<p class=\"" + BODY + "\">Before you start, make sure you have the following information:</p>"
                    + "<ul>"
                    + "<li class=\"" + LIST_ITEM + "\">details of the tenancy, contract, licence or mortgage agreement"
@@ -63,7 +63,7 @@ public class StartTheService implements CcdPageConfiguration {
                    + " now or closer to the hearing date. Any documents you upload now will be included in the pack of "
                    + "documents that a judge will receive before the hearing (the bundle)</li>"
                    + "</ul>"
-                   + "<h2 class=\"" + HEADING_M + "\">Completing your claim</h2>"
+                   + "<h3 class=\"" + HEADING_M + "\">Completing your claim</h3>"
                    + "<p class=\"" + BODY + "\">Once you’ve finished answering the questions, you can either:</p>"
                    + "<ul>"
                    + "<li class=\"" + LIST_ITEM + "\">sign, submit and pay for your claim now, or</li>"
