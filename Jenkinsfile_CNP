@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@2.4.9")
+@Library("Infrastructure@2.13.4")
 
 import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
@@ -65,10 +65,8 @@ withPipeline(type, product, component) {
   // so there is no smoketest:/functionalTest: stage to hang this off.
   afterSuccess('checkout') {
     if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
-      withSubscription('nonprod') {
-        uploadDmnDiagrams()
-        uploadBpmnDiagram()
-      }
+      uploadDmnDiagrams()
+      uploadBpmnDiagram()
     }
   }
 
@@ -113,6 +111,9 @@ withPipeline(type, product, component) {
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
       env.E2E_SUITE = "caseManagement"
+    }
+     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement_test").size() > 0) {
+      env.E2E_SUITE = "enforcement"
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
       env.E2E_SUITE = "noticeOfChange"
