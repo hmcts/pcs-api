@@ -64,6 +64,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -208,7 +209,7 @@ class PCSCaseViewTest {
         AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
 
         String expectedCaseTitle = "expected case title";
-        when(caseTitleService.buildCaseTitle(any(PCSCase.class))).thenReturn(expectedCaseTitle);
+        when(caseTitleService.buildCaseTitle(any(PCSCase.class), eq(CASE_REFERENCE))).thenReturn(expectedCaseTitle);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -217,7 +218,7 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getCaseTitleMarkdown()).isEqualTo(expectedCaseTitle);
 
         ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
-        verify(caseTitleService).buildCaseTitle(pcsCaseCaptor.capture());
+        verify(caseTitleService).buildCaseTitle(pcsCaseCaptor.capture(), eq(CASE_REFERENCE));
         assertThat(pcsCaseCaptor.getValue().getPropertyAddress()).isEqualTo(addressUK);
     }
 
@@ -467,7 +468,7 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
-        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class), 
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class),
             any(PcsCaseEntity.class));
         verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
@@ -481,7 +482,7 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
-        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class), 
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class),
             any(PcsCaseEntity.class));
         verify(caseTabView).setCaseTabFields(any(PCSCase.class), any(PcsCaseEntity.class));
     }
