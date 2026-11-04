@@ -15,7 +15,6 @@ export const repayments = {
   noneRadioOptions: `None of it`,
   enterTheAmountTextLabelHidden: `Enter the amount that you want the defendants to repay`,
   enterTheAmountTextInputHidden: [`755559.7`,`119999`,`1099.95`,`6320.00`,`890.10`,`111.01`],
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

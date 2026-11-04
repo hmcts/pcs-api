@@ -3,7 +3,6 @@ export const knownDefendantsDOBInformation = {
   mainHeader: `Enter the defendants’ dates of birth`,
   defendantsDOBQuestion: `What are the defendants’ dates of birth?`,
   defendantsDOBHintText: `For example, Billy Wright - 16 4 1991. Brian Springford - 16 4 1983. You can enter up to 6,800 characters`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   errorValidation: `NO`,//set it to `NO` before raising a PR

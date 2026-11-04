@@ -1,0 +1,195 @@
+package uk.gov.hmcts.reform.pcs.enforcement.testcasesupport;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffAllocationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementChange;
+import uk.gov.hmcts.reform.pcs.enforcement.service.BailiffUser;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.AllocateBailiffRequest;
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.DefendantCaseRoleRequest;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import uk.gov.hmcts.reform.pcs.enforcement.testcasesupport.EnforcementTestingSupportController.BackdateRequest;
+
+import java.time.Duration;
+import java.time.Period;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class EnforcementTestingSupportControllerTest {
+
+    private static final long CASE_REFERENCE = 1234L;
+    private static final String S2S_TOKEN = "s2s";
+    private static final String USER_TOKEN = "Bearer user-token";
+    private static final AllocateBailiffRequest ALLOCATE_REQUEST =
+        new AllocateBailiffRequest("39d73e7f-842b-3c7f-874d-2a3d3c627310", "Sam Jones", "sam.jones@justice.gov.uk");
+    private static final BailiffUser EXPECTED_BAILIFF =
+        new BailiffUser("39d73e7f-842b-3c7f-874d-2a3d3c627310", "Sam Jones", "sam.jones@justice.gov.uk");
+
+    @Mock
+    private EnforcementFeePaidSimulator enforcementFeePaidSimulator;
+    @Mock
+    private BailiffAllocationService bailiffAllocationService;
+    @Mock
+    private IdamAuthenticator idamAuthenticator;
+    @Mock
+    private CaseRoleAssignmentService caseRoleAssignmentService;
+    @Mock
+    private EnforcementBackdateService enforcementBackdateService;
+    @InjectMocks
+    private EnforcementTestingSupportController underTest;
+
+    @Test
+    void shouldReturnNoContentWhenTheFeeIsRecorded() {
+        when(enforcementFeePaidSimulator.recordFeePaid(CASE_REFERENCE)).thenReturn(true);
+
+        assertThat(underTest.recordFeePaid(S2S_TOKEN, CASE_REFERENCE).getStatusCode())
+            .isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenNoApplicationIsAwaitingPayment() {
+        when(enforcementFeePaidSimulator.recordFeePaid(CASE_REFERENCE)).thenReturn(false);
+
+        assertThat(underTest.recordFeePaid(S2S_TOKEN, CASE_REFERENCE).getStatusCode())
+            .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldReturnNoContentWhenTheBailiffIsAllocated() {
+        givenTheCallerIsAuthenticated();
+        givenTheAllocation(EnforcementChange.made("WP-00000001"));
+
+        assertThat(underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST)
+                       .getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void shouldAllocateTheRequestedBailiffToTheCase() {
+        givenTheCallerIsAuthenticated();
+        givenTheAllocation(EnforcementChange.made("WP-00000001"));
+
+        underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST);
+
+        verify(bailiffAllocationService).allocate(CASE_REFERENCE, EXPECTED_BAILIFF);
+    }
+
+    /** BailiffAllocationService reads the current user, so the caller must be on the security context. */
+    @Test
+    void shouldRunTheAllocationAsTheCallerAndClearTheContextAfterwards() {
+        User caller = givenTheCallerIsAuthenticated();
+        AtomicReference<Object> principalDuringAllocation = new AtomicReference<>();
+        when(bailiffAllocationService.allocate(CASE_REFERENCE, EXPECTED_BAILIFF)).thenAnswer(invocation -> {
+            principalDuringAllocation.set(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            return EnforcementChange.made("WP-00000001");
+        });
+
+        underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST);
+
+        assertThat(principalDuringAllocation.get()).isSameAs(caller);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
+    void shouldReportTheRefusalWhenTheWarrantCannotBeAllocated() {
+        givenTheCallerIsAuthenticated();
+        givenTheAllocation(EnforcementChange.refused("There is no warrant on this case"));
+
+        ResponseEntity<List<String>> response =
+            underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getBody()).containsExactly("There is no warrant on this case");
+    }
+
+    @Test
+    void shouldReportEveryRefusalReason() {
+        givenTheCallerIsAuthenticated();
+        givenTheAllocation(EnforcementChange.refused(List.of("first reason", "second reason")));
+
+        assertThat(underTest.allocateBailiff(S2S_TOKEN, USER_TOKEN, CASE_REFERENCE, ALLOCATE_REQUEST).getBody())
+            .containsExactly("first reason", "second reason");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"DEFENDANT", "DEFENDANT_SOLICITOR"})
+    void shouldGiveTheUserTheDefendantCaseRole(UserRole role) {
+        ResponseEntity<Void> response = underTest.assignDefendantCaseRole(
+            S2S_TOKEN, CASE_REFERENCE, new DefendantCaseRoleRequest("user-id", role.getRole()));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(caseRoleAssignmentService).assignRasRole(CASE_REFERENCE, "user-id", role);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[CLAIMANTSOLICITOR]", "[CREATOR]", "hearing-centre-admin", "DEFENDANT"})
+    void shouldRefuseAnyOtherCaseRole(String caseRole) {
+        ResponseEntity<Void> response = underTest.assignDefendantCaseRole(
+            S2S_TOKEN, CASE_REFERENCE, new DefendantCaseRoleRequest("user-id", caseRole));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(caseRoleAssignmentService);
+    }
+
+    @Test
+    void shouldReturnNoContentWhenTheEnforcementIsBackdated() {
+        Period twelveMonths = Period.ofMonths(12);
+        when(enforcementBackdateService.backdate(CASE_REFERENCE, "WP-00000001", twelveMonths, null))
+            .thenReturn(Optional.of(UUID.randomUUID()));
+
+        assertThat(underTest.backdate(S2S_TOKEN, CASE_REFERENCE,
+                                      new BackdateRequest(twelveMonths, null, "WP-00000001")).getStatusCode())
+            .isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenThereIsNoEnforcementToBackdate() {
+        Duration seventyThreeHours = Duration.ofHours(73);
+        when(enforcementBackdateService.backdate(CASE_REFERENCE, null, null, seventyThreeHours))
+            .thenReturn(Optional.empty());
+
+        assertThat(underTest.backdate(S2S_TOKEN, CASE_REFERENCE,
+                                      new BackdateRequest(null, seventyThreeHours, null)).getStatusCode())
+            .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldRejectABackdateWithNoAmount() {
+        assertThat(underTest.backdate(S2S_TOKEN, CASE_REFERENCE,
+                                      new BackdateRequest(null, null, null)).getStatusCode())
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(enforcementBackdateService);
+    }
+
+    private void givenTheAllocation(EnforcementChange<String> outcome) {
+        when(bailiffAllocationService.allocate(CASE_REFERENCE, EXPECTED_BAILIFF)).thenReturn(outcome);
+    }
+
+    private User givenTheCallerIsAuthenticated() {
+        User caller = new User(USER_TOKEN, UserInfo.builder().uid("caller-id").roles(List.of()).build());
+        when(idamAuthenticator.validateAuthToken(USER_TOKEN)).thenReturn(caller);
+        return caller;
+    }
+}

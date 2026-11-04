@@ -1,0 +1,307 @@
+package uk.gov.hmcts.reform.pcs.enforcement.ccd.page;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDataUtil;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.mapper.WarrantOfRestitutionMapper;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType.WARRANT_OF_RESTITUTION;
+import static uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementDataUtil.buildEnforcementOrder;
+
+@ExtendWith(MockitoExtension.class)
+class EnforcementApplicationPageTest extends BasePageTest {
+
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
+    @Mock
+    private WarrantOfRestitutionMapper warrantOfRestitutionMapper;
+    @InjectMocks
+    private EnforcementApplicationPage enforcementApplicationPage;
+
+    @BeforeEach
+    void setUp() {
+        setPageUnderTest(enforcementApplicationPage);
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_SingleDefendant() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant("John", "Doe"));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_SingleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant(null, null));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_SurnameOnly() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant(null, "Smith"));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Smith</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_FirstNameOnly() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant("Jess", "  "));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Jess</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_MultipleDefendant() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(
+                createDefendant("John", "Doe"),
+                createDefendant("Test", "Testing"),
+                createDefendant("Third", "Def")
+        );
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                        + "<div class=\"govuk-!-margin-bottom-2\">Test Testing</div>"
+                        + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_MultipleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(
+            createDefendant("John", "Doe"),
+            createDefendant(null, null),
+            createDefendant("Third", "Def")
+        );
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_NoDefendants() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT))
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames()).isNull();
+    }
+
+    @Test
+    void shouldSetUnsubmittedEnforcementDataFlagDuringMidEvent() {
+        // Given
+        PCSCase caseData = createCaseWithEnforcementType(null, SelectEnforcementType.WARRANT);
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldNotAddErrorWhenWarrantSelected() {
+        // Given
+        PCSCase caseData = createCaseWithEnforcementType(null, SelectEnforcementType.WARRANT);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
+    void shouldNotAddErrorWhenWritSelectedAndClaimNotTransferred() {
+        // Given
+        PCSCase caseData = createCaseWithEnforcementType(
+            WritDetails.builder()
+                .hasClaimTransferredToHighCourt(YesOrNo.NO)
+                .wasGeneralApplicationToTransferToHighCourtSuccessful(null)
+                .build(),
+            SelectEnforcementType.WRIT
+        );
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
+    void shouldNotAddErrorWhenWritSelectedAndClaimTransferredAndGeneralApplicationSuccessful() {
+        // Given
+        PCSCase caseData = createCaseWithEnforcementType(
+            WritDetails.builder()
+                .hasClaimTransferredToHighCourt(YesOrNo.YES)
+                .wasGeneralApplicationToTransferToHighCourtSuccessful(YesOrNo.YES)
+                .build(),
+            SelectEnforcementType.WRIT
+        );
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
+    void shouldAddErrorWhenWritSelectedAndClaimTransferredButGeneralApplicationUnsuccessful() {
+        // Given
+        PCSCase caseData = createCaseWithEnforcementType(
+            WritDetails.builder()
+                .hasClaimTransferredToHighCourt(YesOrNo.YES)
+                .wasGeneralApplicationToTransferToHighCourtSuccessful(YesOrNo.NO)
+                .build(),
+            SelectEnforcementType.WRIT
+        );
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors())
+            .singleElement()
+            .isEqualTo(
+                "You cannot continue with this application because your "
+                    + "application to transfer to the High Court was unsuccessful"
+            );
+    }
+
+    @Test
+    void shouldPrepopulateWarrantRestDetailsIfSelected() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION))
+                .build();
+
+        EnforcementOrder warrantEnforcementOrder = buildEnforcementOrder();
+
+        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
+                .thenReturn(warrantEnforcementOrder);
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        verify(warrantOfRestitutionMapper).prePopulateFieldsFromWarrantDetails(warrantEnforcementOrder,
+                caseData.getEnforcementOrder());
+    }
+
+    @Test
+    void shouldNotPrepopulateWarrantRestDetailsIfNoWarrantOrder() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION))
+                .build();
+
+        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
+                .thenReturn(null);
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        verify(warrantOfRestitutionMapper, never()).prePopulateFieldsFromWarrantDetails(any(), any());
+    }
+
+    private PCSCase createCaseWithDefendants(Party... defendants) {
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+
+        for (Party defendant : defendants) {
+            defendantList.add(ListValue.<Party>builder().value(defendant).build());
+        }
+
+        PCSCase caseData = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+        caseData.setAllDefendants(defendantList);
+        return caseData;
+    }
+
+    private PCSCase createCaseWithEnforcementType(WritDetails writDetails, SelectEnforcementType enforcementType) {
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .chooseEnforcementType(EnforcementDataUtil.buildEnforcementTypes(enforcementType))
+            .writDetails(writDetails)
+            .build();
+
+        return PCSCase.builder()
+            .enforcementOrder(enforcementOrder)
+            .build();
+    }
+
+    private Party createDefendant(String firstName, String lastName) {
+        return Party.builder()
+                .firstName(firstName)
+                .lastName(lastName).build();
+    }
+}

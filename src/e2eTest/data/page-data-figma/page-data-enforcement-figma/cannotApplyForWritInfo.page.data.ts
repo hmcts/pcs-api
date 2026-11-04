@@ -5,7 +5,7 @@ export const cannotApplyForWritInfo = {
   onceYouHaveParagraph: `Once you have permission to transfer to the High Court, you can return to this service and apply for a writ.`,
   howToTransferParagraph: `How to transfer your claim to the High Court`,
   youMustMakeParagraph: `You must make an application if you want to transfer your claim to the High Court.`,
-  transferYourClaimParagraph: `Transfer your claim from the County Court to the High Court (make an application)`,
+  transferYourClaimParagraph: `Transfer your claim from the County Court to the High Court (GOV.UK, opens in a new tab) (make an application)`,
   errorMessageHeader: `Errors`,
   errMessage: `You cannot continue with this application until you ask the judge for permission to transfer to the High Court`,
   previousButton: `Previous`,

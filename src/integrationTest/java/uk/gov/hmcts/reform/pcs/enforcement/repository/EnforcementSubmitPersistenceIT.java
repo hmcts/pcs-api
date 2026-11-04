@@ -1,0 +1,305 @@
+package uk.gov.hmcts.reform.pcs.enforcement.repository;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.enforcement.document.EnforcementDocumentScheduler;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.common.StatementOfTruthDetailsEnforcement;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.domain.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.enforcement.entity.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.enforcement.notification.EnforcementNotificationService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.CurrentEnforcementService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementFeeService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementStatusTransitions;
+import uk.gov.hmcts.reform.pcs.enforcement.service.EnforcementWaTaskService;
+import uk.gov.hmcts.reform.pcs.enforcement.service.RepeatWarrantFeeWaiver;
+import uk.gov.hmcts.reform.pcs.enforcement.service.strategy.EnforcementTypeStrategyFactory;
+
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_MOCKS;
+import static org.mockito.Mockito.mock;
+
+@SpringBootTest
+@ActiveProfiles("integration")
+@Transactional
+@DisplayName("Enforcement application submit persistence")
+class EnforcementSubmitPersistenceIT extends AbstractPostgresContainerIT {
+
+    @Autowired
+    private EnforcementOrderRepository enforcementOrderRepository;
+
+    @Autowired
+    private PcsCaseRepository pcsCaseRepository;
+
+    @Autowired
+    private PcsCaseService pcsCaseService;
+
+    @Autowired
+    private EnforcementTypeStrategyFactory strategyFactory;
+
+    @Autowired
+    private EnforcementStatusTransitions enforcementStatusTransitions;
+
+    @Autowired
+    private RepeatWarrantFeeWaiver repeatWarrantFeeWaiver;
+
+    @Autowired
+    private EnforcementDocumentScheduler enforcementDocumentScheduler;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private EnforcementOrderService enforcementOrderService;
+
+    @BeforeEach
+    void setUp() {
+        enforcementOrderService = new EnforcementOrderService(
+            enforcementOrderRepository, new CurrentEnforcementService(pcsCaseService, enforcementOrderRepository),
+            pcsCaseService, mock(DraftCaseDataService.class), strategyFactory,
+            enforcementStatusTransitions, repeatWarrantFeeWaiver, mock(EnforcementNotificationService.class),
+            enforcementDocumentScheduler, mock(EnforcementFeeService.class, RETURNS_MOCKS),
+            mock(EnforcementWaTaskService.class), objectMapper);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, 1000000000000001, enf_warrant",
+        "WRIT, 1000000000000002, enf_writ",
+        "WARRANT_OF_RESTITUTION, 1000000000000003, enf_warrant_of_restitution",
+        "WRIT_OF_RESTITUTION, 1000000000000004, enf_writ_of_restitution",
+    })
+    @DisplayName("stores the application and the type's own row, pointing back at the enforcement")
+    void shouldStoreTheTypesOwnRowAgainstTheEnforcement(SelectEnforcementType enforcementType,
+                                                        long caseReference,
+                                                        String childTable) {
+        final ClaimEntity claim = savedClaim(caseReference);
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder(enforcementType));
+        entityManager.flush();
+        entityManager.clear();
+
+        List<EnforcementOrderEntity> enforcements = enforcementOrderRepository.findByClaimId(claim.getId());
+        assertThat(enforcements).hasSize(1);
+        UUID enforcementId = enforcements.getFirst().getId();
+        // Scoped to this claim: the enforcements other test classes commit leave their own rows behind.
+        assertThat(jdbcTemplate.queryForList(
+            "SELECT enf_case_id FROM " + childTable
+                + " WHERE enf_case_id IN (SELECT id FROM enf_case WHERE claim_id = ?)",
+            UUID.class, claim.getId()))
+            .containsExactly(enforcementId);
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT submitted_at = status_updated_at FROM enf_case WHERE id = ?", Boolean.class, enforcementId))
+            .as("the application is dated by when it was submitted")
+            .isTrue();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, 1000000000000006, enf_warrant",
+        "WRIT, 1000000000000007, enf_writ",
+        "WARRANT_OF_RESTITUTION, 1000000000000008, enf_warrant_of_restitution",
+        "WRIT_OF_RESTITUTION, 1000000000000009, enf_writ_of_restitution",
+    })
+    @DisplayName("stores the language used and the statement of truth for every type")
+    void shouldStoreTheLanguageUsedAndTheStatementOfTruth(SelectEnforcementType enforcementType,
+                                                          long caseReference,
+                                                          String childTable) {
+        final ClaimEntity claim = savedClaim(caseReference);
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, signedApplication(enforcementType));
+        entityManager.flush();
+        entityManager.clear();
+
+        UUID enforcementId = enforcementOrderRepository.findByClaimId(claim.getId()).getFirst().getId();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT language_used FROM " + childTable + " WHERE enf_case_id = ?", String.class, enforcementId))
+            .isEqualTo(LanguageUsed.WELSH.name());
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT full_name FROM statement_of_truth WHERE id = "
+                + "(SELECT sot_id FROM enf_case WHERE id = ?)", String.class, enforcementId))
+            .isEqualTo("Sam Shah");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "WARRANT, 1000000000000011, enf_warrant",
+        "WRIT, 1000000000000012, enf_writ",
+        "WARRANT_OF_RESTITUTION, 1000000000000013, enf_warrant_of_restitution",
+        "WRIT_OF_RESTITUTION, 1000000000000014, enf_writ_of_restitution",
+    })
+    @DisplayName("stores no statement of truth for an application that answered neither question")
+    void shouldStoreNoStatementOfTruthForAnUnansweredApplication(SelectEnforcementType enforcementType,
+                                                                 long caseReference,
+                                                                 String childTable) throws JsonProcessingException {
+        final ClaimEntity claim = savedClaim(caseReference);
+        final int statementsOfTruth = countStatementsOfTruth();
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, unansweredApplication(enforcementType));
+        entityManager.flush();
+        entityManager.clear();
+
+        UUID enforcementId = enforcementOrderRepository.findByClaimId(claim.getId()).getFirst().getId();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT language_used FROM " + childTable + " WHERE enf_case_id = ?", String.class, enforcementId))
+            .isNull();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT sot_id FROM enf_case WHERE id = ?", Integer.class, enforcementId))
+            .isNull();
+        assertThat(countStatementsOfTruth())
+            .as("no statement of truth is inserted for an application that signed none")
+            .isEqualTo(statementsOfTruth);
+    }
+
+    private int countStatementsOfTruth() {
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM statement_of_truth", Integer.class);
+    }
+
+    @Test
+    @DisplayName("stores the application without a second write of the same enforcement order")
+    void shouldStoreTheApplicationWithoutASecondWrite() {
+        long caseReference = 1000000000000005L;
+        ClaimEntity claim = savedClaim(caseReference);
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder(SelectEnforcementType.WARRANT));
+        entityManager.flush();
+
+        UUID enforcementId = enforcementOrderRepository.findByClaimId(claim.getId()).getFirst().getId();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT version FROM enf_case WHERE id = ?", Integer.class, enforcementId))
+            .as("the insert is the only write of the enforcement")
+            .isZero();
+    }
+
+    @Test
+    @DisplayName("attaches the evidence uploaded with a warrant of restitution to its case in CDAM")
+    void shouldAttachTheUploadedEvidenceToItsCaseInCdam() {
+        long caseReference = 1000000000000010L;
+        ClaimEntity claim = savedClaim(caseReference);
+        UUID documentId = UUID.randomUUID();
+        EnforcementOrder application = enforcementOrder(SelectEnforcementType.WARRANT_OF_RESTITUTION);
+        application.getWarrantOfRestitutionDetails().setAdditionalDocuments(List.of(
+            ListValue.<EvidenceOfDefendants>builder().id("1").value(uploadedEvidence(documentId)).build()));
+
+        enforcementOrderService.saveAndClearDraftData(caseReference, application);
+        entityManager.flush();
+
+        assertThat(jdbcTemplate.queryForList(
+            "SELECT c.case_reference FROM document d JOIN pcs_case c ON c.id = d.case_id "
+                + "WHERE d.url = ?", Long.class, dmStoreUrl(documentId)))
+            .as("the uploaded evidence is on the case")
+            .containsExactly(caseReference);
+        assertThat(jdbcTemplate.queryForList(
+            "SELECT convert_from(s.task_data, 'UTF8')::jsonb ->> 'documentId' "
+                + "FROM scheduled_tasks s JOIN document d ON d.id::text = s.task_instance "
+                + "WHERE s.task_name = 'attach-document-task' AND d.url = ?",
+            String.class, dmStoreUrl(documentId)))
+            .as("the uploaded evidence is attached to its case in CDAM")
+            .containsExactly(documentId.toString());
+    }
+
+    private static EvidenceOfDefendants uploadedEvidence(UUID documentId) {
+        Document document = new Document();
+        document.setUrl(dmStoreUrl(documentId));
+        document.setBinaryUrl(dmStoreUrl(documentId) + "/binary");
+        document.setFilename("Police report.pdf");
+        return EvidenceOfDefendants.builder()
+            .documentType(EvidenceDocumentType.POLICE_REPORT)
+            .document(document)
+            .description("Police report")
+            .build();
+    }
+
+    private static String dmStoreUrl(UUID documentId) {
+        return "http://dm-store/documents/" + documentId;
+    }
+
+    private static EnforcementOrder enforcementOrder(SelectEnforcementType enforcementType) {
+        return EnforcementOrder.builder()
+            .chooseEnforcementType(chosenType(enforcementType))
+            .warrantDetails(WarrantDetails.builder().build())
+            .writDetails(WritDetails.builder().build())
+            .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder().build())
+            .build();
+    }
+
+    private static DynamicStringList chosenType(SelectEnforcementType enforcementType) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                       .code(enforcementType.name())
+                       .build())
+            .build();
+    }
+
+    private EnforcementOrder unansweredApplication(SelectEnforcementType enforcementType)
+        throws JsonProcessingException {
+
+        EnforcementOrder application = objectMapper.readValue("{}", PCSCase.class).getEnforcementOrder();
+        application.setChooseEnforcementType(chosenType(enforcementType));
+        return application;
+    }
+
+    private static EnforcementOrder signedApplication(SelectEnforcementType enforcementType) {
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);
+        statementOfTruth.setFullNameParty("Sam Shah");
+        statementOfTruth.setPositionParty("Housing officer");
+
+        EnforcementOrder application = enforcementOrder(enforcementType);
+        boolean writ = enforcementType == SelectEnforcementType.WRIT
+            || enforcementType == SelectEnforcementType.WRIT_OF_RESTITUTION;
+        if (writ) {
+            application.getWritDetails().setLanguageUsed(LanguageUsed.WELSH);
+            application.getWritDetails().setStatementOfTruth(statementOfTruth);
+        } else {
+            application.getWarrantDetails().setLanguageUsed(LanguageUsed.WELSH);
+            application.getWarrantDetails().setStatementOfTruth(statementOfTruth);
+        }
+        return application;
+    }
+
+    private ClaimEntity savedClaim(long caseReference) {
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(caseReference).build();
+        ClaimEntity claim = new ClaimEntity();
+        pcsCase.addClaim(claim);
+        return pcsCaseRepository.save(pcsCase).getClaims().getFirst();
+    }
+}

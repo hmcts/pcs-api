@@ -8,7 +8,6 @@ export const landRegistryFees = {
   noRadioOption: `No`,
   howMuchYouSpendOnLandRegistryFeeTextLabelHidden: `How much did you spend on Land Registry fees?`,
   howMuchYouSpendOnLandRegistryFeeTextInput: [`155559.7`,`9999`,`199.95`,`120.00`,`890.10`,`111.01`],
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

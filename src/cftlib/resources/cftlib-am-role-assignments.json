@@ -29,6 +29,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
@@ -106,6 +107,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+          "jurisdiction": "PCS"
         },
         "authorisations": []
       },
@@ -138,6 +140,122 @@
           "region": "1",
           "workTypes": "routine_work,applications,decision_making_work,error_management,appeals"
         }
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "task-supervisor",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "N",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1"
+        }
+      }
+    ]
+  },
+  {
+    "email": "sam.jones@justice.gov.uk",
+    "id": "39d73e7f-842b-3c7f-874d-2a3d3c627310",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hmcts-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS"
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "bailiff",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "Y",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1",
+          "workTypes": "bailiff_work,enforcement_support,error_management"
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "pcs-bailiff-admin@localhost",
+    "id": "92f5a81f-ed87-3f15-8f48-d991892faefa",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hmcts-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS"
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "bailiff-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "Y",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1",
+          "workTypes": "enforcement_support,error_management"
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "pcs-bailiff-manager@localhost",
+    "id": "117afe78-87b1-3abe-9252-9c0d17459e3e",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hmcts-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS"
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "bailiff-manager",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "Y",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1",
+          "workTypes": "bailiff_work,enforcement_support,error_management"
+        },
+        "authorisations": []
       },
       {
         "roleType": "ORGANISATION",

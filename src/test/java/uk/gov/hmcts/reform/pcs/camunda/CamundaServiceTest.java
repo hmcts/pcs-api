@@ -6,6 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskInstanceId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -38,6 +40,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,8 +48,10 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 public class CamundaServiceTest {
@@ -61,6 +66,9 @@ public class CamundaServiceTest {
 
     @Mock
     private SchedulerClient schedulerClient;
+
+    @Mock
+    private PendingCamundaRequests pendingCamundaRequests;
 
     @Mock(strictness = LENIENT)
     private Clock utcClock;
@@ -524,6 +532,114 @@ public class CamundaServiceTest {
         assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
         assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
             .isEqualTo(instant);
+    }
+
+    @Test
+    void shouldKeyACreateRequestOnTheCallersReferenceSoARetrySchedulesOneJob() {
+        stubWaFeatureFlag(true);
+        TaskReference reference = TaskReference.of("enforcement-1");
+
+        camundaService.createTask(CASE_REFERENCE, TaskType.ALLOCATE_CASE_TO_BAILIFF, reference);
+        camundaService.createTask(CASE_REFERENCE, TaskType.ALLOCATE_CASE_TO_BAILIFF, reference);
+
+        verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        List<SchedulableInstance<CamundaRequestTaskData>> scheduled = schedulableInstanceCaptor.getAllValues();
+        // db-scheduler drops the second against the same instance id, which is how the retry is deduped.
+        assertThat(scheduled.getFirst().getTaskInstance().getId())
+            .isEqualTo(scheduled.getLast().getTaskInstance().getId())
+            .isEqualTo("CREATE-AllocateCaseToBailiff-enforcement-1");
+        assertThat(scheduled.getFirst().getTaskInstance().getData().getIdempotencyKey())
+            .isEqualTo(scheduled.getLast().getTaskInstance().getData().getIdempotencyKey())
+            .isEqualTo(UUID.nameUUIDFromBytes(
+                "CREATE-AllocateCaseToBailiff-enforcement-1".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void shouldKeyCreateRequestsForDifferentReferencesSeparately() {
+        stubWaFeatureFlag(true);
+
+        camundaService.createTask(CASE_REFERENCE, TaskType.ALLOCATE_CASE_TO_BAILIFF, TaskReference.of("return-1"));
+        camundaService.createTask(CASE_REFERENCE, TaskType.ALLOCATE_CASE_TO_BAILIFF, TaskReference.of("return-2"));
+
+        verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        List<SchedulableInstance<CamundaRequestTaskData>> scheduled = schedulableInstanceCaptor.getAllValues();
+        assertThat(scheduled.getFirst().getTaskInstance().getId())
+            .isNotEqualTo(scheduled.getLast().getTaskInstance().getId());
+        assertThat(scheduled.getFirst().getTaskInstance().getData().getIdempotencyKey())
+            .isNotEqualTo(scheduled.getLast().getTaskInstance().getData().getIdempotencyKey());
+    }
+
+    @Test
+    void shouldKeyTheSameReferenceForDifferentTaskTypesSeparately() {
+        stubWaFeatureFlag(true);
+        TaskReference reference = TaskReference.of("return-1");
+
+        camundaService.createTask(CASE_REFERENCE, TaskType.ALLOCATE_CASE_TO_BAILIFF, reference);
+        camundaService.createTask(CASE_REFERENCE, TaskType.REVIEW_RISKS_AND_SET_LEVEL, reference);
+
+        verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        List<SchedulableInstance<CamundaRequestTaskData>> scheduled = schedulableInstanceCaptor.getAllValues();
+        assertThat(scheduled.getFirst().getTaskInstance().getId())
+            .isNotEqualTo(scheduled.getLast().getTaskInstance().getId());
+    }
+
+    @Test
+    void shouldScheduleAReferencedCreateRequestForALaterDate() {
+        stubWaFeatureFlag(true);
+        Instant evictionDate = Instant.parse("2026-11-03T10:00:00Z");
+
+        camundaService.createTask(CASE_REFERENCE, TaskType.RECORD_WARRANT_RETURN,
+                                  TaskReference.of("enforcement-1"), evictionDate);
+
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        SchedulableInstance<CamundaRequestTaskData> scheduled = schedulableInstanceCaptor.getValue();
+        assertThat(scheduled.getNextExecutionTime(Instant.now())).isEqualTo(evictionDate);
+        assertThat(scheduled.getTaskInstance().getData().getTaskDescription())
+            .isEqualTo(TaskType.RECORD_WARRANT_RETURN.getDefaultDescription());
+    }
+
+    @Test
+    void shouldScheduleAStablyKeyedCancellationRequest() {
+        stubWaFeatureFlag(true);
+
+        camundaService.cancelTask(CASE_REFERENCE, TaskType.RECORD_WARRANT_RETURN, TaskReference.of("return-1"));
+
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        SchedulableInstance<CamundaRequestTaskData> scheduled = schedulableInstanceCaptor.getValue();
+        assertThat(scheduled.getTaskInstance().getData().getAction()).isEqualTo(Action.CANCEL);
+        assertThat(scheduled.getTaskInstance().getId()).isEqualTo("CANCEL-RecordWarrantReturn-return-1");
+    }
+
+    @Test
+    void shouldDropACreateRequestThatHasNotReachedCamundaYet() {
+        stubWaFeatureFlag(true);
+        TaskInstanceId pending = CAMUNDA_REQUEST_TASK_DESCRIPTOR
+            .instanceId("CREATE-RecordWarrantReturn-enforcement-1");
+        when(pendingCamundaRequests.withdraw(pending)).thenReturn(true);
+
+        camundaService.cancelPendingTaskCreation(TaskType.RECORD_WARRANT_RETURN,
+                                                 TaskReference.of("enforcement-1"));
+
+        verify(pendingCamundaRequests).withdraw(pending);
+    }
+
+    @Test
+    void shouldWithdrawNothingWhenWorkAllocationIsOff() {
+        stubWaFeatureFlag(false);
+
+        camundaService.cancelPendingTaskCreation(TaskType.RECORD_WARRANT_RETURN,
+                                                 TaskReference.of("enforcement-1"));
+
+        verify(pendingCamundaRequests, never()).withdraw(any());
+    }
+
+    @Test
+    void shouldDropNothingWhenTheCreateRequestHasAlreadyGone() {
+        stubWaFeatureFlag(true);
+        when(pendingCamundaRequests.withdraw(any())).thenReturn(false);
+
+        assertThatNoException().isThrownBy(() -> camundaService.cancelPendingTaskCreation(
+            TaskType.RECORD_WARRANT_RETURN, TaskReference.of("enforcement-1")));
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType, String taskDescription) {

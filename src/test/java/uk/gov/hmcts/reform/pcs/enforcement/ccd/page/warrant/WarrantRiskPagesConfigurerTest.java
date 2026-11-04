@@ -1,0 +1,84 @@
+package uk.gov.hmcts.reform.pcs.enforcement.ccd.page.warrant;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.PageConfigurerHelper.verifyAndCount;
+
+@ExtendWith(MockitoExtension.class)
+class WarrantRiskPagesConfigurerTest extends BasePageTest {
+
+    @InjectMocks
+    private WarrantRiskPagesConfigurer underTest;
+
+    @Mock
+    private ViolentAggressiveRiskPage violentAggressiveRiskPage;
+    @Mock
+    private VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
+    @Mock
+    private ProtestorGroupRiskPage protestorGroupRiskPage;
+    @Mock
+    private PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
+    @Mock
+    private FirearmsPossessionRiskPage firearmsPossessionRiskPage;
+    @Mock
+    private CriminalAntisocialRiskPage criminalAntisocialRiskPage;
+    @Mock
+    private AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
+    @Mock
+    private PropertyAccessDetailsPage propertyAccessDetailsPage;
+    @Mock
+    private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
+    @Mock
+    private AdditionalInformationPage additionalInformationPage;
+
+    @Test
+    void shouldConfigureTheRiskPagesInTheOrderTheApplicationAsksThem() {
+        // Given
+        PageBuilder pageBuilder = mock(PageBuilder.class);
+        when(pageBuilder.add(any())).thenReturn(pageBuilder);
+
+        // When
+        underTest.configurePages(pageBuilder);
+
+        // Then
+        ArgumentCaptor<CcdPageConfiguration> pageCaptor = ArgumentCaptor.forClass(CcdPageConfiguration.class);
+        InOrder inOrder = inOrder(pageBuilder);
+        Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
+        AtomicInteger verificationCount = new AtomicInteger(0);
+
+        verifyAndCount(inOrder, pageBuilder, LivingInThePropertyPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvictionDelayWarningPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvictionRisksPosedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, violentAggressiveRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, firearmsPossessionRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, criminalAntisocialRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, verbalOrWrittenThreatsRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, protestorGroupRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, policeOrSocialServicesRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, aggressiveAnimalsRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, propertyAccessDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, additionalInformationPage, verificationCount);
+
+        assertThat(verificationCount.get()).isEqualTo(pageCaptor.getAllValues().size());
+        verifyNoMoreInteractions(pageBuilder);
+    }
+}

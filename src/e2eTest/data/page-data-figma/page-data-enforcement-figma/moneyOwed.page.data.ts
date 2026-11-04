@@ -7,7 +7,6 @@ export const moneyOwed = {
   ifYouDoNotKnowParagraph: `If you do not know the fee you paid to make your possession claim, check the service request tab (opens in a new tab). This shows all of the fees you have paid when you made a claim`,
   totalAmountOwedTextLabel: `What is the total amount that the defendants owe you?`,
   totalAmountOwedTextInput: [`755559.7`,`119999`,`1099.95`,`6320.00`,`890.10`,`9911.01`],
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

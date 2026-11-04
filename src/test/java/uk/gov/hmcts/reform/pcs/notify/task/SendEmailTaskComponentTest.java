@@ -1,9 +1,15 @@
 package uk.gov.hmcts.reform.pcs.notify.task;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.github.kagkarlsson.scheduler.task.CompletionHandler;
+import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,11 +20,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -48,6 +56,8 @@ import static org.mockito.Mockito.when;
 @DisplayName("SendEmailTaskComponent Tests")
 class SendEmailTaskComponentTest {
 
+    private static final int MAX_RETRIES = 3;
+
     private SendEmailTaskComponent sendEmailTaskComponent;
 
     @Mock
@@ -69,6 +79,9 @@ class SendEmailTaskComponentTest {
     private ExecutionContext executionContext;
 
     @Mock
+    private Execution execution;
+
+    @Mock
     private CaseNotification caseNotification;
 
     @Mock
@@ -86,13 +99,13 @@ class SendEmailTaskComponentTest {
 
     @BeforeEach
     void setUp() {
-        int maxRetriesSendEmail = 3;
+        when(executionContext.getExecution()).thenReturn(execution);
         sendEmailTaskComponent = new SendEmailTaskComponent(
             notificationService,
             notificationClient,
             errorHandler,
             notificationRepository,
-            maxRetriesSendEmail,
+            MAX_RETRIES,
             sendingBackoffDelay,
             statusCheckTaskDelay
         );
@@ -488,6 +501,98 @@ class SendEmailTaskComponentTest {
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString());
             verify(notificationService, never()).updateNotificationAfterSending(any(), any());
             verifyNoInteractions(errorHandler);
+        }
+    }
+
+    @Nested
+    @DisplayName("Terminal failure tests")
+    class TerminalFailureTests {
+
+        private Logger componentLogger;
+        private ListAppender<ILoggingEvent> logAppender;
+
+        @BeforeEach
+        void attachAppender() {
+            componentLogger = (Logger) LoggerFactory.getLogger(SendEmailTaskComponent.class);
+            logAppender = new ListAppender<>();
+            logAppender.start();
+            componentLogger.addAppender(logAppender);
+            when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
+            when(notificationRepository.findCaseReferenceById(dbNotificationId))
+                .thenReturn(Optional.of(1234567890123456L));
+            when(caseNotification.getClaimType()).thenReturn(NotificationClaimType.ENFORCEMENT);
+        }
+
+        @AfterEach
+        void detachAppender() {
+            componentLogger.detachAppender(logAppender);
+        }
+
+        @Test
+        @DisplayName("Should mark the notification as failed and log once when the last retry fails")
+        void shouldMarkFailedAndLogOnTheLastRetry() throws Exception {
+            execution.consecutiveFailures = MAX_RETRIES;
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(500);
+            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
+                .thenThrow(exception);
+
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
+
+            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+                .isInstanceOf(TemporaryNotificationException.class);
+
+            verify(notificationService).updateNotificationStatus(dbNotificationId, "technical-failure");
+            assertTerminalFailureLogged("TemporaryNotificationException");
+        }
+
+        @Test
+        @DisplayName("Should neither mark nor log a terminal failure while retries remain")
+        void shouldNotMarkFailedWhileRetriesRemain() throws Exception {
+            execution.consecutiveFailures = MAX_RETRIES - 1;
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(500);
+            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
+                .thenThrow(exception);
+
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
+
+            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+                .isInstanceOf(TemporaryNotificationException.class);
+
+            verify(notificationService, never()).updateNotificationStatus(any(Integer.class), anyString());
+            assertThat(logAppender.list)
+                .noneMatch(event -> "true".equals(event.getMDCPropertyMap().get("terminalFailure")));
+        }
+
+        @Test
+        @DisplayName("Should log a terminal failure when Notify rejects the email")
+        void shouldLogATerminalFailureForAPermanentFailure() throws Exception {
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(400);
+            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
+                .thenThrow(exception);
+
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
+
+            assertThat(task.execute(taskInstance, executionContext))
+                .isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertTerminalFailureLogged(exception.getClass().getSimpleName());
+        }
+
+        private void assertTerminalFailureLogged(String failureReason) {
+            assertThat(logAppender.list)
+                .filteredOn(event -> "true".equals(event.getMDCPropertyMap().get("terminalFailure")))
+                .singleElement()
+                .satisfies(event -> {
+                    assertThat(event.getLevel()).isEqualTo(Level.ERROR);
+                    assertThat(event.getFormattedMessage()).contains("permanently failed");
+                    assertThat(event.getMDCPropertyMap()).containsAllEntriesOf(Map.of(
+                        "taskName", "send-email-task",
+                        "caseReference", "1234567890123456",
+                        "notificationClaimType", "ENFORCEMENT",
+                        "failureReason", failureReason));
+                });
         }
     }
 }

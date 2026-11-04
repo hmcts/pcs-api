@@ -17,7 +17,6 @@ export const vulnerableAdultsChildren = {
   vulnerableAdultsAndChildrenHiddenRadioOption: `Vulnerable adults and children`,
   howAreTheyVulnerableHiddenTextLabel: `How are they vulnerable?`,
   howAreTheyVulnerableHiddenTextInput: 1000,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

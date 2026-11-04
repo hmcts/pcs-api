@@ -15,7 +15,6 @@ export const legalCosts = {
   youCanEitherParagraphHidden: `You can either:`,
   askYourLawyerListHidden: `ask your lawyer or legal representative how much you can reclaim, or`,
   checkTheCivilLinkHidden: `check the Civil Procedure Rules (Justice.gov website, opens in a new tab)`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -23,16 +25,23 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  *
  * <p>Global search only indexes postcodes that appear on a SearchParty, so the property to be
  * repossessed is added as an extra SearchParty alongside the real parties to make it searchable.
+ *
+ * <p>Other case references, such as warrant and writ numbers, come from the {@link OtherCaseReferenceProvider}s.
  */
 @Component
+@RequiredArgsConstructor
 public class SearchCriteriaIndexer {
+
+    private final List<OtherCaseReferenceProvider> otherCaseReferenceProviders;
 
     /**
      * Builds the {@link SearchCriteria} for indexing the given case in global search.
      * @param pcsCase the case to index
-     * @return search criteria covering the case parties and the property to be repossessed
+     * @param caseReference the case's CCD reference
+     * @return search criteria covering the case parties, the property to be repossessed and the case's other
+     *     references
      */
-    public SearchCriteria buildSearchCriteria(PCSCase pcsCase) {
+    public SearchCriteria buildSearchCriteria(PCSCase pcsCase, long caseReference) {
         AddressUK propertyAddress = pcsCase.getPropertyAddress();
 
         List<SearchParty> searchParties = new ArrayList<>(
@@ -51,8 +60,18 @@ public class SearchCriteriaIndexer {
         }
 
         return SearchCriteria.builder()
+            .otherCaseReferences(otherCaseReferences(caseReference))
             .parties(ListValueUtils.wrapListItems(searchParties))
             .build();
+    }
+
+    private List<ListValue<String>> otherCaseReferences(long caseReference) {
+        List<String> references = otherCaseReferenceProviders.stream()
+            .flatMap(provider -> provider.otherCaseReferences(caseReference).stream())
+            .filter(StringUtils::isNotBlank)
+            .distinct()
+            .toList();
+        return references.isEmpty() ? null : ListValueUtils.wrapListItems(references);
     }
 
     private SearchParty toPropertySearchParty(AddressUK propertyAddress) {

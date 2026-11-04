@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFormScheduler;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -39,6 +40,11 @@ class GenAppPaymentCallbackHandlerTest {
     @BeforeEach
     void setUp() {
         underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppFormScheduler);
+    }
+
+    @Test
+    void shouldHandleGenAppFeePaymentCallbacks() {
+        assertThat(underTest.handlerType()).isEqualTo(PaymentCallbackHandlerType.GEN_APP_ISSUE);
     }
 
     @Test

@@ -96,6 +96,24 @@ class DocumentImportServiceTest {
     }
 
     @Test
+    void shouldFileTheDocumentInAFolderGivenByCategoryId() {
+        // Given
+        UUID documentId = UUID.randomUUID();
+        when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
+            .thenReturn(Document.builder().originalDocumentName("warrant.pdf")
+                            .links(createLinks("test url", "test binary url")).build());
+        when(documentIdExtractor.extractDocumentId("some document URL")).thenReturn(documentId);
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        // When
+        DocumentEntity documentEntity = underTest.addDocumentToCase(pcsCaseEntity, "some document URL", "enforcement");
+
+        // Then
+        assertThat(documentEntity.getCategoryId()).isEqualTo("enforcement");
+        assertThat(pcsCaseEntity.getDocuments()).containsExactly(documentEntity);
+    }
+
+    @Test
     void shouldDeleteDocumentByExtractedId() {
         UUID documentId = UUID.randomUUID();
         String documentUrl = "some document URL";

@@ -6,6 +6,9 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteRoles.CASE_NOTE_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_MANAGER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
@@ -41,7 +44,10 @@ final class AccessGrants {
         LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
         CTSC_ADMIN,
-        WLU_ADMIN
+        WLU_ADMIN,
+        BAILIFF,
+        BAILIFF_ADMIN,
+        BAILIFF_MANAGER
     };
 
     static final UserRole[] JUDICIAL_READ_ROLES = {
@@ -57,8 +63,12 @@ final class AccessGrants {
         CIRCUIT_JUDGE,
         LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
+        HEARING_CENTRE_TEAM_LEADER,
         CTSC_ADMIN,
-        WLU_ADMIN
+        WLU_ADMIN,
+        BAILIFF,
+        BAILIFF_ADMIN,
+        BAILIFF_MANAGER
     };
 
     static final UserRole[] PAYMENT_HISTORY_READ_ROLES = {

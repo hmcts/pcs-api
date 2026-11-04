@@ -1,0 +1,114 @@
+@HDPI-7342 @enforcement @bailiff
+Feature: Add a bailiff note
+  As a bailiff, bailiff administrator, bailiff manager, hearing centre team leader or hearing centre administrator
+  I want to add notes about the enforcement
+  So that I can refer to them later
+
+  Background:
+    Given a PCS case "1234-5678-9101-1121" with a warrant of possession with status "Awaiting scheduling"
+
+  @HDPI-7593
+  Scenario Outline: Bailiff staff can add a bailiff note
+    Given I am signed in to XUI as a "<role>"
+    When I open the case
+    Then the "Add a bailiff note" event is available in the next steps drop down
+
+    Examples:
+      | role                       |
+      | hearing-centre-admin       |
+
+    Examples:
+      | role                       |
+      | bailiff                    |
+
+    # One role from each family is filmed; the remaining roles see the same drop down.
+    @not-filmed
+    Examples:
+      | role                       |
+      | hearing-centre-team-leader |
+      | bailiff-admin              |
+      | bailiff-manager            |
+
+  @HDPI-7593 @HDPI-7539 @not-filmed
+  Scenario Outline: Other users cannot add a bailiff note
+    Given I am signed in to XUI as a "<user>"
+    When I open the case
+    Then the "Add a bailiff note" event is not available
+
+    Examples:
+      | user                         |
+      | claimant legal representative |
+      | defendant legal representative |
+      | judge                        |
+
+  # Each status is reached through the real events from the Background's "Awaiting scheduling": "Closed" and
+  # "Breathing space" by recording a warrant return, "Awaiting bailiff allocation" on a new case. Nothing moves a
+  # warrant to "Awaiting property visit" yet, so that example stops as pending (HDPI-7419).
+  @HDPI-7593 @open-question
+  Scenario: Bailiff note can be added in any live enforcement status and after closure
+    Given I am signed in to XUI as a bailiff
+    And the enforcement status is "<status>"
+    When I start the "Add a bailiff note" event
+    Then the "Add bailiff note" screen opens
+
+    Examples:
+      | status                       |
+      | Awaiting scheduling          |
+      | Closed                       |
+
+    # A live warrant and a closed one are the two behaviours; the other statuses open the same screen.
+    @not-filmed
+    Examples:
+      | status                       |
+      | Awaiting bailiff allocation  |
+      | Awaiting property visit      |
+      | Breathing space              |
+
+  # Needs a pcs-api built with AddBailiffNotePage's "claimant vs defendants" line (${formattedCaseName}, set by
+  # the start callback). Against one without it, everything but that line passes; remove @pending once it runs.
+  @HDPI-7593 @pending
+  Scenario: Add bailiff note screen
+    Given I am signed in to XUI as a bailiff
+    When I start the "Add a bailiff note" event
+    Then I see the case number, the possession property address and "claimant name vs defendant name"
+    And I see the "Add note" text box
+    And the "Previous" button is disabled
+
+  @HDPI-7593
+  Scenario Outline: Note validation
+    Given I am signed in to XUI as a bailiff
+    And I am on the "Add bailiff note" screen
+    When I enter "<note>" and select "Continue"
+    Then I see "<result>"
+
+    @not-filmed
+    Examples:
+      | note                 | result                                   |
+      |                      | the standard XUI error that a note is needed |
+      | 6,801 characters     | the standard XUI error for too many characters |
+
+    Examples:
+      | note                 | result                                   |
+      | Dog on site * (large) | the confirmation screen                  |
+
+  # XUI's "Close and return to case summary" opens the case on its first tab, not "Risk assessment", and a
+  # confirmation cannot change that (HDPI-7593). The warrant number on the confirmation needs a pcs-api built
+  # with it (AddBailiffNote now uses ConfirmationNumbers.caseAndWarrant).
+  @HDPI-7593 @HDPI-7350 @pending
+  Scenario: Saved note is shown on the risk assessment tab
+    Given I am signed in to XUI as bailiff "Sam Jones"
+    When I add the bailiff note "Rear gate is locked"
+    Then I see the "Bailiff note added" confirmation with the case number and warrant number
+    And "Close and return to case summary" takes me to the "Risk assessment" tab
+    And the note "Rear gate is locked" is shown under "Bailiff note" with "Sam Jones" and the date and time in "1 Feb 2026 at 16:20pm" format
+    And the note cannot be edited
+    And the note is visible to internal users only
+
+  # The notes are added two days apart, the first moved back with the testing-support backdate endpoint, rather
+  # than on the dates given.
+  # Reads the tab on notes added by the harness, with no journey to show.
+  @HDPI-7593 @not-filmed
+  Scenario: Multiple notes are shown newest first
+    Given the case has bailiff notes added on "1 Feb 2026" and "3 Feb 2026"
+    When I open the "Risk assessment" tab
+    Then the note from "3 Feb 2026" is shown first as "Bailiff Note 1"

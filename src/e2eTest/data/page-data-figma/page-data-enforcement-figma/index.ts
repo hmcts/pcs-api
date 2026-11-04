@@ -26,6 +26,7 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/protestorGroupR
 export * from '@data/page-data-figma/page-data-enforcement-figma/repaymentsWrit.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/repayments.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/statementOfTruth.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/statementOfTruthWrit.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/suspendedOrder.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/verbalOrWrittenThreatsRisk.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/violentAggressiveRisk.page.data';

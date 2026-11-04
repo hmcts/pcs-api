@@ -101,8 +101,13 @@ class CaseTypeTest {
         final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> supportTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> enforcementStatusTabBuilder =
+            TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseDetailsTabBuilder =
             Tab.TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> riskAssessmentTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> claimantRiskAssessmentTabBuilder =
+            TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> judicialNotesTabBuilder =
             Tab.TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, AccessProfile> searchBuilder =
@@ -130,7 +135,10 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
+        when(builder.tab("enforcementStatus", "Eviction status")).thenReturn(enforcementStatusTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
+        when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(riskAssessmentTabBuilder);
+        when(builder.tab("riskAssessmentClaimant", "Risk assessment")).thenReturn(claimantRiskAssessmentTabBuilder);
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(judicialNotesTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
@@ -153,6 +161,9 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> riskAssessmentTab = riskAssessmentTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> claimantRiskAssessmentTab = claimantRiskAssessmentTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> enforcementStatusTab = enforcementStatusTabBuilder.build();
         final Tab<PCSCase, AccessProfile> judicialNotesTab = judicialNotesTabBuilder.build();
 
 
@@ -200,6 +211,49 @@ class CaseTypeTest {
             .containsExactly(null, "flagLauncherExternal!=\"\"");
         assertThat(supportTab.getShowCondition())
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
+
+        assertThat(riskAssessmentTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(riskAssessmentTab.getShowCondition())
+            .isEqualTo("featureFlags.enforcementEnabled=\"YES\" AND showRiskAssessmentTab=\"Yes\"");
+        assertThat(riskAssessmentTab.getFields()).extracting(TabField::getId)
+            .containsExactly("showRiskAssessmentTab",
+                             "riskAssessmentPrintMarkdownLabel", "riskAssessmentPrintMarkdown",
+                             "riskAssessmentInternalMarkdownLabel", "riskAssessmentInternalMarkdown",
+                             "riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown");
+        assertThat(claimantRiskAssessmentTab.getForRoles())
+            .containsExactlyInAnyOrder(CaseType.CLAIMANT_SIDE_TAB_ROLES);
+        assertThat(claimantRiskAssessmentTab.getShowCondition()).isEqualTo(riskAssessmentTab.getShowCondition());
+        assertThat(claimantRiskAssessmentTab.getFields()).extracting(TabField::getId)
+            .containsExactly("showRiskAssessmentTab",
+                             "riskAssessmentPrintMarkdownLabel", "riskAssessmentPrintMarkdown",
+                             "riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown");
+        assertThat(enforcementStatusTab.getFields()).extracting(TabField::getId)
+            .containsExactly("enforcementStatusTabMarkdownLabel", "enforcementStatusTabMarkdown");
+        assertThat(enforcementStatusTab.getForRoles())
+            .containsExactlyInAnyOrder(CaseType.ENFORCEMENT_STATUS_TAB_ROLES);
+        assertThat(enforcementStatusTab.getShowCondition())
+            .isEqualTo("featureFlags.enforcementEnabled=\"YES\" AND enforcementStatusTabMarkdown!=\"\"");
+    }
+
+    @Test
+    void shouldKeepTheInternalRiskAssessmentOffTheClaimantSideTab() {
+        assertThat(CaseType.CLAIMANT_SIDE_TAB_ROLES)
+            .doesNotHaveDuplicates()
+            .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES))
+            .doesNotContain(AccessProfile.CITIZEN,
+                            AccessProfile.DEFENDANT,
+                            AccessProfile.DEFENDANT_SOLICITOR,
+                            AccessProfile.GA_DEFENDANT_SOLICITOR);
+    }
+
+    @Test
+    void shouldOfferTheEnforcementStatusTabToInternalUsersAndBothSides() {
+        assertThat(CaseType.ENFORCEMENT_STATUS_TAB_ROLES)
+            .doesNotHaveDuplicates()
+            .contains(CaseType.INTERNAL_TAB_ROLES)
+            .contains(AccessProfile.CLAIMANT, AccessProfile.PCS_SOLICITOR, AccessProfile.GA_CLAIMANT_SOLICITOR)
+            .contains(AccessProfile.DEFENDANT, AccessProfile.GA_DEFENDANT_SOLICITOR)
+            .doesNotContain(AccessProfile.CITIZEN);
     }
 
     @Test
@@ -285,7 +339,12 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("enforcementStatus", "Eviction status"))
+            .thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("riskAssessmentClaimant", "Risk assessment"))
+            .thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));

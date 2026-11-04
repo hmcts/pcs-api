@@ -11,11 +11,13 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentAttributes;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -33,6 +35,9 @@ class UserRoleServiceTest {
     private static final String LEGACY_UID = "7667";
     private static final String USER_AUTH_HEADER = "Bearer user-token";
     private static final String S2S_AUTH_HEADER = "Bearer s2s-token";
+    private static final String CLAIMANT_GROUP = "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:ORG1";
+    private static final String OTHER_CASE_DEFENDANT_GROUP =
+        "PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:ORG1";
 
     @Mock
     private SecurityContextService securityContextService;
@@ -58,7 +63,7 @@ class UserRoleServiceTest {
         stubRasRoles("[DEFENDANT]", "caseworker-pcs");
         stubRoleAssignmentRoles("hearing-centre-admin");
 
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
         assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "[DEFENDANT]", "hearing-centre-admin");
@@ -71,8 +76,8 @@ class UserRoleServiceTest {
         stubRasRoles("[DEFENDANT]");
         stubRoleAssignmentRoles("hearing-centre-admin");
 
-        underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
-        underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
+        underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         verify(caseAssignmentApi, times(1)).getUserRoles(
             USER_AUTH_HEADER,
@@ -99,7 +104,7 @@ class UserRoleServiceTest {
             List.of(CURRENT_USER_ID)
         )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
 
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         assertThat(userRoles.roles()).isEmpty();
     }
@@ -110,7 +115,7 @@ class UserRoleServiceTest {
         stubCurrentUserDetails(List.of("caseworker-pcs"));
         stubRasRoles("[DEFENDANT]", "caseworker-pcs");
 
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
         assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "[DEFENDANT]");
@@ -122,7 +127,7 @@ class UserRoleServiceTest {
         stubCurrentUserDetails(List.of("caseworker-pcs"));
         stubRoleAssignmentRoles("hearing-centre-admin");
 
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
         assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "hearing-centre-admin");
@@ -134,7 +139,7 @@ class UserRoleServiceTest {
         stubCurrentUserDetails(List.of("caseworker-pcs"));
         when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID))
             .thenReturn(RoleAssignmentResponse.builder().build());
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
         assertThat(userRoles.roles()).containsExactly("caseworker-pcs");
@@ -161,7 +166,7 @@ class UserRoleServiceTest {
         stubRoleAssignmentRoles("claimant-solicitor");
 
         underTest.getCurrentUserOrganisationalRoles();
-        underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         verify(roleAssignmentApi, times(1)).getRoles(
             S2S_AUTH_HEADER,
@@ -186,7 +191,7 @@ class UserRoleServiceTest {
         stubCurrentUserDetails(List.of("system"));
         when(securityContextService.isSystemUser()).thenReturn(true);
 
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
         assertThat(userRoles.roles()).containsExactly("system");
@@ -212,7 +217,7 @@ class UserRoleServiceTest {
                 .roleAssignment(List.of(RoleAssignment.builder().roleName("hearing-centre-admin").build()))
                 .build());
 
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
 
         assertThat(userRoles.userId()).isEqualTo(LEGACY_UID);
         assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "hearing-centre-admin");
@@ -233,6 +238,62 @@ class UserRoleServiceTest {
 
         assertThat(userRoles.userId()).isEqualTo(LEGACY_UID);
         assertThat(userRoles.roles()).containsExactly("caseworker");
+    }
+
+    @Test
+    void shouldCountAGroupAccessRoleOnlyForTheCaseAccessGroupItIsFor() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker-pcs-solicitor"));
+        stubRasRoles();
+        stubRoleAssignments(
+            groupRole("claimant-solicitor", CLAIMANT_GROUP),
+            groupRole("defendant-solicitor", OTHER_CASE_DEFENDANT_GROUP),
+            RoleAssignment.builder().roleName("hearing-centre-admin").build()
+        );
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE, Set.of(CLAIMANT_GROUP));
+
+        assertThat(userRoles.roles())
+            .containsExactly("caseworker-pcs-solicitor", "claimant-solicitor", "hearing-centre-admin");
+    }
+
+    @Test
+    void shouldNotCountAGroupAccessRoleWithNoCaseAccessGroup() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker-pcs-solicitor"));
+        stubRasRoles();
+        stubRoleAssignments(
+            RoleAssignment.builder().roleName("defendant-solicitor").build(),
+            groupRole("claimant", " ")
+        );
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE, Set.of(CLAIMANT_GROUP));
+
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs-solicitor");
+    }
+
+    @Test
+    void shouldLeaveOutGroupAccessRolesWhenNoCaseAccessGroupIsGiven() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker-pcs-solicitor"));
+        stubRasRoles("[CLAIMANTSOLICITOR]");
+        stubRoleAssignments(groupRole("claimant-solicitor", CLAIMANT_GROUP));
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRolesWithoutGroupAccess(CASE_REFERENCE);
+
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs-solicitor", "[CLAIMANTSOLICITOR]");
+    }
+
+    @Test
+    void shouldKeepGroupAccessRolesForEveryCaseAmongTheOrganisationalRoles() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker"));
+        stubRoleAssignments(groupRole("claimant-solicitor", CLAIMANT_GROUP),
+                            groupRole("defendant-solicitor", OTHER_CASE_DEFENDANT_GROUP));
+
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
+
+        assertThat(userRoles.roles()).containsExactly("caseworker", "claimant-solicitor", "defendant-solicitor");
     }
 
     private void stubCurrentUserDetails(List<String> roles) {
@@ -275,5 +336,19 @@ class UserRoleServiceTest {
                             .toList())
                     .build()
             );
+    }
+
+    private void stubRoleAssignments(RoleAssignment... assignments) {
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID))
+            .thenReturn(RoleAssignmentResponse.builder().roleAssignment(List.of(assignments)).build());
+    }
+
+    private static RoleAssignment groupRole(String roleName, String caseAccessGroupId) {
+        return RoleAssignment.builder()
+            .roleType("ORGANISATION")
+            .grantType("STANDARD")
+            .roleName(roleName)
+            .attributes(RoleAssignmentAttributes.builder().caseAccessGroupId(caseAccessGroupId).build())
+            .build();
     }
 }

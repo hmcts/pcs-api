@@ -35,7 +35,6 @@ export const enforcementApplication = {
   youAreSufferingListHidden: `you are suffering financially due to lost income`,
   ifyouDoNotHaveThisEvidenceParagraphHidden: `If you do not have this evidence the judge could deny your request. If they deny it, you’ll need to start again (re-apply for the writ or the warrant with new evidence).`,
   contactALawyerParagraphHidden: `Contact a lawyer or a High Court Enforcement Officer (bailiff) before you apply for a writ. They can help you to check if you have the evidence to apply successfully.`,
-  summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

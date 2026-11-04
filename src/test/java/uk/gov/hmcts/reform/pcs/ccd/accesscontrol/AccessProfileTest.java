@@ -54,7 +54,10 @@ class AccessProfileTest {
             Arguments.of(AccessProfile.WLU_ADMIN, "wlu-admin", CRU),
             Arguments.of(AccessProfile.GS_PROFILE, "GS_profile", Set.of(R)),
             Arguments.of(AccessProfile.SYSTEM_USER, "pcs-system-update", CRU),
-            Arguments.of(AccessProfile.ORGANISATION_CASE_ACCESS_ADMINISTRATOR, "caseworker-caa", CRU)
+            Arguments.of(AccessProfile.ORGANISATION_CASE_ACCESS_ADMINISTRATOR, "caseworker-caa", CRU),
+            Arguments.of(AccessProfile.BAILIFF, "bailiff", CRU),
+            Arguments.of(AccessProfile.BAILIFF_ADMIN, "bailiff-admin", CRU),
+            Arguments.of(AccessProfile.BAILIFF_MANAGER, "bailiff-manager", CRU)
         );
     }
 
