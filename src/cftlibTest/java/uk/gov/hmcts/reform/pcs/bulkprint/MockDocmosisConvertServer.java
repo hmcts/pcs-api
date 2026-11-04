@@ -28,7 +28,7 @@ import static com.github.tomakehurst.wiremock.http.RequestMethod.POST;
  */
 @Component
 @RequiredArgsConstructor
-public class MockDocmosisServer {
+public class MockDocmosisConvertServer {
 
     private static final String CONVERT_PATH = "/rs/convert";
 

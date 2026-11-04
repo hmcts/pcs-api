@@ -25,7 +25,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.bulkprint.MockDocmosisServer;
+import uk.gov.hmcts.reform.pcs.bulkprint.MockDocmosisConvertServer;
 import uk.gov.hmcts.reform.pcs.bulkprint.MockSendLetterServer;
 import uk.gov.hmcts.reform.pcs.bulkprint.model.Letter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -88,7 +88,7 @@ class TestBulkPrintTest extends CftlibTest {
     @Autowired
     private MockSendLetterServer mockSendLetterServer;
     @Autowired
-    private MockDocmosisServer mockDocmosisServer;
+    private MockDocmosisConvertServer mockDocmosisConvertServer;
     @Autowired
     private MockDocumentStore mockDocumentStore;
 
@@ -110,7 +110,7 @@ class TestBulkPrintTest extends CftlibTest {
     void postsUploadedDocumentsOfEveryKindAsOnePrintReadyLetter() throws IOException {
         Instant testStart = Instant.now();
         long caseReference = createCaseWithClaimant();
-        final int docmosisCallsBefore = mockDocmosisServer.convertRequests().size();
+        final int docmosisCallsBefore = mockDocmosisConvertServer.convertRequests().size();
 
         List<ListValue<Document>> uploads = List.of(
             upload("photo.jpg", "image/jpeg", photo("jpeg")),
@@ -139,8 +139,8 @@ class TestBulkPrintTest extends CftlibTest {
                 assertPrintReady(document, index);
             }
         }
-        assertThat(mockDocmosisServer.convertRequests().subList(docmosisCallsBefore,
-                mockDocmosisServer.convertRequests().size()))
+        assertThat(mockDocmosisConvertServer.convertRequests().subList(docmosisCallsBefore,
+                mockDocmosisConvertServer.convertRequests().size()))
             .as("office documents go to Docmosis with the access key")
             .hasSize(2)
             .allSatisfy(body -> assertThat(body).contains("cftlib-docmosis-key"))
