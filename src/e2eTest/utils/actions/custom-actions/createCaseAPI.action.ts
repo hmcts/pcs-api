@@ -17,7 +17,8 @@ import {
   paymentApiData,
   manageHearingEventTokenApiData, manageHearingApiData,
   respondPossessionClaimSolicitorEventTokenApiData,
-  submitPossessionClaimResponseApiDataForLR
+  submitPossessionClaimResponseApiDataForLR,
+  respondPossessionClaimCitizenApiData
 } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
@@ -51,6 +52,8 @@ export class CreateCaseAPIAction implements IAction {
       ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord)],
       ['submitPossessionClaimResponseLRAPI', () => this.submitPossessionClaimResponseLRAPI(fieldName as actionRecord)],
       ['midEventRespondPossessionClaimLRAPI', () => this.midEventRespondPossessionClaimLRAPI(fieldName as actionRecord)],
+      ['midEventRespondPossessionClaimCitizenAPI', () => this.midEventRespondPossessionClaimCitizenAPI(fieldName as actionRecord)],
+      ['submitPossessionClaimResponseCitizenAPI', () => this.submitPossessionClaimResponseCitizenAPI()],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -549,7 +552,13 @@ export class CreateCaseAPIAction implements IAction {
         if (!paymentInfo?.length) {
           throw new Error('No payment information found.');
         }
-        const requestReference = paymentInfo[0].serviceRequestReference;
+        const selectedPayment = payType?.app === 'Counter Claim'
+          ? this.selectCounterClaimPayment(paymentInfo, payType.amt)
+          : paymentInfo[0];
+        const requestReference = selectedPayment?.serviceRequestReference;
+        if (!requestReference) {
+          throw new Error('Selected payment does not contain a service request reference');
+        }
         const updateResponse = await paymentApi.put(
           paymentApiData.updatePaymentApiEndPoint,
           payLoad(requestReference, payType?.amt as number | undefined)
@@ -572,6 +581,38 @@ export class CreateCaseAPIAction implements IAction {
     }
     throw new Error('Payment API failed after multiple retries');
   }
+
+  private selectCounterClaimPayment(paymentInfo: any[], amount?: actionData): any {
+    const callbackPayment = paymentInfo.find(
+      payment => payment?.paymentCallbackHandlerType === 'COUNTER_CLAIM_ISSUE'
+    );
+    if (callbackPayment) {
+      return callbackPayment;
+    }
+
+    const requestedAmount = Number(amount);
+    const amountRepresentations = new Set([
+      requestedAmount,
+      requestedAmount / 100,
+    ].filter(value => Number.isFinite(value)));
+
+    const matchingPayments = paymentInfo.filter(payment => {
+      const paymentAmount = Number(payment?.amount);
+      return amountRepresentations.has(paymentAmount)
+        || amountRepresentations.has(Number(payment?.amountInPence));
+    });
+
+    if (matchingPayments.length > 0) {
+      return matchingPayments[matchingPayments.length - 1];
+    }
+
+    if (paymentInfo.length === 1) {
+      return paymentInfo[0];
+    }
+
+    throw new Error(`No counterclaim payment found for amount ${amount}`);
+  }
+
   private defendantIds: string[] = [];
   private def1Details: { id: string; name: string } | null = null;
   private solicitor1Details: { email: string; password: string } | null = null;
@@ -758,6 +799,22 @@ export class CreateCaseAPIAction implements IAction {
       throw new Error(`MID EVENT LEGAL REPRESENTATIVE RESPONSE FAILED${status}.RESPONSE RECEIVED IS ${responseBody?.message}}`);
 
     }
+  }
+
+  private async midEventRespondPossessionClaimCitizenAPI(midEvent: actionRecord): Promise<void> {
+    const api = Axios.create(respondPossessionClaimCitizenApiData.eventTokenApiInstance());
+    await api.get(`/cases/${process.env.CASE_NUMBER}/event-triggers/respondPossessionClaim`);
+    await api.post(
+      respondPossessionClaimCitizenApiData.midEventApiEndPoint(),
+      typeof midEvent === 'object' && 'data' in midEvent ? midEvent.data : midEvent
+    );
+  }
+
+  private async submitPossessionClaimResponseCitizenAPI(): Promise<void> {
+    const api = Axios.create(respondPossessionClaimCitizenApiData.eventTokenApiInstance());
+    const startEvent = (await api.get(respondPossessionClaimCitizenApiData.eventTokenApiEndPoint())).data;
+    await api.post(`/cases/${process.env.CASE_NUMBER}/events`,
+      respondPossessionClaimCitizenApiData.submitPayload(startEvent.token, startEvent.case_details?.case_data?.possessionClaimResponse?.draftVersion ?? 1));
   }
 
   private async submitPossessionClaimResponseLRAPI(rtac: actionRecord): Promise<void> {
