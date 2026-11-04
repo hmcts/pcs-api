@@ -8,9 +8,12 @@ export class ClickRadioButtonAction implements IAction {
     const idx = params.index !== undefined ? Number(params.index) : 0;
     const question = params.question as string;
     const option = params.option as string;
+    const isAttendanceRow = Boolean(question) && await page.locator('[data-attendance-row]').count() > 0;
 
     const patterns = [
-      () => this.radioPattern6(page, question, option, idx),
+      ...(isAttendanceRow
+        ? [() => this.radioPattern6(page, question, option, idx)]
+        : []),
       () => this.radioPattern1(page, question, option, idx),
       () => this.radioPattern2(page, question, option, idx),
       () => this.radioPattern4(page, question, option, idx),
