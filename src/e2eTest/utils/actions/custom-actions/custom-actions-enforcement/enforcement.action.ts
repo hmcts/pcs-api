@@ -37,6 +37,7 @@ import {
   cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import Axios from "axios";
+import {validateHiddenElements} from "@utils/common/hiddenElementValidation.utils";
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -109,6 +110,12 @@ export class EnforcementAction implements IAction{
   private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
     await performAction('expandSummary', bailiffQuote.type);
     await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
+    await validateHiddenElements(
+      bailiffQuote.hiddenElements as {
+        elementType: 'paragraph' | 'listItem';
+        text: string;
+      }[]
+    );
     await performAction('expandSummary', bailiffQuote.type);
   }
 
@@ -595,7 +602,7 @@ export class EnforcementAction implements IAction{
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
-              
+
             case 'pageLevel':
               await expect(async () => {
               await performAction('clickButton', validationArr.button);

@@ -101,15 +101,69 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfPossessionRadioOption,
         type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        label1: enforcementApplication.warrantFeeValidationParagraphHidden,
         text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
-        text2: enforcementApplication.writFeeValidationTextHidden
+        label2: enforcementApplication.writFeeValidationParagraphHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden,
       });
       await performAction('validateGetQuoteFromBailiffLink', {
         type: enforcementApplication.summaryWritOrWarrantLink,
         link: enforcementApplication.quoteFromBailiffLinkHidden,
-        newPage: enforcementApplication.hceoPageTitleHidden
+        newPage: enforcementApplication.hceoPageTitleHidden,
+        hiddenElements: [
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.youCanUseParagraphHidden
+          },
+          {
+            elementType: 'listItem',
+            text: enforcementApplication.itsFreeListItemHidden
+          },
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.ifYouChooseParagraphHidden
+          },
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.ifyouAskJudgeForAWritParagraphHidden
+          },
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.youNeedToParagraphHidden
+          },
+          {
+            elementType: 'listItem',
+            text: enforcementApplication.applyToTransferEnforcementHiddenListItem
+          },
+          {
+            elementType: 'listItem',
+            text: enforcementApplication.askTheJudgeForAWritHiddenListItem
+          },
+          {
+            elementType: 'listItem',
+            text: enforcementApplication.hireAPrivateListHidden
+          },
+          // {
+          //   elementType: 'listItem',
+          //   text: enforcementApplication.theyUsuallyChargeByTheHourListItemHidden
+          // },
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.theAdditionalEvidenceParagraphHidden
+          },
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.youllNeedToProvideReasonsParagraphHidden
+          },
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.theJudgeWillConsiderParagraphHidden
+          },
+          {
+            elementType: 'paragraph',
+            text: enforcementApplication.youCanContactALawyerParagraphHidden
+          }
+        ]
       });
       await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
@@ -293,9 +347,9 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.warrantOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
@@ -411,9 +465,9 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.warrantOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
@@ -562,9 +616,9 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfPossessionRadioOption,
         type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        label1: enforcementApplication.warrantFeeValidationParagraphHidden,
         text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
+        label2: enforcementApplication.writFeeValidationParagraphHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('selectApplicationType', {
@@ -701,9 +755,9 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfPossessionRadioOption,
         type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        label1: enforcementApplication.warrantFeeValidationParagraphHidden,
         text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
+        label2: enforcementApplication.writFeeValidationParagraphHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('selectApplicationType', {
@@ -818,9 +872,9 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.warrantOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {

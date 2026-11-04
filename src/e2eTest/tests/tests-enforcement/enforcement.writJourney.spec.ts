@@ -146,9 +146,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
@@ -200,9 +200,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
