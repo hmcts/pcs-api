@@ -1,12 +1,11 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
 import com.azure.core.http.rest.Response;
-import com.azure.core.util.BinaryData;
 import com.azure.core.util.Context;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobHttpHeaders;
-import com.azure.storage.blob.options.BlobParallelUploadOptions;
+import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -29,9 +28,9 @@ public class BlobUploader {
     public void upload(String blobName, Path file) {
         try {
             BlobClient blobClient = blobContainerClient.getBlobClient(blobName);
-            BlobParallelUploadOptions options = new BlobParallelUploadOptions(BinaryData.fromFile(file))
+            BlobUploadFromFileOptions options = new BlobUploadFromFileOptions(file.toAbsolutePath().toString())
                 .setHeaders(new BlobHttpHeaders().setContentType(CONTENT_TYPE));
-            Response<?> response = blobClient.uploadWithResponse(options, null, Context.NONE);
+            Response<?> response = blobClient.uploadFromFileWithResponse(options, null, Context.NONE);
             log.info("Uploaded SDP claim snapshot to blob {} status={}", blobName, response.getStatusCode());
 
             int status = response.getStatusCode();

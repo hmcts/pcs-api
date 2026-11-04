@@ -1,12 +1,11 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
 import com.azure.core.http.rest.Response;
-import com.azure.core.util.BinaryData;
 import com.azure.core.util.Context;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlockBlobItem;
-import com.azure.storage.blob.options.BlobParallelUploadOptions;
+import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,7 +13,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -39,23 +37,22 @@ class BlobUploaderTest {
     private Response<BlockBlobItem> response;
 
     @Captor
-    private ArgumentCaptor<BlobParallelUploadOptions> uploadOptionsCaptor;
+    private ArgumentCaptor<BlobUploadFromFileOptions> uploadOptionsCaptor;
 
     @Test
     void shouldUploadJsonFromFile() throws Exception {
         String blobName = "claim_snapshot_2026-10-13.json";
         when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
-        when(blobClient.uploadWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
+        when(blobClient.uploadFromFileWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
         when(response.getStatusCode()).thenReturn(201);
         Path file = snapshotFile();
 
         try {
             new BlobUploader(blobContainerClient).upload(blobName, file);
-            verify(blobClient).uploadWithResponse(uploadOptionsCaptor.capture(), isNull(), eq(Context.NONE));
-            BlobParallelUploadOptions options = uploadOptionsCaptor.getValue();
+            verify(blobClient).uploadFromFileWithResponse(uploadOptionsCaptor.capture(), isNull(), eq(Context.NONE));
+            BlobUploadFromFileOptions options = uploadOptionsCaptor.getValue();
             assertThat(options.getHeaders().getContentType()).isEqualTo("application/json");
-            assertThat(new String(BinaryData.fromFlux(options.getDataFlux()).block().toBytes(), StandardCharsets.UTF_8))
-                .isEqualTo("{\"ok\":true}");
+            assertThat(options.getFilePath()).isEqualTo(file.toAbsolutePath().toString());
         } finally {
             Files.deleteIfExists(file);
         }
@@ -66,7 +63,7 @@ class BlobUploaderTest {
         String blobName = "claim_snapshot_2026-10-13.json";
         Path file = snapshotFile();
         when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
-        when(blobClient.uploadWithResponse(any(), isNull(), eq(Context.NONE)))
+        when(blobClient.uploadFromFileWithResponse(any(), isNull(), eq(Context.NONE)))
             .thenThrow(new IllegalStateException("upload failed"));
 
         try {
@@ -83,7 +80,7 @@ class BlobUploaderTest {
         String blobName = "claim_snapshot_2026-10-13.json";
         Path file = snapshotFile();
         when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
-        when(blobClient.uploadWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
+        when(blobClient.uploadFromFileWithResponse(any(), isNull(), eq(Context.NONE))).thenReturn(response);
         when(response.getStatusCode()).thenReturn(500);
 
         try {
