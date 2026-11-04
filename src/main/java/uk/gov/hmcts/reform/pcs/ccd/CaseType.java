@@ -209,7 +209,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildSupportTab(builder);
 
         buildJudicialNotesTab(builder);
-      
+
         builder.tab("paymentHistory", "Payment History")
             .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -376,7 +376,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.workBasketResultFields()
             .field("[CASE_REFERENCE]", "Case number")
-            .field(PCSCase::getDateIssuedString, "Date issued")
+            .field(PCSCase::getClaimIssueDate, "Date issued")
             .field(PCSCase::getClaimantNames, "Claimant names")
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
