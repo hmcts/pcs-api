@@ -53,12 +53,59 @@ wiremock:
       }
     fee-register-proxy.json: |
       {
+        "priority": 10,
         "request": {
           "method": "GET",
           "urlPath": "/fees-register/fees/lookup"
         },
         "response": {
           "proxyBaseUrl": "http://fees-register-api-aat.service.core-compute-aat.internal"
+        }
+      }
+    fee-register-genapp-suspend.json: |
+      {
+        "priority": 1,
+        "request": {
+          "method": "GET",
+          "urlPath": "/fees-register/fees/lookup",
+          "queryParameters": {
+            "service": {
+              "equalTo": "other"
+            },
+            "jurisdiction1": {
+              "equalTo": "civil"
+            },
+            "jurisdiction2": {
+              "equalTo": "civil"
+            },
+            "channel": {
+              "equalTo": "default"
+            },
+            "event": {
+              "equalTo": "miscellaneous"
+            },
+            "applicant_type": {
+              "equalTo": "all"
+            },
+            "amount_or_volume": {
+              "equalTo": "1"
+            },
+            "keyword": {
+              "equalTo": "AppnToVaryOrSuspend"
+            }
+          }
+        },
+        "response": {
+          "status": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "jsonBody": {
+            "code": "FEE0458",
+            "description": "Application to vary a judgement or suspend enforcement",
+            "version": 4,
+            "fee_amount": 16.0
+          }
         }
       }
     rd-professional-proxy.json: |

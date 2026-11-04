@@ -73,23 +73,35 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock), Map.of());
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock), Map.of(), null);
     }
 
     public void createTask(long caseId, TaskType taskType, Duration delay) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay), Map.of());
+        createTask(
+            caseId,
+            taskType,
+            taskType.getDefaultDescription(),
+            Instant.now(utcClock).plus(delay),
+            Map.of(),
+            null
+        );
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of());
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of(), null);
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Map<String, Object> taskDetails) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), taskDetails);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), taskDetails, null);
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
-        createTask(caseId, taskType, taskDescription, scheduledTo, Map.of());
+        createTask(caseId, taskType, taskDescription, scheduledTo, Map.of(), null);
+    }
+
+    /** Creates a task assigned to one user. */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, String assignee) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of(), assignee);
     }
 
     public void createTask(
@@ -97,7 +109,8 @@ public class CamundaService {
         TaskType taskType,
         String taskDescription,
         Instant scheduledTo,
-        Map<String, Object> taskDetails
+        Map<String, Object> taskDetails,
+        String assignee
     ) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
@@ -106,6 +119,7 @@ public class CamundaService {
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
             .taskDetails(taskDetails)
+            .assignee(assignee)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
@@ -127,7 +141,8 @@ public class CamundaService {
                 taskData.getTaskType(),
                 taskData.getTaskDescription(),
                 taskData.getIdempotencyKey(),
-                taskData.getTaskDetails()
+                taskData.getTaskDetails(),
+                taskData.getAssignee()
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
@@ -153,7 +168,8 @@ public class CamundaService {
         long caseId, TaskType taskType,
         String taskDescription,
         UUID idempotencyKey,
-        Map<String, Object> taskDetails
+        Map<String, Object> taskDetails,
+        String assignee
     ) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
@@ -187,6 +203,10 @@ public class CamundaService {
             processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
         } else {
             log.warn("No idempotency key provided for task of type {}", taskType);
+        }
+        // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
+        if (assignee != null) {
+            processVariables.put("assigneeId", dmnStringValue(assignee));
         }
 
         // Default values - WA task due date is configured in configuration dmn

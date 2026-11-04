@@ -286,7 +286,8 @@ public class DocumentService {
             type = DocumentType.OTHER;
             categoryId = CaseFileCategory.APPLICATIONS.getId();
         } else if (selectedCounterClaim != null) {
-            renamed = documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, party.getId());
+            renamed = documentNameService.appendCounterClaimPostfix(
+                originalFilename, selectedCounterClaim, mainClaim, party.getId());
             type = DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM;
             // Set explicitly: mapDocumentTypeToCategory has no mapping for this type
             categoryId = CaseFileCategory.STATEMENTS_OF_CASE.getId();
@@ -386,7 +387,7 @@ public class DocumentService {
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
                 .fileName(documentNameService.appendCounterClaimPostfix(
-                    ccDoc.getDocument().getFilename(), claim, party.getId()))
+                    ccDoc.getDocument().getFilename(), counterClaim, claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())
@@ -441,6 +442,7 @@ public class DocumentService {
             case NOTICE_OF_HEARING,
                 WITH_NOTICE_ORDER,
                 WITHOUT_NOTICE_ORDER,
+                ORDER,
                 NOTICE_OF_ALLOCATION_TO_TRACK ->
                 Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
             case GENERAL_APPLICATION ->

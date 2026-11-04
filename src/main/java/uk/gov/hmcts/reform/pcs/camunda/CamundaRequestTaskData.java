@@ -29,4 +29,7 @@ public class CamundaRequestTaskData {
 
     private Map<String, Object> taskDetails;
 
+    /** Whom the task is for, which the configuration DMN makes its assignee. */
+    private final String assignee;
+
 }
