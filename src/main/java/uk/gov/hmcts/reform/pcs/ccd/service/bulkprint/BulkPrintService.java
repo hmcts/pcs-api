@@ -23,6 +23,7 @@ import java.util.UUID;
 /**
  * Assembles one pack — coversheet then documents, made into a single print-ready PDF by
  * {@link BulkPrintLetterAssembler} — into a Send Letter letter and posts it. Recording the outcome is the caller's job.
+ * Defendant claim packs also append the static blank defence and counterclaim forms after the case documents.
  */
 @Service
 public class BulkPrintService {
@@ -30,6 +31,9 @@ public class BulkPrintService {
     private static final int SINGLE_COPY = 1;
     private static final String RECIPIENTS = "recipients";
     private static final String CASE_REFERENCE = "caseReference";
+    private static final String APPLICATION_PDF = "application/pdf";
+    private static final String BLANK_RESPONSE_FORM_NAME = "ONC-002R-defence-form.pdf";
+    private static final String BLANK_COUNTERCLAIM_FORM_NAME = "ONC-003-counterclaim.pdf";
 
     private final CoversheetProvider coversheetProvider;
     private final LetterDocumentFetcher letterDocumentFetcher;
@@ -37,19 +41,22 @@ public class BulkPrintService {
     private final SendLetterApi sendLetterApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseReferenceFormatter caseReferenceFormatter;
+    private final BlankClaimPackFormsProvider blankClaimPackFormsProvider;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
                             LetterDocumentFetcher letterDocumentFetcher,
                             BulkPrintLetterAssembler letterAssembler,
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
-                            CaseReferenceFormatter caseReferenceFormatter) {
+                            CaseReferenceFormatter caseReferenceFormatter,
+                            BlankClaimPackFormsProvider blankClaimPackFormsProvider) {
         this.coversheetProvider = coversheetProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
         this.letterAssembler = letterAssembler;
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
         this.caseReferenceFormatter = caseReferenceFormatter;
+        this.blankClaimPackFormsProvider = blankClaimPackFormsProvider;
     }
 
     public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
@@ -62,6 +69,13 @@ public class BulkPrintService {
         documents.forEach(document -> letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
             document.getFileName(), document.getContentType(),
             letterDocumentFetcher.fetchBytes(document.getDocumentId()))));
+        if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
+            letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
+                BLANK_RESPONSE_FORM_NAME, APPLICATION_PDF, blankClaimPackFormsProvider.getBlankResponseForm()));
+            letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
+                BLANK_COUNTERCLAIM_FORM_NAME, APPLICATION_PDF,
+                blankClaimPackFormsProvider.getBlankCounterclaimForm()));
+        }
         byte[] letterPdf = letterAssembler.assemble(
             letterType.getCode() + " " + caseReference, coversheet, letterDocuments);
         Document mergedLetter = new Document(Base64.getEncoder().encodeToString(letterPdf), SINGLE_COPY);
