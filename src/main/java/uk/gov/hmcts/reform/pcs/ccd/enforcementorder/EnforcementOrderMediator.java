@@ -37,7 +37,7 @@ public class EnforcementOrderMediator {
         }
     }
 
-    Optional<EnforcementOrderEntity> getEnforcementOrder(PcsCaseEntity pcsCaseEntity) {
+    public Optional<EnforcementOrderEntity> getEnforcementOrder(PcsCaseEntity pcsCaseEntity) {
         List<ClaimEntity> claims = pcsCaseEntity.getClaims();
         if (claims != null && !claims.isEmpty()) {
             // At this point we do not know which Enforcement Order the Confirm Eviction is placed against.
