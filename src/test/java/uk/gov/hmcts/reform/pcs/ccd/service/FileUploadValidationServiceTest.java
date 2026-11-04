@@ -213,14 +213,25 @@ class FileUploadValidationServiceTest {
         }
 
         @Test
-        @DisplayName("Should ignore an additional document with a null inner document")
-        void shouldIgnoreNullInnerDocument() {
+        @DisplayName("Should reject a file in an empty additional row")
+        void shouldRejectNullInnerDocument() {
             AdditionalDocument additionalDocument = AdditionalDocument.builder().document(null).build();
             List<ListValue<AdditionalDocument>> documents =
                 List.of(ListValue.<AdditionalDocument>builder().value(additionalDocument).build());
 
             assertThat(fileUploadValidationService.validateRequiredAdditionalDocuments(documents, REQUIRED_MESSAGE))
-                .isEmpty();
+                .containsExactly(REQUIRED_MESSAGE);
+        }
+
+        @Test
+        @DisplayName("Should reject any empty rows alongside the additional documents")
+        void shouldRejectEmptyRowAlongsideUploadedDocument() {
+            List<ListValue<AdditionalDocument>> documents = new ArrayList<>(
+                additionalDocumentsWithFilenames("statement.pdf"));
+            documents.add(ListValue.<AdditionalDocument>builder().value(new AdditionalDocument()).build());
+
+            assertThat(fileUploadValidationService.validateRequiredAdditionalDocuments(documents, REQUIRED_MESSAGE))
+                .containsExactly(REQUIRED_MESSAGE);
         }
     }
 
