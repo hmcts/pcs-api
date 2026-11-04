@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -171,6 +172,23 @@ public class DefenceFormPayloadBuilder {
 
         payload.defendantName(resolveDefendantName(defendant, assertions));
         payload.defendantAddress(resolveDefendantAddress(defendant, pcsCase.getPropertyAddress()));
+        mapDefendantContactDetails(defendant, payload);
+    }
+
+    private void mapDefendantContactDetails(PartyEntity defendant,
+                                            DefenceFormPayload.DefenceFormPayloadBuilder payload) {
+        ContactPreferencesEntity preferences = defendant.getContactPreferences();
+        boolean showPhoneNumber = preferences != null && isYes(preferences.getContactByPhone())
+            && isPopulated(defendant.getPhoneNumber());
+        boolean showEmailAddress = preferences != null && isYes(preferences.getContactByEmail())
+            && isPopulated(defendant.getEmailAddress());
+
+        payload.showDefendantPhoneNumber(showPhoneNumber);
+        payload.defendantPhoneNumber(showPhoneNumber ? defendant.getPhoneNumber() : null);
+        payload.showDefendantEmailAddress(showEmailAddress);
+        payload.defendantEmailAddress(showEmailAddress ? defendant.getEmailAddress() : null);
+        payload.showDefendantDateOfBirth(defendant.getDateOfBirth() != null);
+        payload.defendantDateOfBirth(formatLongDate(defendant.getDateOfBirth()));
     }
 
     private void mapResponse(DefendantResponseEntity response, boolean isWales, boolean claimantServedNotice,
