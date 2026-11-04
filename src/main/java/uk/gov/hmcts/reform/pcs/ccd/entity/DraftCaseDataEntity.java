@@ -53,8 +53,8 @@ public class DraftCaseDataEntity {
     private Instant createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    @Column(name = "last_modified_date", nullable = false)
+    private Instant lastModifiedDate;
 
     @Version
     @Column(name = "version", nullable = false)
