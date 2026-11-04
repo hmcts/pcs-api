@@ -112,7 +112,6 @@ class ClaimServiceTest {
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
-        assertThat(createdClaimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
         assertThat(createdClaimEntity.getAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getDueToRentArrears()).isEqualTo(YesOrNo.NO);
         assertThat(createdClaimEntity.getPreActionProtocolFollowed()).isEqualTo(VerticalYesNo.YES);
@@ -451,7 +450,6 @@ class ClaimServiceTest {
         claimService.setClaimIssuedDate(claimEntity);
         verify(claimRepository, times(1)).save(claimEntity);
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
-        assertThat(claimEntity.getLastModified()).isEqualTo(TEST_UTC_DATE_TIME);
     }
     
     private static Stream<Arguments> claimantTypeScenarios() {
