@@ -71,6 +71,7 @@ class WarrantPageConfigurerTest extends BasePageTest {
         SavingPageBuilder pageBuilder = mock(SavingPageBuilder.class);
         when(pageBuilder.add(any())).thenReturn(pageBuilder);
 
+
         // When
         warrantPageConfigurer.configurePages(pageBuilder);
 
