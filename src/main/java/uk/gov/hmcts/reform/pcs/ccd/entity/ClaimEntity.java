@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
@@ -37,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -211,6 +211,7 @@ public class ClaimEntity {
 
     private LocalDateTime claimIssuedDate;
 
+    @UpdateTimestamp
     private LocalDateTime lastModified;
 
     @Builder.Default
@@ -302,10 +303,6 @@ public class ClaimEntity {
             .build();
         claimParties.add(claimPartyEntity);
         party.getClaimParties().add(claimPartyEntity);
-    }
-
-    public void markLastModified(Clock clock) {
-        this.lastModified = LocalDateTime.now(clock);
     }
 
     public void addClaimGrounds(List<ClaimGroundEntity> grounds) {

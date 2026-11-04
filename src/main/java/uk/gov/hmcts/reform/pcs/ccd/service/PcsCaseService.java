@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 import java.util.Set;
@@ -48,7 +47,6 @@ public class PcsCaseService {
     private final LocationReferenceService locationReferenceService;
     private final SecurityContextService securityContextService;
     private final DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
-    private final Clock utcClock;
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
@@ -80,7 +78,6 @@ public class PcsCaseService {
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
-        pcsCaseEntity.markLastModified(utcClock);
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -180,7 +177,6 @@ public class PcsCaseService {
             );
         if (epimsId != null) {
             pcsCaseEntity.setCaseManagementLocation(epimsId);
-            pcsCaseEntity.markLastModified(utcClock);
         }
     }
 

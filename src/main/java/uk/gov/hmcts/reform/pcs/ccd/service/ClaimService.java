@@ -90,14 +90,12 @@ public class ClaimService {
         claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));
         claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
         claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
-        claimEntity.markLastModified(utcClock);
 
         return claimRepository.save(claimEntity);
     }
 
     public void setClaimIssuedDate(ClaimEntity claimEntity) {
         claimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-        claimEntity.markLastModified(utcClock);
         claimRepository.save(claimEntity);
     }
 

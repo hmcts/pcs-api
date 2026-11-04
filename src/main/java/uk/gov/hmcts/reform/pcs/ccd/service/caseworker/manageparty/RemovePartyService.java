@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.util.RevokeAccessHelper;
 
-import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +44,6 @@ public class RemovePartyService {
     private final GenAppRepository genAppRepository;
     private final CounterClaimRepository counterClaimRepository;
     private final RevokeAccessHelper revokeAccessHelper;
-    private final Clock utcClock;
 
     @Transactional
     public RemovedParty removeParty(RemovePartyDetails removePartyDetails, long caseReference) {
@@ -68,7 +66,6 @@ public class RemovePartyService {
         partyRepository.save(partyEntity);
 
         ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
-        mainClaim.markLastModified(utcClock);
         String partyLabel = partyService.getPartyLabel(mainClaim, partyId);
         return new RemovedParty(partyService.getPartyName(partyEntity), partyRole,
                                 partyLabel);

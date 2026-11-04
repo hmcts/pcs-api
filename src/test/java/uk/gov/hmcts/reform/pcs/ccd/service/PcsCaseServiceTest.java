@@ -39,10 +39,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -66,7 +63,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENG
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
-    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(Instant.parse("2026-03-09T12:00:00Z"), ZoneOffset.UTC);
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -113,8 +109,7 @@ class PcsCaseServiceTest {
             postCodeCourtService,
             locationReferenceService,
             securityContextService,
-            defendantSupportEligibilityResolver,
-            FIXED_UTC_CLOCK
+            defendantSupportEligibilityResolver
         );
     }
 
@@ -476,7 +471,7 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldStampClaimsWhenPersistedCaseManagementLocationIsAllocated() {
+    void shouldAllocateCaseManagementLocationOnPersistedCase() {
         int epimsId = 123456;
         AddressEntity addressEntity = AddressEntity.builder().postcode("SW1A 1AA").build();
         ClaimEntity claimEntity = ClaimEntity.builder().build();
@@ -492,7 +487,7 @@ class PcsCaseServiceTest {
 
         assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(epimsId);
         assertThat(claimEntity.getLastModified()).isNull();
-        assertThat(pcsCaseEntity.getLastModifiedDatetime()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
+        assertThat(pcsCaseEntity.getLastModifiedDatetime()).isNull();
     }
 
     @Test
