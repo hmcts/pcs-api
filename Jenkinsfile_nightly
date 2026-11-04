@@ -80,7 +80,10 @@ static Map<String, Object> secret(String secretName, String envVariable) {
 // Only secrets used under src/e2eTest (vault pcs-<ENVIRONMENT>).
 def pcsE2eVaultSecrets = [
   secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
+  secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
+  secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
   secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
+  secret('pcs-frontend-idam-secret', 'PCS_FRONTEND_IDAM_SECRET'),
   secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
 ]
 
