@@ -16,3 +16,6 @@ export * from '@data/api-data/manageHearing.api.data';
 export * from '@data/api-data/manageHearingEventToken.api.data';
 export * from '@data/api-data/respondPossessionClaimEventToken.api.data';
 export * from '@data/api-data/respondPossessionClaimSubmitLR.api.data'
+export * from '@data/api-data/respondPossessionClaimCitizen.api.data';
+export * from '@data/api-data/fetchPINs.api.data';
+export * from '@data/api-data/validateAccessCode.api.data';
