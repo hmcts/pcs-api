@@ -180,4 +180,18 @@ public class CaseListViewTest {
         // Then
         assertThat(pcsCase.getPostCode()).isEqualTo("postCode");
     }
+
+    @Test
+    void shouldNotSetFieldsIfNotPresent() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        caseListView.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getClaimantNames()).isNull();
+        assertThat(pcsCase.getDefendantNames()).isNull();
+        assertThat(pcsCase.getPostCode()).isNull();
+    }
 }
