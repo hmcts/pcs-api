@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.jose4j.base64url.Base64;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -145,16 +146,15 @@ class BulkPrintPacksTest extends CftlibTest {
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
             assertThat(pdDocument.getNumberOfPages()).isEqualTo(2);
-            // The fake document renderer writes the template name into the PDF page
+            // Coversheet is posted as-is; converted pack pages have no extractable text.
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            assertConvertedPage(pdDocument, 1);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
             assertThat(pdDocument.getNumberOfPages()).isEqualTo(2);
-            // The fake document renderer writes the template name into the PDF page
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            assertConvertedPage(pdDocument, 1);
         }
 
     }
@@ -191,19 +191,18 @@ class BulkPrintPacksTest extends CftlibTest {
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
-            // The fake document renderer writes the template name into the PDF page
+            // Coversheet + defence + counterclaim is 3 pages; bulk print pads to an even count for duplex.
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
+            assertConvertedPage(pdDocument, 1);
+            assertConvertedPage(pdDocument, 2);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
-            // The fake document renderer writes the template name into the PDF page
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
+            assertConvertedPage(pdDocument, 1);
+            assertConvertedPage(pdDocument, 2);
         }
 
     }
@@ -280,6 +279,14 @@ class BulkPrintPacksTest extends CftlibTest {
         try (InputStream inputStream = pdDocument.getPage(pageIndex).getContents()) {
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         }
+    }
+
+    /** Pack documents are rasterised; full print-ready checks live in TestBulkPrintTest. */
+    private static void assertConvertedPage(PDDocument document, int index) throws IOException {
+        PDFTextStripper stripper = new PDFTextStripper();
+        stripper.setStartPage(index + 1);
+        stripper.setEndPage(index + 1);
+        assertThat(stripper.getText(document)).as("page " + (index + 1) + " live text").isBlank();
     }
 
     private static Letter findLetterSentTo(String recipientName, List<Letter> letters) {

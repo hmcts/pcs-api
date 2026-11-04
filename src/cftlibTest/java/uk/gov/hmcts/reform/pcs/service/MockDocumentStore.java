@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Serves real document content from the shared document-store Wiremock (8083). Its standing stub returns the same
- * placeholder PDF for every document; a stub added here takes priority for one document id, so a test can put files
- * of any type behind CDAM.
+ * Serves real document content from the cftlib test Wiremock (9400), which is also {@code DM_STORE_BASE_URL} and
+ * matches {@code CCD_DOCUMENT_URL_PATTERN}. Its standing stub returns the same placeholder PDF for every document; a
+ * stub added here takes priority for one document id, so a test can put files of any type behind CDAM.
  */
 @Service
 public class MockDocumentStore {
 
-    public static final String DOCUMENT_STORE_URL = "http://localhost:8083";
+    public static final String DOCUMENT_STORE_URL = "http://localhost:9400";
 
     private final RestClient admin = RestClient.create(DOCUMENT_STORE_URL + "/__admin/mappings");
     private final List<String> stubIds = new ArrayList<>();
