@@ -52,6 +52,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -107,6 +108,7 @@ class TestBulkPrintTest extends CftlibTest {
 
     @Test
     void postsUploadedDocumentsOfEveryKindAsOnePrintReadyLetter() throws IOException {
+        Instant testStart = Instant.now();
         long caseReference = createCaseWithClaimant();
         final int docmosisCallsBefore = mockDocmosisServer.convertRequests().size();
 
@@ -122,7 +124,7 @@ class TestBulkPrintTest extends CftlibTest {
             PCSCase.builder().testBulkPrintDocuments(uploads).build(), caseworkerToken);
         testingSupportClient.executeFutureDbSchedulerTasks(TEST_BULK_PRINT_TASK_NAME, Duration.ofMinutes(1));
 
-        Letter letter = mockSendLetterServer.getSentLetters(caseReference, TEST_SUPPORT_PACK, 1).getFirst();
+        Letter letter = mockSendLetterServer.getSentLetters(caseReference, TEST_SUPPORT_PACK, testStart, 1).getFirst();
         assertThat(letter.documents).as("one PDF, so Send Letter forwards it unchanged").hasSize(1);
         byte[] pdf = Base64.getDecoder().decode(letter.documents.getFirst().content);
 
