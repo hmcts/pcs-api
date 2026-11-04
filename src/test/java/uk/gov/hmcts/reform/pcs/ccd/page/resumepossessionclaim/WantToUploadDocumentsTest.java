@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -317,6 +318,31 @@ class WantToUploadDocumentsTest extends BasePageTest {
         assertThat(addDoc.getDescription()).isEqualTo("Legacy occupation contract");
         assertThat(addDoc.getDocument().getFilename()).isEqualTo("occupation-licence.pdf");
         assertThat(addDoc.getDocumentTypeWales()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDraftAdditionalDocumentTypeValueIsNull() {
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .wantToUploadDocuments(VerticalYesNo.YES)
+            .build();
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .documentType(DynamicList.builder().build())
+            .build();
+        PCSCase draftCaseData = PCSCase.builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+            ))
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(
+            TEST_CASE_REFERENCE,
+            EventId.resumePossessionClaim
+        )).thenReturn(Optional.of(draftCaseData));
+
+        assertThatThrownBy(() -> callMidEventHandler(caseData))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Additional document type value cannot be null");
     }
 
     private DynamicList dynamicDocumentType(String label) {

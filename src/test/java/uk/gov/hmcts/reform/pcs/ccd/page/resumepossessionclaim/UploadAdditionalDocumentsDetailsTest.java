@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ADDITIONAL_DOCUMENT_REQUIRED;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
@@ -155,6 +156,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(returnedDocument.getDocumentType().getValueLabel())
             .isEqualTo(documentType.getLabel());
+        assertThat(returnedDocument.getDocumentType().getListItems()).isEmpty();
     }
 
     @Test
@@ -224,6 +226,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(returnedDocument.getDocumentType().getValueLabel())
             .isEqualTo(documentType.getLabel());
+        assertThat(returnedDocument.getDocumentType().getListItems()).isEmpty();
     }
 
     @Test
@@ -251,6 +254,17 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrorMessageOverride()).isEqualTo(ADDITIONAL_DOCUMENT_REQUIRED);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAdditionalDocumentIsNull() {
+        PCSCase caseData = PCSCase.builder()
+            .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().build()))
+            .build();
+
+        assertThatThrownBy(() -> callMidEventHandler(caseData))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Additional document cannot be null");
     }
 
     @Test

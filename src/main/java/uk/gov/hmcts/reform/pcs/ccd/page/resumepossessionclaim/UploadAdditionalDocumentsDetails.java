@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -27,7 +26,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,66 +92,36 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             return;
         }
 
-        List<DynamicListElement> documentTypes = getDocumentTypes(caseData);
-
         for (ListValue<AdditionalDocument> additionalDocumentListValue : caseData.getAdditionalDocuments()) {
             AdditionalDocument additionalDocument = additionalDocumentListValue.getValue();
-            if (additionalDocument == null || additionalDocument.getDocumentType() != null) {
+            if (additionalDocument == null) {
+                throw new IllegalStateException("Additional document cannot be null");
+            }
+
+            if (additionalDocument.getDocumentType() != null) {
                 continue;
             }
 
             if (caseData.getLegislativeCountry() == LegislativeCountry.WALES) {
                 AdditionalDocumentTypeWales walesType = additionalDocument.getDocumentTypeWales();
                 if (walesType != null) {
-                    additionalDocument.setDocumentType(
-                        createDynamicListForDocumentType(walesType.getLabel(), documentTypes)
-                    );
+                    additionalDocument.setDocumentType(createDynamicListForDocumentType(walesType.getLabel()));
                 }
             } else {
                 AdditionalDocumentTypeEngland englandType = additionalDocument.getDocumentTypeEngland();
                 if (englandType != null) {
-                    additionalDocument.setDocumentType(
-                        createDynamicListForDocumentType(englandType.getLabel(), documentTypes)
-                    );
+                    additionalDocument.setDocumentType(createDynamicListForDocumentType(englandType.getLabel()));
                 }
             }
         }
     }
 
-    private List<DynamicListElement> getDocumentTypes(PCSCase caseData) {
-        ListValue<AdditionalDocument> firstAdditionalDocument = caseData.getAdditionalDocuments().isEmpty()
-            ? null
-            : caseData.getAdditionalDocuments().getFirst();
-
-        if (firstAdditionalDocument != null
-            && firstAdditionalDocument.getValue() != null
-            && firstAdditionalDocument.getValue().getDocumentType() != null
-            && firstAdditionalDocument.getValue().getDocumentType().getListItems() != null) {
-            return firstAdditionalDocument.getValue().getDocumentType().getListItems();
-        }
-
-        return createDocumentTypeItems(
-            caseData.getLegislativeCountry() == LegislativeCountry.WALES
-            ? AdditionalDocumentTypeWales.values()
-            : AdditionalDocumentTypeEngland.values());
-    }
-
-    private List<DynamicListElement> createDocumentTypeItems(HasLabel[] documentTypes) {
-        return Arrays.stream(documentTypes)
-            .map(documentType -> new DynamicListElement(
-                UUID.nameUUIDFromBytes(documentType.getLabel().getBytes(StandardCharsets.UTF_8)),
-                documentType.getLabel()
-            ))
-            .toList();
-    }
-
-    private DynamicList createDynamicListForDocumentType(String label, List<DynamicListElement> documentTypes) {
-        DynamicListElement selectedItem = documentTypes.stream()
-            .filter(item -> label.equals(item.getLabel()))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No document type found for label: " + label));
-
-        return new DynamicList(selectedItem, documentTypes);
+    private DynamicList createDynamicListForDocumentType(String label) {
+        DynamicListElement selectedItem = new DynamicListElement(
+            UUID.nameUUIDFromBytes(label.getBytes(StandardCharsets.UTF_8)),
+            label
+        );
+        return new DynamicList(selectedItem, List.of());
     }
   
     private List<String> validateDocumentDescription(

@@ -79,11 +79,14 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
         draftCase.getAdditionalDocuments().stream()
             .map(ListValue::getValue)
             .filter(document -> document != null && document.getDocumentType() != null)
-            .filter(document -> document.getDocumentType().getValue() != null)
             .forEach(document -> copyDocumentType(document, legislativeCountry));
     }
 
     private void copyDocumentType(AdditionalDocument document, LegislativeCountry legislativeCountry) {
+        if (document.getDocumentType().getValue() == null) {
+            throw new IllegalStateException("Additional document type value cannot be null");
+        }
+
         AdditionalDocumentType documentType = AdditionalDocumentType.getValueFromLabel(
             document.getDocumentType().getValue().getLabel()
         );
