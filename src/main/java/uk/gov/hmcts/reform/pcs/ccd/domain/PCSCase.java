@@ -967,4 +967,7 @@ public class PCSCase {
     )
     private String casePaymentHistoryViewer;
 
+    @CCD(searchable = false)
+    private YesOrNo hasUnsubmittedEnforcementData;
+
 }
