@@ -13,11 +13,16 @@ import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.event.claim.ClaimWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.system.SystemAction;
 
@@ -52,16 +57,20 @@ class ClaimPaymentActionTest {
     private SchedulerClient schedulerClient;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private ClaimWaTaskService claimWaTaskService;
 
     @Captor
     private ArgumentCaptor<SchedulableInstance<AccessCodeTaskData>> schedulableInstanceCaptor;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<FeePaymentStatusChangeTaskData>> notificationCaptor;
 
     private ClaimPaymentAction underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new ClaimPaymentAction(pcsCaseService, claimFormScheduler, defendantAccessCodeService,
-                                           schedulerClient);
+                                           schedulerClient, claimWaTaskService);
     }
 
     @Test
@@ -203,6 +212,196 @@ class ClaimPaymentActionTest {
             .contains("Payment " + PAYMENT_REFERENCE + " updated for " + CASE_REFERENCE);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldScheduleClaimIssuedNotificationWhenDateIssuedNotSet() {
+        // Given
+        int feePaymentId = 123;
+        FeePaymentEntity feePayment = org.mockito.Mockito.mock(FeePaymentEntity.class);
+        when(feePayment.getPaymentCallbackHandlerType()).thenReturn(PaymentCallbackHandlerType.CLAIM);
+        when(feePayment.getId()).thenReturn(feePaymentId);
+
+        ClaimEntity claimEntity = ClaimEntity.builder().claimIssuedDate(null).feePayments(List.of(feePayment)).build();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(CASE_REFERENCE))
+            .thenReturn(List.of());
+
+        ArgumentCaptor<SchedulableInstance<FeePaymentStatusChangeTaskData>> captor =
+            ArgumentCaptor.forClass(SchedulableInstance.class);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(captor.capture());
+        assertThat(captor.getValue().getTaskInstance().getTaskName())
+            .isEqualTo(FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR.getTaskName());
+        assertThat(captor.getValue().getTaskInstance().getData().getFeePaymentId())
+            .isEqualTo(feePaymentId);
+    }
+
+    @Test
+    void shouldCreateWaTasksWhenClaimNotYetIssued() {
+        // Given
+        givenCaseWithClaimIssuedDate(null);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(claimWaTaskService).createTasksForIssuedClaim(CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldNotCreateWaTasksWhenClaimAlreadyIssued() {
+        // Given
+        givenCaseWithClaimIssuedDate(LocalDateTime.now().minusDays(1));
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verifyNoInteractions(claimWaTaskService);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldNotScheduleClaimIssuedNotificationWhenClaimAlreadyIssued() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimIssuedDate(LocalDateTime.now().minusDays(1))
+            .feePayments(List.of(feePayment(1, PaymentCallbackHandlerType.CLAIM)))
+            .build();
+        givenCaseWithClaim(claimEntity);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any(SchedulableInstance.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldNotScheduleClaimIssuedNotificationWhenClaimHasNoFeePayments() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().claimIssuedDate(null).feePayments(List.of()).build();
+        givenCaseWithClaim(claimEntity);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any(SchedulableInstance.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldNotScheduleClaimIssuedNotificationWhenFeePaymentsIsNull() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().claimIssuedDate(null).feePayments(null).build();
+        givenCaseWithClaim(claimEntity);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any(SchedulableInstance.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldNotScheduleClaimIssuedNotificationWhenNoClaimTypeFeePaymentExists() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimIssuedDate(null)
+            .feePayments(List.of(
+                feePayment(1, PaymentCallbackHandlerType.ENFORCEMENT),
+                feePayment(2, PaymentCallbackHandlerType.GEN_APP_ISSUE)))
+            .build();
+        givenCaseWithClaim(claimEntity);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any(SchedulableInstance.class));
+    }
+
+    @Test
+    void shouldScheduleClaimIssuedNotificationForLatestClaimTypeFeePayment() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimIssuedDate(null)
+            .feePayments(List.of(
+                feePayment(5, PaymentCallbackHandlerType.CLAIM),
+                feePayment(9, PaymentCallbackHandlerType.CLAIM),
+                feePayment(7, PaymentCallbackHandlerType.CLAIM),
+                feePayment(99, PaymentCallbackHandlerType.ENFORCEMENT)))
+            .build();
+        givenCaseWithClaim(claimEntity);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(notificationCaptor.capture());
+        assertThat(notificationCaptor.getValue().getTaskInstance().getData().getFeePaymentId())
+            .isEqualTo(9);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldNotScheduleClaimIssuedNotificationWhenClaimsEmptyOnFeePaymentLookup() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().claimIssuedDate(null).build();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity)).thenReturn(List.of());
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any(SchedulableInstance.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldNotScheduleClaimIssuedNotificationWhenClaimsNullOnFeePaymentLookup() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().claimIssuedDate(null).build();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity)).thenReturn(null);
+
+        // When
+        underTest.apply(taskData());
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any(SchedulableInstance.class));
+    }
+
+    @Test
+    void shouldStillIssueCaseAndCreateWaTasksWhenNoClaimFeePaymentFound() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().claimIssuedDate(null).feePayments(List.of()).build();
+        givenCaseWithClaim(claimEntity);
+
+        // When
+        SystemEventResult result = underTest.apply(taskData());
+
+        // Then
+        verify(pcsCaseService).setCaseIssuedDate(CASE_REFERENCE);
+        verify(claimFormScheduler).scheduleClaimFormGeneration(CASE_REFERENCE);
+        verify(claimWaTaskService).createTasksForIssuedClaim(CASE_REFERENCE);
+        assertThat(result.state()).isPresent();
+    }
+
+    private void givenCaseWithClaim(ClaimEntity claimEntity) {
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseEntity.getClaims()).thenReturn(new ArrayList<>(List.of(claimEntity)));
+    }
+
     private void assertScheduledForDefendant(SchedulableInstance<AccessCodeTaskData> scheduled, UUID defendantPartyId,
                                              Instant earliest, Instant latest) {
         assertThat(scheduled.getTaskInstance().getTaskName()).isEqualTo(ACCESS_CODE_TASK_DESCRIPTOR.getTaskName());
@@ -228,6 +427,10 @@ class ClaimPaymentActionTest {
     private PaymentStateTaskData taskData() {
         return PaymentStateTaskData.builder().caseReference(CASE_REFERENCE).eventId(EventId.claimIssuePayment)
             .paymentReference(PAYMENT_REFERENCE).idempotencyKey(UUID.randomUUID()).build();
+    }
+
+    private FeePaymentEntity feePayment(Integer id, PaymentCallbackHandlerType type) {
+        return FeePaymentEntity.builder().id(id).paymentCallbackHandlerType(type).build();
     }
 
 }
