@@ -84,6 +84,10 @@ public class PcsCaseService {
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+
         patchCaseFlags(caseReference, pcsCase, pcsCase.getParties());
     }
 
