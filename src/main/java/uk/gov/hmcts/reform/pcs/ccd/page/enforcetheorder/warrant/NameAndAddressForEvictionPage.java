@@ -73,9 +73,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             warrantDetails.setShowChangeNameAddressPage(YesOrNo.YES);
             warrantDetails.setShowPeopleWhoWillBeEvictedPage(YesOrNo.NO);
         } else if (correctNameAndAddress == VerticalYesNo.YES) {
-            // Navigate to PeopleWhoWillBeEvictedPage
             warrantDetails.setShowChangeNameAddressPage(YesOrNo.NO);
-            warrantDetails.setShowPeopleWhoWillBeEvictedPage(YesOrNo.YES);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

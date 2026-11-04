@@ -8,7 +8,7 @@ export const evictionRisksPosed = {
   criminalOrAntisocialBehaviourCheckbox: `Criminal or antisocial behaviour`,
   verbalOrWrittenThreatsCheckbox: `Verbal or written threats`,
   protestGroupCheckbox: `Member of a group that protests evictions`,
-  policeOrSocialServiceCheckbox: `Police or social services visits to the property`,
+  policeVisitsCheckbox: `Police visits to the property`,
   aggressiveAnimalsCheckbox: `Aggressive dogs or other animals`,
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
