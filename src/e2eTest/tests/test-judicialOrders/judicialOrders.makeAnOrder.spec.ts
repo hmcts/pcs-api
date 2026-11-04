@@ -76,7 +76,7 @@ test.use({ storageState: undefined })
               button: makeAnOrder.saveAsDraftButton
             });
           });
-          await test.step(`And the user selects the "Make an Order" event from the event dropdown`, async () => {
+          await test.step(`Then user selects the "Make an Order" event again to verify save draft order`, async () => {
             await performAction('selectAnEvent', {eventType: caseSummary.makeAnOrder});
             await performValidation('mainHeader', makeAnOrder.mainHeader);
           });
