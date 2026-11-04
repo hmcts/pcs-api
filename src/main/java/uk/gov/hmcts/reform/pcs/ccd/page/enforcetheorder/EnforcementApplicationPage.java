@@ -141,7 +141,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
-            .errors(errors.isEmpty() ? null : errors)
+            .errorMessageOverride(errors.isEmpty() ? null : errors.getFirst())
             .build();
     }
 

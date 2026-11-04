@@ -158,8 +158,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors())
-            .singleElement()
+        assertThat(response.getErrorMessageOverride())
             .isEqualTo(
                 "You cannot continue with this application because your "
                     + "application to transfer to the High Court was unsuccessful"
