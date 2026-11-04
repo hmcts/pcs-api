@@ -8,7 +8,9 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -16,31 +18,36 @@ public class CaseDocumentService {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public void waitForDocumentType(long caseReference, DocumentType documentType) {
-        Awaitility.await("Document type %s exists for case".formatted(documentType))
+    public void waitForDocumentsOfType(long caseReference,
+                                       DocumentType documentType,
+                                       Instant createdSince,
+                                       int minCount) {
+
+        Awaitility.await("At least %d documents of type %s created since %s for case %d"
+                             .formatted(minCount, documentType, createdSince, caseReference))
             .atMost(Duration.ofSeconds(30))
             .pollInterval(Duration.ofMillis(1000))
             .ignoreExceptions()
-            .until(() -> caseDocumentExists(caseReference, documentType));
+            .until(() -> countCaseDocuments(caseReference, documentType, createdSince) >= minCount);
     }
 
-    private boolean caseDocumentExists(long caseReference, DocumentType documentType) {
+    private int countCaseDocuments(long caseReference, DocumentType documentType, Instant createdSince) {
 
         SqlParameterSource namedParameters = new MapSqlParameterSource()
             .addValue("caseReference", caseReference)
-            .addValue("documentType", documentType.name());
+            .addValue("documentType", documentType.name())
+            .addValue("createdSince", Timestamp.from(createdSince));
 
         return jdbcTemplate.queryForObject(
             """
-                SELECT EXISTS(
-                    SELECT 1 FROM document d
+                    SELECT count(*) FROM document d
                     JOIN pcs_case pcs ON pcs.id = d.case_id
                     WHERE pcs.case_reference = :caseReference
                     AND d.type = :documentType
-                )
+                    AND d.submitted_date > :createdSince
                 """,
             namedParameters,
-            Boolean.class
+            Integer.class
         );
     }
 
