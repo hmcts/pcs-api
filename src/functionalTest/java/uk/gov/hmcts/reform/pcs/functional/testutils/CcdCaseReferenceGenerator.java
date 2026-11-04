@@ -5,7 +5,7 @@ import java.security.SecureRandom;
 /**
  * Lifted from `UidService` in ccd-data-store and adjusted to return a long case reference
  * This is so that a valid random CCD case reference can be generated, with the
- * correct checksum
+ * correct checksum.
  */
 public class CcdCaseReferenceGenerator {
 
