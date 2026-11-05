@@ -51,6 +51,8 @@ class BulkPrintServiceTest {
     private AuthTokenGenerator authTokenGenerator;
     @Mock
     private CaseReferenceFormatter caseReferenceFormatter;
+    @Mock
+    private BlankClaimPackFormsProvider blankClaimPackFormsProvider;
 
     @InjectMocks
     private BulkPrintService underTest;
@@ -93,6 +95,55 @@ class BulkPrintServiceTest {
         assertThat(letter.additionalData.get("recipients"))
             .asInstanceOf(list(String.class))
             .containsExactly("Jane Doe", "1 High Street", "London", "W1 1AA");
+        verifyNoInteractions(blankClaimPackFormsProvider);
+    }
+
+    @Test
+    @DisplayName("Merges coversheet, access code, claim form, blank response form, and blank counterclaim form"
+        + " for defendant claim pack")
+    void shouldMergeAllFiveDocumentsForDefendantClaimPack() {
+        byte[] coversheetBytes = "coversheet".getBytes();
+        byte[] accessCodeBytes = "access-code".getBytes();
+        byte[] claimFormBytes = "claim-form".getBytes();
+        byte[] blankResponseBytes = "blank-response".getBytes();
+        byte[] blankCounterclaimBytes = "blank-counterclaim".getBytes();
+        byte[] mergedBytes = "merged-pdf".getBytes();
+        UUID accessCodeDocId = UUID.randomUUID();
+        UUID claimFormDocId = UUID.randomUUID();
+
+        when(authTokenGenerator.generate()).thenReturn("s2s");
+        when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
+        when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
+        when(letterDocumentFetcher.fetchBytes(accessCodeDocId)).thenReturn(accessCodeBytes);
+        when(letterDocumentFetcher.fetchBytes(claimFormDocId)).thenReturn(claimFormBytes);
+        when(blankClaimPackFormsProvider.getBlankResponseForm()).thenReturn(blankResponseBytes);
+        when(blankClaimPackFormsProvider.getBlankCounterclaimForm()).thenReturn(blankCounterclaimBytes);
+        when(pdfMerger.merge(List.of(
+            coversheetBytes, accessCodeBytes, claimFormBytes, blankResponseBytes, blankCounterclaimBytes)))
+            .thenReturn(mergedBytes);
+        when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
+
+        DocumentEntity accessCode = DocumentEntity.builder().id(UUID.randomUUID())
+            .documentId(accessCodeDocId).build();
+        DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID())
+            .documentId(claimFormDocId).build();
+        AddressUK address = AddressUK.builder()
+            .addressLine1("2 High Street").postTown("London").postCode("W1 2BB").build();
+
+        UUID letterId = underTest.sendPack(
+            pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "John Doe", address,
+            List.of(accessCode, claimForm));
+
+        assertThat(letterId).isEqualTo(LETTER_ID);
+        verify(coversheetProvider).render("John Doe", address, "1234-5678-9012-3456");
+        verify(letterDocumentFetcher).fetchBytes(accessCodeDocId);
+        verify(letterDocumentFetcher).fetchBytes(claimFormDocId);
+        verify(blankClaimPackFormsProvider).getBlankResponseForm();
+        verify(blankClaimPackFormsProvider).getBlankCounterclaimForm();
+        verify(pdfMerger).merge(List.of(
+            coversheetBytes, accessCodeBytes, claimFormBytes, blankResponseBytes, blankCounterclaimBytes));
+        verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
+        assertThat(letterCaptor.getValue().type).isEqualTo("CPD-01-IN1");
     }
 
     @ParameterizedTest(name = "{0} sends letter type {1}")

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 
@@ -37,10 +38,11 @@ public class GenAppWaTaskService {
         TaskType taskType = switch (genAppEntity.getType()) {
             case ADJOURN -> TaskType.REVIEW_ADJOURN_GEN_APP;
             case SET_ASIDE -> TaskType.REVIEW_SET_ASIDE_GEN_APP;
-            case SOMETHING_ELSE -> TaskType.REVIEW_GEN_APP;
+            case SUSPEND, SOMETHING_ELSE -> TaskType.REVIEW_GEN_APP;
         };
 
-        camundaService.createTask(caseReference, taskType, description);
+        Map<String, Object> taskDetails = Map.of("genAppId", genAppEntity.getId());
+        camundaService.createTask(caseReference, taskType, description, taskDetails);
     }
 
     public void createTranslationTaskForGenApp(GenAppEntity genAppEntity) {
