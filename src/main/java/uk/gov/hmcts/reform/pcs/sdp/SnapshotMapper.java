@@ -67,7 +67,7 @@ public class SnapshotMapper {
             .postalClaimReceivedByCourtDate(resolvePostalReceivedDate(servingMethod, noticeDate))
             .claimSubmittedToSystemDate(claimSubmittedDate)
             .claimFeePaidDate(claimFeePaidDate)
-            .issueClaimDate(claimIssuedDate)
+            .claimIssuedToDefendantDate(claimIssuedDate)
             .build();
     }
 

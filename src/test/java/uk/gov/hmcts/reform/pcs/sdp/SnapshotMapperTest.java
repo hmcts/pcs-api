@@ -162,7 +162,7 @@ class SnapshotMapperTest {
         assertThat(result.getPostalClaimReceivedByCourtDate()).isEqualTo("2026-01-10");
         assertThat(result.getClaimSubmittedToSystemDate()).isEqualTo("2026-02-01T14:30:00Z");
         assertThat(result.getClaimFeePaidDate()).isEqualTo("2026-02-03T10:00:00Z");
-        assertThat(result.getIssueClaimDate()).isEqualTo("2026-02-05T09:00:00Z");
+        assertThat(result.getClaimIssuedToDefendantDate()).isEqualTo("2026-02-05T09:00:00Z");
     }
 
     @Test
