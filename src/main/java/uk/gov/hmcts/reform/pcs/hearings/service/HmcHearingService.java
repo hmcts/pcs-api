@@ -21,6 +21,10 @@ public class HmcHearingService {
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     @Value("${hmc.deployment-id}")
     private String hmctsDeploymentId;
+    @Value("${role-assignment.api.url:#{null}}")
+    private String roleAssignmentUrl;
+    @Value("${core_case_data.api.url:#{null}}")
+    private String dataStoreUrl;
 
     public HmcHearingService(
         HmcHearingApi hmcHearingApi,
@@ -34,21 +38,22 @@ public class HmcHearingService {
 
     public HearingResponse createHearing(@RequestBody HearingRequest hearingPayload) {
         return hmcHearingApi.createHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
-                                           hmctsDeploymentId, hearingPayload);
+                                           hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, hearingPayload);
     }
 
     public HearingResponse updateHearing(String id, @RequestBody UpdateHearingRequest hearingPayload) {
         return hmcHearingApi.updateHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
-                                           hmctsDeploymentId, id, hearingPayload);
+                                           hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, id, hearingPayload);
     }
 
     public HearingResponse deleteHearing(String id, @RequestBody DeleteHearingRequest hearingDeletePayload) {
         return hmcHearingApi.deleteHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
-                                           hmctsDeploymentId, id, hearingDeletePayload);
+                                           hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, 
+                                           id, hearingDeletePayload);
     }
 
     public GetHearingsResponse getHearing(String id) {
         return hmcHearingApi.getHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
-                                        hmctsDeploymentId, id, null);
+                                        hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, id, null);
     }
 }
