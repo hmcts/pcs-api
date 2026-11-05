@@ -1088,13 +1088,10 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
             break;
 
           case 'dateField':
-            
              const date: string =
             item.day && item.month && item.year
               ? `${item.day}/${item.month}/${item.year}`
               : CaseManagementCommonUtils.getRandomDate(item.type as string);
-
-          //  let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
             const enterDate = () =>
               performActions(
                 'Enter Date',
