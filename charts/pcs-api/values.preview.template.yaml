@@ -87,7 +87,7 @@ java:
     WA_WORKFLOW_API: http://localhost/should-not-be-called
     TASK_MANAGEMENT_API_URL: http://localhost/should-not-be-called
     # DO NOT MERGE TO MASTER
-    CASE_TYPE_SUFFIX: ${CHANGE_ID}
+    CASE_TYPE_SUFFIX: "PR-${CHANGE_ID}"
     CASE_API_URL: https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net
   secrets:
     PCS_DB_PASSWORD:
