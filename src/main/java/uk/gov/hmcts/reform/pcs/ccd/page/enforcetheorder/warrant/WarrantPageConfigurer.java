@@ -26,10 +26,10 @@ public class WarrantPageConfigurer implements PageConfigurer {
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(new NameAndAddressForEvictionPage())
+            .add(new ChangeNameAddressPage())
             .add(new BreathingSpacePage())
             .add(new MissedPaymentsPage())
             .add(new CannotApplyForWarrantInfoPage())
-            .add(new ChangeNameAddressPage())
             .add(new ConfirmIfDOBKnownPage())
             .add(defendantsDOBPage)
             .add(new PeopleWhoWillBeEvictedPage())
