@@ -270,7 +270,7 @@ class SnapshotMapperTest {
                 .build()
         );
 
-        assertThat(result.getContractVersion()).isEqualTo("4.1.0");
+        assertThat(result.getContractVersion()).isEqualTo("4.2.0");
         assertThat(result.getProducer().getSystem()).isEqualTo("possessions-ccd");
         assertThat(result.getProducer().getEnvironment()).isEqualTo("test");
         assertThat(result.getExtractDate()).isEqualTo("2026-03-09");

@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 @Component
 public class SnapshotMapper {
 
-    private static final String CONTRACT_VERSION = "4.1.0";
+    private static final String CONTRACT_VERSION = "4.2.0";
     private static final String PRODUCER_SYSTEM = "possessions-ccd";
     private static final String SUBMITTED_TYPE_DIGITAL = "Digital";
 
