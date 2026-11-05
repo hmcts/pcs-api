@@ -106,6 +106,7 @@
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
+
         },
         "authorisations": []
       },
@@ -142,6 +143,34 @@
       {
         "roleType": "ORGANISATION",
         "roleName": "task-supervisor",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "N",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1"
+        }
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hearing-manager",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "N",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1"
+        }
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hearing-viewer",
         "grantType": "STANDARD",
         "roleCategory": "ADMIN",
         "classification": "PUBLIC",
