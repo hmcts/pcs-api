@@ -1,0 +1,32 @@
+export const breathingSpaceNotSure = {
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: 'You will not be able to submit this application if the defendants are using the Breathing Space scheme',
+  youWillNotBeAbleToSubmitParagraph: `You will not be able to submit this application if the defendants are using the Breathing Space scheme.`,
+  checkIfDefendantInBreathingSpaceParagraph: `Check if the defendants are in Breathing Space before you continue.`,
+  whatYouShouldDoParagraph: `What you should do next`,
+  theInsolvencyServiceParagraph: `The Insolvency Service can tell you if the defendants are using the Breathing Space scheme.`,
+  contactTheInsolvencyLink: `Contact the Insolvency Service (opens in new tab)`,
+  toConfirmParagraph: `to confirm.`,
+  ifTheInsolvencyServiceParagraph: `If the Insolvency Service confirms that the defendants are using the Breathing Space scheme`,
+  youMustContactTheCourtParagraph: `You must contact the court and tell them that the defendants are using the Breathing Space scheme.`,
+  contactTheCourtByEmailParagraph: `Contact the court by email`,
+  useTheFindACourtParagraph: `Use the find a court or tribunal service (opens in new tab) to get your local court’s email address.`,
+  findACourtLink: `find a court or tribunal service (opens in new tab)`,
+  ifYouAreApplyingForWarrantParagraph: `If you’re applying for a warrant and you do not know the name of your local court, select the 'Money' category and then the 'Housing' category to find it.`,
+  ifYouAreApplyingForWritParagraph: `If you’re applying for a writ and you do not know the name of your local court, select the 'High Court district registries' to find it.`,
+  contactTheCourtByTelParagraph: `Contact the court by telephone`,
+  phNumberParagraph: `0300 123 7050`,
+  dayAndTimeParagraph: `Monday to Friday, 8.30am to 5pm.`,
+  findOutAboutCallChargesLink: `Find out about call charges (opens in new tab)`,
+  ifTheInsolvencyServiceConfirmsParagraph: `If the Insolvency Service confirms that the defendants are not using the Breathing Space scheme`,
+  youCanReturnParagraph: `You can return to this service, and continue applying for a warrant.`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  errorValidationField: {
+    errorRadioOption: [
+      { type: 'none', input: '', errMessage: 'You cannot continue with this application while the defendants are using the Breathing Space scheme.' }
+    ]
+  },
+}

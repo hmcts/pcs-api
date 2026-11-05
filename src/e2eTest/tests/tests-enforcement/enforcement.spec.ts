@@ -38,7 +38,7 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWarrantInfo,
+  statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWarrantInfo, breathingSpaceNotSure,
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -865,7 +865,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       });
     });
 
-    test('Warrant of Possession - Missed payment: claimant selects No and is directed to the judge permission screen @enforcement @regression', async ({ page }) => {
+    test('Warrant of Possession - Missed payment: claimant selects No and is directed to the judge permission screen @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -893,5 +893,28 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('cannotApplyForWarrantInfo');
     await performAction('errorValidationCannotApplyForWarrantPage', cannotApplyForWarrantInfo.errorValidation);
 
+  });
+
+  test('Warrant of Possession - Breathing space: claimant selects Im not sure is directed to  screen @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      journey: enforcementApplication.warrantOfPossessionRadioOption,
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
+      text1: enforcementApplication.warrantFeeValidationTextHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
+      text2: enforcementApplication.writFeeValidationTextHidden
+    });
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('isDefendantInBreathingSpace', {
+      option: defendantInBreathingSpace.imNotSureRadioOption,
+      nextPage: breathingSpaceNotSure.mainHeader
+    });
   });
 });
