@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
@@ -31,14 +32,23 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PackSkipRulesTest {
+
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 29, 12, 0);
+    private static final Clock UTC_CLOCK = Clock.fixed(NOW.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
 
     @Mock
     private FeatureToggleService featureToggleService;
@@ -48,7 +58,7 @@ class PackSkipRulesTest {
     @BeforeEach
     void setUp() {
         underTest = new PackSkipRules(
-            featureToggleService, new CaseFlagService(null, null, null, null, null));
+            featureToggleService, new CaseFlagService(null, null, null, null, null), UTC_CLOCK, Duration.ofHours(24));
     }
 
     @Test
@@ -345,8 +355,133 @@ class PackSkipRulesTest {
         assertThat(underTest.shouldSkipGenAppPack(pcsCase, genApp)).isTrue();
     }
 
+    @Test
+    @DisplayName("Skips the claim pack when a gen app is expected and the claim was issued under 24 hours ago")
+    void shouldSkipClaimPackWhenGenAppExpectedWithinHoldPeriod() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(23));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack when a gen app is expected and 24 hours have passed since issue")
+    void shouldNotSkipClaimPackWhenGenAppHoldPeriodExpired() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        claim.setClaimParties(List.of(claimParty(PartyEntity.builder().id(UUID.randomUUID()).build(),
+            PartyRole.CLAIMANT)));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Still skips the claim pack for translation after the gen app hold period has expired")
+    void shouldSkipClaimPackWhenTranslationRequiredAfterGenAppHoldPeriodExpired() {
+        enableRelease13();
+        ClaimEntity claim = ClaimEntity.builder()
+            .languageUsed(LanguageUsed.WELSH)
+            .genAppExpected(VerticalYesNo.YES)
+            .claimIssuedDate(NOW.minusHours(25))
+            .build();
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Keeps holding the claim pack after 24 hours when release 1.4 is off")
+    void shouldSkipClaimPackAfterGenAppHoldPeriodWhenRelease14Off() {
+        enableRelease13();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Keeps holding the claim pack after 24 hours when the claimant has an issued gen app")
+    void shouldSkipClaimPackAfterGenAppHoldPeriodWhenClaimantGenAppIssued() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase =
+            caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.GEN_APP_ISSUED, NOW.minusHours(1));
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack after 24 hours when the claimant gen app is not yet issued")
+    void shouldNotSkipClaimPackAfterGenAppHoldPeriodWhenClaimantGenAppPending() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase =
+            caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.PENDING_GEN_APP_ISSUED, NOW.minusHours(1));
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack when the claimant gen app was submitted after the 24 hour hold ended")
+    void shouldNotSkipClaimPackWhenClaimantGenAppSubmittedAfterHoldPeriod() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(25));
+        PcsCaseEntity pcsCase =
+            caseWithGenApp(claim, PartyRole.CLAIMANT, GenAppState.GEN_APP_ISSUED, NOW.minusMinutes(30));
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Releases the claim pack after 24 hours when only other claimants or defendants have issued gen apps")
+    void shouldNotSkipClaimPackAfterGenAppHoldPeriodWhenOnlyOtherPartiesHaveIssuedGenApps() {
+        enableRelease13();
+        enableRelease14();
+        PartyEntity claimCreator = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity secondClaimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        claim.setClaimParties(List.of(
+            claimParty(claimCreator, PartyRole.CLAIMANT),
+            ClaimPartyEntity.builder().party(secondClaimant).role(PartyRole.CLAIMANT).rank(2).build(),
+            claimParty(defendant, PartyRole.DEFENDANT)));
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .claims(List.of(claim))
+            .genApps(Set.of(
+                GenAppEntity.builder().party(secondClaimant).state(GenAppState.GEN_APP_ISSUED).build(),
+                GenAppEntity.builder().party(defendant).state(GenAppState.GEN_APP_ISSUED).build()))
+            .build();
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Throws IllegalStateException when checking the gen app hold for a claim with no claimants")
+    void shouldThrowExceptionWhenClaimHasNoClaimants() {
+        enableRelease13();
+        enableRelease14();
+        ClaimEntity claim = englishClaimExpectingGenApp(NOW.minusHours(24));
+        PcsCaseEntity pcsCase = caseWith(claim);
+
+        assertThatThrownBy(() -> underTest.shouldSkipClaimPack(pcsCase, claim))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageStartingWith("No claimants found for claim");
+    }
+
     private void enableRelease13() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+    }
+
+    private void enableRelease14() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
     }
 
     private PcsCaseEntity caseWith(ClaimEntity claim) {
@@ -413,5 +548,29 @@ class PackSkipRulesTest {
         flag.setFlagRefData(FlagRefDataEntity.builder()
             .flagCode("PF0026")
             .build());
+    }
+
+    private PcsCaseEntity caseWithGenApp(ClaimEntity claim, PartyRole applicantRole, GenAppState state,
+                                         LocalDateTime submittedDate) {
+        PartyEntity applicant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        claim.setClaimParties(List.of(claimParty(applicant, applicantRole)));
+        GenAppEntity genApp = GenAppEntity.builder()
+            .party(applicant)
+            .state(state)
+            .applicationSubmittedDate(submittedDate)
+            .build();
+        return PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .claims(List.of(claim))
+            .genApps(Set.of(genApp))
+            .build();
+    }
+
+    private ClaimEntity englishClaimExpectingGenApp(LocalDateTime claimIssuedDate) {
+        return ClaimEntity.builder()
+            .languageUsed(LanguageUsed.ENGLISH)
+            .genAppExpected(VerticalYesNo.YES)
+            .claimIssuedDate(claimIssuedDate)
+            .build();
     }
 }
