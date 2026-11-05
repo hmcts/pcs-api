@@ -48,6 +48,7 @@ test.describe('case management - case worker selects Breathing Space', () => {
     await test.step('Given the caseworker selects the "Enter breathing space" event', async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enterBreathingSpaceEvent);
       await performAction('clickButton', caseSummary.go);
+      await performValidation('mainHeader', enterBreathingSpace.mainHeader);
     });
   });
 
