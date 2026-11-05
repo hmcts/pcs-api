@@ -14,36 +14,35 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage.*;
 
 public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+        var nameAddressPageBuilder = pageBuilder
             .page("nameAndAddressForEvictionWrit", this::midEvent)
             .pageLabel("The name and address for the eviction")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .complex(PCSCase::getEnforcementOrder)
-            .label(
-                "nameAndAddressForEvictionWrit-defendants-check",
-                """
-                    <hr />
-                    <table class="govuk-table">
-                      <caption class="govuk-table__caption govuk-table__caption--s govuk-!-padding-bottom-2">
-                      Check the name and address for the eviction</caption>
-                      <tbody class="govuk-table__body">
-                        <tr class="govuk-table__row">
-                          <th scope="row" class="govuk-table__header">Defendants</th>
-                          <td class="govuk-table__cell">${formattedDefendantNames}</td>
-                        </tr>
-                        <tr class="govuk-table__row">
-                          <th scope="row" class="govuk-table__header">Address</th>
-                          <td class="govuk-table__cell">${formattedPropertyAddress}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                """
-            )
+            .label("nameAndAddressForEvictionWrit-caption-hr", "<hr>")
+            .label("nameAndAddressForEvictionWrit-caption",
+                   "<h3 class=\"govuk-heading-s\">Check the name and address for the eviction</h3>")
+            .label("nameAndAddressForEvictionWrit-defendants-heading",
+                   "<p class=\"govuk-body govuk-!-font-weight-bold\">Defendants</p>")
+            .label("nameAndAddressForEvictionWrit-defendants-value", "${formattedDefendantNames}");
+
+        for (int i = 0; i < MAX_UNKNOWN_DEFENDANTS; i++) {
+            nameAddressPageBuilder.label("nameAndAddressForEvictionWrit-defendant-unknown-" + i,
+                                   PERSON_UNKNOWN_LABEL, unknownDefendantShowCondition(i));
+        }
+
+        nameAddressPageBuilder
+            .label("nameAndAddressForEvictionWrit-defendants-hr", "<hr>")
+            .label("nameAndAddressForEvictionWrit-address-heading",
+                   "<p class=\"govuk-body govuk-!-font-weight-bold\">Address</p>")
+            .label("nameAndAddressForEvictionWrit-address-value", "${formattedPropertyAddress}")
+            .label("nameAndAddressForEvictionWrit-address-hr", "<hr>")
             .complex(EnforcementOrder::getWritDetails)
             .complex(WritDetails::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)

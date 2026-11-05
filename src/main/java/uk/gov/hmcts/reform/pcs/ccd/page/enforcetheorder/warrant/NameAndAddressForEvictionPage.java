@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -14,36 +15,35 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage.*;
 
 public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+        var nameAddressPageBuilder = pageBuilder
             .page("nameAndAddressForEviction", this::midEvent)
             .pageLabel("The name and address for the eviction")
             .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .complex(PCSCase::getEnforcementOrder)
-            .label(
-                "nameAndAddressForEviction-defendants-check",
-                """
-                        <hr />
-                        <table class="govuk-table">
-                          <caption class="govuk-table__caption govuk-table__caption--s govuk-!-padding-bottom-2">
-                          Check the name and address for the eviction</caption>
-                          <tbody class="govuk-table__body">
-                            <tr class="govuk-table__row">
-                              <th scope="row" class="govuk-table__header">Defendants</th>
-                              <td class="govuk-table__cell">${formattedDefendantNames}</td>
-                            </tr>
-                            <tr class="govuk-table__row">
-                              <th scope="row" class="govuk-table__header">Address</th>
-                              <td class="govuk-table__cell">${formattedPropertyAddress}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                    """
-            )
+            .label("nameAndAddressForEviction-caption-hr", "<hr>")
+            .label("nameAndAddressForEviction-caption",
+                   "<h3 class=\"govuk-heading-s\">Check the name and address for the eviction</h3>")
+            .label("nameAndAddressForEviction-defendants-heading",
+                   "<p class=\"govuk-body govuk-!-font-weight-bold\">Defendants</p>")
+            .label("nameAndAddressForEviction-defendants-value", "${formattedDefendantNames}");
+
+        for (int i = 0; i < MAX_UNKNOWN_DEFENDANTS; i++) {
+            nameAddressPageBuilder.label("nameAndAddressForEviction-defendant-unknown-" + i,
+                                   PERSON_UNKNOWN_LABEL, unknownDefendantShowCondition(i));
+        }
+
+        nameAddressPageBuilder
+            .label("nameAndAddressForEviction-defendants-hr", "<hr>")
+            .label("nameAndAddressForEviction-address-heading",
+                   "<p class=\"govuk-body govuk-!-font-weight-bold\">Address</p>")
+            .label("nameAndAddressForEviction-address-value", "${formattedPropertyAddress}")
+            .label("nameAndAddressForEviction-address-hr", "<hr>")
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
@@ -51,7 +51,6 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .done()
             .done()
             .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
-
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(

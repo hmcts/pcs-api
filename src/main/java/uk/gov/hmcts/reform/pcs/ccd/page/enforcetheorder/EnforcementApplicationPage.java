@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -20,8 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfResti
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -30,6 +31,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnf
 @Component
 @AllArgsConstructor
 public class EnforcementApplicationPage implements CcdPageConfiguration {
+
+    public static final int MAX_UNKNOWN_DEFENDANTS = 10;
+    public static final String PERSON_UNKNOWN_LABEL =
+        "<div class=\"govuk-!-margin-bottom-2\">" + CaseTabView.NAME_UNKNOWN + "</div>";
 
     private final EnforcementOrderService enforcementOrderService;
     private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
@@ -111,6 +116,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .label("enforcementApplication-content", "---")
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
+            .readonly(PCSCase::getUnknownDefendantCount, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
@@ -149,18 +155,27 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.setFormattedDefendantNames(defendants.stream()
-                                                   .map(defendant -> "<div class=\"govuk-!-margin-bottom-2\">"
-                                                       + resolvePartyName(defendant.getValue()) + "</div>")
-                                                   .collect(Collectors.joining()));
+            List<String> knownNames = new ArrayList<>();
+            int unknownDefendants = 0;
+
+            for (ListValue<Party> defendant : defendants) {
+                Party party = defendant.getValue();
+                if (isNameUnknown(party)) {
+                    unknownDefendants++;
+                    continue;
+                }
+                knownNames.add("<div class=\"govuk-!-margin-bottom-2\">"
+                    + party.getFirstName() + " " + party.getLastName()
+                    + "</div>");
+            }
+
+            pcsCase.setFormattedDefendantNames(StringUtils.join(knownNames, StringUtils.EMPTY));
+            pcsCase.setUnknownDefendantCount(unknownDefendants);
         }
     }
 
-    private String resolvePartyName(Party party) {
-        if (StringUtils.isBlank(party.getFirstName()) && StringUtils.isBlank(party.getLastName())) {
-            return CaseTabView.NAME_UNKNOWN;
-        }
-        return party.getFirstName() + " " + party.getLastName();
+    private boolean isNameUnknown(Party party) {
+        return StringUtils.isBlank(party.getFirstName()) && StringUtils.isBlank(party.getLastName());
     }
 
     private static boolean toBoolean(YesOrNo yesOrNo) {
@@ -202,5 +217,13 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             warrantOfRestitutionMapper.prePopulateFieldsFromWarrantDetails(
                     warrantEnforcementOrder, currentEnforcementOrder);
         }
+    }
+
+    public static String unknownDefendantShowCondition(int position) {
+        List<String> conditions = new ArrayList<>();
+        for (int i = position; i < MAX_UNKNOWN_DEFENDANTS; i++) {
+            conditions.add("unknownDefendantCount=\"" + (i + 1) + "\"");
+        }
+        return ShowConditions.or(conditions.toArray(new String[0]));
     }
 }
