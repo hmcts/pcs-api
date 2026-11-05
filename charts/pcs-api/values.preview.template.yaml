@@ -58,7 +58,6 @@ java:
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     NOTIFY_URL: https://api.notifications.service.gov.uk
     CCD_SDK_DECENTRALISED: "true"
-    CCD_DATA_STORE_URL: http://ccd-data-store-api-aat.service.core-compute-aat.internal
     PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/payment-update
     PCS_FRONTEND_URL: ${PCS_FRONTEND_URL}
