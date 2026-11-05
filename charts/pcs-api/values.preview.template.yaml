@@ -90,9 +90,6 @@ java:
     # DO NOT MERGE TO MASTER - HMC 
     CASE_TYPE_SUFFIX: "pr-${CHANGE_ID}"
     CASE_API_URL: https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net
-    HMC_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
-    CCD_DATA_STORE_URL: ${CCD_DATA_STORE_URL}
-    ROLE_ASSIGNMENT_API_URL: https://am-role-assignment-service-${SERVICE_FQDN}
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
