@@ -89,56 +89,6 @@ class EnforcementOrderServiceTest {
         assertThat(retOrder).isNull();
     }
 
-    @Test
-    void shouldReturnFirstClaimFromPcsCaseEntity() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        ClaimEntity firstClaim = new ClaimEntity();
-        ClaimEntity secondClaim = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(firstClaim, secondClaim));
-
-        // When
-        ClaimEntity result = enforcementOrderService.retrieveClaimEntity(pcsCaseEntity);
-
-        // Then
-        assertThat(result).isSameAs(firstClaim);
-    }
-
-    @Test
-    void shouldSaveNewSubmittedEnforcementData() {
-        // Given
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-
-        when(enforcementOrderRepository.save(any())).thenReturn(new EnforcementOrderEntity());
-        when(strategyFactory.getStrategy(getSelectEnforcementTypeFromName(
-            enforcementOrder.getChooseEnforcementType().getValueCode())))
-            .thenReturn(mock(EnforcementTypeStrategy.class));
-
-        // When
-        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
-
-        // Then
-        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
-        EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
-    }
-
-    @Test
-    void shouldReturnFirstClaimFromPcsCaseEntity() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        ClaimEntity firstClaim = new ClaimEntity();
-        ClaimEntity secondClaim = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(firstClaim, secondClaim));
-
-        // When
-        ClaimEntity result = enforcementOrderService.retrieveClaimEntity(pcsCaseEntity);
-
-        // Then
-        assertThat(result).isSameAs(firstClaim);
-    }
-
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
     void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
