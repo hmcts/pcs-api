@@ -7,9 +7,17 @@ import uk.gov.hmcts.reform.pcs.sdp.model.Producer;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotFeeParty;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
-import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPropertyAddress;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotRequestedFee;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Maps PCS claim source values into SDP snapshot model fields.
@@ -58,6 +66,27 @@ public class SnapshotMapper {
             .build();
     }
 
+    public List<SnapshotPropertyAddress> mapPropertyAddress(String addressLine1,
+                                                            String addressLine2,
+                                                            String addressLine3,
+                                                            String postTown,
+                                                            String county,
+                                                            String country,
+                                                            String postcode) {
+        String address = Stream.of(addressLine1, addressLine2, addressLine3, postTown, county, country)
+            .filter(part -> part != null && !part.isBlank())
+            .map(String::trim)
+            .collect(Collectors.joining(", "));
+        String normalisedPostcode = postcode == null || postcode.isBlank() ? "" : postcode.trim().toUpperCase();
+        if (address.isEmpty() && normalisedPostcode.isEmpty()) {
+            return List.of();
+        }
+        return List.of(SnapshotPropertyAddress.builder()
+            .address(address)
+            .postcode(normalisedPostcode)
+            .build());
+    }
+
     public SnapshotMilestones mapMilestones(String servingMethod,
                                             String noticeDate,
                                             String claimSubmittedDate,
@@ -71,12 +100,14 @@ public class SnapshotMapper {
             .build();
     }
 
-    public SnapshotParty mapParty(String partyId, String role, String claimantType, boolean represented) {
+    public SnapshotParty mapParty(String partyId, String role, String claimantType, boolean represented,
+                                 String languageUsed) {
         return SnapshotParty.builder()
             .partyId(partyId)
             .partyType("CLAIMANT".equals(role) ? resolvePartyType(claimantType) : null)
             .partyRole(resolvePartyRole(role))
             .partyRepresented(represented ? "Yes" : "No")
+            .partyLanguage(resolveLanguage(languageUsed))
             .build();
     }
 
@@ -88,9 +119,20 @@ public class SnapshotMapper {
             .build();
     }
 
-    public SnapshotPaymentReference mapPayment(String paymentReference) {
-        return SnapshotPaymentReference.builder()
-            .paymentReference(paymentReference)
+    public SnapshotRequestedFee mapRequestedFee(SdpClaimSnapshotPayment payment, String requestedDate) {
+        String partyId = payment.partyId() != null ? payment.partyId().toString() : null;
+        return SnapshotRequestedFee.builder()
+            .feeId(stableUuid("fee-payment-" + payment.id()))
+            .feeReference(firstNonBlank(payment.serviceRequestReference(), payment.externalReference()))
+            .feeTypeId(stableUuid("fee-type-" + payment.paymentCallbackHandlerType()))
+            .feeTypeDescription(payment.paymentCallbackHandlerType())
+            .feeAmount(payment.amount())
+            .feeStatus(resolveFeeStatus(payment.paymentStatus()))
+            .feeRequestedOfTheseParties(partyId == null
+                ? List.of()
+                : List.of(SnapshotFeeParty.builder().partyId(partyId).build()))
+            .feeRequestedDate(requestedDate)
+            .responsiblePartyId(partyId)
             .build();
     }
 
@@ -104,6 +146,30 @@ public class SnapshotMapper {
             .responseType("YES".equals(makeCounterClaim) ? "Counter Claim" : "Defence")
             .respondedDate(respondedDate)
             .build();
+    }
+
+    private static String resolveFeeStatus(String paymentStatus) {
+        if ("PAID".equals(paymentStatus)) {
+            return "Fully Paid";
+        }
+        if ("PARTIALLY_PAID".equals(paymentStatus)) {
+            return "Partially Paid";
+        }
+        return "Requested Not Paid";
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        if (first != null && !first.isBlank()) {
+            return first;
+        }
+        if (second != null && !second.isBlank()) {
+            return second;
+        }
+        return null;
+    }
+
+    private static String stableUuid(String value) {
+        return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     private String resolveEnvironment(String environment) {
