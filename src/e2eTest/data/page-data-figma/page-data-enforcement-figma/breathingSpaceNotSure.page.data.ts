@@ -22,11 +22,7 @@ export const breathingSpaceNotSure = {
   youCanReturnParagraph: `You can return to this service, and continue applying for a warrant.`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
-  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
-  errorValidationField: {
-    errorRadioOption: [
-      { type: 'none', input: '', errMessage: 'You cannot continue with this application while the defendants are using the Breathing Space scheme.' }
-    ]
-  },
+  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
+  errorMessage: `You cannot continue with this application while the defendants are using the Breathing Space scheme.`,
+  cancelButton: 'Cancel',
 }

@@ -908,5 +908,9 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       option: defendantInBreathingSpace.imNotSureRadioOption,
       nextPage: breathingSpaceNotSure.mainHeader
     });
+    await performAction('clickButton', breathingSpaceNotSure.continueButton);
+    await performValidation('errorMessage', { header: breathingSpaceNotSure.eventCouldNotBeCreatedErrorMessageHeader, message: breathingSpaceNotSure.errorMessage });
+    await performAction('clickButton', breathingSpaceNotSure.cancelButton);
+    await performValidation('mainHeader', 'Summary');
   });
 });
