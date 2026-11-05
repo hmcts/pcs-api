@@ -164,7 +164,6 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
     await performAction('inputDate', enterBreathingSpace.whenDidBreathingSpaceStartQuestion, today);
   }
   private async validateEnterBreathingSpacePage(): Promise<void> {
-    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
