@@ -1,0 +1,62 @@
+{% if reviewDates is not empty %}
+<div class="govuk-width-container">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h3 class="govuk-heading-xl">Case Review Dates</h3>
+      {% for reviewDate in reviewDates %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">
+            Review date {{reviewDate.reviewDateNumber}}
+          </h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Created by
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{reviewDate.createdBy}}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Created date
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{reviewDate.createdDate | date("d MMM yyyy, h:mm:ss a")}}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Date of review
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{reviewDate.date | date("d MMM yyyy")}}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Reason
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{reviewDate.reason.label}}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Description of review
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{reviewDate.description}}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}

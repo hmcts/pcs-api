@@ -65,7 +65,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Set aside', async () => {
+  test('Select an Application - Ask to Set aside @regression', async () => {
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let fileName = (chooseAnApplication.uploadDocHiddenOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '');
     let uploadFile = (chooseAnApplication.uploadDocHiddenOption)[1]

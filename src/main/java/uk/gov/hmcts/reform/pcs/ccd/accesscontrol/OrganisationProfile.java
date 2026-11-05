@@ -1,17 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 /**
- * Organisation profile IDs as they appear in PRD.
- * Must be kept in sync.
+ * The PRD organisation profile IDs that PCS maps to a group access type. Any other claimant
+ * profile falls back to the generic {@link #ORGANISATION_PROFILE} access, so this does not need
+ * to list every profile PRD knows about.
  */
 public enum OrganisationProfile {
 
-    SOLICITOR_PROFILE,
-    LOCALAUTH_PROFILE,
-    OTHER_REALT_PROFILE,
-    OTHER_PROP_PROFILE,
-    OTHER_NFP_PROFILE,
-    OTHER_CHARITY_PROFILE;
+    ORGANISATION_PROFILE,
+    SOLICITOR_PROFILE;
 
     public String getId() {
         return name();

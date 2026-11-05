@@ -30,8 +30,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing,
-  checkFullPartyDetails
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -84,6 +83,9 @@ export class CaseManagementAction implements IAction {
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
+      ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
+      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes()],
+      ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
       ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
@@ -816,15 +818,101 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
-  private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
-    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
-    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
+  private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('inputText', judicialNotes.label, judicialNotes.noteTextInput);
+    await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
+  }
+
+  private async confirmAddJudicialNotes(): Promise<void> {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('mainHeader', confirmJudicialNotes.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedParagraph});
+    await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedParagraph});
+    await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
+    const judicialNote = new Map<string, string>();
+
+    judicialNote.set('Note', judicialNotes.userInput as string);
+    const expectedCreatedOn = judicialNotes.createdOn as string;
+    judicialNote.set('Created on', expectedCreatedOn.replace(/:\d{2}(?=\s(?:AM|PM)$)/, ''));
+
+    const noteCards = page.locator('.govuk-summary-card');
+    const index = judicialNotes.index !== undefined ? Number(judicialNotes.index) : 0;
+    const noteCard = noteCards.nth(index);
+
+    await expect(noteCard).toBeVisible();
+    const cardTitle = (await noteCard.locator('.govuk-summary-card__title').textContent())?.trim();
+    expect(cardTitle).toBe(judicialNotes.table as string);
+    const rows = noteCard.locator('.govuk-summary-list__row');
+    const caseTabMap = new Map<string, string>();
+    for (let i = 0; i < await rows.count(); i++) {
+      const row = rows.nth(i);
+      const key = (
+        await row.locator('.govuk-summary-list__key').textContent())?.trim();
+      let value = (await row.locator('.govuk-summary-list__value').textContent())?.trim();
+
+      if (key === 'Created by') {
+        continue;
+      }
+      if (key === 'Created on' && value) {
+        value = value.replace(/:\d{2}(?=\s(?:AM|PM)$)/, '');
+      }
+      if (key) {
+        caseTabMap.set(key, value ?? '');
+      }
+    }
+    const misMatchMap = compareMaps(
+      judicialNote,
+      caseTabMap,
+      {
+        name1: 'JudicialNote',
+        name2: 'CaseNotesTab',
+      }
+    );
+
+    if (misMatchMap.size > 0) {
+      console.log(
+        `\n❌ Differences found: ${misMatchMap.size}`
+      );
+
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+
+        console.log(
+          '============================================================'
+        );
+
+        console.log(
+          `• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`
+        );
+      }
+
+      throw new Error(
+        `Judicial Notes validations failed for ${misMatchMap.size} ${
+          misMatchMap.size === 1 ? 'item' : 'items'}`
+      );
+    }
+    console.log(
+      `✅ ${judicialNotes.table} validation passed`
+    );
+  }
+    private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
+      let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
+      const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
+      await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -1023,7 +1111,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, index)).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, index)).toEqual(`${defendantsDetails.lastName}`);
       }
-    });    
+    });
 
     await this.caseTabTableData(page, defendantsDetails.mainTable as string, defendantsDetails.subTable as string);
 
@@ -1099,7 +1187,6 @@ export class CaseManagementAction implements IAction {
           /ancestor::div[1]
           //table[@class="complex-panel-table"]`;
 
-
     const tables = page.locator(tableLocator);
     const tableCount = await tables.count();
 
@@ -1157,7 +1244,7 @@ export class CaseManagementAction implements IAction {
     caseNote.set(`Reason`, caseNotes.reviewReason as string);
     caseNote.set(`Description of review`, caseNotes.reviewDescription as string);
 
-    await this.caseTabTableData(page, caseNotes.table as string);
+    await this.caseTabReviewDateTableData(page, caseNotes.table as string);
 
     const misMatchMap = compareMaps(caseNote, caseTabMap, {
       name1: 'CaseNote',
@@ -1182,13 +1269,60 @@ export class CaseManagementAction implements IAction {
 
   }
 
+  private async caseTabReviewDateTableData(page: Page, mainTable: string, subTable?: string) {
+
+    
+    const summaryLocator =  `//h2[normalize-space()="${mainTable}"]
+                             /ancestor::div[@class="govuk-summary-card"]
+                             //dl[@class="govuk-summary-list"]`;
+
+    const tables = page.locator(summaryLocator);
+    const tableCount = await tables.count();
+
+    if (tableCount === 0) {
+      throw new Error(
+        `Table ${subTable ? `${mainTable} -> ${subTable}` : mainTable
+        } not found.`
+      );
+    }
+
+
+    for (let i = 0; i < tableCount; i++) {
+      const table = tables.nth(i);
+      await expect(table).toBeVisible();
+
+      const rows = table.locator('.govuk-summary-list__row');
+      const rowCount = await rows.count();
+
+      for (let j = 0; j < rowCount; j++) {
+        const row = rows.nth(j);
+        if (!(await row.isVisible())) continue;
+
+        const keyQns = row.locator('dt');
+        const valAns = row.locator('dd');
+
+        if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
+
+        const keyText = (await keyQns.first().innerText()).trim();
+        let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+
+        if (keyText === "Created on" || keyText === "Created date") {
+          valText = valText.replace(/:\d{2} /, " ");
+        }
+
+        if (keyText && keyText.length > 0) {
+          caseTabMap.set(keyText ?? '', valText ?? '');
+        }
+      }
+    }
+  };
   private async validateFullPartyDetails(page: Page, partyDetails: actionRecord) {
 
     expect(await this.getCaseFieldValue(page, 'Name')).toEqual(partyDetails.defName);
     expect(await this.getCaseFieldValue(page, 'Date of birth')).toEqual(partyDetails.defDOB);
     expect(await this.getCaseFieldValue(page, 'Address for service')).toEqual(partyDetails.defAddress);
-    
-    if (partyDetails.dobVal) return;    
+
+    if (partyDetails.dobVal) return;
 
     await performAction('clickRadioButton', {
       question: partyDetails.question,

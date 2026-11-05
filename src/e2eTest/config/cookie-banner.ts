@@ -3,17 +3,28 @@ import { MEDIUM_TIMEOUT, SHORT_TIMEOUT } from '../playwright.config';
 
 export type CookieBannerType = 'additional' | 'analytics' | 'hide-success';
 
-async function bannerPresent(page: Page): Promise<CookieBannerType | null> {
+async function bannerPresent( page: Page): Promise<CookieBannerType | null> {
   const additional = page.locator('#accept-additional-cookies');
+
   const analytics = page
     .getByRole('region', { name: /Cookies on this service/i })
     .getByRole('button', { name: /Accept analytics cookies/i });
-  return Promise.any([
-    additional.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
-      .then((): CookieBannerType => 'additional'),
-    analytics.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
-      .then((): CookieBannerType => 'analytics'),
-  ]).catch(() => null);
+
+  const banner = additional.or(analytics);
+
+  const bannerVisible = await banner.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT,})
+    .then(() => true)
+    .catch(() => false);
+
+  if (!bannerVisible) {
+    return null;
+  }
+
+  if (await additional.isVisible().catch(() => false)) {
+    return 'additional';
+  }
+
+  return 'analytics';
 }
 
 export async function dismissCookieBanner(page: Page, type: CookieBannerType): Promise<void> {
