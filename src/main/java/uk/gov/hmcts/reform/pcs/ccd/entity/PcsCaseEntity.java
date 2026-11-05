@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -142,6 +143,7 @@ public class PcsCaseEntity {
 
     private String caseSubtypeKey;
 
+    @UpdateTimestamp
     private LocalDateTime lastModifiedDatetime;
 
     public ClaimEntity getMainClaim() {
@@ -194,6 +196,8 @@ public class PcsCaseEntity {
     }
 
     public void addCounterClaim(CounterClaimEntity counterClaim) {
+        int rank = counterClaims.size() + 1;
+        counterClaim.setRank(rank);
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
     }
