@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DraftResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
@@ -96,6 +97,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
     private final DefendantResponseView defendantResponseView;
+    private final DraftResponseView draftResponseView;
     private final FeatureFlagView featureFlagView;
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
@@ -116,16 +118,19 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         SubmittedCase submittedCase = getSubmittedCase(caseReference, state);
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+        PcsCaseEntity pcsCaseEntity = submittedCase.pcsCaseEntity();
 
         if (hasUnsubmittedCaseData) {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
-                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
-                    () -> caseTabView.setCaseTabFields(pcsCase)
+                    draft -> {
+                        caseTabView.setDraftCaseTabFields(pcsCase, draft, pcsCaseEntity);
+                        },
+                    () -> caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity)
                 );
         } else {
-            caseTabView.setCaseTabFields(pcsCase);
+            caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity);
         }
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
@@ -196,6 +201,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
+        draftResponseView.setCaseFields(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 
@@ -244,7 +250,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                                class="govuk-button">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
@@ -260,7 +266,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                                class="govuk-button">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
