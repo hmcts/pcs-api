@@ -23,7 +23,7 @@ public class SdpClaimSnapshotJdbcRepository {
 
     // Claim, case, tenancy and notice fields for the snapshot, plus the current version if already exported.
     private static final String HEADER_SQL = """
-        SELECT c.id AS claim_id,
+        SELECT DISTINCT c.id AS claim_id,
                c.claimant_type,
                c.against_trespassers,
                c.language_used,
@@ -46,7 +46,7 @@ public class SdpClaimSnapshotJdbcRepository {
 
     // Claims with no snapshot yet, or with source data changed since last export.
     private static final String ID_SQL = """
-        SELECT c.id AS claim_id
+        SELECT DISTINCT c.id AS claim_id
         FROM claim c
         LEFT JOIN sdp_claim_snapshot s ON s.claim_id = c.id
         LEFT JOIN pcs_case pc ON pc.id = c.case_id
