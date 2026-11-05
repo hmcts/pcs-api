@@ -93,13 +93,11 @@ class EnforcementOrderServiceTest {
     @MethodSource("enforcementOrderTypes")
     void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
         // Given
-        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         final ClaimEntity claimEntity = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(claimEntity));
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
         final EnforcementTypeStrategy strategy = mock(EnforcementTypeStrategy.class);
 
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(claimEntity);
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(strategy);
 
         // When
