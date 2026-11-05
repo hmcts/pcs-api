@@ -41,8 +41,12 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             .forStates(EventStates.recordWarrantOutcome())
             .name("Record warrant return")
             .showCondition(ShowConditions.NEVER_SHOW)
-            .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
-            .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN) // TODO - REMOVE
+            .grant(
+                Permission.CRU,
+                UserRole.HEARING_CENTRE_ADMIN,
+                UserRole.HEARING_CENTRE_TEAM_LEADER,
+                UserRole.BAILIFF_ADMIN
+            ) // TODO - REMOVE Hearing center roles
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
 
