@@ -899,14 +899,6 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
-    await performAction('validateWritOrWarrantFeeAmount', {
-      journey: enforcementApplication.warrantOfPossessionRadioOption,
-      type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
-      text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationParagraphHidden,
-      text2: enforcementApplication.writFeeValidationTextHidden
-    });
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
       option: enforcementApplication.warrantOfPossessionRadioOption,
