@@ -46,7 +46,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             """
                             <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
                             <ul class="govuk-list govuk-list--bullet" style="margin-left: 40px;">
-                                <li>the defendant has not vacated the land as ordered.</li>
+                                <li>the defendant has not vacated the land as ordered</li>
                                 <li>I believe the facts stated in this form are true.</li>
                             </ul>
                             </div>
