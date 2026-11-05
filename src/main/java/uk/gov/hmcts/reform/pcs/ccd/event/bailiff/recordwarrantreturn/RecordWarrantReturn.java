@@ -40,7 +40,6 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             .decentralisedEvent("ext:recordWarrantReturn", this::submit)
             .forStates(EventStates.recordWarrantOutcome())
             .name("Record warrant return")
-            .showCondition(ShowConditions.NEVER_SHOW)
             .grant(
                 Permission.CRU,
                 UserRole.HEARING_CENTRE_ADMIN,
