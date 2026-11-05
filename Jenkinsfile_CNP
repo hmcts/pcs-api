@@ -83,11 +83,10 @@ withPipeline(type, product, component) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } else {
-      env.CCD_ENABLED = "false"
-
       if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:hmc-integration").size() > 0) {
         enableHighLevelDataSetup()
       }
+      env.CCD_ENABLED = "false"
     }
     // Work Allocation preview (pr-values:wa) — WA pods and Camunda
     env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
