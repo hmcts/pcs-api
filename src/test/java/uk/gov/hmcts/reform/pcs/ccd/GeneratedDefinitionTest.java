@@ -46,7 +46,9 @@ class GeneratedDefinitionTest {
         "[DEFENDANT]", "defendant-solicitor", "[DEFENDANTSOLICITOR]"
     );
     private static final Set<String> DOCUMENT_PROFILES = union(PARTY_VISIBLE_PROFILES, Set.of(
-        "[CLAIMANTSOLICITOR]", "[DEFENDANTSOLICITOR]", "pcs-system-update"
+        "[CLAIMANTSOLICITOR]", "[DEFENDANTSOLICITOR]", "pcs-system-update",
+        // HDPI-9526: team leaders move documents between Case File View folders
+        "ctsc-team-leader", "hearing-centre-team-leader", "wlu-team-leader"
     ));
 
     /** field id -> profiles with R. */
