@@ -242,7 +242,7 @@
     <cve>CVE-2026-47841</cve>
     <cve>CVE-2026-47842</cve>
   </suppress>
-  <suppress until="2026-11-01">
+  <suppress until="2026-11-15">
     <notes><![CDATA[
     HDPI-8772: temporary. CVE-2026-47834 against spring-data-jpa 3.5.13; no fixed 3.5.x
     release published yet. Remove when the Boot BOM brings a patched version.
