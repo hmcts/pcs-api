@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
@@ -209,6 +210,9 @@ public class ClaimEntity {
     private LocalDateTime claimSubmittedDate;
 
     private LocalDateTime claimIssuedDate;
+
+    @UpdateTimestamp
+    private LocalDateTime lastModified;
 
     @Builder.Default
     @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
