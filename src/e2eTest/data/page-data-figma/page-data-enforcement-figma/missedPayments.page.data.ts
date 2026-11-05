@@ -1,8 +1,7 @@
 export const missedPayments = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Missed payments',
-  haveDefendantsMissedPaymentsQuestion: 'Have the defendants missed any payments?',
-  paymentsOutlinedHintText: `These are payments outlined in the suspended order for possession. They were ordered to make these payments by the judge`,
+  haveDefendantsMissedPaymentsQuestion: 'Are you alleging that the defendant has failed to make payments which are a condition of the suspension of the order for possession?',
   thisWillSaveHiddenParagraph: `This will save your progress and take you to the case overview.`,
   chooseHiddenListItem: `Choose ‘Continue’.`,
   cancelHiddenListItem: `On the next page choose ‘Cancel’.`,
@@ -15,7 +14,7 @@ export const missedPayments = {
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [
-      { type: 'none', input: '', errMessage: 'Have the defendants missed any payments? is required' }
+      { type: 'none', input: '', errMessage: 'Are you alleging that the defendant has failed to make payments which are a condition of the suspension of the order for possession?? is required' }
     ]
   },
   continueButton: 'Continue',
