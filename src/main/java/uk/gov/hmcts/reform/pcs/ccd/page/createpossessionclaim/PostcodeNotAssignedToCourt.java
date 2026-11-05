@@ -40,7 +40,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 assigned to, so you cannot use this online service.
                 </p>
 
-                <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
+                <h2 class="govuk-heading-s govuk-!-font-size-19">What to do next</h2>
                 """
             )
             .label(
