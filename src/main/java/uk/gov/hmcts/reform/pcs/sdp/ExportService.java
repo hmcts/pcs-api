@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
@@ -54,8 +53,6 @@ public class ExportService {
     private final Clock utcClock;
     private final String environment;
     static final int EXPORT_CHUNK_SIZE = 200;
-
-    private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
 
     public ExportService(SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository,
                          SnapshotMapper claimSnapshotMapper,
@@ -216,7 +213,7 @@ public class ExportService {
             UUID.randomUUID().toString(),
             publishedDate,
             ClaimSnapshot.builder()
-                .claimReference(caseReferenceFormatter.formatCaseReferenceWithDashes(header.caseReference()))
+                .claimReference(formatClaimReference(header.caseReference()))
                 .snapshotVersion(0)
                 .recordedDate(formatDateTime(header.claimSubmittedDate()))
                 .dimensions(dimensions)
@@ -311,5 +308,9 @@ public class ExportService {
 
     private static String formatDateTime(LocalDateTime dateTime) {
         return dateTime == null ? null : dateTime.toInstant(ZoneOffset.UTC).toString();
+    }
+
+    private static String formatClaimReference(Long caseReference) {
+        return caseReference == null ? null : String.format("%016d", caseReference);
     }
 }

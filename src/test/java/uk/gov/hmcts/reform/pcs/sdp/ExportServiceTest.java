@@ -99,7 +99,7 @@ class ExportServiceTest {
 
         String json = uploadedJson();
         assertThat(json).contains("\"contract_version\":\"4.2.0\"");
-        assertThat(json).contains("\"claim_reference\":\"1234-5678-9012-3456\"");
+        assertThat(json).contains("\"claim_reference\":\"1234567890123456\"");
         assertThat(json).contains("\"claim_type\":\"AAA3-SLD\"");
         assertThat(json).contains("\"claim_sub_type\":\"Social\"");
         assertThat(json).contains("\"party_role\":\"Defendant\"");
