@@ -106,12 +106,7 @@ public class GenAppPackSelector {
         return isIssuedWithNoticeAndDocument(genApp) && isDefendantSelfServeGenApp(genApp, defendantIds);
     }
 
-    /**
-     * A GA counts as defendant self-serve when a defendant made it through pcs-frontend. This covers both the
-     * citizen defendant and their legal rep (who shares the same journey but populates a firm name on the
-     * statement of truth), so firm name is intentionally not a discriminator here. Caseworker-entered GAs are
-     * excluded via the application received date.
-     */
+    
     private boolean isDefendantSelfServeGenApp(GenAppEntity genApp, Set<UUID> defendantIds) {
         PartyEntity applicant = genApp.getParty();
         if (applicant == null || !defendantIds.contains(applicant.getId())) {
@@ -126,11 +121,7 @@ public class GenAppPackSelector {
             && genApp.getWithoutNotice() != VerticalYesNo.YES;
     }
 
-    /**
-     * The applicant (the defendant whose LR made the application, or the self-serve defendant) and any
-     * LR-represented defendant are served digitally through their legal rep, never by post, so they are
-     * never pack recipients. Every other postal party on the claim is notified.
-     */
+    
     private boolean isExcludedRecipient(PartyEntity party, PartyEntity applicant,
                                         Map<UUID, PartyRole> roleByPartyId) {
         if (applicant != null && party.getId().equals(applicant.getId())) {
