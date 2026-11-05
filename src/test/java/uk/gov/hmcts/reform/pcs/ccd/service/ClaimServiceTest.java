@@ -88,6 +88,8 @@ class ClaimServiceTest {
                                         noticeOfPossessionService, statementOfTruthService, utcClock);
         lenient().when(claimRepository.save(any(ClaimEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
+        lenient().when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
     }
 
     @Test
@@ -446,8 +448,6 @@ class ClaimServiceTest {
     void shouldSetClaimIssuedDate() {
         // Given
         ClaimEntity claimEntity = ClaimEntity.builder().build();
-        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
 
         // When
         claimService.setClaimIssuedDate(claimEntity);
