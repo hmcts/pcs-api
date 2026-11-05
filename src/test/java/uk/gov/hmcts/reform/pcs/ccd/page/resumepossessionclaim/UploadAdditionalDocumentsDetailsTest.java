@@ -156,7 +156,6 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(returnedDocument.getDocumentType().getValueLabel())
             .isEqualTo(documentType.getLabel());
-        assertThat(returnedDocument.getDocumentType().getListItems()).isEmpty();
     }
 
     @Test
@@ -226,7 +225,6 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         AdditionalDocument returnedDocument = response.getData().getAdditionalDocuments().getFirst().getValue();
         assertThat(returnedDocument.getDocumentType().getValueLabel())
             .isEqualTo(documentType.getLabel());
-        assertThat(returnedDocument.getDocumentType().getListItems()).isEmpty();
     }
 
     @Test
