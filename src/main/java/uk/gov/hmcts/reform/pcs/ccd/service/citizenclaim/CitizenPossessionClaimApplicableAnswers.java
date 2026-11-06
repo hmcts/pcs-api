@@ -76,15 +76,26 @@ public class CitizenPossessionClaimApplicableAnswers {
         } else if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.INDIVIDUAL) {
             claimant.setOrganisationName(null);
         }
-        // A text-message number left blank means "text the phone number I gave"
-        boolean textsGoToPhoneNumber = claimant.getContactByText() == VerticalYesNo.YES
-            && StringUtils.isBlank(claimant.getTextMessageNumber());
-        if (claimant.getContactByPhone() != VerticalYesNo.YES && !textsGoToPhoneNumber) {
+        if (claimant.getContactByPhone() != VerticalYesNo.YES) {
             claimant.setPhoneNumber(null);
         }
         if (claimant.getContactByText() != VerticalYesNo.YES) {
             claimant.setTextMessageNumber(null);
         }
+    }
+
+    /**
+     * The number texts go to: the text-message number, or, when that is blank, the phone number the
+     * claimant agreed to be called on.
+     */
+    public static String effectiveTextNumber(CitizenClaimClaimant claimant) {
+        if (StringUtils.isNotBlank(claimant.getTextMessageNumber())) {
+            return claimant.getTextMessageNumber();
+        }
+        if (claimant.getContactByPhone() == VerticalYesNo.YES && StringUtils.isNotBlank(claimant.getPhoneNumber())) {
+            return claimant.getPhoneNumber();
+        }
+        return null;
     }
 
     private static void reduceDefendants(CitizenPossessionClaim claim) {

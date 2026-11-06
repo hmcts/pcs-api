@@ -376,14 +376,26 @@ class CitizenPossessionClaimSubmitServiceTest {
     @Test
     void shouldTextThePhoneNumberWhenNoTextNumberIsGiven() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
         claim.getClaimant().setContactByText(VerticalYesNo.YES);
         claim.getClaimant().setTextMessageNumber(null);
 
         submit(claim);
 
         assertThat(claimantStub.getTextMessageNumber()).isEqualTo("07700900000");
-        assertThat(claimantStub.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(claimantStub.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claimantStub.getPhoneNumber()).isEqualTo("07700900000");
+    }
+
+    @Test
+    void shouldNotTextALeftoverPhoneNumberWhenTheClaimantSaidNoToCalls() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+        claim.getClaimant().setTextMessageNumber("07700900111");
+
+        submit(claim);
+
+        assertThat(claimantStub.getTextMessageNumber()).isEqualTo("07700900111");
         assertThat(claimantStub.getPhoneNumber()).isNull();
     }
 

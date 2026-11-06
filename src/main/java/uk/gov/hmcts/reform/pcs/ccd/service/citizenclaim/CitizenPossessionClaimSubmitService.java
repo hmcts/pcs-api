@@ -452,8 +452,7 @@ public class CitizenPossessionClaimSubmitService {
         party.setPhoneNumberProvided(VerticalYesNo.from(phoneProvided));
         party.setPhoneNumber(phoneProvided ? claimant.getPhoneNumber() : null);
         if (claimant.getContactByText() == VerticalYesNo.YES) {
-            party.setTextMessageNumber(StringUtils.defaultIfBlank(claimant.getTextMessageNumber(),
-                                                                  claimant.getPhoneNumber()));
+            party.setTextMessageNumber(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant));
         }
 
         ContactPreferencesEntity preferences = Optional.ofNullable(party.getContactPreferences())

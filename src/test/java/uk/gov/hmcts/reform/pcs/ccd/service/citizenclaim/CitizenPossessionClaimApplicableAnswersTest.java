@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
@@ -171,13 +172,33 @@ class CitizenPossessionClaimApplicableAnswersTest {
     }
 
     @Test
-    void shouldKeepThePhoneNumberWhenTextsGoToIt() {
+    void shouldDropALeftoverPhoneNumberWhenTheClaimantSaidNoToCalls() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
         claim.getClaimant().setContactByText(VerticalYesNo.YES);
         claim.getClaimant().setTextMessageNumber(null);
 
-        assertThat(underTest.of(claim).getClaimant().getPhoneNumber()).isEqualTo("07700900000");
+        CitizenPossessionClaim applicable = underTest.of(claim);
+
+        assertThat(applicable.getClaimant().getPhoneNumber()).isNull();
+        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(applicable.getClaimant())).isNull();
+    }
+
+    @Test
+    void shouldTextThePhoneNumberOnlyWhenTheClaimantAgreedToCalls() {
+        CitizenClaimClaimant claimant = CitizenClaimClaimant.builder()
+            .contactByPhone(VerticalYesNo.YES)
+            .phoneNumber("07700900000")
+            .contactByText(VerticalYesNo.YES)
+            .build();
+        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant)).isEqualTo("07700900000");
+
+        claimant.setTextMessageNumber("07700900111");
+        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant)).isEqualTo("07700900111");
+
+        claimant.setTextMessageNumber(" ");
+        claimant.setContactByPhone(VerticalYesNo.NO);
+        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant)).isNull();
     }
 
     @Test

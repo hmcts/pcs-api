@@ -455,6 +455,26 @@ class CitizenPossessionClaimValidatorTest {
         assertThat(validate(claim)).isEmpty();
     }
 
+    @Test
+    void shouldNotTextALeftoverPhoneNumberWhenTheClaimantSaidNoToCalls() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+        claim.getClaimant().setTextMessageNumber(null);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:claimant.textMessageNumber");
+    }
+
+    @Test
+    void shouldReportOnlyThePhoneNumberWhenCallsAndTextsHaveNoNumber() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setPhoneNumber(null);
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+        claim.getClaimant().setTextMessageNumber(null);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:claimant.phoneNumber");
+    }
+
     private static String emailOfLength(int length) {
         String domain = "@test.test";
         return "x".repeat(length - domain.length()) + domain;

@@ -141,9 +141,10 @@ public class CitizenPossessionClaimValidator {
             maxLength(errors, "claimant.phoneNumber", claimant.getPhoneNumber(), NAME_MAX);
         }
         maxLength(errors, "claimant.textMessageNumber", claimant.getTextMessageNumber(), NAME_MAX);
+        // With calls=YES a missing number is already reported as the phone number
         if (claimant.getContactByText() == VerticalYesNo.YES
-            && StringUtils.isBlank(claimant.getTextMessageNumber())
-            && StringUtils.isBlank(claimant.getPhoneNumber())) {
+            && claimant.getContactByPhone() != VerticalYesNo.YES
+            && CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant) == null) {
             errors.add(required("claimant.textMessageNumber"));
         }
     }
