@@ -23,10 +23,24 @@ class WhatOrderWantedTest extends BasePageTest {
     }
 
     @Test
-    void shouldNotOfferDraftWordingOnTheDefendantApplicationPage() {
+    void shouldOfferOptionalConditionalDraftWordingOnTheDefendantSolicitorApplicationPage() {
         setPageUnderTest(new uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted());
+
+        assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
+            .filteredOn(field -> "xui_genapp_DraftOrderWording".equals(field.getId()))
+            .singleElement()
+            .satisfies(field -> {
+                assertThat(field.getContext()).isEqualTo(DisplayContext.Optional);
+                assertThat(field.getShowCondition()).isEqualTo("xui_genapp_DraftOrderWordingAllowed=\"YES\"");
+            });
+    }
+
+    @Test
+    void shouldNotOfferDraftWordingOnTheStaffEnterApplicationPage() {
+        setPageUnderTest(new uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails(null, null));
 
         assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
             .noneMatch(field -> "xui_genapp_DraftOrderWording".equals(field.getId()));
     }
+
 }

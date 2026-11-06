@@ -24,15 +24,12 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private final FeeApplier feeApplier;
     private final DraftOrderWordingAccess draftOrderWordingAccess;
 
-    public PCSCase startForClaimant(EventPayload<PCSCase, State> eventPayload) {
-        eventPayload.caseData().getXuiGenAppRequest().setDraftOrderWordingAllowed(
-            VerticalYesNo.from(draftOrderWordingAccess.isAllowed(eventPayload.caseReference())));
-        return start(eventPayload);
-    }
-
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
+
+        caseData.getXuiGenAppRequest().setDraftOrderWordingAllowed(
+            VerticalYesNo.from(draftOrderWordingAccess.isAllowed(caseReference)));
 
         setRepresentedParties(caseReference, caseData);
 

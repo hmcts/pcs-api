@@ -76,7 +76,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         if (createGenAppRequest instanceof XuiGenAppRequest xuiRequest
             && StringUtils.isNotBlank(xuiRequest.getDraftOrderWording())
             && !draftOrderWordingAccess.isAllowed(caseReference)) {
-            return errorResponse("Only a claimant solicitor can provide draft order wording");
+            return errorResponse("Only a solicitor can provide draft order wording");
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);

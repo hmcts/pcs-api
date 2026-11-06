@@ -16,7 +16,7 @@ class DraftOrderWordingAccessTest {
 
     @ParameterizedTest
     @EnumSource(UserRole.class)
-    void shouldAllowOnlyClaimantSolicitorCaseRoles(UserRole role) {
+    void shouldAllowOnlySolicitorCaseRoles(UserRole role) {
         UserRoleService userRoleService = mock(UserRoleService.class);
         when(userRoleService.getCurrentUserCaseRoles(1234L))
             .thenReturn(new UserRoles("user", List.of(role.getRole())));
@@ -24,6 +24,7 @@ class DraftOrderWordingAccessTest {
         boolean allowed = new DraftOrderWordingAccess(userRoleService).isAllowed(1234L);
 
         assertThat(allowed).isEqualTo(
-            role == UserRole.CLAIMANT_SOLICITOR || role == UserRole.GA_CLAIMANT_SOLICITOR);
+            role == UserRole.CLAIMANT_SOLICITOR || role == UserRole.GA_CLAIMANT_SOLICITOR
+                || role == UserRole.DEFENDANT_SOLICITOR || role == UserRole.GA_DEFENDANT_SOLICITOR);
     }
 }

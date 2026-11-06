@@ -68,7 +68,7 @@ class StartEventHandlerTest {
             .thenReturn(DynamicList.builder().listItems(List.of()).build());
         PCSCase caseData = PCSCase.builder().xuiGenAppRequest(XuiGenAppRequest.builder().build()).build();
 
-        underTest.startForClaimant(eventPayload(caseData));
+        underTest.start(eventPayload(caseData));
 
         assertThat(caseData.getXuiGenAppRequest().getDraftOrderWordingAllowed())
             .isEqualTo(VerticalYesNo.from(allowed));

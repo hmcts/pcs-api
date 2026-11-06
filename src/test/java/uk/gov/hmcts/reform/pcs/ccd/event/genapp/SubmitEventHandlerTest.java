@@ -137,7 +137,7 @@ class SubmitEventHandlerTest {
 
         SubmitResponse<State> response = underTest.submit(eventPayload(caseData));
 
-        assertThat(response.getErrors()).containsExactly("Only a claimant solicitor can provide draft order wording");
+        assertThat(response.getErrors()).containsExactly("Only a solicitor can provide draft order wording");
         verifyNoInteractions(genAppService);
     }
 

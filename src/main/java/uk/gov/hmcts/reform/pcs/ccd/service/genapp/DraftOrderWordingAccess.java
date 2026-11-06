@@ -11,15 +11,17 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DraftOrderWordingAccess {
 
-    private static final Set<String> CLAIMANT_SOLICITOR_ROLES = Set.of(
+    private static final Set<String> SOLICITOR_ROLES = Set.of(
         UserRole.CLAIMANT_SOLICITOR.getRole(),
-        UserRole.GA_CLAIMANT_SOLICITOR.getRole()
+        UserRole.GA_CLAIMANT_SOLICITOR.getRole(),
+        UserRole.DEFENDANT_SOLICITOR.getRole(),
+        UserRole.GA_DEFENDANT_SOLICITOR.getRole()
     );
 
     private final UserRoleService userRoleService;
 
     public boolean isAllowed(long caseReference) {
         return userRoleService.getCurrentUserCaseRoles(caseReference).roles().stream()
-            .anyMatch(CLAIMANT_SOLICITOR_ROLES::contains);
+            .anyMatch(SOLICITOR_ROLES::contains);
     }
 }
