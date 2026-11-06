@@ -7,7 +7,7 @@ import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
-import { enterBreathingSpace, checkYourAnswers} from '@data/page-data-figma/page-data-caseManagement-figma';
+import { enterBreathingSpace, enterBreathingSpacecheckYourAnswers} from '@data/page-data-figma/page-data-caseManagement-figma';
 
 
 test.use({ storageState: undefined })
@@ -80,7 +80,7 @@ test.describe('case management - case worker selects Breathing Space', () => {
       });
         
       await test.step('Then they are directed to Check Your Answers', async () => {
-      await performValidation('mainHeader', checkYourAnswers.mainHeader);
+      await performValidation('mainHeader', enterBreathingSpacecheckYourAnswers.mainHeader);
       });
     }
   );

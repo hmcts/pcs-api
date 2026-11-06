@@ -41,4 +41,4 @@ export * from './checkYourAnswersJudicialNotes.page.data';
 export * from './confirmJudicialNotes.page.data'
 export * from './checkFullPartyDetails.page.data';
 export * from './enterBreathingSpace.page.data';
-export * from './checkYourAnswers.page.data';
+export * from './enterBreathingSpacecheckYourAnswers.page.data';

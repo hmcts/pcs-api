@@ -1,4 +1,4 @@
-export const checkYourAnswers = {
+export const enterBreathingSpacecheckYourAnswers = {
   mainHeader: 'Enter breathing space',
   subHeader: 'Check your answers',
   hintText: 'Check the information below carefully.',
