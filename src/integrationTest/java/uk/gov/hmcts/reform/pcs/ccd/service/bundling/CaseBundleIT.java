@@ -44,7 +44,7 @@ import static org.awaitility.Awaitility.await;
 /** Real PCS persistence and projection, real SDK rendering, and the SDK's existing CDAM fixture. */
 @PcsCcdEventTest
 @TestPropertySource(properties = {
-    "ccd.bundling.managed.enabled=true", "ccd.bundling.job.enabled=true",
+    "ccd.bundling.enabled=true", "ccd.bundling.managed.enabled=true", "ccd.bundling.job.enabled=true",
     "ccd.bundling.job.worker.poll-delay=1h"
 })
 class CaseBundleIT extends AbstractPostgresContainerIT {
