@@ -68,8 +68,10 @@ class EnforcementSubmitEventTest {
         when(payload.caseReference()).thenReturn(caseReference);
         when(payload.caseData()).thenReturn(caseData);
         when(caseData.getEnforcementOrder()).thenReturn(enforcementOrder);
-        when(pcsCaseService.loadCase(anyLong())).thenReturn(mock(PcsCaseEntity.class));
-        when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(mock(PartyEntity.class));
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(partyEntity);
 
         // When
         SubmitResponse<State> response = event.submit(payload);

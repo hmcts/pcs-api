@@ -35,7 +35,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -120,8 +122,7 @@ class ClaimPaymentActionTest {
 
         // Then
         Instant after = Instant.now();
-        verify(schedulerClient, org.mockito.Mockito.times(2))
-            .scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
         List<SchedulableInstance<AccessCodeTaskData>> scheduled = schedulableInstanceCaptor.getAllValues();
         assertScheduledForDefendant(scheduled.get(0), firstDefendantId, before, after);
         assertScheduledForDefendant(scheduled.get(1), secondDefendantId, before, after);
@@ -217,7 +218,7 @@ class ClaimPaymentActionTest {
     void shouldScheduleClaimIssuedNotificationWhenDateIssuedNotSet() {
         // Given
         int feePaymentId = 123;
-        FeePaymentEntity feePayment = org.mockito.Mockito.mock(FeePaymentEntity.class);
+        FeePaymentEntity feePayment = mock(FeePaymentEntity.class);
         when(feePayment.getPaymentCallbackHandlerType()).thenReturn(PaymentCallbackHandlerType.CLAIM);
         when(feePayment.getId()).thenReturn(feePaymentId);
 

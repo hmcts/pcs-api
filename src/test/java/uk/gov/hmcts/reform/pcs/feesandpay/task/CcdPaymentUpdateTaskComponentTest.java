@@ -20,6 +20,7 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -79,8 +80,7 @@ class CcdPaymentUpdateTaskComponentTest {
         PaymentStateTaskData taskData = mock(PaymentStateTaskData.class);
         RuntimeException exception = new RuntimeException("CCD update failed");
         when(taskInstance.getData()).thenReturn(taskData);
-        org.mockito.Mockito.doThrow(exception)
-            .when(ccdPaymentStateUpdateService).updateCcd(taskData);
+        doThrow(exception).when(ccdPaymentStateUpdateService).updateCcd(taskData);
 
         // When
         CustomTask<PaymentStateTaskData> task = underTest.ccdPaymentUpdateTask();
