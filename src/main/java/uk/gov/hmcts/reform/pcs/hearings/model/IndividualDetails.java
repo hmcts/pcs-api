@@ -1,14 +1,17 @@
 package uk.gov.hmcts.reform.pcs.hearings.model;
 
 import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Builder 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor 
 public class IndividualDetails {
-
-    private String title;
 
     private String firstName;
 
@@ -25,7 +28,6 @@ public class IndividualDetails {
     private String vulnerabilityDetails;
 
     private List<String> hearingChannelEmail;
-
 
     private List<String> hearingChannelPhone;
 

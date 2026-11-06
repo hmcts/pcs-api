@@ -41,7 +41,8 @@ public class CftlibConfig implements CFTLibConfigurer {
         var users = new HashMap<String, List<String>>();
         users.put("caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"));
         users.put("judge@pcs.com", List.of("caseworker", "caseworker-pcs"));
-        users.put("pcs-hearing-centre-team-leader-01@localhost", List.of("caseworker", "caseworker-pcs"));
+        users.put("pcs-hearing-centre-team-leader-01@localhost", List.of("caseworker", "caseworker-pcs", 
+            "hearing-manager", "hearing-viewer"));
         users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
         users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
                                                               "caseworker-pcs-solicitor",  "caseworker-pcs"));
@@ -63,6 +64,7 @@ public class CftlibConfig implements CFTLibConfigurer {
         for (var entry : users.entrySet()) {
             lib.createIdamUser(entry.getKey(), entry.getValue().toArray(new String[0]));
             lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.CASE_ISSUED.name());
+            lib.createProfile(entry.getKey(), "CIVIL", "PCS-shz", State.CASE_ISSUED.name());
         }
 
         createAccessProfiles(lib);

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class CaseDetails {
+public class HmcCaseDetails {
 
     private String hmctsServiceCode;
 
