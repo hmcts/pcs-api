@@ -1,24 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WritDetailsMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,36 +24,13 @@ class WritStrategyTest {
     @InjectMocks
     private WritStrategy underTest;
 
-    @Captor
-    private ArgumentCaptor<WritEntity> writEntityCaptor;
-
-    private EnforcementOrderEntity enforcementOrderEntity;
-    private EnforcementOrder enforcementOrder;
-    private WritDetails writDetails;
-    private WritEntity writEntity;
-
-    @BeforeEach
-    void setUp() {
-        enforcementOrderEntity = mock(EnforcementOrderEntity.class);
-
-        writDetails = WritDetails.builder()
-            .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                           .correctNameAndAddress(VerticalYesNo.YES)
-                                           .build())
-            .showChangeNameAddressPage(YesOrNo.NO)
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
-            .hceoDetails("Enforcement")
-            .hasClaimTransferredToHighCourt(YesOrNo.YES)
-            .build();
-
-        enforcementOrder = EnforcementOrder.builder().writDetails(writDetails).build();
-
-        writEntity = new WritEntity();
-    }
-
     @Test
-    void shouldProcessWritDetailsSuccessfully() {
+    void shouldMapWritDetailsAndLinkEntitiesBidirectionally() {
         // Given
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+        WritDetails writDetails = WritDetails.builder().build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().writDetails(writDetails).build();
+        WritEntity writEntity = new WritEntity();
         when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
 
         // When
@@ -68,112 +38,8 @@ class WritStrategyTest {
 
         // Then
         verify(writDetailsMapper).toEntity(writDetails);
-
-        WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity).isSameAs(writEntity);
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-    }
-
-    @Test
-    void shouldSetEnforcementOrderOnWritEntity() {
-        // Given
-        when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-    }
-
-    @Test
-    void shouldHandleEmptyWritDetails() {
-        // Given
-        WritDetails emptyWritDetails = WritDetails.builder().build();
-        enforcementOrder.setWritDetails(emptyWritDetails);
-        WritEntity emptyWritEntity = new WritEntity();
-
-        when(writDetailsMapper.toEntity(emptyWritDetails)).thenReturn(emptyWritEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(writDetailsMapper).toEntity(emptyWritDetails);
-        WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity).isSameAs(emptyWritEntity);
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-    }
-
-    @Test
-    void shouldMapAndSaveWritDetailsInCorrectOrder() {
-        // Given
-        when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(writDetailsMapper).toEntity(writDetails);
-    }
-
-    @Test
-    void shouldHandleWritDetailsWithMinimalData() {
-        // Given
-        WritDetails minimalWritDetails = WritDetails.builder()
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
-            .build();
-        enforcementOrder.setWritDetails(minimalWritDetails);
-        WritEntity minimalWritEntity = new WritEntity();
-
-        when(writDetailsMapper.toEntity(minimalWritDetails)).thenReturn(minimalWritEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(writDetailsMapper).toEntity(minimalWritDetails);
-        WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-    }
-
-    @Test
-    void shouldHandleWritDetailsWithAllFieldsPopulated() {
-        // Given
-        WritDetails fullWritDetails = WritDetails.builder()
-            .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                           .correctNameAndAddress(VerticalYesNo.YES)
-                                           .build())
-            .showChangeNameAddressPage(YesOrNo.NO)
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
-            .hceoDetails("Complete HCEO Details")
-            .hasClaimTransferredToHighCourt(YesOrNo.YES)
-            .build();
-        enforcementOrder.setWritDetails(fullWritDetails);
-        WritEntity fullWritEntity = new WritEntity();
-
-        when(writDetailsMapper.toEntity(fullWritDetails)).thenReturn(fullWritEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(writDetailsMapper).toEntity(fullWritDetails);
-        WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-    }
-
-    @Test
-    void shouldCallMapperBeforeSaving() {
-        // Given
-        when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(writDetailsMapper).toEntity(writDetails);
+        assertThat(enforcementOrderEntity.getWritDetails()).isSameAs(writEntity);
+        assertThat(writEntity.getEnforcementOrder()).isSameAs(enforcementOrderEntity);
     }
 
 }
