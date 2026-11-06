@@ -316,8 +316,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Sends the English PIN, then the Welsh PIN, then the claim form on a Wales case")
-    void shouldSendEnglishPinThenWelshPinThenClaimFormOnAWalesCase() {
+    @DisplayName("Sends the English access-code letter, then the Welsh one, then the claim form on a Wales case")
+    void shouldSendEnglishThenWelshAccessCodeLetterThenClaimFormOnAWalesCase() {
         DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity welshPinA = welshPin(defendantA);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
@@ -330,8 +330,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Holds a Wales defendant who has only the English PIN")
-    void shouldHoldAWalesDefendantWithOnlyTheEnglishPin() {
+    @DisplayName("Holds a Wales defendant who has only the English access-code letter")
+    void shouldHoldAWalesDefendantWithOnlyTheEnglishAccessCodeLetter() {
         DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
         PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA), claimantAnd(defendantA));
@@ -340,8 +340,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Holds a Wales defendant who has only the Welsh PIN")
-    void shouldHoldAWalesDefendantWithOnlyTheWelshPin() {
+    @DisplayName("Holds a Wales defendant who has only the Welsh access-code letter")
+    void shouldHoldAWalesDefendantWithOnlyTheWelshAccessCodeLetter() {
         DocumentEntity welshPinA = welshPin(defendantA);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
         PcsCaseEntity pcsCase = walesCaseWith(List.of(welshPinA), claimantAnd(defendantA));
@@ -350,8 +350,9 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Re-sends only the Welsh PIN when the English PIN and claim form already reached the defendant")
-    void shouldNotResendAWelshPinAlreadySent() {
+    @DisplayName("Re-sends only the Welsh access-code letter when the English one and the claim form "
+        + "already reached the defendant")
+    void shouldResendOnlyTheWelshAccessCodeLetter() {
         DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity welshPinA = welshPin(defendantA);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
@@ -375,8 +376,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Gives each Wales defendant their own English and Welsh PINs")
-    void shouldGiveEachWalesDefendantTheirOwnPins() {
+    @DisplayName("Gives each Wales defendant their own English and Welsh access-code letters")
+    void shouldGiveEachWalesDefendantTheirOwnAccessCodeLetters() {
         DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity welshPinA = welshPin(defendantA);
         DocumentEntity englishPinB = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantB);
@@ -395,8 +396,9 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Sends a Wales claim in English with no flag and no expected gen app once both PINs exist")
-    void shouldSendAWalesEnglishLanguageClaimWithBothPins() {
+    @DisplayName("Sends a Wales claim in English with no flag and no expected gen app "
+        + "once both access-code letters exist")
+    void shouldSendAWalesEnglishLanguageClaimWithBothAccessCodeLetters() {
         enableRelease13();
         DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity welshPinA = welshPin(defendantA);
@@ -455,8 +457,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Ignores a Welsh-marked PIN on an England case")
-    void shouldIgnoreAWelshMarkedPinOnAnEnglandCase() {
+    @DisplayName("Ignores a Welsh-marked access-code letter on an England case")
+    void shouldIgnoreAWelshMarkedAccessCodeLetterOnAnEnglandCase() {
         DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity welshPinA = welshPin(defendantA);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
@@ -467,7 +469,7 @@ class ClaimPackSelectorTest {
             .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(englishPinA, claimForm));
     }
 
-    @ParameterizedTest(name = "{0}, English PIN {1}, Welsh PIN {2} -> awaiting {3}")
+    @ParameterizedTest(name = "{0}, English letter {1}, Welsh letter {2} -> awaiting {3}")
     @CsvSource({
         "WALES, true, false, Welsh access-code letter",
         "WALES, false, true, English access-code letter",
