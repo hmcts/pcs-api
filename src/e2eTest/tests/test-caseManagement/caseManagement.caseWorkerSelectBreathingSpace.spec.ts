@@ -114,7 +114,7 @@ test.describe('case management - case worker selects Breathing Space', () => {
 );
 
 test(
-    'caseworker validates mental health crisis moratorium expected end date visibility (AC06)',
+    'caseworker validates mental health crisis moratorium expected end date visibility',
     {
       tag: ['@CM', '@regression'],
       annotation: [
