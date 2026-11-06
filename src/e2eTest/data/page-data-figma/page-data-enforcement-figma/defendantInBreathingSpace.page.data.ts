@@ -1,7 +1,8 @@
 export const defendantInBreathingSpace = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'Is the defendant in a breathing space moratorium?',
-  isDefendantCurrentlyInBreathingSpaceQuestion: 'Is the defendant currently in a breathing space?',
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: 'Breathing Space',
+  isDefendantCurrentlyInBreathingSpaceQuestion: 'Is the defendant currently in a Breathing Space moratorium?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
   imNotSureRadioOption: 'I’m not sure',

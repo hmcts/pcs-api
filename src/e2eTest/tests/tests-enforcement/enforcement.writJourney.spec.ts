@@ -15,17 +15,18 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
+  breathingSpaceNotSure, breathingSpaceNotSureWrit,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
-  enforcementApplication,
+  enforcementApplication, generalApplication,
   landRegistryFees,
   languageUsed,
   legalCosts, missedPayments,
   moneyOwed,
   nameAndAddressForEviction,
   repayments,
-  statementOfTruth
+  statementOfTruth, uploadStatement
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -105,7 +106,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
       await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
       await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+      await performAction('uploadStatement', {
+        continueButton: uploadStatement.continueButton,
+        nextPage: confirmHCEOfficer.mainHeader
+      });
       await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
@@ -146,9 +151,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
@@ -200,10 +205,69 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
+    });
+    await performAction('validateGetQuoteFromBailiffLink', {
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      link: enforcementApplication.quoteFromBailiffLinkHidden,
+      newPage: enforcementApplication.hceoPageTitleHidden,
+      hiddenElements: [
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youCanUseParagraphHidden
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.itsFreeListItemHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.ifYouChooseParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.ifyouAskJudgeForAWritParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youNeedToParagraphHidden
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.applyToTransferEnforcementHiddenListItem
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.askTheJudgeForAWritHiddenListItem
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.hireAPrivateListHidden
+        },
+        // {
+        //   elementType: 'listItem',
+        //   text: enforcementApplication.theyUsuallyChargeByTheHourListItemHidden
+        // },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.theAdditionalEvidenceParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youllNeedToProvideReasonsParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.theJudgeWillConsiderParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youCanContactALawyerParagraphHidden
+        }
+      ]
     });
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
@@ -291,8 +355,44 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
-      await performValidation('mainHeader', changeNameAddress.mainHeader);
-      await performAction('clickButton', changeNameAddress.continueButton);
-      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
+      await performAction('youNeedPermissionFromAJudge', {
+        continueButton: changeNameAddress.continueButton,
+        nextPage: generalApplication.mainHeader
+      });
+      await performAction('clickButton', generalApplication.continueButton);
+      await performValidation('errorMessage', { header: generalApplication.eventCouldNotBeCreatedErrorMessageHeader, message: generalApplication.errMessage });
     });
+
+  test('Writ of Possession - Breathing space: claimant selects Im not sure is directed to  screen @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
+    await performAction('selectNameAndAddressForEviction', {
+      question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+      option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('isDefendantInBreathingSpace', {
+      option: defendantInBreathingSpace.imNotSureRadioOption,
+      nextPage: breathingSpaceNotSureWrit.mainHeader
+    });
+    await performAction('clickButton', breathingSpaceNotSureWrit.previousButton);
+    await performAction('isDefendantInBreathingSpace', {
+      option: defendantInBreathingSpace.imNotSureRadioOption,
+      nextPage: breathingSpaceNotSureWrit.mainHeader
+    });
+    await performAction('clickButton', breathingSpaceNotSureWrit.continueButton);
+    await performValidation('errorMessage', { header: breathingSpaceNotSureWrit.eventCouldNotBeCreatedErrorMessageHeader, message: breathingSpaceNotSureWrit.errorMessage });
+    await performAction('clickButton', breathingSpaceNotSureWrit.cancelButton);
+    await performValidation('mainHeader', 'Summary');
+  });
 });
