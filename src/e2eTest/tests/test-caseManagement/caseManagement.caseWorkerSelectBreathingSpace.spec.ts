@@ -118,7 +118,7 @@ test(
     {
       tag: ['@CM', '@regression'],
       annotation: [
-        { type: 'jira', description: 'https://atlassian.net?' },
+        { type: 'jira', description: 'https://hmcts.atlassian.net/browse/HDPI-6289?' },
         { type: 'ac', description: 'AC06: When Mental Health Crisis Moratorium is selected, the expected end date question must not be displayed' },
       ],
     },
