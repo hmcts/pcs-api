@@ -25,4 +25,4 @@ export const breathingSpaceNotSure = {
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   errorMessage: `You cannot continue with this application while the defendants are using the Breathing Space scheme.`,
   cancelButton: 'Cancel',
-}
+};

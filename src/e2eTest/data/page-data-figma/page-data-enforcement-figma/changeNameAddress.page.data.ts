@@ -16,6 +16,4 @@ export const changeNameAddress = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
-  errMessageDynamic: `You cannot continue with this application until you ask the judge for permission to change the name and address.`
 }

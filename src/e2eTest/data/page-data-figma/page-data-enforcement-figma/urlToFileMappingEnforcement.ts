@@ -65,5 +65,6 @@ export default {
     'enforceTheOrderenforcementCannotApplyforWarrantInfo': 'cannotApplyforWarrantInfo',
     'enforceTheOrderbreathingSpaceNotSure': 'breathingSpaceNotSure',
     'enforceTheOrdergenAppHoldingPage': 'generalApplication',
-    'enforceTheOrderuploadStatementPage': 'uploadStatement'
+    'enforceTheOrderuploadStatementPage': 'uploadStatement',
+    'enforceTheOrderbreathingSpaceNotSureWrit': 'breathingSpaceNotSureWrit',
 };

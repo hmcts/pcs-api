@@ -41,3 +41,4 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForW
 export * from 'data/page-data-figma/page-data-enforcement-figma/breathingSpaceNotSure.page.data';
 export * from 'data/page-data-figma/page-data-enforcement-figma/generalApplication.page.data';
 export * from 'data/page-data-figma/page-data-enforcement-figma/uploadStatement.page.data';
+export * from 'data/page-data-figma/page-data-enforcement-figma/breathingSpaceNotSureWrit.page.data';
