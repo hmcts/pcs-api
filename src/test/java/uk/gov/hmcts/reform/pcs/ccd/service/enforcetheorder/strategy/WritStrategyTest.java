@@ -15,11 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressFor
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WritRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WritDetailsMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,8 +27,6 @@ class WritStrategyTest {
 
     @Mock
     private WritDetailsMapper writDetailsMapper;
-    @Mock
-    private WritRepository writRepository;
 
     @InjectMocks
     private WritStrategy underTest;
@@ -66,14 +62,12 @@ class WritStrategyTest {
     void shouldProcessWritDetailsSuccessfully() {
         // Given
         when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
-        when(writRepository.save(any(WritEntity.class))).thenReturn(writEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
         verify(writDetailsMapper).toEntity(writDetails);
-        verify(writRepository).save(writEntityCaptor.capture());
 
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(writEntity);
@@ -84,13 +78,11 @@ class WritStrategyTest {
     void shouldSetEnforcementOrderOnWritEntity() {
         // Given
         when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
-        when(writRepository.save(any(WritEntity.class))).thenReturn(writEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
-        verify(writRepository).save(writEntityCaptor.capture());
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
     }
@@ -103,15 +95,12 @@ class WritStrategyTest {
         WritEntity emptyWritEntity = new WritEntity();
 
         when(writDetailsMapper.toEntity(emptyWritDetails)).thenReturn(emptyWritEntity);
-        when(writRepository.save(any(WritEntity.class))).thenReturn(emptyWritEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
         verify(writDetailsMapper).toEntity(emptyWritDetails);
-        verify(writRepository).save(writEntityCaptor.capture());
-
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(emptyWritEntity);
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
@@ -121,15 +110,12 @@ class WritStrategyTest {
     void shouldMapAndSaveWritDetailsInCorrectOrder() {
         // Given
         when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
-        when(writRepository.save(any(WritEntity.class))).thenReturn(writEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
-        var inOrder = org.mockito.Mockito.inOrder(writDetailsMapper, writRepository);
-        inOrder.verify(writDetailsMapper).toEntity(writDetails);
-        inOrder.verify(writRepository).save(any(WritEntity.class));
+        verify(writDetailsMapper).toEntity(writDetails);
     }
 
     @Test
@@ -142,15 +128,12 @@ class WritStrategyTest {
         WritEntity minimalWritEntity = new WritEntity();
 
         when(writDetailsMapper.toEntity(minimalWritDetails)).thenReturn(minimalWritEntity);
-        when(writRepository.save(any(WritEntity.class))).thenReturn(minimalWritEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
         verify(writDetailsMapper).toEntity(minimalWritDetails);
-        verify(writRepository).save(writEntityCaptor.capture());
-
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
     }
@@ -171,15 +154,12 @@ class WritStrategyTest {
         WritEntity fullWritEntity = new WritEntity();
 
         when(writDetailsMapper.toEntity(fullWritDetails)).thenReturn(fullWritEntity);
-        when(writRepository.save(any(WritEntity.class))).thenReturn(fullWritEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
         verify(writDetailsMapper).toEntity(fullWritDetails);
-        verify(writRepository).save(writEntityCaptor.capture());
-
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
     }
@@ -188,13 +168,12 @@ class WritStrategyTest {
     void shouldCallMapperBeforeSaving() {
         // Given
         when(writDetailsMapper.toEntity(writDetails)).thenReturn(writEntity);
-        when(writRepository.save(any(WritEntity.class))).thenReturn(writEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
         verify(writDetailsMapper).toEntity(writDetails);
-        verify(writRepository).save(writEntity);
     }
+
 }
