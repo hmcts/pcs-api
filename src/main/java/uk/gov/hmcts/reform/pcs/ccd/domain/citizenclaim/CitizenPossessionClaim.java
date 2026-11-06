@@ -27,6 +27,9 @@ public class CitizenPossessionClaim implements HasDraftVersion {
 
     private VerticalYesNo additionalDefendants;
 
+    // Draft only: the frontend's record of the claimant confirming there are no more defendants
+    private VerticalYesNo defendantsConfirmed;
+
     private CitizenClaimTenancy tenancy;
 
     private CitizenClaimGrounds grounds;

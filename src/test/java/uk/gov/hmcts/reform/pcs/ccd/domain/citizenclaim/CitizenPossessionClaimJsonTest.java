@@ -69,4 +69,18 @@ class CitizenPossessionClaimJsonTest {
         assertThat(restored.getCitizenPossessionClaim()).isEqualTo(pcsCase.getCitizenPossessionClaim());
     }
 
+    @Test
+    void shouldRoundTripDefendantsConfirmedThroughTheDraftStore() throws Exception {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.setDefendantsConfirmed(VerticalYesNo.YES);
+        PCSCase pcsCase = PCSCase.builder().citizenPossessionClaim(claim).build();
+
+        String stored = objectMapper.writeValueAsString(pcsCase);
+        PCSCase restored = objectMapper.readValue(stored, PCSCase.class);
+
+        assertThat(objectMapper.readTree(stored).at("/citizenPossessionClaim/defendantsConfirmed").asText())
+            .isEqualTo("YES");
+        assertThat(restored.getCitizenPossessionClaim().getDefendantsConfirmed()).isEqualTo(VerticalYesNo.YES);
+    }
+
 }
