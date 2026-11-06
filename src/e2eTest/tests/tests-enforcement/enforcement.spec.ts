@@ -2,7 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary } from '@data/page-data';
+import {addressDetails, caseSummary} from '@data/page-data';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -38,7 +38,12 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWarrantInfo, breathingSpaceNotSure,
+  statementOfTruth,
+  defendantInBreathingSpace,
+  missedPayments,
+  cannotApplyForWarrantInfo,
+  breathingSpaceNotSure,
+  generalApplication, uploadStatement,
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -175,7 +180,11 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
       await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
       await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader});
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+      await performAction('uploadStatement', {
+        continueButton: uploadStatement.continueButton,
+        nextPage: nameAndAddressForEviction.mainHeader
+      });
       await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
@@ -358,7 +367,11 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       nextPage: defendantInBreathingSpace.mainHeader
     });
     await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-    await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+    await performAction('uploadStatement', {
+      continueButton: uploadStatement.continueButton,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
@@ -476,7 +489,11 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       nextPage: defendantInBreathingSpace.mainHeader
     });
     await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.yesRadioOption, nextPage: missedPayments.mainHeader});
-    await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+    await performAction('uploadStatement', {
+      continueButton: uploadStatement.continueButton,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
@@ -597,15 +614,23 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         nextPage: defendantInBreathingSpace.mainHeader
       });
       await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader});
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+      await performAction('uploadStatement', {
+        continueButton: uploadStatement.continueButton,
+        nextPage: nameAndAddressForEviction.mainHeader
+      });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
-      await performAction('clickButton', changeNameAddress.continueButton);
-      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
+      await performAction('youNeedPermissionFromAJudge', {
+        continueButton: changeNameAddress.continueButton,
+        nextPage: generalApplication.mainHeader
+      });
+      await performAction('clickButton', generalApplication.continueButton);
+      await performValidation('errorMessage', { header: generalApplication.eventCouldNotBeCreatedErrorMessageHeader, message: generalApplication.errMessage });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement',
@@ -629,7 +654,11 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
       await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.yesRadioOption, nextPage: missedPayments.mainHeader});
       await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader});
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+      await performAction('uploadStatement', {
+        continueButton: uploadStatement.continueButton,
+        nextPage: nameAndAddressForEviction.mainHeader
+      });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
@@ -766,7 +795,11 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         nextPage: defendantInBreathingSpace.mainHeader,
       });
       await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.yesRadioOption, nextPage: missedPayments.mainHeader});
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader});
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+      await performAction('uploadStatement', {
+        continueButton: uploadStatement.continueButton,
+        nextPage: nameAndAddressForEviction.mainHeader
+      });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,

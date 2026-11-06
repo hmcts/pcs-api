@@ -87,6 +87,8 @@ export class EnforcementAction implements IAction{
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
+      ['youNeedPermissionFromAJudge', () => this.youNeedPermissionFromAJudge(fieldName as actionRecord)],
+      ['uploadStatement', () => this.uploadStatement(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -152,6 +154,12 @@ export class EnforcementAction implements IAction{
     await performAction('expandSummary', missedPayments.iWantToSaveThisApplicationAndReturnToItLaterLink);
     await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
     await performAction('reTryOnCallBackError', missedPayments.continueButton, missedPaymentsData.nextPage as string);
+  }
+
+  private async uploadStatement(uploadStatementData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('reTryOnCallBackError', uploadStatementData.continueButton, uploadStatementData.nextPage as string);
   }
 
   private async validateCannotApplyForWarrant(cannotApplyForWarrantData: actionRecord) {
@@ -246,6 +254,14 @@ export class EnforcementAction implements IAction{
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
   }
+
+  private async youNeedPermissionFromAJudge(permissionFromJudgeData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('reTryOnCallBackError', permissionFromJudgeData.continueButton, permissionFromJudgeData.nextPage as string);
+  }
+
+
 
   private async confirmDefendantsDOB(confirmDefendantsDateOfBirth: actionRecord, page: Page) {
     await this.addFieldsToMap(confirmDefendantsDateOfBirth);
