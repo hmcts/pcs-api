@@ -25,7 +25,7 @@ import { home } from '@data/page-data';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 test.use({ storageState: undefined });
-
+let doYouNeedHelpPayingTheFeeSetaside: ReturnType<typeof helpPayingTheFee>;
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -54,6 +54,7 @@ test.beforeEach(async ({ page, context }) => {
   await page.waitForLoadState();
   await page.locator('.spinner-container').waitFor({ state: 'detached' });
   await performValidation('mainHeader', home.caseSummary);
+  doYouNeedHelpPayingTheFeeSetaside = helpPayingTheFee(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -83,10 +84,11 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: selectParty.partyMakingApplicationQuestion,
       option: defendantDetails[0],
     });
-    await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performValidation('mainHeader', doYouNeedHelpPayingTheFeeSetaside.mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
-      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee.noRadioOption,
+      question: doYouNeedHelpPayingTheFeeSetaside.doYouNeedHelpPayingTheFeeQuestion,
+      option: doYouNeedHelpPayingTheFeeSetaside.noRadioOption,
+      continueButton: doYouNeedHelpPayingTheFeeSetaside.continueButton
     });
     await performAction('confirmOtherPartiesAgreed', {
       question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,

@@ -27,7 +27,7 @@ import { home } from '@data/page-data';
 
 
 test.use({ storageState: undefined })
-
+let doYouNeedHelpPayingTheFeeAdjourn: ReturnType<typeof helpPayingTheFee>;
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -65,6 +65,7 @@ test.beforeEach(async ({ page, context }) => {
   await page.waitForLoadState();
   await page.locator('.spinner-container').waitFor({ state: 'detached' });
   await performValidation('mainHeader', home.caseSummary);
+  doYouNeedHelpPayingTheFeeAdjourn = helpPayingTheFee(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -95,10 +96,11 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
       option: isTheCourtHearingInTheNext14Days.yesRadioOption,
     });
-    await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performValidation('mainHeader', doYouNeedHelpPayingTheFeeAdjourn.mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
-      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee.yesRadioOption,
+      question: doYouNeedHelpPayingTheFeeAdjourn.doYouNeedHelpPayingTheFeeQuestion,
+      option: doYouNeedHelpPayingTheFeeAdjourn.yesRadioOption,
+      continueButton: doYouNeedHelpPayingTheFeeAdjourn.continueButton
     });
     await performAction('confirmYouHaveAppliedForFeeHelp', {
       question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
@@ -168,10 +170,10 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No]',
     question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
     option: isTheCourtHearingInTheNext14Days.yesRadioOption,
   });
-  await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+  await performValidation('mainHeader', helpPayingTheFee('LR').mainHeader);
   await performAction('doYouNeedHelpPayingFee', {
-    question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-    option: helpPayingTheFee.noRadioOption,
+    question: helpPayingTheFee('LR').doYouNeedHelpPayingTheFeeQuestion,
+    option: helpPayingTheFee('LR').noRadioOption,
   });
   await performValidation('mainHeader',hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
   await performAction('confirmOtherPartiesAgreed', {
