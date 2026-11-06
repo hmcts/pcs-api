@@ -439,6 +439,7 @@ ccd:
       first-name: PCS
       last-name: System
   bundling:
+    enabled: ${CASE_BUNDLE_ENABLED:false}
     managed:
       enabled: ${CASE_BUNDLE_ENABLED:false}
     job:
