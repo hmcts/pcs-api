@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
@@ -16,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
-import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotRequestedFee;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
 import java.io.IOException;
@@ -55,8 +54,6 @@ public class ExportService {
     private final String environment;
     static final int EXPORT_CHUNK_SIZE = 200;
 
-    private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
-
     public ExportService(SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository,
                          SnapshotMapper claimSnapshotMapper,
                          ClaimSnapshotFileWriter claimSnapshotFileWriter,
@@ -80,7 +77,7 @@ public class ExportService {
         log.info("SDP claim snapshot export started: {} claim(s)", ids.size());
         final String publishedDate = Instant.now(utcClock).toString();
         LocalDateTime now = LocalDateTime.now(utcClock);
-        String filename = "claim_snapshot_" + extractDate + ".json";
+        String filename = snapshotFilename(extractDate);
         Path snapshotFile = createSnapshotFile();
         try {
             int recordCount = writeSnapshotFile(snapshotFile, ids, extractDate, publishedDate, now);
@@ -92,6 +89,13 @@ public class ExportService {
         } finally {
             deleteSnapshotFile(snapshotFile);
         }
+    }
+
+    private String snapshotFilename(String extractDate) {
+        if ("preview".equals(environment)) {
+            return "claim_snapshot_preview_" + extractDate + ".json";
+        }
+        return "claim_snapshot_" + extractDate + ".json";
     }
 
     private int writeSnapshotFile(Path snapshotFile,
@@ -201,6 +205,15 @@ public class ExportService {
             header.caseManagementLocation() != null ? String.valueOf(header.caseManagementLocation()) : null,
             header.legislativeCountry()
         );
+        dimensions.setPropertyAddress(claimSnapshotMapper.mapPropertyAddress(
+            header.addressLine1(),
+            header.addressLine2(),
+            header.addressLine3(),
+            header.postTown(),
+            header.county(),
+            header.country(),
+            header.postcode()
+        ));
 
         SnapshotMilestones milestones = claimSnapshotMapper.mapMilestones(
             header.servingMethod(),
@@ -216,20 +229,21 @@ public class ExportService {
             UUID.randomUUID().toString(),
             publishedDate,
             ClaimSnapshot.builder()
-                .claimReference(caseReferenceFormatter.formatCaseReferenceWithDashes(header.caseReference()))
+                .claimReference(formatClaimReference(header.caseReference()))
                 .snapshotVersion(0)
                 .recordedDate(formatDateTime(header.claimSubmittedDate()))
                 .dimensions(dimensions)
                 .milestones(milestones)
-                .parties(mapParties(parties, header.claimantType()))
-                .paymentReferences(mapPayments(payments))
+                .parties(mapParties(parties, header.claimantType(), header.languageUsed()))
+                .requestedFees(mapRequestedFees(payments))
                 .grounds(mapGrounds(grounds))
                 .responses(mapResponses(responses))
                 .build()
         );
     }
 
-    private List<SnapshotParty> mapParties(List<SdpClaimSnapshotParty> parties, String claimantType) {
+    private List<SnapshotParty> mapParties(List<SdpClaimSnapshotParty> parties, String claimantType,
+                                          String languageUsed) {
         if (parties == null || parties.isEmpty()) {
             return List.of();
         }
@@ -242,22 +256,20 @@ public class ExportService {
                 party.partyId().toString(),
                 party.role(),
                 claimantType,
-                party.represented()
+                party.represented(),
+                languageUsed
             ));
         }
         return mapped;
     }
 
-    private List<SnapshotPaymentReference> mapPayments(List<SdpClaimSnapshotPayment> payments) {
+    private List<SnapshotRequestedFee> mapRequestedFees(List<SdpClaimSnapshotPayment> payments) {
         if (payments == null || payments.isEmpty()) {
             return List.of();
         }
-        List<SnapshotPaymentReference> mapped = new ArrayList<>();
+        List<SnapshotRequestedFee> mapped = new ArrayList<>();
         for (SdpClaimSnapshotPayment payment : payments) {
-            if (payment.externalReference() == null || payment.externalReference().isBlank()) {
-                continue;
-            }
-            mapped.add(claimSnapshotMapper.mapPayment(payment.externalReference()));
+            mapped.add(claimSnapshotMapper.mapRequestedFee(payment, formatDateTime(payment.requestDate())));
         }
         return mapped;
     }
@@ -311,5 +323,9 @@ public class ExportService {
 
     private static String formatDateTime(LocalDateTime dateTime) {
         return dateTime == null ? null : dateTime.toInstant(ZoneOffset.UTC).toString();
+    }
+
+    private static String formatClaimReference(Long caseReference) {
+        return caseReference == null ? null : String.format("%016d", caseReference);
     }
 }

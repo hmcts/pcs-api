@@ -21,7 +21,8 @@ public class SdpClaimSnapshotJdbcRepository {
 
     private static final String CLAIM_ID = "claim_id";
 
-    // Claim, case, tenancy and notice fields for the snapshot, plus the current version if already exported.
+    // Claim, case, tenancy, notice and property address fields for the snapshot,
+    // plus the current version if already exported.
     private static final String HEADER_SQL = """
         SELECT DISTINCT c.id AS claim_id,
                c.claimant_type,
@@ -35,12 +36,20 @@ public class SdpClaimSnapshotJdbcRepository {
                tl.type AS tenancy_type,
                n.serving_method,
                n.notice_date,
-               s.snapshot_version
+               s.snapshot_version,
+               a.address_line1,
+               a.address_line2,
+               a.address_line3,
+               a.post_town,
+               a.county,
+               a.country,
+               a.postcode
         FROM claim c
         JOIN pcs_case pc ON pc.id = c.case_id
         LEFT JOIN tenancy_licence tl ON tl.case_id = pc.id
         LEFT JOIN notice_of_possession n ON n.claim_id = c.id
         LEFT JOIN sdp_claim_snapshot s ON s.claim_id = c.id
+        LEFT JOIN address a ON a.id = pc.property_address_id
         WHERE c.id IN (:ids)
         """;
 
@@ -107,8 +116,13 @@ public class SdpClaimSnapshotJdbcRepository {
     // Fee payments linked to the claim.
     private static final String PAYMENT_SQL = """
         SELECT fp.possession_claim_id AS claim_id,
+               fp.id,
+               fp.party_id,
+               fp.service_request_reference,
                fp.external_reference,
+               fp.amount,
                fp.status,
+               fp.payment_callback_handler_type,
                fp.request_date
         FROM fee_payment fp
         WHERE fp.possession_claim_id IN (:ids)
@@ -203,7 +217,14 @@ public class SdpClaimSnapshotJdbcRepository {
             rs.getString("tenancy_type"),
             rs.getString("serving_method"),
             rs.getObject("notice_date", LocalDate.class),
-            rs.getObject("snapshot_version", Integer.class)
+            rs.getObject("snapshot_version", Integer.class),
+            rs.getString("address_line1"),
+            rs.getString("address_line2"),
+            rs.getString("address_line3"),
+            rs.getString("post_town"),
+            rs.getString("county"),
+            rs.getString("country"),
+            rs.getString("postcode")
         );
     }
 
@@ -219,8 +240,13 @@ public class SdpClaimSnapshotJdbcRepository {
     private SdpClaimSnapshotPayment mapPayment(ResultSet rs, int rowNum) throws SQLException {
         return new SdpClaimSnapshotPayment(
             rs.getObject(CLAIM_ID, UUID.class),
+            rs.getObject("id", Integer.class),
+            rs.getObject("party_id", UUID.class),
+            rs.getString("service_request_reference"),
             rs.getString("external_reference"),
+            rs.getBigDecimal("amount"),
             rs.getString("status"),
+            rs.getString("payment_callback_handler_type"),
             toLocalDateTime(rs, "request_date")
         );
     }
