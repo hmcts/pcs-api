@@ -43,7 +43,7 @@ public class WarrantDetails {
     private NameAndAddressForEviction nameAndAddressForEviction;
 
     @CCD(
-        label = "Is the defendant currently in a Breathing Space moratorium?"
+        label = "Is the defendant in a Breathing Space moratorium?"
     )
     private YesNoNotSure defendantInBreathingSpace;
 
