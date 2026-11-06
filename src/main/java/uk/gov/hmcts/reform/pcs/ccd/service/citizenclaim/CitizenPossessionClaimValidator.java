@@ -129,9 +129,23 @@ public class CitizenPossessionClaimValidator {
         }
         errors.addAll(requireAddress("claimant.address", claimant.getAddress()));
         errors.addAll(validateAddressLengths("claimant.address", claimant.getAddress()));
-        maxLength(errors, "claimant.emailAddress", claimant.getEmailAddress(), EMAIL_MAX);
-        maxLength(errors, "claimant.phoneNumber", claimant.getPhoneNumber(), NAME_MAX);
+        // contactByEmail YES means the account email, NO a different one given in emailAddress
+        if (claimant.getContactByEmail() != null) {
+            requireText(errors, "claimant.emailAddress", claimant.getEmailAddress(), EMAIL_MAX);
+        } else {
+            maxLength(errors, "claimant.emailAddress", claimant.getEmailAddress(), EMAIL_MAX);
+        }
+        if (claimant.getContactByPhone() == VerticalYesNo.YES) {
+            requireText(errors, "claimant.phoneNumber", claimant.getPhoneNumber(), NAME_MAX);
+        } else {
+            maxLength(errors, "claimant.phoneNumber", claimant.getPhoneNumber(), NAME_MAX);
+        }
         maxLength(errors, "claimant.textMessageNumber", claimant.getTextMessageNumber(), NAME_MAX);
+        if (claimant.getContactByText() == VerticalYesNo.YES
+            && StringUtils.isBlank(claimant.getTextMessageNumber())
+            && StringUtils.isBlank(claimant.getPhoneNumber())) {
+            errors.add(required("claimant.textMessageNumber"));
+        }
     }
 
     private static void validateDefendants(CitizenPossessionClaim claim, List<String> errors) {
@@ -248,6 +262,8 @@ public class CitizenPossessionClaimValidator {
         }
         if (notice.getNoticeServed() == VerticalYesNo.YES) {
             validateServedNotice(notice, errors);
+        } else {
+            maxLength(errors, "notice.noNoticeReason", notice.getNoNoticeReason(), REASON_MAX);
         }
         maxLength(errors, "notice.noticeUnavailableReason", notice.getNoticeUnavailableReason(), REASON_MAX);
         maxLength(errors, "notice.handedToName", notice.getHandedToName(), SHORT_TEXT_MAX);

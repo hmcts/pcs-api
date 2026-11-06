@@ -399,6 +399,62 @@ class CitizenPossessionClaimValidatorTest {
         assertThat(validate(claim)).isEmpty();
     }
 
+    @Test
+    void shouldNeedTheEmailAddressWhicheverEmailAnswerWasGiven() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setEmailAddress(null);
+        assertThat(validate(claim)).containsExactly("REQUIRED:claimant.emailAddress");
+
+        claim.getClaimant().setContactByEmail(VerticalYesNo.NO);
+        assertThat(validate(claim)).containsExactly("REQUIRED:claimant.emailAddress");
+
+        claim.getClaimant().setContactByEmail(null);
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldNeedThePhoneNumberWhenContactByPhoneIsYes() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setPhoneNumber(" ");
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:claimant.phoneNumber");
+    }
+
+    @Test
+    void shouldAcceptTextsToThePhoneNumberWhenNoTextNumberIsGiven() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+        claim.getClaimant().setTextMessageNumber(null);
+
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldNeedATextNumberWhenThereIsNoPhoneNumberToTextInstead() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
+        claim.getClaimant().setPhoneNumber(null);
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:claimant.textMessageNumber");
+
+        claim.getClaimant().setTextMessageNumber("07700900111");
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldLimitTheNoNoticeReasonOnlyWhenNoNoticeWasServed() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoNoticeReason("x".repeat(501));
+        assertThat(validate(claim)).isEmpty();
+
+        claim.getNotice().setNoticeServed(VerticalYesNo.NO);
+        assertThat(validate(claim)).containsExactly("TOO_LONG:notice.noNoticeReason");
+
+        claim.getNotice().setNoNoticeReason("x".repeat(500));
+        assertThat(validate(claim)).isEmpty();
+    }
+
     private static String emailOfLength(int length) {
         String domain = "@test.test";
         return "x".repeat(length - domain.length()) + domain;

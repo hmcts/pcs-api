@@ -374,6 +374,32 @@ class CitizenPossessionClaimSubmitServiceTest {
     }
 
     @Test
+    void shouldTextThePhoneNumberWhenNoTextNumberIsGiven() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+        claim.getClaimant().setTextMessageNumber(null);
+
+        submit(claim);
+
+        assertThat(claimantStub.getTextMessageNumber()).isEqualTo("07700900000");
+        assertThat(claimantStub.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(claimantStub.getPhoneNumber()).isNull();
+    }
+
+    @Test
+    void shouldRecordEmailUpdatesForAnAddressOtherThanTheAccountEmail() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByEmail(VerticalYesNo.NO);
+        claim.getClaimant().setEmailAddress("other@example.com");
+
+        submit(claim);
+
+        assertThat(claimantStub.getEmailAddress()).isEqualTo("other@example.com");
+        assertThat(claimantStub.getContactPreferences().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
     void shouldStoreTheClaimantAddressThroughThePartyService() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
 

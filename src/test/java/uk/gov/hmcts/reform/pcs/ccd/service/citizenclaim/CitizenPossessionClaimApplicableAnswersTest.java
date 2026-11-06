@@ -170,6 +170,29 @@ class CitizenPossessionClaimApplicableAnswersTest {
             .containsExactly(PrivateLandlordAssuredGround.GROUND_1A, PrivateLandlordAssuredGround.GROUND_14);
     }
 
+    @Test
+    void shouldKeepThePhoneNumberWhenTextsGoToIt() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+        claim.getClaimant().setTextMessageNumber(null);
+
+        assertThat(underTest.of(claim).getClaimant().getPhoneNumber()).isEqualTo("07700900000");
+    }
+
+    @Test
+    void shouldDropThePhoneNumberWhenNeitherCallsNorTextsUseIt() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setContactByPhone(VerticalYesNo.NO);
+        claim.getClaimant().setContactByText(VerticalYesNo.YES);
+        claim.getClaimant().setTextMessageNumber("07700900111");
+
+        CitizenPossessionClaim applicable = underTest.of(claim);
+
+        assertThat(applicable.getClaimant().getPhoneNumber()).isNull();
+        assertThat(applicable.getClaimant().getTextMessageNumber()).isEqualTo("07700900111");
+    }
+
     private static ListValue<CitizenClaimGroundReason> reason(PrivateLandlordAssuredGround ground, String reason) {
         return ListValue.<CitizenClaimGroundReason>builder()
             .value(CitizenClaimGroundReason.builder().ground(ground).reason(reason).build())

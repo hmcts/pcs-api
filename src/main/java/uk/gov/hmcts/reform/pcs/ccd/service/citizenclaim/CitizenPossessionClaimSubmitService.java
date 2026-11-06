@@ -458,7 +458,7 @@ public class CitizenPossessionClaimSubmitService {
 
         ContactPreferencesEntity preferences = Optional.ofNullable(party.getContactPreferences())
             .orElseGet(ContactPreferencesEntity::new);
-        preferences.setContactByEmail(claimant.getContactByEmail());
+        preferences.setContactByEmail(VerticalYesNo.from(StringUtils.isNotBlank(claimant.getEmailAddress())));
         preferences.setContactByPhone(claimant.getContactByPhone());
         preferences.setContactByText(claimant.getContactByText());
         preferences.setContactByPost(VerticalYesNo.YES);

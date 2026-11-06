@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
@@ -75,7 +76,10 @@ public class CitizenPossessionClaimApplicableAnswers {
         } else if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.INDIVIDUAL) {
             claimant.setOrganisationName(null);
         }
-        if (claimant.getContactByPhone() != VerticalYesNo.YES) {
+        // A text-message number left blank means "text the phone number I gave"
+        boolean textsGoToPhoneNumber = claimant.getContactByText() == VerticalYesNo.YES
+            && StringUtils.isBlank(claimant.getTextMessageNumber());
+        if (claimant.getContactByPhone() != VerticalYesNo.YES && !textsGoToPhoneNumber) {
             claimant.setPhoneNumber(null);
         }
         if (claimant.getContactByText() != VerticalYesNo.YES) {
