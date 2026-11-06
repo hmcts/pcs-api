@@ -208,4 +208,10 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         claimService.setClaimIssuedDate(pcsCaseEntity.getClaims().getFirst());
     }
+
+    public ClaimEntity retrieveClaimEntity(Long caseReference) {
+        PcsCaseEntity pcsCaseEntity = this.loadCase(caseReference);
+        // Assuming 1 claim per PcsCase
+        return pcsCaseEntity.getClaims().getFirst();
+    }
 }
