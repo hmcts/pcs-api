@@ -169,14 +169,13 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    await performValidation('elementToBeVisible', enterBreathingSpace.mentalHealthRadioOption);
-    await performValidation('elementToBeVisible', enterBreathingSpace.standardBreathingSpaceRadioOption);
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.referenceNumberTextLabel });
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenDidBreathingSpaceStartQuestion });
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.youShouldEnterStartDateHintText });
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whichTypeOfBreathingSpace });
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.standardBreathingSpaceHintText });
+    await performValidation('elementToBeVisible', enterBreathingSpace.mentalHealthRadioOption);
+    await performValidation('elementToBeVisible', enterBreathingSpace.standardBreathingSpaceRadioOption);
     await performValidation('elementNotToBeVisible', enterBreathingSpace.previousButton);
   }
   private async selectBreathingSpaceType(details: any): Promise<void> {
