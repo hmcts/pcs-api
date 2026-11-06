@@ -14,9 +14,11 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -284,7 +286,6 @@ class AccessCodeFormDocumentGeneratorTest {
             eq(OutputType.PDF),
             eq("Defendant Access Code Welsh " + defendant.getId())
         );
-        assertThat(capturedPayload().getCourtName()).isNull();
     }
 
     @Test
@@ -364,11 +365,10 @@ class AccessCodeFormDocumentGeneratorTest {
             .generateDocument(payloadCaptor.capture(), anyString(), any(), anyString());
         AccessCodeFormPayload englishPayload = (AccessCodeFormPayload) payloadCaptor.getAllValues().get(0);
         AccessCodeFormPayload welshPayload = (AccessCodeFormPayload) payloadCaptor.getAllValues().get(1);
-        assertThat(welshPayload).usingRecursiveComparison().ignoringFields("courtName").isEqualTo(englishPayload);
+        assertThat(welshPayload).usingRecursiveComparison().isEqualTo(englishPayload);
         assertThat(welshPayload.getAccessCode()).isEqualTo("PLAINTEXTPIN1");
         assertThat(welshPayload.getDefendantName()).isEqualTo("John Doe");
         assertThat(welshPayload.getDefendantAddress()).isEqualTo(PARTY_ADDRESS);
-        assertThat(welshPayload.getCourtName()).isNull();
         assertThat(englishPayload.getCourtName()).isEqualTo(release14Enabled ? "Central London County Court" : null);
     }
 
@@ -414,6 +414,22 @@ class AccessCodeFormDocumentGeneratorTest {
         assertThat(payload.getRespondByPostCourtAddress())
             .isEqualTo("Cardiff Civil Justice Centre\n2 Park Street\nCF10 1ET");
         assertThat(payload.getCourtName()).isEqualTo("Cardiff Civil Justice Centre");
+    }
+
+    @Test
+    void shouldMarkOnlyTheWelshLetterByFileName() {
+        UUID partyId = UUID.randomUUID();
+        String welshFileName = AccessCodeFormDocumentGenerator.welshFileName(partyId);
+
+        assertThat(welshFileName).isEqualTo("Defendant Access Code Welsh " + partyId);
+        assertThat(AccessCodeFormDocumentGenerator.isWelshLetter(letterNamed(welshFileName))).isTrue();
+        assertThat(AccessCodeFormDocumentGenerator.isWelshLetter(letterNamed(null))).isFalse();
+        assertThat(AccessCodeFormDocumentGenerator.isWelshLetter(letterNamed("Defendant Access Code " + partyId)))
+            .isFalse();
+    }
+
+    private static DocumentEntity letterNamed(String fileName) {
+        return DocumentEntity.builder().type(DocumentType.DEFENDANT_ACCESS_CODE).fileName(fileName).build();
     }
 
     private String render(PcsCaseEntity caseEntity, PartyEntity defendant, AccessCodeLetterLanguage language) {

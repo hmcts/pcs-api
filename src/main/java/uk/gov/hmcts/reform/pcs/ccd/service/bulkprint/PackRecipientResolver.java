@@ -119,7 +119,6 @@ public class PackRecipientResolver {
         return resolved == null ? null : addressMapper.toAddressUK(resolved);
     }
 
-    // Claimant: CPC-01-IN0 everywhere. Defendant: the bilingual CPD-01-IN4 pack in Wales, CPD-01-IN1 elsewhere.
     private LetterType claimLetterType(PartyRole role, PcsCaseEntity pcsCase) {
         if (role == PartyRole.CLAIMANT) {
             return LetterType.CLAIMANT_CLAIM_PACK;

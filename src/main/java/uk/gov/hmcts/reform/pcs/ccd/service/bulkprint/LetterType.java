@@ -14,7 +14,6 @@ public enum LetterType {
 
     CLAIMANT_CLAIM_PACK("CPC-01-IN0"),
     DEFENDANT_CLAIM_PACK("CPD-01-IN1"),
-    // Bilingual defendant claim pack for a property in Wales (HDPI-9698).
     DEFENDANT_CLAIM_PACK_WELSH("CPD-01-IN4"),
     DEFENCE_PACK("DEF-01-IN0"),
     DEFENCE_PACK_LEGAL_REP("DEF-01-IN1"),

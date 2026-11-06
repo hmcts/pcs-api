@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
-import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -175,7 +175,7 @@ class DocumentsViewTest {
     void shouldExcludeTheWelshAccessCodeLetterFromCaseFile() {
         DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName(AccessCodeDocuments.welshFileName(UUID.randomUUID()))
+            .fileName(AccessCodeFormDocumentGenerator.welshFileName(UUID.randomUUID()))
             .url("welsh-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
@@ -205,7 +205,7 @@ class DocumentsViewTest {
             .build();
         DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName(AccessCodeDocuments.welshFileName(partyId))
+            .fileName(AccessCodeFormDocumentGenerator.welshFileName(partyId))
             .url("welsh-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();

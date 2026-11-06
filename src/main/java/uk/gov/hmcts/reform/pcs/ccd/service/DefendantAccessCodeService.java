@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator.LetterContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
@@ -86,18 +85,14 @@ public class DefendantAccessCodeService {
         ClaimEntity mainClaim = getMainClaim(pcsCaseEntity);
         PartyEntity defendant = findDefendant(mainClaim, defendantPartyId);
 
-        // A defendant on a Wales case gets an English and a Welsh letter carrying the same code (HDPI-9698 D1).
         boolean walesCase = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
         AccessCodeLetterLanguage rendering = null;
 
         try {
-            // One court lookup and one issue date for all of this defendant's letters (HDPI-9698 R2). A failure
-            // here belongs to no single letter, so it carries no language prefix.
             final LetterContext letterContext = accessCodeFormDocumentGenerator.resolveLetterContext(pcsCaseEntity);
             String plaintextAccessCode = accessCodeGenerator.generateAccessCode();
 
-            // Render every letter before saving anything: a failed render leaves no document or code behind,
-            // so the retry starts again with a fresh code and renders both letters.
+            // Render every letter before saving anything, so a failure leaves no document or code behind.
             rendering = ENGLISH;
             String englishUrl = accessCodeFormDocumentGenerator
                 .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, ENGLISH, letterContext);
@@ -111,7 +106,8 @@ public class DefendantAccessCodeService {
 
             saveLetter(pcsCaseEntity, defendant, englishUrl, null);
             if (welshUrl != null) {
-                saveLetter(pcsCaseEntity, defendant, welshUrl, AccessCodeDocuments.welshFileName(defendant.getId()));
+                saveLetter(pcsCaseEntity, defendant, welshUrl,
+                           AccessCodeFormDocumentGenerator.welshFileName(defendant.getId()));
             }
 
             partyAccessCodeRepo.save(
@@ -153,8 +149,7 @@ public class DefendantAccessCodeService {
         }
     }
 
-    // Names the letter that failed to render on a Wales case, which has two letters. England has one letter, so its
-    // failure detail stays exactly as today; so does a failure after both renders (a save), which no language caused.
+    // Only a Wales render failure names its letter; England's failure detail is unchanged.
     private static String failedLetter(AccessCodeLetterLanguage rendering, boolean walesCase) {
         return walesCase && rendering != null ? rendering.getLabel() + " letter" : null;
     }

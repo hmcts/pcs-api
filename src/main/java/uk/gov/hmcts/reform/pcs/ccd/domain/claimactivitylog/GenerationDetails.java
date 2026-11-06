@@ -24,10 +24,6 @@ public record GenerationDetails(DocumentType documentType,
         return forFailure(documentType, cause, terminal, null);
     }
 
-    /**
-     * As {@link #forFailure(DocumentType, Throwable, boolean)}, with {@code context} (for example "Welsh letter")
-     * put in front of the error detail. The reason is still classified from {@code cause} alone.
-     */
     public static GenerationDetails forFailure(DocumentType documentType, Throwable cause, boolean terminal,
                                                String context) {
         return new GenerationDetails(documentType, FailureReasons.from(cause), terminal, describe(cause, context));

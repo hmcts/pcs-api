@@ -9,9 +9,8 @@ import java.io.InputStream;
 
 /**
  * Loads and caches the static blank forms enclosed in defendant claim packs:
- * ONC 002R (Defence form) and ONC 003 (Counterclaim form), plus their Welsh versions, ONC 002RW and the
- * Welsh ONC 003, for packs to a property in Wales. All forms are read from classpath resources at startup
- * and held in memory so bulk print dispatches avoid repeated disk I/O.
+ * ONC 002R (Defence form) and ONC 003 (Counterclaim form), and their Welsh versions. All forms are read from
+ * classpath resources at startup and held in memory so bulk print dispatches avoid repeated disk I/O.
  */
 @Service
 public class BlankClaimPackFormsProvider {

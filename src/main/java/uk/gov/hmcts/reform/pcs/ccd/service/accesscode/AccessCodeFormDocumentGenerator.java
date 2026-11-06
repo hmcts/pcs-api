@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -28,11 +29,11 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * Renders a defendant access-code letter via Doc Assembly / Docmosis: English for every
- * defendant, and Welsh as well on a Wales case.
+ * Renders a defendant access-code letter via Doc Assembly / Docmosis, in English or Welsh.
  */
 @Service
 @Slf4j
@@ -42,8 +43,9 @@ public class AccessCodeFormDocumentGenerator {
     static final String TEMPLATE_ID_V2 = "CV-PCS-LET-ENG-Defendant-Access-Code-V2.docx";
     static final String WELSH_TEMPLATE_ID = "CV-PCS-LET-WEL-Defendant-Access-Code.docx";
     private static final String OUTPUT_FILENAME_PREFIX = "Defendant Access Code";
+    private static final String WELSH_OUTPUT_FILENAME_PREFIX = OUTPUT_FILENAME_PREFIX + " Welsh";
     private static final String PERSONS_UNKNOWN = "Persons unknown";
-    // Supplied in Jira HDPI-9698. Welsh text: never edit or translate.
+    // Welsh text supplied by WLU via Jira: never edit or translate.
     private static final String PERSONS_UNKNOWN_WELSH = "Unigolion yn anhysbys";
 
     private final DocAssemblyService docAssemblyService;
@@ -78,11 +80,15 @@ public class AccessCodeFormDocumentGenerator {
         this.featureToggleService = featureToggleService;
     }
 
-    /**
-     * Resolves what every letter for a defendant shares: the respond-by-post court (a location reference lookup) and
-     * the issue date. Call it once per defendant and pass the result to each {@link #generate} call, so a Wales
-     * defendant's English and Welsh letters show the same court and date and the court is looked up once.
-     */
+    public static String welshFileName(UUID partyId) {
+        return WELSH_OUTPUT_FILENAME_PREFIX + " " + partyId;
+    }
+
+    // Both letters have type DEFENDANT_ACCESS_CODE. The file name marks the Welsh one; the English one's is null.
+    public static boolean isWelshLetter(DocumentEntity document) {
+        return StringUtils.startsWith(document.getFileName(), WELSH_OUTPUT_FILENAME_PREFIX);
+    }
+
     public LetterContext resolveLetterContext(PcsCaseEntity pcsCaseEntity) {
         return new LetterContext(resolveServingCourt(pcsCaseEntity), LocalDate.now(ukClock));
     }
@@ -94,11 +100,9 @@ public class AccessCodeFormDocumentGenerator {
                            AccessCodeLetterLanguage language,
                            LetterContext context) {
 
-        boolean welsh = language == AccessCodeLetterLanguage.WELSH;
-        // The Welsh template has no V2 and no courtName tag, so release 1.4 changes only the English letter.
-        boolean englishV2 = !welsh && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
         String formattedPropertyAddress = formatAddress(pcsCaseEntity.getPropertyAddress());
         CourtVenue servingCourt = context.servingCourt();
+        boolean welsh = language == AccessCodeLetterLanguage.WELSH;
 
         AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCaseEntity.getCaseReference()))
@@ -110,22 +114,20 @@ public class AccessCodeFormDocumentGenerator {
             .accessCode(plaintextAccessCode)
             .issuedOn(context.issuedOn())
             .url(respondOnlineUrl)
-            .courtName(englishV2 ? servingCourt.courtName() : null)
+            .courtName(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? servingCourt.courtName() : null)
             .build();
 
         String outputFilename = welsh
-            ? AccessCodeDocuments.welshFileName(defendant.getId())
+            ? welshFileName(defendant.getId())
             : OUTPUT_FILENAME_PREFIX + " " + defendant.getId();
 
-        return docAssemblyService.generateDocument(payload, templateId(welsh, englishV2), OutputType.PDF,
-                                                   outputFilename);
-    }
-
-    private static String templateId(boolean welsh, boolean englishV2) {
+        String templateId = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
+            ? TEMPLATE_ID_V2 : TEMPLATE_ID;
         if (welsh) {
-            return WELSH_TEMPLATE_ID;
+            templateId = WELSH_TEMPLATE_ID;
         }
-        return englishV2 ? TEMPLATE_ID_V2 : TEMPLATE_ID;
+
+        return docAssemblyService.generateDocument(payload, templateId, OutputType.PDF, outputFilename);
     }
 
     private String resolveClaimantName(ClaimEntity mainClaim) {
@@ -202,9 +204,6 @@ public class AccessCodeFormDocumentGenerator {
         return addressFormatter.formatFullAddressWithoutCountry(addressUK, AddressFormatter.NEWLINE_DELIMITER);
     }
 
-    /**
-     * The values shared by all of one defendant's access-code letters, from {@link #resolveLetterContext}.
-     */
     public record LetterContext(CourtVenue servingCourt, LocalDate issuedOn) {
     }
 }

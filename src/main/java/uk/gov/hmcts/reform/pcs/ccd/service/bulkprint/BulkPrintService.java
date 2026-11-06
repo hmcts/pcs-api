@@ -21,9 +21,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Assembles one pack — coversheet, then documents, then any blank forms for the letter type, merged into a
- * single PDF by {@link PdfMerger} — into a Send Letter letter and posts it. Recording the outcome is the
- * caller's job.
+ * Assembles one pack — coversheet then documents, merged into a single PDF by {@link PdfMerger} — into a
+ * Send Letter letter and posts it. Recording the outcome is the caller's job.
  */
 @Service
 public class BulkPrintService {
@@ -72,8 +71,7 @@ public class BulkPrintService {
         return sendLetterApi.sendLetter(authTokenGenerator.generate(), letter).letterId;
     }
 
-    // Blank forms always go last, after however many documents the pack carries (HDPI-9818 adds evidence after the
-    // claim form). In Wales each Welsh form follows its English twin (AC02).
+    // Blank forms always go last, however many documents come before them; each Welsh form follows its English one.
     private void addBlankForms(List<byte[]> pdfs, LetterType letterType) {
         if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
             pdfs.add(blankClaimPackFormsProvider.getBlankResponseForm());

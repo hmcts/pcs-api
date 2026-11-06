@@ -36,7 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
-import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -557,7 +557,7 @@ class ClaimPackSelectorTest {
 
     private DocumentEntity welshPin(PartyEntity party) {
         DocumentEntity pin = document(DocumentType.DEFENDANT_ACCESS_CODE, party);
-        pin.setFileName(AccessCodeDocuments.welshFileName(party.getId()));
+        pin.setFileName(AccessCodeFormDocumentGenerator.welshFileName(party.getId()));
         return pin;
     }
 
