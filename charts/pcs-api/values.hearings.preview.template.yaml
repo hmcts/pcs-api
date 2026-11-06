@@ -1,7 +1,10 @@
 java:
   environment:
     HEARINGS_SERVICEBUS_ENABLED: true
+    HEARINGS_SERVICEBUS_RETRIEVE_ONLY: true
     HEARINGS_SERVICEBUS_SUBSCRIPTION: pcs-api-pr-${CHANGE_ID}-servicebus-pcs
+    HMC_DEPLOYMENT_ID: deployment-${SERVICE_NAME}
+    HMC_SERVICE_ID: AAA3
 servicebus:
   enabled: true
   resourceGroup: hmc-shared-aat
