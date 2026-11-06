@@ -2,7 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import {addressDetails, caseSummary} from '@data/page-data';
+import { caseSummary } from '@data/page-data';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
