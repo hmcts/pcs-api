@@ -60,7 +60,7 @@ public enum TaskType {
             """
     ),
     REVIEW_SET_ASIDE_GEN_APP(
-        "ReviewAdjournGenApp",
+        "ReviewSetAsideGenApp",
         "Review set aside gen app",
         """
             Review the general application to set aside, decide what action is needed, and take the appropriate

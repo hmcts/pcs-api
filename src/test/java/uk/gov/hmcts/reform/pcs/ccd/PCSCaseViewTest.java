@@ -37,6 +37,8 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DraftResponseView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -139,11 +141,15 @@ class PCSCaseViewTest {
     @Mock
     private DefendantResponseView defendantResponseView;
     @Mock
+    private DraftResponseView draftResponseView;
+    @Mock
     private FeatureFlagView featureFlagView;
     @Mock
     private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     @Mock
     private HearingView hearingView;
+    @Mock
+    private EnforcementOrderView enforcementOrderView;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -171,9 +177,10 @@ class PCSCaseViewTest {
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, ordersView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
+                                    defendantResponseView, draftResponseView, featureFlagView,
+                                    caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    messagesView, judicialNoteView
+                                    messagesView, judicialNoteView, enforcementOrderView
         );
     }
 
@@ -409,6 +416,7 @@ class PCSCaseViewTest {
         verify(judicialNoteView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
+        verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
     }
 
     @Test
@@ -428,7 +436,7 @@ class PCSCaseViewTest {
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(caseTabView).setCaseTabFields(pcsCase);
+        verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
         verify(caseFileDocumentDeduplicationService).removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
     }
 
@@ -447,8 +455,8 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
-        verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
-        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
+        verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
+        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class), any(PcsCaseEntity.class));
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
     }
 
@@ -466,8 +474,9 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
-        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
-        verify(caseTabView).setCaseTabFields(pcsCase);
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class),
+            any(PcsCaseEntity.class));
+        verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
     }
 
@@ -479,8 +488,9 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
-        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
-        verify(caseTabView).setCaseTabFields(any(PCSCase.class));
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class),
+            any(PcsCaseEntity.class));
+        verify(caseTabView).setCaseTabFields(any(PCSCase.class), any(PcsCaseEntity.class));
     }
 
     @Test
@@ -499,6 +509,15 @@ class PCSCaseViewTest {
 
         // Then
         verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+    }
+
+    @Test
+    void shouldCallEnforcementOrderView() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
