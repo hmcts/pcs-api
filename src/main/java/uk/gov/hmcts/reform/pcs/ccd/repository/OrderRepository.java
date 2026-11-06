@@ -1,10 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,4 +23,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndState(UUID id, long caseReference, OrderState state);
 
     boolean existsByIdAndDocumentIsNotNull(UUID id);
+
+    /** The recipients of a generated without-notice order; uploaded documents have no linked order. */
+    @Query("select party from OrderEntity o join o.servedParties party where o.document.id = :documentId")
+    List<PartyEntity> findServedPartiesByDocumentId(UUID documentId);
 }

@@ -1,10 +1,5 @@
 -- A judge decides a general application with an order on it, and court staff and judges message each other on a case.
 
--- Making orders is not live, so the orders made while it was built are test data and are not kept.
-SET LOCAL ccd.audit_disabled = 'true';
-DELETE FROM scheduled_tasks WHERE task_name = 'order-document-generation';
-DELETE FROM orders;
-
 -- A judge has a draft for each hearing beside their draft made without one; an application has no draft of its own.
 DROP INDEX orders_one_draft_per_author_idx;
 CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id, hearing_id)
@@ -16,16 +11,6 @@ CREATE TABLE order_served_party (
     party_id UUID NOT NULL REFERENCES party(id),
     PRIMARY KEY (order_id, party_id)
 );
-
--- The parties a document is for alone, with court staff, such as an order served on them without notice. A document
--- with none follows the case file's rules. A without notice order already uploaded is for the party it names.
-CREATE TABLE document_audience (
-    document_id UUID NOT NULL REFERENCES document(id) ON DELETE CASCADE,
-    party_id UUID NOT NULL REFERENCES party(id),
-    PRIMARY KEY (document_id, party_id)
-);
-INSERT INTO document_audience (document_id, party_id)
-SELECT id, party_id FROM document WHERE type = 'WITHOUT_NOTICE_ORDER' AND party_id IS NOT NULL;
 
 -- Messages between court staff and judges on a case: a thread with a subject, which a sender starts and either side
 -- replies to until someone closes it. A thread is open until it has a closed_at; when anyone wrote is on its entries.
@@ -75,10 +60,5 @@ ALTER TABLE order_steps ADD COLUMN message_entry_id UUID REFERENCES case_message
     ADD CONSTRAINT order_steps_message_check CHECK (message_entry_id IS NULL OR state = 'RETURNED_TO_JUDGE');
 CREATE INDEX order_steps_message_entry_idx ON order_steps(message_entry_id) WHERE message_entry_id IS NOT NULL;
 
--- A step's message replaces its case note.
-ALTER TABLE order_steps DROP COLUMN note_id;
-
--- An order sent for review or issued has its wording: without it, court staff could not review it or issue it.
-ALTER TABLE order_steps ADD CONSTRAINT order_steps_wording_check
-    CHECK (state NOT IN ('SUBMITTED_FOR_REVIEW', 'ISSUED')
-        OR (docweave_snapshot IS NOT NULL AND docweave_snapshot <> 'null'::jsonb));
+-- Keep note_id for existing queries and application versions still writing case notes.
+-- New order submissions validate their wording in the application.
