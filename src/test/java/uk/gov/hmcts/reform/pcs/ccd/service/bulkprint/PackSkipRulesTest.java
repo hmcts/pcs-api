@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -193,8 +191,9 @@ class PackSkipRulesTest {
     }
 
     @Test
-    @DisplayName("Skips the defence pack when an issued counterclaim has an HWF reference")
-    void shouldSkipDefencePackWhenIssuedCounterClaimHasHwf() {
+    @DisplayName("Does not skip the defence pack when an issued counterclaim has only an HWF reference "
+        + "and no translation (HDPI-9007: HWF alone does not hold the defence pack for RTAC Pro)")
+    void shouldNotSkipDefencePackWhenIssuedCounterClaimHasOnlyHwf() {
         enableRelease13();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
             .id(UUID.randomUUID())
@@ -203,11 +202,11 @@ class PackSkipRulesTest {
             .counterClaims(List.of(issuedCounterClaim(LanguageUsed.ENGLISH, "HWF-123")))
             .build();
 
-        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isTrue();
+        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isFalse();
     }
 
     @Test
-    @DisplayName("Skips the defence pack when translation and issued-counterclaim HWF both apply")
+    @DisplayName("Skips the defence pack when translation is required, even when an issued counterclaim has HWF")
     void shouldSkipDefencePackWhenTranslationAndHwf() {
         enableRelease13();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
@@ -252,8 +251,8 @@ class PackSkipRulesTest {
     }
 
     @Test
-    @DisplayName("Skips the defence pack when a pending-review counterclaim has an HWF reference")
-    void shouldSkipDefencePackWhenPendingReviewCounterClaimHasHwf() {
+    @DisplayName("Does not skip the defence pack when a pending-review counterclaim has only an HWF reference")
+    void shouldNotSkipDefencePackWhenPendingReviewCounterClaimHasOnlyHwf() {
         enableRelease13();
         CounterClaimEntity pendingReview = CounterClaimEntity.builder()
             .status(CounterClaimState.PENDING_REVIEW)
@@ -267,12 +266,12 @@ class PackSkipRulesTest {
             .counterClaims(List.of(pendingReview))
             .build();
 
-        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isTrue();
+        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isFalse();
     }
 
     @Test
-    @DisplayName("Does not skip a payment-pending counterclaim that has an HWF reference")
-    void shouldNotSkipPaymentPendingCounterClaimWithHwf() {
+    @DisplayName("Does not skip the defence pack when a counterclaim awaiting its HWF decision has only HWF")
+    void shouldNotSkipPendingCounterClaimWithOnlyHwf() {
         enableRelease13();
         CounterClaimEntity pending = CounterClaimEntity.builder()
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
@@ -289,20 +288,22 @@ class PackSkipRulesTest {
         assertThat(underTest.shouldSkipDefencePack(pcsCase)).isFalse();
     }
 
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {" ", "\t"})
-    @DisplayName("Does not treat a blank issued-counterclaim HWF reference as populated")
-    void shouldNotSkipBlankIssuedCounterClaimHwf(String hwfReferenceNumber) {
+    @Test
+    @DisplayName("Skips the defence pack when a counterclaim awaiting its HWF decision needs translation")
+    void shouldSkipPendingCounterClaimNeedingTranslation() {
         enableRelease13();
+        CounterClaimEntity pending = CounterClaimEntity.builder()
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
             .id(UUID.randomUUID())
             .claims(List.of(ClaimEntity.builder().build()))
             .defendantResponses(List.of(submittedDefence(LanguageUsed.ENGLISH)))
-            .counterClaims(List.of(issuedCounterClaim(LanguageUsed.ENGLISH, hwfReferenceNumber)))
+            .counterClaims(List.of(pending))
             .build();
 
-        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isFalse();
+        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isTrue();
     }
 
     @ParameterizedTest

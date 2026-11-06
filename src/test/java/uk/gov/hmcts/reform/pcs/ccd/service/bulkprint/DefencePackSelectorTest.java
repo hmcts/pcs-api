@@ -329,8 +329,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Does not send defence packs when a pending-review counterclaim has an HWF reference")
-    void shouldSkipDefencePackWhenPendingReviewCounterClaimHasHwf() {
+    @DisplayName("Still sends defence packs when a pending-review counterclaim has only an HWF reference")
+    void shouldStillSendDefencePackWhenPendingReviewCounterClaimHasOnlyHwf() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
         DocumentEntity postalDefence = defenceForm(postalDefendant);
@@ -344,12 +344,13 @@ class DefencePackSelectorTest {
             .hwfReferenceNumber("HWF-123")
             .build()));
 
-        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isNotEmpty();
     }
 
     @Test
-    @DisplayName("Does not send defence packs when an issued counterclaim has an HWF reference")
-    void shouldSkipDefencePackWhenIssuedCounterClaimHasHwf() {
+    @DisplayName("Still sends defence packs when an issued counterclaim has only an HWF reference "
+        + "(HDPI-9007: HWF alone does not hold the defence pack for RTAC Pro)")
+    void shouldStillSendDefencePackWhenIssuedCounterClaimHasOnlyHwf() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
         DocumentEntity postalDefence = defenceForm(postalDefendant);
@@ -358,7 +359,7 @@ class DefencePackSelectorTest {
         pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, LanguageUsed.ENGLISH)));
         pcsCase.setCounterClaims(List.of(issuedCounterClaim(postalDefendant, LanguageUsed.ENGLISH, "HWF-123")));
 
-        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isNotEmpty();
     }
 
     @Test

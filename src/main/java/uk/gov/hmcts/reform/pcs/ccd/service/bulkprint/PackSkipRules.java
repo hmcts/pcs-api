@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -31,15 +30,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selector-time skip rules for bulk-print packs. When {@link FeatureFlag#RELEASE_1_DOT_3} is on, packs that
- * need translation, a follow-on gen app (until its hold period after claim issue ends), or an issued counterclaim
- * HWF reference are held back silently —
- * no {@code PACK_SENT} or {@code PACK_FAILED} row is written. Flag off keeps current send behaviour.
- * When {@link FeatureFlag#RELEASE_1_DOT_4} is on, claimants are excluded from every pack type.
+ * Selector-time skip rules for bulk-print packs. When {@link FeatureFlag#RELEASE_1_DOT_3} is on, the claim pack is
+ * held back silently when it needs translation or has a follow-on gen app (until its hold period after claim issue
+ * ends), and the defence pack is held back only when it needs translation (HDPI-9007: for RTAC Pro an HWF reference
+ * does not hold the defence pack) — no {@code PACK_SENT} or {@code PACK_FAILED} row is written. Flag off keeps current
+ * send behaviour. When {@link FeatureFlag#RELEASE_1_DOT_4} is on, claimants are excluded from every pack type.
  */
 @Service
 @Slf4j
@@ -127,16 +125,9 @@ public class PackSkipRules {
     private Optional<String> defencePackSkipReason(PcsCaseEntity pcsCase) {
         boolean translation = hasActiveTranslationFlag(pcsCase)
             || hasSubmittedDefenceNeedingTranslation(pcsCase)
-            || hasIssuedCounterClaimNeedingTranslation(pcsCase);
-        boolean hwf = hasIssuedCounterClaimWithHwf(pcsCase);
-        if (translation && hwf) {
-            return Optional.of(TRANSLATION_REQUIRED + " and issued counterclaim has help with fees");
-        }
+            || hasCounterClaimNeedingTranslation(pcsCase);
         if (translation) {
             return Optional.of(TRANSLATION_REQUIRED);
-        }
-        if (hwf) {
-            return Optional.of("issued counterclaim has help with fees");
         }
         return Optional.empty();
     }
@@ -170,25 +161,17 @@ public class PackSkipRules {
             .anyMatch(response -> requiresTranslation(response.getLanguageUsed()));
     }
 
-    private boolean hasIssuedCounterClaimNeedingTranslation(PcsCaseEntity pcsCase) {
-        return issuedCounterClaims(pcsCase)
+    private boolean hasCounterClaimNeedingTranslation(PcsCaseEntity pcsCase) {
+        return includedCounterClaims(pcsCase)
             .anyMatch(counterClaim -> requiresTranslation(counterClaim.getLanguageUsed()));
     }
 
-    private boolean hasIssuedCounterClaimWithHwf(PcsCaseEntity pcsCase) {
-        return hwfBlockingCounterClaims(pcsCase)
-            .anyMatch(counterClaim -> isPopulated(counterClaim.getHwfReferenceNumber()));
-    }
-
-    private Stream<CounterClaimEntity> issuedCounterClaims(PcsCaseEntity pcsCase) {
-        return streamOf(pcsCase.getCounterClaims())
-            .filter(counterClaim -> counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED);
-    }
-
-    private Stream<CounterClaimEntity> hwfBlockingCounterClaims(PcsCaseEntity pcsCase) {
-        return streamOf(pcsCase.getCounterClaims())
-            .filter(counterClaim -> counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED
-                || counterClaim.getStatus() == CounterClaimState.PENDING_REVIEW);
+    // A counterclaim is "included" once it exists on the case, in any state. A counterclaim awaiting its
+    // help-with-fees decision stays PENDING_COUNTER_CLAIM_ISSUED (it is only ISSUED after the fee is paid),
+    // so a counterclaim needing translation holds the defence pack from that state too - not only once
+    // COUNTER_CLAIM_ISSUED.
+    private Stream<CounterClaimEntity> includedCounterClaims(PcsCaseEntity pcsCase) {
+        return streamOf(pcsCase.getCounterClaims());
     }
 
     private boolean hasActiveTranslationFlag(PcsCaseEntity pcsCase) {
