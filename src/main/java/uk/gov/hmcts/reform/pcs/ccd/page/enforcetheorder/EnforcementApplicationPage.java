@@ -1,17 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
@@ -20,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderServi
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,7 +140,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         data.setHasUnsubmittedEnforcementData(YesOrNo.YES);
-        setFormattedDefendantNames(data.getAllDefendants(), data);
+        EnforcementOrderView.setFormattedDefendantNames(data);
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
@@ -153,31 +151,6 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .data(data)
             .errors(errors.isEmpty() ? null : errors)
             .build();
-    }
-
-    private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
-        if (defendants != null && !defendants.isEmpty()) {
-            List<String> knownNames = new ArrayList<>();
-            int unknownDefendants = 0;
-
-            for (ListValue<Party> defendant : defendants) {
-                Party party = defendant.getValue();
-                if (isNameUnknown(party)) {
-                    unknownDefendants++;
-                    continue;
-                }
-                knownNames.add("<div class=\"govuk-!-margin-bottom-2\">"
-                    + party.getFirstName() + " " + party.getLastName()
-                    + "</div>");
-            }
-
-            pcsCase.setFormattedDefendantNames(StringUtils.join(knownNames, StringUtils.EMPTY));
-            pcsCase.setUnknownDefendantCount(unknownDefendants);
-        }
-    }
-
-    private boolean isNameUnknown(Party party) {
-        return StringUtils.isBlank(party.getFirstName()) && StringUtils.isBlank(party.getLastName());
     }
 
     private static boolean toBoolean(YesOrNo yesOrNo) {
