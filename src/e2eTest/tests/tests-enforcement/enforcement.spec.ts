@@ -38,8 +38,16 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWarrantInfo,
+  statementOfTruth,
+  defendantInBreathingSpace,
+  missedPayments,
+  cannotApplyForWarrantInfo,
+  payTheClaimFeeConfirm,
+  checkYourAnswersEnforcement,
 } from '@data/page-data-figma/page-data-enforcement-figma';
+
+let payClaimFeeWarrant: ReturnType<typeof payTheClaimFeeConfirm>;
+let sotWarrant: ReturnType<typeof statementOfTruth>;
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -80,6 +88,8 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  payClaimFeeWarrant = payTheClaimFeeConfirm(test.info().title);
+  sotWarrant = statementOfTruth(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -92,146 +102,213 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement @regression',
+test.describe('[Enforcement - Warrant of Possession]', async () => {
+  test('Warrant - As a Claimant I complete "Warrant of Possession Application" with Eviction Details, Defendant Information, Vulnerable People, Property Access, Financial Details, Suspended Order and Statement of Truth',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-3476` },
+        { type: 'ac', description: 'AC1, AC2' },
+      ],
+    },
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', enforcementApplication.mainHeader);
-      await performAction('validateWritOrWarrantFeeAmount', {
-        journey: enforcementApplication.warrantOfPossessionRadioOption,
-        type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
-        text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
-        text2: enforcementApplication.writFeeValidationTextHidden
+
+      await test.step(`Given the user has selected Enforce the order event`, async () => {
+        await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+        await performAction('clickButton', caseSummary.go);
       });
-      await performAction('validateGetQuoteFromBailiffLink', {
-        type: enforcementApplication.summaryWritOrWarrantLink,
-        link: enforcementApplication.quoteFromBailiffLinkHidden,
-        newPage: enforcementApplication.hceoPageTitleHidden
+
+      await test.step(`When the user validates the writ or warrant fee amount`, async () => {
+        await performValidation('mainHeader', enforcementApplication.mainHeader);
+        await performAction('validateWritOrWarrantFeeAmount', {
+          journey: enforcementApplication.warrantOfPossessionRadioOption,
+          type: enforcementApplication.summaryWritOrWarrantLink,
+          label1: enforcementApplication.warrantFeeValidationLabelHidden,
+          text1: enforcementApplication.warrantFeeValidationTextHidden,
+          label2: enforcementApplication.writFeeValidationLabelHidden,
+          text2: enforcementApplication.writFeeValidationTextHidden
+        });
       });
-      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
-      await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
-      await performAction('selectApplicationType', {
-        question: enforcementApplication.typeOfApplicationQuestion,
-        option: enforcementApplication.warrantOfPossessionRadioOption,
-        nextPage: defendantInBreathingSpace.mainHeader
+
+      await test.step(`And the user validates the Get quote from Bailiff link`, async () => {
+        await performAction('validateGetQuoteFromBailiffLink', {
+          type: enforcementApplication.summaryWritOrWarrantLink,
+          link: enforcementApplication.quoteFromBailiffLinkHidden,
+          newPage: enforcementApplication.hceoPageTitleHidden
+        });
       });
-      await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
-      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-      await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader});
-      await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
-      await performAction('selectNameAndAddressForEviction', {
-        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-        option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-        nextPage: confirmDefendantsDOB.mainHeader
+
+      await test.step(`And the user expands Save application and return link`, async () => {
+        await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       });
-      await performAction('errorValidationConfirmDefendantsDOBPage', confirmDefendantsDOB.errorValidation);
-      await performAction('confirmDefendantsDOB', {
-        question: confirmDefendantsDOB.defendantsDOBQuestion,
-        option: confirmDefendantsDOB.yesRadioOption,
-        nextPage: knownDefendantsDOBInformation.mainHeader
+
+      await test.step(`And the user selects the application type`, async () => {
+        await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
+        await performAction('selectApplicationType', {
+          question: enforcementApplication.typeOfApplicationQuestion,
+          option: enforcementApplication.warrantOfPossessionRadioOption,
+          nextPage: defendantInBreathingSpace.mainHeader
+        });
       });
-      await performAction('errorValidationEnterDefendantsDOBPage', knownDefendantsDOBInformation.errorValidation);
-      await performAction('enterDefendantsDOB', {
-        label: knownDefendantsDOBInformation.defendantsDOBQuestion,
-        input: defendantDetails,
-        nextPage: peopleWhoWillBeEvicted.mainHeader
+
+      await test.step(`Then the user selects if the defendant is in breathing space`, async () => {
+        await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
+        await performAction('isDefendantInBreathingSpace', {
+          option: defendantInBreathingSpace.noRadioOption,
+          nextPage: missedPayments.mainHeader
+        });
       });
-      await performAction('errorValidationPeopleWhoWillBeEvictedPage', peopleWhoWillBeEvicted.errorValidation);
-      await performAction('selectPeopleWhoWillBeEvicted', {
-        question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
-        option: peopleWhoWillBeEvicted.yesRadioOption,
-        nextPage: livingInTheProperty.mainHeader
+
+      await test.step(`Then the user provides the missed payment details`, async () => {
+        await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
+        await performAction('missedPayments', {
+          option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader
+        });
       });
-      await performAction('selectEveryoneLivingAtTheProperty', {
-        question: livingInTheProperty.riskToBailiffQuestion,
-        option: livingInTheProperty.yesRadioOption,
-        nextPage: evictionRisksPosed.mainHeader
+
+      await test.step(`Then the user selects the defendant name and address for eviction`, async () => {
+        await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
+        await performAction('selectNameAndAddressForEviction', {
+          question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+          option: nameAndAddressForEviction.yesRadioOption,
+          defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+          nextPage: confirmDefendantsDOB.mainHeader
+        });
       });
-      await performAction('errorValidationRiskPosedByEveryonePage', evictionRisksPosed.errorValidation);
-      await performAction('selectRiskPosedByEveryoneAtProperty', {
-        question: evictionRisksPosed.kindOfRiskQuestion,
-        option: [
-          evictionRisksPosed.violentOrAggressiveBehaviourCheckbox,
-          evictionRisksPosed.historyOfFirearmPossessionCheckbox,
-          evictionRisksPosed.criminalOrAntisocialBehaviourCheckbox,
-          evictionRisksPosed.verbalOrWrittenThreatsCheckbox,
-          evictionRisksPosed.protestGroupCheckbox,
-          evictionRisksPosed.policeOrSocialServiceCheckbox,
-          evictionRisksPosed.aggressiveAnimalsCheckbox,
-        ],
-        nextPage: violentAggressiveRisk.mainHeader
+
+      await test.step(`And the user enters defendant DOB`, async () => {
+        await performAction('errorValidationConfirmDefendantsDOBPage', confirmDefendantsDOB.errorValidation);
+        await performAction('confirmDefendantsDOB', {
+          question: confirmDefendantsDOB.defendantsDOBQuestion,
+          option: confirmDefendantsDOB.yesRadioOption,
+          nextPage: knownDefendantsDOBInformation.mainHeader
+        });
       });
-      await performAction('errorValidationViolentOrAggressiveBehaviourPage', violentAggressiveRisk.errorValidation);
-      await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveQuestion,
-        input: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveTextInput,
-        nextPage: firearmsPossessionRisk.mainHeader
+
+      await test.step(`And the user answers the known defendant DOB question`, async () => {
+        await performAction('errorValidationEnterDefendantsDOBPage', knownDefendantsDOBInformation.errorValidation);
+        await performAction('enterDefendantsDOB', {
+          label: knownDefendantsDOBInformation.defendantsDOBQuestion,
+          input: defendantDetails,
+          nextPage: peopleWhoWillBeEvicted.mainHeader
+        });
       });
-      await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: firearmsPossessionRisk.whatIsTheirHistoryOfFirearmPossessionQuestion,
-        input: firearmsPossessionRisk.whatIsTheirHistoryOfFirearmPossessionTextInput,
-        nextPage: criminalAntisocialRisk.mainHeader
+
+      await test.step(`And the user selects the people who will be evicted`, async () => {
+        await performAction('errorValidationPeopleWhoWillBeEvictedPage', peopleWhoWillBeEvicted.errorValidation);
+        await performAction('selectPeopleWhoWillBeEvicted', {
+          question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
+          option: peopleWhoWillBeEvicted.yesRadioOption,
+          nextPage: livingInTheProperty.mainHeader
+        });
       });
-      await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: criminalAntisocialRisk.whatIsTheirHistoryOfCriminalAntisocialBehaviourQuestion,
-        input: criminalAntisocialRisk.whatIsTheirHistoryOfCriminalAntisocialBehaviourTextInput,
-        nextPage: verbalOrWrittenThreatsRisk.mainHeader
+
+      await test.step(`And the user selects if the people pose risk to bailiff`, async () => {
+        await performAction('selectEveryoneLivingAtTheProperty', {
+          question: livingInTheProperty.riskToBailiffQuestion,
+          option: livingInTheProperty.yesRadioOption,
+          nextPage: evictionRisksPosed.mainHeader
+        });
       });
-      await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: verbalOrWrittenThreatsRisk.verbalOrWrittenThreatsMadeQuestion,
-        input: verbalOrWrittenThreatsRisk.verbalOrWrittenThreatsMadeTextInput,
-        nextPage: protestorGroupRisk.mainHeader
+
+      await test.step(`And the user selects the kind of risk they pose to bailiff`, async () => {
+        await performAction('errorValidationRiskPosedByEveryonePage', evictionRisksPosed.errorValidation);
+        await performAction('selectRiskPosedByEveryoneAtProperty', {
+          question: evictionRisksPosed.kindOfRiskQuestion,
+          option: [
+            evictionRisksPosed.violentOrAggressiveBehaviourCheckbox,
+            evictionRisksPosed.historyOfFirearmPossessionCheckbox,
+            evictionRisksPosed.criminalOrAntisocialBehaviourCheckbox,
+            evictionRisksPosed.verbalOrWrittenThreatsCheckbox,
+            evictionRisksPosed.protestGroupCheckbox,
+            evictionRisksPosed.policeOrSocialServiceCheckbox,
+            evictionRisksPosed.aggressiveAnimalsCheckbox,
+          ],
+          nextPage: violentAggressiveRisk.mainHeader
+        });
       });
-      await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: protestorGroupRisk.whichGroupMemberQuestion,
-        input: protestorGroupRisk.whichGroupMemberTextInput,
-        nextPage: policeOrSocialServicesRisk.mainHeader
+
+      await test.step(`And the user enters the details of risk they pose to bailiff`, async () => {
+        await performAction('errorValidationViolentOrAggressiveBehaviourPage', violentAggressiveRisk.errorValidation);
+        await performAction('provideRiskPosedByEveryoneAtProperty', {
+          label: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveQuestion,
+          input: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveTextInput,
+          nextPage: firearmsPossessionRisk.mainHeader
+        });
+        await performAction('provideRiskPosedByEveryoneAtProperty', {
+          label: firearmsPossessionRisk.whatIsTheirHistoryOfFirearmPossessionQuestion,
+          input: firearmsPossessionRisk.whatIsTheirHistoryOfFirearmPossessionTextInput,
+          nextPage: criminalAntisocialRisk.mainHeader
+        });
+        await performAction('provideRiskPosedByEveryoneAtProperty', {
+          label: criminalAntisocialRisk.whatIsTheirHistoryOfCriminalAntisocialBehaviourQuestion,
+          input: criminalAntisocialRisk.whatIsTheirHistoryOfCriminalAntisocialBehaviourTextInput,
+          nextPage: verbalOrWrittenThreatsRisk.mainHeader
+        });
+        await performAction('provideRiskPosedByEveryoneAtProperty', {
+          label: verbalOrWrittenThreatsRisk.verbalOrWrittenThreatsMadeQuestion,
+          input: verbalOrWrittenThreatsRisk.verbalOrWrittenThreatsMadeTextInput,
+          nextPage: protestorGroupRisk.mainHeader
+        });
+        await performAction('provideRiskPosedByEveryoneAtProperty', {
+          label: protestorGroupRisk.whichGroupMemberQuestion,
+          input: protestorGroupRisk.whichGroupMemberTextInput,
+          nextPage: policeOrSocialServicesRisk.mainHeader
+        });
+        await performAction('provideRiskPosedByEveryoneAtProperty', {
+          label: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyQuestion,
+          input: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyTextInput,
+          nextPage: aggressiveAnimalsRisk.mainHeader
+        });
+        await performAction('provideRiskPosedByEveryoneAtProperty', {
+          label: aggressiveAnimalsRisk.whatKindOfAnimalDoTheyHaveQuestion,
+          input: aggressiveAnimalsRisk.whatKindOfAnimalDoTheyHaveTextInput,
+          nextPage: vulnerableAdultsChildren.mainHeader
+        });
       });
-      await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyQuestion,
-        input: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyTextInput,
-        nextPage: aggressiveAnimalsRisk.mainHeader
+
+      await test.step(`And the user enters vulnerable people at the property information`, async () => {
+        await performAction('errorValidationVulnerablePeoplePage', vulnerableAdultsChildren.errorValidation);
+        await performAction('selectVulnerablePeopleInTheProperty', {
+          question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
+          option: vulnerableAdultsChildren.yesRadioOption,
+          confirm: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
+          peopleOption: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
+          label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
+          input: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextInput,
+          nextPage: propertyAccessDetails.mainHeader
+        });
       });
-      await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: aggressiveAnimalsRisk.whatKindOfAnimalDoTheyHaveQuestion,
-        input: aggressiveAnimalsRisk.whatKindOfAnimalDoTheyHaveTextInput,
-        nextPage: vulnerableAdultsChildren.mainHeader
+
+      await test.step(`And the user enters access to property information`, async () => {
+        await performAction('provideDetailsBasedOnRadioOptionSelection', {
+          question: propertyAccessDetails.accessToThePropertyQuestion,
+          option: propertyAccessDetails.yesRadioOption,
+          label: propertyAccessDetails.whyItsDifficultToAccessToThePropertyTextLabelHidden,
+          input: propertyAccessDetails.whyItsDifficultToAccessToThePropertyTextInputHidden,
+          nextPage: additionalInformation.mainHeader
+        });
       });
-      await performAction('errorValidationVulnerablePeoplePage', vulnerableAdultsChildren.errorValidation);
-      await performAction('selectVulnerablePeopleInTheProperty', {
-        question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
-        option: vulnerableAdultsChildren.yesRadioOption,
-        confirm: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
-        peopleOption: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
-        label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
-        input: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextInput,
-        nextPage: propertyAccessDetails.mainHeader
+
+      await test.step(`And provides any additional information to help with eviction`, async () => {
+        await performAction('provideDetailsBasedOnRadioOptionSelection', {
+          question: additionalInformation.anythingElseQuestion,
+          option: additionalInformation.yesRadioOption,
+          label: additionalInformation.tellUsAnythingElseTextLabelHidden,
+          input: additionalInformation.tellUsAnythingElseTextInput,
+          nextPage: moneyOwed.mainHeader
+        });
       });
-      await performAction('provideDetailsBasedOnRadioOptionSelection', {
-        question: propertyAccessDetails.accessToThePropertyQuestion,
-        option: propertyAccessDetails.yesRadioOption,
-        label: propertyAccessDetails.whyItsDifficultToAccessToThePropertyTextLabelHidden,
-        input: propertyAccessDetails.whyItsDifficultToAccessToThePropertyTextInputHidden,
-        nextPage: additionalInformation.mainHeader
+
+      await test.step(`And provides details regarding the money owed by the defendant`, async () => {
+        await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
+        await performAction('provideMoneyOwed', {
+          label: moneyOwed.totalAmountOwedTextLabel,
+          input: moneyOwed.totalAmountOwedTextInput,
+          nextPage: legalCosts.mainHeader
+        });
       });
-      await performAction('provideDetailsBasedOnRadioOptionSelection', {
-        question: additionalInformation.anythingElseQuestion,
-        option: additionalInformation.yesRadioOption,
-        label: additionalInformation.tellUsAnythingElseTextLabelHidden,
-        input: additionalInformation.tellUsAnythingElseTextInput,
-        nextPage: moneyOwed.mainHeader
-      });
-      await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
-      await performAction('provideMoneyOwed', {
-        label: moneyOwed.totalAmountOwedTextLabel,
-        input: moneyOwed.totalAmountOwedTextInput,
-        nextPage: legalCosts.mainHeader
-      });
+
       await performAction('errorValidationLegalCostsPage', legalCosts.errorValidation);
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
@@ -257,32 +334,50 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
-      await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
-      await performAction('selectLanguageUsed', {
-        question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.englishRadioOption,
-        nextPage: suspendedOrder.mainHeader
+      await test.step(`And selects the language used`, async () => {
+        await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
+        await performAction('selectLanguageUsed', {
+          question: languageUsed.whichLanguageUsedQuestion,
+          option: languageUsed.englishRadioOption,
+          nextPage: suspendedOrder.mainHeader
+        });
       });
+
       await performAction('errorValidationSuspendOrderPage', suspendedOrder.errorValidation);
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.yesRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWarrant.mainHeader
       });
-      await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
-      await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantRadioOption,
-        option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruth.nameOfFirmHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader
+      await test.step(`Then enter the details on the SOT page, verify the CYA page`, async () => {
+        await performAction('errorValidationSOT1Page', sotWarrant.errorValidation);
+        await performAction('validateAmountToRePayTable', {headerName: sotWarrant.mainHeader});
+        await performAction('selectStatementOfTruth', {
+          selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+          question: sotWarrant.completedByParagraph,
+          option: sotWarrant.claimantRadioOption,
+          option1: sotWarrant.iBelieveTheFactsHiddenCheckbox,
+          label: sotWarrant.fullNameHiddenTextLabel,
+          input: sotWarrant.fullNameHiddenTextInput,
+          label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+          input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+          label2: sotWarrant.nameOfFirmHiddenTextLabel,
+          input2: sotWarrant.nameOfFirmHiddenTextInput,
+          nextPage: checkYourAnswersEnforcement.mainHeader,
+          continueButton: sotWarrant.continueButton
+        });
+      });
+
+      await test.step(`And continue to the pay the claim fee page`, async () => {
+        await performAction('continueFromCYAPage', {
+          nextPage: payClaimFeeWarrant.mainHeader
+        });
+      });
+
+      await test.step(`And verify the pay the claim fee page content`, async () => {
+        await performAction('selectPayClaimFee', {
+          link: payClaimFeeWarrant.payYourApplicationFeeLink
+        });
       });
     });
 
@@ -386,21 +481,28 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.noRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWarrant.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruth.signThisStatementHiddenCheckbox,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruth.nameOfFirmHiddenTextInput,
-      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader
+      selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+      question: sotWarrant.completedByParagraph,
+      option: sotWarrant.claimantLegalRepresentativeRadioOption,
+      option1: sotWarrant.signThisStatementHiddenCheckbox,
+      label: sotWarrant.fullNameHiddenTextLabel,
+      input: sotWarrant.fullNameHiddenTextInput,
+      label1: sotWarrant.nameOfFirmHiddenTextLabel,
+      input1: sotWarrant.nameOfFirmHiddenTextInput,
+      label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+      input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+      nextPage: checkYourAnswersEnforcement.mainHeader,
+      continueButton: sotWarrant.continueButton
+    });
+    await performAction('continueFromCYAPage', {
+      nextPage: payClaimFeeWarrant.mainHeader
+    });
+    await performAction('selectPayClaimFee', {
+      link: payClaimFeeWarrant.payYourApplicationFeeLink
     });
   });
 
@@ -509,30 +611,37 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.yesRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWarrant.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantRadioOption,
-      option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input2: statementOfTruth.nameOfFirmHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader
+      selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+      question: sotWarrant.completedByParagraph,
+      option: sotWarrant.claimantRadioOption,
+      option1: sotWarrant.iBelieveTheFactsHiddenCheckbox,
+      label: sotWarrant.fullNameHiddenTextLabel,
+      input: sotWarrant.fullNameHiddenTextInput,
+      label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+      input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+      label2: sotWarrant.nameOfFirmHiddenTextLabel,
+      input2: sotWarrant.nameOfFirmHiddenTextInput,
+      nextPage: checkYourAnswersEnforcement.mainHeader,
+      continueButton: sotWarrant.continueButton
+    });
+    await performAction('continueFromCYAPage', {
+      nextPage: payClaimFeeWarrant.mainHeader
+    });
+    await performAction('selectPayClaimFee', {
+      link: payClaimFeeWarrant.payYourApplicationFeeLink
     });
   });
 
   test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
-    annotation: {
-      type: 'issue',
-      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
+      annotation: {
+        type: 'issue',
+        description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
+      },
     },
-  },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -675,21 +784,28 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWarrant.mainHeader
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruth.signThisStatementHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruth.nameOfFirmHiddenTextInput,
-        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantLegalRepresentativeRadioOption,
+        option1: sotWarrant.signThisStatementHiddenCheckbox,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.nameOfFirmHiddenTextLabel,
+        input1: sotWarrant.nameOfFirmHiddenTextInput,
+        label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+        nextPage: checkYourAnswersEnforcement.mainHeader,
+        continueButton: sotWarrant.continueButton
+      });
+      await performAction('continueFromCYAPage', {
+        nextPage: payClaimFeeWarrant.mainHeader
+      });
+      await performAction('selectPayClaimFee', {
+        link: payClaimFeeWarrant.payYourApplicationFeeLink
       });
     });
 
@@ -793,25 +909,26 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruth.mainHeader,
+        nextPage: sotWarrant.mainHeader,
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruth.signThisStatementHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruth.nameOfFirmHiddenTextInput,
-        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader,
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantLegalRepresentativeRadioOption,
+        option1: sotWarrant.signThisStatementHiddenCheckbox,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.nameOfFirmHiddenTextLabel,
+        input1: sotWarrant.nameOfFirmHiddenTextInput,
+        label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+        nextPage: checkYourAnswersEnforcement.mainHeader,
+        continueButton: sotWarrant.continueButton
       });
     });
 
-    test('Warrant of Possession - Missed payment: claimant selects No and is directed to the judge permission screen @enforcement @regression', async ({ page }) => {
+  test('Warrant of Possession - Missed payment: claimant selects No and is directed to the judge permission screen @enforcement @regression', async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
