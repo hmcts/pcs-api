@@ -10,8 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
@@ -23,8 +21,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.SoftDelete;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -38,9 +34,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -121,14 +115,6 @@ public class DocumentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "counter_claim_id")
     private CounterClaimEntity counterClaim;
-
-    /** The parties the document is for alone, with court staff; with none it follows the case file's rules. */
-    @ManyToMany
-    @JoinTable(name = "document_audience", joinColumns = @JoinColumn(name = "document_id"),
-        inverseJoinColumns = @JoinColumn(name = "party_id"))
-    @Fetch(FetchMode.SUBSELECT)
-    @Builder.Default
-    private Set<PartyEntity> audience = new HashSet<>();
 
     private String removalReason;
 

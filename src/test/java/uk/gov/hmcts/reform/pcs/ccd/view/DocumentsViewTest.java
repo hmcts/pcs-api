@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -27,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -55,6 +55,9 @@ class DocumentsViewTest {
     @Mock
     private SecurityContextService securityContextService;
 
+    @Mock
+    private OrderRepository orderRepository;
+
     private PCSCase pcsCase;
 
     private DocumentsView underTest;
@@ -68,7 +71,7 @@ class DocumentsViewTest {
         pcsCase = PCSCase.builder().build();
 
         underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
-                                      securityContextService);
+                                      securityContextService, orderRepository);
     }
 
     @Test
@@ -329,9 +332,60 @@ class DocumentsViewTest {
         assertThat(pcsCase.getAllDocuments()).isEmpty();
     }
 
+    @Test
+    void shouldHideStandaloneWithoutNoticeOrderWhenPartyScopedRuleDoesNotAllowAccess() {
+        // Given
+        PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(genAppVisibilityService
+                 .isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
+            .thenReturn(false);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .party(relatedParty)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldShowStandaloneWithoutNoticeOrderWhenPartyScopedRuleAllowsAccess() {
+        // Given
+        PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(genAppVisibilityService
+                 .isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
+            .thenReturn(true);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .party(relatedParty)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("without notice order.pdf"));
+    }
+
     @ParameterizedTest(name = "visible to one of its parties: {0}")
     @ValueSource(booleans = {true, false})
-    void shouldShowADocumentForSomePartiesOnlyToThoseTheirRuleAllows(boolean visibleToOne) {
+    void shouldShowAGeneratedOrderOnlyToItsRecipients(boolean visibleToOne) {
         // Given
         PartyEntity served = PartyEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity alsoServed = PartyEntity.builder().id(UUID.randomUUID()).build();
@@ -343,9 +397,10 @@ class DocumentsViewTest {
             .fileName("without notice order.pdf")
             .url("without-notice-order-url")
             .type(DocumentType.WITHOUT_NOTICE_ORDER)
-            .audience(Set.of(served, alsoServed))
             .build();
 
+        when(orderRepository.findServedPartiesByDocumentId(documentEntity.getId()))
+            .thenReturn(List.of(served, alsoServed));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When

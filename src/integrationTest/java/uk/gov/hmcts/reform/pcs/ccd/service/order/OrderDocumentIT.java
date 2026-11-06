@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.order;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.serializer.JacksonSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,15 @@ import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
@@ -22,6 +30,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
@@ -38,6 +51,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
@@ -59,6 +73,8 @@ class OrderDocumentIT extends OrderEventIT {
     private OrderDocumentService orderDocumentService;
     @Autowired
     private SchedulerClient schedulerClient;
+    @Autowired
+    private DocumentAmendService documentAmendService;
 
     @Test
     @DisplayName("renders the issued order's wording with the case, its parties and the judge, and adds it to the case")
@@ -123,22 +139,54 @@ class OrderDocumentIT extends OrderEventIT {
         assertThat(documents(caseReference, party(caseReference, "Jane"))).hasSize(1);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     @DisplayName("issues an order served on some parties without notice as a without notice order only they and "
         + "court staff see")
-    void servesAnOrderOnSomePartiesWithoutNotice() {
+    void servesAnOrderOnSomePartiesWithoutNotice(boolean makeOrderEnabled) {
         long caseReference = cases.issue();
         cases.update(caseReference, pcsCase -> pcsCase.addParty(
             PartyEntity.builder().firstName("John").lastName("Smith").build()));
         issueAndAttach(caseReference, false,
             List.of(partyId(caseReference, IssuedCases.CLAIMANT), partyId(caseReference, "Jane")));
 
+        doReturn(makeOrderEnabled).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
         assertThat(documentType(caseReference)).isEqualTo("WITHOUT_NOTICE_ORDER");
         assertThat(documents(caseReference, party(caseReference, IssuedCases.CLAIMANT))).hasSize(1);
         assertThat(documents(caseReference, party(caseReference, "Jane"))).hasSize(1);
         assertThat(documents(caseReference, events.registerActor("Court", "Staff", "hearing-centre-admin")))
             .hasSize(1);
         assertThat(documents(caseReference, party(caseReference, "John"))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("an uploaded without-notice order follows its amended party with making orders disabled")
+    void uploadedOrderFollowsItsAmendedParty() {
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+        long caseReference = cases.issue();
+        Actor claimant = party(caseReference, IssuedCases.CLAIMANT);
+        Actor defendant = party(caseReference, "Jane");
+        Document stored = events.documents().store("Uploaded order.pdf");
+        cases.update(caseReference, pcsCase -> pcsCase.addDocument(DocumentEntity.builder()
+            .fileName("Uploaded order.pdf").url(stored.getUrl()).binaryUrl(stored.getBinaryUrl())
+            .type(DocumentType.WITHOUT_NOTICE_ORDER).party(partyOf(pcsCase, IssuedCases.CLAIMANT))
+            .build()));
+        assertThat(documents(caseReference, claimant)).hasSize(1);
+        assertThat(documents(caseReference, defendant)).isEmpty();
+
+        cases.update(caseReference, pcsCase -> documentAmendService.amendDocument(PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedDocumentId(pcsCase.getDocuments().getFirst().getId().toString())
+                .amendedFileName("Uploaded order")
+                .relatedParty(DynamicList.builder().value(DynamicListElement.builder()
+                    .code(partyOf(pcsCase, "Jane").getId()).build()).build())
+                .showRelatedSubmissionsList(VerticalYesNo.NO)
+                .standaloneDocumentType(DynamicStringList.builder().value(DynamicStringListElement.builder()
+                    .code(CaseworkerDocumentType.WITHOUT_NOTICE_ORDER.name()).build()).build())
+                .build()).build(), caseReference));
+
+        assertThat(documents(caseReference, claimant)).isEmpty();
+        assertThat(documents(caseReference, defendant)).hasSize(1);
     }
 
     @Test

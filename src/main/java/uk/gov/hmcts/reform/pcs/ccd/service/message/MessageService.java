@@ -162,9 +162,9 @@ public class MessageService {
 
     /** Court staff's last query on the order, which they returned it with. */
     public Optional<String> lastQuery(OrderEntity order) {
-        return orderStepRepository.findByOrderIdAndMessageEntryIsNotNullOrderByIdDesc(order.getId()).stream()
+        return orderStepRepository.findQueriesByOrderId(order.getId()).stream()
             .findFirst()
-            .map(step -> step.getMessageEntry().getBody());
+            .map(step -> step.getMessageEntry() == null ? step.getNote().getNote() : step.getMessageEntry().getBody());
     }
 
     /** Gives the pool of the side the message waits for a task to review it. */
