@@ -25,9 +25,9 @@ public class BreathingSpaceNotSureContent {
                 Check if the defendants are in Breathing Space before you continue.
             </p>
 
-            <p class="govuk-body govuk-!-font-weight-bold">
+            <h2 class="govuk-heading-s">
                 What you should do next
-            </p>
+            </h2>
 
             <p class="govuk-body">
                 The Insolvency Service can tell you if the defendants are
@@ -36,23 +36,22 @@ public class BreathingSpaceNotSureContent {
                    href="https://www.gov.uk/government/organisations/insolvency-service"
                    target="_blank"
                    rel="noopener noreferrer">
-                    Contact the Insolvency Service (opens in new tab)
-                </a> to confirm.
+                   Contact the Insolvency Service (opens in new tab)</a> to confirm.
             </p>
 
-            <p class="govuk-body govuk-!-font-weight-bold">
+            <h2 class="govuk-heading-s">
                 If the Insolvency Service confirms that the defendants
                 are using the Breathing Space scheme
-            </p>
+            </h2>
 
             <p class="govuk-body">
                 You must contact the court and tell them that the defendants
                 are using the Breathing Space scheme.
             </p>
 
-            <p class="govuk-body govuk-!-font-weight-bold">
+            <h2 class="govuk-heading-s">
                 Contact the court by email
-            </p>
+            </h2>
 
             <p class="govuk-body">
                 Use the
@@ -60,9 +59,7 @@ public class BreathingSpaceNotSureContent {
                    href="https://www.find-court-tribunal.service.gov.uk/"
                    target="_blank"
                    rel="noopener noreferrer">
-                    find a court or tribunal service (opens in new tab)
-                </a>
-                to get your local court’s email address.
+                   find a court or tribunal service (opens in new tab)</a> to get your local court’s email address.
             </p>
 
             <p class="govuk-body">
@@ -77,9 +74,9 @@ public class BreathingSpaceNotSureContent {
                 registries' to find it.
             </p>
 
-            <p class="govuk-body govuk-!-font-weight-bold">
+            <h2 class="govuk-heading-s">
                 Contact the court by telephone
-            </p>
+            </h2>
 
             <p class="govuk-body">
                 0300 123 7050
@@ -93,13 +90,13 @@ public class BreathingSpaceNotSureContent {
                    target="_blank"
                    rel="noopener noreferrer">
                     Find out about call charges (opens in new tab)
-                </a>.
+                </a>
             </p>
 
-            <p class="govuk-body govuk-!-font-weight-bold">
+            <h2 class="govuk-heading-s">
                 If the Insolvency Service confirms that the defendants
                 are not using the Breathing Space scheme
-            </p>
+            </h2>
 
             <p class="govuk-body">
                 You can return to this service, and continue applying
