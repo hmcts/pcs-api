@@ -137,8 +137,8 @@ class BulkPrintLetterAssemblerTest {
             .isNotEqualTo(new BulkPrintLetterAssembler.LetterDocument("other.pdf", "application/pdf",
                 "claim".getBytes()))
             .isNotEqualTo(new BulkPrintLetterAssembler.LetterDocument("claim.pdf", "image/png", "claim".getBytes()))
-            .isNotEqualTo("claim.pdf");
-        assertThat(document).hasToString("LetterDocument[fileName=claim.pdf, contentType=application/pdf, 5 bytes]");
+            .isNotEqualTo("claim.pdf")
+            .hasToString("LetterDocument[fileName=claim.pdf, contentType=application/pdf, 5 bytes]");
         assertThat(new BulkPrintLetterAssembler.LetterDocument(null, null, null))
             .hasToString("LetterDocument[fileName=null, contentType=null, 0 bytes]");
     }
