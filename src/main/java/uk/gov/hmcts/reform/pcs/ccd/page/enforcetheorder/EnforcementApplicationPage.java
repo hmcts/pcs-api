@@ -60,7 +60,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body govuk-!-margin-bottom-4"> You’ll need to:</p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">apply to transfer enforcement of the possession order to
-                              the High Court. This costs £126 and you’ll need to provide a reason why you’re
+                              the High Court. This costs ${gaFeeAmount} and you’ll need to provide a reason why you’re
                               requesting to transfer</li>
                               <li class="govuk-!-font-size-19">ask the judge for a writ
                               (you’ll need additional evidence for this
@@ -102,6 +102,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getGaFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWarrantOfRestitutionInfoText, NEVER_SHOW, true)
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(

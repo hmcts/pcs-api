@@ -69,6 +69,10 @@ public class EnforcementOrder {
     @External
     private String writFeeAmount;
 
+    @CCD(searchable = false)
+    @External
+    private String gaFeeAmount;
+
     private String warrantOfRestitutionInfoText;
 
 }
