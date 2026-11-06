@@ -1,50 +1,64 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.event.action.PaymentSuccessAction;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-@AllArgsConstructor
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.CcdPaymentUpdateTaskComponent.CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR;
+
 @Service
 @Slf4j
 public class CcdPaymentStateUpdateService {
 
-    private final IdamTokenProvider systemUpdateUserTokenProvider;
-    private final AuthTokenGenerator authTokenGenerator;
-    private final CoreCaseDataApi coreCaseDataApi;
-    private final ObjectMapper objectMapper;
+    private final SchedulerClient schedulerClient;
+    private final SystemEventExecutor systemEventExecutor;
+    private final Map<SystemAction, PaymentSuccessAction> paymentSuccessActions;
 
-    public CaseResource submitPaymentSuccess(long caseId) {
-        String serviceAuthorization = authTokenGenerator.generate();
-        String idamToken = systemUpdateUserTokenProvider.getAuthToken();
-        log.debug("Submitting payment event for case: {}", caseId);
-        StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
-                                                                           String.valueOf(caseId),
-                                                                           claimIssuePayment.name());
-        CaseDataContent submitContent = CaseDataContent.builder()
-            .event(Event.builder().id(claimIssuePayment.name()).build())
-            .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
-        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
-                                                                String.valueOf(caseId), submitContent);
-        log.debug("CaseResource response : {}", caseResource);
-        return caseResource;
+    public CcdPaymentStateUpdateService(SchedulerClient schedulerClient,
+                                        SystemEventExecutor systemEventExecutor,
+                                        List<PaymentSuccessAction> paymentSuccessActions) {
+        this.schedulerClient = schedulerClient;
+        this.systemEventExecutor = systemEventExecutor;
+        this.paymentSuccessActions = paymentSuccessActions.stream()
+            .collect(Collectors.toUnmodifiableMap(PaymentSuccessAction::systemAction, Function.identity()));
+    }
+
+    public void submitPaymentSuccess(long caseId, EventId eventId, PaymentStatusCallback paymentStatusCallback,
+                                     SystemAction systemAction) {
+        PaymentStateTaskData taskData = PaymentStateTaskData.builder()
+            .caseReference(caseId)
+            .eventId(eventId)
+            .systemAction(systemAction)
+            .paymentReference(paymentStatusCallback.getPaymentReference())
+            .idempotencyKey(UUID.randomUUID()).build();
+        String instanceId = systemAction.name() + "-" + paymentStatusCallback.getPaymentReference();
+        schedulerClient.scheduleIfNotExists(CCD_PAYMENT_UPDATE_TASK_DESCRIPTOR
+                .instance(instanceId).data(taskData).scheduledTo(Instant.now()));
+    }
+
+    public void updateCcd(PaymentStateTaskData taskData) {
+        log.info("Updating the CCD State for Case: {} in Event: {} and PaymentReference: {}",
+                 taskData.getCaseReference(), taskData.getEventId(), taskData.getPaymentReference());
+        SystemEventExecutionResult result = systemEventExecutor.execute(taskData.getCaseReference(),
+            taskData.getIdempotencyKey(), context ->
+                paymentSuccessActions.get(taskData.getSystemAction()).apply(taskData));
+        log.info("System Event from Payment Callback event resulted in : {}", result);
     }
 
 
-    private JsonNode toJsonNode(PCSCase pcsCase) {
-        return objectMapper.valueToTree(pcsCase);
-    }
 
 }

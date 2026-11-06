@@ -1,21 +1,15 @@
-package uk.gov.hmcts.reform.pcs.feesandpay.event;
+package uk.gov.hmcts.reform.pcs.ccd.event.action;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
-import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.claim.ClaimWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
@@ -24,60 +18,44 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
+import uk.gov.hmcts.reform.pcs.system.SystemAction;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.system.SystemAction.CLAIM_ISSUED_PAYMENT;
 
 @Component
-@AllArgsConstructor
 @Slf4j
-public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
+@AllArgsConstructor
+public class ClaimPaymentAction implements PaymentSuccessAction {
 
-    private final SchedulerClient schedulerClient;
     private final PcsCaseService pcsCaseService;
-    private final DefendantAccessCodeService defendantAccessCodeService;
     private final ClaimFormScheduler claimFormScheduler;
+    private final DefendantAccessCodeService defendantAccessCodeService;
+    private final SchedulerClient schedulerClient;
     private final ClaimWaTaskService claimWaTaskService;
 
     @Override
-    public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder
-            .decentralisedEvent(claimIssuePayment.name(), this::submit)
-            .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
-            .name("Payment Confirmation")
-            .showCondition(ShowConditions.NEVER_SHOW)
-            .grant(Permission.CRU, UserRole.SYSTEM_USER)
-            .grant(Permission.R, UserRole.CLAIMANT)
-            .grant(Permission.R, UserRole.PCS_SOLICITOR)
-            .grant(Permission.R, UserRole.GA_CLAIMANT_SOLICITOR)
-            .grant(Permission.R, UserRole.CITIZEN)
-            .grant(Permission.R, UserRole.CTSC_ADMIN)
-            .grant(Permission.R, UserRole.CTSC_TEAM_LEADER)
-            .grant(Permission.R, UserRole.DEFENDANT)
-            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
-            .grant(Permission.R, UserRole.DEFENDANT_SOLICITOR)
-            .grant(Permission.R, UserRole.GA_DEFENDANT_SOLICITOR)
-            .grant(Permission.R, UserRole.HEARING_CENTRE_ADMIN)
-            .grant(Permission.R, UserRole.HEARING_CENTRE_TEAM_LEADER)
-            .grant(Permission.R, UserRole.JUDGE)
-            .grant(Permission.R, UserRole.LEADERSHIP_JUDGE)
-            .grant(Permission.R, UserRole.WLU_ADMIN)
-            .grant(Permission.R, UserRole.WLU_TEAM_LEADER)
-            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
+    public EventId eventId() {
+        return EventId.claimIssuePayment;
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-        long caseReference = eventPayload.caseReference();
-        if (caseData.getDateIssued() == null) {
-            log.info("Payment confirmed for case {} - issuing case and scheduling claim-form, "
-                     + "access-code letter generation, claim-issued notification and WA tasks", caseReference);
+    @Override
+    public SystemAction systemAction() {
+        return CLAIM_ISSUED_PAYMENT;
+    }
+
+    @Override
+    public SystemEventResult apply(PaymentStateTaskData taskData) {
+        long caseReference = taskData.getCaseReference();
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        if (pcsCaseEntity.getClaims().getFirst().getClaimIssuedDate() == null) {
+            log.info("Payment confirmed for case {} - issuing case and scheduling tasks", caseReference);
             pcsCaseService.setCaseIssuedDate(caseReference);
             claimFormScheduler.scheduleClaimFormGeneration(caseReference);
             // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
@@ -85,7 +63,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             scheduleClaimIssuedNotification(caseReference);
             claimWaTaskService.createTasksForIssuedClaim(caseReference);
         }
-        return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
+        return stateTransition(taskData, State.CASE_ISSUED);
     }
 
     private void scheduleClaimIssuedNotification(long caseReference) {
