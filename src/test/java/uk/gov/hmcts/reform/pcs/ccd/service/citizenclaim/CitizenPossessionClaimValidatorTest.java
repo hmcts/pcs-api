@@ -3,8 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
@@ -245,6 +247,92 @@ class CitizenPossessionClaimValidatorTest {
 
         assertThat(underTest.validateForSubmit(claim))
             .containsExactly("TOO_LONG:claimant.emailAddress", "TOO_LONG:notice.emailedTo");
+    }
+
+    @Test
+    void shouldNeedEachDefendantsNameAndAddressAnswers() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        CitizenClaimDefendant first = claim.getDefendants().get(0).getValue();
+        first.setNameKnown(null);
+        first.setAddressKnown(null);
+        CitizenClaimDefendant second = claim.getDefendants().get(1).getValue();
+        second.setNameKnown(VerticalYesNo.YES);
+        second.setAddressSameAsProperty(null);
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+            "REQUIRED:defendants[0].nameKnown",
+            "REQUIRED:defendants[0].addressKnown",
+            "REQUIRED:defendants[1].firstName",
+            "REQUIRED:defendants[1].lastName",
+            "REQUIRED:defendants[1].addressSameAsProperty");
+    }
+
+    @Test
+    void shouldNeedADefendantsAddressWhenItIsNotTheProperty() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getDefendants().get(1).getValue().setAddress(null);
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:defendants[1].address");
+    }
+
+    @Test
+    void shouldNeedTheDetailsOfAServedNotice() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeType(null);
+        claim.getNotice().setNoticeDate(null);
+        claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.PERSONALLY_HANDED,
+                                                  CitizenClaimNoticeMethod.OTHER));
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+            "REQUIRED:notice.noticeType",
+            "REQUIRED:notice.noticeDate",
+            "REQUIRED:notice.handedToName",
+            "REQUIRED:notice.handedDate",
+            "REQUIRED:notice.otherMethodDetails",
+            "REQUIRED:notice.otherMethodDate");
+    }
+
+    @Test
+    void shouldNeedAtLeastOneNoticeMethodAndTheDatesOfEachChosenOne() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeMethods(null);
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:notice.noticeMethods");
+
+        claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.EMAIL));
+        claim.getNotice().setEmailedDate(null);
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:notice.emailedDate");
+    }
+
+    @Test
+    void shouldNotNeedNoticeDetailsWhenNoticeWasNotServed() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeServed(VerticalYesNo.NO);
+        claim.getNotice().setNoticeType(null);
+        claim.getNotice().setNoticeMethods(null);
+
+        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldNeedTheStatementOfTruthName() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getSubmission().setStatementOfTruthFullName(" ");
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:submission.statementOfTruthFullName");
+
+        claim.getSubmission().setStatementOfTruthFullName("x".repeat(101));
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("TOO_LONG:submission.statementOfTruthFullName");
+    }
+
+    @Test
+    void shouldRefuseAnIndividualNameThatWouldNotFitTheClaimantNameColumn() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setFirstName("x".repeat(30));
+        claim.getClaimant().setLastName("y".repeat(29));
+        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+
+        claim.getClaimant().setLastName("y".repeat(30));
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("TOO_LONG:claimant.name");
     }
 
     private static String emailOfLength(int length) {

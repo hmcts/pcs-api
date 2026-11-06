@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentLedgerEntry;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
@@ -113,6 +115,10 @@ public class CitizenPossessionClaimValidator {
         } else if (kind == CitizenClaimantKind.INDIVIDUAL) {
             requireText(errors, "claimant.firstName", claimant.getFirstName(), NAME_MAX);
             requireText(errors, "claimant.lastName", claimant.getLastName(), NAME_MAX);
+            if (fitsIn(claimant.getFirstName(), NAME_MAX) && fitsIn(claimant.getLastName(), NAME_MAX)) {
+                // The claimant is named "First Last" in the party's 60-character org_name column
+                maxLength(errors, "claimant.name", claimant.getFirstName() + " " + claimant.getLastName(), NAME_MAX);
+            }
         } else {
             requireText(errors, "claimant.organisationName", claimant.getOrganisationName(), NAME_MAX);
         }
@@ -138,14 +144,21 @@ public class CitizenPossessionClaimValidator {
                 errors.add(required(path));
                 continue;
             }
-            if (defendant.getNameKnown() == VerticalYesNo.YES) {
+            if (defendant.getNameKnown() == null) {
+                errors.add(required(path + ".nameKnown"));
+            } else if (defendant.getNameKnown() == VerticalYesNo.YES) {
                 requireText(errors, path + ".firstName", defendant.getFirstName(), NAME_MAX);
                 requireText(errors, path + ".lastName", defendant.getLastName(), NAME_MAX);
             }
-            if (defendant.getAddressKnown() == VerticalYesNo.YES
-                && defendant.getAddressSameAsProperty() != VerticalYesNo.YES) {
-                requireAddress(errors, path + ".address", defendant.getAddress());
-                errors.addAll(validateAddressLengths(path + ".address", defendant.getAddress()));
+            if (defendant.getAddressKnown() == null) {
+                errors.add(required(path + ".addressKnown"));
+            } else if (defendant.getAddressKnown() == VerticalYesNo.YES) {
+                if (defendant.getAddressSameAsProperty() == null) {
+                    errors.add(required(path + ".addressSameAsProperty"));
+                } else if (defendant.getAddressSameAsProperty() == VerticalYesNo.NO) {
+                    requireAddress(errors, path + ".address", defendant.getAddress());
+                    errors.addAll(validateAddressLengths(path + ".address", defendant.getAddress()));
+                }
             }
         }
     }
@@ -228,6 +241,9 @@ public class CitizenPossessionClaimValidator {
             errors.add(required("notice.noticeServed"));
             return;
         }
+        if (notice.getNoticeServed() == VerticalYesNo.YES) {
+            validateServedNotice(notice, errors);
+        }
         maxLength(errors, "notice.noticeUnavailableReason", notice.getNoticeUnavailableReason(), REASON_MAX);
         maxLength(errors, "notice.handedToName", notice.getHandedToName(), SHORT_TEXT_MAX);
         maxLength(errors, "notice.emailedTo", notice.getEmailedTo(), EMAIL_MAX);
@@ -237,6 +253,61 @@ public class CitizenPossessionClaimValidator {
             requireText(errors, "notice.noticeTypeOther", notice.getNoticeTypeOther(), NAME_MAX);
         } else {
             maxLength(errors, "notice.noticeTypeOther", notice.getNoticeTypeOther(), NAME_MAX);
+        }
+    }
+
+    private static void validateServedNotice(CitizenClaimNotice notice, List<String> errors) {
+        if (notice.getNoticeType() == null) {
+            errors.add(required("notice.noticeType"));
+        }
+        if (notice.getNoticeDate() == null) {
+            errors.add(required("notice.noticeDate"));
+        }
+        Set<CitizenClaimNoticeMethod> methods = notice.getNoticeMethods();
+        if (methods == null || methods.isEmpty() || methods.stream().anyMatch(Objects::isNull)) {
+            errors.add(required("notice.noticeMethods"));
+        }
+        if (methods == null) {
+            return;
+        }
+        methods.stream().filter(Objects::nonNull).sorted().forEach(method -> {
+            switch (method) {
+                case FIRST_CLASS_POST -> requireDate(errors, "notice.postedDate", notice.getPostedDate());
+                case PERMITTED_PLACE -> requireDate(errors, "notice.deliveredDate", notice.getDeliveredDate());
+                case PERSONALLY_HANDED -> {
+                    requirePresent(errors, "notice.handedToName", notice.getHandedToName());
+                    requireDate(errors, "notice.handedDate", notice.getHandedDate());
+                }
+                case EMAIL -> {
+                    requirePresent(errors, "notice.emailedTo", notice.getEmailedTo());
+                    requireDate(errors, "notice.emailedDate", notice.getEmailedDate());
+                }
+                case OTHER_ELECTRONIC -> {
+                    requirePresent(errors, "notice.otherElectronicDetails", notice.getOtherElectronicDetails());
+                    requireDate(errors, "notice.otherElectronicDate", notice.getOtherElectronicDate());
+                }
+                case OTHER -> {
+                    requirePresent(errors, "notice.otherMethodDetails", notice.getOtherMethodDetails());
+                    requireDate(errors, "notice.otherMethodDate", notice.getOtherMethodDate());
+                }
+            }
+        });
+    }
+
+    // Length is checked for every notice field in validateNotice, served or not
+    private static void requirePresent(List<String> errors, String path, String value) {
+        if (StringUtils.isBlank(value)) {
+            errors.add(required(path));
+        }
+    }
+
+    private static boolean fitsIn(String value, int max) {
+        return StringUtils.isNotBlank(value) && value.length() <= max;
+    }
+
+    private static void requireDate(List<String> errors, String path, LocalDate date) {
+        if (date == null) {
+            errors.add(required(path));
         }
     }
 
@@ -287,7 +358,7 @@ public class CitizenPossessionClaimValidator {
             errors.add(required("submission.statementOfTruthAgreed"));
             return;
         }
-        maxLength(errors, "submission.statementOfTruthFullName", submission.getStatementOfTruthFullName(), 100);
+        requireText(errors, "submission.statementOfTruthFullName", submission.getStatementOfTruthFullName(), 100);
         maxLength(errors, "submission.statementOfTruthPosition", submission.getStatementOfTruthPosition(), 100);
     }
 

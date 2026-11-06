@@ -765,6 +765,10 @@ composeUp.doFirst {
 
 tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
+  // Shared with the unit tests, which own the file
+  from('src/test/resources') {
+    include 'citizenclaim/**'
+  }
 }
 
 tasks.named("processContractTestResources") {

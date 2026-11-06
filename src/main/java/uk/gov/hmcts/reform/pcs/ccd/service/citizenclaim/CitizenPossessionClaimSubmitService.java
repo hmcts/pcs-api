@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
@@ -61,13 +62,13 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -110,7 +111,6 @@ public class CitizenPossessionClaimSubmitService {
     private final CitizenClaimSubmissionRepository submissionRepository;
     private final FeeService feeService;
     private final PaymentService paymentService;
-    private final FeePaymentRepository feePaymentRepository;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
@@ -126,7 +126,6 @@ public class CitizenPossessionClaimSubmitService {
                                                CitizenClaimSubmissionRepository submissionRepository,
                                                FeeService feeService,
                                                PaymentService paymentService,
-                                               FeePaymentRepository feePaymentRepository,
                                                @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                                Clock utcClock) {
         this.pcsCaseService = pcsCaseService;
@@ -141,7 +140,6 @@ public class CitizenPossessionClaimSubmitService {
         this.submissionRepository = submissionRepository;
         this.feeService = feeService;
         this.paymentService = paymentService;
-        this.feePaymentRepository = feePaymentRepository;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -150,11 +148,13 @@ public class CitizenPossessionClaimSubmitService {
     }
 
     /**
-     * Writes and flushes the claim, then raises its fee service request (or reuses one the case
-     * already has), inside the submit transaction, so a Payments failure rolls the claim back with
-     * the rest of the event and a database failure surfaces before Payments is called.
+     * Writes and flushes the claim, then raises its fee service request, inside the submit
+     * transaction, so a Payments failure rolls the claim back with the rest of the event and a
+     * database failure surfaces before Payments is called. Only the answers that apply to the claim
+     * are mapped (no arrears details without a rent arrears ground, no notice details unless notice
+     * was served); the submitted answers are kept in full.
      *
-     * @throws CitizenClaimPaymentUnavailableException if the Payments API call failed
+     * @throws CitizenClaimPaymentUnavailableException if the Fees Register or Payments call failed
      */
     public SubmittedClaim submit(PcsCaseEntity pcsCaseEntity, CitizenPossessionClaim answers) {
         final long caseReference = pcsCaseEntity.getCaseReference();
@@ -162,55 +162,63 @@ public class CitizenPossessionClaimSubmitService {
             .propertyAddress(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress()))
             .draftVersion(null)
             .build();
+        final CitizenPossessionClaim applicable = withOnlyApplicableAnswers(claim);
 
-        ClaimEntity newClaim = buildClaimEntity(claim);
-        newClaim.addClaimGrounds(buildClaimGrounds(claim.getGrounds()));
-        newClaim.setRentArrears(buildRentArrears(claim));
-        newClaim.setNoticeOfPossession(buildNotice(claim.getNotice()));
-        newClaim.setStatementOfTruth(buildStatementOfTruth(claim));
+        ClaimEntity newClaim = buildClaimEntity(applicable);
+        newClaim.addClaimGrounds(buildClaimGrounds(applicable.getGrounds()));
+        newClaim.setRentArrears(buildRentArrears(applicable));
+        newClaim.setNoticeOfPossession(buildNotice(applicable.getNotice()));
+        newClaim.setStatementOfTruth(buildStatementOfTruth(applicable));
         pcsCaseEntity.addClaim(newClaim);
         ClaimEntity claimEntity = claimRepository.save(newClaim);
 
-        List<DocumentEntity> documents = documentService.createAllDocuments(toDocumentCase(claim));
+        List<DocumentEntity> documents = documentService.createAllDocuments(toDocumentCase(applicable));
         documents.forEach(document -> document.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documents);
         claimEntity.addClaimDocuments(documents);
 
-        PartyEntity claimant = populateClaimant(pcsCaseEntity, claim.getClaimant());
+        PartyEntity claimant = populateClaimant(pcsCaseEntity, applicable.getClaimant());
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
-        for (PartyEntity defendant : buildDefendants(claim)) {
+        for (PartyEntity defendant : buildDefendants(applicable)) {
             pcsCaseEntity.addParty(defendant);
             claimEntity.addParty(defendant, PartyRole.DEFENDANT);
         }
-        buildUnderlessee(claim.getCircumstances()).ifPresent(underlessee -> {
+        buildUnderlessee(applicable.getCircumstances()).ifPresent(underlessee -> {
             pcsCaseEntity.addParty(underlessee);
             claimEntity.addParty(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
         });
 
-        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(claim));
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(applicable));
         allocateLocation(pcsCaseEntity);
         pcsCaseRepository.save(pcsCaseEntity);
 
-        saveRentHistory(claimEntity, claim.getRentArrears());
+        saveRentHistory(claimEntity, applicable.getRentArrears());
         saveSubmittedAnswers(claimEntity, claim);
         pcsCaseRepository.flush();
 
-        return existingClaimServiceRequest(caseReference)
-            .orElseGet(() -> createClaimServiceRequest(caseReference, claimant));
+        return createClaimServiceRequest(caseReference, claimant);
     }
 
-    private Optional<SubmittedClaim> existingClaimServiceRequest(long caseReference) {
-        return feePaymentRepository.findLatestServiceRequest(caseReference, CLAIM)
-            .map(existing -> {
-                log.info("Reusing claim fee service request {} for case {}",
-                         existing.getServiceRequestReference(), caseReference);
-                return new SubmittedClaim(existing.getServiceRequestReference(),
-                                          FeeDetails.builder().feeAmount(existing.getAmount()).build());
-            });
+    private static CitizenPossessionClaim withOnlyApplicableAnswers(CitizenPossessionClaim claim) {
+        boolean rentArrearsClaim = CitizenPossessionClaimValidator.allGrounds(claim.getGrounds()).stream()
+            .anyMatch(PrivateLandlordAssuredGround::isRentArrears);
+        CitizenClaimNotice notice = claim.getNotice();
+        boolean noticeServed = notice != null && notice.getNoticeServed() == VerticalYesNo.YES;
+
+        return claim.toBuilder()
+            .rentArrears(rentArrearsClaim ? claim.getRentArrears() : null)
+            .notice(noticeServed || notice == null
+                        ? notice : CitizenClaimNotice.builder().noticeServed(notice.getNoticeServed()).build())
+            .build();
     }
 
     private SubmittedClaim createClaimServiceRequest(long caseReference, PartyEntity claimant) {
-        FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
+        FeeDetails feeDetails;
+        try {
+            feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
+        } catch (FeeNotFoundException e) {
+            throw new CitizenClaimPaymentUnavailableException(caseReference, e);
+        }
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
@@ -367,19 +375,16 @@ public class CitizenPossessionClaimSubmitService {
 
     private StatementOfTruthEntity buildStatementOfTruth(CitizenPossessionClaim claim) {
         CitizenClaimSubmission submission = claim.getSubmission();
-        String fullName = StringUtils.defaultIfBlank(
-            submission.getStatementOfTruthFullName(), claimantDisplayName(claim.getClaimant()));
-
         return StatementOfTruthEntity.builder()
             .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
             .accepted(YesOrNo.YES)
-            .fullName(fullName)
+            .fullName(submission.getStatementOfTruthFullName())
             .positionHeld(blankToNull(submission.getStatementOfTruthPosition()))
             .completedDate(LocalDateTime.now(utcClock))
             .build();
     }
 
-    private static String claimantDisplayName(CitizenClaimClaimant claimant) {
+    static String claimantDisplayName(CitizenClaimClaimant claimant) {
         if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.ORGANISATION) {
             return claimant.getOrganisationName();
         }
@@ -400,7 +405,8 @@ public class CitizenPossessionClaimSubmitService {
                                               .tenancyLicenceDocuments(tenancy.getTenancyAgreementDocuments())
                                               .build());
         }
-        if (notice != null && notice.getNoticeAvailable() != VerticalYesNo.NO) {
+        if (notice != null && notice.getNoticeServed() == VerticalYesNo.YES
+            && notice.getNoticeAvailable() != VerticalYesNo.NO) {
             builder.noticeServedDetails(NoticeServedDetails.builder()
                                             .documents(notice.getNoticeDocuments())
                                             .build());
@@ -443,9 +449,9 @@ public class CitizenPossessionClaimSubmitService {
         party.setRemoved(false);
         party.setNameKnown(VerticalYesNo.YES);
         party.setNameOverridden(YesOrNo.NO);
-        if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.ORGANISATION) {
-            party.setOrgName(claimant.getOrganisationName());
-        } else {
+        // Claimant name readers (case list, claimant tab, the defendant's journey) use orgName, as ExUI sets it
+        party.setOrgName(claimantDisplayName(claimant));
+        if (claimant.getIndividualOrOrganisation() != CitizenClaimantKind.ORGANISATION) {
             party.setFirstName(claimant.getFirstName());
             party.setLastName(claimant.getLastName());
         }
@@ -478,29 +484,21 @@ public class CitizenPossessionClaimSubmitService {
             .filter(Objects::nonNull)
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(this::toDefendant)
+            .map(CitizenPossessionClaimSubmitService::toDefendantDetails)
+            .map(partyService::createDefendant)
             .toList();
         return partyRepository.saveAll(defendants);
     }
 
-    private PartyEntity toDefendant(CitizenClaimDefendant defendant) {
-        PartyEntity entity = new PartyEntity();
-        entity.setRemoved(false);
-        entity.setNameKnown(defendant.getNameKnown());
-        if (defendant.getNameKnown() == VerticalYesNo.YES) {
-            entity.setFirstName(defendant.getFirstName());
-            entity.setLastName(defendant.getLastName());
-        }
-        entity.setAddressKnown(defendant.getAddressKnown());
-        if (defendant.getAddressKnown() == VerticalYesNo.YES) {
-            VerticalYesNo sameAsProperty = Optional.ofNullable(defendant.getAddressSameAsProperty())
-                .orElse(defendant.getAddress() == null ? VerticalYesNo.YES : VerticalYesNo.NO);
-            entity.setAddressSameAsProperty(sameAsProperty);
-            if (sameAsProperty == VerticalYesNo.NO) {
-                entity.setAddress(toAddressEntity(defendant.getAddress()));
-            }
-        }
-        return entity;
+    private static DefendantDetails toDefendantDetails(CitizenClaimDefendant defendant) {
+        return DefendantDetails.builder()
+            .nameKnown(defendant.getNameKnown())
+            .firstName(defendant.getFirstName())
+            .lastName(defendant.getLastName())
+            .addressKnown(defendant.getAddressKnown())
+            .addressSameAsPossession(defendant.getAddressSameAsProperty())
+            .correspondenceAddress(defendant.getAddress())
+            .build();
     }
 
     private Optional<PartyEntity> buildUnderlessee(CitizenClaimCircumstances circumstances) {

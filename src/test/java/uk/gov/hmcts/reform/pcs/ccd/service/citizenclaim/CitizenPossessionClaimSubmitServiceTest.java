@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
@@ -36,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.CitizenClaimSubmissionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryLedgerEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryPeriodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
@@ -49,11 +50,11 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -68,7 +69,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -80,6 +80,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -116,8 +117,6 @@ class CitizenPossessionClaimSubmitServiceTest {
     private FeeService feeService;
     @Mock
     private PaymentService paymentService;
-    @Mock
-    private FeePaymentRepository feePaymentRepository;
 
     @Captor
     private ArgumentCaptor<ClaimEntity> claimCaptor;
@@ -160,6 +159,15 @@ class CitizenPossessionClaimSubmitServiceTest {
         lenient().when(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress())).thenReturn(CASE_ADDRESS);
         lenient().when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenReturn(caseIssueFee);
         lenient().when(partyService.getPartyName(claimantStub)).thenReturn("Jane Landlord");
+        lenient().when(partyService.createDefendant(any(DefendantDetails.class))).thenAnswer(invocation -> {
+            DefendantDetails details = invocation.getArgument(0);
+            PartyEntity defendant = new PartyEntity();
+            defendant.setNameKnown(details.getNameKnown());
+            defendant.setFirstName(details.getFirstName());
+            defendant.setAddressSameAsProperty(details.getAddressSameAsPossession());
+            defendant.setAddress(details.getCorrespondenceAddress() != null ? new AddressEntity() : null);
+            return defendant;
+        });
         PaymentServiceResponse serviceRequest = new PaymentServiceResponse();
         serviceRequest.setServiceRequestReference("2026-1762441234567");
         lenient().when(paymentService.createServiceRequest(any())).thenReturn(serviceRequest);
@@ -168,7 +176,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         underTest = new CitizenPossessionClaimSubmitService(
             pcsCaseService, pcsCaseRepository, claimRepository, partyRepository, partyService, documentService,
             addressMapper, ledgerEntryRepository, periodRepository, submissionRepository, feeService,
-            paymentService, feePaymentRepository, objectMapper, clock);
+            paymentService, objectMapper, clock);
     }
 
     @Test
@@ -292,19 +300,78 @@ class CitizenPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldReuseAClaimServiceRequestTheCaseAlreadyHas() {
-        when(feePaymentRepository.findLatestServiceRequest(CASE_REFERENCE, PaymentCallbackHandlerType.CLAIM))
-            .thenReturn(Optional.of(FeePaymentEntity.builder()
-                                        .serviceRequestReference("2026-existing")
-                                        .amount(new BigDecimal("404.00"))
-                                        .build()));
+    void shouldReportAFeesRegisterOutageAsPaymentUnavailable() {
+        FeeNotFoundException feesDown = new FeeNotFoundException("Unable to retrieve fee", mock(FeignException.class));
+        when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenThrow(feesDown);
 
-        CitizenPossessionClaimSubmitService.SubmittedClaim submitted =
-            underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim))
+            .isInstanceOf(CitizenClaimPaymentUnavailableException.class)
+            .hasCause(feesDown);
+        verifyNoInteractions(paymentService);
+    }
 
-        assertThat(submitted.serviceRequestReference()).isEqualTo("2026-existing");
-        assertThat(submitted.feeDetails().getFeeAmount()).isEqualByComparingTo("404.00");
-        verifyNoInteractions(paymentService, feeService);
+    @Test
+    void shouldNameAnIndividualClaimantInOrgNameAsExUiDoes() {
+        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+
+        assertThat(claimantStub.getOrgName()).isEqualTo("Jane Landlord");
+        assertThat(claimantStub.getFirstName()).isEqualTo("Jane");
+        assertThat(claimantStub.getLastName()).isEqualTo("Landlord");
+    }
+
+    @Test
+    void shouldNameAnOrganisationClaimantByItsName() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setIndividualOrOrganisation(CitizenClaimantKind.ORGANISATION);
+        claim.getClaimant().setOrganisationName("Landlord Lettings Ltd");
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        assertThat(claimantStub.getOrgName()).isEqualTo("Landlord Lettings Ltd");
+        assertThat(claimantStub.getFirstName()).isNull();
+    }
+
+    @Test
+    void shouldWriteNoRentArrearsDetailsWithoutARentArrearsGround() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setRentArrearsGrounds(null);
+        claim.getGrounds().setHasRentArrearsGrounds(VerticalYesNo.NO);
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getRentArrears()).isNull();
+        assertThat(claimCaptor.getValue().getDueToRentArrears()).isEqualTo(YesOrNo.NO);
+        verify(ledgerEntryRepository, never()).saveAll(any());
+        verify(periodRepository, never()).saveAll(any());
+        assertThat(pcsCaseEntity.getTenancyLicence().getRentAmount()).isNull();
+        assertThat(pcsCaseEntity.getTenancyLicence().getRentFrequency()).isNull();
+        verify(documentService).createAllDocuments(documentCaseCaptor.capture());
+        assertThat(documentCaseCaptor.getValue().getRentArrears()).isNull();
+
+        verify(submissionRepository).save(submissionCaptor.capture());
+        assertThat(submissionCaptor.getValue().getSubmittedClaim()).contains("rentHistoryLedger");
+    }
+
+    @Test
+    void shouldWriteNoNoticeDetailsWhenNoticeWasNotServed() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeServed(VerticalYesNo.NO);
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        NoticeOfPossessionEntity notice = claimCaptor.getValue().getNoticeOfPossession();
+        assertThat(notice.getNoticeServed()).isEqualTo(YesOrNo.NO);
+        assertThat(notice.getNoticeType()).isNull();
+        assertThat(notice.getServingMethod()).isNull();
+        assertThat(notice.getNoticeDate()).isNull();
+        verify(documentService).createAllDocuments(documentCaseCaptor.capture());
+        assertThat(documentCaseCaptor.getValue().getNoticeServedDetails()).isNull();
+
+        verify(submissionRepository).save(submissionCaptor.capture());
+        assertThat(submissionCaptor.getValue().getSubmittedClaim()).contains("tom.tenant@example.com");
     }
 
     @Test
@@ -329,6 +396,14 @@ class CitizenPossessionClaimSubmitServiceTest {
         PartyEntity secondDefendant = claimParties.get(2).getParty();
         assertThat(secondDefendant.getNameKnown()).isEqualTo(VerticalYesNo.NO);
         assertThat(secondDefendant.getAddress()).isNotNull();
+        verify(partyService).createDefendant(DefendantDetails.builder()
+                                                 .nameKnown(VerticalYesNo.NO)
+                                                 .addressKnown(VerticalYesNo.YES)
+                                                 .addressSameAsPossession(VerticalYesNo.NO)
+                                                 .correspondenceAddress(
+                                                     CitizenPossessionClaimFixtures.completeClaim().getDefendants()
+                                                         .get(1).getValue().getAddress())
+                                                 .build());
         assertThat(claimParties.get(3).getParty().getOrgName()).isEqualTo("Sub Tenant Ltd");
     }
 

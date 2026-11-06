@@ -283,7 +283,7 @@ public class PartyService {
         return allDefendants;
     }
 
-    private PartyEntity createDefendant(DefendantDetails defendantDetails) {
+    public PartyEntity createDefendant(DefendantDetails defendantDetails) {
         PartyEntity defendantEntity = new PartyEntity();
         defendantEntity.setRemoved(false);
 

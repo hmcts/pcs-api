@@ -22,6 +22,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOrgNameListCreator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -41,6 +43,9 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -95,6 +100,14 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     private EntityManager entityManager;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private PartiesView partiesView;
+    @Autowired
+    private CaseListView caseListView;
+    @Autowired
+    private ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
+    @Autowired
+    private ClaimantOrgNameListCreator claimantOrgNameListCreator;
     @Autowired
     @Qualifier("draftCaseDataObjectMapper")
     private ObjectMapper draftObjectMapper;
@@ -249,6 +262,16 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
                 assertThat(claimant.getParty().getEmailAddress()).isEqualTo(LONGEST_EMAIL);
             });
         assertThat(claim.getClaimDocuments()).hasSize(3);
+
+        PCSCase viewed = PCSCase.builder().build();
+        partiesView.setCaseFields(viewed, pcsCase);
+        caseListView.setCaseFields(viewed);
+        assertThat(viewed.getClaimantNames()).isEqualTo("Jane Landlord");
+        assertThat(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(viewed).getClaimantName())
+            .isEqualTo("Jane Landlord");
+        assertThat(claimantOrgNameListCreator.createClaimantOrgNameList(viewed))
+            .extracting(ListValue::getValue)
+            .containsExactly("Jane Landlord");
 
         assertThat(ledgerEntryRepository.findByClaimId(claim.getId())).hasSize(2);
         assertThat(periodRepository.findByClaimId(claim.getId())).hasSize(1);
