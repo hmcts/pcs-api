@@ -86,9 +86,10 @@ public class ClaimPackSelector {
             DocumentEntity englishLetter = letters.get(AccessCodeLetterLanguage.ENGLISH);
             // England ignores any Welsh-marked letter. Wales waits for both letters (HDPI-9698 D4).
             DocumentEntity welshLetter = wales ? letters.get(AccessCodeLetterLanguage.WELSH) : null;
-            if (englishLetter == null || (wales && welshLetter == null)) {
-                log.debug("Claim pack held for case {} defendant {} - awaiting access code",
-                    pcsCase.getId(), defendant.getId());
+            String missing = missingLetters(englishLetter, welshLetter, wales);
+            if (missing != null) {
+                log.debug("Claim pack held for case {} defendant {} - awaiting {}",
+                    pcsCase.getId(), defendant.getId(), missing);
                 continue;
             }
             List<DocumentEntity> unsent = new ArrayList<>();
@@ -101,6 +102,20 @@ public class ClaimPackSelector {
                 candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent));
             }
         }
+    }
+
+    // Names what a held defendant pack is waiting for (HDPI-9698 R3). England keeps its old wording.
+    private static String missingLetters(DocumentEntity englishLetter, DocumentEntity welshLetter, boolean wales) {
+        if (!wales) {
+            return englishLetter == null ? "access code" : null;
+        }
+        if (englishLetter == null && welshLetter == null) {
+            return "access code (English and Welsh letters)";
+        }
+        if (englishLetter == null) {
+            return "English access-code letter";
+        }
+        return welshLetter == null ? "Welsh access-code letter" : null;
     }
 
     private void addIfUnsent(List<DocumentEntity> unsent, Set<String> sent, PartyEntity defendant,

@@ -1,5 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +16,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -40,6 +45,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -459,6 +465,48 @@ class ClaimPackSelectorTest {
 
         assertThat(defendantCandidates(pcsCase)).singleElement()
             .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(englishPinA, claimForm));
+    }
+
+    @ParameterizedTest(name = "{0}, English PIN {1}, Welsh PIN {2} -> awaiting {3}")
+    @CsvSource({
+        "WALES, true, false, Welsh access-code letter",
+        "WALES, false, true, English access-code letter",
+        "WALES, false, false, access code (English and Welsh letters)",
+        "ENGLAND, false, false, access code",
+        "ENGLAND, false, true, access code"
+    })
+    @DisplayName("Names the missing access-code letter when a defendant's pack is held")
+    void shouldNameTheMissingLetterWhenHoldingADefendantPack(LegislativeCountry country, boolean hasEnglishPin,
+                                                             boolean hasWelshPin, String awaiting) {
+        List<DocumentEntity> documents = new ArrayList<>();
+        if (hasEnglishPin) {
+            documents.add(document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA));
+        }
+        if (hasWelshPin) {
+            documents.add(welshPin(defendantA));
+        }
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWith(claimForm, documents, claimantAnd(defendantA));
+        pcsCase.setLegislativeCountry(country);
+
+        Logger selectorLogger = (Logger) LoggerFactory.getLogger(ClaimPackSelector.class);
+        Level previousLevel = selectorLogger.getLevel();
+        ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+        logAppender.start();
+        selectorLogger.addAppender(logAppender);
+        selectorLogger.setLevel(Level.DEBUG);
+        try {
+            assertThat(defendantCandidates(pcsCase)).isEmpty();
+        } finally {
+            selectorLogger.detachAppender(logAppender);
+            selectorLogger.setLevel(previousLevel);
+        }
+
+        assertThat(logAppender.list).singleElement().satisfies(event -> {
+            assertThat(event.getLevel()).isEqualTo(Level.DEBUG);
+            assertThat(event.getFormattedMessage()).isEqualTo(
+                "Claim pack held for case " + CASE_ID + " defendant " + defendantA.getId() + " - awaiting " + awaiting);
+        });
     }
 
     private PcsCaseEntity readyClaimCase() {

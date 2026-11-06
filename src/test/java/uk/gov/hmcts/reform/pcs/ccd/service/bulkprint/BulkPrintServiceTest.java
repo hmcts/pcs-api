@@ -220,9 +220,11 @@ class BulkPrintServiceTest {
     @ParameterizedTest(name = "{0} sends letter type {1}")
     @CsvSource({
         "CLAIMANT_CLAIM_PACK, CPC-01-IN0",
-        "DEFENCE_PACK, DEF-01-IN0"
+        "DEFENCE_PACK, DEF-01-IN0",
+        "DEFENCE_PACK_LEGAL_REP, DEF-01-IN1",
+        "GEN_APP_PACK, GEN-00-IN0"
     })
-    @DisplayName("Sends renamed IN0 letter type codes for claim and defence packs")
+    @DisplayName("Sends the letter type code, with no blank forms, for packs other than the defendant claim packs")
     void shouldSendRenamedLetterTypeCode(LetterType letterType, String expectedLetterType) {
         byte[] coversheetBytes = "coversheet".getBytes();
         byte[] documentBytes = "document".getBytes();
@@ -242,6 +244,8 @@ class BulkPrintServiceTest {
 
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo(expectedLetterType);
+        verify(pdfMerger).merge(List.of(coversheetBytes, documentBytes));
+        verifyNoInteractions(blankClaimPackFormsProvider);
     }
 
     @Test

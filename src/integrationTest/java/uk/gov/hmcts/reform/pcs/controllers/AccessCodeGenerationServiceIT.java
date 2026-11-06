@@ -74,10 +74,11 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         UUID succeedingDefendantId = defendants.get(1).getId();
 
         when(accessCodeFormDocumentGenerator.generate(any(), any(),
-            argThat(party -> party != null && failingDefendantId.equals(party.getId())), anyString(), any()))
+            argThat(party -> party != null && failingDefendantId.equals(party.getId())), anyString(), any(), any()))
             .thenThrow(new RuntimeException("docmosis down"));
         when(accessCodeFormDocumentGenerator.generate(any(), any(),
-            argThat(party -> party != null && succeedingDefendantId.equals(party.getId())), anyString(), any()))
+            argThat(party -> party != null && succeedingDefendantId.equals(party.getId())), anyString(), any(),
+            any()))
             .thenReturn("http://dm-store/documents/11111111-1111-1111-1111-111111111111");
 
         assertThrows(IllegalStateException.class,
@@ -98,7 +99,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         final UUID firstDefendantId = defendants.get(0).getId();
         final UUID secondDefendantId = defendants.get(1).getId();
 
-        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any()))
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any(), any()))
             .thenReturn("http://dm-store/documents/11111111-1111-1111-1111-111111111111");
 
         accessCodeGenerationService.createAccessCodesForParties("1781000000000002", true);
@@ -120,14 +121,14 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         final UUID d2 = defendants.get(1).getId();
 
         doReturn(ENGLISH_URL).when(accessCodeFormDocumentGenerator)
-            .generate(any(), any(), any(), anyString(), eq(ENGLISH));
+            .generate(any(), any(), any(), anyString(), eq(ENGLISH), any());
         doThrow(new DocAssemblyException("Document generation failed")).doReturn(WELSH_URL)
             .when(accessCodeFormDocumentGenerator)
             .generate(any(), any(), argThat(party -> party != null && d1.equals(party.getId())), anyString(),
-                      eq(WELSH));
+                      eq(WELSH), any());
         doReturn(WELSH_URL).when(accessCodeFormDocumentGenerator)
             .generate(any(), any(), argThat(party -> party != null && d2.equals(party.getId())), anyString(),
-                      eq(WELSH));
+                      eq(WELSH), any());
 
         assertThrows(IllegalStateException.class,
             () -> accessCodeGenerationService.createAccessCodesForParties("1781000000000021", true));

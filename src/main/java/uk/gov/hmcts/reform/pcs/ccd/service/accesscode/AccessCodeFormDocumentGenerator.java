@@ -78,17 +78,27 @@ public class AccessCodeFormDocumentGenerator {
         this.featureToggleService = featureToggleService;
     }
 
+    /**
+     * Resolves what every letter for a defendant shares: the respond-by-post court (a location reference lookup) and
+     * the issue date. Call it once per defendant and pass the result to each {@link #generate} call, so a Wales
+     * defendant's English and Welsh letters show the same court and date and the court is looked up once.
+     */
+    public LetterContext resolveLetterContext(PcsCaseEntity pcsCaseEntity) {
+        return new LetterContext(resolveServingCourt(pcsCaseEntity), LocalDate.now(ukClock));
+    }
+
     public String generate(PcsCaseEntity pcsCaseEntity,
                            ClaimEntity mainClaim,
                            PartyEntity defendant,
                            String plaintextAccessCode,
-                           AccessCodeLetterLanguage language) {
+                           AccessCodeLetterLanguage language,
+                           LetterContext context) {
 
         boolean welsh = language == AccessCodeLetterLanguage.WELSH;
         // The Welsh template has no V2 and no courtName tag, so release 1.4 changes only the English letter.
         boolean englishV2 = !welsh && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
         String formattedPropertyAddress = formatAddress(pcsCaseEntity.getPropertyAddress());
-        CourtVenue servingCourt = resolveServingCourt(pcsCaseEntity);
+        CourtVenue servingCourt = context.servingCourt();
 
         AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCaseEntity.getCaseReference()))
@@ -98,7 +108,7 @@ public class AccessCodeFormDocumentGenerator {
             .propertyAddress(formattedPropertyAddress)
             .respondByPostCourtAddress(formatCourtAddress(servingCourt))
             .accessCode(plaintextAccessCode)
-            .issuedOn(LocalDate.now(ukClock))
+            .issuedOn(context.issuedOn())
             .url(respondOnlineUrl)
             .courtName(englishV2 ? servingCourt.courtName() : null)
             .build();
@@ -190,5 +200,11 @@ public class AccessCodeFormDocumentGenerator {
         }
         AddressUK addressUK = addressMapper.toAddressUK(addressEntity);
         return addressFormatter.formatFullAddressWithoutCountry(addressUK, AddressFormatter.NEWLINE_DELIMITER);
+    }
+
+    /**
+     * The values shared by all of one defendant's access-code letters, from {@link #resolveLetterContext}.
+     */
+    public record LetterContext(CourtVenue servingCourt, LocalDate issuedOn) {
     }
 }

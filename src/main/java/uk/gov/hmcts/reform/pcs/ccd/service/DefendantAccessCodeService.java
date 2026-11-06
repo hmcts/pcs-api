@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator.LetterContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
@@ -90,18 +91,21 @@ public class DefendantAccessCodeService {
         AccessCodeLetterLanguage rendering = null;
 
         try {
+            // One court lookup and one issue date for all of this defendant's letters (HDPI-9698 R2). A failure
+            // here belongs to no single letter, so it carries no language prefix.
+            final LetterContext letterContext = accessCodeFormDocumentGenerator.resolveLetterContext(pcsCaseEntity);
             String plaintextAccessCode = accessCodeGenerator.generateAccessCode();
 
             // Render every letter before saving anything: a failed render leaves no document or code behind,
             // so the retry starts again with a fresh code and renders both letters.
             rendering = ENGLISH;
             String englishUrl = accessCodeFormDocumentGenerator
-                .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, ENGLISH);
+                .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, ENGLISH, letterContext);
             String welshUrl = null;
             if (walesCase) {
                 rendering = WELSH;
                 welshUrl = accessCodeFormDocumentGenerator
-                    .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, WELSH);
+                    .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, WELSH, letterContext);
             }
             rendering = null;
 
