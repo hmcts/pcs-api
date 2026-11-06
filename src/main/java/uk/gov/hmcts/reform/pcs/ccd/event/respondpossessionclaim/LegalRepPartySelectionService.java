@@ -61,6 +61,12 @@ public class LegalRepPartySelectionService {
         return filterDefendantsAwaitingResponse(caseEntity.getCaseReference(), representedDefendants);
     }
 
+    public List<PartyEntity> getDefendantsWithResponse(PcsCaseEntity caseEntity, String organisationId) {
+        List<PartyEntity> representedDefendants =
+            legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId);
+        return filterDefendantsWithResponse(caseEntity.getCaseReference(), representedDefendants);
+    }
+
     public Optional<UUID> getRespondingPartyId(long caseReference, String organisationId) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         List<PartyEntity> defendantsAwaitingResponse = getDefendantsAwaitingResponse(caseEntity, organisationId);
@@ -73,6 +79,13 @@ public class LegalRepPartySelectionService {
     public List<PartyEntity> filterDefendantsAwaitingResponse(long caseReference, List<PartyEntity> defendants) {
         return defendants.stream()
             .filter(defendant -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                caseReference, defendant.getId()))
+            .toList();
+    }
+
+    private List<PartyEntity> filterDefendantsWithResponse(long caseReference, List<PartyEntity> defendants) {
+        return defendants.stream()
+            .filter(defendant -> defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
                 caseReference, defendant.getId()))
             .toList();
     }
