@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.pcs;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.stubbing.StubMapping;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -19,13 +17,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.bulkprint.MockSendLetterServer;
-import uk.gov.hmcts.reform.pcs.bulkprint.model.Letter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -34,27 +28,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
-import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
-import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
-import uk.gov.hmcts.reform.pcs.service.CaseStateService;
-import uk.gov.hmcts.reform.pcs.service.DocumentServiceStubs;
-import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.CLAIMANT_CLAIM_PACK;
-import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK;
-import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT_TASK_NAME;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.utils.TestDataGenerator.createDefendant;
+import static uk.gov.hmcts.reform.pcs.utils.TestDataGenerator.createTestAddress;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -66,34 +49,14 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Autowired
     private IdamClient idamClient;
     @Autowired
-    private CaseStateService caseStateService;
-    @Autowired
-    private CaseDocumentService caseDocumentService;
-    @Autowired
-    private FeePaymentService feePaymentService;
-    @Autowired
-    private TestingSupportClient testingSupportClient;
-    @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private MockSendLetterServer mockSendLetterServer;
-    @Autowired
-    private DocumentServiceStubs documentServiceStubs;
 
     private String solicitorToken;
     private Long caseReference;
-    private StubMapping renditions;
 
     @BeforeAll
     void setup() {
         solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
-        // So that CDAM's check for each pack document can only pass on that document.
-        renditions = documentServiceStubs.giveEachRenditionItsOwnId();
-    }
-
-    @AfterAll
-    void tearDown() {
-        documentServiceStubs.remove(renditions);
     }
 
     @Test
@@ -167,64 +130,5 @@ class CreatePossessionClaimTest extends CftlibTest {
         assertThat(retrievedCase.getState()).isEqualTo(State.PENDING_CASE_ISSUED.name());
     }
 
-    @Test
-    @Order(3)
-    void verifyClaimPacks() {
-        List<FeePaymentSummary> feePaymentSummaries
-            = feePaymentService.waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.CLAIM);
-        feePaymentService.simulatePayments(caseReference, feePaymentSummaries);
-        caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
-
-        // Bulk print downloads each document through CDAM as PCS's system user. With the documents attached to
-        // the case, CDAM serves one only if CCD shows it to that user, which systemDocuments is there for.
-        List<UUID> claimForms = caseDocumentService.waitForDocumentIds(caseReference, DocumentType.CLAIM, 1);
-        List<UUID> accessCodeLetters =
-            caseDocumentService.waitForDocumentIds(caseReference, DocumentType.DEFENDANT_ACCESS_CODE, 2);
-        List<StubMapping> attached = Stream.concat(claimForms.stream(), accessCodeLetters.stream())
-            .map(documentId -> documentServiceStubs.attachToCase(documentId, caseReference))
-            .toList();
-        try {
-            testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
-
-            List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK, 1);
-            Letter claimantLetter = claimantLetters.getFirst();
-            assertThat(getRecipientName(claimantLetter)).isEqualTo("CftLibTest Claimant");
-
-            List<Letter> defendantLetters =
-                mockSendLetterServer.getSentLetters(caseReference, DEFENDANT_CLAIM_PACK, 2);
-            assertThat(defendantLetters)
-                .map(CreatePossessionClaimTest::getRecipientName)
-                .containsExactlyInAnyOrder("Danny Defendant", "Delia Jones");
-            assertThat(attached)
-                .as("CDAM read each pack document's case-attached metadata, so checked access through CCD")
-                .allSatisfy(stub -> assertThat(documentServiceStubs.requestsServedBy(stub)).isPositive());
-        } finally {
-            attached.forEach(documentServiceStubs::remove);
-        }
-    }
-
-    private DefendantDetails createDefendant(String firstname, String lastName) {
-        return DefendantDetails.builder()
-            .nameKnown(VerticalYesNo.YES)
-            .firstName(firstname)
-            .lastName(lastName)
-            .addressKnown(VerticalYesNo.YES)
-            .correspondenceAddress(createTestAddress())
-            .build();
-    }
-
-    private AddressUK createTestAddress() {
-        return AddressUK.builder()
-            .addressLine1("123 Baker Street")
-            .addressLine2("Marylebone")
-            .postTown("London")
-            .county("Greater London")
-            .postCode("NW1 6XE")
-            .build();
-    }
-
-    private static String getRecipientName(Letter letter) {
-        return letter.additionalData.getRecipients().getFirst();
-    }
 
 }

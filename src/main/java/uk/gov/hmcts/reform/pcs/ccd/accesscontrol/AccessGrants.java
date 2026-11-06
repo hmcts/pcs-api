@@ -104,6 +104,7 @@ final class AccessGrants {
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
         grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CR);
         addReadAccess(grants, INTERNAL_READ_ROLES);
+        grants.putAll(new InternalDocumentMoveAccess().getGrants());
         return grants;
     }
 

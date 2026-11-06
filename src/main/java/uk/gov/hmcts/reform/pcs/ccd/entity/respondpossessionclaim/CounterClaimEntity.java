@@ -60,6 +60,8 @@ public class CounterClaimEntity {
     @Version
     private Integer version;
 
+    private Integer rank;
+
     @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "sot_id")
     @JsonManagedReference
