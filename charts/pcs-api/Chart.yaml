@@ -3,7 +3,7 @@ appVersion: "1.0"
 description: A Helm chart for pcs-api App
 name: pcs-api
 home: https://github.com/hmcts/pcs-api
-version: 0.0.118
+version: 0.0.119
 maintainers:
   - name: HMCTS pcs team
 dependencies:
@@ -23,7 +23,9 @@ dependencies:
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: xui-webapp.enabled
   - name: xui-mo-webapp
-    version: 1.1.30
+    # KEEP after merge: 1.1.30-1.1.32 mount mo-webapp-redis6-connection-string, which rpx-aat no longer has,
+    # so the pod never starts. 1.1.33 uses mo-webapp-managed-redis-connection-string.
+    version: 1.1.33
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: xui-mo-webapp.enabled
   - name: postgresql
