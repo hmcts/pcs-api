@@ -74,7 +74,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                               <li class="govuk-!-font-size-19"><a href="https://www.hceoa.org.uk/choosing-a-hceo"
                               rel="noreferrer noopener"
                               target="_blank" class="govuk-link">you can get a quote from a bailiff to find out how
-                              much it will cost(opens in a new tab, High Court Enforcement Officers Association
+                              much it will cost (opens in a new tab, High Court Enforcement Officers Association
                               website)</a> (they usually charge by the hour)</li>
                             </ul>
                             <h2 class="govuk-heading-s">The additional evidence you’ll need to
@@ -83,7 +83,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             than a warrant.</p>
                             <p class="govuk-body">The judge will consider this evidence, along with the other
                              information in your application, when deciding whether to grant your request.</p>
-                            <p class="govuk-body">You can Contact a lawyer or a High Court Enforcement Officer
+                            <p class="govuk-body">You can contact a lawyer or a High Court Enforcement Officer
                             before you apply for a writ. They can help you to check if you have the evidence to apply
                             successfully.</p>
                             ${warrantOfRestitutionInfoText} </div>
