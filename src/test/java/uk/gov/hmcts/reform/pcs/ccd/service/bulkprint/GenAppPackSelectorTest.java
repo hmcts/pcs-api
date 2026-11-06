@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -36,7 +38,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -70,7 +76,8 @@ class GenAppPackSelectorTest {
         underTest = new GenAppPackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
-            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null),
+                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)));
     }
 
     private final PartyEntity claimant = party();
@@ -458,6 +465,22 @@ class GenAppPackSelectorTest {
         assertThat(candidateFor(result, coDefendant).documents()).containsExactly(withNoticePdf);
     }
 
+    @Test
+    @DisplayName("Excludes defendants with an active legal representative from gen app pack recipients")
+    void shouldExcludeRepresentedDefendants() {
+        PartyEntity formerlyRepresentedDefendant = party();
+        linkOrganisation(coDefendant, YesOrNo.YES);
+        linkOrganisation(formerlyRepresentedDefendant, YesOrNo.NO);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
+            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)),
+            claimant, defendant, coDefendant, formerlyRepresentedDefendant));
+
+        assertThat(result).extracting(candidate -> candidate.recipient().getId())
+            .containsExactly(claimant.getId(), defendant.getId(), formerlyRepresentedDefendant.getId());
+    }
+
     private GenAppPackCandidate candidateFor(List<GenAppPackCandidate> result, PartyEntity recipient) {
         return candidatesFor(result, recipient).stream().findFirst()
             .orElseThrow(() -> new AssertionError("no candidate for recipient " + recipient.getId()));
@@ -526,5 +549,9 @@ class GenAppPackSelectorTest {
 
     private PartyEntity party() {
         return PartyEntity.builder().id(UUID.randomUUID()).build();
+    }
+
+    private void linkOrganisation(PartyEntity party, YesOrNo active) {
+        party.getClaimPartyOrganisationList().add(ClaimPartyOrganisationEntity.builder().active(active).build());
     }
 }
