@@ -2,16 +2,19 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
@@ -19,7 +22,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 /**
  * Selects claim-pack envelopes per recipient. The claim form goes to every defendant and, while release flag 1.4 is
  * off, the claimant too. When release flag 1.4 is on, only defendants will receive the claim pack.
- * Defendants also get their own access code once it exists. Only documents not covered by a {@code PACK_SENT}
+ * Defendants also get their own access-code letter once it exists; on a Wales case, the English and the Welsh
+ * letter, and the pack waits for both. Only documents not covered by a {@code PACK_SENT}
  * success row are included, so a failed access-code letter self-heals without re-sending the claim form.
  */
 @Service
@@ -75,36 +79,35 @@ public class ClaimPackSelector {
 
     private void addDefendantCandidates(List<ClaimPackCandidate> candidates, PcsCaseEntity pcsCase, ClaimEntity claim,
                                         DocumentEntity claimForm, Set<String> sent) {
+        boolean wales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
-            DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant);
-            if (accessCode == null) {
+            Map<AccessCodeLetterLanguage, DocumentEntity> letters =
+                AccessCodeDocuments.byLanguage(pcsCase.getDocuments(), defendant);
+            DocumentEntity englishLetter = letters.get(AccessCodeLetterLanguage.ENGLISH);
+            // England ignores any Welsh-marked letter. Wales waits for both letters (HDPI-9698 D4).
+            DocumentEntity welshLetter = wales ? letters.get(AccessCodeLetterLanguage.WELSH) : null;
+            if (englishLetter == null || (wales && welshLetter == null)) {
                 log.debug("Claim pack held for case {} defendant {} - awaiting access code",
                     pcsCase.getId(), defendant.getId());
                 continue;
             }
             List<DocumentEntity> unsent = new ArrayList<>();
-            if (!sent.contains(key(defendant, accessCode))) {
-                unsent.add(accessCode);
+            addIfUnsent(unsent, sent, defendant, englishLetter);
+            if (welshLetter != null) {
+                addIfUnsent(unsent, sent, defendant, welshLetter);
             }
-            if (!sent.contains(key(defendant, claimForm))) {
-                unsent.add(claimForm);
-            }
+            addIfUnsent(unsent, sent, defendant, claimForm);
             if (!unsent.isEmpty()) {
                 candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent));
             }
         }
     }
 
-    private DocumentEntity accessCodeDocument(PcsCaseEntity pcsCase, PartyEntity defendant) {
-        return pcsCase.getDocuments().stream()
-            .filter(document -> document.getType() == DocumentType.DEFENDANT_ACCESS_CODE)
-            .filter(document -> belongsTo(document, defendant))
-            .findFirst()
-            .orElse(null);
-    }
-
-    private boolean belongsTo(DocumentEntity document, PartyEntity party) {
-        return document.getParty() != null && document.getParty().getId().equals(party.getId());
+    private void addIfUnsent(List<DocumentEntity> unsent, Set<String> sent, PartyEntity defendant,
+                             DocumentEntity document) {
+        if (!sent.contains(key(defendant, document))) {
+            unsent.add(document);
+        }
     }
 
     private String key(PartyEntity party, DocumentEntity document) {

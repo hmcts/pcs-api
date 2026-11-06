@@ -14,6 +14,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
@@ -47,13 +49,17 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType.PAYMENT_OR_COMPENSATION;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.CLAIMANT_CLAIM_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENCE_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK;
+import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK_WELSH;
 import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT_TASK_NAME;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -62,6 +68,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT
 class BulkPrintPacksTest extends CftlibTest {
 
     private static final long INITIAL_DRAFT_VERSION = 0L;
+    private static final Pattern ACCESS_CODE = Pattern.compile("accessCode: ([A-Z0-9]{12})");
     @Autowired
     private CcdClient ccdClient;
     @Autowired
@@ -208,6 +215,63 @@ class BulkPrintPacksTest extends CftlibTest {
 
     }
 
+    @Test
+    @Order(4)
+    void verifyWelshClaimPacks() throws IOException {
+        Instant testStart = Instant.now();
+
+        long walesRef = caseCreationService.createAndIssueCase(solicitorToken, LanguageUsed.ENGLISH,
+                                                               LegislativeCountry.WALES);
+
+        caseDocumentService.waitForDocumentsOfType(walesRef, DocumentType.CLAIM, testStart, 1);
+        // The packs are held until both letters exist for both defendants
+        caseDocumentService.waitForDocumentsOfType(walesRef, DocumentType.DEFENDANT_ACCESS_CODE, testStart, 4);
+        final List<PartyAccessCode> codes = accessCodeService.waitForAccessCodes(walesRef, 2);
+
+        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
+
+        List<Letter> letters = mockSendLetterServer.getSentLetters(walesRef, DEFENDANT_CLAIM_PACK_WELSH, testStart, 2);
+        assertThat(letters)
+            .map(BulkPrintPacksTest::getRecipientName)
+            .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
+        assertThat(mockSendLetterServer.getSentLetters(walesRef, DEFENDANT_CLAIM_PACK, testStart, 0)).isEmpty();
+        assertThat(mockSendLetterServer.getSentLetters(walesRef, CLAIMANT_CLAIM_PACK, testStart, 0)).isEmpty();
+
+        // One code and one recorder call per defendant, shared by both letters
+        assertThat(accessCodeService.waitForAccessCodes(walesRef, 2)).hasSize(2);
+        List<String> letterFileNames = caseDocumentService.findAccessCodeLetterFileNames(walesRef);
+        assertThat(letterFileNames).hasSize(4);
+        assertThat(letterFileNames).filteredOn(fileName -> fileName == null).hasSize(2);
+        assertThat(letterFileNames).filteredOn(fileName -> fileName != null)
+            .hasSize(2)
+            .allSatisfy(fileName -> assertThat(fileName).startsWith("Defendant Access Code Welsh "));
+
+        List<String> printedCodes = new ArrayList<>();
+        for (String recipientName : List.of("Danny Defendant", "Delia Defendant")) {
+            try (PDDocument pack = findPackPdf(recipientName, letters)) {
+                assertThat(pack.getNumberOfPages()).isEqualTo(43);
+                // The fake document renderer writes the template name into the PDF page
+                assertThat(getPageContents(pack, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
+                assertThat(getPageContents(pack, 1))
+                    .contains("Template: CV-PCS-LET-ENG-Defendant-Access-Code-V2.docx");
+                assertThat(getPageContents(pack, 2)).contains("Template: CV-PCS-LET-WEL-Defendant-Access-Code.docx");
+                assertThat(getPageContents(pack, 3)).contains("Template: CV-PCS-CLM-ENG-Claim-Pack.docx");
+
+                String englishCode = accessCode(getPageContents(pack, 1));
+                assertThat(accessCode(getPageContents(pack, 2))).isEqualTo(englishCode);
+                printedCodes.add(englishCode);
+
+                assertPagesMatchForm(pack, 4, "forms/ONC-002R-defence-form.pdf");
+                assertPagesMatchForm(pack, 20, "forms/ONC-002RW-defence-form-welsh.pdf");
+                assertPagesMatchForm(pack, 35, "forms/ONC-003-counterclaim.pdf");
+                assertPagesMatchForm(pack, 39, "forms/ONC-003-counterclaim-welsh.pdf");
+            }
+        }
+
+        assertThat(printedCodes).containsExactlyInAnyOrderElementsOf(
+            codes.stream().map(PartyAccessCode::getAccessCode).toList());
+    }
+
     private void submitDefendantResponse(String emailAddress, CounterClaim counterClaim, String defendantToken) {
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByPost(VerticalYesNo.YES)
@@ -280,6 +344,29 @@ class BulkPrintPacksTest extends CftlibTest {
         try (InputStream inputStream = pdDocument.getPage(pageIndex).getContents()) {
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         }
+    }
+
+    private static void assertPagesMatchForm(PDDocument pack, int firstPage, String resource) throws IOException {
+        try (InputStream formStream = new ClassPathResource(resource).getInputStream();
+             PDDocument form = Loader.loadPDF(formStream.readAllBytes())) {
+            for (int page = 0; page < form.getNumberOfPages(); page++) {
+                assertThat(getPageContentBytes(pack, firstPage + page))
+                    .as("page %d of the pack is page %d of %s", firstPage + page, page, resource)
+                    .isEqualTo(getPageContentBytes(form, page));
+            }
+        }
+    }
+
+    private static byte[] getPageContentBytes(PDDocument pdDocument, int pageIndex) throws IOException {
+        try (InputStream inputStream = pdDocument.getPage(pageIndex).getContents()) {
+            return inputStream.readAllBytes();
+        }
+    }
+
+    private static String accessCode(String pageContents) {
+        Matcher matcher = ACCESS_CODE.matcher(pageContents);
+        assertThat(matcher.find()).as("access code on the letter").isTrue();
+        return matcher.group(1);
     }
 
     private static Letter findLetterSentTo(String recipientName, List<Letter> letters) {

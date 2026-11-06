@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -168,6 +169,54 @@ class DocumentsViewTest {
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename())
                 .isEqualTo("access-code-letter.pdf"));
+    }
+
+    @Test
+    void shouldExcludeTheWelshAccessCodeLetterFromCaseFile() {
+        DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName(AccessCodeDocuments.welshFileName(UUID.randomUUID()))
+            .url("welsh-pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+
+        DocumentEntity visibleDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("claim.pdf")
+            .url("claim-url")
+            .categoryId("category")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(welshAccessCodeLetter, visibleDocument));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+    }
+
+    @Test
+    void shouldShowBothAccessCodeLettersToTheSystemUser() {
+        UUID partyId = UUID.randomUUID();
+        DocumentEntity englishAccessCodeLetter = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .url("english-pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+        DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName(AccessCodeDocuments.welshFileName(partyId))
+            .url("welsh-pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(englishAccessCodeLetter, welshAccessCodeLetter));
+        when(securityContextService.isIdamSystemUser()).thenReturn(true);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments())
+            .extracting(document -> document.getValue().getFilename())
+            .containsExactlyInAnyOrder(null, "Defendant Access Code Welsh " + partyId);
     }
 
     @Test

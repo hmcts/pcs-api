@@ -3,13 +3,19 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -23,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
+import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.TestAccessCodeRecorder;
 
@@ -38,15 +46,21 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
 
 @ExtendWith(MockitoExtension.class)
 class DefendantAccessCodeServiceTest {
 
     private static final String DOC_URL = "http://dm-store/documents/abc";
+    private static final String WELSH_DOC_URL = "http://dm-store/documents/welsh";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -73,6 +87,10 @@ class DefendantAccessCodeServiceTest {
     private ArgumentCaptor<PartyAccessCodeEntity> accessCodeCaptor;
     @Captor
     private ArgumentCaptor<DocumentEntity> documentCaptor;
+    @Captor
+    private ArgumentCaptor<GenerationDetails> detailsCaptor;
+    @Captor
+    private ArgumentCaptor<String> plaintextCaptor;
 
     @BeforeEach
     void setUp() {
@@ -88,7 +106,7 @@ class DefendantAccessCodeServiceTest {
             testAccessCodeRecorder
         );
         when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
-        lenient().when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
+        lenient().when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any()))
             .thenReturn(DOC_URL);
         lenient().when(hashingService.encodeForStorage(anyString()))
             .thenAnswer(invocation -> "ENC-" + invocation.getArgument(0));
@@ -109,6 +127,9 @@ class DefendantAccessCodeServiceTest {
         assertThat(savedDoc.getUrl()).isEqualTo(DOC_URL);
         assertThat(savedDoc.getParty().getId()).isEqualTo(partyId);
         assertThat(savedDoc.getPcsCase()).isEqualTo(caseEntity);
+        assertThat(savedDoc.getFileName()).isNull();
+        verify(accessCodeFormDocumentGenerator).generate(any(), any(), any(), anyString(), eq(ENGLISH));
+        verify(accessCodeFormDocumentGenerator, never()).generate(any(), any(), any(), anyString(), eq(WELSH));
 
         verify(partyAccessCodeRepo).save(accessCodeCaptor.capture());
         PartyAccessCodeEntity savedCode = accessCodeCaptor.getValue();
@@ -127,7 +148,7 @@ class DefendantAccessCodeServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
-        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any()))
             .thenThrow(new RuntimeException("docmosis down"));
 
         RuntimeException thrown = assertThrows(RuntimeException.class,
@@ -147,7 +168,7 @@ class DefendantAccessCodeServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
-        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any()))
             .thenThrow(new RuntimeException("docmosis down"));
 
         assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, true, false));
@@ -162,7 +183,7 @@ class DefendantAccessCodeServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
-        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any()))
             .thenThrow(new RuntimeException("docmosis down"));
 
         assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false, false));
@@ -183,6 +204,199 @@ class DefendantAccessCodeServiceTest {
         verify(documentRepository, never()).save(any());
         verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
         verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(value = LegislativeCountry.class, names = "WALES", mode = EnumSource.Mode.EXCLUDE)
+    void generateForDefendant_nonWalesCase_rendersOnlyTheEnglishLetter(LegislativeCountry country) {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        caseEntity.setLegislativeCountry(country);
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
+
+        underTest.generateForDefendant(1L, partyId, false, true);
+
+        verify(accessCodeFormDocumentGenerator).generate(any(), any(), any(), anyString(), eq(ENGLISH));
+        verify(accessCodeFormDocumentGenerator, never()).generate(any(), any(), any(), anyString(), eq(WELSH));
+        verify(documentRepository).save(documentCaptor.capture());
+        assertThat(documentCaptor.getValue().getUrl()).isEqualTo(DOC_URL);
+        assertThat(documentCaptor.getValue().getFileName()).isNull();
+        verify(partyAccessCodeRepo).save(any());
+    }
+
+    @Test
+    void generateForDefendant_walesCase_rendersBothLettersWithOneCodeBeforeAnySave() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = walesCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
+        stubBothLetters();
+
+        underTest.generateForDefendant(1L, partyId, false, true);
+
+        InOrder inOrder = inOrder(accessCodeFormDocumentGenerator, documentRepository, partyAccessCodeRepo);
+        inOrder.verify(accessCodeFormDocumentGenerator)
+            .generate(any(), any(), any(), plaintextCaptor.capture(), eq(ENGLISH));
+        inOrder.verify(accessCodeFormDocumentGenerator)
+            .generate(any(), any(), any(), plaintextCaptor.capture(), eq(WELSH));
+        inOrder.verify(documentRepository, times(2)).save(any());
+        inOrder.verify(partyAccessCodeRepo).save(accessCodeCaptor.capture());
+
+        String plaintext = plaintextCaptor.getAllValues().getFirst();
+        assertThat(plaintextCaptor.getAllValues()).containsExactly(plaintext, plaintext);
+        assertThat(accessCodeCaptor.getValue().getCode()).isEqualTo("ENC-" + plaintext);
+        verify(testAccessCodeRecorder).record(caseEntity.getId(), partyId, plaintext);
+    }
+
+    @Test
+    void generateForDefendant_walesCase_marksOnlyTheWelshLetter() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = walesCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
+        stubBothLetters();
+
+        underTest.generateForDefendant(1L, partyId, false, true);
+
+        verify(documentRepository, times(2)).save(documentCaptor.capture());
+        List<DocumentEntity> saved = documentCaptor.getAllValues();
+        assertThat(saved.get(0).getUrl()).isEqualTo(DOC_URL);
+        assertThat(saved.get(0).getFileName()).isNull();
+        assertThat(saved.get(1).getUrl()).isEqualTo(WELSH_DOC_URL);
+        assertThat(saved.get(1).getFileName()).isEqualTo("Defendant Access Code Welsh " + partyId);
+        assertThat(saved).allSatisfy(document -> {
+            assertThat(document.getType()).isEqualTo(DocumentType.DEFENDANT_ACCESS_CODE);
+            assertThat(document.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+            assertThat(document.getParty().getId()).isEqualTo(partyId);
+            assertThat(document.getPcsCase()).isEqualTo(caseEntity);
+        });
+        verify(accessCodeActivityLogService).logSuccess(caseEntity, saved.get(0).getParty(),
+                                                   ClaimActivityType.DOCUMENTS_CREATED);
+        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true,false,false", "false,true,true"})
+    void generateForDefendant_welshRenderFails_savesNothingAndNamesTheWelshLetter(boolean firstAttempt,
+                                                                                  boolean finalAttempt,
+                                                                                  boolean terminal) {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = walesCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
+        DocAssemblyException failure = new DocAssemblyException("Document generation failed");
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), eq(ENGLISH)))
+            .thenReturn(DOC_URL);
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), eq(WELSH)))
+            .thenThrow(failure);
+
+        DocAssemblyException thrown = assertThrows(DocAssemblyException.class,
+            () -> underTest.generateForDefendant(5L, partyId, firstAttempt, finalAttempt));
+
+        assertThat(thrown).isSameAs(failure);
+        verify(documentRepository, never()).save(any());
+        verify(partyAccessCodeRepo, never()).save(any());
+        verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
+        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any());
+        verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED), detailsCaptor.capture());
+        GenerationDetails details = detailsCaptor.getValue();
+        assertThat(details.documentType()).isEqualTo(DocumentType.DEFENDANT_ACCESS_CODE);
+        assertThat(details.failureReason()).isEqualTo(FailureReason.RENDER_FAILED);
+        assertThat(details.terminal()).isEqualTo(terminal);
+        assertThat(details.errorDetail()).isEqualTo("Welsh letter: DocAssemblyException: Document generation failed");
+    }
+
+    @Test
+    void generateForDefendant_englishRenderFailsOnWalesCase_neverRendersTheWelshLetter() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = walesCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), eq(ENGLISH)))
+            .thenThrow(new RuntimeException("docmosis down"));
+
+        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, true, false));
+
+        verify(accessCodeFormDocumentGenerator, never()).generate(any(), any(), any(), anyString(), eq(WELSH));
+        verify(documentRepository, never()).save(any());
+        verify(partyAccessCodeRepo, never()).save(any());
+        verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED), detailsCaptor.capture());
+        assertThat(detailsCaptor.getValue().errorDetail()).isEqualTo("English letter: RuntimeException: docmosis down");
+    }
+
+    @Test
+    void generateForDefendant_englandRenderFailure_keepsTheErrorDetailUnchanged() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any()))
+            .thenThrow(new RuntimeException("docmosis down"));
+
+        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, true, false));
+
+        verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED), detailsCaptor.capture());
+        assertThat(detailsCaptor.getValue().errorDetail()).isEqualTo("RuntimeException: docmosis down");
+        assertThat(detailsCaptor.getValue().failureReason()).isEqualTo(FailureReason.UNKNOWN);
+    }
+
+    @Test
+    void generateForDefendant_saveFailsAfterBothRenders_doesNotBlameALanguage() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = walesCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
+        stubBothLetters();
+        when(documentRepository.save(any())).thenThrow(new IllegalStateException("db down"));
+
+        assertThrows(IllegalStateException.class, () -> underTest.generateForDefendant(5L, partyId, true, false));
+
+        verify(partyAccessCodeRepo, never()).save(any());
+        verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED), detailsCaptor.capture());
+        assertThat(detailsCaptor.getValue().errorDetail()).isEqualTo("IllegalStateException: db down");
+    }
+
+    @Test
+    void generateForDefendant_twoWalesDefendants_eachGetsTheirOwnCodeOnBothLetters() {
+        UUID p1 = UUID.randomUUID();
+        UUID p2 = UUID.randomUUID();
+        PcsCaseEntity caseEntity = walesCaseWithDefendants(p1, p2);
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
+        when(accessCodeGenerator.generateAccessCode()).thenReturn("AAAAAAAAAAAA", "BBBBBBBBBBBB");
+        stubBothLetters();
+
+        underTest.generateForDefendant(1L, p1, false, true);
+        underTest.generateForDefendant(1L, p2, false, true);
+
+        verify(accessCodeFormDocumentGenerator).generate(any(), any(), argThat(party -> p1.equals(party.getId())),
+                                                         eq("AAAAAAAAAAAA"), eq(ENGLISH));
+        verify(accessCodeFormDocumentGenerator).generate(any(), any(), argThat(party -> p1.equals(party.getId())),
+                                                         eq("AAAAAAAAAAAA"), eq(WELSH));
+        verify(accessCodeFormDocumentGenerator).generate(any(), any(), argThat(party -> p2.equals(party.getId())),
+                                                         eq("BBBBBBBBBBBB"), eq(ENGLISH));
+        verify(accessCodeFormDocumentGenerator).generate(any(), any(), argThat(party -> p2.equals(party.getId())),
+                                                         eq("BBBBBBBBBBBB"), eq(WELSH));
+        verify(documentRepository, times(4)).save(any());
+        verify(partyAccessCodeRepo, times(2)).save(accessCodeCaptor.capture());
+        assertThat(accessCodeCaptor.getAllValues())
+            .extracting(PartyAccessCodeEntity::getCode)
+            .containsExactly("ENC-AAAAAAAAAAAA", "ENC-BBBBBBBBBBBB");
+        verify(testAccessCodeRecorder).record(caseEntity.getId(), p1, "AAAAAAAAAAAA");
+        verify(testAccessCodeRecorder).record(caseEntity.getId(), p2, "BBBBBBBBBBBB");
+        verify(testAccessCodeRecorder, times(2)).record(any(), any(), anyString());
+    }
+
+    @Test
+    void generateForDefendant_walesCaseWithExistingCode_rendersNothing() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = walesCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
+        when(partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(caseEntity.getId(), partyId)).thenReturn(true);
+
+        underTest.generateForDefendant(1L, partyId, false, true);
+
+        verifyNoInteractions(accessCodeFormDocumentGenerator);
+        verify(documentRepository, never()).save(any());
+        verify(partyAccessCodeRepo, never()).save(any());
     }
 
     @Test
@@ -223,6 +437,19 @@ class DefendantAccessCodeServiceTest {
         List<UUID> result = underTest.findDefendantPartyIdsNeedingAccessCode(2L);
 
         assertThat(result).containsExactly(activePartyId);
+    }
+
+    private void stubBothLetters() {
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), eq(ENGLISH)))
+            .thenReturn(DOC_URL);
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), eq(WELSH)))
+            .thenReturn(WELSH_DOC_URL);
+    }
+
+    private static PcsCaseEntity walesCaseWithDefendants(UUID... partyIds) {
+        PcsCaseEntity caseEntity = createCaseWithDefendants(partyIds);
+        caseEntity.setLegislativeCountry(LegislativeCountry.WALES);
+        return caseEntity;
     }
 
     private static PcsCaseEntity createCaseWithDefendants(UUID... partyIds) {

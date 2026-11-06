@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Optional;
@@ -236,6 +240,77 @@ class PackRecipientResolverTest {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
 
         assertThat(underTest.resolveGenAppRecipients(CASE_ID)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Posts a Wales defendant's claim pack as CPD-01-IN4 with its documents in order")
+    void shouldSendTheWelshDefendantClaimPackOnAWalesCase() {
+        DocumentEntity englishPin = DocumentEntity.builder().id(UUID.randomUUID()).build();
+        DocumentEntity welshPin = DocumentEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity walesCase = caseIn(LegislativeCountry.WALES);
+        stubClaimCandidate(walesCase,
+            new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, List.of(englishPin, welshPin, claimForm)));
+
+        List<ResolvedRecipient> resolved = underTest.resolveClaimRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENDANT_CLAIM_PACK_WELSH);
+            assertThat(recipient.letterType().getCode()).isEqualTo("CPD-01-IN4");
+            assertThat(recipient.documents()).containsExactly(englishPin, welshPin, claimForm);
+        });
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(value = LegislativeCountry.class, names = "WALES", mode = EnumSource.Mode.EXCLUDE)
+    @DisplayName("Posts a defendant's claim pack outside Wales as CPD-01-IN1")
+    void shouldSendTheEnglishDefendantClaimPackOutsideWales(LegislativeCountry country) {
+        DocumentEntity englishPin = DocumentEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity otherCase = caseIn(country);
+        stubClaimCandidate(otherCase,
+            new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, List.of(englishPin, claimForm)));
+
+        List<ResolvedRecipient> resolved = underTest.resolveClaimRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENDANT_CLAIM_PACK);
+            assertThat(recipient.letterType().getCode()).isEqualTo("CPD-01-IN1");
+            assertThat(recipient.documents()).containsExactly(englishPin, claimForm);
+        });
+    }
+
+    @Test
+    @DisplayName("Keeps CPC-01-IN0 for the claimant's claim pack on a Wales case")
+    void shouldKeepTheClaimantClaimPackOnAWalesCase() {
+        PcsCaseEntity walesCase = caseIn(LegislativeCountry.WALES);
+        stubClaimCandidate(walesCase, new ClaimPackCandidate(PartyRole.CLAIMANT, claimant, List.of(claimForm)));
+
+        List<ResolvedRecipient> resolved = underTest.resolveClaimRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.letterType()).isEqualTo(LetterType.CLAIMANT_CLAIM_PACK);
+            assertThat(recipient.letterType().getCode()).isEqualTo("CPC-01-IN0");
+            assertThat(recipient.documents()).containsExactly(claimForm);
+        });
+    }
+
+    private static PcsCaseEntity caseIn(LegislativeCountry country) {
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
+        pcsCaseEntity.setLegislativeCountry(country);
+        return pcsCaseEntity;
+    }
+
+    private void stubClaimCandidate(PcsCaseEntity pcsCaseEntity, ClaimPackCandidate candidate) {
+        AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 High Street").build();
+        AddressUK addressUk = AddressUK.builder().addressLine1("1 High Street").build();
+        PartyEntity party = candidate.party();
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCaseEntity));
+        when(claimPackSelector.findClaimPackCandidates(pcsCaseEntity)).thenReturn(List.of(candidate));
+        when(recipientAddressResolver.resolveDisplayName(party)).thenReturn("Recipient Name");
+        when(recipientAddressResolver.resolvePostalAddress(party, candidate.recipientType(),
+                                                           pcsCaseEntity.getPropertyAddress()))
+            .thenReturn(postalAddress);
+        when(addressMapper.toAddressUK(postalAddress)).thenReturn(addressUk);
     }
 
     private void stubDefenceCandidate(List<DocumentEntity> documents) {

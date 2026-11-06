@@ -31,6 +31,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeDocuments;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -307,6 +309,158 @@ class ClaimPackSelectorTest {
         assertThat(result.getLast().documents()).containsExactly(pcsCase.getDocuments().getFirst(), claimForm);
     }
 
+    @Test
+    @DisplayName("Sends the English PIN, then the Welsh PIN, then the claim form on a Wales case")
+    void shouldSendEnglishPinThenWelshPinThenClaimFormOnAWalesCase() {
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity welshPinA = welshPin(defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(welshPinA, englishPinA), claimantAnd(defendantA));
+
+        assertThat(defendantCandidates(pcsCase)).singleElement().satisfies(candidate -> {
+            assertThat(candidate.party()).isEqualTo(defendantA);
+            assertThat(candidate.documents()).containsExactly(englishPinA, welshPinA, claimForm);
+        });
+    }
+
+    @Test
+    @DisplayName("Holds a Wales defendant who has only the English PIN")
+    void shouldHoldAWalesDefendantWithOnlyTheEnglishPin() {
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA), claimantAnd(defendantA));
+
+        assertThat(defendantCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Holds a Wales defendant who has only the Welsh PIN")
+    void shouldHoldAWalesDefendantWithOnlyTheWelshPin() {
+        DocumentEntity welshPinA = welshPin(defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(welshPinA), claimantAnd(defendantA));
+
+        assertThat(defendantCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Re-sends only the Welsh PIN when the English PIN and claim form already reached the defendant")
+    void shouldNotResendAWelshPinAlreadySent() {
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity welshPinA = welshPin(defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
+            .thenReturn(List.of(sent(defendantA, englishPinA), sent(defendantA, claimForm)));
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA, welshPinA), claimantAnd(defendantA));
+
+        assertThat(defendantCandidates(pcsCase)).singleElement()
+            .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(welshPinA));
+    }
+
+    @Test
+    @DisplayName("Sends nothing more to a Wales defendant once the whole pack was sent")
+    void shouldSendNothingMoreOnceTheWholeWalesPackWasSent() {
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity welshPinA = welshPin(defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(
+            sent(defendantA, englishPinA), sent(defendantA, welshPinA), sent(defendantA, claimForm)));
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA, welshPinA), claimantAnd(defendantA));
+
+        assertThat(defendantCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Gives each Wales defendant their own English and Welsh PINs")
+    void shouldGiveEachWalesDefendantTheirOwnPins() {
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity welshPinA = welshPin(defendantA);
+        DocumentEntity englishPinB = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantB);
+        DocumentEntity welshPinB = welshPin(defendantB);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(welshPinB, englishPinA, englishPinB, welshPinA), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1),
+            claimParty(defendantB, PartyRole.DEFENDANT, 2)));
+
+        List<ClaimPackCandidate> result = defendantCandidates(pcsCase);
+
+        assertThat(result).extracting(ClaimPackCandidate::party).containsExactly(defendantA, defendantB);
+        assertThat(result.get(0).documents()).containsExactly(englishPinA, welshPinA, claimForm);
+        assertThat(result.get(1).documents()).containsExactly(englishPinB, welshPinB, claimForm);
+    }
+
+    @Test
+    @DisplayName("Sends a Wales claim in English with no flag and no expected gen app once both PINs exist")
+    void shouldSendAWalesEnglishLanguageClaimWithBothPins() {
+        enableRelease13();
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity welshPinA = welshPin(defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA, welshPinA), claimantAnd(defendantA));
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+        pcsCase.getClaims().getFirst().setGenAppExpected(VerticalYesNo.NO);
+
+        assertThat(defendantCandidates(pcsCase)).singleElement()
+            .satisfies(candidate -> assertThat(candidate.documents())
+                .containsExactly(englishPinA, welshPinA, claimForm));
+    }
+
+    @Test
+    @DisplayName("Does not send a Wales claim pack when an Active PF0026 case flag is present")
+    void shouldSkipAWalesClaimPackWithAnActiveTranslationFlag() {
+        enableRelease13();
+        PcsCaseEntity pcsCase = walesCaseWith(
+            List.of(document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA), welshPin(defendantA)),
+            claimantAnd(defendantA));
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+        CaseFlagEntity flag = new CaseFlagEntity();
+        flag.setDefaultStatus("Active");
+        flag.setFlagRefData(FlagRefDataEntity.builder()
+            .flagCode("PF0026").build());
+        pcsCase.setCaseFlags(List.of(flag));
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Holds a Wales claim pack while a gen app is expected")
+    void shouldHoldAWalesClaimPackWhileAGenAppIsExpected() {
+        enableRelease13();
+        PcsCaseEntity pcsCase = walesCaseWith(
+            List.of(document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA), welshPin(defendantA)),
+            claimantAnd(defendantA));
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+        pcsCase.getClaims().getFirst().setGenAppExpected(VerticalYesNo.YES);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Gives a Wales claimant only the claim form")
+    void shouldGiveAWalesClaimantOnlyTheClaimForm() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(
+            List.of(document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA), welshPin(defendantA)),
+            claimantAnd(defendantA));
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase))
+            .filteredOn(candidate -> candidate.recipientType() == PartyRole.CLAIMANT)
+            .singleElement()
+            .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(claimForm));
+    }
+
+    @Test
+    @DisplayName("Ignores a Welsh-marked PIN on an England case")
+    void shouldIgnoreAWelshMarkedPinOnAnEnglandCase() {
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity welshPinA = welshPin(defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(welshPinA, englishPinA), claimantAnd(defendantA));
+        pcsCase.setLegislativeCountry(LegislativeCountry.ENGLAND);
+
+        assertThat(defendantCandidates(pcsCase)).singleElement()
+            .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(englishPinA, claimForm));
+    }
+
     private PcsCaseEntity readyClaimCase() {
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         return caseWith(claimForm, List.of(pinA), List.of(
@@ -351,5 +505,29 @@ class ClaimPackSelectorTest {
 
     private DocumentEntity document(DocumentType type, PartyEntity party) {
         return DocumentEntity.builder().id(UUID.randomUUID()).type(type).party(party).build();
+    }
+
+    private DocumentEntity welshPin(PartyEntity party) {
+        DocumentEntity pin = document(DocumentType.DEFENDANT_ACCESS_CODE, party);
+        pin.setFileName(AccessCodeDocuments.welshFileName(party.getId()));
+        return pin;
+    }
+
+    private PcsCaseEntity walesCaseWith(List<DocumentEntity> documents, List<ClaimPartyEntity> claimParties) {
+        PcsCaseEntity pcsCase = caseWith(claimForm, documents, claimParties);
+        pcsCase.setLegislativeCountry(LegislativeCountry.WALES);
+        return pcsCase;
+    }
+
+    private List<ClaimPartyEntity> claimantAnd(PartyEntity defendant) {
+        return List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendant, PartyRole.DEFENDANT, 1));
+    }
+
+    private List<ClaimPackCandidate> defendantCandidates(PcsCaseEntity pcsCase) {
+        return underTest.findClaimPackCandidates(pcsCase).stream()
+            .filter(candidate -> candidate.recipientType() == PartyRole.DEFENDANT)
+            .toList();
     }
 }

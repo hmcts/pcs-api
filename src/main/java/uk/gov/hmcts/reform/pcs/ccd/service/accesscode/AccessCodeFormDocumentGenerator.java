@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Renders the defendant access-code letter via Doc Assembly / Docmosis, one per defendant.
+ * Renders a defendant access-code letter via Doc Assembly / Docmosis: English for every
+ * defendant, and Welsh as well on a Wales case.
  */
 @Service
 @Slf4j
@@ -39,8 +40,11 @@ public class AccessCodeFormDocumentGenerator {
 
     static final String TEMPLATE_ID = "CV-PCS-LET-ENG-Defendant-Access-Code.docx";
     static final String TEMPLATE_ID_V2 = "CV-PCS-LET-ENG-Defendant-Access-Code-V2.docx";
+    static final String WELSH_TEMPLATE_ID = "CV-PCS-LET-WEL-Defendant-Access-Code.docx";
     private static final String OUTPUT_FILENAME_PREFIX = "Defendant Access Code";
     private static final String PERSONS_UNKNOWN = "Persons unknown";
+    // Supplied in Jira HDPI-9698. Welsh text: never edit or translate.
+    private static final String PERSONS_UNKNOWN_WELSH = "Unigolion yn anhysbys";
 
     private final DocAssemblyService docAssemblyService;
     private final LocationReferenceService locationReferenceService;
@@ -77,30 +81,41 @@ public class AccessCodeFormDocumentGenerator {
     public String generate(PcsCaseEntity pcsCaseEntity,
                            ClaimEntity mainClaim,
                            PartyEntity defendant,
-                           String plaintextAccessCode) {
+                           String plaintextAccessCode,
+                           AccessCodeLetterLanguage language) {
 
+        boolean welsh = language == AccessCodeLetterLanguage.WELSH;
+        // The Welsh template has no V2 and no courtName tag, so release 1.4 changes only the English letter.
+        boolean englishV2 = !welsh && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
         String formattedPropertyAddress = formatAddress(pcsCaseEntity.getPropertyAddress());
         CourtVenue servingCourt = resolveServingCourt(pcsCaseEntity);
 
         AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCaseEntity.getCaseReference()))
             .claimantName(resolveClaimantName(mainClaim))
-            .defendantName(resolveDefendantName(defendant))
+            .defendantName(resolveDefendantName(defendant, welsh ? PERSONS_UNKNOWN_WELSH : PERSONS_UNKNOWN))
             .defendantAddress(resolveDefendantAddress(defendant, pcsCaseEntity))
             .propertyAddress(formattedPropertyAddress)
             .respondByPostCourtAddress(formatCourtAddress(servingCourt))
             .accessCode(plaintextAccessCode)
             .issuedOn(LocalDate.now(ukClock))
             .url(respondOnlineUrl)
-            .courtName(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? servingCourt.courtName() : null)
+            .courtName(englishV2 ? servingCourt.courtName() : null)
             .build();
 
-        String outputFilename = OUTPUT_FILENAME_PREFIX + " " + defendant.getId();
+        String outputFilename = welsh
+            ? AccessCodeDocuments.welshFileName(defendant.getId())
+            : OUTPUT_FILENAME_PREFIX + " " + defendant.getId();
 
-        String templateId = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
-            ? TEMPLATE_ID_V2 : TEMPLATE_ID;
+        return docAssemblyService.generateDocument(payload, templateId(welsh, englishV2), OutputType.PDF,
+                                                   outputFilename);
+    }
 
-        return docAssemblyService.generateDocument(payload, templateId, OutputType.PDF, outputFilename);
+    private static String templateId(boolean welsh, boolean englishV2) {
+        if (welsh) {
+            return WELSH_TEMPLATE_ID;
+        }
+        return englishV2 ? TEMPLATE_ID_V2 : TEMPLATE_ID;
     }
 
     private String resolveClaimantName(ClaimEntity mainClaim) {
@@ -114,14 +129,14 @@ public class AccessCodeFormDocumentGenerator {
             .orElse(null);
     }
 
-    private String resolveDefendantName(PartyEntity defendant) {
+    private String resolveDefendantName(PartyEntity defendant, String unknownName) {
         if (defendant.getNameKnown() == VerticalYesNo.YES) {
             String name = formatPartyName(defendant);
             if (StringUtils.isNotBlank(name)) {
                 return name;
             }
         }
-        return PERSONS_UNKNOWN;
+        return unknownName;
     }
 
     private String formatPartyName(PartyEntity party) {

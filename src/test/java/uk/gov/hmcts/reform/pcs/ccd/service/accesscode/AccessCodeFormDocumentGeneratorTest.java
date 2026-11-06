@@ -36,6 +36,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -43,8 +44,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -110,7 +114,7 @@ class AccessCodeFormDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
 
         assertThat(capturedPayload().getDefendantName()).isEqualTo("Persons unknown");
     }
@@ -125,7 +129,7 @@ class AccessCodeFormDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
 
         assertThat(capturedPayload().getDefendantName()).isEqualTo("John Doe");
     }
@@ -138,7 +142,7 @@ class AccessCodeFormDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
 
         AccessCodeFormPayload payload = capturedPayload();
         assertThat(payload.getDefendantAddress()).isEqualTo(PROPERTY_ADDRESS);
@@ -162,7 +166,7 @@ class AccessCodeFormDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
 
         assertThat(capturedPayload().getDefendantAddress()).isEqualTo(PARTY_ADDRESS);
     }
@@ -175,7 +179,7 @@ class AccessCodeFormDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
 
         AccessCodeFormPayload payload = capturedPayload();
         assertThat(payload.getRespondByPostCourtAddress())
@@ -192,7 +196,7 @@ class AccessCodeFormDocumentGeneratorTest {
         caseEntity.setCaseManagementLocation(null);
 
         assertThatThrownBy(() ->
-            underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
+            underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("case management location")
             .hasMessageContaining("respond-by-post court");
@@ -211,7 +215,7 @@ class AccessCodeFormDocumentGeneratorTest {
         PcsCaseEntity caseEntity = caseWith(defendant);
 
         assertThatThrownBy(() ->
-            underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
+            underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No court venue found")
             .hasMessageContaining("respond-by-post court");
@@ -229,7 +233,7 @@ class AccessCodeFormDocumentGeneratorTest {
         PcsCaseEntity caseEntity = caseWith(defendant);
 
         String result = underTest.generate(caseEntity, caseEntity.getClaims().getFirst(),
-                                                  defendant, "PLAINTEXTPIN1");
+                                                  defendant, "PLAINTEXTPIN1", ENGLISH);
 
         String expectedTemplateId = release14Enabled
             ? AccessCodeFormDocumentGenerator.TEMPLATE_ID_V2
@@ -256,9 +260,116 @@ class AccessCodeFormDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
 
         assertThat(capturedPayload().getCourtName()).isEqualTo(release14Enabled ? "Central London County Court" : null);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldUseTheSingleWelshTemplateWhateverRelease14(boolean release14Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .nameKnown(VerticalYesNo.NO)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        PcsCaseEntity caseEntity = caseWith(defendant);
+
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", WELSH);
+
+        verify(docAssemblyService).generateDocument(
+            any(),
+            eq(AccessCodeFormDocumentGenerator.WELSH_TEMPLATE_ID),
+            eq(OutputType.PDF),
+            eq("Defendant Access Code Welsh " + defendant.getId())
+        );
+        assertThat(capturedPayload().getCourtName()).isNull();
+    }
+
+    @Test
+    void shouldUseWelshPersonsUnknownOnTheWelshLetter() {
+        PartyEntity defendant = PartyEntity.builder()
+            .nameKnown(VerticalYesNo.NO)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        PcsCaseEntity caseEntity = caseWith(defendant);
+
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", WELSH);
+
+        assertThat(capturedPayload().getDefendantName()).isEqualTo("Unigolion yn anhysbys");
+    }
+
+    @Test
+    void shouldUseTheDefendantNameOnTheWelshLetterWhenKnown() {
+        PartyEntity defendant = PartyEntity.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("John")
+            .lastName("Doe")
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        PcsCaseEntity caseEntity = caseWith(defendant);
+
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", WELSH);
+
+        assertThat(capturedPayload().getDefendantName()).isEqualTo("John Doe");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldRenderEnglishV1OrV2AndTheWelshTemplateForAWalesDefendant(boolean release14Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .nameKnown(VerticalYesNo.NO)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        PcsCaseEntity caseEntity = caseWith(defendant);
+
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", WELSH);
+
+        ArgumentCaptor<String> templateCaptor = ArgumentCaptor.forClass(String.class);
+        verify(docAssemblyService, times(2)).generateDocument(any(), templateCaptor.capture(), any(), anyString());
+        String expectedEnglishTemplateId = release14Enabled
+            ? AccessCodeFormDocumentGenerator.TEMPLATE_ID_V2
+            : AccessCodeFormDocumentGenerator.TEMPLATE_ID;
+        assertThat(templateCaptor.getAllValues())
+            .containsExactly(expectedEnglishTemplateId, AccessCodeFormDocumentGenerator.WELSH_TEMPLATE_ID);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldGiveBothLettersTheSameMergeValues(boolean release14Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        AddressEntity partyAddressEntity = AddressEntity.builder().build();
+        AddressUK partyAddressUk = AddressUK.builder().build();
+        when(addressMapper.toAddressUK(partyAddressEntity)).thenReturn(partyAddressUk);
+        when(addressFormatter.formatFullAddressWithoutCountry(partyAddressUk, AddressFormatter.NEWLINE_DELIMITER))
+            .thenReturn(PARTY_ADDRESS);
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("John").lastName("Doe")
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .address(partyAddressEntity)
+            .build();
+        PcsCaseEntity caseEntity = caseWith(defendant);
+
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", ENGLISH);
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", WELSH);
+
+        verify(docAssemblyService, times(2))
+            .generateDocument(payloadCaptor.capture(), anyString(), any(), anyString());
+        AccessCodeFormPayload englishPayload = (AccessCodeFormPayload) payloadCaptor.getAllValues().get(0);
+        AccessCodeFormPayload welshPayload = (AccessCodeFormPayload) payloadCaptor.getAllValues().get(1);
+        assertThat(welshPayload).usingRecursiveComparison().ignoringFields("courtName").isEqualTo(englishPayload);
+        assertThat(welshPayload.getAccessCode()).isEqualTo("PLAINTEXTPIN1");
+        assertThat(welshPayload.getDefendantName()).isEqualTo("John Doe");
+        assertThat(welshPayload.getDefendantAddress()).isEqualTo(PARTY_ADDRESS);
+        assertThat(welshPayload.getCourtName()).isNull();
+        assertThat(englishPayload.getCourtName()).isEqualTo(release14Enabled ? "Central London County Court" : null);
     }
 
     private AccessCodeFormPayload capturedPayload() {
