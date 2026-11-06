@@ -688,6 +688,9 @@ public class PCSCase {
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
+    @CCD(searchable = false)
+    private Integer unknownDefendantCount;
+
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 

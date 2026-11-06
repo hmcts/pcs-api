@@ -186,7 +186,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseTitleMarkdown)
             .field(PCSCase::getDashboardData)
             .field(PCSCase::getCaseNameHmctsInternal)
-            .field(PCSCase::getFeatureFlags);
+            .field(PCSCase::getFeatureFlags)
+            .field(PCSCase::getFormattedDefendantNames)
+            .field(PCSCase::getFormattedPropertyAddress);
 
         builder.tab("serviceRequest", "Service Request")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
@@ -209,7 +211,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildSupportTab(builder);
 
         buildJudicialNotesTab(builder);
-      
+
         builder.tab("paymentHistory", "Payment History")
             .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
