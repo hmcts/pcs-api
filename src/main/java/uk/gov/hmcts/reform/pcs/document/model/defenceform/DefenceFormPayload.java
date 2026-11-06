@@ -46,6 +46,12 @@ public class DefenceFormPayload implements FormPayload {
     // ---------- Defendant ----------
     private String defendantName;
     private String defendantAddress;
+    private boolean showDefendantPhoneNumber;
+    private String defendantPhoneNumber;
+    private boolean showDefendantEmailAddress;
+    private String defendantEmailAddress;
+    private boolean showDefendantDateOfBirth;
+    private String defendantDateOfBirth;
 
     // ---------- Response to the claim ----------
     private String tenancyTypeConfirmation;

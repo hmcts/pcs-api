@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -175,6 +176,105 @@ class DefenceFormPayloadBuilderTest {
             DefenceFormPayload payload = builder.build(response);
 
             assertThat(payload.getDefendantAddress()).isNull();
+        }
+    }
+
+    @Nested
+    class DefendantContactDetails {
+
+        private static final String PHONE_NUMBER = "07123456789";
+        private static final String EMAIL_ADDRESS = "bob@tenant.com";
+
+        @Test
+        void showsPhoneAndEmailWhenDefendantOptedIn() {
+            DefendantResponseEntity response = responseWithContactDetails(VerticalYesNo.YES, VerticalYesNo.YES);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowDefendantPhoneNumber()).isTrue();
+            assertThat(payload.getDefendantPhoneNumber()).isEqualTo(PHONE_NUMBER);
+            assertThat(payload.isShowDefendantEmailAddress()).isTrue();
+            assertThat(payload.getDefendantEmailAddress()).isEqualTo(EMAIL_ADDRESS);
+        }
+
+        @Test
+        void omitsStoredPhoneAndEmailWhenDefendantOptedOut() {
+            DefendantResponseEntity response = responseWithContactDetails(VerticalYesNo.NO, VerticalYesNo.NO);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowDefendantPhoneNumber()).isFalse();
+            assertThat(payload.getDefendantPhoneNumber()).isNull();
+            assertThat(payload.isShowDefendantEmailAddress()).isFalse();
+            assertThat(payload.getDefendantEmailAddress()).isNull();
+        }
+
+        @Test
+        void handlesEachContactPreferenceIndependently() {
+            DefendantResponseEntity response = responseWithContactDetails(VerticalYesNo.NO, VerticalYesNo.YES);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowDefendantPhoneNumber()).isFalse();
+            assertThat(payload.getDefendantPhoneNumber()).isNull();
+            assertThat(payload.isShowDefendantEmailAddress()).isTrue();
+            assertThat(payload.getDefendantEmailAddress()).isEqualTo(EMAIL_ADDRESS);
+        }
+
+        @Test
+        void omitsPhoneAndEmailWhenOptedInWithoutAValue() {
+            DefendantResponseEntity response = responseWithContactDetails(VerticalYesNo.YES, VerticalYesNo.YES);
+            response.getParty().setPhoneNumber(" ");
+            response.getParty().setEmailAddress(null);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowDefendantPhoneNumber()).isFalse();
+            assertThat(payload.isShowDefendantEmailAddress()).isFalse();
+        }
+
+        @Test
+        void omitsPhoneAndEmailWhenNoContactPreferencesRecorded() {
+            DefendantResponseEntity response = responseWithContactDetails(VerticalYesNo.YES, VerticalYesNo.YES);
+            response.getParty().setContactPreferences(null);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowDefendantPhoneNumber()).isFalse();
+            assertThat(payload.getDefendantPhoneNumber()).isNull();
+            assertThat(payload.isShowDefendantEmailAddress()).isFalse();
+            assertThat(payload.getDefendantEmailAddress()).isNull();
+        }
+
+        @Test
+        void showsFormattedDateOfBirth() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.getParty().setDateOfBirth(LocalDate.of(1985, 3, 7));
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowDefendantDateOfBirth()).isTrue();
+            assertThat(payload.getDefendantDateOfBirth()).isEqualTo("7 March 1985");
+        }
+
+        @Test
+        void hidesDateOfBirthWhenNotProvided() {
+            DefenceFormPayload payload = builder.build(response(LegislativeCountry.ENGLAND));
+
+            assertThat(payload.isShowDefendantDateOfBirth()).isFalse();
+            assertThat(payload.getDefendantDateOfBirth()).isNull();
+        }
+
+        private DefendantResponseEntity responseWithContactDetails(VerticalYesNo contactByPhone,
+                                                                   VerticalYesNo contactByEmail) {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.getParty().setPhoneNumber(PHONE_NUMBER);
+            response.getParty().setEmailAddress(EMAIL_ADDRESS);
+            response.getParty().setContactPreferences(ContactPreferencesEntity.builder()
+                .contactByPhone(contactByPhone)
+                .contactByEmail(contactByEmail)
+                .build());
+            return response;
         }
     }
 
