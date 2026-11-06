@@ -53,4 +53,43 @@ class GenerationDetailsTest {
 
         assertThat(details.errorDetail()).hasSize(500);
     }
+
+    @Test
+    void prefixesTheErrorDetailWithTheContext() {
+        GenerationDetails details = GenerationDetails.forFailure(
+            DocumentType.DEFENDANT_ACCESS_CODE, new DocAssemblyException("Document generation failed"), false,
+            "Welsh letter");
+
+        assertThat(details.errorDetail()).isEqualTo("Welsh letter: DocAssemblyException: Document generation failed");
+        assertThat(details.failureReason()).isEqualTo(FailureReason.RENDER_FAILED);
+    }
+
+    @Test
+    void classifiesFromTheCauseNotTheContext() {
+        GenerationDetails details = GenerationDetails.forFailure(
+            DocumentType.DEFENDANT_ACCESS_CODE,
+            new IllegalStateException(
+                "No case management location set for case 1; cannot resolve respond-by-post court"),
+            false, "English letter");
+
+        assertThat(details.failureReason()).isEqualTo(FailureReason.NO_COURT_LOCATION);
+    }
+
+    @Test
+    void truncatesAPrefixedDetailAt500Characters() {
+        GenerationDetails details = GenerationDetails.forFailure(
+            DocumentType.DEFENDANT_ACCESS_CODE, new RuntimeException("x".repeat(600)), false, "Welsh letter");
+
+        assertThat(details.errorDetail())
+            .hasSize(500)
+            .startsWith("Welsh letter: RuntimeException: ");
+    }
+
+    @Test
+    void nullContextGivesTheSameDetailsAsTheThreeArgumentForm() {
+        RuntimeException cause = new RuntimeException("docmosis down");
+
+        assertThat(GenerationDetails.forFailure(DocumentType.DEFENDANT_ACCESS_CODE, cause, true, null))
+            .isEqualTo(GenerationDetails.forFailure(DocumentType.DEFENDANT_ACCESS_CODE, cause, true));
+    }
 }

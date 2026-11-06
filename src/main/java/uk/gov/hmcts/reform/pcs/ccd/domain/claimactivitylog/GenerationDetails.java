@@ -21,15 +21,21 @@ public record GenerationDetails(DocumentType documentType,
      * the exception class + message (truncated) so the reason enum is backed by the concrete error.
      */
     public static GenerationDetails forFailure(DocumentType documentType, Throwable cause, boolean terminal) {
-        return new GenerationDetails(documentType, FailureReasons.from(cause), terminal, describe(cause));
+        return forFailure(documentType, cause, terminal, null);
     }
 
-    private static String describe(Throwable cause) {
+    public static GenerationDetails forFailure(DocumentType documentType, Throwable cause, boolean terminal,
+                                               String context) {
+        return new GenerationDetails(documentType, FailureReasons.from(cause), terminal, describe(cause, context));
+    }
+
+    private static String describe(Throwable cause, String context) {
         if (cause == null) {
             return null;
         }
         String message = cause.getMessage();
-        String detail = cause.getClass().getSimpleName() + (message == null ? "" : ": " + message);
+        String detail = (context == null ? "" : context + ": ")
+            + cause.getClass().getSimpleName() + (message == null ? "" : ": " + message);
         return detail.length() > MAX_ERROR_DETAIL ? detail.substring(0, MAX_ERROR_DETAIL) : detail;
     }
 }
