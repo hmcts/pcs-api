@@ -1,3 +1,4 @@
+
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
   'addCaseReviewDateaddCaseReviewDate': 'addReviewDates',
@@ -33,5 +34,5 @@ export default {
   'addJudicialNoteaddJudicialNote': 'addJudicialNotes',
   'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
   'addJudicialNote/confirm': 'confirmJudicialNotes',
-  'managePartiesremovePartyDetails': 'checkFullPartyDetails'
+  'managePartiesremovePartyDetails': 'checkFullPartyDetails',
 };
