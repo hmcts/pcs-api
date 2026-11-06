@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimCircumstances;
@@ -23,11 +24,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Final-submit checks for a citizen claim. Errors are stable codes the frontend routes on.
@@ -41,11 +46,10 @@ public class CitizenPossessionClaimValidator {
     public static final String MULTIPLE_CLAIMANTS_NOT_ELIGIBLE = "MULTIPLE_CLAIMANTS_NOT_ELIGIBLE";
     public static final String RENT_ARREARS_GROUND_NOT_ALLOWED = "RENT_ARREARS_GROUND_NOT_ALLOWED";
 
-    private static final Set<PrivateLandlordAssuredGround> RENT_ARREARS_GROUNDS = Set.of(
-        PrivateLandlordAssuredGround.GROUND_8,
-        PrivateLandlordAssuredGround.GROUND_10,
-        PrivateLandlordAssuredGround.GROUND_11
-    );
+    private static final Set<PrivateLandlordAssuredGround> RENT_ARREARS_GROUNDS =
+        Arrays.stream(PrivateLandlordAssuredGround.values())
+            .filter(PrivateLandlordAssuredGround::isRentArrears)
+            .collect(Collectors.toUnmodifiableSet());
 
     private static final int NAME_MAX = 60;
     private static final int SHORT_TEXT_MAX = 250;
@@ -86,8 +90,11 @@ public class CitizenPossessionClaimValidator {
     public static Set<PrivateLandlordAssuredGround> allGrounds(CitizenClaimGrounds grounds) {
         Set<PrivateLandlordAssuredGround> all = new LinkedHashSet<>();
         if (grounds != null) {
-            Optional.ofNullable(grounds.getRentArrearsGrounds()).ifPresent(all::addAll);
-            Optional.ofNullable(grounds.getOtherGrounds()).ifPresent(all::addAll);
+            Stream.of(grounds.getRentArrearsGrounds(), grounds.getOtherGrounds())
+                .filter(Objects::nonNull)
+                .flatMap(Set::stream)
+                .filter(Objects::nonNull)
+                .forEach(all::add);
         }
         return all;
     }
@@ -155,28 +162,53 @@ public class CitizenPossessionClaimValidator {
     private static void validateGrounds(CitizenPossessionClaim claim, List<String> errors) {
         CitizenClaimGrounds grounds = claim.getGrounds();
         Set<PrivateLandlordAssuredGround> allGrounds = allGrounds(grounds);
-        if (allGrounds.isEmpty()) {
+        if (grounds == null || allGrounds.isEmpty()) {
             errors.add(required("grounds"));
             return;
         }
-        if (grounds.getRentArrearsGrounds() != null
-            && !RENT_ARREARS_GROUNDS.containsAll(grounds.getRentArrearsGrounds())) {
+
+        Set<PrivateLandlordAssuredGround> rentArrearsGrounds = grounds.getRentArrearsGrounds();
+        if (rentArrearsGrounds != null && !isOnlyRentArrearsGrounds(rentArrearsGrounds)) {
             errors.add(RENT_ARREARS_GROUND_NOT_ALLOWED);
         }
+
         if (allGrounds.stream().anyMatch(PrivateLandlordAssuredGround::isRentArrears)) {
             CitizenClaimRentArrears rentArrears = claim.getRentArrears();
             if (rentArrears == null || rentArrears.getCurrentArrears() == null) {
                 errors.add(required("rentArrears.currentArrears"));
             }
         }
-        if (grounds.getGroundReasons() != null) {
-            grounds.getGroundReasons().stream()
-                .filter(Objects::nonNull)
-                .map(listValue -> listValue.getValue())
-                .filter(Objects::nonNull)
-                .forEach(reason -> maxLength(errors, "grounds.groundReasons.reason", reason.getReason(), REASON_MAX));
+
+        if (allGrounds.contains(PrivateLandlordAssuredGround.OTHER)) {
+            requireText(errors, "grounds.otherGroundsDetails", grounds.getOtherGroundsDetails(), REASON_MAX);
         }
-        maxLength(errors, "grounds.otherGroundsDetails", grounds.getOtherGroundsDetails(), REASON_MAX);
+
+        Map<PrivateLandlordAssuredGround, String> reasons = groundReasons(grounds);
+        allGrounds.stream()
+            .filter(ground -> !ground.isRentArrears() && ground != PrivateLandlordAssuredGround.OTHER)
+            .forEach(ground -> requireText(errors, "grounds.groundReasons." + ground.name(), reasons.get(ground),
+                                           REASON_MAX));
+    }
+
+    private static boolean isOnlyRentArrearsGrounds(Set<PrivateLandlordAssuredGround> grounds) {
+        return grounds.stream().allMatch(ground -> ground != null && RENT_ARREARS_GROUNDS.contains(ground));
+    }
+
+    /**
+     * The reason given for each ground; the last one wins if a ground is listed twice.
+     */
+    public static Map<PrivateLandlordAssuredGround, String> groundReasons(CitizenClaimGrounds grounds) {
+        Map<PrivateLandlordAssuredGround, String> reasons = new EnumMap<>(PrivateLandlordAssuredGround.class);
+        if (grounds == null || grounds.getGroundReasons() == null) {
+            return reasons;
+        }
+        grounds.getGroundReasons().stream()
+            .filter(Objects::nonNull)
+            .map(ListValue::getValue)
+            .filter(reason -> reason != null && reason.getGround() != null)
+            .filter(reason -> StringUtils.isNotBlank(reason.getReason()))
+            .forEach(reason -> reasons.put(reason.getGround(), reason.getReason()));
+        return reasons;
     }
 
     private static void validateNotice(CitizenClaimNotice notice, List<String> errors) {

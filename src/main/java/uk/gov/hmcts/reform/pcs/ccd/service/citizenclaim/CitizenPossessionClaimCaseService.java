@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -109,27 +110,37 @@ public class CitizenPossessionClaimCaseService {
         draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, citizenMakePossessionClaim);
     }
 
-    public boolean isCurrentUserClaimCreator(long caseReference) {
+    public PcsCaseEntity loadCase(long caseReference) {
+        return pcsCaseService.loadCase(caseReference);
+    }
+
+    public boolean isCurrentUserClaimCreator(PcsCaseEntity pcsCaseEntity) {
         String currentUserId = securityContextService.getCurrentUserId();
         if (currentUserId == null) {
             return false;
         }
-        return pcsCaseService.loadCase(caseReference).getParties().stream()
+        return pcsCaseEntity.getParties().stream()
             .filter(PartyEntity::isClaimCreator)
             .map(PartyEntity::getIdamId)
             .filter(Objects::nonNull)
             .anyMatch(currentUserId::equals);
     }
 
-    public CitizenPossessionClaim loadOrInitialiseDraft(long caseReference) {
-        Optional<CitizenPossessionClaim> saved = loadDraft(caseReference);
-        if (saved.isPresent()) {
-            return saved.get();
-        }
-        CitizenPossessionClaim empty = CitizenPossessionClaim.builder().build();
-        draftCaseDataService.patchUnsubmittedEventData(
-            caseReference, PCSCase.builder().citizenPossessionClaim(empty).build(), citizenMakePossessionClaim);
-        return empty;
+    /**
+     * The saved draft, with the property address the case was created with, creating an empty
+     * draft first if there is none so that the first save has something to replace.
+     */
+    public CitizenPossessionClaim loadOrInitialiseDraft(PcsCaseEntity pcsCaseEntity) {
+        long caseReference = pcsCaseEntity.getCaseReference();
+        CitizenPossessionClaim draft = loadDraft(caseReference).orElseGet(() -> {
+            draftCaseDataService.patchUnsubmittedEventData(
+                caseReference,
+                PCSCase.builder().citizenPossessionClaim(CitizenPossessionClaim.builder().build()).build(),
+                citizenMakePossessionClaim);
+            return loadDraft(caseReference).orElseGet(() -> CitizenPossessionClaim.builder().build());
+        });
+        draft.setPropertyAddress(caseAddress(pcsCaseEntity));
+        return draft;
     }
 
     public Optional<CitizenPossessionClaim> loadDraft(long caseReference) {
@@ -137,13 +148,40 @@ public class CitizenPossessionClaimCaseService {
             .map(PCSCase::getCitizenPossessionClaim);
     }
 
-    public void saveDraft(long caseReference, CitizenPossessionClaim claim) {
-        PCSCase draft = PCSCase.builder().citizenPossessionClaim(claim).build();
+    /**
+     * Replaces the draft with the given answers, minus what only pcs-api may set. When the answers
+     * carry a draft version the save is refused if the stored draft has moved on.
+     *
+     * @return the stored draft version after the save
+     * @throws uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException if the draft version is stale
+     */
+    public Long saveDraft(long caseReference, CitizenPossessionClaim claim) {
+        Long expectedVersion = claim.getDraftVersion();
+        PCSCase draft = PCSCase.builder().citizenPossessionClaim(withoutServerOwnedFields(claim)).build();
         if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, citizenMakePossessionClaim)) {
-            draftCaseDataService.saveUnsubmittedEventData(caseReference, draft, citizenMakePossessionClaim);
-        } else {
-            draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, citizenMakePossessionClaim);
+            return draftCaseDataService.saveUnsubmittedEventData(
+                caseReference, draft, citizenMakePossessionClaim, expectedVersion);
         }
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, citizenMakePossessionClaim);
+        return loadDraft(caseReference).map(CitizenPossessionClaim::getDraftVersion).orElse(null);
+    }
+
+    public AddressUK caseAddress(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getPropertyAddress() != null
+            ? addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress()) : null;
+    }
+
+    public static CitizenPossessionClaim withoutServerOwnedFields(CitizenPossessionClaim claim) {
+        CitizenClaimSubmission submission = claim.getSubmission();
+        return claim.toBuilder()
+            .propertyAddress(null)
+            .draftVersion(null)
+            .submission(submission == null ? null : submission.toBuilder()
+                .serviceRequestReference(null)
+                .feeAmount(null)
+                .paymentStatus(null)
+                .build())
+            .build();
     }
 
     public void deleteDraft(long caseReference) {

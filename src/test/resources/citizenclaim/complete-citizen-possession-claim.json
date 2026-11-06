@@ -66,7 +66,8 @@
       "hasOtherGrounds": "YES",
       "otherGrounds": ["GROUND_1A", "GROUND_14"],
       "groundReasons": [
-        { "id": null, "value": { "ground": "GROUND_1A", "reason": "I am selling the property." } }
+        { "id": null, "value": { "ground": "GROUND_1A", "reason": "I am selling the property." } },
+        { "id": null, "value": { "ground": "GROUND_14", "reason": "Repeated noise complaints from neighbours." } }
       ]
     },
     "notice": {

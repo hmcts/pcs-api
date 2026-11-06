@@ -40,4 +40,7 @@ public class CitizenPossessionClaim {
 
     private CitizenClaimSubmission submission;
 
+    // Version of the stored draft these answers were read from; a save or submit that echoes it is bound to it.
+    private Long draftVersion;
+
 }

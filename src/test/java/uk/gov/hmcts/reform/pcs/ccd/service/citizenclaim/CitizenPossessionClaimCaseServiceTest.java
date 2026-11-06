@@ -10,7 +10,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -19,20 +21,24 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenMakePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.LEGISLATIVE_COUNTRY_REQUIRED;
@@ -168,39 +174,96 @@ class CitizenPossessionClaimCaseServiceTest {
         creator.setIdamId(USER_ID);
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.addParty(creator);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
 
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        assertThat(underTest.isCurrentUserClaimCreator(CASE_REFERENCE)).isTrue();
+        assertThat(underTest.isCurrentUserClaimCreator(caseEntity)).isTrue();
 
         when(securityContextService.getCurrentUserId()).thenReturn("someone-else");
-        assertThat(underTest.isCurrentUserClaimCreator(CASE_REFERENCE)).isFalse();
+        assertThat(underTest.isCurrentUserClaimCreator(caseEntity)).isFalse();
+        verifyNoInteractions(pcsCaseService);
     }
 
     @Test
-    void shouldInitialiseAnEmptyDraftWhenThereIsNone() {
+    void shouldInitialiseAnEmptyDraftWhenThereIsNoneAndGiveItTheCaseAddress() {
+        PcsCaseEntity caseEntity = caseWithAddress();
+        CitizenPossessionClaim created = CitizenPossessionClaim.builder().draftVersion(0L).build();
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, citizenMakePossessionClaim))
-            .thenReturn(Optional.empty());
+            .thenReturn(Optional.empty())
+            .thenReturn(Optional.of(PCSCase.builder().citizenPossessionClaim(created).build()));
 
-        CitizenPossessionClaim claim = underTest.loadOrInitialiseDraft(CASE_REFERENCE);
+        CitizenPossessionClaim claim = underTest.loadOrInitialiseDraft(caseEntity);
 
-        assertThat(claim).isEqualTo(CitizenPossessionClaim.builder().build());
+        assertThat(claim.getDraftVersion()).isZero();
+        assertThat(claim.getPropertyAddress()).isEqualTo(ADDRESS);
         verify(draftCaseDataService).patchUnsubmittedEventData(eq(CASE_REFERENCE), any(PCSCase.class),
                                                                eq(citizenMakePossessionClaim));
     }
 
     @Test
-    void shouldReplaceAnExistingDraftOnSave() {
-        CitizenPossessionClaim claim = CitizenPossessionClaim.builder().build();
+    void shouldGiveASavedDraftTheCaseAddressNotTheOneItWasSavedWith() {
+        PcsCaseEntity caseEntity = caseWithAddress();
+        CitizenPossessionClaim saved = CitizenPossessionClaim.builder()
+            .propertyAddress(AddressUK.builder().addressLine1("9 Moved Street").build())
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, citizenMakePossessionClaim))
+            .thenReturn(Optional.of(PCSCase.builder().citizenPossessionClaim(saved).build()));
+
+        assertThat(underTest.loadOrInitialiseDraft(caseEntity).getPropertyAddress()).isEqualTo(ADDRESS);
+    }
+
+    @Test
+    void shouldReplaceAnExistingDraftCheckingTheVersionAndDroppingServerOwnedFields() {
+        CitizenPossessionClaim claim = CitizenPossessionClaim.builder()
+            .propertyAddress(ADDRESS)
+            .draftVersion(3L)
+            .submission(CitizenClaimSubmission.builder()
+                            .statementOfTruthAgreed(VerticalYesNo.YES)
+                            .serviceRequestReference("forged")
+                            .feeAmount(BigDecimal.TEN)
+                            .paymentStatus("PAID")
+                            .build())
+            .build();
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, citizenMakePossessionClaim))
             .thenReturn(true);
+        when(draftCaseDataService.saveUnsubmittedEventData(eq(CASE_REFERENCE), any(PCSCase.class),
+                                                           eq(citizenMakePossessionClaim), eq(3L)))
+            .thenReturn(4L);
 
-        underTest.saveDraft(CASE_REFERENCE, claim);
+        Long savedVersion = underTest.saveDraft(CASE_REFERENCE, claim);
 
+        assertThat(savedVersion).isEqualTo(4L);
         verify(draftCaseDataService).saveUnsubmittedEventData(eq(CASE_REFERENCE), draftCaptor.capture(),
-                                                              eq(citizenMakePossessionClaim));
-        assertThat(draftCaptor.getValue().getCitizenPossessionClaim()).isSameAs(claim);
+                                                              eq(citizenMakePossessionClaim), eq(3L));
+        CitizenPossessionClaim stored = draftCaptor.getValue().getCitizenPossessionClaim();
+        assertThat(stored.getPropertyAddress()).isNull();
+        assertThat(stored.getDraftVersion()).isNull();
+        assertThat(stored.getSubmission().getStatementOfTruthAgreed()).isEqualTo(VerticalYesNo.YES);
+        assertThat(stored.getSubmission().getServiceRequestReference()).isNull();
+        assertThat(stored.getSubmission().getFeeAmount()).isNull();
+        assertThat(stored.getSubmission().getPaymentStatus()).isNull();
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(any(Long.class), any(), any());
+    }
+
+    @Test
+    void shouldPassAStaleVersionConflictBackToTheCaller() {
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, citizenMakePossessionClaim))
+            .thenReturn(true);
+        when(draftCaseDataService.saveUnsubmittedEventData(eq(CASE_REFERENCE), any(PCSCase.class),
+                                                           eq(citizenMakePossessionClaim), eq(2L)))
+            .thenThrow(new DraftVersionConflictException(CASE_REFERENCE, 2L, 3L));
+
+        CitizenPossessionClaim stale = CitizenPossessionClaim.builder().draftVersion(2L).build();
+        assertThatThrownBy(() -> underTest.saveDraft(CASE_REFERENCE, stale))
+            .isInstanceOf(DraftVersionConflictException.class);
+    }
+
+    private PcsCaseEntity caseWithAddress() {
+        AddressEntity addressEntity = new AddressEntity();
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setCaseReference(CASE_REFERENCE);
+        caseEntity.setPropertyAddress(addressEntity);
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(ADDRESS);
+        return caseEntity;
     }
 
     private void eligibility(LegislativeCountry provided, EligibilityStatus status, LegislativeCountry country) {

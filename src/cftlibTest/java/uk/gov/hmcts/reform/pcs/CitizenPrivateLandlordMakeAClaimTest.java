@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
@@ -53,6 +55,13 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
     private static final String DRAFT_PAGE_ID =
         EventId.citizenMakePossessionClaim.name() + CitizenMakePossessionClaimDraftSavePage.PAGE_ID;
 
+    // Mapped to Bradford (88516), a whitelisted England court, by db/migration/V026__pilot_postcodes.sql
+    private static final AddressUK PROPERTY_ADDRESS = AddressUK.builder()
+        .addressLine1("1 Test Street")
+        .postTown("Bradford")
+        .postCode("BD10 0JB")
+        .build();
+
     @Autowired
     private CcdClient ccdClient;
     @Autowired
@@ -76,7 +85,7 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
             .build();
         PCSCase createData = PCSCase.builder()
             .citizenPossessionClaim(CitizenPossessionClaim.builder()
-                                        .propertyAddress(createTestAddress())
+                                        .propertyAddress(PROPERTY_ADDRESS)
                                         .eligibility(eligibility)
                                         .build())
             .build();
@@ -94,12 +103,14 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
         CaseDetails saved = ccdClient.midEvent(
             EventId.citizenMakePossessionClaim, caseReference, DRAFT_PAGE_ID,
             PCSCase.builder().citizenPossessionClaim(answers).build(), start.getToken(), citizenToken);
-        assertThat(toPcsCase(saved.getData()).getCitizenPossessionClaim().getClaimant().getFirstName())
-            .isEqualTo("Jane");
+        CitizenPossessionClaim savedDraft = toPcsCase(saved.getData()).getCitizenPossessionClaim();
+        assertThat(savedDraft.getClaimant().getFirstName()).isEqualTo("Jane");
 
+        PCSCase reviewed = PCSCase.builder()
+            .citizenPossessionClaim(CitizenPossessionClaim.builder().draftVersion(savedDraft.getDraftVersion()).build())
+            .build();
         CaseResource submitted = ccdClient.submitEvent(
-            EventId.citizenMakePossessionClaim, caseReference, PCSCase.builder().build(), start.getToken(),
-            citizenToken);
+            EventId.citizenMakePossessionClaim, caseReference, reviewed, start.getToken(), citizenToken);
 
         assertThat(submitted.getState()).isEqualTo(State.PENDING_CASE_ISSUED.name());
 
@@ -149,6 +160,12 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
                          .rentArrearsGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_8))
                          .hasOtherGrounds(VerticalYesNo.YES)
                          .otherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A))
+                         .groundReasons(List.of(ListValue.<CitizenClaimGroundReason>builder()
+                                                    .value(CitizenClaimGroundReason.builder()
+                                                               .ground(PrivateLandlordAssuredGround.GROUND_1A)
+                                                               .reason("I am selling the property.")
+                                                               .build())
+                                                    .build()))
                          .build())
             .notice(CitizenClaimNotice.builder().noticeServed(VerticalYesNo.NO).build())
             .rentArrears(CitizenClaimRentArrears.builder()

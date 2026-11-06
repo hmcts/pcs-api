@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissio
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -106,15 +108,26 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .claimantType(ClaimantType.PRIVATE_LANDLORD).build();
 
         caseService.createCase(caseReference, PROPERTY_ADDRESS, eligibility);
-        assertThat(caseService.isCurrentUserClaimCreator(caseReference)).isTrue();
-        assertThat(caseService.loadOrInitialiseDraft(caseReference).getEligibility()).isEqualTo(eligibility);
+        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        assertThat(caseService.isCurrentUserClaimCreator(createdCase)).isTrue();
+        CitizenPossessionClaim started = caseService.loadOrInitialiseDraft(createdCase);
+        assertThat(started.getEligibility()).isEqualTo(eligibility);
+        assertThat(started.getPropertyAddress().getPostCode()).isEqualTo(PROPERTY_ADDRESS.getPostCode());
 
         CitizenPossessionClaim answers = completeClaim();
-        caseService.saveDraft(caseReference, answers);
+        answers.setDraftVersion(started.getDraftVersion());
+        Long savedVersion = caseService.saveDraft(caseReference, answers);
         CitizenPossessionClaim draft = caseService.loadDraft(caseReference).orElseThrow();
-        assertThat(draft).isEqualTo(answers);
+        assertThat(draft.getDraftVersion()).isEqualTo(savedVersion).isNotEqualTo(started.getDraftVersion());
+        assertThat(draft.getClaimant()).isEqualTo(answers.getClaimant());
+        assertThat(draft.getPropertyAddress()).isNull();
 
-        final CitizenPossessionClaimSubmitService.SubmittedClaim submitted = submitService.submit(caseReference, draft);
+        CitizenPossessionClaim stale = completeClaim();
+        stale.setDraftVersion(started.getDraftVersion());
+        assertThatThrownBy(() -> caseService.saveDraft(caseReference, stale))
+            .isInstanceOf(DraftVersionConflictException.class);
+
+        final CitizenPossessionClaimSubmitService.SubmittedClaim submitted = submitService.submit(createdCase, draft);
         caseService.deleteDraft(caseReference);
         entityManager.flush();
         entityManager.clear();

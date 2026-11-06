@@ -9,9 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenCreatePossessionClaim.SERVICE_NOT_AVAILABLE;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.CASE_ACCESS_DENIED;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.DRAFT_CHANGED;
 
 @Slf4j
 @Component
@@ -47,34 +49,30 @@ public class CitizenMakePossessionClaimDraftSavePage implements CcdPageConfigura
 
         long caseReference = details.getId();
         try {
-            if (!citizenPossessionClaimCaseService.isCurrentUserClaimCreator(caseReference)) {
+            PcsCaseEntity pcsCaseEntity = citizenPossessionClaimCaseService.loadCase(caseReference);
+            if (!citizenPossessionClaimCaseService.isCurrentUserClaimCreator(pcsCaseEntity)) {
                 return error(CASE_ACCESS_DENIED);
             }
 
             CitizenPossessionClaim claim = Optional.ofNullable(details.getData().getCitizenPossessionClaim())
                 .orElseGet(() -> CitizenPossessionClaim.builder().build());
-            claim.setSubmission(withoutServerOwnedFields(claim.getSubmission()));
 
-            citizenPossessionClaimCaseService.saveDraft(caseReference, claim);
+            Long savedVersion = citizenPossessionClaimCaseService.saveDraft(caseReference, claim);
+
+            CitizenPossessionClaim saved = CitizenPossessionClaimCaseService.withoutServerOwnedFields(claim);
+            saved.setPropertyAddress(citizenPossessionClaimCaseService.caseAddress(pcsCaseEntity));
+            saved.setDraftVersion(savedVersion);
 
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(PCSCase.builder().citizenPossessionClaim(claim).build())
+                .data(PCSCase.builder().citizenPossessionClaim(saved).build())
                 .build();
+        } catch (DraftVersionConflictException e) {
+            log.warn("Rejecting citizen claim draft save for case {}: {}", caseReference, e.getMessage());
+            return error(DRAFT_CHANGED);
         } catch (Exception e) {
             log.error("Failed to save citizen claim draft for case {}", caseReference, e);
             return error(SAVE_FAILED);
         }
-    }
-
-    private static CitizenClaimSubmission withoutServerOwnedFields(CitizenClaimSubmission submission) {
-        if (submission == null) {
-            return null;
-        }
-        return submission.toBuilder()
-            .serviceRequestReference(null)
-            .feeAmount(null)
-            .paymentStatus(null)
-            .build();
     }
 
     private static AboutToStartOrSubmitResponse<PCSCase, State> error(String message) {

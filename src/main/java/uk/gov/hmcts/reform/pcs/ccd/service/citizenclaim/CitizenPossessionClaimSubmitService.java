@@ -25,10 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentLedgerEntry;
@@ -43,7 +43,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -145,8 +144,18 @@ public class CitizenPossessionClaimSubmitService {
     public record SubmittedClaim(String serviceRequestReference, FeeDetails feeDetails) {
     }
 
-    public SubmittedClaim submit(long caseReference, CitizenPossessionClaim claim) {
-        final PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+    /**
+     * Writes the claim and then raises its fee service request, in that order, inside the submit
+     * transaction, so a Payments failure rolls the claim back with the rest of the event.
+     *
+     * @throws CitizenClaimPaymentUnavailableException if Payments could not create the service request
+     */
+    public SubmittedClaim submit(PcsCaseEntity pcsCaseEntity, CitizenPossessionClaim answers) {
+        final long caseReference = pcsCaseEntity.getCaseReference();
+        final CitizenPossessionClaim claim = answers.toBuilder()
+            .propertyAddress(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress()))
+            .draftVersion(null)
+            .build();
 
         ClaimEntity newClaim = buildClaimEntity(claim);
         newClaim.addClaimGrounds(buildClaimGrounds(claim.getGrounds()));
@@ -179,19 +188,22 @@ public class CitizenPossessionClaimSubmitService {
         saveRentHistory(claimEntity, claim.getRentArrears());
         saveSubmittedAnswers(claimEntity, claim);
 
-        FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
-        PaymentServiceResponse serviceRequest = paymentService.createServiceRequest(
-            FeesAndPayTaskData.builder()
-                .feeDetails(feeDetails)
-                .ccdCaseNumber(String.valueOf(caseReference))
-                .caseReference(caseReference)
-                .responsiblePartyId(claimant.getId())
-                .responsiblePartyName(partyService.getPartyName(claimant))
-                .paymentCallbackHandlerType(CLAIM)
-                .build()
-        );
-
-        return new SubmittedClaim(serviceRequest.getServiceRequestReference(), feeDetails);
+        try {
+            FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
+            PaymentServiceResponse serviceRequest = paymentService.createServiceRequest(
+                FeesAndPayTaskData.builder()
+                    .feeDetails(feeDetails)
+                    .ccdCaseNumber(String.valueOf(caseReference))
+                    .caseReference(caseReference)
+                    .responsiblePartyId(claimant.getId())
+                    .responsiblePartyName(partyService.getPartyName(claimant))
+                    .paymentCallbackHandlerType(CLAIM)
+                    .build()
+            );
+            return new SubmittedClaim(serviceRequest.getServiceRequestReference(), feeDetails);
+        } catch (RuntimeException e) {
+            throw new CitizenClaimPaymentUnavailableException(caseReference, e);
+        }
     }
 
     private static ClaimEntity buildClaimEntity(CitizenPossessionClaim claim) {
@@ -231,34 +243,19 @@ public class CitizenPossessionClaimSubmitService {
     }
 
     private static List<ClaimGroundEntity> buildClaimGrounds(CitizenClaimGrounds grounds) {
-        Map<PrivateLandlordAssuredGround, String> reasons = groundReasons(grounds);
+        Map<PrivateLandlordAssuredGround, String> reasons = CitizenPossessionClaimValidator.groundReasons(grounds);
         String otherGroundsDetails = grounds != null ? blankToNull(grounds.getOtherGroundsDetails()) : null;
 
         return CitizenPossessionClaimValidator.allGrounds(grounds).stream()
             .sorted(Comparator.comparingInt(PrivateLandlordAssuredGround::getRank))
             .map(ground -> ClaimGroundEntity.builder()
-                .category(ground.isMandatory()
-                              ? ClaimGroundCategory.PRIVATE_LANDLORD_ASSURED_MANDATORY
-                              : ClaimGroundCategory.PRIVATE_LANDLORD_ASSURED_DISCRETIONARY)
+                .category(ground.getCategory())
                 .code(ground.name())
                 .reason(reasons.get(ground))
                 .description(ground == PrivateLandlordAssuredGround.OTHER ? otherGroundsDetails : null)
                 .isRentArrears(ground.isRentArrears())
                 .build())
             .toList();
-    }
-
-    private static Map<PrivateLandlordAssuredGround, String> groundReasons(CitizenClaimGrounds grounds) {
-        if (grounds == null || grounds.getGroundReasons() == null) {
-            return Map.of();
-        }
-        return grounds.getGroundReasons().stream()
-            .filter(Objects::nonNull)
-            .map(ListValue::getValue)
-            .filter(reason -> reason != null && reason.getGround() != null
-                && StringUtils.isNotBlank(reason.getReason()))
-            .collect(Collectors.toMap(CitizenClaimGroundReason::getGround, CitizenClaimGroundReason::getReason,
-                                      (first, second) -> second));
     }
 
     private static RentArrearsEntity buildRentArrears(CitizenPossessionClaim claim) {
@@ -286,7 +283,7 @@ public class CitizenPossessionClaimSubmitService {
             return entity;
         }
 
-        entity.setNoticeType(notice.getNoticeType() != null ? notice.getNoticeType().getLabel() : null);
+        entity.setNoticeType(noticeTypeDescription(notice));
         entity.setIsAbleToUploadDocument(
             notice.getNoticeAvailable() != null ? YesOrNo.from(notice.getNoticeAvailable().toBoolean()) : null);
         if (notice.getNoticeAvailable() == VerticalYesNo.NO) {
@@ -324,6 +321,17 @@ public class CitizenPossessionClaimSubmitService {
         );
 
         return entity;
+    }
+
+    private static String noticeTypeDescription(CitizenClaimNotice notice) {
+        CitizenClaimNoticeType noticeType = notice.getNoticeType();
+        if (noticeType == null) {
+            return null;
+        }
+        if (noticeType == CitizenClaimNoticeType.OTHER && StringUtils.isNotBlank(notice.getNoticeTypeOther())) {
+            return notice.getNoticeTypeOther();
+        }
+        return noticeType.getLabel();
     }
 
     private static Optional<CitizenClaimNoticeMethod> primaryNoticeMethod(CitizenClaimNotice notice) {

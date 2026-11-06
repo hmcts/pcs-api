@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
@@ -366,6 +367,10 @@ public class DraftCaseDataService {
         PossessionClaimResponse response = pcsCase.getPossessionClaimResponse();
         if (response != null) {
             response.setDraftVersion(entity.getVersion());
+        }
+        CitizenPossessionClaim citizenPossessionClaim = pcsCase.getCitizenPossessionClaim();
+        if (citizenPossessionClaim != null) {
+            citizenPossessionClaim.setDraftVersion(entity.getVersion());
         }
         return pcsCase;
     }

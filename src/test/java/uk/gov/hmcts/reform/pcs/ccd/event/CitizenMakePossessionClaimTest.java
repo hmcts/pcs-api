@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.citizenmakepossessionclaim.CitizenMakePossessionClaimDraftSavePage;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenClaimPaymentUnavailableException;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService.SubmittedClaim;
@@ -41,12 +41,17 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenCreatePossessionClaim.SERVICE_NOT_AVAILABLE;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.CASE_ACCESS_DENIED;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.DRAFT_CHANGED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.DRAFT_NOT_FOUND;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.PAYMENT_SERVICE_UNAVAILABLE;
 
 @ExtendWith(MockitoExtension.class)
 class CitizenMakePossessionClaimTest extends BaseEventTest {
 
+    private static final long DRAFT_VERSION = 3L;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
     @Mock
     private FeatureToggleService featureToggleService;
@@ -56,14 +61,12 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     private CitizenPossessionClaimSubmitService submitService;
     @Mock
     private CitizenMakePossessionClaimDraftSavePage draftSavePage;
-    @Mock
-    private PcsCaseService pcsCaseService;
 
     @BeforeEach
     void setUp() {
         setEventUnderTest(new CitizenMakePossessionClaim(
             featureToggleService, caseService, new CitizenPossessionClaimValidator(), submitService,
-            draftSavePage, pcsCaseService, objectMapper));
+            draftSavePage, objectMapper));
     }
 
     @Test
@@ -87,7 +90,8 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldRefuseToStartForSomeoneOtherThanTheClaimCreator() {
         flag(true);
-        when(caseService.isCurrentUserClaimCreator(TEST_CASE_REFERENCE)).thenReturn(false);
+        whenCaseIsIn(LegislativeCountry.ENGLAND);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(false);
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callAboutToStart();
 
@@ -97,9 +101,10 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldStartWithTheSavedDraft() {
         flag(true);
-        when(caseService.isCurrentUserClaimCreator(TEST_CASE_REFERENCE)).thenReturn(true);
+        whenCaseIsIn(LegislativeCountry.ENGLAND);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
         CitizenPossessionClaim draft = CitizenPossessionClaimFixtures.completeClaim();
-        when(caseService.loadOrInitialiseDraft(TEST_CASE_REFERENCE)).thenReturn(draft);
+        when(caseService.loadOrInitialiseDraft(pcsCaseEntity)).thenReturn(draft);
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callAboutToStart();
 
@@ -120,7 +125,8 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldRefuseToSubmitWithoutADraft() {
         flag(true);
-        when(caseService.isCurrentUserClaimCreator(TEST_CASE_REFERENCE)).thenReturn(true);
+        whenCaseIsIn(LegislativeCountry.ENGLAND);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
         when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.empty());
 
         SubmitResponse<State> response = callSubmitHandler(PCSCase.builder().build());
@@ -131,52 +137,92 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldRefuseAnIncompleteClaimAndKeepTheDraft() {
         flag(true);
-        when(caseService.isCurrentUserClaimCreator(TEST_CASE_REFERENCE)).thenReturn(true);
-        CitizenPossessionClaim draft = CitizenPossessionClaimFixtures.completeClaim();
+        whenCaseIsIn(LegislativeCountry.ENGLAND);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
+        CitizenPossessionClaim draft = savedDraft();
         draft.setTenancy(null);
         when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(draft));
-        whenCaseIsIn(LegislativeCountry.ENGLAND);
 
-        SubmitResponse<State> response = callSubmitHandler(PCSCase.builder().build());
+        SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
 
         assertThat(response.getErrors()).containsExactly("REQUIRED:tenancy.tenancyType");
-        verify(submitService, never()).submit(anyLong(), any());
+        verify(submitService, never()).submit(any(), any());
         verify(caseService, never()).deleteDraft(anyLong());
     }
 
     @Test
     void shouldRefuseAClaimForAPropertyOutsideEngland() {
         flag(true);
-        when(caseService.isCurrentUserClaimCreator(TEST_CASE_REFERENCE)).thenReturn(true);
-        when(caseService.loadDraft(TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(CitizenPossessionClaimFixtures.completeClaim()));
         whenCaseIsIn(LegislativeCountry.WALES);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
+        when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(savedDraft()));
 
-        SubmitResponse<State> response = callSubmitHandler(PCSCase.builder().build());
+        SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
 
         assertThat(response.getErrors()).containsExactly(CitizenPossessionClaimCaseService.PROPERTY_NOT_IN_ENGLAND);
     }
 
     @Test
+    void shouldRefuseASubmitThatDoesNotEchoTheStoredDraftVersion() {
+        flag(true);
+        whenCaseIsIn(LegislativeCountry.ENGLAND);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
+        when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(savedDraft()));
+
+        assertThat(callSubmitHandler(reviewed(DRAFT_VERSION - 1)).getErrors()).containsExactly(DRAFT_CHANGED);
+        assertThat(callSubmitHandler(PCSCase.builder().build()).getErrors()).containsExactly(DRAFT_CHANGED);
+        verify(submitService, never()).submit(any(), any());
+    }
+
+    @Test
     void shouldSubmitTheDraftAndReturnTheServiceRequest() throws Exception {
         flag(true);
-        when(caseService.isCurrentUserClaimCreator(TEST_CASE_REFERENCE)).thenReturn(true);
-        CitizenPossessionClaim draft = CitizenPossessionClaimFixtures.completeClaim();
-        when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(draft));
         whenCaseIsIn(LegislativeCountry.ENGLAND);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
+        CitizenPossessionClaim draft = savedDraft();
+        when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(draft));
         FeeDetails fee = FeeDetails.builder().feeAmount(new BigDecimal("404.00")).build();
-        when(submitService.submit(TEST_CASE_REFERENCE, draft)).thenReturn(new SubmittedClaim("2026-1234", fee));
+        when(submitService.submit(pcsCaseEntity, draft)).thenReturn(new SubmittedClaim("2026-1234", fee));
 
-        SubmitResponse<State> response = callSubmitHandler(PCSCase.builder().build());
+        SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
 
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getState()).isEqualTo(State.PENDING_CASE_ISSUED);
         Map<String, String> body = objectMapper.readValue(response.getConfirmationBody(), new TypeReference<>() {
         });
-        assertThat(body)
-            .containsEntry("serviceRequestReference", "2026-1234")
-            .containsEntry("feeAmount", "40400");
+        assertThat(body).containsOnly(
+            Map.entry("serviceRequestReference", "2026-1234"),
+            Map.entry("feeAmount", "40400"));
         verify(caseService).deleteDraft(TEST_CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldRefuseWithoutIssuingWhenPaymentsIsUnavailable() {
+        flag(true);
+        whenCaseIsIn(LegislativeCountry.ENGLAND);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
+        CitizenPossessionClaim draft = savedDraft();
+        when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(draft));
+        when(submitService.submit(pcsCaseEntity, draft)).thenThrow(
+            new CitizenClaimPaymentUnavailableException(TEST_CASE_REFERENCE, new IllegalStateException("503")));
+
+        SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
+
+        assertThat(response.getErrors()).containsExactly(PAYMENT_SERVICE_UNAVAILABLE);
+        assertThat(response.getState()).isNull();
+        verify(caseService, never()).deleteDraft(anyLong());
+    }
+
+    private static CitizenPossessionClaim savedDraft() {
+        CitizenPossessionClaim draft = CitizenPossessionClaimFixtures.completeClaim();
+        draft.setDraftVersion(DRAFT_VERSION);
+        return draft;
+    }
+
+    private static PCSCase reviewed(long draftVersion) {
+        return PCSCase.builder()
+            .citizenPossessionClaim(CitizenPossessionClaim.builder().draftVersion(draftVersion).build())
+            .build();
     }
 
     private void flag(boolean enabled) {
@@ -184,9 +230,8 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     }
 
     private void whenCaseIsIn(LegislativeCountry country) {
-        PcsCaseEntity entity = new PcsCaseEntity();
-        entity.setLegislativeCountry(country);
-        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(entity);
+        pcsCaseEntity.setLegislativeCountry(country);
+        when(caseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> callAboutToStart() {

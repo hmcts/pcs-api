@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
@@ -920,6 +921,28 @@ class DraftCaseDataServiceTest {
         // Then
         assertThat(result).isPresent();
         assertThat(result.get().getPossessionClaimResponse().getDraftVersion()).isEqualTo(7L);
+    }
+
+    @Test
+    void shouldStampDraftVersionOnCitizenPossessionClaimWhenReading() throws JsonProcessingException {
+        String json = "case data json";
+        DraftCaseDataEntity entity = mock(DraftCaseDataEntity.class);
+        PCSCase parsed = PCSCase.builder()
+            .citizenPossessionClaim(CitizenPossessionClaim.builder().build())
+            .build();
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID)).thenReturn(Optional.of(entity));
+        when(entity.getCaseData()).thenReturn(json);
+        when(entity.getVersion()).thenReturn(7L);
+        when(objectMapper.readValue(json, PCSCase.class)).thenReturn(parsed);
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID).build());
+        when(securityContextService.toUserId(USER_ID)).thenReturn(USER_ID);
+
+        Optional<PCSCase> result = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getCitizenPossessionClaim().getDraftVersion()).isEqualTo(7L);
     }
 
     @Test
