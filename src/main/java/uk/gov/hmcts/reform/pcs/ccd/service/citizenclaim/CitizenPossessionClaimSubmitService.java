@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
@@ -44,7 +43,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -157,15 +155,14 @@ public class CitizenPossessionClaimSubmitService {
      *
      * @throws CitizenClaimPaymentUnavailableException if the Fees Register or Payments call failed
      */
-    public SubmittedClaim submit(PcsCaseEntity pcsCaseEntity, CitizenPossessionClaim answers) {
+    public SubmittedClaim submit(PcsCaseEntity pcsCaseEntity, CitizenPossessionClaim answers,
+                                 CitizenPossessionClaim applicable) {
         final long caseReference = pcsCaseEntity.getCaseReference();
         final CitizenPossessionClaim claim = answers.toBuilder()
             .propertyAddress(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress()))
             .draftVersion(null)
             .build();
-        // Taken before mapping: creating the documents renames them in place
         final String submittedAnswers = writeSubmittedAnswers(claim);
-        final CitizenPossessionClaim applicable = CitizenPossessionClaimApplicableAnswers.of(claim);
 
         ClaimEntity newClaim = buildClaimEntity(applicable);
         newClaim.addClaimGrounds(buildClaimGrounds(applicable.getGrounds()));
@@ -447,7 +444,7 @@ public class CitizenPossessionClaimSubmitService {
             party.setLastName(claimant.getLastName());
         }
         party.setAddressKnown(VerticalYesNo.YES);
-        party.setAddress(toAddressEntity(claimant.getAddress()));
+        party.setAddress(partyService.mapAddress(claimant.getAddress()));
         party.setEmailAddress(blankToNull(claimant.getEmailAddress()));
 
         boolean phoneProvided = claimant.getContactByPhone() == VerticalYesNo.YES
@@ -598,9 +595,6 @@ public class CitizenPossessionClaimSubmitService {
         }
     }
 
-    private AddressEntity toAddressEntity(AddressUK address) {
-        return address != null ? addressMapper.toAddressEntityAndNormalise(address) : null;
-    }
 
     private static <T> List<T> values(List<ListValue<T>> items) {
         if (items == null) {

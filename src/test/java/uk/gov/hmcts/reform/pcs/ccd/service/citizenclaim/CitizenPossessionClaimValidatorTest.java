@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
@@ -16,8 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,15 +30,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CitizenPossessionClaimValidatorTest {
 
     private final CitizenPossessionClaimValidator underTest = new CitizenPossessionClaimValidator();
+    private final CitizenPossessionClaimApplicableAnswers applicableAnswers =
+        new CitizenPossessionClaimApplicableAnswers(CitizenPossessionClaimFixtures.draftObjectMapper());
+
+    private List<String> validate(CitizenPossessionClaim claim) {
+        return underTest.validateForSubmit(applicableAnswers.of(claim));
+    }
 
     @Test
     void shouldAcceptACompleteClaim() {
-        assertThat(underTest.validateForSubmit(CitizenPossessionClaimFixtures.completeClaim())).isEmpty();
+        assertThat(validate(CitizenPossessionClaimFixtures.completeClaim())).isEmpty();
     }
 
     @Test
     void shouldReportEveryMissingRequiredAnswer() {
-        assertThat(underTest.validateForSubmit(CitizenPossessionClaim.builder().build())).containsExactly(
+        assertThat(validate(CitizenPossessionClaim.builder().build())).containsExactly(
             CitizenPossessionClaimValidator.CLAIMANT_TYPE_NOT_ELIGIBLE,
             "REQUIRED:claimant",
             "REQUIRED:defendants",
@@ -66,7 +76,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getClaimant().setMultipleClaimants(VerticalYesNo.YES);
 
-        assertThat(underTest.validateForSubmit(claim))
+        assertThat(validate(claim))
             .containsExactly(CitizenPossessionClaimValidator.MULTIPLE_CLAIMANTS_NOT_ELIGIBLE);
     }
 
@@ -75,7 +85,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getRentArrears().setCurrentArrears(null);
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:rentArrears.currentArrears");
+        assertThat(validate(claim)).containsExactly("REQUIRED:rentArrears.currentArrears");
     }
 
     @Test
@@ -83,7 +93,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setRentArrearsGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A));
 
-        assertThat(underTest.validateForSubmit(claim))
+        assertThat(validate(claim))
             .containsExactly(CitizenPossessionClaimValidator.RENT_ARREARS_GROUND_NOT_ALLOWED);
     }
 
@@ -92,7 +102,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getTenancy().setTenancyType(CitizenClaimTenancyType.OTHER);
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:tenancy.otherTenancyTypeDetails");
+        assertThat(validate(claim)).containsExactly("REQUIRED:tenancy.otherTenancyTypeDetails");
     }
 
     @Test
@@ -100,7 +110,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getClaimant().setFirstName("x".repeat(61));
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("TOO_LONG:claimant.firstName");
+        assertThat(validate(claim)).containsExactly("TOO_LONG:claimant.firstName");
     }
 
     @Test
@@ -108,7 +118,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.setGrounds(null);
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:grounds");
+        assertThat(validate(claim)).containsExactly("REQUIRED:grounds");
     }
 
     @Test
@@ -117,7 +127,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getGrounds().setRentArrearsGrounds(setOf((PrivateLandlordAssuredGround) null));
         claim.getGrounds().setOtherGrounds(setOf((PrivateLandlordAssuredGround) null));
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:grounds");
+        assertThat(validate(claim)).containsExactly("REQUIRED:grounds");
     }
 
     @Test
@@ -128,7 +138,7 @@ class CitizenPossessionClaimValidatorTest {
         complete.getGrounds().setRentArrearsGrounds(claim.getGrounds().getRentArrearsGrounds());
 
         assertThat(complete.getGrounds().getRentArrearsGrounds()).containsNull();
-        assertThat(underTest.validateForSubmit(complete)).containsExactly("REQUIRED:grounds.rentArrearsGrounds");
+        assertThat(validate(complete)).containsExactly("REQUIRED:grounds.rentArrearsGrounds");
     }
 
     @Test
@@ -153,7 +163,7 @@ class CitizenPossessionClaimValidatorTest {
         assertThat(claim.getGrounds().getRentArrearsGrounds()).containsExactlyInAnyOrder(
             PrivateLandlordAssuredGround.GROUND_8, PrivateLandlordAssuredGround.GROUND_10,
             PrivateLandlordAssuredGround.GROUND_11);
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
     }
 
     @Test
@@ -161,10 +171,10 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.OTHER));
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:grounds.otherGroundsDetails");
+        assertThat(validate(claim)).containsExactly("REQUIRED:grounds.otherGroundsDetails");
 
         claim.getGrounds().setOtherGroundsDetails("The tenant sublet without consent.");
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
     }
 
     @Test
@@ -172,7 +182,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setGroundReasons(null);
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactlyInAnyOrder(
+        assertThat(validate(claim)).containsExactlyInAnyOrder(
             "REQUIRED:grounds.groundReasons.GROUND_1A",
             "REQUIRED:grounds.groundReasons.GROUND_14");
     }
@@ -182,7 +192,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setOtherGrounds(setOf(PrivateLandlordAssuredGround.GROUND_1A, null));
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:grounds.otherGrounds");
+        assertThat(validate(claim)).containsExactly("REQUIRED:grounds.otherGrounds");
     }
 
     @Test
@@ -191,7 +201,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A,
                                                   PrivateLandlordAssuredGround.GROUND_11));
 
-        assertThat(underTest.validateForSubmit(claim))
+        assertThat(validate(claim))
             .containsExactly(CitizenPossessionClaimValidator.OTHER_GROUND_NOT_ALLOWED);
     }
 
@@ -200,10 +210,10 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getNotice().setNoticeType(CitizenClaimNoticeType.OTHER);
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:notice.noticeTypeOther");
+        assertThat(validate(claim)).containsExactly("REQUIRED:notice.noticeTypeOther");
 
         claim.getNotice().setNoticeTypeOther("Section 8 notice (old form)");
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
     }
 
     @Test
@@ -214,7 +224,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getRentArrears().setOtherFrequencyDetails("x".repeat(61));
         claim.getRentArrears().getRentHistoryLedger().get(1).getValue().setDescription("x".repeat(501));
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+        assertThat(validate(claim)).containsExactly(
             "TOO_LONG:rentArrears.otherFrequencyDetails",
             "TOO_LONG:rentArrears.recoverySteps",
             "TOO_LONG:rentArrears.rentHistoryLedger[1].description");
@@ -227,7 +237,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getDefendants().get(1).getValue().getAddress().setPostCode("x".repeat(15));
         claim.getCircumstances().getUnderlesseeAddress().setPostTown("x".repeat(101));
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+        assertThat(validate(claim)).containsExactly(
             "TOO_LONG:claimant.address.AddressLine1",
             "TOO_LONG:defendants[1].address.PostCode",
             "TOO_LONG:circumstances.underlesseeAddress.PostTown");
@@ -239,7 +249,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getClaimant().setEmailAddress(emailOfLength(254));
         claim.getNotice().setEmailedTo(emailOfLength(254));
 
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
     }
 
     @Test
@@ -248,7 +258,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getClaimant().setEmailAddress(emailOfLength(255));
         claim.getNotice().setEmailedTo(emailOfLength(255));
 
-        assertThat(underTest.validateForSubmit(claim))
+        assertThat(validate(claim))
             .containsExactly("TOO_LONG:claimant.emailAddress", "TOO_LONG:notice.emailedTo");
     }
 
@@ -262,7 +272,7 @@ class CitizenPossessionClaimValidatorTest {
         second.setNameKnown(VerticalYesNo.YES);
         second.setAddressSameAsProperty(null);
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+        assertThat(validate(claim)).containsExactly(
             "REQUIRED:defendants[0].nameKnown",
             "REQUIRED:defendants[0].addressKnown",
             "REQUIRED:defendants[1].firstName",
@@ -275,7 +285,7 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getDefendants().get(1).getValue().setAddress(null);
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:defendants[1].address");
+        assertThat(validate(claim)).containsExactly("REQUIRED:defendants[1].address");
     }
 
     @Test
@@ -286,7 +296,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.PERSONALLY_HANDED,
                                                   CitizenClaimNoticeMethod.OTHER));
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+        assertThat(validate(claim)).containsExactly(
             "REQUIRED:notice.noticeType",
             "REQUIRED:notice.noticeDate",
             "REQUIRED:notice.handedToName",
@@ -299,11 +309,11 @@ class CitizenPossessionClaimValidatorTest {
     void shouldNeedAtLeastOneNoticeMethodAndTheDatesOfEachChosenOne() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getNotice().setNoticeMethods(null);
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:notice.noticeMethods");
+        assertThat(validate(claim)).containsExactly("REQUIRED:notice.noticeMethods");
 
         claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.EMAIL));
         claim.getNotice().setEmailedDate(null);
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:notice.emailedDate");
+        assertThat(validate(claim)).containsExactly("REQUIRED:notice.emailedDate");
     }
 
     @Test
@@ -313,7 +323,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getNotice().setNoticeType(null);
         claim.getNotice().setNoticeMethods(null);
 
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
     }
 
     @Test
@@ -321,10 +331,10 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getSubmission().setStatementOfTruthFullName(" ");
 
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:submission.statementOfTruthFullName");
+        assertThat(validate(claim)).containsExactly("REQUIRED:submission.statementOfTruthFullName");
 
         claim.getSubmission().setStatementOfTruthFullName("x".repeat(101));
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("TOO_LONG:submission.statementOfTruthFullName");
+        assertThat(validate(claim)).containsExactly("TOO_LONG:submission.statementOfTruthFullName");
     }
 
     @Test
@@ -332,10 +342,10 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getClaimant().setFirstName("x".repeat(30));
         claim.getClaimant().setLastName("y".repeat(29));
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
 
         claim.getClaimant().setLastName("y".repeat(30));
-        assertThat(underTest.validateForSubmit(claim)).containsExactly("TOO_LONG:claimant.name");
+        assertThat(validate(claim)).containsExactly("TOO_LONG:claimant.name");
     }
 
     @Test
@@ -352,7 +362,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.setAdditionalDefendants(VerticalYesNo.NO);
         claim.getDefendants().get(1).getValue().setNameKnown(null);
 
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
     }
 
     @Test
@@ -361,7 +371,7 @@ class CitizenPossessionClaimValidatorTest {
         claim.getRentArrears().getRentHistoryLedger().getFirst().getValue().setDescription("x".repeat(501));
         claim.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
 
-        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+        assertThat(validate(claim)).isEmpty();
     }
 
     @Test
@@ -370,8 +380,23 @@ class CitizenPossessionClaimValidatorTest {
         claim.getClaimant().getAddress().setAddressLine1(" ");
         claim.getClaimant().getAddress().setPostCode(null);
 
-        assertThat(underTest.validateForSubmit(claim))
+        assertThat(validate(claim))
             .containsExactly("REQUIRED:claimant.address.AddressLine1", "REQUIRED:claimant.address.PostCode");
+    }
+
+    @Test
+    void shouldNotCheckAReasonOnAGroundThatIsNeverAskedForOne() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        List<ListValue<CitizenClaimGroundReason>> reasons = new ArrayList<>(claim.getGrounds().getGroundReasons());
+        reasons.add(ListValue.<CitizenClaimGroundReason>builder()
+                        .value(CitizenClaimGroundReason.builder()
+                                   .ground(PrivateLandlordAssuredGround.GROUND_8)
+                                   .reason("x".repeat(600))
+                                   .build())
+                        .build());
+        claim.getGrounds().setGroundReasons(reasons);
+
+        assertThat(validate(claim)).isEmpty();
     }
 
     private static String emailOfLength(int length) {

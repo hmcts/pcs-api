@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.page.citizenmakepossessionclaim.CitizenMakePossessionClaimDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenClaimPaymentUnavailableException;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimApplicableAnswers;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService.SubmittedClaim;
@@ -55,6 +56,7 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
     private final FeatureToggleService featureToggleService;
     private final CitizenPossessionClaimCaseService citizenPossessionClaimCaseService;
     private final CitizenPossessionClaimValidator citizenPossessionClaimValidator;
+    private final CitizenPossessionClaimApplicableAnswers citizenPossessionClaimApplicableAnswers;
     private final CitizenPossessionClaimSubmitService citizenPossessionClaimSubmitService;
     private final CitizenMakePossessionClaimDraftSavePage draftSavePage;
     private final ObjectMapper objectMapper;
@@ -116,7 +118,8 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
             return refuse(List.of(DRAFT_CHANGED));
         }
 
-        List<String> errors = citizenPossessionClaimValidator.validateForSubmit(claim);
+        CitizenPossessionClaim applicable = citizenPossessionClaimApplicableAnswers.of(claim);
+        List<String> errors = citizenPossessionClaimValidator.validateForSubmit(applicable);
         if (!errors.isEmpty()) {
             log.info("Refusing citizen claim submit for case {}: {}", caseReference, errors);
             return refuse(errors);
@@ -124,7 +127,7 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
 
         SubmittedClaim submitted;
         try {
-            submitted = citizenPossessionClaimSubmitService.submit(pcsCaseEntity, claim);
+            submitted = citizenPossessionClaimSubmitService.submit(pcsCaseEntity, claim, applicable);
         } catch (CitizenClaimPaymentUnavailableException e) {
             log.error("Refusing citizen claim submit for case {}: Payments unavailable", caseReference, e);
             return refuse(List.of(PAYMENT_SERVICE_UNAVAILABLE));

@@ -350,7 +350,7 @@ public class PartyService {
         return underlesseeMortgageeEntity;
     }
 
-    private AddressEntity mapAddress(AddressUK address) {
+    public AddressEntity mapAddress(AddressUK address) {
         if (address == null) {
             return null;
         }

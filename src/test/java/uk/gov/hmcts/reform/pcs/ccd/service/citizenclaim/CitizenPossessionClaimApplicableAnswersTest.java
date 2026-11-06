@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -20,11 +22,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CitizenPossessionClaimApplicableAnswersTest {
 
+    private final CitizenPossessionClaimApplicableAnswers underTest =
+        new CitizenPossessionClaimApplicableAnswers(CitizenPossessionClaimFixtures.draftObjectMapper());
+
     @Test
     void shouldKeepEverythingInTheSelfConsistentFixture() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
 
-        assertThat(CitizenPossessionClaimApplicableAnswers.of(claim)).isEqualTo(claim);
+        assertThat(underTest.of(claim)).isEqualTo(claim);
     }
 
     @Test
@@ -32,7 +37,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setHasOtherGrounds(VerticalYesNo.NO);
 
-        CitizenPossessionClaim applicable = CitizenPossessionClaimApplicableAnswers.of(claim);
+        CitizenPossessionClaim applicable = underTest.of(claim);
         applicable.getTenancy().getTenancyAgreementDocuments().getFirst().getValue().setFilename("renamed.pdf");
 
         assertThat(claim.getGrounds().getOtherGrounds()).isNotEmpty();
@@ -45,7 +50,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setHasRentArrearsGrounds(VerticalYesNo.NO);
 
-        CitizenPossessionClaim applicable = CitizenPossessionClaimApplicableAnswers.of(claim);
+        CitizenPossessionClaim applicable = underTest.of(claim);
 
         assertThat(applicable.getGrounds().getRentArrearsGrounds()).isNull();
         assertThat(applicable.getRentArrears()).isNull();
@@ -56,7 +61,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setHasOtherGrounds(VerticalYesNo.NO);
 
-        CitizenPossessionClaim applicable = CitizenPossessionClaimApplicableAnswers.of(claim);
+        CitizenPossessionClaim applicable = underTest.of(claim);
 
         assertThat(applicable.getGrounds().getOtherGrounds()).isNull();
         assertThat(applicable.getGrounds().getGroundReasons()).isEmpty();
@@ -74,19 +79,19 @@ class CitizenPossessionClaimApplicableAnswersTest {
                                                     .build()));
 
         rentArrears.setProofType(CitizenClaimRentProofType.LEDGER);
-        CitizenClaimRentArrears ledger = CitizenPossessionClaimApplicableAnswers.of(claim).getRentArrears();
+        CitizenClaimRentArrears ledger = underTest.of(claim).getRentArrears();
         assertThat(ledger.getRentHistoryLedger()).hasSize(2);
         assertThat(ledger.getRentHistoryTable()).isNull();
         assertThat(ledger.getRentStatementDocuments()).isNull();
 
         rentArrears.setProofType(CitizenClaimRentProofType.TABLE);
-        CitizenClaimRentArrears table = CitizenPossessionClaimApplicableAnswers.of(claim).getRentArrears();
+        CitizenClaimRentArrears table = underTest.of(claim).getRentArrears();
         assertThat(table.getRentHistoryTable()).hasSize(1);
         assertThat(table.getRentHistoryLedger()).isNull();
         assertThat(table.getRentStatementDocuments()).isNull();
 
         rentArrears.setProofType(CitizenClaimRentProofType.UPLOAD_STATEMENT);
-        CitizenClaimRentArrears upload = CitizenPossessionClaimApplicableAnswers.of(claim).getRentArrears();
+        CitizenClaimRentArrears upload = underTest.of(claim).getRentArrears();
         assertThat(upload.getRentStatementDocuments()).hasSize(1);
         assertThat(upload.getRentHistoryLedger()).isNull();
         assertThat(upload.getRentHistoryTable()).isNull();
@@ -97,11 +102,11 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getRentArrears().setOtherFrequencyDetails("Every 3 weeks");
 
-        assertThat(CitizenPossessionClaimApplicableAnswers.of(claim).getRentArrears().getOtherFrequencyDetails())
+        assertThat(underTest.of(claim).getRentArrears().getOtherFrequencyDetails())
             .isNull();
 
         claim.getRentArrears().setRentFrequency(RentPaymentFrequency.OTHER);
-        assertThat(CitizenPossessionClaimApplicableAnswers.of(claim).getRentArrears().getOtherFrequencyDetails())
+        assertThat(underTest.of(claim).getRentArrears().getOtherFrequencyDetails())
             .isEqualTo("Every 3 weeks");
     }
 
@@ -110,7 +115,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getNotice().setNoticeServed(VerticalYesNo.NO);
 
-        assertThat(CitizenPossessionClaimApplicableAnswers.of(claim).getNotice())
+        assertThat(underTest.of(claim).getNotice())
             .isEqualTo(CitizenClaimNotice.builder().noticeServed(VerticalYesNo.NO).build());
     }
 
@@ -119,7 +124,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.FIRST_CLASS_POST));
 
-        CitizenClaimNotice notice = CitizenPossessionClaimApplicableAnswers.of(claim).getNotice();
+        CitizenClaimNotice notice = underTest.of(claim).getNotice();
 
         assertThat(notice.getPostedDate()).isNotNull();
         assertThat(notice.getEmailedTo()).isNull();
@@ -131,7 +136,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getCircumstances().setUnderlesseeExists(VerticalYesNo.NO);
 
-        CitizenPossessionClaim applicable = CitizenPossessionClaimApplicableAnswers.of(claim);
+        CitizenPossessionClaim applicable = underTest.of(claim);
 
         assertThat(applicable.getCircumstances().getUnderlesseeName()).isNull();
         assertThat(applicable.getCircumstances().getUnderlesseeAddress()).isNull();
@@ -142,10 +147,33 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.setAdditionalDefendants(VerticalYesNo.NO);
 
-        CitizenPossessionClaim applicable = CitizenPossessionClaimApplicableAnswers.of(claim);
+        CitizenPossessionClaim applicable = underTest.of(claim);
 
         assertThat(applicable.getDefendants()).singleElement()
             .satisfies(defendant -> assertThat(defendant.getValue().getFirstName()).isEqualTo("Tom"));
+    }
+
+    @Test
+    void shouldKeepReasonsOnlyForGroundsThatAreAskedForOne() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        List<ListValue<CitizenClaimGroundReason>> reasons = new ArrayList<>(claim.getGrounds().getGroundReasons());
+        reasons.add(reason(PrivateLandlordAssuredGround.GROUND_8, "x".repeat(600)));
+        reasons.add(reason(PrivateLandlordAssuredGround.OTHER, "not asked"));
+        reasons.add(null);
+        claim.getGrounds().setGroundReasons(reasons);
+        claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A,
+                                                  PrivateLandlordAssuredGround.GROUND_14,
+                                                  PrivateLandlordAssuredGround.OTHER));
+
+        assertThat(underTest.of(claim).getGrounds().getGroundReasons())
+            .extracting(item -> item.getValue().getGround())
+            .containsExactly(PrivateLandlordAssuredGround.GROUND_1A, PrivateLandlordAssuredGround.GROUND_14);
+    }
+
+    private static ListValue<CitizenClaimGroundReason> reason(PrivateLandlordAssuredGround ground, String reason) {
+        return ListValue.<CitizenClaimGroundReason>builder()
+            .value(CitizenClaimGroundReason.builder().ground(ground).reason(reason).build())
+            .build();
     }
 
 }

@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
@@ -71,6 +72,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -135,6 +137,8 @@ class CitizenPossessionClaimSubmitServiceTest {
     private ArgumentCaptor<PCSCase> documentCaseCaptor;
 
     private final ObjectMapper objectMapper = CitizenPossessionClaimFixtures.draftObjectMapper();
+    private final CitizenPossessionClaimApplicableAnswers applicableAnswers =
+        new CitizenPossessionClaimApplicableAnswers(objectMapper);
     private final FeeDetails caseIssueFee = FeeDetails.builder().code("FEE0412").feeAmount(new BigDecimal("404.00"))
         .build();
 
@@ -162,6 +166,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         lenient().when(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress())).thenReturn(CASE_ADDRESS);
         lenient().when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenReturn(caseIssueFee);
         lenient().when(partyService.getPartyName(claimantStub)).thenReturn("Jane Landlord");
+        lenient().when(partyService.mapAddress(any())).thenAnswer(invocation -> new AddressEntity());
         lenient().when(partyService.createUnderlesseeOrMortgagee(any(UnderlesseeMortgageeDetails.class)))
             .thenAnswer(invocation -> {
                 UnderlesseeMortgageeDetails details = invocation.getArgument(0);
@@ -189,9 +194,13 @@ class CitizenPossessionClaimSubmitServiceTest {
             paymentService, objectMapper, clock);
     }
 
+    private CitizenPossessionClaimSubmitService.SubmittedClaim submit(CitizenPossessionClaim claim) {
+        return underTest.submit(pcsCaseEntity, claim, applicableAnswers.of(claim));
+    }
+
     @Test
     void shouldMapTheClaimOntoTheExistingDomain() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         verify(claimRepository).save(claimCaptor.capture());
         ClaimEntity claim = claimCaptor.getValue();
@@ -244,7 +253,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.OTHER));
         claim.getGrounds().setOtherGroundsDetails("The tenant sublet without consent.");
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getClaimGrounds())
@@ -263,7 +272,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         claim.getNotice().setNoticeType(CitizenClaimNoticeType.OTHER);
         claim.getNotice().setNoticeTypeOther("Section 8 notice (old form)");
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getNoticeOfPossession().getNoticeType())
@@ -276,7 +285,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         when(paymentService.createServiceRequest(any())).thenThrow(paymentsDown);
 
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim))
+        assertThatThrownBy(() -> submit(claim))
             .isInstanceOf(CitizenClaimPaymentUnavailableException.class)
             .hasCause(paymentsDown);
     }
@@ -287,7 +296,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         when(paymentService.createServiceRequest(any())).thenThrow(dbError);
 
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim)).isSameAs(dbError);
+        assertThatThrownBy(() -> submit(claim)).isSameAs(dbError);
     }
 
     @Test
@@ -296,13 +305,13 @@ class CitizenPossessionClaimSubmitServiceTest {
         doThrow(dbError).when(pcsCaseRepository).flush();
 
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim)).isSameAs(dbError);
+        assertThatThrownBy(() -> submit(claim)).isSameAs(dbError);
         verifyNoInteractions(paymentService);
     }
 
     @Test
     void shouldFlushTheClaimBeforeCallingPayments() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         InOrder inOrder = inOrder(pcsCaseRepository, paymentService);
         inOrder.verify(pcsCaseRepository).flush();
@@ -315,7 +324,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenThrow(feesDown);
 
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim))
+        assertThatThrownBy(() -> submit(claim))
             .isInstanceOf(CitizenClaimPaymentUnavailableException.class)
             .hasCause(feesDown);
         verifyNoInteractions(paymentService);
@@ -323,7 +332,7 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldNameAnIndividualClaimantInOrgNameAsExUiDoes() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         assertThat(claimantStub.getOrgName()).isEqualTo("Jane Landlord");
         assertThat(claimantStub.getFirstName()).isEqualTo("Jane");
@@ -336,10 +345,41 @@ class CitizenPossessionClaimSubmitServiceTest {
         claim.getClaimant().setIndividualOrOrganisation(CitizenClaimantKind.ORGANISATION);
         claim.getClaimant().setOrganisationName("Landlord Lettings Ltd");
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         assertThat(claimantStub.getOrgName()).isEqualTo("Landlord Lettings Ltd");
         assertThat(claimantStub.getFirstName()).isNull();
+    }
+
+    @Test
+    void shouldWriteNoReasonForAGroundThatIsNeverAskedForOne() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        List<ListValue<CitizenClaimGroundReason>> reasons = new ArrayList<>(claim.getGrounds().getGroundReasons());
+        reasons.add(ListValue.<CitizenClaimGroundReason>builder()
+                        .value(CitizenClaimGroundReason.builder()
+                                   .ground(PrivateLandlordAssuredGround.GROUND_8)
+                                   .reason("x".repeat(600))
+                                   .build())
+                        .build());
+        claim.getGrounds().setGroundReasons(reasons);
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimGrounds())
+            .filteredOn(ground -> ground.getCode().equals("GROUND_8"))
+            .singleElement()
+            .extracting(ClaimGroundEntity::getReason)
+            .isNull();
+    }
+
+    @Test
+    void shouldStoreTheClaimantAddressThroughThePartyService() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+
+        submit(claim);
+
+        verify(partyService).mapAddress(claim.getClaimant().getAddress());
     }
 
     @Test
@@ -347,7 +387,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.setAdditionalDefendants(VerticalYesNo.NO);
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getClaimParties())
@@ -360,7 +400,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getCircumstances().setUnderlesseeExists(VerticalYesNo.NO);
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getClaimParties())
@@ -371,7 +411,7 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldMapTheUnderlesseeThroughThePartyService() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         verify(partyService).createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails.builder()
                                                               .nameKnown(VerticalYesNo.YES)
@@ -387,7 +427,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setHasOtherGrounds(VerticalYesNo.NO);
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getClaimGrounds())
@@ -401,7 +441,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         claim.getRentArrears().setProofType(CitizenClaimRentProofType.UPLOAD_STATEMENT);
         claim.getRentArrears().setRentStatementDocuments(claim.getTenancy().getTenancyAgreementDocuments());
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(ledgerEntryRepository, never()).saveAll(any());
         verify(periodRepository, never()).saveAll(any());
@@ -419,7 +459,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         });
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(submissionRepository).save(submissionCaptor.capture());
         assertThat(submissionCaptor.getValue().getSubmittedClaim())
@@ -435,7 +475,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         claim.getGrounds().setRentArrearsGrounds(null);
         claim.getGrounds().setHasRentArrearsGrounds(VerticalYesNo.NO);
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getRentArrears()).isNull();
@@ -456,7 +496,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getNotice().setNoticeServed(VerticalYesNo.NO);
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(claimRepository).save(claimCaptor.capture());
         NoticeOfPossessionEntity notice = claimCaptor.getValue().getNoticeOfPossession();
@@ -473,7 +513,7 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPopulateTheCitizenClaimantAndAddDefendantsAndUnderlessee() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         assertThat(claimantStub.getFirstName()).isEqualTo("Jane");
         assertThat(claimantStub.getLastName()).isEqualTo("Landlord");
@@ -506,7 +546,7 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldMapTheTenancyAndRent() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         TenancyLicenceEntity tenancy = pcsCaseEntity.getTenancyLicence();
         assertThat(tenancy.getType()).isEqualTo(CombinedLicenceType.ASSURED_TENANCY);
@@ -521,7 +561,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getTenancy().setTenancyType(CitizenClaimTenancyType.REGULATED);
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         assertThat(pcsCaseEntity.getTenancyLicence().getType()).isEqualTo(CombinedLicenceType.OTHER);
         assertThat(pcsCaseEntity.getTenancyLicence().getOtherTypeDetails()).isEqualTo("Regulated tenancy");
@@ -529,7 +569,7 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPersistTheLedgerRentHistory() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         verify(periodRepository, never()).saveAll(any());
 
@@ -559,7 +599,7 @@ class CitizenPossessionClaimSubmitServiceTest {
                        .build())
             .build()));
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(ledgerEntryRepository, never()).saveAll(any());
 
@@ -577,7 +617,7 @@ class CitizenPossessionClaimSubmitServiceTest {
     void shouldKeepTheSubmittedAnswersSoNothingIsDropped() throws Exception {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
 
-        underTest.submit(pcsCaseEntity, claim);
+        submit(claim);
 
         verify(submissionRepository).save(submissionCaptor.capture());
         CitizenPossessionClaim stored = objectMapper.readValue(
@@ -590,7 +630,7 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPassTheClaimDocumentsToTheDocumentService() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         verify(documentService).createAllDocuments(documentCaseCaptor.capture());
         PCSCase documentCase = documentCaseCaptor.getValue();
@@ -608,7 +648,7 @@ class CitizenPossessionClaimSubmitServiceTest {
     @Test
     void shouldCreateTheClaimIssueFeeServiceRequestForTheClaimant() {
         CitizenPossessionClaimSubmitService.SubmittedClaim submitted =
-            underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+            submit(CitizenPossessionClaimFixtures.completeClaim());
 
         verify(paymentService).createServiceRequest(feeTaskCaptor.capture());
         FeesAndPayTaskData task = feeTaskCaptor.getValue();

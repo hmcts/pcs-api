@@ -89,6 +89,8 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     @Autowired
     private CitizenPossessionClaimSubmitService submitService;
     @Autowired
+    private CitizenPossessionClaimApplicableAnswers applicableAnswers;
+    @Autowired
     private PcsCaseRepository pcsCaseRepository;
     @Autowired
     private RentHistoryLedgerEntryRepository ledgerEntryRepository;
@@ -234,7 +236,8 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         assertThatThrownBy(() -> caseService.saveDraft(caseReference, stale))
             .isInstanceOf(DraftVersionConflictException.class);
 
-        final CitizenPossessionClaimSubmitService.SubmittedClaim submitted = submitService.submit(createdCase, draft);
+        final CitizenPossessionClaimSubmitService.SubmittedClaim submitted =
+            submitService.submit(createdCase, draft, applicableAnswers.of(draft));
         caseService.deleteDraft(caseReference);
         entityManager.flush();
         entityManager.clear();

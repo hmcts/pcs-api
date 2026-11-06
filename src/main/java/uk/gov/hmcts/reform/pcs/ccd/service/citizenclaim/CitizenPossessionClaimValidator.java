@@ -74,11 +74,11 @@ public class CitizenPossessionClaimValidator {
     }
 
     /**
-     * Checks only the answers that apply (see {@link CitizenPossessionClaimApplicableAnswers}), so
-     * nothing on a branch the citizen did not take is required or length-checked.
+     * Checks a claim already reduced to the answers that apply (see
+     * {@link CitizenPossessionClaimApplicableAnswers}), so nothing on a branch the citizen did not
+     * take is required or length-checked.
      */
-    public List<String> validateForSubmit(CitizenPossessionClaim answers) {
-        CitizenPossessionClaim claim = CitizenPossessionClaimApplicableAnswers.of(answers);
+    public List<String> validateForSubmit(CitizenPossessionClaim claim) {
         List<String> errors = new ArrayList<>(validateEligibility(claim.getEligibility()));
 
         validateClaimant(claim.getClaimant(), errors);

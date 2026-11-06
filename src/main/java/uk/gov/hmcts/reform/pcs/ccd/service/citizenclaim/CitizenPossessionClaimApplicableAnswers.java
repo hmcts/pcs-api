@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimCircumstances;
@@ -18,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
-import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -28,19 +29,21 @@ import java.util.Set;
  * the final-submit mapping both work on the claim this returns, so answers on a branch the citizen
  * turned away from (or left behind by changing an answer) are neither checked nor written.
  */
-public final class CitizenPossessionClaimApplicableAnswers {
+@Component
+public class CitizenPossessionClaimApplicableAnswers {
 
-    // Same serialisation as the draft store, so the copy is exactly what a saved draft would read back as
-    private static final ObjectMapper DRAFT_MAPPER = new JacksonConfiguration().draftCaseDataObjectMapper();
+    private final ObjectMapper draftCaseDataObjectMapper;
 
-    private CitizenPossessionClaimApplicableAnswers() {
+    public CitizenPossessionClaimApplicableAnswers(
+        @Qualifier("draftCaseDataObjectMapper") ObjectMapper draftCaseDataObjectMapper) {
+        this.draftCaseDataObjectMapper = draftCaseDataObjectMapper;
     }
 
     /**
      * A deep copy of the claim holding only the answers that apply. The original is not changed.
      */
-    public static CitizenPossessionClaim of(CitizenPossessionClaim claim) {
-        CitizenPossessionClaim applicable = DRAFT_MAPPER.convertValue(claim, CitizenPossessionClaim.class);
+    public CitizenPossessionClaim of(CitizenPossessionClaim claim) {
+        CitizenPossessionClaim applicable = draftCaseDataObjectMapper.convertValue(claim, CitizenPossessionClaim.class);
 
         reduceClaimant(applicable.getClaimant());
         reduceDefendants(applicable);
@@ -134,12 +137,20 @@ public final class CitizenPossessionClaimApplicableAnswers {
             grounds.setOtherGroundsDetails(null);
         }
         if (grounds.getGroundReasons() != null) {
+            // Only grounds other than rent arrears and OTHER are asked for a reason
             grounds.setGroundReasons(grounds.getGroundReasons().stream()
-                                         .filter(item -> item == null || item.getValue() == null
-                                             || item.getValue().getGround() == null
-                                             || selected.contains(item.getValue().getGround()))
+                                         .filter(item -> item != null && item.getValue() != null)
+                                         .filter(item -> isAskedForAReason(item.getValue().getGround(), selected))
                                          .toList());
         }
+    }
+
+    private static boolean isAskedForAReason(PrivateLandlordAssuredGround ground,
+                                             Set<PrivateLandlordAssuredGround> selected) {
+        return ground != null
+            && selected.contains(ground)
+            && !ground.isRentArrears()
+            && ground != PrivateLandlordAssuredGround.OTHER;
     }
 
     private static void reduceRentArrears(CitizenClaimRentArrears rentArrears) {

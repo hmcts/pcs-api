@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFix
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.citizenmakepossessionclaim.CitizenMakePossessionClaimDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenClaimPaymentUnavailableException;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimApplicableAnswers;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService.SubmittedClaim;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -65,7 +67,9 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         setEventUnderTest(new CitizenMakePossessionClaim(
-            featureToggleService, caseService, new CitizenPossessionClaimValidator(), submitService,
+            featureToggleService, caseService, new CitizenPossessionClaimValidator(),
+            new CitizenPossessionClaimApplicableAnswers(CitizenPossessionClaimFixtures.draftObjectMapper()),
+            submitService,
             draftSavePage, objectMapper));
     }
 
@@ -146,7 +150,7 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
         SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
 
         assertThat(response.getErrors()).containsExactly("REQUIRED:tenancy.tenancyType");
-        verify(submitService, never()).submit(any(), any());
+        verify(submitService, never()).submit(any(), any(), any());
         verify(caseService, never()).deleteDraft(anyLong());
     }
 
@@ -159,7 +163,7 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
 
         assertThat(callSubmitHandler(reviewed(DRAFT_VERSION - 1)).getErrors()).containsExactly(DRAFT_CHANGED);
         assertThat(callSubmitHandler(PCSCase.builder().build()).getErrors()).containsExactly(DRAFT_CHANGED);
-        verify(submitService, never()).submit(any(), any());
+        verify(submitService, never()).submit(any(), any(), any());
     }
 
     @Test
@@ -170,7 +174,8 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
         CitizenPossessionClaim draft = savedDraft();
         when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(draft));
         FeeDetails fee = FeeDetails.builder().feeAmount(new BigDecimal("404.00")).build();
-        when(submitService.submit(pcsCaseEntity, draft)).thenReturn(new SubmittedClaim("2026-1234", fee));
+        when(submitService.submit(eq(pcsCaseEntity), eq(draft), any()))
+            .thenReturn(new SubmittedClaim("2026-1234", fee));
 
         SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
 
@@ -191,7 +196,7 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
         when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
         CitizenPossessionClaim draft = savedDraft();
         when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(draft));
-        when(submitService.submit(pcsCaseEntity, draft)).thenThrow(
+        when(submitService.submit(eq(pcsCaseEntity), eq(draft), any())).thenThrow(
             new CitizenClaimPaymentUnavailableException(TEST_CASE_REFERENCE, new IllegalStateException("503")));
 
         SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
