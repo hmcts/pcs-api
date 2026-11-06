@@ -144,6 +144,18 @@ location-reference:
   api-url: ${LOCATION_REF_URL:http://localhost:8083}
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
+common-data:
+  api-url: ${COMMON_DATA_API_URL:http://localhost:8083}
+  service-id: ${COMMON_DATA_SERVICE_ID:AAA3}
+  sync:
+    enabled: ${COMMON_DATA_SYNC_ENABLED:false}
+    schedule: ${COMMON_DATA_SYNC_SCHEDULE:DAILY|03:30}
+    request:
+      max-retries: ${COMMON_DATA_SYNC_MAX_RETRIES:3}
+      backoff-delay-seconds: ${COMMON_DATA_SYNC_BACKOFF_DELAY_SECONDS:60s}
+  cache:
+    refresh-interval: ${COMMON_DATA_CACHE_REFRESH_INTERVAL:PT1H}
+
 notify:
   api-url: ${NOTIFY_URL:http://localhost:8083}
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
