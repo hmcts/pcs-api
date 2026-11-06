@@ -16,7 +16,7 @@ import java.util.UUID;
 /**
  * Fetches a stored document's bytes from CDAM. Authenticates as the system user (CDAM needs a user token)
  * plus S2S, so it is safe to call from the scheduled sweep. The bytes are merged into the letter PDF by
- * {@link PdfMerger} rather than sent as a separate Send Letter document.
+ * {@link BulkPrintLetterAssembler} rather than sent as a separate Send Letter document.
  */
 @Service
 public class LetterDocumentFetcher {
