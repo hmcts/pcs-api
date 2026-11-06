@@ -1,3 +1,4 @@
+type BreathingSpaceDate = { day: string; month: string; year: string };
 
 import test, { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
@@ -30,7 +31,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -89,7 +90,19 @@ export class CaseManagementAction implements IAction {
       ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
       ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['validateEnterBreathingSpacePage', () => this.validateEnterBreathingSpacePage()],
+      ['selectBreathingSpaceType', () => this.selectBreathingSpaceType(fieldName as actionRecord)],
+      ['fillExpectedEndDateWithFutureDate', () => this.fillExpectedEndDateWithFutureDate()],
+      ['fillBreathingSpaceStartDateWithToday', () => this.fillBreathingSpaceStartDateWithToday()],
+      ['completeBreathingSpaceFormHappyPath', () => this.completeBreathingSpaceFormHappyPath(fieldName as any)],
+      ['enterBreathingSpaceDetailsAndCancel', () => this.enterBreathingSpaceDetailsAndCancel(fieldName as any)],
+      ['reopenBreathingSpaceEvent', () => this.reopenBreathingSpaceEvent()],
+      ['validateReferenceNumberLengthError', () => this.validateReferenceNumberLengthError()],
+      ['validateFutureStartDateError', () => this.validateFutureStartDateError()],
+
+
     ]);
+
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
       throw new Error(`No action found for '${action}'`);
@@ -97,6 +110,94 @@ export class CaseManagementAction implements IAction {
     await actionToPerform();
   }
 
+private async validateReferenceNumberLengthError() {
+    await performAction('inputErrorValidation', {
+        validationType: enterBreathingSpace.errorValidationType.one,
+        inputArray: enterBreathingSpace.errorValidationField.errorTextField,
+        label: enterBreathingSpace.referenceNumberTextLabel,
+        question: enterBreathingSpace.referenceNumberTextLabel,
+        header: enterBreathingSpace.eventCouldNotBeCreatedErrorMessageHeader,
+        button: enterBreathingSpace.continueButton,
+    });
+}
+private async validateFutureStartDateError() {
+    await performAction('inputErrorValidation', {
+        validationType: enterBreathingSpace.errorValidationType.five,
+        inputArray: enterBreathingSpace.errorValidationField.errorDateField,
+        label1: enterBreathingSpace.dayTextLabel,
+        label2: enterBreathingSpace.monthTextLabel,
+        label3: enterBreathingSpace.yearTextLabel,
+        question: enterBreathingSpace.whenDidBreathingSpaceStartQuestion,
+        header: enterBreathingSpace.eventCouldNotBeCreatedHeader,
+        header1: enterBreathingSpace.eventCouldNotBeCreatedHeader,
+        button: enterBreathingSpace.continueButton,
+    });
+}
+  private async enterBreathingSpaceDetailsAndCancel(data: {
+  referenceNumber: string;
+  startDate: string;
+  targetType: string;
+  }) {
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
+    await performAction('inputDate', enterBreathingSpace.whenDidBreathingSpaceStartQuestion, data.startDate);
+    await performAction('selectBreathingSpaceType', { type: data.targetType });
+    await performAction('clickButton', enterBreathingSpace.cancelLink);
+  }
+
+  private async reopenBreathingSpaceEvent() {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enterBreathingSpaceEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+  }
+
+private async completeBreathingSpaceFormHappyPath(data: { targetType: string; referenceNumber: string }) {
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+    await performAction('fillBreathingSpaceStartDateWithToday');
+    await performAction('selectBreathingSpaceType', { type: data.targetType }); 
+    await performAction('fillExpectedEndDateWithFutureDate');
+    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
+    await performAction('clickButton', enterBreathingSpace.continueButton);
+}
+  private async fillBreathingSpaceStartDateWithToday(): Promise<void> {
+    const today = CaseManagementCommonUtils.getRandomDate('today');
+    await performAction('inputDate', enterBreathingSpace.whenDidBreathingSpaceStartQuestion, today);
+  }
+  private async validateEnterBreathingSpacePage(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.referenceNumberTextLabel });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenDidBreathingSpaceStartQuestion });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.youShouldEnterStartDateHintText });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whichTypeOfBreathingSpace });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.standardBreathingSpaceHintText });
+    await performValidation('elementToBeVisible', enterBreathingSpace.mentalHealthRadioOption);
+    await performValidation('elementToBeVisible', enterBreathingSpace.standardBreathingSpaceRadioOption);
+    await performValidation('elementNotToBeVisible', enterBreathingSpace.previousButton);
+  }
+  private async selectBreathingSpaceType(details: any): Promise<void> {
+    const { type } = details;
+    const question = enterBreathingSpace.whichTypeOfBreathingSpace;
+    if (type === 'mentalHealthCrisisMoratorium') {
+      await performAction('clickRadioButton', { question, option: enterBreathingSpace.mentalHealthRadioOption });
+    } else {
+      await performAction('clickRadioButton', { question, option: enterBreathingSpace.standardBreathingSpaceRadioOption });
+    }
+  }
+  private async fillExpectedEndDateWithFutureDate(): Promise<void> {
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenIsExpectedEndDateHiddenTextLabel });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenIsExpectedEndDateHiddenHintText });
+
+    const futureDate = CaseManagementCommonUtils.getRandomDate(enterBreathingSpace.dateTypeHiddenUserInput);
+    await performAction(
+      'inputDate',
+      enterBreathingSpace.whenIsExpectedEndDateHiddenTextLabel,
+      futureDate
+    );
+  }
   private async navigateToSummaryPage(page: Page) {
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await expect(async () => {
@@ -970,6 +1071,11 @@ export class CaseManagementAction implements IAction {
                 await performAction('clickButton', validationArr.button);
                 if (item.type === 'moreThanMax') {
                   await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
+                   if (item.errDetailMessage) {
+                    const detail = item.errDetailMessage;
+                    await expect(page.locator('li.ccd-error-summary-li').filter({ hasText: detail })).toBeVisible();
+                    await expect(page.locator('#caseEditForm span.error-message').filter({ hasText: detail })).toBeVisible();
+                  }
                 } else {
                   await performValidation('inputError', validationArr.label, item.errMessage);
                   await performValidation('errorMessage', validationArr.label, item.errMessage);
@@ -981,7 +1087,10 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'dateField':
-            let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+             const date: string =
+            item.day && item.month && item.year
+              ? `${item.day}/${item.month}/${item.year}`
+              : CaseManagementCommonUtils.getRandomDate(item.type as string);
             const enterDate = () =>
               performActions(
                 'Enter Date',
@@ -1001,10 +1110,14 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
             } else {
-              await enterDate();
+            await enterDate();
+            await expect(async () => {
               await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
-            }
+              }).toPass({
+              intervals: [1_000, 2_000, 3_000],
+              timeout: VERY_LONG_TIMEOUT,
+            });}
             break;
 
           case 'dateRadioOption':
