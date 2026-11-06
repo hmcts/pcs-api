@@ -78,9 +78,22 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(
         label = "Explain what the defendant wants the court to do, and why",
-        typeOverride = FieldType.RichTextArea
+        typeOverride = FieldType.TextArea,
+        max = 6800
     )
     private String whatOrderWanted;
+
+    @CCD(
+        label = "Draft order wording (optional)",
+        hint = "Provide the wording you propose for the order. You can use numbering and formatting.",
+        typeOverride = FieldType.RichTextArea,
+        access = SolicitorAccess.class,
+        inheritAccessFromParent = false
+    )
+    private String draftOrderWording;
+
+    @CCD(searchable = false)
+    private VerticalYesNo draftOrderWordingAllowed;
 
     @CCD(
         label = "Do you want to upload documents to support the defendant’s application?"

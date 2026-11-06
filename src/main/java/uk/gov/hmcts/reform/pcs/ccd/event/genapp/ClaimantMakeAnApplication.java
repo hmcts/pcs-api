@@ -49,7 +49,8 @@ public class ClaimantMakeAnApplication implements CCDConfig<PCSCase, State, User
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
-            .decentralisedEvent(claimantMakeAnApplication.name(), submitEventHandler, startEventHandler)
+            .decentralisedEvent(claimantMakeAnApplication.name(), submitEventHandler,
+                                startEventHandler::startForClaimant)
             .forStates(claimantMakeAnApplication())
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3))
             .name("Make an application")
