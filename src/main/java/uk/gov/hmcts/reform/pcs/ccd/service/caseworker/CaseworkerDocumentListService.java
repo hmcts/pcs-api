@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -29,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
@@ -46,6 +47,7 @@ public class CaseworkerDocumentListService {
     private static final DateTimeFormatter RELATED_ENTITY_DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
 
     private final PartyService partyService;
+    private final FeatureToggleService featureToggleService;
 
     public boolean hasRelatedSubmissions(List<ListValue<GeneralApplication>> genApps,
                                          List<CounterClaimEntity> counterClaims) {
@@ -195,10 +197,7 @@ public class CaseworkerDocumentListService {
                                                                PcsCaseEntity pcsCaseEntity) {
         return getOpenCounterClaims(counterClaims).stream()
             .map(counterClaimEntity -> {
-                UUID counterclaimPartyId = counterClaimEntity.getParty().getId();
-                String partyLabel = partyService.getPartyLabel(pcsCaseEntity.getMainClaim(), counterclaimPartyId);
-
-                String displayLabel = "Counter claim %s".formatted(counterClaimReference(partyLabel));
+                String displayLabel = counterClaimDisplayLabel(counterClaimEntity, pcsCaseEntity);
 
                 LocalDateTime submittedDate = counterClaimEntity.getClaimSubmittedDate();
                 displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
@@ -224,6 +223,27 @@ public class CaseworkerDocumentListService {
             .toList();
     }
 
+    private String counterClaimDisplayLabel(CounterClaimEntity counterClaimEntity, PcsCaseEntity pcsCaseEntity) {
+        if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            Integer rank = counterClaimEntity.getRank();
+            return rank != null ? "Counter claim CC%d".formatted(rank) : "Counter claim";
+        }
+
+        String partyLabel = partyService.getPartyLabel(
+            pcsCaseEntity.getMainClaim(), counterClaimEntity.getParty().getId());
+        return "Counter claim %s".formatted(counterClaimReference(partyLabel));
+    }
+
+    // Before release 1.4 the CC number was the defendant's place on the claim, taken from their party label.
+    private static String counterClaimReference(String partyLabel) {
+        if (partyLabel == null) {
+            return "CC";
+        }
+
+        String rank = partyLabel.replaceAll("\\D+", "");
+        return rank.isBlank() ? "CC" : "CC" + rank;
+    }
+
     private DynamicListElement mapToPartyListElement(ClaimEntity mainClaim, PartyEntity partyEntity) {
         String partyName = partyService.getPartyName(partyEntity);
         String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
@@ -232,15 +252,6 @@ public class CaseworkerDocumentListService {
             .code(partyEntity.getId())
             .label(label)
             .build();
-    }
-
-    private static String counterClaimReference(String partyLabel) {
-        if (partyLabel == null) {
-            return "CC";
-        }
-
-        String rank = partyLabel.replaceAll("\\D+", "");
-        return rank.isBlank() ? "CC" : "CC" + rank;
     }
 
     @Builder

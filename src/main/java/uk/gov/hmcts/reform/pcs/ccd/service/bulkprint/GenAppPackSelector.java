@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -27,8 +28,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 
 /**
  * Selects gen-app envelopes per recipient. Issued with-notice defendant CUI GAs with a submission PDF go to
- * every claim party whose contact preferences include post (or are unset). Without-notice GAs,
- * non-defendant-applicant GAs, ExUI/caseworker GAs produce no candidates.
+ * every claim party whose contact preferences include post (or are unset). Defendants with a legal
+ * representative are always excluded, and claimants are excluded when the release 1.4 flag is enabled.
+ * Without-notice GAs, non-defendant-applicant GAs, ExUI/caseworker GAs produce no candidates.
  */
 @Service
 public class GenAppPackSelector {
@@ -52,9 +54,12 @@ public class GenAppPackSelector {
         ClaimEntity claim = pcsCase.getClaims().getFirst();
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
-        List<PartyEntity> allParties = new ArrayList<>(claimants);
-        allParties.addAll(defendants);
-        if (allParties.isEmpty()) {
+        List<PartyEntity> candidateParties = new ArrayList<>();
+        if (!packSkipRules.shouldExcludeClaimant()) {
+            candidateParties.addAll(claimants);
+        }
+        candidateParties.addAll(defendants);
+        if (candidateParties.isEmpty()) {
             return List.of();
         }
 
@@ -74,8 +79,8 @@ public class GenAppPackSelector {
                 continue;
             }
             DocumentEntity document = genApp.getSubmissionDocument();
-            for (PartyEntity party : allParties) {
-                if (!wantsPost(party) || sent.contains(key(party, document))) {
+            for (PartyEntity party : candidateParties) {
+                if (!wantsPost(party) || isRepresented(party) || sent.contains(key(party, document))) {
                     continue;
                 }
                 candidates.add(new GenAppPackCandidate(
@@ -115,6 +120,12 @@ public class GenAppPackSelector {
         return genApp.getState() == GenAppState.GEN_APP_ISSUED
             && genApp.getSubmissionDocument() != null
             && genApp.getWithoutNotice() != VerticalYesNo.YES;
+    }
+
+    // Represented defendants are served digitally through their legal representative, never by post.
+    private boolean isRepresented(PartyEntity party) {
+        return party.getClaimPartyOrganisationList().stream()
+            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
     }
 
     private boolean wantsPost(PartyEntity party) {
