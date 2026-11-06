@@ -79,6 +79,12 @@ public class CitizenCreatePossessionClaim implements CCDConfig<PCSCase, State, U
             return SubmitResponse.<State>builder().errors(eligibilityErrors).build();
         }
 
+        List<String> addressErrors =
+            CitizenPossessionClaimValidator.validateAddressLengths("propertyAddress", claim.getPropertyAddress());
+        if (!addressErrors.isEmpty()) {
+            return SubmitResponse.<State>builder().errors(addressErrors).build();
+        }
+
         Optional<String> propertyError = citizenPossessionClaimCaseService
             .checkPropertyInEngland(claim.getPropertyAddress(), eligibility.getLegislativeCountry());
         if (propertyError.isPresent()) {

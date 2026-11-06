@@ -110,6 +110,19 @@ class CitizenCreatePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
+    void shouldRefuseAPropertyAddressLongerThanItsColumns() {
+        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
+        PCSCase caseData = caseData(ClaimantType.PRIVATE_LANDLORD);
+        caseData.getCitizenPossessionClaim().setPropertyAddress(
+            AddressUK.builder().addressLine1("x".repeat(101)).postTown("London").postCode("SW1A 1AA").build());
+
+        SubmitResponse<State> response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors()).containsExactly("TOO_LONG:propertyAddress.AddressLine1");
+        verify(caseService, never()).createCase(anyLong(), any(), any());
+    }
+
+    @Test
     void shouldPassTheChosenCountryForCrossBorderPostcodes() {
         when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
         PCSCase caseData = caseData(ClaimantType.PRIVATE_LANDLORD);

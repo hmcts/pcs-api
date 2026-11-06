@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -84,17 +85,20 @@ class CitizenPossessionClaimViewTest {
     }
 
     @Test
-    void shouldDoNothingWhenTheFlagIsOff() {
+    void shouldDoNothingWhenTheFlagIsOffWithoutLookingAtTheCase() {
         when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(false);
+        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
         PCSCase pcsCase = PCSCase.builder().build();
 
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, caseEntity);
 
         assertThat(pcsCase.getCitizenPossessionClaim()).isNull();
+        verifyNoInteractions(caseEntity, securityContextService);
     }
 
     @Test
-    void shouldNotEvenCheckTheFlagForCasesNotMadeByACitizen() {
+    void shouldNotLookUpTheUserForCasesNotMadeByACitizen() {
+        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
         claimCreator.setIdamId(null);
         claimCreator.setOrganisationId("ORG1");
         PCSCase pcsCase = PCSCase.builder().build();
@@ -102,7 +106,7 @@ class CitizenPossessionClaimViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         assertThat(pcsCase.getCitizenPossessionClaim()).isNull();
-        verifyNoInteractions(featureToggleService, securityContextService);
+        verifyNoInteractions(securityContextService);
     }
 
 }

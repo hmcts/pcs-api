@@ -31,6 +31,10 @@ public class CitizenPossessionClaimView {
     private final SecurityContextService securityContextService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        if (!featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)) {
+            return;
+        }
+
         Optional<String> creatorIdamId = pcsCaseEntity.getParties().stream()
             .filter(PartyEntity::isClaimCreator)
             .map(PartyEntity::getIdamId)
@@ -38,7 +42,6 @@ public class CitizenPossessionClaimView {
             .findFirst();
 
         if (creatorIdamId.isEmpty() || pcsCaseEntity.getClaims().isEmpty()
-            || !featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)
             || !creatorIdamId.get().equals(currentUserId())) {
             return;
         }

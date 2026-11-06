@@ -278,7 +278,7 @@ class DraftCaseDataServiceTest {
             .isInstanceOf(UnsubmittedDataException.class)
             .hasMessageContaining("No draft found");
 
-        verify(draftCaseDataRepository, never()).save(any());
+        verify(draftCaseDataRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -293,7 +293,7 @@ class DraftCaseDataServiceTest {
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
-        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+        when(draftCaseDataRepository.saveAndFlush(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
         UserInfo userInfo = UserInfo.builder()
             .uid(USER_ID)
@@ -305,7 +305,7 @@ class DraftCaseDataServiceTest {
         underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
 
         // Then
-        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        verify(draftCaseDataRepository).saveAndFlush(unsubmittedCaseDataEntityCaptor.capture());
         DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
 
         assertThat(savedEntity).isSameAs(draftCaseDataEntity);
@@ -590,7 +590,7 @@ class DraftCaseDataServiceTest {
             .isInstanceOf(UnsubmittedDataException.class)
             .hasMessageContaining("No draft found");
 
-        verify(draftCaseDataRepository, never()).save(any());
+        verify(draftCaseDataRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -612,14 +612,14 @@ class DraftCaseDataServiceTest {
                                                                            organisationId, partyId))
             .thenReturn(Optional.of(draftCaseDataEntity));
 
-        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+        when(draftCaseDataRepository.saveAndFlush(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId, organisationId);
 
         // Then
-        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        verify(draftCaseDataRepository).saveAndFlush(unsubmittedCaseDataEntityCaptor.capture());
 
         DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
 
@@ -986,7 +986,7 @@ class DraftCaseDataServiceTest {
             .isInstanceOf(DraftVersionConflictException.class)
             .hasMessageContaining("expected version 3 but found 5");
         verify(entity, never()).setCaseData(any());
-        verify(draftCaseDataRepository, never()).save(any());
+        verify(draftCaseDataRepository, never()).saveAndFlush(any());
         verify(draftCaseDataRepository, never()).saveAndFlush(any());
     }
 
@@ -1011,24 +1011,26 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldNotCheckVersionWhenNoneExpected() throws JsonProcessingException {
-        // Given - ordinary step saves post no version and keep the plain save path
+    void shouldFlushAndReturnTheStoredVersionWhenNoneExpected() throws JsonProcessingException {
+        // Given - ordinary step saves post no version: last write wins, but the caller still learns the new version
         PCSCase newCaseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(newCaseData)).thenReturn("new json");
         DraftCaseDataEntity entity = mock(DraftCaseDataEntity.class);
+        when(entity.getVersion()).thenReturn(4L);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID)).thenReturn(Optional.of(entity));
-        when(draftCaseDataRepository.save(entity)).thenReturn(entity);
+        when(draftCaseDataRepository.saveAndFlush(entity)).thenReturn(entity);
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID).build());
         when(securityContextService.toUserId(USER_ID)).thenReturn(USER_ID);
 
         // When
-        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, null);
+        Long savedVersion = underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, null);
 
         // Then
-        verify(draftCaseDataRepository).save(entity);
-        verify(draftCaseDataRepository, never()).saveAndFlush(any());
+        assertThat(savedVersion).isEqualTo(4L);
+        verify(draftCaseDataRepository).saveAndFlush(entity);
+        verify(draftCaseDataRepository, never()).save(any());
     }
 
     @Test
@@ -1040,7 +1042,7 @@ class DraftCaseDataServiceTest {
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
-        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+        when(draftCaseDataRepository.saveAndFlush(any(DraftCaseDataEntity.class)))
             .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, "draft"))
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(securityContextService.getCurrentUserDetails())
@@ -1049,7 +1051,7 @@ class DraftCaseDataServiceTest {
 
         underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
 
-        verify(draftCaseDataRepository, times(2)).save(draftCaseDataEntity);
+        verify(draftCaseDataRepository, times(2)).saveAndFlush(draftCaseDataEntity);
         verify(draftCaseDataRepository, times(2))
             .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(CASE_REFERENCE, eventId, USER_ID);
     }
@@ -1063,7 +1065,7 @@ class DraftCaseDataServiceTest {
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
-        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+        when(draftCaseDataRepository.saveAndFlush(any(DraftCaseDataEntity.class)))
             .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, "draft"))
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(securityContextService.getCurrentUserDetails())
@@ -1072,7 +1074,7 @@ class DraftCaseDataServiceTest {
 
         underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, (Long) null);
 
-        verify(draftCaseDataRepository, times(2)).save(draftCaseDataEntity);
+        verify(draftCaseDataRepository, times(2)).saveAndFlush(draftCaseDataEntity);
     }
 
     @Test
@@ -1101,7 +1103,7 @@ class DraftCaseDataServiceTest {
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(mock(DraftCaseDataEntity.class)));
-        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+        when(draftCaseDataRepository.saveAndFlush(any(DraftCaseDataEntity.class)))
             .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, "draft"));
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID).build());
@@ -1109,6 +1111,6 @@ class DraftCaseDataServiceTest {
 
         assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId))
             .isInstanceOf(ObjectOptimisticLockingFailureException.class);
-        verify(draftCaseDataRepository, times(3)).save(any(DraftCaseDataEntity.class));
+        verify(draftCaseDataRepository, times(3)).saveAndFlush(any(DraftCaseDataEntity.class));
     }
 }

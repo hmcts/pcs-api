@@ -1,13 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -33,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.CitizenClaimSubmissionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryLedgerEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryPeriodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
@@ -45,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -63,6 +68,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -70,8 +76,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -106,6 +116,8 @@ class CitizenPossessionClaimSubmitServiceTest {
     private FeeService feeService;
     @Mock
     private PaymentService paymentService;
+    @Mock
+    private FeePaymentRepository feePaymentRepository;
 
     @Captor
     private ArgumentCaptor<ClaimEntity> claimCaptor;
@@ -146,17 +158,17 @@ class CitizenPossessionClaimSubmitServiceTest {
         when(documentService.createAllDocuments(any(PCSCase.class))).thenReturn(List.of());
         lenient().when(addressMapper.toAddressEntityAndNormalise(any())).thenAnswer(invocation -> new AddressEntity());
         lenient().when(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress())).thenReturn(CASE_ADDRESS);
-        when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenReturn(caseIssueFee);
-        when(partyService.getPartyName(claimantStub)).thenReturn("Jane Landlord");
+        lenient().when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenReturn(caseIssueFee);
+        lenient().when(partyService.getPartyName(claimantStub)).thenReturn("Jane Landlord");
         PaymentServiceResponse serviceRequest = new PaymentServiceResponse();
         serviceRequest.setServiceRequestReference("2026-1762441234567");
-        when(paymentService.createServiceRequest(any())).thenReturn(serviceRequest);
+        lenient().when(paymentService.createServiceRequest(any())).thenReturn(serviceRequest);
 
         Clock clock = Clock.fixed(Instant.parse("2026-11-06T10:00:00Z"), ZoneOffset.UTC);
         underTest = new CitizenPossessionClaimSubmitService(
             pcsCaseService, pcsCaseRepository, claimRepository, partyRepository, partyService, documentService,
             addressMapper, ledgerEntryRepository, periodRepository, submissionRepository, feeService,
-            paymentService, objectMapper, clock);
+            paymentService, feePaymentRepository, objectMapper, clock);
     }
 
     @Test
@@ -241,14 +253,58 @@ class CitizenPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldReportPaymentsFailuresAsPaymentUnavailable() {
-        RuntimeException paymentsDown = new IllegalStateException("503 from Payments");
+    void shouldReportPaymentsApiFailuresAsPaymentUnavailable() {
+        FeignException paymentsDown = mock(FeignException.class);
         when(paymentService.createServiceRequest(any())).thenThrow(paymentsDown);
 
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim))
             .isInstanceOf(CitizenClaimPaymentUnavailableException.class)
             .hasCause(paymentsDown);
+    }
+
+    @Test
+    void shouldNotReportADatabaseFailureWhileRecordingThePaymentAsAPaymentsOutage() {
+        DataIntegrityViolationException dbError = new DataIntegrityViolationException("fee_payment insert failed");
+        when(paymentService.createServiceRequest(any())).thenThrow(dbError);
+
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim)).isSameAs(dbError);
+    }
+
+    @Test
+    void shouldFailOnAClaimWriteErrorBeforeCallingPayments() {
+        DataIntegrityViolationException dbError = new DataIntegrityViolationException("claim insert failed");
+        doThrow(dbError).when(pcsCaseRepository).flush();
+
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        assertThatThrownBy(() -> underTest.submit(pcsCaseEntity, claim)).isSameAs(dbError);
+        verifyNoInteractions(paymentService);
+    }
+
+    @Test
+    void shouldFlushTheClaimBeforeCallingPayments() {
+        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+
+        InOrder inOrder = inOrder(pcsCaseRepository, paymentService);
+        inOrder.verify(pcsCaseRepository).flush();
+        inOrder.verify(paymentService).createServiceRequest(any());
+    }
+
+    @Test
+    void shouldReuseAClaimServiceRequestTheCaseAlreadyHas() {
+        when(feePaymentRepository.findLatestServiceRequest(CASE_REFERENCE, PaymentCallbackHandlerType.CLAIM))
+            .thenReturn(Optional.of(FeePaymentEntity.builder()
+                                        .serviceRequestReference("2026-existing")
+                                        .amount(new BigDecimal("404.00"))
+                                        .build()));
+
+        CitizenPossessionClaimSubmitService.SubmittedClaim submitted =
+            underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+
+        assertThat(submitted.serviceRequestReference()).isEqualTo("2026-existing");
+        assertThat(submitted.feeDetails().getFeeAmount()).isEqualByComparingTo("404.00");
+        verifyNoInteractions(paymentService, feeService);
     }
 
     @Test

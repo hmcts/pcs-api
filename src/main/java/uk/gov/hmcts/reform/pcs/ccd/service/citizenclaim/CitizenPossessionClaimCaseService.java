@@ -150,9 +150,11 @@ public class CitizenPossessionClaimCaseService {
 
     /**
      * Replaces the draft with the given answers, minus what only pcs-api may set. When the answers
-     * carry a draft version the save is refused if the stored draft has moved on.
+     * carry a draft version the save is refused if the stored draft has moved on; without one the
+     * last write wins.
      *
-     * @return the stored draft version after the save
+     * @return the version the draft is stored at once this save is written, which the next save or
+     *     the submit must echo
      * @throws uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException if the draft version is stale
      */
     public Long saveDraft(long caseReference, CitizenPossessionClaim claim) {

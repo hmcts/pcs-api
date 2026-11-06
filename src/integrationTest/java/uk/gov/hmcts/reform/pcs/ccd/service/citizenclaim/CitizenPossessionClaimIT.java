@@ -2,23 +2,37 @@ package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.ConfigBuilderImpl;
+import uk.gov.hmcts.ccd.sdk.ResolvedCCDConfig;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.Event;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -37,10 +51,14 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +74,7 @@ import static org.mockito.Mockito.when;
 class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
 
     private static final String USER_ID = UUID.randomUUID().toString();
+    private static final String LONGEST_EMAIL = "x".repeat(244) + "@test.test";
     private static final String COMPLETE_CLAIM_JSON = "/citizenclaim/complete-citizen-possession-claim.json";
     private static final AddressUK PROPERTY_ADDRESS = AddressUK.builder()
         .addressLine1("1 Test Street").postTown("London").postCode("SW1A 1AA").build();
@@ -75,6 +94,8 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     @Autowired
     private EntityManager entityManager;
     @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
     @Qualifier("draftCaseDataObjectMapper")
     private ObjectMapper draftObjectMapper;
 
@@ -86,6 +107,10 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     private PaymentService paymentService;
     @MockitoBean
     private LocationReferenceService locationReferenceService;
+    @MockitoBean
+    private FeatureToggleService featureToggleService;
+    @Autowired
+    private CitizenMakePossessionClaim citizenMakePossessionClaim;
 
     @BeforeEach
     void setUp() {
@@ -98,6 +123,74 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         PaymentServiceResponse serviceRequest = new PaymentServiceResponse();
         serviceRequest.setServiceRequestReference("2026-1762441234567");
         when(paymentService.createServiceRequest(any())).thenReturn(serviceRequest);
+        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
+    }
+
+    @Test
+    @DisplayName("An unversioned draft save echoes the version it stored, and a submit echoing it is accepted")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void shouldAcceptASubmitEchoingTheVersionAnUnversionedSaveReturned() {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+        Event<PCSCase, UserRole, State> event = configuredEvent();
+
+        CitizenPossessionClaim answers = completeClaimOrThrow();
+        answers.setDraftVersion(null);
+        CaseDetails<PCSCase, State> details = CaseDetails.<PCSCase, State>builder()
+            .id(caseReference)
+            .data(PCSCase.builder().citizenPossessionClaim(answers).build())
+            .build();
+        MidEvent midEvent = event.getFields().getPagesToMidEvent().values().iterator().next();
+        AboutToStartOrSubmitResponse<PCSCase, State> saved =
+            (AboutToStartOrSubmitResponse<PCSCase, State>) midEvent.handle(details, null);
+        assertThat(saved.getErrors()).isNullOrEmpty();
+        Long echoedVersion = saved.getData().getCitizenPossessionClaim().getDraftVersion();
+        assertThat(echoedVersion)
+            .isEqualTo(caseService.loadDraft(caseReference).orElseThrow().getDraftVersion());
+
+        PCSCase reviewed = PCSCase.builder()
+            .citizenPossessionClaim(CitizenPossessionClaim.builder().draftVersion(echoedVersion).build())
+            .build();
+        SubmitResponse<State> submitted = event.getSubmitHandler()
+            .submit(new EventPayload<>(caseReference, reviewed, null));
+
+        assertThat(submitted.getErrors()).isNullOrEmpty();
+        assertThat(submitted.getState()).isEqualTo(State.PENDING_CASE_ISSUED);
+    }
+
+    @Test
+    @DisplayName("Email columns the citizen claim writes to hold an RFC 5321 length address")
+    void shouldWidenEmailColumnsTo254() {
+        String sql = """
+            select table_name || '.' || column_name, character_maximum_length
+            from information_schema.columns
+            where table_schema = 'public'
+              and (table_name, column_name) in (('party', 'email_address'), ('notice_of_possession', 'notice_details'))
+            """;
+        Map<String, Integer> widths = new HashMap<>();
+        jdbcTemplate.query(sql, rs -> {
+            widths.put(rs.getString(1), rs.getInt(2));
+        });
+
+        assertThat(widths).containsOnly(
+            Map.entry("party.email_address", 254),
+            Map.entry("notice_of_possession.notice_details", 254));
+    }
+
+    private Event<PCSCase, UserRole, State> configuredEvent() {
+        ConfigBuilderImpl<PCSCase, State, UserRole> configBuilder = new ConfigBuilderImpl<>(
+            new ResolvedCCDConfig<>(PCSCase.class, State.class, UserRole.class, Map.of(), ImmutableSet.of()));
+        citizenMakePossessionClaim.configureDecentralised(configBuilder);
+        return configBuilder.build().getEvents().get(EventId.citizenMakePossessionClaim.name());
+    }
+
+    private CitizenPossessionClaim completeClaimOrThrow() {
+        try {
+            return completeClaim();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Test
@@ -116,6 +209,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
 
         CitizenPossessionClaim answers = completeClaim();
         answers.setDraftVersion(started.getDraftVersion());
+        answers.getClaimant().setEmailAddress(LONGEST_EMAIL);
         Long savedVersion = caseService.saveDraft(caseReference, answers);
         CitizenPossessionClaim draft = caseService.loadDraft(caseReference).orElseThrow();
         assertThat(draft.getDraftVersion()).isEqualTo(savedVersion).isNotEqualTo(started.getDraftVersion());
@@ -152,6 +246,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .satisfies(claimant -> {
                 assertThat(claimant.getParty().getIdamId()).isEqualTo(USER_ID);
                 assertThat(claimant.getParty().getFirstName()).isEqualTo("Jane");
+                assertThat(claimant.getParty().getEmailAddress()).isEqualTo(LONGEST_EMAIL);
             });
         assertThat(claim.getClaimDocuments()).hasSize(3);
 

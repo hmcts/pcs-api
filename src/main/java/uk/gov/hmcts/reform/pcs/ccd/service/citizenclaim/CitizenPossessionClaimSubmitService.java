@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -60,6 +61,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -108,6 +110,7 @@ public class CitizenPossessionClaimSubmitService {
     private final CitizenClaimSubmissionRepository submissionRepository;
     private final FeeService feeService;
     private final PaymentService paymentService;
+    private final FeePaymentRepository feePaymentRepository;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
@@ -123,6 +126,7 @@ public class CitizenPossessionClaimSubmitService {
                                                CitizenClaimSubmissionRepository submissionRepository,
                                                FeeService feeService,
                                                PaymentService paymentService,
+                                               FeePaymentRepository feePaymentRepository,
                                                @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                                Clock utcClock) {
         this.pcsCaseService = pcsCaseService;
@@ -137,6 +141,7 @@ public class CitizenPossessionClaimSubmitService {
         this.submissionRepository = submissionRepository;
         this.feeService = feeService;
         this.paymentService = paymentService;
+        this.feePaymentRepository = feePaymentRepository;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -145,10 +150,11 @@ public class CitizenPossessionClaimSubmitService {
     }
 
     /**
-     * Writes the claim and then raises its fee service request, in that order, inside the submit
-     * transaction, so a Payments failure rolls the claim back with the rest of the event.
+     * Writes and flushes the claim, then raises its fee service request (or reuses one the case
+     * already has), inside the submit transaction, so a Payments failure rolls the claim back with
+     * the rest of the event and a database failure surfaces before Payments is called.
      *
-     * @throws CitizenClaimPaymentUnavailableException if Payments could not create the service request
+     * @throws CitizenClaimPaymentUnavailableException if the Payments API call failed
      */
     public SubmittedClaim submit(PcsCaseEntity pcsCaseEntity, CitizenPossessionClaim answers) {
         final long caseReference = pcsCaseEntity.getCaseReference();
@@ -187,21 +193,38 @@ public class CitizenPossessionClaimSubmitService {
 
         saveRentHistory(claimEntity, claim.getRentArrears());
         saveSubmittedAnswers(claimEntity, claim);
+        pcsCaseRepository.flush();
 
+        return existingClaimServiceRequest(caseReference)
+            .orElseGet(() -> createClaimServiceRequest(caseReference, claimant));
+    }
+
+    private Optional<SubmittedClaim> existingClaimServiceRequest(long caseReference) {
+        return feePaymentRepository.findLatestServiceRequest(caseReference, CLAIM)
+            .map(existing -> {
+                log.info("Reusing claim fee service request {} for case {}",
+                         existing.getServiceRequestReference(), caseReference);
+                return new SubmittedClaim(existing.getServiceRequestReference(),
+                                          FeeDetails.builder().feeAmount(existing.getAmount()).build());
+            });
+    }
+
+    private SubmittedClaim createClaimServiceRequest(long caseReference, PartyEntity claimant) {
+        FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeDetails(feeDetails)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(caseReference)
+            .responsiblePartyId(claimant.getId())
+            .responsiblePartyName(partyService.getPartyName(claimant))
+            .paymentCallbackHandlerType(CLAIM)
+            .build();
         try {
-            FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
-            PaymentServiceResponse serviceRequest = paymentService.createServiceRequest(
-                FeesAndPayTaskData.builder()
-                    .feeDetails(feeDetails)
-                    .ccdCaseNumber(String.valueOf(caseReference))
-                    .caseReference(caseReference)
-                    .responsiblePartyId(claimant.getId())
-                    .responsiblePartyName(partyService.getPartyName(claimant))
-                    .paymentCallbackHandlerType(CLAIM)
-                    .build()
-            );
+            // Payments has no lookup by case, so if the submit rolls back after this call succeeds the
+            // service request it created is orphaned in Payments, and a retry raises a second one.
+            PaymentServiceResponse serviceRequest = paymentService.createServiceRequest(taskData);
             return new SubmittedClaim(serviceRequest.getServiceRequestReference(), feeDetails);
-        } catch (RuntimeException e) {
+        } catch (FeignException e) {
             throw new CitizenClaimPaymentUnavailableException(caseReference, e);
         }
     }

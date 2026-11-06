@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentLedgerEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
@@ -24,14 +26,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -45,17 +45,16 @@ public class CitizenPossessionClaimValidator {
     public static final String WHO_IS_CLAIMING_NOT_ELIGIBLE = "WHO_IS_CLAIMING_NOT_ELIGIBLE";
     public static final String MULTIPLE_CLAIMANTS_NOT_ELIGIBLE = "MULTIPLE_CLAIMANTS_NOT_ELIGIBLE";
     public static final String RENT_ARREARS_GROUND_NOT_ALLOWED = "RENT_ARREARS_GROUND_NOT_ALLOWED";
-
-    private static final Set<PrivateLandlordAssuredGround> RENT_ARREARS_GROUNDS =
-        Arrays.stream(PrivateLandlordAssuredGround.values())
-            .filter(PrivateLandlordAssuredGround::isRentArrears)
-            .collect(Collectors.toUnmodifiableSet());
+    public static final String OTHER_GROUND_NOT_ALLOWED = "OTHER_GROUND_NOT_ALLOWED";
 
     private static final int NAME_MAX = 60;
     private static final int SHORT_TEXT_MAX = 250;
+    private static final int EMAIL_MAX = 254;
     private static final int REASON_MAX = 500;
     private static final int CIRCUMSTANCES_MAX = 950;
     private static final int OTHER_REASONS_MAX = 6400;
+    private static final int ADDRESS_LINE_MAX = 100;
+    private static final int POSTCODE_MAX = 14;
 
     public List<String> validateEligibility(CitizenClaimEligibility eligibility) {
         List<String> errors = new ArrayList<>();
@@ -80,6 +79,7 @@ public class CitizenPossessionClaimValidator {
         validateTenancy(claim.getTenancy(), errors);
         validateGrounds(claim, errors);
         validateNotice(claim.getNotice(), errors);
+        validateRentArrears(claim.getRentArrears(), errors);
         validateCircumstances(claim.getCircumstances(), errors);
         validateOtherInformation(claim.getOtherInformation(), errors);
         validateSubmission(claim.getSubmission(), errors);
@@ -117,7 +117,8 @@ public class CitizenPossessionClaimValidator {
             requireText(errors, "claimant.organisationName", claimant.getOrganisationName(), NAME_MAX);
         }
         requireAddress(errors, "claimant.address", claimant.getAddress());
-        maxLength(errors, "claimant.emailAddress", claimant.getEmailAddress(), NAME_MAX);
+        errors.addAll(validateAddressLengths("claimant.address", claimant.getAddress()));
+        maxLength(errors, "claimant.emailAddress", claimant.getEmailAddress(), EMAIL_MAX);
         maxLength(errors, "claimant.phoneNumber", claimant.getPhoneNumber(), NAME_MAX);
         maxLength(errors, "claimant.textMessageNumber", claimant.getTextMessageNumber(), NAME_MAX);
     }
@@ -144,6 +145,7 @@ public class CitizenPossessionClaimValidator {
             if (defendant.getAddressKnown() == VerticalYesNo.YES
                 && defendant.getAddressSameAsProperty() != VerticalYesNo.YES) {
                 requireAddress(errors, path + ".address", defendant.getAddress());
+                errors.addAll(validateAddressLengths(path + ".address", defendant.getAddress()));
             }
         }
     }
@@ -168,8 +170,22 @@ public class CitizenPossessionClaimValidator {
         }
 
         Set<PrivateLandlordAssuredGround> rentArrearsGrounds = grounds.getRentArrearsGrounds();
-        if (rentArrearsGrounds != null && !isOnlyRentArrearsGrounds(rentArrearsGrounds)) {
-            errors.add(RENT_ARREARS_GROUND_NOT_ALLOWED);
+        if (rentArrearsGrounds != null) {
+            if (rentArrearsGrounds.stream().anyMatch(Objects::isNull)) {
+                errors.add(required("grounds.rentArrearsGrounds"));
+            }
+            if (rentArrearsGrounds.stream().filter(Objects::nonNull).anyMatch(ground -> !ground.isRentArrears())) {
+                errors.add(RENT_ARREARS_GROUND_NOT_ALLOWED);
+            }
+        }
+        Set<PrivateLandlordAssuredGround> otherGrounds = grounds.getOtherGrounds();
+        if (otherGrounds != null) {
+            if (otherGrounds.stream().anyMatch(Objects::isNull)) {
+                errors.add(required("grounds.otherGrounds"));
+            }
+            if (otherGrounds.stream().filter(Objects::nonNull).anyMatch(PrivateLandlordAssuredGround::isRentArrears)) {
+                errors.add(OTHER_GROUND_NOT_ALLOWED);
+            }
         }
 
         if (allGrounds.stream().anyMatch(PrivateLandlordAssuredGround::isRentArrears)) {
@@ -188,10 +204,6 @@ public class CitizenPossessionClaimValidator {
             .filter(ground -> !ground.isRentArrears() && ground != PrivateLandlordAssuredGround.OTHER)
             .forEach(ground -> requireText(errors, "grounds.groundReasons." + ground.name(), reasons.get(ground),
                                            REASON_MAX));
-    }
-
-    private static boolean isOnlyRentArrearsGrounds(Set<PrivateLandlordAssuredGround> grounds) {
-        return grounds.stream().allMatch(ground -> ground != null && RENT_ARREARS_GROUNDS.contains(ground));
     }
 
     /**
@@ -218,10 +230,32 @@ public class CitizenPossessionClaimValidator {
         }
         maxLength(errors, "notice.noticeUnavailableReason", notice.getNoticeUnavailableReason(), REASON_MAX);
         maxLength(errors, "notice.handedToName", notice.getHandedToName(), SHORT_TEXT_MAX);
-        maxLength(errors, "notice.emailedTo", notice.getEmailedTo(), SHORT_TEXT_MAX);
+        maxLength(errors, "notice.emailedTo", notice.getEmailedTo(), EMAIL_MAX);
         maxLength(errors, "notice.otherElectronicDetails", notice.getOtherElectronicDetails(), SHORT_TEXT_MAX);
         maxLength(errors, "notice.otherMethodDetails", notice.getOtherMethodDetails(), SHORT_TEXT_MAX);
-        maxLength(errors, "notice.noticeTypeOther", notice.getNoticeTypeOther(), 60);
+        if (notice.getNoticeType() == CitizenClaimNoticeType.OTHER) {
+            requireText(errors, "notice.noticeTypeOther", notice.getNoticeTypeOther(), NAME_MAX);
+        } else {
+            maxLength(errors, "notice.noticeTypeOther", notice.getNoticeTypeOther(), NAME_MAX);
+        }
+    }
+
+    private static void validateRentArrears(CitizenClaimRentArrears rentArrears, List<String> errors) {
+        if (rentArrears == null) {
+            return;
+        }
+        maxLength(errors, "rentArrears.otherFrequencyDetails", rentArrears.getOtherFrequencyDetails(), NAME_MAX);
+        maxLength(errors, "rentArrears.recoverySteps", rentArrears.getRecoverySteps(), REASON_MAX);
+        List<ListValue<CitizenClaimRentLedgerEntry>> ledger = rentArrears.getRentHistoryLedger();
+        if (ledger != null) {
+            for (int i = 0; i < ledger.size(); i++) {
+                CitizenClaimRentLedgerEntry entry = ledger.get(i) != null ? ledger.get(i).getValue() : null;
+                if (entry != null) {
+                    maxLength(errors, "rentArrears.rentHistoryLedger[" + i + "].description",
+                              entry.getDescription(), REASON_MAX);
+                }
+            }
+        }
     }
 
     private static void validateCircumstances(CitizenClaimCircumstances circumstances, List<String> errors) {
@@ -234,6 +268,8 @@ public class CitizenPossessionClaimValidator {
                   circumstances.getClaimantCircumstances(), CIRCUMSTANCES_MAX);
         if (circumstances.getUnderlesseeExists() == VerticalYesNo.YES) {
             requireText(errors, "circumstances.underlesseeName", circumstances.getUnderlesseeName(), NAME_MAX);
+            errors.addAll(validateAddressLengths("circumstances.underlesseeAddress",
+                                                 circumstances.getUnderlesseeAddress()));
         }
     }
 
@@ -267,6 +303,24 @@ public class CitizenPossessionClaimValidator {
         if (value != null && value.length() > max) {
             errors.add("TOO_LONG:" + path);
         }
+    }
+
+    /**
+     * Address fields longer than the address table's columns, as TOO_LONG errors.
+     */
+    public static List<String> validateAddressLengths(String path, AddressUK address) {
+        List<String> errors = new ArrayList<>();
+        if (address == null) {
+            return errors;
+        }
+        maxLength(errors, path + ".AddressLine1", address.getAddressLine1(), ADDRESS_LINE_MAX);
+        maxLength(errors, path + ".AddressLine2", address.getAddressLine2(), ADDRESS_LINE_MAX);
+        maxLength(errors, path + ".AddressLine3", address.getAddressLine3(), ADDRESS_LINE_MAX);
+        maxLength(errors, path + ".PostTown", address.getPostTown(), ADDRESS_LINE_MAX);
+        maxLength(errors, path + ".County", address.getCounty(), ADDRESS_LINE_MAX);
+        maxLength(errors, path + ".Country", address.getCountry(), ADDRESS_LINE_MAX);
+        maxLength(errors, path + ".PostCode", address.getPostCode(), POSTCODE_MAX);
+        return errors;
     }
 
     private static void requireAddress(List<String> errors, String path, AddressUK address) {

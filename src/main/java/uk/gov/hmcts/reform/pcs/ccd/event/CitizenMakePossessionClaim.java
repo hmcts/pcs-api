@@ -28,11 +28,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCa
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService.SubmittedClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimValidator;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -111,16 +109,14 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
         }
 
         CitizenPossessionClaim claim = draft.get();
-        if (reviewedVersion(eventPayload).filter(version -> version.equals(claim.getDraftVersion())).isEmpty()) {
+        Long reviewedVersion = reviewedVersion(eventPayload);
+        if (reviewedVersion == null || !reviewedVersion.equals(claim.getDraftVersion())) {
             log.warn("Refusing citizen claim submit for case {}: reviewed draft version {} but stored draft is at {}",
-                     caseReference, reviewedVersion(eventPayload).orElse(null), claim.getDraftVersion());
+                     caseReference, reviewedVersion, claim.getDraftVersion());
             return refuse(List.of(DRAFT_CHANGED));
         }
 
-        List<String> errors = new ArrayList<>(citizenPossessionClaimValidator.validateForSubmit(claim));
-        if (pcsCaseEntity.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
-            errors.add(CitizenPossessionClaimCaseService.PROPERTY_NOT_IN_ENGLAND);
-        }
+        List<String> errors = citizenPossessionClaimValidator.validateForSubmit(claim);
         if (!errors.isEmpty()) {
             log.info("Refusing citizen claim submit for case {}: {}", caseReference, errors);
             return refuse(errors);
@@ -141,10 +137,11 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
             .build();
     }
 
-    private static Optional<Long> reviewedVersion(EventPayload<PCSCase, State> eventPayload) {
+    private static Long reviewedVersion(EventPayload<PCSCase, State> eventPayload) {
         return Optional.ofNullable(eventPayload.caseData())
             .map(PCSCase::getCitizenPossessionClaim)
-            .map(CitizenPossessionClaim::getDraftVersion);
+            .map(CitizenPossessionClaim::getDraftVersion)
+            .orElse(null);
     }
 
     private boolean featureEnabled() {

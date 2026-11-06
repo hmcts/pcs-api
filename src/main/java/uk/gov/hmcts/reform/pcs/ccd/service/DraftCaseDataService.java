@@ -207,6 +207,7 @@ public class DraftCaseDataService {
 
     /**
      * Saves the draft, first checking it is still at {@code expectedVersion} when one is given.
+     * The write is flushed in both cases, so the version returned is the one now stored.
      *
      * @return the draft version after this save
      * @throws DraftVersionConflictException if the stored draft is at a different version
@@ -331,16 +332,15 @@ public class DraftCaseDataService {
 
         draftCaseDataEntity.setCaseData(eventDataJson);
 
+        // Flush so the version returned is the one stored, and a concurrent write fails here, not at commit.
         DraftCaseDataEntity saved;
-        if (expectedVersion == null) {
-            saved = draftCaseDataRepository.save(draftCaseDataEntity);
-        } else {
-            // Flush so the new version can be returned and a concurrent write fails here, not at commit.
-            try {
-                saved = draftCaseDataRepository.saveAndFlush(draftCaseDataEntity);
-            } catch (ObjectOptimisticLockingFailureException | OptimisticLockException e) {
-                throw new DraftVersionConflictException(draftCaseData.getCaseReference(), e);
+        try {
+            saved = draftCaseDataRepository.saveAndFlush(draftCaseDataEntity);
+        } catch (ObjectOptimisticLockingFailureException | OptimisticLockException e) {
+            if (expectedVersion == null) {
+                throw e;
             }
+            throw new DraftVersionConflictException(draftCaseData.getCaseReference(), e);
         }
 
         if (draftCaseData.getPartyId() != null) {

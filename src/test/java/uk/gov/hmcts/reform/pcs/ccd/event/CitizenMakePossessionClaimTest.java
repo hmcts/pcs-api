@@ -151,18 +151,6 @@ class CitizenMakePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldRefuseAClaimForAPropertyOutsideEngland() {
-        flag(true);
-        whenCaseIsIn(LegislativeCountry.WALES);
-        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
-        when(caseService.loadDraft(TEST_CASE_REFERENCE)).thenReturn(Optional.of(savedDraft()));
-
-        SubmitResponse<State> response = callSubmitHandler(reviewed(DRAFT_VERSION));
-
-        assertThat(response.getErrors()).containsExactly(CitizenPossessionClaimCaseService.PROPERTY_NOT_IN_ENGLAND);
-    }
-
-    @Test
     void shouldRefuseASubmitThatDoesNotEchoTheStoredDraftVersion() {
         flag(true);
         whenCaseIsIn(LegislativeCountry.ENGLAND);

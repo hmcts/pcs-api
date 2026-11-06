@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
@@ -116,15 +117,14 @@ class CitizenPossessionClaimValidatorTest {
     }
 
     @Test
-    void shouldRefuseANullRentArrearsGroundAlongsideRealOnes() throws Exception {
+    void shouldTreatANullRentArrearsGroundAsAMissingAnswer() throws Exception {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.draftObjectMapper().readValue(
             "{\"grounds\":{\"rentArrearsGrounds\":[null,\"GROUND_8\"]}}", CitizenPossessionClaim.class);
         CitizenPossessionClaim complete = CitizenPossessionClaimFixtures.completeClaim();
         complete.getGrounds().setRentArrearsGrounds(claim.getGrounds().getRentArrearsGrounds());
 
         assertThat(complete.getGrounds().getRentArrearsGrounds()).containsNull();
-        assertThat(underTest.validateForSubmit(complete))
-            .containsExactly(CitizenPossessionClaimValidator.RENT_ARREARS_GROUND_NOT_ALLOWED);
+        assertThat(underTest.validateForSubmit(complete)).containsExactly("REQUIRED:grounds.rentArrearsGrounds");
     }
 
     @Test
@@ -171,6 +171,85 @@ class CitizenPossessionClaimValidatorTest {
         assertThat(underTest.validateForSubmit(claim)).containsExactlyInAnyOrder(
             "REQUIRED:grounds.groundReasons.GROUND_1A",
             "REQUIRED:grounds.groundReasons.GROUND_14");
+    }
+
+    @Test
+    void shouldTreatANullOtherGroundAsAMissingAnswer() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setOtherGrounds(setOf(PrivateLandlordAssuredGround.GROUND_1A, null));
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:grounds.otherGrounds");
+    }
+
+    @Test
+    void shouldRefuseRentArrearsGroundsInTheOtherGroundsList() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A,
+                                                  PrivateLandlordAssuredGround.GROUND_11));
+
+        assertThat(underTest.validateForSubmit(claim))
+            .containsExactly(CitizenPossessionClaimValidator.OTHER_GROUND_NOT_ALLOWED);
+    }
+
+    @Test
+    void shouldNeedTheDescriptionOfAnOtherNoticeType() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeType(CitizenClaimNoticeType.OTHER);
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly("REQUIRED:notice.noticeTypeOther");
+
+        claim.getNotice().setNoticeTypeOther("Section 8 notice (old form)");
+        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldRefuseRentArrearsTextLongerThanItsColumn() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getRentArrears().setRecoverySteps("x".repeat(501));
+        claim.getRentArrears().setOtherFrequencyDetails("x".repeat(61));
+        claim.getRentArrears().getRentHistoryLedger().get(1).getValue().setDescription("x".repeat(501));
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+            "TOO_LONG:rentArrears.otherFrequencyDetails",
+            "TOO_LONG:rentArrears.recoverySteps",
+            "TOO_LONG:rentArrears.rentHistoryLedger[1].description");
+    }
+
+    @Test
+    void shouldRefuseAddressesLongerThanTheirColumns() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().getAddress().setAddressLine1("x".repeat(101));
+        claim.getDefendants().get(1).getValue().getAddress().setPostCode("x".repeat(15));
+        claim.getCircumstances().getUnderlesseeAddress().setPostTown("x".repeat(101));
+
+        assertThat(underTest.validateForSubmit(claim)).containsExactly(
+            "TOO_LONG:claimant.address.AddressLine1",
+            "TOO_LONG:defendants[1].address.PostCode",
+            "TOO_LONG:circumstances.underlesseeAddress.PostTown");
+    }
+
+    @Test
+    void shouldAcceptEmailAddressesUpToTheRfcLimit() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setEmailAddress(emailOfLength(254));
+        claim.getNotice().setEmailedTo(emailOfLength(254));
+
+        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldRefuseEmailAddressesOverTheRfcLimit() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setEmailAddress(emailOfLength(255));
+        claim.getNotice().setEmailedTo(emailOfLength(255));
+
+        assertThat(underTest.validateForSubmit(claim))
+            .containsExactly("TOO_LONG:claimant.emailAddress", "TOO_LONG:notice.emailedTo");
+    }
+
+    private static String emailOfLength(int length) {
+        String domain = "@test.test";
+        return "x".repeat(length - domain.length()) + domain;
     }
 
     private static Set<PrivateLandlordAssuredGround> setOf(PrivateLandlordAssuredGround... grounds) {
