@@ -72,18 +72,25 @@ test.describe('case management - case worker selects Breathing Space', () => {
 
       await test.step('When the caseworker enters a future start date, the date error is verified', async () => {
       await performAction('validateFutureStartDateError');
-   });
-
+     });
 
       await test.step('When the caseworker completes the Breathing Space configuration and submits the valid form', async () => {
       await performAction('completeBreathingSpaceFormHappyPath', enterBreathingSpace.happyPathConfig);
       });
         
-      await test.step('Then they are directed to Check Your Answers', async () => {
-      await performValidation('mainHeader', enterBreathingSpacecheckYourAnswers.mainHeader);
-      });
-    }
-  );
+      await test.step('Then they are directed to Check Your Answers with the case information and answers displayed', async () => {
+      await performAction('validateCheckYourAnswersPage', enterBreathingSpacecheckYourAnswers.happyPathConfig);
+     });
+
+     await test.step('When the caseworker changes the reference number, the update is retained', async () => {
+     await performAction('changeReferenceNumberAndValidate', enterBreathingSpacecheckYourAnswers.changeConfig);
+     });
+
+     await test.step('When the caseworker submits, the confirmation screen is displayed', async () => {
+     await performAction('submitCheckYourAnswers');
+     });
+  }
+);
 
  test(
   'cancelling enter breathing space returns the caseworker to the case dashboard',

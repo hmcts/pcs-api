@@ -31,7 +31,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace,enterBreathingSpacecheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -99,8 +99,11 @@ export class CaseManagementAction implements IAction {
       ['reopenBreathingSpaceEvent', () => this.reopenBreathingSpaceEvent()],
       ['validateReferenceNumberLengthError', () => this.validateReferenceNumberLengthError()],
       ['validateFutureStartDateError', () => this.validateFutureStartDateError()],
-
-
+      ['validateCheckYourAnswersPage', () => this.validateCheckYourAnswersPage(fieldName as any)],
+      ['changeReferenceNumberAndValidate', () => this.changeReferenceNumberAndValidate(fieldName as any)],
+      ['submitCheckYourAnswers', () => this.submitCheckYourAnswers()],
+      ['clickPreviousAndValidateAnswersRetained', () => this.clickPreviousAndValidateAnswersRetained()],
+      ['cancelCheckYourAnswersAndValidate', () => this.cancelCheckYourAnswersAndValidate(fieldName as any)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -109,6 +112,91 @@ export class CaseManagementAction implements IAction {
     }
     await actionToPerform();
   }
+// AC01 + AC02: screen, case information and answers
+private async validateCheckYourAnswersPage(data: {
+  referenceNumber: string;
+  startDateDisplay: string;
+  typeDisplayText: string;
+  expectedEndDateDisplay: string;
+}) {
+  await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+  await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+  await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+  // PLACEHOLDER: 'elementToBeVisible' is my guess, swap for your real positive text check
+  await performValidation('elementToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.subHeader,
+  });
+  await performValidation('elementToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.caseInfoLabels.caseNumber,
+  });
+  await performValidation('elementToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.caseInfoLabels.propertyAddress,
+  });
+  await performValidation('elementToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber,
+  });
+  await performValidation('elementToBeVisible', { elementType: 'text', text: data.referenceNumber });
+  await performValidation('elementToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.answerLabels.startDate,
+  });
+  await performValidation('elementToBeVisible', { elementType: 'text', text: data.startDateDisplay });
+  await performValidation('elementToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.answerLabels.type,
+  });
+  await performValidation('elementToBeVisible', { elementType: 'text', text: data.typeDisplayText });
+  await performValidation('elementToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate,
+  });
+  await performValidation('elementToBeVisible', { elementType: 'text', text: data.expectedEndDateDisplay });
+}
+
+// AC03: change an answer and return to Check Your Answers
+private async changeReferenceNumberAndValidate(data: { updatedReferenceNumber: string }) {
+  // PLACEHOLDER: this clicks the first Change link, which is the Reference Number row
+  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.changeLink);
+  await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+  await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.updatedReferenceNumber);
+  await performAction('clickButton', enterBreathingSpace.continueButton);
+  await this.validateCheckYourAnswersPage({
+    ...enterBreathingSpacecheckYourAnswers.happyPathConfig,
+    referenceNumber: data.updatedReferenceNumber,
+  });
+}
+
+// AC05: submit and reach the confirmation screen
+private async submitCheckYourAnswers() {
+  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.submitButton);
+  await performValidation('mainHeader', enterBreathingSpacecheckYourAnswers.confirmationHeader);
+}
+
+// AC04: go back to the form
+private async clickPreviousAndValidateAnswersRetained() {
+  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.previousButton);
+  await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+  await performValidation('elementNotToBeVisible', {
+    elementType: 'text',
+    text: enterBreathingSpacecheckYourAnswers.subHeader,
+  });
+}
+
+// AC06: cancel and confirm nothing was saved
+private async cancelCheckYourAnswersAndValidate(data: { referenceNumber: string }) {
+  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.cancelLink);
+  await performValidation('mainHeader', enterBreathingSpace.cancelReturnHeader);
+  await performAction('reopenBreathingSpaceEvent');
+  await performValidation('elementNotToBeVisible', { elementType: 'text', text: data.referenceNumber });
+}
+  
 
 private async validateReferenceNumberLengthError() {
     await performAction('inputErrorValidation', {
