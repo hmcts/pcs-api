@@ -19,7 +19,8 @@ public enum FeatureFlag {
     WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false),
     CASEWORKER_WA("caseworker-wa-enabled", true),
     MAKE_ORDER("make-order-enabled", false),
-    ENFORCEMENT("enforcement-enabled", false);
+    ENFORCEMENT("enforcement-enabled", false),
+    PRIVATE_LANDLORD_MAKE_A_CLAIM("private-landlord-make-a-claim-enabled", false);
 
     private final String key;
     private final boolean defaultValue;

@@ -713,6 +713,7 @@ cftlibTest {
 
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
+  systemProperty 'feature.private-landlord-make-a-claim-enabled', 'true'
 
   systemProperty 'logging.level.root', 'INFO'
 }

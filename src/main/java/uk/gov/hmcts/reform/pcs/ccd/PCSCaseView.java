@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CitizenPossessionClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
@@ -105,6 +106,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
     private final EnforcementOrderView enforcementOrderView;
+    private final CitizenPossessionClaimView citizenPossessionClaimView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -202,6 +204,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         draftResponseView.setCaseFields(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
+        citizenPossessionClaimView.setCaseFields(pcsCase, pcsCaseEntity);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 

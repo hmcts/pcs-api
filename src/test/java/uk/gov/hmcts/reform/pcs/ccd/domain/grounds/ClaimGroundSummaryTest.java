@@ -62,7 +62,9 @@ class ClaimGroundSummaryTest {
             casesFor(ClaimGroundCategory.WALES_SECURE_MANDATORY, SecureContractMandatoryGroundsWales.class),
             casesFor(ClaimGroundCategory.WALES_SECURE_DISCRETIONARY, SecureContractDiscretionaryGroundsWales.class),
             casesFor(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT, EstateManagementGroundsWales.class),
-            casesFor(ClaimGroundCategory.WALES_SECURE_ESTATE_MANAGEMENT, EstateManagementGroundsWales.class)
+            casesFor(ClaimGroundCategory.WALES_SECURE_ESTATE_MANAGEMENT, EstateManagementGroundsWales.class),
+            casesFor(ClaimGroundCategory.PRIVATE_LANDLORD_ASSURED_MANDATORY, PrivateLandlordAssuredGround.class),
+            casesFor(ClaimGroundCategory.PRIVATE_LANDLORD_ASSURED_DISCRETIONARY, PrivateLandlordAssuredGround.class)
         ).flatMap(s -> s);
     }
 
