@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
@@ -51,6 +53,9 @@ public class WhatOrderWanted implements CcdPageConfiguration {
             .label("whatOrderWanted-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWhatOrderWanted)
+            .readonly(XuiGenAppRequest::getDraftOrderWordingAllowed, ShowConditions.NEVER_SHOW, true)
+            .optional(XuiGenAppRequest::getDraftOrderWording,
+                      fieldEquals("xui_genapp_DraftOrderWordingAllowed", VerticalYesNo.YES))
             .done();
     }
 

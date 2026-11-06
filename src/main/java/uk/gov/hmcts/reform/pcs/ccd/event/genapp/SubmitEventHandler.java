@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event.genapp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -63,6 +65,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppWaTaskService genAppWaTaskService;
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
+    private final DraftOrderWordingAccess draftOrderWordingAccess;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -70,6 +73,11 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PCSCase caseData = eventPayload.caseData();
 
         GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
+        if (createGenAppRequest instanceof XuiGenAppRequest xuiRequest
+            && StringUtils.isNotBlank(xuiRequest.getDraftOrderWording())
+            && !draftOrderWordingAccess.isAllowed(caseReference)) {
+            return errorResponse("Only a solicitor can provide draft order wording");
+        }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity applicantParty = getApplicantParty(caseReference, caseData, createGenAppRequest);
