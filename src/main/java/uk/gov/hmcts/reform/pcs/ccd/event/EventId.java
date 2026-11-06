@@ -36,5 +36,9 @@ public enum EventId {
     defendantPaperResponse,
     legalRepresentativeContactDetails,
     deleteDraftResponse,
-    addJudicialNote
+    addJudicialNote,
+    // Must match the system event id CCD data-store sends for CFV moves
+    DocumentUpdated,
+    resumeEnforcementOrder,
+    deleteDraftApplication
 }
