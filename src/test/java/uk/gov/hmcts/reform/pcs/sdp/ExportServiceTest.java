@@ -114,6 +114,10 @@ class ExportServiceTest {
         assertThat(json).contains("\"property_address\":[]");
         assertThat(json).contains("\"requested_fees\":[]");
         assertThat(json).contains("\"responses\":[]");
+        assertThat(json).contains("\"postal_claim_received_by_court_date\":\"2026-01-10\"");
+        assertThat(json).contains("\"claim_submitted_to_system_date\":\"2026-02-01T14:30:00Z\"");
+        assertThat(json).contains("\"claim_fee_paid_date\":null");
+        assertThat(json).contains("\"claim_issued_to_defendant_date\":\"2026-02-05T09:00:00Z\"");
         assertThat(json).contains("\"recorded_date\":\"2026-02-01T14:30:00Z\"");
         assertThat(json).contains("\"environment\":\"dev\"");
         assertThat(json).contains("\"snapshot_version\":1");
@@ -255,7 +259,7 @@ class ExportServiceTest {
             LanguageUsed.ENGLISH.name(),
             LocalDateTime.of(2026, 2, 1, 14, 30),
             LocalDateTime.of(2026, 2, 5, 9, 0),
-            1234567890123456,
+            1234567890123456L,
             45,
             null,
             null,
@@ -295,7 +299,7 @@ class ExportServiceTest {
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).doesNotContain("postal_claim_received_by_court_date");
+        assertThat(uploadedJson()).contains("\"postal_claim_received_by_court_date\":null");
     }
 
     @Test
