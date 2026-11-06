@@ -49,21 +49,21 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body">You can use either a warrant or a writ to evict someone. You cannot
                             apply for a warrant if you have already transferred enforcement of the possession order
                             to the High Court.</p>
-                            <p class="govuk-body govuk-!-font-weight-bold">If you choose a warrant of possession</p>
+                            <h2 class="govuk-heading-s">If you choose a warrant of possession</h2>
                             <p class="govuk-body govuk-!-margin-bottom-1">If you apply for a warrant:</p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">it costs ${warrantFeeAmount} to apply</li>
                               <li class="govuk-!-font-size-19">it’s free to hire a County Court bailiff</li>
                             </ul>
-                            <p class="govuk-body govuk-!-font-weight-bold">If you ask the judge for a writ of
-                            possession</p>
+                            <h2 class="govuk-heading-s">If you ask the judge for a writ of
+                            possession</h2>
                             <p class="govuk-body govuk-!-margin-bottom-4"> You’ll need to:</p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">apply to transfer enforcement of the possession order to
-                              the High Court. This costs £126 and you'll need to provide a reason why you're
+                              the High Court. This costs £126 and you’ll need to provide a reason why you’re
                               requesting to transfer</li>
                               <li class="govuk-!-font-size-19">ask the judge for a writ
-                              (you'll need additional evidence for this
+                              (you’ll need additional evidence for this
                               and the judge could still refuse your request)</li>
                               <li class="govuk-!-font-size-19">hire a private High Court Enforcement Officer
                               to carry out the eviction</li>
@@ -77,9 +77,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                               much it will cost(opens in a new tab, High Court Enforcement Officers Association
                               website)</a> (they usually charge by the hour)</li>
                             </ul>
-                            <p class="govuk-body govuk-!-font-weight-bold">The additional evidence you’ll need to
-                            apply for a writ</p>
-                            <p class="govuk-body">You'll need to provide reasons for applying for a writ rather
+                            <h2 class="govuk-heading-s">The additional evidence you’ll need to
+                            apply for a writ</h2>
+                            <p class="govuk-body">You’ll need to provide reasons for applying for a writ rather
                             than a warrant.</p>
                             <p class="govuk-body">The judge will consider this evidence, along with the other
                              information in your application, when deciding whether to grant your request.</p>
