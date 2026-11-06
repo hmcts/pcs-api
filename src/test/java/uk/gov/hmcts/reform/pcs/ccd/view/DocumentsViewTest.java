@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -30,6 +32,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -50,6 +55,9 @@ class DocumentsViewTest {
     @Mock
     private SecurityContextService securityContextService;
 
+    @Mock
+    private OrderRepository orderRepository;
+
     private PCSCase pcsCase;
 
     private DocumentsView underTest;
@@ -63,7 +71,7 @@ class DocumentsViewTest {
         pcsCase = PCSCase.builder().build();
 
         underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
-                                      securityContextService);
+                                      securityContextService, orderRepository);
     }
 
     @Test
@@ -373,6 +381,56 @@ class DocumentsViewTest {
         // Then
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("without notice order.pdf"));
+    }
+
+    @ParameterizedTest(name = "visible to one of its parties: {0}")
+    @ValueSource(booleans = {true, false})
+    void shouldShowAGeneratedOrderOnlyToItsRecipients(boolean visibleToOne) {
+        // Given
+        PartyEntity served = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity alsoServed = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(any(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of()))).thenAnswer(call -> visibleToOne && call.getArgument(0) == alsoServed);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .build();
+
+        when(orderRepository.findServedPartiesByDocumentId(documentEntity.getId()))
+            .thenReturn(List.of(served, alsoServed));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(visibleToOne ? 1 : 0);
+    }
+
+    @ParameterizedTest(name = "court staff: {0}")
+    @ValueSource(booleans = {true, false})
+    void shouldShowAWithoutNoticeOrderWithNoPartyRecordedOnlyToCourtStaff(boolean courtStaff) {
+        // Given
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(isNull(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of()))).thenReturn(courtStaff);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(courtStaff ? 1 : 0);
     }
 
     @ParameterizedTest(name = "[{index}] description={0} => isEmpty={1}")

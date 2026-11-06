@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -208,8 +209,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSupportTab(builder);
 
+        builder.tab("Messages", "Messages")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .showCondition(ShowConditions.and(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS),
+                ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER)))
+            .label("messagesMarkdownLabel", null, "${messagesMarkdown}")
+            .field("messagesMarkdown", NEVER_SHOW);
+
         buildJudicialNotesTab(builder);
-      
+
         builder.tab("paymentHistory", "Payment History")
             .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))

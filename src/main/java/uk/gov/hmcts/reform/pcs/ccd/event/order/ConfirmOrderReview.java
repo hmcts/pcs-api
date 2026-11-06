@@ -20,23 +20,27 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
-import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -46,7 +50,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.MEDIUM_TEXT_LIMIT;
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
 
 /**
@@ -58,20 +61,24 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.
 @AllArgsConstructor
 public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
+    /** As HDPI-8476 allows; the judge reads it on the order and the Messages tab, not in their task. */
+    static final int QUERY_LIMIT = 30_000;
     public static final ExternalEventId<OrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
         ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
+    static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
+    static final String NO_PARTY_TO_SERVE = "Select who to serve the order on";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
     private final OrderCaseContext orderCaseContext;
     private final CaseReviewDateService caseReviewDateService;
     private final SchedulerClient schedulerClient;
-    private final ClientContextRetriever clientContextRetriever;
     private final SecurityContextService securityContextService;
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
-    private final CaseNoteService caseNoteService;
+    private final MessageService messageService;
     private final OrderDocumentService orderDocumentService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -94,14 +101,17 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
-        UUID orderId = clientContextRetriever.getOrderId()
+        MakeOrder.requireMakeOrder(featureToggleService);
+        UUID orderId = start.clientContext().as(OrderLink.class).map(OrderLink::orderId)
             .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
-            OrderStart.Order.of(order, orderSteps.latest(order), null), orderCaseContext.of(order.getPcsCase())));
+            OrderStart.Order.of(order, orderSteps.latest(order), null),
+            orderCaseContext.of(order.getPcsCase(), order.getId()), OrderStart.Hearing.ofOrder(order), null));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
+        MakeOrder.requireMakeOrder(featureToggleService);
         ConfirmOrderReviewRequest request = submit.payload();
         OrderEntity order = orderAwaitingReview(request.orderId(), submit.caseReference());
         OrderStepEntity submitted = orderSteps.latest(order, request.version());
@@ -112,7 +122,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             : issue(order, request.issue(), caseworker);
     }
 
-    /** The order goes back as the judge submitted it, with the query the judge will read. */
+    /** The order goes back as the judge submitted it, with the query the judge will read, kept on the Messages tab. */
     private ExternalSubmitResponse<State> returnToJudge(OrderEntity order, OrderStepEntity submitted, String query,
                                                         UserInfo caseworker) {
         OrderStepEntity returned = orderSteps.append(
@@ -121,13 +131,29 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 .orderType(submitted.getOrderType())
                 .formData(submitted.getFormData())
                 .docweaveSnapshot(submitted.getDocweaveSnapshot())
-                .note(caseNoteService.addCaseNote(order.getPcsCase(), query)));
-        orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned, query);
+                .messageEntry(messageService.recordOrderQuery(order, submitted.getCreatedAt(),
+                    orderTasks.currentUserName("Court staff"), query)));
+        orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned);
         return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
     }
 
     private ExternalSubmitResponse<State> issue(OrderEntity order, Issue issue, UserInfo caseworker) {
+        // The review page posts the wording its script built, as Docweave and as the HTML the document is made from.
+        IssuedOrder issuing = issue.order();
+        if (issuing == null || issuing.docweaveSnapshot() == null || issuing.docweaveSnapshot().isNull()
+            || issuing.html() == null || issuing.html().isBlank()) {
+            throw ExternalRejection.because(NO_WORDING);
+        }
+        // Court staff may change the order's answers, but not to decide an application another order decides.
+        if (order.getPcsCase().getGenApps().stream()
+            .anyMatch(genApp -> OrderTasks.decides(issuing.formData(), genApp)
+                && !orderTasks.canDecide(genApp, order.getId()))) {
+            throw ExternalRejection.because(MakeOrder.ALREADY_DECIDED);
+        }
         order.setSeal(issue.seal());
+        if (!issue.serveAllParties()) {
+            order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
+        }
         OrderStepEntity issued = orderSteps.append(order, ISSUED, IdamUserIds.normalise(caseworker.getUid()),
             OrderStepEntity.builder()
                 .orderType(issue.order().orderType())
@@ -147,6 +173,17 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         return ExternalSubmitResponse.accepted("Order issued", "Reviewed and issued an order");
     }
 
+    /** The case's parties court staff chose to serve the order on without notice, at least one. */
+    private static List<PartyEntity> partiesToServe(OrderEntity order, List<UUID> chosen) {
+        List<PartyEntity> parties = order.getPcsCase().getParties().stream()
+            .filter(party -> chosen.contains(party.getId()))
+            .toList();
+        if (chosen.isEmpty() || parties.size() != Set.copyOf(chosen).size()) {
+            throw ExternalRejection.because(NO_PARTY_TO_SERVE);
+        }
+        return parties;
+    }
+
     private OrderEntity orderAwaitingReview(UUID orderId, long caseReference) {
         return orderRepository
             .findByIdAndPcsCaseCaseReferenceAndState(orderId, caseReference, SUBMITTED_FOR_REVIEW)
@@ -157,8 +194,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (query == null || query.isBlank()) {
             throw ExternalRejection.because("Enter a query for the judge");
         }
-        if (query.length() > MEDIUM_TEXT_LIMIT) {
-            throw ExternalRejection.because("The query must be 500 characters or fewer");
+        if (query.length() > QUERY_LIMIT) {
+            throw ExternalRejection.because("The query must be 30,000 characters or fewer");
         }
         return query;
     }

@@ -10,14 +10,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,7 @@ public class DocumentsView {
     private final GenAppVisibilityService genAppVisibilityService;
     private final UploadTimestampProvider uploadTimestampProvider;
     private final SecurityContextService securityContextService;
+    private final OrderRepository orderRepository;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
@@ -76,9 +79,12 @@ public class DocumentsView {
         }
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
-            PartyEntity party = documentEntity.getParty();
-            return genAppVisibilityService
-                .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles());
+            // Generated orders use their recorded recipients; uploads retain the selected party's access rules.
+            // Enforce this even when making new orders is disabled.
+            List<PartyEntity> recipients = orderRepository.findServedPartiesByDocumentId(documentEntity.getId());
+            return (recipients.isEmpty() ? Collections.singletonList(documentEntity.getParty()) : recipients).stream()
+                .anyMatch(party -> genAppVisibilityService
+                    .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles()));
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();

@@ -131,4 +131,9 @@ public class GenAppEntity {
 
     private BigDecimal feeAmountReceived;
 
+    /** An issued application is open; nothing records yet what an order decided about it. */
+    public boolean isOpen() {
+        return state == GenAppState.GEN_APP_ISSUED;
+    }
+
 }
