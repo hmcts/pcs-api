@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimVa
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,8 +80,10 @@ public class CitizenCreatePossessionClaim implements CCDConfig<PCSCase, State, U
             return SubmitResponse.<State>builder().errors(eligibilityErrors).build();
         }
 
-        List<String> addressErrors =
-            CitizenPossessionClaimValidator.validateAddressLengths("propertyAddress", claim.getPropertyAddress());
+        List<String> addressErrors = new ArrayList<>(
+            CitizenPossessionClaimValidator.requireAddress("propertyAddress", claim.getPropertyAddress()));
+        addressErrors.addAll(
+            CitizenPossessionClaimValidator.validateAddressLengths("propertyAddress", claim.getPropertyAddress()));
         if (!addressErrors.isEmpty()) {
             return SubmitResponse.<State>builder().errors(addressErrors).build();
         }

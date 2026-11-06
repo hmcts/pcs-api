@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
@@ -162,7 +163,9 @@ public class CitizenPossessionClaimSubmitService {
             .propertyAddress(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress()))
             .draftVersion(null)
             .build();
-        final CitizenPossessionClaim applicable = withOnlyApplicableAnswers(claim);
+        // Taken before mapping: creating the documents renames them in place
+        final String submittedAnswers = writeSubmittedAnswers(claim);
+        final CitizenPossessionClaim applicable = CitizenPossessionClaimApplicableAnswers.of(claim);
 
         ClaimEntity newClaim = buildClaimEntity(applicable);
         newClaim.addClaimGrounds(buildClaimGrounds(applicable.getGrounds()));
@@ -193,23 +196,13 @@ public class CitizenPossessionClaimSubmitService {
         pcsCaseRepository.save(pcsCaseEntity);
 
         saveRentHistory(claimEntity, applicable.getRentArrears());
-        saveSubmittedAnswers(claimEntity, claim);
+        submissionRepository.save(CitizenClaimSubmissionEntity.builder()
+                                      .claim(claimEntity)
+                                      .submittedClaim(submittedAnswers)
+                                      .build());
         pcsCaseRepository.flush();
 
         return createClaimServiceRequest(caseReference, claimant);
-    }
-
-    private static CitizenPossessionClaim withOnlyApplicableAnswers(CitizenPossessionClaim claim) {
-        boolean rentArrearsClaim = CitizenPossessionClaimValidator.allGrounds(claim.getGrounds()).stream()
-            .anyMatch(PrivateLandlordAssuredGround::isRentArrears);
-        CitizenClaimNotice notice = claim.getNotice();
-        boolean noticeServed = notice != null && notice.getNoticeServed() == VerticalYesNo.YES;
-
-        return claim.toBuilder()
-            .rentArrears(rentArrearsClaim ? claim.getRentArrears() : null)
-            .notice(noticeServed || notice == null
-                        ? notice : CitizenClaimNotice.builder().noticeServed(notice.getNoticeServed()).build())
-            .build();
     }
 
     private SubmittedClaim createClaimServiceRequest(long caseReference, PartyEntity claimant) {
@@ -240,8 +233,7 @@ public class CitizenPossessionClaimSubmitService {
     private static ClaimEntity buildClaimEntity(CitizenPossessionClaim claim) {
         CitizenClaimCircumstances circumstances = claim.getCircumstances();
         CitizenClaimOtherInformation otherInformation = claim.getOtherInformation();
-        boolean rentArrearsClaim = CitizenPossessionClaimValidator.allGrounds(claim.getGrounds()).stream()
-            .anyMatch(PrivateLandlordAssuredGround::isRentArrears);
+        boolean rentArrearsClaim = CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(claim);
 
         ClaimEntity.ClaimEntityBuilder builder = ClaimEntity.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD)
@@ -400,18 +392,17 @@ public class CitizenPossessionClaimSubmitService {
         final CitizenClaimOtherInformation otherInformation = claim.getOtherInformation();
 
         PCSCase.PCSCaseBuilder builder = PCSCase.builder();
-        if (tenancy != null && tenancy.getTenancyAgreementAvailable() != VerticalYesNo.NO) {
+        if (tenancy != null && hasItems(tenancy.getTenancyAgreementDocuments())) {
             builder.tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                               .tenancyLicenceDocuments(tenancy.getTenancyAgreementDocuments())
                                               .build());
         }
-        if (notice != null && notice.getNoticeServed() == VerticalYesNo.YES
-            && notice.getNoticeAvailable() != VerticalYesNo.NO) {
+        if (notice != null && hasItems(notice.getNoticeDocuments())) {
             builder.noticeServedDetails(NoticeServedDetails.builder()
                                             .documents(notice.getNoticeDocuments())
                                             .build());
         }
-        if (rentArrears != null) {
+        if (rentArrears != null && hasItems(rentArrears.getRentStatementDocuments())) {
             builder.rentArrears(RentArrearsSection.builder()
                                     .statementDocuments(rentArrears.getRentStatementDocuments())
                                     .build());
@@ -505,17 +496,15 @@ public class CitizenPossessionClaimSubmitService {
         if (circumstances == null || circumstances.getUnderlesseeExists() != VerticalYesNo.YES) {
             return Optional.empty();
         }
-        PartyEntity entity = new PartyEntity();
-        entity.setRemoved(false);
         boolean nameKnown = StringUtils.isNotBlank(circumstances.getUnderlesseeName());
-        entity.setNameKnown(VerticalYesNo.from(nameKnown));
-        entity.setOrgName(nameKnown ? circumstances.getUnderlesseeName() : null);
         boolean addressKnown = circumstances.getUnderlesseeAddress() != null;
-        entity.setAddressKnown(VerticalYesNo.from(addressKnown));
-        if (addressKnown) {
-            entity.setAddress(toAddressEntity(circumstances.getUnderlesseeAddress()));
-        }
-        return Optional.of(partyRepository.save(entity));
+        UnderlesseeMortgageeDetails details = UnderlesseeMortgageeDetails.builder()
+            .nameKnown(VerticalYesNo.from(nameKnown))
+            .name(nameKnown ? circumstances.getUnderlesseeName() : null)
+            .addressKnown(VerticalYesNo.from(addressKnown))
+            .address(circumstances.getUnderlesseeAddress())
+            .build();
+        return Optional.of(partyRepository.save(partyService.createUnderlesseeOrMortgagee(details)));
     }
 
     private static TenancyLicenceEntity buildTenancyLicence(CitizenPossessionClaim claim) {
@@ -578,7 +567,9 @@ public class CitizenPossessionClaimSubmitService {
                                    .amountPaid(entry.getAmountPaid())
                                    .build());
         }
-        ledgerEntryRepository.saveAll(ledgerEntities);
+        if (!ledgerEntities.isEmpty()) {
+            ledgerEntryRepository.saveAll(ledgerEntities);
+        }
 
         List<CitizenClaimRentPeriodEntry> table = values(rentArrears.getRentHistoryTable());
         List<RentHistoryPeriodEntity> periodEntities = new ArrayList<>();
@@ -594,15 +585,14 @@ public class CitizenPossessionClaimSubmitService {
                                    .amountPaid(entry.getAmountPaid())
                                    .build());
         }
-        periodRepository.saveAll(periodEntities);
+        if (!periodEntities.isEmpty()) {
+            periodRepository.saveAll(periodEntities);
+        }
     }
 
-    private void saveSubmittedAnswers(ClaimEntity claimEntity, CitizenPossessionClaim claim) {
+    private String writeSubmittedAnswers(CitizenPossessionClaim claim) {
         try {
-            submissionRepository.save(CitizenClaimSubmissionEntity.builder()
-                                          .claim(claimEntity)
-                                          .submittedClaim(objectMapper.writeValueAsString(claim))
-                                          .build());
+            return objectMapper.writeValueAsString(claim);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Unable to serialise the submitted citizen claim", e);
         }

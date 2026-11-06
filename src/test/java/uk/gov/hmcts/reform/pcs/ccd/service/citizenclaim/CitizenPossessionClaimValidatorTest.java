@@ -2,12 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
@@ -208,6 +210,7 @@ class CitizenPossessionClaimValidatorTest {
     void shouldRefuseRentArrearsTextLongerThanItsColumn() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getRentArrears().setRecoverySteps("x".repeat(501));
+        claim.getRentArrears().setRentFrequency(RentPaymentFrequency.OTHER);
         claim.getRentArrears().setOtherFrequencyDetails("x".repeat(61));
         claim.getRentArrears().getRentHistoryLedger().get(1).getValue().setDescription("x".repeat(501));
 
@@ -333,6 +336,42 @@ class CitizenPossessionClaimValidatorTest {
 
         claim.getClaimant().setLastName("y".repeat(30));
         assertThat(underTest.validateForSubmit(claim)).containsExactly("TOO_LONG:claimant.name");
+    }
+
+    @Test
+    void shouldNotCheckAnswersOnBranchesTheCitizenDidNotTake() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setHasOtherGrounds(VerticalYesNo.NO);
+        claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_11));
+        claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.FIRST_CLASS_POST));
+        claim.getNotice().setEmailedTo("x".repeat(300));
+        claim.getCircumstances().setUnderlesseeExists(VerticalYesNo.NO);
+        claim.getCircumstances().setUnderlesseeName("x".repeat(61));
+        claim.getRentArrears().setRentFrequency(RentPaymentFrequency.MONTHLY);
+        claim.getRentArrears().setOtherFrequencyDetails("x".repeat(61));
+        claim.setAdditionalDefendants(VerticalYesNo.NO);
+        claim.getDefendants().get(1).getValue().setNameKnown(null);
+
+        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldNotCheckTheRentHistoryTheProofTypeDidNotChoose() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getRentArrears().getRentHistoryLedger().getFirst().getValue().setDescription("x".repeat(501));
+        claim.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
+
+        assertThat(underTest.validateForSubmit(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldNameTheMissingPartsOfAnAddress() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().getAddress().setAddressLine1(" ");
+        claim.getClaimant().getAddress().setPostCode(null);
+
+        assertThat(underTest.validateForSubmit(claim))
+            .containsExactly("REQUIRED:claimant.address.AddressLine1", "REQUIRED:claimant.address.PostCode");
     }
 
     private static String emailOfLength(int length) {

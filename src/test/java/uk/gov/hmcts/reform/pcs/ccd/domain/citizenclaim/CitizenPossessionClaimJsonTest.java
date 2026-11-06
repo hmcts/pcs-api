@@ -36,8 +36,10 @@ class CitizenPossessionClaimJsonTest {
         assertThat(rentArrears.getRentHistoryLedger()).hasSize(2);
         assertThat(rentArrears.getRentHistoryLedger().getFirst().getValue().getTransactionTypes())
             .containsExactly(CitizenClaimRentTransactionType.RENT_CHARGE);
-        assertThat(rentArrears.getRentHistoryTable().getFirst().getValue().getDatePaid())
-            .isEqualTo(LocalDate.of(2026, 10, 20));
+        assertThat(rentArrears.getProofType()).isEqualTo(CitizenClaimRentProofType.LEDGER);
+        assertThat(rentArrears.getRentHistoryLedger().get(1).getValue().getTransactionDate())
+            .isEqualTo(LocalDate.of(2026, 9, 15));
+        assertThat(rentArrears.getRentHistoryTable()).isNull();
     }
 
     @Test
@@ -49,7 +51,7 @@ class CitizenPossessionClaimJsonTest {
         JsonNode json = objectMapper.valueToTree(pcsCase).get("citizenPossessionClaim");
 
         assertThat(json.at("/rentArrears/currentArrears").asText()).isEqualTo("500000");
-        assertThat(json.at("/rentArrears/rentHistoryTable/0/value/amountDue").asText()).isEqualTo("125000");
+        assertThat(json.at("/rentArrears/rentHistoryLedger/0/value/amountCharged").asText()).isEqualTo("125000");
         assertThat(json.at("/tenancy/tenancyType").asText()).isEqualTo("ASSURED");
         assertThat(json.at("/tenancy/tenancyStartDate").asText()).isEqualTo("2023-04-01");
         assertThat(json.at("/submission/statementOfTruthAgreed").asText()).isEqualTo("YES");

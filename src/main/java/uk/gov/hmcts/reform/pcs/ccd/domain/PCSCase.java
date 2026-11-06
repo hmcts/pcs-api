@@ -93,7 +93,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
@@ -673,6 +675,14 @@ public class PCSCase {
         searchable = false
     )
     private CitizenPossessionClaim citizenPossessionClaim;
+
+    /**
+     * The draft journeys' answer roots on this case data that carry a draft version.
+     */
+    @JsonIgnore
+    public Stream<HasDraftVersion> draftVersionedAnswers() {
+        return Stream.of(possessionClaimResponse, citizenPossessionClaim).filter(Objects::nonNull);
+    }
 
     @JsonUnwrapped
     private DefendantPaperResponseRequest defendantPaperResponse;

@@ -19,12 +19,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
@@ -154,11 +157,18 @@ class CitizenPossessionClaimSubmitServiceTest {
         when(claimRepository.save(any(ClaimEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(partyRepository.save(any(PartyEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(partyRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(documentService.createAllDocuments(any(PCSCase.class))).thenReturn(List.of());
+        lenient().when(documentService.createAllDocuments(any(PCSCase.class))).thenReturn(List.of());
         lenient().when(addressMapper.toAddressEntityAndNormalise(any())).thenAnswer(invocation -> new AddressEntity());
         lenient().when(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress())).thenReturn(CASE_ADDRESS);
         lenient().when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenReturn(caseIssueFee);
         lenient().when(partyService.getPartyName(claimantStub)).thenReturn("Jane Landlord");
+        lenient().when(partyService.createUnderlesseeOrMortgagee(any(UnderlesseeMortgageeDetails.class)))
+            .thenAnswer(invocation -> {
+                UnderlesseeMortgageeDetails details = invocation.getArgument(0);
+                PartyEntity underlessee = new PartyEntity();
+                underlessee.setOrgName(details.getName());
+                return underlessee;
+            });
         lenient().when(partyService.createDefendant(any(DefendantDetails.class))).thenAnswer(invocation -> {
             DefendantDetails details = invocation.getArgument(0);
             PartyEntity defendant = new PartyEntity();
@@ -333,6 +343,93 @@ class CitizenPossessionClaimSubmitServiceTest {
     }
 
     @Test
+    void shouldMapOnlyTheFirstDefendantUnlessAdditionalDefendantsIsYes() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.setAdditionalDefendants(VerticalYesNo.NO);
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimParties())
+            .extracting(ClaimPartyEntity::getRole)
+            .containsExactly(PartyRole.CLAIMANT, PartyRole.DEFENDANT, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+    }
+
+    @Test
+    void shouldAddNoUnderlesseeUnlessOneExists() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getCircumstances().setUnderlesseeExists(VerticalYesNo.NO);
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimParties())
+            .extracting(ClaimPartyEntity::getRole)
+            .doesNotContain(PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+        verify(partyService, never()).createUnderlesseeOrMortgagee(any());
+    }
+
+    @Test
+    void shouldMapTheUnderlesseeThroughThePartyService() {
+        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+
+        verify(partyService).createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails.builder()
+                                                              .nameKnown(VerticalYesNo.YES)
+                                                              .name("Sub Tenant Ltd")
+                                                              .addressKnown(VerticalYesNo.YES)
+                                                              .address(CitizenPossessionClaimFixtures.completeClaim()
+                                                                           .getCircumstances().getUnderlesseeAddress())
+                                                              .build());
+    }
+
+    @Test
+    void shouldIgnoreGroundsListsTheCitizenSaidNoTo() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setHasOtherGrounds(VerticalYesNo.NO);
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimGrounds())
+            .extracting(ClaimGroundEntity::getCode)
+            .containsExactlyInAnyOrder("GROUND_8", "GROUND_10");
+    }
+
+    @Test
+    void shouldUseOnlyTheRentEvidenceTheProofTypeNames() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getRentArrears().setProofType(CitizenClaimRentProofType.UPLOAD_STATEMENT);
+        claim.getRentArrears().setRentStatementDocuments(claim.getTenancy().getTenancyAgreementDocuments());
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(ledgerEntryRepository, never()).saveAll(any());
+        verify(periodRepository, never()).saveAll(any());
+        verify(documentService).createAllDocuments(documentCaseCaptor.capture());
+        assertThat(documentCaseCaptor.getValue().getRentArrears().getStatementDocuments()).hasSize(1);
+    }
+
+    @Test
+    void shouldKeepTheOriginalDocumentNamesInTheSubmittedAnswers() {
+        when(documentService.createAllDocuments(any(PCSCase.class))).thenAnswer(invocation -> {
+            PCSCase documentCase = invocation.getArgument(0);
+            documentCase.getTenancyLicenceDetails().getTenancyLicenceDocuments()
+                .forEach(item -> item.getValue().setFilename("tenancy - Claimant 1.pdf"));
+            return List.of();
+        });
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(submissionRepository).save(submissionCaptor.capture());
+        assertThat(submissionCaptor.getValue().getSubmittedClaim())
+            .contains("tenancy.pdf")
+            .doesNotContain("Claimant 1");
+        assertThat(claim.getTenancy().getTenancyAgreementDocuments().getFirst().getValue().getFilename())
+            .isEqualTo("tenancy.pdf");
+    }
+
+    @Test
     void shouldWriteNoRentArrearsDetailsWithoutARentArrearsGround() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setRentArrearsGrounds(null);
@@ -434,6 +531,8 @@ class CitizenPossessionClaimSubmitServiceTest {
     void shouldPersistTheLedgerRentHistory() {
         underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
 
+        verify(periodRepository, never()).saveAll(any());
+
         verify(ledgerEntryRepository).saveAll(ledgerCaptor.capture());
         List<RentHistoryLedgerEntryEntity> ledger = ledgerCaptor.getValue();
         assertThat(ledger).hasSize(2);
@@ -448,7 +547,21 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPersistTheTableRentHistory() {
-        underTest.submit(pcsCaseEntity, CitizenPossessionClaimFixtures.completeClaim());
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
+        claim.getRentArrears().setRentHistoryTable(List.of(ListValue.<CitizenClaimRentPeriodEntry>builder()
+            .value(CitizenClaimRentPeriodEntry.builder()
+                       .periodStart(LocalDate.of(2026, 10, 1))
+                       .dateDue(LocalDate.of(2026, 10, 1))
+                       .amountDue(new BigDecimal("1250.00"))
+                       .datePaid(LocalDate.of(2026, 10, 20))
+                       .amountPaid(new BigDecimal("500.00"))
+                       .build())
+            .build()));
+
+        underTest.submit(pcsCaseEntity, claim);
+
+        verify(ledgerEntryRepository, never()).saveAll(any());
 
         verify(periodRepository).saveAll(periodCaptor.capture());
         assertThat(periodCaptor.getValue()).singleElement().satisfies(period -> {

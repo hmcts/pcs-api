@@ -1,8 +1,13 @@
 {
   "citizenPossessionClaim": {
     "propertyAddress": {
-      "AddressLine1": "1 Test Street", "AddressLine2": "", "AddressLine3": "",
-      "PostTown": "London", "County": "", "PostCode": "SW1A 1AA", "Country": ""
+      "AddressLine1": "1 Test Street",
+      "AddressLine2": "",
+      "AddressLine3": "",
+      "PostTown": "London",
+      "County": "",
+      "PostCode": "SW1A 1AA",
+      "Country": ""
     },
     "eligibility": {
       "claimantType": "PRIVATE_LANDLORD",
@@ -14,7 +19,9 @@
       "firstName": "Jane",
       "lastName": "Landlord",
       "address": {
-        "AddressLine1": "2 Owner Road", "PostTown": "Leeds", "PostCode": "LS1 1AA"
+        "AddressLine1": "2 Owner Road",
+        "PostTown": "Leeds",
+        "PostCode": "LS1 1AA"
       },
       "emailAddress": "jane.landlord@example.com",
       "contactByEmail": "YES",
@@ -40,7 +47,11 @@
           "nameKnown": "NO",
           "addressKnown": "YES",
           "addressSameAsProperty": "NO",
-          "address": { "AddressLine1": "9 Elsewhere Lane", "PostTown": "York", "PostCode": "YO1 7HH" }
+          "address": {
+            "AddressLine1": "9 Elsewhere Lane",
+            "PostTown": "York",
+            "PostCode": "YO1 7HH"
+          }
         }
       }
     ],
@@ -62,19 +73,40 @@
     },
     "grounds": {
       "hasRentArrearsGrounds": "YES",
-      "rentArrearsGrounds": ["GROUND_8", "GROUND_10"],
+      "rentArrearsGrounds": [
+        "GROUND_8",
+        "GROUND_10"
+      ],
       "hasOtherGrounds": "YES",
-      "otherGrounds": ["GROUND_1A", "GROUND_14"],
+      "otherGrounds": [
+        "GROUND_1A",
+        "GROUND_14"
+      ],
       "groundReasons": [
-        { "id": null, "value": { "ground": "GROUND_1A", "reason": "I am selling the property." } },
-        { "id": null, "value": { "ground": "GROUND_14", "reason": "Repeated noise complaints from neighbours." } }
+        {
+          "id": null,
+          "value": {
+            "ground": "GROUND_1A",
+            "reason": "I am selling the property."
+          }
+        },
+        {
+          "id": null,
+          "value": {
+            "ground": "GROUND_14",
+            "reason": "Repeated noise complaints from neighbours."
+          }
+        }
       ]
     },
     "notice": {
       "noticeServed": "YES",
       "noticeType": "NOTICE_SEEKING_POSSESSION",
       "noticeDate": "2026-08-01",
-      "noticeMethods": ["FIRST_CLASS_POST", "EMAIL"],
+      "noticeMethods": [
+        "FIRST_CLASS_POST",
+        "EMAIL"
+      ],
       "postedDate": "2026-08-01",
       "emailedTo": "tom.tenant@example.com",
       "emailedDate": "2026-08-01",
@@ -103,7 +135,9 @@
           "id": null,
           "value": {
             "transactionDate": "2026-09-01",
-            "transactionTypes": ["RENT_CHARGE"],
+            "transactionTypes": [
+              "RENT_CHARGE"
+            ],
             "description": "September rent",
             "amountCharged": "125000",
             "amountPaid": "0"
@@ -113,22 +147,12 @@
           "id": null,
           "value": {
             "transactionDate": "2026-09-15",
-            "transactionTypes": ["TENANT_PAYMENT"],
+            "transactionTypes": [
+              "TENANT_PAYMENT"
+            ],
             "description": "Part payment",
             "amountCharged": "0",
             "amountPaid": "25000"
-          }
-        }
-      ],
-      "rentHistoryTable": [
-        {
-          "id": null,
-          "value": {
-            "periodStart": "2026-10-01",
-            "dateDue": "2026-10-01",
-            "amountDue": "125000",
-            "datePaid": "2026-10-20",
-            "amountPaid": "50000"
           }
         }
       ],
@@ -140,7 +164,11 @@
       "claimantCircumstances": "I rely on the rent to pay my mortgage.",
       "underlesseeExists": "YES",
       "underlesseeName": "Sub Tenant Ltd",
-      "underlesseeAddress": { "AddressLine1": "1 Test Street", "PostTown": "London", "PostCode": "SW1A 1AA" }
+      "underlesseeAddress": {
+        "AddressLine1": "1 Test Street",
+        "PostTown": "London",
+        "PostCode": "SW1A 1AA"
+      }
     },
     "otherInformation": {
       "otherDocuments": [

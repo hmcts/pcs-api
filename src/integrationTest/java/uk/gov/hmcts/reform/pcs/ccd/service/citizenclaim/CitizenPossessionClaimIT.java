@@ -274,7 +274,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .containsExactly("Jane Landlord");
 
         assertThat(ledgerEntryRepository.findByClaimId(claim.getId())).hasSize(2);
-        assertThat(periodRepository.findByClaimId(claim.getId())).hasSize(1);
+        assertThat(periodRepository.findByClaimId(claim.getId())).isEmpty();
         assertThat(submissionRepository.findByClaimId(claim.getId())).singleElement()
             .satisfies(row -> assertThat(row.getSubmittedClaim()).contains("tom.tenant@example.com"));
     }

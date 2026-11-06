@@ -123,6 +123,19 @@ class CitizenCreatePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
+    void shouldNeedThePropertyAddressFirstLineAndPostcode() {
+        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
+        PCSCase caseData = caseData(ClaimantType.PRIVATE_LANDLORD);
+        caseData.getCitizenPossessionClaim().setPropertyAddress(AddressUK.builder().postTown("London").build());
+
+        SubmitResponse<State> response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors())
+            .containsExactly("REQUIRED:propertyAddress.AddressLine1", "REQUIRED:propertyAddress.PostCode");
+        verify(caseService, never()).createCase(anyLong(), any(), any());
+    }
+
+    @Test
     void shouldPassTheChosenCountryForCrossBorderPostcodes() {
         when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
         PCSCase caseData = caseData(ClaimantType.PRIVATE_LANDLORD);

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.HasDraftVersion;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CitizenPossessionClaim {
+public class CitizenPossessionClaim implements HasDraftVersion {
 
     private AddressUK propertyAddress;
 

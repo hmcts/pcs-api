@@ -73,7 +73,12 @@ public class CitizenPossessionClaimValidator {
         return errors;
     }
 
-    public List<String> validateForSubmit(CitizenPossessionClaim claim) {
+    /**
+     * Checks only the answers that apply (see {@link CitizenPossessionClaimApplicableAnswers}), so
+     * nothing on a branch the citizen did not take is required or length-checked.
+     */
+    public List<String> validateForSubmit(CitizenPossessionClaim answers) {
+        CitizenPossessionClaim claim = CitizenPossessionClaimApplicableAnswers.of(answers);
         List<String> errors = new ArrayList<>(validateEligibility(claim.getEligibility()));
 
         validateClaimant(claim.getClaimant(), errors);
@@ -122,7 +127,7 @@ public class CitizenPossessionClaimValidator {
         } else {
             requireText(errors, "claimant.organisationName", claimant.getOrganisationName(), NAME_MAX);
         }
-        requireAddress(errors, "claimant.address", claimant.getAddress());
+        errors.addAll(requireAddress("claimant.address", claimant.getAddress()));
         errors.addAll(validateAddressLengths("claimant.address", claimant.getAddress()));
         maxLength(errors, "claimant.emailAddress", claimant.getEmailAddress(), EMAIL_MAX);
         maxLength(errors, "claimant.phoneNumber", claimant.getPhoneNumber(), NAME_MAX);
@@ -156,7 +161,7 @@ public class CitizenPossessionClaimValidator {
                 if (defendant.getAddressSameAsProperty() == null) {
                     errors.add(required(path + ".addressSameAsProperty"));
                 } else if (defendant.getAddressSameAsProperty() == VerticalYesNo.NO) {
-                    requireAddress(errors, path + ".address", defendant.getAddress());
+                    errors.addAll(requireAddress(path + ".address", defendant.getAddress()));
                     errors.addAll(validateAddressLengths(path + ".address", defendant.getAddress()));
                 }
             }
@@ -394,12 +399,22 @@ public class CitizenPossessionClaimValidator {
         return errors;
     }
 
-    private static void requireAddress(List<String> errors, String path, AddressUK address) {
-        if (address == null
-            || StringUtils.isBlank(address.getAddressLine1())
-            || StringUtils.isBlank(address.getPostCode())) {
+    /**
+     * REQUIRED errors for a missing address, or for its first line or postcode.
+     */
+    public static List<String> requireAddress(String path, AddressUK address) {
+        List<String> errors = new ArrayList<>();
+        if (address == null) {
             errors.add(required(path));
+            return errors;
         }
+        if (StringUtils.isBlank(address.getAddressLine1())) {
+            errors.add(required(path + ".AddressLine1"));
+        }
+        if (StringUtils.isBlank(address.getPostCode())) {
+            errors.add(required(path + ".PostCode"));
+        }
+        return errors;
     }
 
     private static String required(String path) {

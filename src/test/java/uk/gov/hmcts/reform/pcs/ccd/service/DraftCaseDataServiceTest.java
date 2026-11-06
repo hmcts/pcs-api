@@ -986,7 +986,7 @@ class DraftCaseDataServiceTest {
             .isInstanceOf(DraftVersionConflictException.class)
             .hasMessageContaining("expected version 3 but found 5");
         verify(entity, never()).setCaseData(any());
-        verify(draftCaseDataRepository, never()).saveAndFlush(any());
+        verify(draftCaseDataRepository, never()).save(any());
         verify(draftCaseDataRepository, never()).saveAndFlush(any());
     }
 

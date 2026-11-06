@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
@@ -172,6 +173,7 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
                              .rentAmount(new BigDecimal("1250.00"))
                              .rentFrequency(RentPaymentFrequency.MONTHLY)
                              .currentArrears(new BigDecimal("5000.00"))
+                             .proofType(CitizenClaimRentProofType.TABLE)
                              .rentHistoryTable(List.of(ListValue.<CitizenClaimRentPeriodEntry>builder()
                                                            .value(CitizenClaimRentPeriodEntry.builder()
                                                                       .periodStart(LocalDate.of(2026, 10, 1))
