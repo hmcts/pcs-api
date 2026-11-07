@@ -53,7 +53,8 @@ public enum UserRole implements HasRole {
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM),
     SUPER_USER("caseworker-pcs-superuser", CRU, IDAM),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", Permission.CRU, IDAM),
-    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM);
+    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM),
+    BAILIFF_ADMIN("bailiff-admin", Permission.CRU, RAS, AccessProfile.BAILIFF_ADMIN);
 
     @JsonValue
     private final String role;
