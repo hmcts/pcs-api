@@ -714,6 +714,7 @@ cftlibTest {
 
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
+  systemProperty 'feature.private-landlord-make-a-claim-enabled', 'true'
 
   systemProperty 'logging.level.root', 'INFO'
 }
@@ -765,6 +766,10 @@ composeUp.doFirst {
 
 tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
+  // Shared with the unit tests, which own the file
+  from('src/test/resources') {
+    include 'citizenclaim/**'
+  }
 }
 
 tasks.named("processContractTestResources") {
