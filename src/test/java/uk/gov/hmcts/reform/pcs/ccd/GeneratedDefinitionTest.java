@@ -46,7 +46,7 @@ class GeneratedDefinitionTest {
         "[DEFENDANT]", "defendant-solicitor", "[DEFENDANTSOLICITOR]"
     );
     private static final Set<String> DOCUMENT_PROFILES = union(PARTY_VISIBLE_PROFILES, Set.of(
-        "[CLAIMANTSOLICITOR]", "[DEFENDANTSOLICITOR]", "pcs-system-update",
+        "[CLAIMANTSOLICITOR]", "[DEFENDANTSOLICITOR]",
         // HDPI-9526: team leaders move documents between Case File View folders
         "ctsc-team-leader", "hearing-centre-team-leader", "wlu-team-leader"
     ));
@@ -84,7 +84,7 @@ class GeneratedDefinitionTest {
             .distinct()
             .toList()));
 
-        assertThat(roleByTab).hasSize(16);
+        assertThat(roleByTab).hasSize(17);
         roleByTab.forEach((tabId, roles) -> {
             if (tabId.startsWith("support")) {
                 assertThat(roles).as(tabId).hasSize(1);
