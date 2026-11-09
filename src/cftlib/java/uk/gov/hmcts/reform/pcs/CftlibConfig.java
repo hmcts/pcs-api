@@ -64,7 +64,6 @@ public class CftlibConfig implements CFTLibConfigurer {
         for (var entry : users.entrySet()) {
             lib.createIdamUser(entry.getKey(), entry.getValue().toArray(new String[0]));
             lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.CASE_ISSUED.name());
-            lib.createProfile(entry.getKey(), "CIVIL", "PCS-shz", State.CASE_ISSUED.name());
         }
 
         createAccessProfiles(lib);
