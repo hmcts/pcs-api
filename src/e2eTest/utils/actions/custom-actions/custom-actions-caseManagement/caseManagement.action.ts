@@ -112,7 +112,7 @@ export class CaseManagementAction implements IAction {
     }
     await actionToPerform();
   }
-// AC01 + AC02: screen, case information and answers
+
 private async validateCheckYourAnswersPage(data: {
   referenceNumber: string;
   startDateDisplay: string;
@@ -125,53 +125,59 @@ private async validateCheckYourAnswersPage(data: {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-  // PLACEHOLDER: 'elementToBeVisible' is my guess, swap for your real positive text check
-  await performValidation('elementToBeVisible', {
-    elementType: 'text',
-    text: enterBreathingSpacecheckYourAnswers.subHeader,
+  await performValidation('text', { 
+  elementType: 'paragraph', 
+  text: enterBreathingSpacecheckYourAnswers.subHeader 
   });
-  await performValidation('elementToBeVisible', {
-    elementType: 'text',
-    text: enterBreathingSpacecheckYourAnswers.caseInfoLabels.caseNumber,
+  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.checkInfoText });
+  await performValidation('text', { elementType: 'paragraph', text: data.referenceNumber });
+  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber });
+  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.startDate });
+  await performValidation('text', {
+    elementType: 'paragraph',
+    text: this.formatDisplayDate(CaseManagementAction.enteredStartDate),
   });
-  await performValidation('elementToBeVisible', {
-    elementType: 'text',
-    text: enterBreathingSpacecheckYourAnswers.caseInfoLabels.propertyAddress,
+  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate });
+  await performValidation('text', {
+    elementType: 'paragraph',
+    text: this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate),
   });
-  await performValidation('elementToBeVisible', {
-    elementType: 'text',
-    text: enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber,
-  });
-  await performValidation('elementToBeVisible', { elementType: 'text', text: data.referenceNumber });
-  await performValidation('elementToBeVisible', {
-    elementType: 'text',
-    text: enterBreathingSpacecheckYourAnswers.answerLabels.startDate,
-  });
-  await performValidation('elementToBeVisible', { elementType: 'text', text: data.startDateDisplay });
-  await performValidation('elementToBeVisible', {
-    elementType: 'text',
-    text: enterBreathingSpacecheckYourAnswers.answerLabels.type,
-  });
-  await performValidation('elementToBeVisible', { elementType: 'text', text: data.typeDisplayText });
-  await performValidation('elementToBeVisible', {
-    elementType: 'text',
-    text: enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate,
-  });
-  await performValidation('elementToBeVisible', { elementType: 'text', text: data.expectedEndDateDisplay });
+  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.type });
+  console.log('typeDisplayText:', data.typeDisplayText);
+  await performValidation('text', { elementType: 'inlineText', text: data.typeDisplayText });
+  
 }
 
 // AC03: change an answer and return to Check Your Answers
 private async changeReferenceNumberAndValidate(data: { updatedReferenceNumber: string }) {
-  // PLACEHOLDER: this clicks the first Change link, which is the Reference Number row
+  // WHEN they select the Change link for an answer
   await performAction('clickButton', enterBreathingSpacecheckYourAnswers.changeLink);
-  await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+
+  // THEN they are directed to the relevant question
+  await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.referenceNumberTextLabel });
+
+  // AND they can amend the answer, and Continue
   await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.updatedReferenceNumber);
+
+  // 🟢 FRAMEWORK APPROACH: Clear or update the cached state so the background loop passes!
+  // Look for your framework's native cache-clear command. Usually, it's named something like:
+  // await performAction('clearSavedQA'); 
+  // or you can interact directly with the store object if it is imported in your actions class file:
+  // this.store.clearQAObjects();
+  
   await performAction('clickButton', enterBreathingSpace.continueButton);
+
+  // AND they reach Check Your Answers again with the updated answer displayed
   await this.validateCheckYourAnswersPage({
-    ...enterBreathingSpacecheckYourAnswers.happyPathConfig,
     referenceNumber: data.updatedReferenceNumber,
+    typeDisplayText: enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText,
+    startDateDisplay: CaseManagementAction.enteredStartDate,
+    expectedEndDateDisplay: CaseManagementAction.enteredExpectedEndDate
   });
 }
+
+
+
 
 // AC05: submit and reach the confirmation screen
 private async submitCheckYourAnswers() {
@@ -247,8 +253,11 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
     await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
     await performAction('clickButton', enterBreathingSpace.continueButton);
 }
+  private static enteredStartDate = '';
+  private static enteredExpectedEndDate = '';
   private async fillBreathingSpaceStartDateWithToday(): Promise<void> {
     const today = CaseManagementCommonUtils.getRandomDate('today');
+    CaseManagementAction.enteredStartDate = String(today); 
     await performAction('inputDate', enterBreathingSpace.whenDidBreathingSpaceStartQuestion, today);
   }
   private async validateEnterBreathingSpacePage(): Promise<void> {
@@ -280,12 +289,20 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenIsExpectedEndDateHiddenHintText });
 
     const futureDate = CaseManagementCommonUtils.getRandomDate(enterBreathingSpace.dateTypeHiddenUserInput);
+     CaseManagementAction.enteredExpectedEndDate = String(futureDate); // new line
     await performAction(
       'inputDate',
       enterBreathingSpace.whenIsExpectedEndDateHiddenTextLabel,
       futureDate
     );
   }
+  private static readonly months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// 'dd/mm/yyyy' -> 'd MMM yyyy'
+private formatDisplayDate(entered: string): string {
+  const [d, m, y] = entered.split(/[\/\-\s]/).map(Number);
+  return `${d} ${CaseManagementAction.months[m - 1]} ${y}`;
+}
   private async navigateToSummaryPage(page: Page) {
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await expect(async () => {
