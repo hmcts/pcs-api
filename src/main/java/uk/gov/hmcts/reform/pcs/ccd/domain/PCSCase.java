@@ -962,7 +962,10 @@ public class PCSCase {
     )
     private String casePaymentHistoryViewer;
 
-    @CCD
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        searchable = false
+    )
     private WarrantReturn warrantReturn;
 
 }
