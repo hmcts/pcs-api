@@ -56,4 +56,10 @@ public class HmcHearingService {
         return hmcHearingApi.getHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
                                         hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, id, null);
     }
+
+    public GetHearingsResponse getHearingdRequest(String caseId, String hmcStatus) {
+        return hmcHearingApi.getHearingsRequest(systemUpdateUserTokenProvider.getAuthToken(), 
+                                                authTokenGenerator.generate(),
+                                                hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, caseId, hmcStatus);
+    }
 }

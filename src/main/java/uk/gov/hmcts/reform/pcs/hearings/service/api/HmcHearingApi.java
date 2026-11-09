@@ -29,6 +29,7 @@ public interface HmcHearingApi {
 
     String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     String HEARING_ENDPOINT = "/hearing";
+    String HEARINGS_ENDPOINT = "/hearing";
     String ID = "id";
     String HMCTS_DEPLOYMENT_ID = "hmctsDeploymentId";
     String ROLE_ASSIGNMENT_URL = "Role-Assignment-Url";
@@ -75,5 +76,16 @@ public interface HmcHearingApi {
         @RequestHeader(value = ROLE_ASSIGNMENT_URL, required = false) String roleAssignmentUrl,
         @PathVariable(ID) String id,
         @RequestParam(name = "isValid", required = false) Boolean isValid
+    );
+
+    @GetMapping(HEARINGS_ENDPOINT + "/{caseId}")
+    GetHearingsResponse getHearingsRequest(
+        @RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
+        @RequestHeader(value = DATA_STORE_URL, required = false) String dataStoreUrl,
+        @RequestHeader(value = ROLE_ASSIGNMENT_URL, required = false) String roleAssignmentUrl,
+        @RequestHeader(value = "hmctsDeploymentId", required = false) String hmctsDeploymentId,
+        @PathVariable String caseId,
+        @RequestParam(name = "status", required = false) String hmcStatus
     );
 }
