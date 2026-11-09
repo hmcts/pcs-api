@@ -60,12 +60,14 @@ export const enforceWarrantApiData = {
     warrantCertification: [
       "CERTIFY"
     ],
-    warrantCompletedBy: "CLAIMANT",
-    warrantAgreementClaimant: [
-      "BELIEVE_TRUE"
-    ],
-    warrantFullNameParty: "Full name",
-    warrantPositionParty: "Position or office held"
+    warrantStatementOfTruth: {
+      completedBy: "CLAIMANT",
+      agreementClaimant: [
+        "BELIEVE_TRUE"
+      ],
+      fullNameParty: "Full name",
+      positionParty: "Position or office held"
+    }
 
   },
   enforceCasePayloadNoJourney: {
@@ -118,12 +120,14 @@ export const enforceWarrantApiData = {
     warrantCertification: [
       "CERTIFY"
     ],
-    warrantCompletedBy: "CLAIMANT",
-    warrantAgreementClaimant: [
-      "BELIEVE_TRUE"
-    ],
-    warrantFullNameParty: "Full name",
-    warrantPositionParty: "Position or office held"
+    warrantStatementOfTruth: {
+      completedBy: "CLAIMANT",
+      agreementClaimant: [
+        "BELIEVE_TRUE"
+      ],
+      fullNameParty: "Full name",
+      positionParty: "Position or office held"
+    }
 
   },
   enforceCaseApiEndPoint: () =>
