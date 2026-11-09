@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -129,6 +130,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
+        buildBundleTab(builder);
+
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -160,7 +163,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildSupportTab(builder);
 
         buildJudicialNotesTab(builder);
-      
+
         builder.tab("paymentHistory", "Payment History")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCasePaymentHistoryViewer);
@@ -180,6 +183,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+        builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
+            .categoryID(CaseBundleDefinition.FOLDER_ID)
+            .categoryLabel(CaseBundleDefinition.FOLDER_LABEL)
+            .displayOrder(CaseFileCategory.values().length + 1)
+            .build();
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -195,6 +203,16 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("caseReviewDatesMarkdownLabel")
             .field("caseReviewDatesMarkdown", NEVER_SHOW)
             .field(PCSCase::getCaseNotes);
+    }
+
+    private void buildBundleTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("bundle", "Bundle")
+            .showCondition("bundleTab_Status=\"*\"")
+            .field("bundleTab_Status")
+            .field("bundleTab_Bundle")
+            .field("bundleTab_LastUpdated")
+            .field("bundleTab_Pages")
+            .field("bundleTab_MissingDocuments");
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

@@ -448,6 +448,7 @@ dependencies {
 
 dependencies {
   implementation 'com.github.hmcts:decentralised-runtime'
+  implementation 'com.github.hmcts:document-bundling'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
 
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
