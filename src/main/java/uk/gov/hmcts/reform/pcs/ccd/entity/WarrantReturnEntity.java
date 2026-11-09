@@ -52,7 +52,7 @@ public class WarrantReturnEntity {
 
     private String additionalDetails;
 
-    private LocalDateTime evictionDate;
+    private LocalDateTime outcomeDate;
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)

@@ -70,7 +70,7 @@ public class WarrantReturnServiceTest {
         assertThat(warrantReturnEntity.getReturnType()).isEqualTo(WarrantReturnType.FINAL);
         assertThat(warrantReturnEntity.getOutcome()).isEqualTo(EvictionOutcome.SUCCESSFUL);
         assertThat(warrantReturnEntity.getAdditionalDetails()).isEqualTo("additional details");
-        assertThat(warrantReturnEntity.getEvictionDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
+        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
         assertThat(warrantReturnEntity.getCreatedAt()).isEqualTo(LocalDateTime.of(2026, 4, 22, 21, 5, 30));
     }
 
@@ -103,7 +103,7 @@ public class WarrantReturnServiceTest {
         assertThat(warrantReturnEntity.getReturnType()).isEqualTo(WarrantReturnType.FINAL);
         assertThat(warrantReturnEntity.getOutcome()).isEqualTo(EvictionOutcome.SUCCESSFUL);
         assertThat(warrantReturnEntity.getAdditionalDetails()).isEqualTo("additional details");
-        assertThat(warrantReturnEntity.getEvictionDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
+        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
         assertThat(warrantReturnEntity.getCreatedAt()).isEqualTo(LocalDateTime.of(2026, 4, 22, 21, 5, 30));
     }
 

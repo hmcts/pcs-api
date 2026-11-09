@@ -5,6 +5,6 @@ CREATE TABLE public.warrant_return (
   outcome TEXT,
   return_name TEXT NOT NULL,
   additional_details TEXT,
-  eviction_date TIMESTAMP WITH TIME ZONE,
+  outcome_date TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP NOT NULL
 );
