@@ -48,7 +48,7 @@ public class DefendantValidator {
 
             AddressUK correspondenceAddress = defendantDetails.getCorrespondenceAddress();
             if (correspondenceAddress != null) {
-                return addressValidator.validateAddressFields(correspondenceAddress, sectionHint);
+                return addressValidator.validateCorrespondenceAddress(correspondenceAddress, sectionHint);
             } else {
                 // This is an ExUI bug and needs user action to reset it. See Jira POFCC-81
                 return List.of(EXUI_POFCC81_ERROR);

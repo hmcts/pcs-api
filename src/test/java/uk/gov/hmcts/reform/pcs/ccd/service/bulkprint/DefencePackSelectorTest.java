@@ -39,11 +39,16 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,11 +70,13 @@ class DefencePackSelectorTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
         underTest = new DefencePackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
             featureToggleService,
-            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null),
+                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)));
     }
 
     private final PartyEntity claimant = party();
@@ -115,6 +122,20 @@ class DefencePackSelectorTest {
         assertThat(candidateFor(result, claimant).role()).isEqualTo(PartyRole.CLAIMANT);
         assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm);
         assertThat(candidateFor(result, coDefendant).documents()).containsExactly(defenceForm);
+    }
+
+    @Test
+    @DisplayName("Excludes removed parties from defence pack recipients")
+    void shouldExcludeRemovedPartiesFromDefencePackRecipients() {
+        coDefendant.setRemoved(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm), claimant, defendant, coDefendant));
+
+        assertThat(result).extracting(candidate -> candidate.recipient().getId())
+            .containsExactly(claimant.getId(), defendant.getId());
     }
 
     @Test

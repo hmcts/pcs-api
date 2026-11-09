@@ -103,7 +103,6 @@ public class GenAppDocumentGenerator {
         importedDocumentEntity.setType(DocumentType.GENERAL_APPLICATION);
         importedDocumentEntity.setGeneralApplication(genAppEntity);
         genAppEntity.setSubmissionDocument(importedDocumentEntity);
-        genAppEntity.getDocuments().add(importedDocumentEntity);
         claimActivityLogService.logGenerationSuccess(pcsCaseService.loadCase(caseReference), applicantParty);
     }
 
@@ -205,13 +204,14 @@ public class GenAppDocumentGenerator {
         return formattedPartyAddress;
     }
 
-    private String formatAddress(AddressEntity propertyAddress) {
-        AddressUK addressUK = addressMapper.toAddressUK(propertyAddress);
+    private String formatAddress(AddressEntity addressEntity) {
+        AddressUK addressUK = addressMapper.toAddressUK(addressEntity);
         return addressFormatter.formatFullAddress(addressUK, AddressFormatter.NEWLINE_DELIMITER);
     }
 
     private Map<PartyRole, List<Party>> getPartyMap(ClaimEntity claim) {
         return claim.getClaimParties().stream()
+            .filter(claimParty -> !claimParty.getParty().isRemoved())
             .collect(Collectors.groupingBy(
                 ClaimPartyEntity::getRole,
                 Collectors.mapping(this::toParty, Collectors.toList())

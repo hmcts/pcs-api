@@ -60,7 +60,7 @@ public enum TaskType {
             """
     ),
     REVIEW_SET_ASIDE_GEN_APP(
-        "ReviewAdjournGenApp",
+        "ReviewSetAsideGenApp",
         "Review set aside gen app",
         """
             Review the general application to set aside, decide what action is needed, and take the appropriate
@@ -120,6 +120,22 @@ public enum TaskType {
             Upload or record the translated document on the case file and take any further action needed.
             Only mark the task as complete once the translation has been completed and any required action has been
             taken.
+            """
+    ),
+    CONFIRM_ORDER_REVIEW(
+        "ConfirmOrderReview",
+        "Confirm order review",
+        """
+            Review the order the judge submitted, then either return it to the judge with a query or issue it.
+            The task will close when the order is returned or issued.
+            """
+    ),
+    REVIEW_ORDER_QUERY(
+        "ReviewOrderQuery",
+        "Review order query",
+        """
+            Court staff returned your order with a query. Change the order and submit it for review again.
+            The task will close when you submit it.
             """
     );
 
