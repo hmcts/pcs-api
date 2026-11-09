@@ -180,7 +180,7 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_04gmv26">
-          <text>"judge"</text>
+          <text>"leadership-judge"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1ockg1h">
           <text>"Read,Own"</text>
@@ -195,35 +195,6 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_02j321b">
-          <text></text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_16e4kbs">
-        <inputEntry id="UnaryTests_1mcevur">
-          <text>"reviewSpecificAccessRequestLegalOps"</text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_02ev0re">
-          <text></text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_12usq3e">
-          <text></text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1hn3k8h">
-          <text>"tribunal-caseworker"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0hp3tmt">
-          <text>"Read,Own"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_06ncuca">
-          <text>"LEGAL_OPERATIONS"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0ma0kqd">
-          <text></text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0hemidt">
-          <text></text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0trdi4k">
           <text></text>
         </outputEntry>
       </rule>
@@ -267,7 +238,7 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1jdix48">
-          <text>"national-business-centre"</text>
+          <text>"hearing-centre-team-leader"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0kaubdx">
           <text>"Read,Own"</text>
@@ -287,7 +258,7 @@
       </rule>
       <rule id="DecisionRule_18262xm">
         <inputEntry id="UnaryTests_18idf3t">
-          <text>"reviewSpecificAccessRequestAdmin"</text>
+          <text>"reviewSpecificAccessRequestCTSC"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1riz9f7">
           <text></text>
@@ -296,7 +267,7 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1muei45">
-          <text>"hearing-centre-admin"</text>
+          <text>"ctsc-team-leader"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1pyfeul">
           <text>"Read,Own"</text>

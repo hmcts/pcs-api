@@ -409,6 +409,26 @@ Short name</description>
           <text>true</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_0kcpr99">
+        <inputEntry id="UnaryTests_1q32rvx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1cvyr5m">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10oxlrc">
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dvlm9l">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1pqijpr">
+          <text>"access_requests"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0175zcx">
+          <text>true</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_0v7suji">
         <inputEntry id="UnaryTests_01uali5">
           <text></text>
@@ -417,7 +437,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_055g5ba">
-          <text>not("ReviewOrderQuery")</text>
+          <text>not("ReviewOrderQuery","reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1ubz0s5">
           <text>"roleCategory"</text>
@@ -437,7 +457,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_gcr15ti">
-          <text>"ReviewOrderQuery"</text>
+          <text>"ReviewOrderQuery","reviewSpecificAccessRequestJudiciary"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_sa3s2nd">
           <text>"roleCategory"</text>
@@ -446,6 +466,46 @@ Short name</description>
           <text>"JUDICIAL"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_d8c5q6o">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1uk76yu">
+        <inputEntry id="UnaryTests_126mv9i">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ldisw8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1elgiy3">
+          <text>"reviewSpecificAccessRequestLegalOps"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1y0aqjb">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ua6s7q">
+          <text>"LEGAL_OPERATIONS"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ng2peu">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_01s1rnp">
+        <inputEntry id="UnaryTests_0fzta3a">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1qba3zs">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0fhk3u5">
+          <text>"reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ecj2yu">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1spz8st">
+          <text>"CTSC"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ya7w6x">
           <text>true</text>
         </outputEntry>
       </rule>
@@ -587,86 +647,6 @@ Short name</description>
         </outputEntry>
         <outputEntry id="LiteralExpression_1t9vr9a">
           <text>false</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_0kcpr99">
-        <inputEntry id="UnaryTests_1q32rvx">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1cvyr5m">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_10oxlrc">
-          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0dvlm9l">
-          <text>"workType"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1pqijpr">
-          <text>"access-requests"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0175zcx">
-          <text></text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_0cdi2y4">
-        <inputEntry id="UnaryTests_1w915iy">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0yiwcag">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0yfgol1">
-          <text>"reviewSpecificAccessRequestLegalOps"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0z125bd">
-          <text>"roleCategory"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_050zuto">
-          <text>"LEGAL_OPERATIONS"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0mgamxz">
-          <text></text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_1uk76yu">
-        <inputEntry id="UnaryTests_126mv9i">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0ldisw8">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1elgiy3">
-          <text>"reviewSpecificAccessRequestAdmin"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_1y0aqjb">
-          <text>"roleCategory"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0ua6s7q">
-          <text>"ADMIN"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0ng2peu">
-          <text></text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_12ldkqn">
-        <inputEntry id="UnaryTests_000jiln">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0d29clr">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0j4fck1">
-          <text>"reviewSpecificAccessRequestJudiciary"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0xups1h">
-          <text>"roleCategory"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0mpqcdu">
-          <text>"JUDICIAL"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0kt28x9">
-          <text></text>
         </outputEntry>
       </rule>
     </decisionTable>
