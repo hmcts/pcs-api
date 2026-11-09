@@ -24,7 +24,7 @@ public class PartySupportOwnershipResolver {
 
     private final OrganisationService organisationService;
 
-    public boolean isOwnedByUser(PartyEntity partyEntity, UUID authenticatedUserId) {
+    public boolean isOwnedByUser(PartyEntity partyEntity, String authenticatedUserId) {
         if (authenticatedUserId == null || partyEntity == null) {
             return false;
         }
@@ -43,7 +43,7 @@ public class PartySupportOwnershipResolver {
     }
 
     private boolean isOwnedByUser(PartyEntity partyEntity,
-                                  UUID authenticatedUserId,
+                                  String authenticatedUserId,
                                   String authenticatedOrganisationId) {
         if (authenticatedUserId.equals(partyEntity.getIdamId())) {
             return true;
@@ -53,7 +53,7 @@ public class PartySupportOwnershipResolver {
             || isRepresentedByUserOrganisation(partyEntity, authenticatedOrganisationId);
     }
 
-    public Set<UUID> resolveRepresentedPartyIds(Collection<PartyEntity> partyEntities, UUID authenticatedUserId) {
+    public Set<UUID> resolveRepresentedPartyIds(Collection<PartyEntity> partyEntities, String authenticatedUserId) {
         if (partyEntities == null || partyEntities.isEmpty() || authenticatedUserId == null) {
             return Set.of();
         }

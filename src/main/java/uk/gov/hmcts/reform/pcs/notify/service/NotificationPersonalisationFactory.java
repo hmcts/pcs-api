@@ -8,12 +8,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
@@ -26,10 +30,14 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPayme
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -39,18 +47,33 @@ public class NotificationPersonalisationFactory {
     private final PartyService partyService;
     private final AddressFormatter addressFormatter;
     private final AddressMapper addressMapper;
+    private final CaseNameFormatter caseNameFormatter;
+    private final FeatureToggleService featureToggleService;
 
     @Value("${frontend.url}")
     private String frontendUrl;
 
-    public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
+    @Value("${manage_case.url}")
+    private String manageCaseUrl;
+
+    public ClaimBasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
 
-        return buildPersonalisation(defendant, defendantResponse.getPcsCase());
+        return ClaimBasePersonalisation.builder()
+            .base(buildPersonalisation(defendant, defendantResponse.getPcsCase()))
+            .nextStepUrl(release14Enabled() ? frontendUrl + "/claims" : "")
+            .build();
     }
 
-    public BasePersonalisation forClaimant(ClaimEntity claim) {
-        return buildPersonalisation(partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase()), claim.getPcsCase());
+    public ClaimBasePersonalisation forClaimant(ClaimEntity claim) {
+        String nextStepUrl = manageCaseTabUrl(claim.getPcsCase().getCaseReference().toString(), "Case%20Parties");
+
+        return ClaimBasePersonalisation.builder()
+            .base(buildPersonalisation(
+                    partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase()),
+                    claim.getPcsCase()))
+            .nextStepUrl(release14Enabled() ? nextStepUrl : "")
+            .build();
     }
 
     public ClaimantBasePersonalisation forClaimant(long caseReference, PCSCase pcsCase) {
@@ -67,11 +90,15 @@ public class NotificationPersonalisationFactory {
             primaryDefendantDetails.getLastName()
         );
 
+        String nextStepUrl = manageCaseTabUrl(Long.toString(caseReference), "Next%20steps");
+
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
             .caseNumber(formatCaseReference(Long.toString(caseReference)))
+            .caseName(release14Enabled() ? getFormattedDraftCaseName(pcsCase, toLineClaimantName) : "")
             .claimantName(claimantNameUpper)
             .primaryDefendantName(primaryDefendantName)
+            .nextStepUrl(release14Enabled() ? nextStepUrl : "")
             .build();
     }
 
@@ -95,15 +122,11 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         OrganisationEntity organisationEntity, PcsCaseEntity pcsCaseEntity
     ) {
-        String paymentUrl = Optional.of(pcsCaseEntity)
-            .map(PcsCaseEntity::getCaseReference)
-            .map(Object::toString)
-            .map(caseRef -> String.format(
-                ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
-                frontendUrl,
-                caseRef
-            ))
-            .orElse(null);
+        String caseReference = pcsCaseEntity.getCaseReference().toString();
+        String paymentUrl = release14Enabled()
+            ? manageCaseTabUrl(caseReference, "Service%20Request")
+            : String.format("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount",
+                            frontendUrl, caseReference);
 
         return CounterclaimPaymentRequiredPersonalisation.builder()
             .base(forOrganisation(organisationEntity, pcsCaseEntity))
@@ -114,16 +137,10 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         DefendantResponseEntity defendantResponse
     ) {
-        String paymentUrl = Optional.ofNullable(defendantResponse)
-            .map(DefendantResponseEntity::getPcsCase)
-            .map(PcsCaseEntity::getCaseReference)
-            .map(Object::toString)
-            .map(caseRef -> String.format(
-                ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
-                frontendUrl,
-                caseRef
-            ))
-            .orElse(null);
+        String paymentUrl = release14Enabled()
+            ? (frontendUrl + "/claims")
+            : String.format("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount",
+                            frontendUrl, defendantResponse.getPcsCase().getCaseReference().toString());
 
         return CounterclaimPaymentRequiredPersonalisation.builder()
             .base(forDefendant(defendantResponse))
@@ -155,6 +172,7 @@ public class NotificationPersonalisationFactory {
         return OrganisationBasePersonalisation.builder()
             .organisationName(organisationEntity.getOrganisationName())
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .caseName(release14Enabled() ? getFormattedCaseName(pcsCaseEntity) : "")
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
@@ -192,6 +210,7 @@ public class NotificationPersonalisationFactory {
             .firstName(recipientFirstName)
             .lastName(recipientLastName)
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .caseName(release14Enabled() ? getFormattedCaseName(pcsCaseEntity) : "")
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
@@ -275,7 +294,7 @@ public class NotificationPersonalisationFactory {
     }
 
     private static String formatNameUpperForNotification(String firstName, String lastName) {
-        return String.format("%s %s", firstName, lastName).toUpperCase(Locale.ROOT);
+        return (firstName + " " + lastName).toUpperCase(Locale.ROOT);
     }
 
     public static String formatCaseReference(String caseReference) {
@@ -284,5 +303,44 @@ public class NotificationPersonalisationFactory {
         }
 
         return caseReference.replaceAll("(.{4})(?!$)", "$1-");
+    }
+
+    public String getFormattedDraftCaseName(PCSCase pcsCase, String claimantName) {
+        List<Party> claimant = List.of(Party.builder().orgName(claimantName).build());
+        List<Party> defendants = new ArrayList<>();
+        defendants.add(toDraftParty(pcsCase.getDefendant1()));
+        if (pcsCase.getAddAnotherDefendant() == VerticalYesNo.YES && pcsCase.getAdditionalDefendants() != null) {
+            pcsCase.getAdditionalDefendants().forEach(defendant ->
+                defendants.add(toDraftParty(defendant.getValue())));
+        }
+        return caseNameFormatter.formatCaseName(claimant, defendants);
+    }
+
+    private static Party toDraftParty(DefendantDetails defendant) {
+        return Party.builder()
+            .firstName(defendant.getFirstName())
+            .lastName(defendant.getLastName())
+            .nameKnown(defendant.getFirstName() == null || defendant.getLastName() == null
+                           ? VerticalYesNo.NO : defendant.getNameKnown())
+            .build();
+    }
+
+    public String getFormattedCaseName(PcsCaseEntity pcsCaseEntity) {
+        ClaimEntity claim = pcsCaseEntity.getClaims().getFirst();
+
+        List<Party> claimants = PartyDisplayMapper.partiesByRole(claim, PartyRole.CLAIMANT).stream()
+            .map(PartyDisplayMapper::toDomainParty).toList();
+        List<Party> defendants = PartyDisplayMapper.partiesByRole(claim, PartyRole.DEFENDANT).stream()
+            .map(PartyDisplayMapper::toDomainParty).toList();
+
+        return caseNameFormatter.formatCaseName(claimants, defendants);
+    }
+
+    private String manageCaseTabUrl(String caseReference, String tab) {
+        return String.format("%s/cases/case-details/PCS/PCS/%s#%s", manageCaseUrl, caseReference, tab);
+    }
+
+    private boolean release14Enabled() {
+        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
     }
 }

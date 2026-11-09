@@ -6,6 +6,7 @@ export const enterGenappApplication = {
   adjournRadioOption: `Adjourn`,
   setAsideRadioOption: `Set aside`,
   somethingElseRadioOption: `Something else`,
+  suspendRadioOption: `Suspend`,
   dayTextLabel: `Day`,
   monthTextLabel: `Month`,
   yearTextLabel: `Year`,
@@ -21,7 +22,7 @@ export const enterGenappApplication = {
       { type: `none`, input: ``, errMessage: `Which party made the application? is required`, errInlineMessage: `Field is required` },
     ],
     errorRadioOption2: [
-      { type: `none`, input: ``, errMessage: `Which type of application has the applicant made? is required`, errInlineMessage: `Which type of application has the applicant made? is required` },
+      { type: `none`, input: ``, errMessage: `Which type of application has the applicant made? is required`, errInlineMessage: `Field is required` },
     ],
     errorDateField: [
       { type: `empty`, input: `empty`, errMessage: `What date was the application received? is required`,errInlineMessage: `What date was the application received? is required`},

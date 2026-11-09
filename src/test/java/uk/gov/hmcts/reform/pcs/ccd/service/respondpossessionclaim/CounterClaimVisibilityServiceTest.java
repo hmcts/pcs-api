@@ -27,7 +27,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterC
 @ExtendWith(MockitoExtension.class)
 class CounterClaimVisibilityServiceTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
 
     private CounterClaimVisibilityService underTest;
 
@@ -54,7 +54,7 @@ class CounterClaimVisibilityServiceTest {
 
     @Test
     void shouldHideIssuedCounterClaimRaisedByAnotherDefendant() {
-        CounterClaimEntity counterClaim = stubCounterClaim(COUNTER_CLAIM_ISSUED, UUID.randomUUID(), null);
+        CounterClaimEntity counterClaim = stubCounterClaim(COUNTER_CLAIM_ISSUED, UUID.randomUUID().toString(), null);
 
         assertThat(underTest.isCounterClaimVisibleToUser(counterClaim, CURRENT_USER_ID)).isFalse();
     }
@@ -91,7 +91,7 @@ class CounterClaimVisibilityServiceTest {
         CounterClaimEntity unpaid = stubCounterClaim(
             CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED, CURRENT_USER_ID, LocalDateTime.now());
         CounterClaimEntity otherParty = stubCounterClaim(
-            COUNTER_CLAIM_ISSUED, UUID.randomUUID(), LocalDateTime.now());
+            COUNTER_CLAIM_ISSUED, UUID.randomUUID().toString(), LocalDateTime.now());
 
         assertThat(underTest.getVisibleCounterClaimForUser(List.of(unpaid, otherParty), CURRENT_USER_ID)).isEmpty();
     }
@@ -127,7 +127,7 @@ class CounterClaimVisibilityServiceTest {
             .contains(dated);
     }
 
-    private CounterClaimEntity stubCounterClaim(CounterClaimState state, UUID raisedByIdamId,
+    private CounterClaimEntity stubCounterClaim(CounterClaimState state, String raisedByIdamId,
                                                 LocalDateTime submittedDate) {
         PartyEntity party = mock(PartyEntity.class);
         lenient().when(party.getIdamId()).thenReturn(raisedByIdamId);

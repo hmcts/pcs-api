@@ -28,7 +28,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Computes dashboard data (notifications + task groups) from submitted case data.
@@ -190,7 +189,7 @@ public class DashboardJourneyService {
             return List.of();
         }
 
-        UUID viewerIdamId = dashboardContext.defendant() != null
+        String viewerIdamId = dashboardContext.defendant() != null
             ? dashboardContext.defendant().getIdamId()
             : null;
 

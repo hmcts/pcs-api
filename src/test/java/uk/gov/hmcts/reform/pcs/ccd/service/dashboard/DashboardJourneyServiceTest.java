@@ -140,7 +140,7 @@ class DashboardJourneyServiceTest {
             .containsExactly(
                 tuple(TaskGroupId.CLAIM, 1),
                 tuple(TaskGroupId.DOCUMENTS, 2),
-                tuple(TaskGroupId.RESPONSE, 2),
+                tuple(TaskGroupId.RESPONSE, 3),
                 tuple(TaskGroupId.HEARING, 1),
                 tuple(TaskGroupId.NOTICE, 1),
                 tuple(TaskGroupId.APPLICATIONS, 2)
@@ -163,7 +163,8 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.NOT_STARTED),
-                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.NOT_AVAILABLE)
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.NOT_AVAILABLE),
+                tuple(DashboardTaskTemplateIds.YOUR_SUPPORT, TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
@@ -189,7 +190,7 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldShowViewApplicationsTaskWhenAtLeastOneGeneralApplicationExists() {
         PCSCase submitted = PCSCase.builder().build();
-        UUID viewerId = UUID.randomUUID();
+        String viewerId = UUID.randomUUID().toString();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .genApps(Set.of(GenAppEntity.builder().state(GenAppState.GEN_APP_ISSUED).build()))
             .build();
@@ -214,7 +215,7 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldPopulateRelatedApplicationsFromGeneralApplications() {
         PCSCase submitted = PCSCase.builder().build();
-        UUID viewerId = UUID.randomUUID();
+        String viewerId = UUID.randomUUID().toString();
 
         GenAppEntity genApp = GenAppEntity.builder()
             .id(UUID.randomUUID())
@@ -249,7 +250,7 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldOrderRelatedApplicationsBySubmittedDateNewestFirst() {
         PCSCase submitted = PCSCase.builder().build();
-        UUID viewerId = UUID.randomUUID();
+        String viewerId = UUID.randomUUID().toString();
 
         GenAppEntity olderGenApp = GenAppEntity.builder()
             .id(UUID.randomUUID())
@@ -287,8 +288,8 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldOmitWithoutNoticeApplicationsRaisedByAnotherUser() {
         PCSCase submitted = PCSCase.builder().build();
-        UUID applicantId = UUID.randomUUID();
-        UUID viewerId = UUID.randomUUID();
+        String applicantId = UUID.randomUUID().toString();
+        String viewerId = UUID.randomUUID().toString();
 
         PartyEntity applicant = PartyEntity.builder().idamId(applicantId).build();
         GenAppEntity hiddenGenApp = GenAppEntity.builder()
@@ -324,7 +325,7 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldIncludeWithoutNoticeApplicationForApplicantIdamUser() {
         PCSCase submitted = PCSCase.builder().build();
-        UUID applicantId = UUID.randomUUID();
+        String applicantId = UUID.randomUUID().toString();
 
         PartyEntity applicant = PartyEntity.builder().idamId(applicantId).build();
         GenAppEntity ownGenApp = GenAppEntity.builder()
@@ -395,7 +396,8 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
-                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE)
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE),
+                tuple(DashboardTaskTemplateIds.YOUR_SUPPORT, TaskStatus.AVAILABLE)
             );
     }
 
@@ -406,7 +408,7 @@ class DashboardJourneyServiceTest {
         when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
 
         UUID partyId = UUID.randomUUID();
-        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID().toString()).build();
         when(outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(CASE_REFERENCE, partyId))
             .thenReturn(Optional.of(OutstandingCounterClaimPayment.builder()
                 .serviceRequestReference("2026-1234567890123")
@@ -442,7 +444,7 @@ class DashboardJourneyServiceTest {
         when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
 
         UUID partyId = UUID.randomUUID();
-        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID().toString()).build();
 
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -467,7 +469,7 @@ class DashboardJourneyServiceTest {
         when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
 
         UUID partyId = UUID.randomUUID();
-        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID().toString()).build();
         when(outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(CASE_REFERENCE, partyId))
             .thenReturn(Optional.empty());
 
@@ -492,7 +494,10 @@ class DashboardJourneyServiceTest {
             .thenReturn(true);
         when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
 
-        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).idamId(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .idamId(UUID.randomUUID().toString())
+            .build();
 
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -510,7 +515,7 @@ class DashboardJourneyServiceTest {
         verifyNoInteractions(outstandingCounterClaimPaymentService);
     }
 
-    private void stubUserRoles(UUID userId) {
+    private void stubUserRoles(String userId) {
         when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
             .thenReturn(new UserRoles(userId, List.of()));
     }

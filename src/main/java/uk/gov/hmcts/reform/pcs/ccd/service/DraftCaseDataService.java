@@ -60,8 +60,8 @@ public class DraftCaseDataService {
         this.transactionTemplate = transactionTemplate;
     }
 
-    private UUID getCurrentUserId() {
-        return UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
+    private String getCurrentUserId() {
+        return securityContextService.toUserId(securityContextService.getCurrentUserDetails().getUid());
     }
 
     /**
@@ -88,7 +88,7 @@ public class DraftCaseDataService {
             && userInfo.getRoles().contains(UserRole.CITIZEN.getRole());
     }
 
-    private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, UUID userId,
+    private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, String userId,
                                                     Optional<String> organisationId) {
         return organisationId
             .map(orgId -> draftCaseDataRepository
@@ -99,7 +99,7 @@ public class DraftCaseDataService {
     }
 
     /** Pre-org-keying drafts carry no org and would be missed; the first open adopts the row. */
-    private Optional<DraftCaseDataEntity> adoptUserKeyedDraft(long caseReference, EventId eventId, UUID userId,
+    private Optional<DraftCaseDataEntity> adoptUserKeyedDraft(long caseReference, EventId eventId, String userId,
                                                               String organisationId) {
         return draftCaseDataRepository
             .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId)
@@ -110,7 +110,7 @@ public class DraftCaseDataService {
     }
 
     /** Counts a not-yet-adopted draft too, so the dashboard matches what opening will find. */
-    private boolean draftExists(long caseReference, EventId eventId, UUID userId,
+    private boolean draftExists(long caseReference, EventId eventId, String userId,
                                 Optional<String> organisationId) {
         return organisationId
             .map(orgId -> draftCaseDataRepository
@@ -121,7 +121,7 @@ public class DraftCaseDataService {
     }
 
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
-        UUID userId = getCurrentUserId();
+        String userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
 
         return getUnsubmittedCaseDataInternal(
@@ -149,7 +149,7 @@ public class DraftCaseDataService {
     }
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
-        UUID userId = getCurrentUserId();
+        String userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
 
         return hasUnsubmittedCaseDataInternal(
@@ -187,6 +187,18 @@ public class DraftCaseDataService {
             .isPresent();
     }
 
+    public boolean hasMeaningfulRespondDraft(long caseReference,
+                                             EventId eventId,
+                                             UUID partyId,
+                                             String legalRepresentativeOrganisationId) {
+
+        return getUnsubmittedCaseData(caseReference, eventId, partyId, legalRepresentativeOrganisationId)
+            .map(PCSCase::getPossessionClaimResponse)
+            .map(PossessionClaimResponse::getDefendantResponses)
+            .isPresent();
+    }
+
+    @Transactional
     public <T> void saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId) {
@@ -233,7 +245,7 @@ public class DraftCaseDataService {
     }
 
     private <T> Long saveCitizenDraft(long caseReference, T eventData, EventId eventId, Long expectedVersion) {
-        UUID userId = getCurrentUserId();
+        String userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
 
         return saveUnsubmittedEventDataInternal(
@@ -375,7 +387,7 @@ public class DraftCaseDataService {
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson, UUID partyId,
                                          String legalRepresentativeOrganisationId) {
-        UUID userId = getCurrentUserId();
+        String userId = getCurrentUserId();
         retryingLastWriteWins(() -> patchInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).partyId(partyId)
                 .organisationId(legalRepresentativeOrganisationId).build(),
@@ -391,7 +403,7 @@ public class DraftCaseDataService {
     }
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
-        UUID userId = getCurrentUserId();
+        String userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
         retryingLastWriteWins(() -> patchInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
@@ -414,7 +426,7 @@ public class DraftCaseDataService {
 
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
-        UUID userId = getCurrentUserId();
+        String userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
 
         deleteUnsubmittedCaseDataInternal(
@@ -481,7 +493,7 @@ public class DraftCaseDataService {
         return pcsCase;
     }
 
-    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData) {
+    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, String userId, String caseData) {
         DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
         newDraft.setCaseReference(caseReference);
         newDraft.setCaseData(caseData);
@@ -491,7 +503,7 @@ public class DraftCaseDataService {
     }
 
     /** Org identifies the draft when present; idamUserId always records who last touched it. */
-    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData,
+    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, String userId, String caseData,
                                                Optional<String> organisationId) {
         DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);
         organisationId.ifPresent(newDraft::setOrganisationId);
@@ -499,7 +511,7 @@ public class DraftCaseDataService {
     }
 
     private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, String organisationId,
-                                               String caseData, UUID partyId, UUID userId) {
+                                               String caseData, UUID partyId, String userId) {
         DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
         newDraft.setIdamUserId(userId);
         newDraft.setCaseReference(caseReference);
@@ -672,7 +684,7 @@ public class DraftCaseDataService {
                      draftCaseData.getOrganisationId(),
                      draftCaseData.getPartyId());
         } else {
-            UUID userId = getCurrentUserId();
+            String userId = getCurrentUserId();
             log.info("Patching draft: caseReference={}, eventId={}, userId={}",
                      draftCaseData.getCaseReference(),
                      draftCaseData.getEventId(),

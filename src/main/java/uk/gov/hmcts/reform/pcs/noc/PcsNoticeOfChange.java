@@ -2,8 +2,7 @@ package uk.gov.hmcts.reform.pcs.noc;
 
 import static java.util.Optional.of;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valueOf;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
@@ -24,6 +23,7 @@ import uk.gov.hmcts.ccd.sdk.api.noc.NocOrganisation;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmitContext;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -73,7 +73,6 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
     static final String ORG_NOT_FOUND_CODE = "organisationNotFound";
     static final String ORG_NOT_FOUND_MESSAGE = "No organisation was found for the current user.";
-
     static final String INVALID_ORG_TYPE_CODE = "invalidOrganisationType";
     static final String INVALID_ORG_TYPE_MESSAGE =
         "Only a Solicitor Organisation can become a legal representative for a party in a case";
@@ -87,7 +86,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
     private final OrganisationRepository organisationRepository;
@@ -130,7 +129,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         PartyEntity matchedParty = matches.getFirst();
-        OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
+        OrganisationDetailsResponse organisation = organisationService.getOrganisationDetails(context.userId());
         if (isNull(organisation)) {
             return NocAnswersResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
         }
@@ -149,9 +148,9 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     public NocSubmissionResponse submit(NocSubmitContext context, NocAnswersRequest request) {
         PcsCaseEntity pcsCase = loadCase(request.caseId());
         PartyEntity matchedParty = matchingDefendants(pcsCase, request).getFirst();
-        UUID currentUserId = currentUserId(context);
+        String currentUserId = currentUserId(context);
         OrganisationDetailsResponse organisationDetails =
-            organisationDetailsService.getOrganisationDetails(currentUserId.toString());
+            organisationService.getOrganisationDetails(currentUserId);
 
         if (isNull(organisationDetails)) {
             return NocSubmissionResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
@@ -271,7 +270,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private Optional<NocAnswersResponse> checkConflictOfInterest(PcsCaseEntity caseEntity,
                                                                  OrganisationDetailsResponse orgDetails) {
-        if (!SOLICITOR_PROFILE.equals(valueOf(orgDetails.getOrgProfileId()))) {
+        if (!SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId().equals(orgDetails.getOrgProfileId())) {
             return of(NocAnswersResponse.invalid(INVALID_ORG_TYPE_CODE, INVALID_ORG_TYPE_MESSAGE));
         }
         PartyEntity claimant = caseEntity.getParties().stream()
@@ -309,8 +308,8 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         return value.trim().replaceAll("\\s+", " ").toLowerCase();
     }
 
-    private UUID currentUserId(NocSubmitContext context) {
-        return UUID.fromString(context.userId());
+    private String currentUserId(NocSubmitContext context) {
+        return IdamUserIds.normalise(context.userId());
     }
 
     private record NocAccessChangePlan(List<NocAccessChangeTaskData> changes) {

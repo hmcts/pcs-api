@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimSummary;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CitizenClaimListService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/cases")
@@ -46,7 +46,9 @@ public class CitizenClaimListController {
         @Parameter(description = "Service-to-Service (S2S) authorization token", required = true)
         @RequestHeader("ServiceAuthorization") String s2sToken
     ) {
-        UUID idamId = UUID.fromString(idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid());
+        String idamId = IdamUserIds.normalise(
+            idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid()
+        );
         return ResponseEntity.ok(citizenClaimListService.getClaimsAgainst(idamId));
     }
 }

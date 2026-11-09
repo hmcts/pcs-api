@@ -1,6 +1,7 @@
 export const users = [{
   user: 'Creator',
-  email: 'pcs-solicitor2@test.com',
+  email: 'pcs.local.auth1user1@test.com',
+  //email: 'pcs-solicitor2@test.com',
   password: process.env.IDAM_PCS_USER_PASSWORD,
   tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
 },
@@ -14,13 +15,13 @@ export const users = [{
   user: 'Defendant Solicitor',
   email: 'pcs-org1-solicitor2@test.com',
   password: process.env.IDAM_PCS_USER_PASSWORD,
-  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
+  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support']
 },
 {
   user: 'County Court Judge',
-  email: 'TribunalMember.Brandon.Kshlerin-Hartmann@ejudiciary.net',
+  email: 'DDJ.Randell.Lesch@ejudiciary.net',
   password: process.env.IDAM_PCS_USER_PASSWORD,
-  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History']
+  tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History', 'Judicial notes', 'Hearings']
 },
 {
   user: 'CTSC Team Leader',
@@ -50,13 +51,13 @@ export const users = [{
     user: 'High Court Judge',
     email: 'ChiefICCJudge.Nichols@ejudiciary.net',
     password: process.env.IDAM_PCS_USER_PASSWORD,
-    tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History']
+    tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History', 'Judicial notes']
   },
   {
     user: 'Hearing Centre Team Leader',
     email: 'pcs-hearing-centre-team-leader-01@justice.gov.uk',
     password: process.env.IDAM_PCS_USER_PASSWORD,
-    tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History']
+    tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags', 'Tasks', 'Roles and access', 'Payment History', 'Hearings']
   },
   {
     user: 'Hearing Centre Administrator',

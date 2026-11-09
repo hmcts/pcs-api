@@ -1,6 +1,7 @@
 java:
   environment:
     WA_WORKFLOW_API: http://{{ .Release.Name }}-wa-workflow-api
+    TASK_MANAGEMENT_API_URL: http://{{ .Release.Name }}-wa-task-management-api
 
 postgresql:
   enabled: true
@@ -39,6 +40,8 @@ wa:
       environment:
         ALLOWED_CASE_TYPES: pcs
         ALLOWED_JURISDICTIONS: pcs
+        # pcs-api completes the task a user worked on once its event has committed.
+        WA_S2S_AUTHORIZED_SERVICES: ccd,ccd_data,ccd_gw,ccd_ps,iac,wa_task_management_api,xui_webapp,wa_task_monitor,camunda_bpm,wa_workflow_api,wa_case_event_handler,ccd_case_disposer,civil_service,sscs,pcs_api
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
         SPRING_DATASOURCE_MAXIMUM_POOL_SIZE: "4"
         SPRING_DATASOURCE_MINIMUM_IDLE: "1"
