@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
@@ -31,12 +32,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
@@ -102,6 +105,101 @@ class ClaimPackSelectorTest {
         assertThat(result.get(1).recipientType()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(result.get(1).party()).isEqualTo(defendantA);
         assertThat(result.get(1).documents()).containsExactly(pinA, claimForm);
+    }
+
+    @Test
+    @DisplayName("Puts application evidence after the claim form for an English defendant")
+    void shouldIncludeApplicationEvidenceAfterTheClaimForm() {
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity laterNotice = evidence("notice.pdf", Instant.parse("2026-10-02T10:00:00Z"));
+        DocumentEntity earlierRent = evidence("rent.pdf", Instant.parse("2026-10-01T10:00:00Z"));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = englishCase(pinA);
+        attachEvidence(pcsCase, laterNotice, earlierRent);
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.getFirst().recipientType()).isEqualTo(PartyRole.CLAIMANT);
+        assertThat(result.getFirst().documents()).containsExactly(claimForm);
+        assertThat(result.get(1).party()).isEqualTo(defendantA);
+        assertThat(result.get(1).documents()).containsExactly(pinA, claimForm, earlierRent, laterNotice);
+    }
+
+    @Test
+    @DisplayName("Does not add application evidence to a Welsh defendant pack")
+    void shouldLeaveWelshDefendantPackWithoutEvidence() {
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1)));
+        pcsCase.setLegislativeCountry(LegislativeCountry.WALES);
+        attachEvidence(pcsCase, notice);
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result.get(1).documents()).containsExactly(pinA, claimForm);
+    }
+
+    @Test
+    @DisplayName("Does not reprint a sent claim pack just because evidence was never included")
+    void shouldNotReopenASentPackToAddEvidence() {
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
+            .thenReturn(List.of(sent(defendantA, claimForm)));
+        PcsCaseEntity pcsCase = englishCase(pinA);
+        attachEvidence(pcsCase, notice);
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        ClaimPackCandidate defendantPack = result.stream()
+            .filter(candidate -> candidate.party().equals(defendantA))
+            .findFirst()
+            .orElseThrow();
+        assertThat(defendantPack.documents()).containsExactly(pinA);
+    }
+
+    @Test
+    @DisplayName("Gives each defendant the same application evidence")
+    void shouldGiveEachDefendantTheSameEvidence() {
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity pinB = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantB);
+        DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA, pinB), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1),
+            claimParty(defendantB, PartyRole.DEFENDANT, 2)));
+        pcsCase.setLegislativeCountry(LegislativeCountry.ENGLAND);
+        attachEvidence(pcsCase, notice);
+
+        List<ClaimPackCandidate> defendants = underTest.findClaimPackCandidates(pcsCase).stream()
+            .filter(candidate -> candidate.recipientType() == PartyRole.DEFENDANT)
+            .toList();
+
+        assertThat(defendants).satisfiesExactly(
+            candidate -> assertThat(candidate.documents()).containsExactly(pinA, claimForm, notice),
+            candidate -> assertThat(candidate.documents()).containsExactly(pinB, claimForm, notice));
+    }
+
+    @Test
+    @DisplayName("Includes application evidence once the gen-app hold has passed")
+    void shouldIncludeEvidenceWhenTheGenAppHoldHasPassed() {
+        enableRelease13();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
+        PcsCaseEntity pcsCase = englishCaseExpectingGenApp(LocalDateTime.of(2026, 10, 28, 12, 0));
+        attachEvidence(pcsCase, notice);
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents())
+                .containsExactly(pcsCase.getDocuments().getFirst(), claimForm, notice));
     }
 
     @Test
@@ -305,6 +403,38 @@ class ClaimPackSelectorTest {
             .containsExactlyElementsOf(release14Enabled ? List.of(defendantA) : List.of(claimant, defendantA));
         assertThat(result.getLast().recipientType()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(result.getLast().documents()).containsExactly(pcsCase.getDocuments().getFirst(), claimForm);
+    }
+
+    private PcsCaseEntity englishCase(DocumentEntity pin) {
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pin), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1)));
+        pcsCase.setLegislativeCountry(LegislativeCountry.ENGLAND);
+        return pcsCase;
+    }
+
+    private PcsCaseEntity englishCaseExpectingGenApp(LocalDateTime claimIssuedDate) {
+        PcsCaseEntity pcsCase = englishCase(document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA));
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+        claim.setLanguageUsed(LanguageUsed.ENGLISH);
+        claim.setGenAppExpected(VerticalYesNo.YES);
+        claim.setClaimIssuedDate(claimIssuedDate);
+        return pcsCase;
+    }
+
+    private void attachEvidence(PcsCaseEntity pcsCase, DocumentEntity... documents) {
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+        claim.setClaimDocuments(List.of(documents).stream()
+            .map(document -> ClaimDocumentEntity.builder().claim(claim).document(document).build())
+            .toList());
+    }
+
+    private DocumentEntity evidence(String fileName, Instant submittedDate) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName(fileName)
+            .submittedDate(submittedDate)
+            .build();
     }
 
     private PcsCaseEntity readyClaimCase() {

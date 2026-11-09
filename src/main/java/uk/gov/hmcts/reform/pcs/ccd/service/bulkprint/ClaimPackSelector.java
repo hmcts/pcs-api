@@ -3,14 +3,17 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * off, the claimant too. When release flag 1.4 is on, only defendants will receive the claim pack.
  * Defendants also get their own access code once it exists. Only documents not covered by a {@code PACK_SENT}
  * success row are included, so a failed access-code letter self-heals without re-sending the claim form.
+ * English defendants also receive the application uploads, after the claim form, on that same send.
  */
 @Service
 @Slf4j
@@ -88,11 +92,25 @@ public class ClaimPackSelector {
             }
             if (!sent.contains(key(defendant, claimForm))) {
                 unsent.add(claimForm);
+                addUnsentEvidence(unsent, pcsCase, claim, defendant, sent);
             }
             if (!unsent.isEmpty()) {
                 candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent));
             }
         }
+    }
+
+    private void addUnsentEvidence(List<DocumentEntity> unsent, PcsCaseEntity pcsCase, ClaimEntity claim,
+                                   PartyEntity defendant, Set<String> sent) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
+            return;
+        }
+        claim.getClaimDocuments().stream()
+            .map(ClaimDocumentEntity::getDocument)
+            .sorted(Comparator.comparing(DocumentEntity::getSubmittedDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .filter(evidence -> !sent.contains(key(defendant, evidence)))
+            .forEach(unsent::add);
     }
 
     private DocumentEntity accessCodeDocument(PcsCaseEntity pcsCase, PartyEntity defendant) {
