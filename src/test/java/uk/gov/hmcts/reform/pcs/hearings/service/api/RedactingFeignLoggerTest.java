@@ -65,7 +65,7 @@ class RedactingFeignLoggerTest {
         }
 
         private void log(Request request) {
-            logRequest("HmcHearingApi#createHearing", feign.Logger.Level.FULL, request);
+            logRequest("HmcHearingApi#createHearing()", feign.Logger.Level.FULL, request);
         }
     }
 }
