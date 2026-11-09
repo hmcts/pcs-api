@@ -80,34 +80,42 @@ public class ClaimPackSelector {
                                         DocumentEntity claimForm, Set<String> sent) {
         boolean wales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
-            DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant, false);
-            if (accessCode == null) {
-                log.debug("Claim pack held for case {} defendant {} - awaiting access code",
-                    pcsCase.getId(), defendant.getId());
-                continue;
+            ClaimPackCandidate candidate = defendantCandidate(pcsCase, defendant, claimForm, sent, wales);
+            if (candidate != null) {
+                candidates.add(candidate);
             }
-            // Both letters are saved together, so a Wales defendant with no Welsh letter got their access code
-            // before Welsh packs existed. It can never be made now, so they get the English pack.
-            DocumentEntity welshAccessCode = wales ? accessCodeDocument(pcsCase, defendant, true) : null;
-            List<DocumentEntity> unsent = new ArrayList<>();
-            if (!sent.contains(key(defendant, accessCode))) {
-                unsent.add(accessCode);
-            }
-            if (welshAccessCode != null && !sent.contains(key(defendant, welshAccessCode))) {
-                unsent.add(welshAccessCode);
-            }
-            if (!sent.contains(key(defendant, claimForm))) {
-                unsent.add(claimForm);
-            }
-            if (unsent.isEmpty()) {
-                continue;
-            }
-            if (wales && welshAccessCode == null) {
-                log.info("Wales case {} defendant {} has no Welsh access-code letter - sending the English pack",
-                    pcsCase.getId(), defendant.getId());
-            }
-            candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent, welshAccessCode != null));
         }
+    }
+
+    private ClaimPackCandidate defendantCandidate(PcsCaseEntity pcsCase, PartyEntity defendant,
+                                                  DocumentEntity claimForm, Set<String> sent, boolean wales) {
+        DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant, false);
+        if (accessCode == null) {
+            log.debug("Claim pack held for case {} defendant {} - awaiting access code",
+                pcsCase.getId(), defendant.getId());
+            return null;
+        }
+        // Both letters are saved together, so a Wales defendant with no Welsh letter got their access code
+        // before Welsh packs existed. It can never be made now, so they get the English pack.
+        DocumentEntity welshAccessCode = wales ? accessCodeDocument(pcsCase, defendant, true) : null;
+        List<DocumentEntity> unsent = new ArrayList<>();
+        if (!sent.contains(key(defendant, accessCode))) {
+            unsent.add(accessCode);
+        }
+        if (welshAccessCode != null && !sent.contains(key(defendant, welshAccessCode))) {
+            unsent.add(welshAccessCode);
+        }
+        if (!sent.contains(key(defendant, claimForm))) {
+            unsent.add(claimForm);
+        }
+        if (unsent.isEmpty()) {
+            return null;
+        }
+        if (wales && welshAccessCode == null) {
+            log.info("Wales case {} defendant {} has no Welsh access-code letter - sending the English pack",
+                pcsCase.getId(), defendant.getId());
+        }
+        return new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent, welshAccessCode != null);
     }
 
     private DocumentEntity accessCodeDocument(PcsCaseEntity pcsCase, PartyEntity defendant, boolean welsh) {
