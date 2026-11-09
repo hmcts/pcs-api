@@ -117,7 +117,7 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
         if (pcsCase.getPartySupport() != null) {
-            UUID authenticatedUserId = securityContextService.getCurrentUserId();
+            String authenticatedUserId = securityContextService.getCurrentUserId();
             caseFlagService.mergePartySupportFlags(
                 pcsCase.getPartySupport(),
                 pcsCaseEntity.getParties(),

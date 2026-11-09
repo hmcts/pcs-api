@@ -194,7 +194,7 @@ public class CaseFlagsView {
     }
 
     private Set<UUID> resolveRepresentedPartyIds(PcsCaseEntity pcsCaseEntity) {
-        UUID authenticatedUserId = authenticatedUserIdOrNoneRepresented();
+        String authenticatedUserId = authenticatedUserIdOrNoneRepresented();
         if (authenticatedUserId == null) {
             return Set.of();
         }
@@ -203,7 +203,7 @@ public class CaseFlagsView {
                                                                        authenticatedUserId);
     }
 
-    private UUID authenticatedUserIdOrNoneRepresented() {
+    private String authenticatedUserIdOrNoneRepresented() {
         try {
             return securityContextService.getCurrentUserId();
         } catch (SecurityContextException ex) {

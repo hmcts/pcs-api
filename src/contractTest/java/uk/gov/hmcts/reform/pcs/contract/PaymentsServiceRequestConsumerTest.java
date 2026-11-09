@@ -39,6 +39,7 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @PactTestFor(providerName = "payment_accounts", port = "8080")
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = ALL)
+
 public class PaymentsServiceRequestConsumerTest {
     private final PaymentsApi paymentsApi;
 

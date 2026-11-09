@@ -50,7 +50,7 @@ class DefendantResponseViewTest {
 
     @Test
     void shouldSetClaimantServiceAddressOnResponseForCitizenWithSubmittedResponse() {
-        UUID userId = UUID.randomUUID();
+        String userId = UUID.randomUUID().toString();
         stubCitizenUser(userId);
 
         PcsCaseEntity caseEntity = buildCaseEntityWithClaimantAddress();
@@ -80,7 +80,7 @@ class DefendantResponseViewTest {
 
     @Test
     void shouldNotSetServiceAddressWhenClaimantHasNoAddress() {
-        UUID userId = UUID.randomUUID();
+        String userId = UUID.randomUUID().toString();
         stubCitizenUser(userId);
 
         PcsCaseEntity caseEntity = buildCaseEntityWithClaimantIndividual();
@@ -131,7 +131,7 @@ class DefendantResponseViewTest {
         verify(accessValidator, never()).validateAndGetDefendant(any(), any());
     }
 
-    private void stubCitizenUser(UUID userId) {
+    private void stubCitizenUser(String userId) {
         UserInfo userInfo = mock(UserInfo.class);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);

@@ -7,9 +7,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
-import java.util.UUID;
 
 @Service
 public class SecurityContextService {
@@ -52,9 +52,13 @@ public class SecurityContextService {
      * @return The user ID for the user making the current request
      * @throws SecurityContextException if the security principal is not set or is not a {@link User} type
      */
-    public UUID getCurrentUserId() {
+    public String getCurrentUserId() {
         UserInfo userDetails = getCurrentUserDetails();
-        return userDetails != null ? UUID.fromString(userDetails.getUid()) : null;
+        return userDetails != null ? toUserId(userDetails.getUid()) : null;
+    }
+
+    public String toUserId(String uid) {
+        return IdamUserIds.normalise(uid);
     }
 
     public String getCurrentUserAuthToken() {

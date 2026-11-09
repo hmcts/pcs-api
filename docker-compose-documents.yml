@@ -1,0 +1,54 @@
+services:
+  dm-store:
+    platform: linux/amd64
+    image: hmctsprod.azurecr.io/dm/store:latest
+    container_name: dm-store
+    environment:
+      SERVER_PORT: 4506
+      STORAGEACCOUNT_PRIMARY_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1
+      S2S_NAMES_WHITELIST: ccd,em_api,em_gw,ccd_gw,ccd_data,ccd_case_document_am_api,dg_docassembly_api,pcs_api
+      IDAM_USER_BASE_URI: http://host.docker.internal:5062
+      IDAM_S2S_BASE_URI: http://host.docker.internal:8489
+      SPRING_DATASOURCE_HOST: dm-store-postgres
+      SPRING_DATASOURCE_PORT: 5432
+      APPLICATIONINSIGHTS_CONFIGURATION_CONTENT: '{"connectionString": ""}'
+    depends_on:
+      dm-store-postgres:
+        condition: service_healthy
+    networks:
+      - documents-network
+    ports:
+      - "4506:4506"
+    healthcheck:
+      test: ["NONE"]
+
+  dm-store-postgres:
+    image: "postgres:15.18"
+    container_name: dm-store-postgres
+    ports:
+      - 8432:5432
+    networks:
+      - documents-network
+    environment:
+      POSTGRES_USER: evidence
+      POSTGRES_PASSWORD: evidence
+      POSTGRES_DB: evidence
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evidence"]
+      interval: 1s
+      timeout: 5s
+      retries: 15
+
+  azurite:
+    platform: linux/amd64
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    command: ["azurite", "-l", "/data", "--blobHost", "0.0.0.0", "--queueHost", "0.0.0.0",
+              "--tableHost", "0.0.0.0", "--skipApiVersionCheck", "--disableTelemetry"]
+    networks:
+      - documents-network
+    ports:
+      - "10000:10000"
+
+networks:
+  documents-network:

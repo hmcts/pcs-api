@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.testutil;
 
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
@@ -9,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -40,6 +43,8 @@ public final class DocumentTestData {
         List<AdditionalDocument> additionalDocuments = new ArrayList<>();
         for (String filename : filenames) {
             additionalDocuments.add(AdditionalDocument.builder()
+                .documentType(new DynamicList(
+                    new DynamicListElement(UUID.randomUUID(), "Witness statement"), List.of()))
                 .document(Document.builder().filename(filename).build())
                 .build());
         }

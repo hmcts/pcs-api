@@ -16,7 +16,7 @@ public class RoleAssignment {
 
     private UUID id;
     private String actorIdType;
-    private UUID actorId;
+    private String actorId;
     private String roleType;
     private String roleName;
     private String classification;

@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -62,6 +63,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
+    };
+
+    static final AccessProfile[] JUDICIAL_NOTE_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE
     };
 
     static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
@@ -167,6 +175,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
+        buildBundleTab(builder);
+
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -201,6 +211,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSupportTab(builder);
 
+        buildJudicialNotesTab(builder);
+
         builder.tab("paymentHistory", "Payment History")
             .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -221,6 +233,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+        builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
+            .categoryID(CaseBundleDefinition.FOLDER_ID)
+            .categoryLabel(CaseBundleDefinition.FOLDER_LABEL)
+            .displayOrder(CaseFileCategory.values().length + 1)
+            .build();
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -234,8 +251,20 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
             .forRoles(CASE_NOTE_TAB_ROLES)
-            .field(PCSCase::getCaseReviewDates)
+            .label("caseReviewDatesMarkdownLabel", null, "${caseReviewDatesMarkdown}")
+            .field("caseReviewDatesMarkdown", NEVER_SHOW)
             .field(PCSCase::getCaseNotes);
+    }
+
+    private void buildBundleTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("bundle", "Bundle")
+            .forRoles(JUDICIAL_NOTE_TAB_ROLES)
+            .showCondition("bundleTab_Status=\"*\"")
+            .field("bundleTab_Status")
+            .field("bundleTab_Bundle")
+            .field("bundleTab_LastUpdated")
+            .field("bundleTab_Pages")
+            .field("bundleTab_MissingDocuments");
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -371,5 +400,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("judicialNotes", "Judicial notes")
+            .forRoles(JUDICIAL_NOTE_TAB_ROLES)
+            .label("judicialNotesMarkdownLabel", null, "${judicialNotesMarkdown}")
+            .field("judicialNotesMarkdown", NEVER_SHOW);
     }
 }
