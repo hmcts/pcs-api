@@ -73,7 +73,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1otkpft">
-          <text></text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0bk5dx2">
           <text>"region"</text>
@@ -94,7 +94,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_001vqzf">
-          <text></text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_08jsjbj">
           <text>"location"</text>
@@ -117,7 +117,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0o3zrg4">
-          <text></text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1izav92">
           <text>"locationName"</text>
@@ -537,7 +537,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1kieu3i">
-          <text>-</text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1u9r7ki">
           <text>"description"</text>
@@ -646,6 +646,86 @@ Short name</description>
           <text>time("17:00")</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1t9vr9a">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_13wzhm4">
+        <inputEntry id="UnaryTests_02nfvmx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0c2nyga">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1resjon">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_18oekp4">
+          <text>"region"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1wrh1eh">
+          <text>if (caseData.caseManagementLocation != null) then caseData.caseManagementLocation.region else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_10mq2m3">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1viop2c">
+        <inputEntry id="UnaryTests_151efza">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0iz9nk5">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qt5zif">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_02mwpqx">
+          <text>"location"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_02uuiuh">
+          <text>if (caseData.caseManagementLocation != null) then caseData.caseManagementLocation.baseLocation else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1jt73dn">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1al8f9d">
+        <inputEntry id="UnaryTests_0skgion">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0n3vf1e">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qto678">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0uklfvz">
+          <text>"additionalProperties_roleAssignmentId"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0z1y5ss">
+          <text>if (taskAttributes != null and taskAttributes.roleAssignmentId != null) then taskAttributes.roleAssignmentId else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ad8m5u">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0dzs9mw">
+        <inputEntry id="UnaryTests_00zha0r">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15zkfbx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0q97jwt">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0rix2ek">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0y3t6tx">
+          <text>if (taskAttributes != null and taskAttributes.taskId != null and taskAttributes.roleAssignmentId != null) then "[Review Access Request](/role-access/" + taskAttributes.taskId + "/assignment/" + taskAttributes.roleAssignmentId + "/specific-access)" else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ccc5m0">
           <text>false</text>
         </outputEntry>
       </rule>

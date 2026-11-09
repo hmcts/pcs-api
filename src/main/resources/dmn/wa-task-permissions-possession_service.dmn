@@ -183,7 +183,7 @@
           <text>"leadership-judge"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1ockg1h">
-          <text>"Read,Own"</text>
+          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1yxjf9p">
           <text>"JUDICIAL"</text>
@@ -212,7 +212,7 @@
           <text>"senior-tribunal-caseworker"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0exrt10">
-          <text>"Read,Own"</text>
+          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jzfziv">
           <text>"LEGAL_OPERATIONS"</text>
@@ -241,7 +241,7 @@
           <text>"hearing-centre-team-leader"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0kaubdx">
-          <text>"Read,Own"</text>
+          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0wmxl81">
           <text>"ADMIN"</text>
@@ -270,10 +270,10 @@
           <text>"ctsc-team-leader"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1pyfeul">
-          <text>"Read,Own"</text>
+          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1t7wqmn">
-          <text>"ADMIN"</text>
+          <text>"CTSC"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1rub45p">
           <text></text>
