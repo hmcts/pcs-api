@@ -326,14 +326,29 @@ class ClaimPackSelectorTest {
         assertThat(defendantCandidates(pcsCase)).singleElement().satisfies(candidate -> {
             assertThat(candidate.party()).isEqualTo(defendantA);
             assertThat(candidate.documents()).containsExactly(englishPinA, welshPinA, claimForm);
+            assertThat(candidate.bilingual()).isTrue();
         });
     }
 
     @Test
-    @DisplayName("Holds a Wales defendant who has only the English access-code letter")
-    void shouldHoldAWalesDefendantWithOnlyTheEnglishAccessCodeLetter() {
+    @DisplayName("Sends the English pack to a Wales defendant whose access code predates Welsh packs")
+    void shouldSendTheEnglishPackToAWalesDefendantWithOnlyTheEnglishAccessCodeLetter() {
         DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA), claimantAnd(defendantA));
+
+        assertThat(defendantCandidates(pcsCase)).singleElement().satisfies(candidate -> {
+            assertThat(candidate.documents()).containsExactly(englishPinA, claimForm);
+            assertThat(candidate.bilingual()).isFalse();
+        });
+    }
+
+    @Test
+    @DisplayName("Sends nothing more to a Wales defendant whose English pack was already sent")
+    void shouldSendNothingMoreOnceTheEnglishPackWasSentOnAWalesCase() {
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
+            .thenReturn(List.of(sent(defendantA, englishPinA), sent(defendantA, claimForm)));
         PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA), claimantAnd(defendantA));
 
         assertThat(defendantCandidates(pcsCase)).isEmpty();
@@ -469,21 +484,17 @@ class ClaimPackSelectorTest {
             .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(englishPinA, claimForm));
     }
 
-    @ParameterizedTest(name = "{0}, English letter {1}, Welsh letter {2} -> awaiting {3}")
+    @ParameterizedTest(name = "{0}, Welsh letter {1} -> awaiting access code")
     @CsvSource({
-        "WALES, true, false, Welsh access-code letter",
-        "WALES, false, true, English access-code letter",
-        "WALES, false, false, access code (English and Welsh letters)",
-        "ENGLAND, false, false, access code",
-        "ENGLAND, false, true, access code"
+        "WALES, true",
+        "WALES, false",
+        "ENGLAND, false",
+        "ENGLAND, true"
     })
-    @DisplayName("Names the missing access-code letter when a defendant's pack is held")
-    void shouldNameTheMissingLetterWhenHoldingADefendantPack(LegislativeCountry country, boolean hasEnglishPin,
-                                                             boolean hasWelshPin, String awaiting) {
+    @DisplayName("Holds a defendant's pack until their English access-code letter exists")
+    void shouldHoldADefendantPackUntilTheEnglishAccessCodeLetterExists(LegislativeCountry country,
+                                                                        boolean hasWelshPin) {
         List<DocumentEntity> documents = new ArrayList<>();
-        if (hasEnglishPin) {
-            documents.add(document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA));
-        }
         if (hasWelshPin) {
             documents.add(welshPin(defendantA));
         }
@@ -507,7 +518,7 @@ class ClaimPackSelectorTest {
         assertThat(logAppender.list).singleElement().satisfies(event -> {
             assertThat(event.getLevel()).isEqualTo(Level.DEBUG);
             assertThat(event.getFormattedMessage()).isEqualTo(
-                "Claim pack held for case " + CASE_ID + " defendant " + defendantA.getId() + " - awaiting " + awaiting);
+                "Claim pack held for case " + CASE_ID + " defendant " + defendantA.getId() + " - awaiting access code");
         });
     }
 

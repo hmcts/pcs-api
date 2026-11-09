@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.UUID;
@@ -78,7 +77,8 @@ public class PackRecipientResolver {
     private ResolvedRecipient resolveClaimRecipient(PcsCaseEntity pcsCase, ClaimPackCandidate candidate) {
         PartyEntity recipient = candidate.party();
         PartyRole role = candidate.recipientType();
-        return new ResolvedRecipient(pcsCase, recipient, claimLetterType(role, pcsCase), candidate.documents(),
+        LetterType letterType = claimLetterType(role, candidate.bilingual());
+        return new ResolvedRecipient(pcsCase, recipient, letterType, candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
             postalAddress(recipient, role, pcsCase.getPropertyAddress()));
     }
@@ -119,12 +119,10 @@ public class PackRecipientResolver {
         return resolved == null ? null : addressMapper.toAddressUK(resolved);
     }
 
-    private LetterType claimLetterType(PartyRole role, PcsCaseEntity pcsCase) {
+    private LetterType claimLetterType(PartyRole role, boolean bilingual) {
         if (role == PartyRole.CLAIMANT) {
             return LetterType.CLAIMANT_CLAIM_PACK;
         }
-        return pcsCase.getLegislativeCountry() == LegislativeCountry.WALES
-            ? LetterType.DEFENDANT_CLAIM_PACK_WELSH
-            : LetterType.DEFENDANT_CLAIM_PACK;
+        return bilingual ? LetterType.DEFENDANT_CLAIM_PACK_WELSH : LetterType.DEFENDANT_CLAIM_PACK;
     }
 }

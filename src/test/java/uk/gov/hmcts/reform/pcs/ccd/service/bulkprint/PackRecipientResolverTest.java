@@ -249,7 +249,7 @@ class PackRecipientResolverTest {
         DocumentEntity welshPin = DocumentEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity walesCase = caseIn(LegislativeCountry.WALES);
         stubClaimCandidate(walesCase,
-            new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, List.of(englishPin, welshPin, claimForm)));
+            new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, List.of(englishPin, welshPin, claimForm), true));
 
         List<ResolvedRecipient> resolved = underTest.resolveClaimRecipients(CASE_ID);
 
@@ -262,9 +262,9 @@ class PackRecipientResolverTest {
 
     @ParameterizedTest
     @NullSource
-    @EnumSource(value = LegislativeCountry.class, names = "WALES", mode = EnumSource.Mode.EXCLUDE)
-    @DisplayName("Posts a defendant's claim pack outside Wales as CPD-01-IN1")
-    void shouldSendTheEnglishDefendantClaimPackOutsideWales(LegislativeCountry country) {
+    @EnumSource(LegislativeCountry.class)
+    @DisplayName("Posts a defendant's English-only claim pack as CPD-01-IN1, on a Wales case too")
+    void shouldSendTheEnglishDefendantClaimPack(LegislativeCountry country) {
         DocumentEntity englishPin = DocumentEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity otherCase = caseIn(country);
         stubClaimCandidate(otherCase,

@@ -81,14 +81,14 @@ public class ClaimPackSelector {
         boolean wales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
             DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant, false);
-            // Only a Wales pack carries, and waits for, the Welsh letter.
-            DocumentEntity welshAccessCode = wales ? accessCodeDocument(pcsCase, defendant, true) : null;
-            String missing = missingLetters(accessCode, welshAccessCode, wales);
-            if (missing != null) {
-                log.debug("Claim pack held for case {} defendant {} - awaiting {}",
-                    pcsCase.getId(), defendant.getId(), missing);
+            if (accessCode == null) {
+                log.debug("Claim pack held for case {} defendant {} - awaiting access code",
+                    pcsCase.getId(), defendant.getId());
                 continue;
             }
+            // Both letters are saved together, so a Wales defendant with no Welsh letter got their access code
+            // before Welsh packs existed. It can never be made now, so they get the English pack.
+            DocumentEntity welshAccessCode = wales ? accessCodeDocument(pcsCase, defendant, true) : null;
             List<DocumentEntity> unsent = new ArrayList<>();
             if (!sent.contains(key(defendant, accessCode))) {
                 unsent.add(accessCode);
@@ -99,23 +99,15 @@ public class ClaimPackSelector {
             if (!sent.contains(key(defendant, claimForm))) {
                 unsent.add(claimForm);
             }
-            if (!unsent.isEmpty()) {
-                candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent));
+            if (unsent.isEmpty()) {
+                continue;
             }
+            if (wales && welshAccessCode == null) {
+                log.info("Wales case {} defendant {} has no Welsh access-code letter - sending the English pack",
+                    pcsCase.getId(), defendant.getId());
+            }
+            candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent, welshAccessCode != null));
         }
-    }
-
-    private static String missingLetters(DocumentEntity accessCode, DocumentEntity welshAccessCode, boolean wales) {
-        if (!wales) {
-            return accessCode == null ? "access code" : null;
-        }
-        if (accessCode == null && welshAccessCode == null) {
-            return "access code (English and Welsh letters)";
-        }
-        if (accessCode == null) {
-            return "English access-code letter";
-        }
-        return welshAccessCode == null ? "Welsh access-code letter" : null;
     }
 
     private DocumentEntity accessCodeDocument(PcsCaseEntity pcsCase, PartyEntity defendant, boolean welsh) {
