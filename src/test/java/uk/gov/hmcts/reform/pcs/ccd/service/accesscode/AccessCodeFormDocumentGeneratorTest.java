@@ -14,7 +14,6 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -51,8 +50,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.ENGLISH;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.WELSH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -419,13 +418,13 @@ class AccessCodeFormDocumentGeneratorTest {
     void shouldNameEachLetterByItsLanguage() {
         UUID partyId = UUID.randomUUID();
 
-        assertThat(AccessCodeFormDocumentGenerator.outputFileName(partyId, DocumentLanguage.ENGLISH))
+        assertThat(AccessCodeFormDocumentGenerator.outputFileName(partyId, AccessCodeLetterLanguage.ENGLISH))
             .isEqualTo("Defendant Access Code " + partyId);
-        assertThat(AccessCodeFormDocumentGenerator.outputFileName(partyId, DocumentLanguage.WELSH))
+        assertThat(AccessCodeFormDocumentGenerator.outputFileName(partyId, AccessCodeLetterLanguage.WELSH))
             .isEqualTo("Defendant Access Code Welsh " + partyId);
     }
 
-    private String render(PcsCaseEntity caseEntity, PartyEntity defendant, DocumentLanguage language) {
+    private String render(PcsCaseEntity caseEntity, PartyEntity defendant, AccessCodeLetterLanguage language) {
         return underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", language,
                                   underTest.resolveLetterContext(caseEntity));
     }

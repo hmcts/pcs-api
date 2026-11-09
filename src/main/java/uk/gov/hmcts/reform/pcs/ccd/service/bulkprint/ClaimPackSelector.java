@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -10,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
@@ -114,7 +114,7 @@ public class ClaimPackSelector {
         return pcsCase.getDocuments().stream()
             .filter(document -> document.getType() == DocumentType.DEFENDANT_ACCESS_CODE)
             .filter(document -> belongsTo(document, defendant))
-            .filter(document -> (document.getLanguage() == DocumentLanguage.WELSH) == welsh)
+            .filter(document -> (document.getLanguage() == AccessCodeLetterLanguage.WELSH) == welsh)
             .findFirst()
             .orElse(null);
     }

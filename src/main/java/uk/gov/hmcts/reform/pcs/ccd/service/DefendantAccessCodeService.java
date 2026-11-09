@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
@@ -20,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator.LetterContext;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.ENGLISH;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.WELSH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
 
 /**
  * Generates a single defendant's access code letter in its own transaction, so that a failure
@@ -86,18 +86,23 @@ public class DefendantAccessCodeService {
         PartyEntity defendant = findDefendant(mainClaim, defendantPartyId);
 
         boolean walesCase = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
+        Attempt attempt = new Attempt(pcsCaseEntity, defendant, walesCase, firstAttempt, finalAttempt);
+
+        final LetterContext letterContext;
+        final String plaintextAccessCode;
+        try {
+            letterContext = accessCodeFormDocumentGenerator.resolveLetterContext(pcsCaseEntity);
+            plaintextAccessCode = accessCodeGenerator.generateAccessCode();
+        } catch (Exception e) {
+            recordFailure(attempt, e, null);
+            throw e;
+        }
+
+        // Render every letter before saving anything, so a failure leaves no document or code behind.
+        String englishUrl = render(attempt, mainClaim, plaintextAccessCode, ENGLISH, letterContext);
+        String welshUrl = walesCase ? render(attempt, mainClaim, plaintextAccessCode, WELSH, letterContext) : null;
 
         try {
-            final LetterContext letterContext = accessCodeFormDocumentGenerator.resolveLetterContext(pcsCaseEntity);
-            String plaintextAccessCode = accessCodeGenerator.generateAccessCode();
-
-            // Render every letter before saving anything, so a failure leaves no document or code behind.
-            String englishUrl =
-                render(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, ENGLISH, letterContext);
-            String welshUrl = walesCase
-                ? render(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, WELSH, letterContext)
-                : null;
-
             saveLetter(pcsCaseEntity, defendant, englishUrl, ENGLISH);
             if (welshUrl != null) {
                 saveLetter(pcsCaseEntity, defendant, welshUrl, WELSH);
@@ -115,25 +120,34 @@ public class DefendantAccessCodeService {
             testAccessCodeRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
 
             accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+        } catch (Exception e) {
+            recordFailure(attempt, e, null);
+            throw e;
+        }
+    }
 
-        } catch (RuntimeException e) {
-            // A render failure arrives wrapped with its letter's language. Unwrap it so the failure is recorded,
-            // classified and rethrown as the original exception.
-            RuntimeException cause = e instanceof LetterRenderException wrapped ? wrapped.original : e;
+    private String render(Attempt attempt, ClaimEntity mainClaim, String plaintextAccessCode,
+                          AccessCodeLetterLanguage language, LetterContext letterContext) {
+        try {
+            return accessCodeFormDocumentGenerator.generate(attempt.pcsCase(), mainClaim, attempt.defendant(),
+                                                            plaintextAccessCode, language, letterContext);
+        } catch (Exception e) {
             // Only a Wales case has two letters, so only there does the failure name which one broke.
-            String failedLetter = walesCase && e instanceof LetterRenderException wrapped
-                ? wrapped.language.getLabel() + " letter" : null;
-            // First + terminal recording: the first failure makes the reason visible immediately
-            // (terminal:false = still retrying); intermediate retries stay in scheduled_tasks/logs;
-            // the final attempt writes the terminal row. Mirrors the claim-form task.
-            if (finalAttempt) {
-                log.error("Access-code letter generation permanently failed for party {} on case {}",
-                          defendant.getId(), pcsCaseEntity.getCaseReference(), cause);
-            }
-            if (firstAttempt || finalAttempt) {
-                recordFailureSafely(pcsCaseEntity, defendant, cause, finalAttempt, failedLetter);
-            }
-            throw cause;
+            recordFailure(attempt, e, attempt.walesCase() ? language.getLabel() + " letter" : null);
+            throw e;
+        }
+    }
+
+    // First + terminal recording: the first failure makes the reason visible immediately
+    // (terminal:false = still retrying); intermediate retries stay in scheduled_tasks/logs;
+    // the final attempt writes the terminal row. Mirrors the claim-form task.
+    private void recordFailure(Attempt attempt, Exception cause, String failedLetter) {
+        if (attempt.finalAttempt()) {
+            log.error("Access-code letter generation permanently failed for party {} on case {}",
+                      attempt.defendant().getId(), attempt.pcsCase().getCaseReference(), cause);
+        }
+        if (attempt.firstAttempt() || attempt.finalAttempt()) {
+            recordFailureSafely(attempt.pcsCase(), attempt.defendant(), cause, attempt.finalAttempt(), failedLetter);
         }
     }
 
@@ -148,18 +162,8 @@ public class DefendantAccessCodeService {
         }
     }
 
-    private String render(PcsCaseEntity pcsCaseEntity, ClaimEntity mainClaim, PartyEntity defendant,
-                          String plaintextAccessCode, DocumentLanguage language, LetterContext letterContext) {
-        try {
-            return accessCodeFormDocumentGenerator
-                .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode, language, letterContext);
-        } catch (RuntimeException e) {
-            throw new LetterRenderException(language, e);
-        }
-    }
-
     private void saveLetter(PcsCaseEntity pcsCaseEntity, PartyEntity defendant, String documentUrl,
-                            DocumentLanguage language) {
+                            AccessCodeLetterLanguage language) {
         documentRepository.save(
             DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
@@ -168,7 +172,9 @@ public class DefendantAccessCodeService {
                 .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                 .type(DocumentType.DEFENDANT_ACCESS_CODE)
                 .categoryId(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
-                .fileName(AccessCodeFormDocumentGenerator.outputFileName(defendant.getId(), language))
+                // The English letter keeps no file name, as on master; the language column tells the letters apart.
+                .fileName(language == WELSH
+                    ? AccessCodeFormDocumentGenerator.outputFileName(defendant.getId(), WELSH) : null)
                 .language(language)
                 .build()
         );
@@ -196,15 +202,7 @@ public class DefendantAccessCodeService {
             .orElseThrow(() -> new ClaimNotFoundException(pcsCaseEntity.getCaseReference()));
     }
 
-    // Carries the language of the letter whose render failed. Never escapes this class: it is unwrapped in the catch.
-    private static final class LetterRenderException extends RuntimeException {
-        private final DocumentLanguage language;
-        private final RuntimeException original;
-
-        private LetterRenderException(DocumentLanguage language, RuntimeException original) {
-            super(original);
-            this.language = language;
-            this.original = original;
-        }
+    private record Attempt(PcsCaseEntity pcsCase, PartyEntity defendant, boolean walesCase,
+                           boolean firstAttempt, boolean finalAttempt) {
     }
 }

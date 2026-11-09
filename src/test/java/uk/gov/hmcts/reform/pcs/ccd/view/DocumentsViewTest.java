@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -23,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -207,8 +207,8 @@ class DocumentsViewTest {
     void shouldExcludeTheWelshAccessCodeLetterFromCaseFile() {
         DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName(AccessCodeFormDocumentGenerator.outputFileName(UUID.randomUUID(), DocumentLanguage.WELSH))
-            .language(DocumentLanguage.WELSH)
+            .fileName(AccessCodeFormDocumentGenerator.outputFileName(UUID.randomUUID(), AccessCodeLetterLanguage.WELSH))
+            .language(AccessCodeLetterLanguage.WELSH)
             .url("welsh-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
@@ -238,8 +238,8 @@ class DocumentsViewTest {
             .build();
         DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName(AccessCodeFormDocumentGenerator.outputFileName(partyId, DocumentLanguage.WELSH))
-            .language(DocumentLanguage.WELSH)
+            .fileName(AccessCodeFormDocumentGenerator.outputFileName(partyId, AccessCodeLetterLanguage.WELSH))
+            .language(AccessCodeLetterLanguage.WELSH)
             .url("welsh-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();

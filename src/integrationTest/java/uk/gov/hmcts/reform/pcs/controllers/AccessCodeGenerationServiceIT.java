@@ -33,8 +33,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.ENGLISH;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.WELSH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
 
 @SpringBootTest
 @ActiveProfiles("integration")
