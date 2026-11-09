@@ -142,7 +142,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, InternalCaseFlagAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -312,7 +312,8 @@ public class PCSCase {
     @CCD(
         label = "Who is the claimant in this case?",
         hint = "If you’re a legal representative, you should select the type of claimant you’re representing",
-        typeOverride = DynamicRadioList
+        typeOverride = DynamicRadioList,
+        access = {InternalCaseFlagAccess.class}
     )
     private DynamicStringList claimantType;
 
