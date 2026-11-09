@@ -30,7 +30,7 @@ public class WarrantReturnService {
             .outcome(warrantReturn.getEvictionOutcome())
             .returnName(warrantReturn.getReturnName())
             .additionalDetails(warrantReturn.getAdditionalDetails())
-            .outcomeDate(warrantReturn.getEvictionDate())
+            .outcomeDate(warrantReturn.getOutcomeDate())
             .createdAt(LocalDateTime.now(utcClock))
             .build();
     }

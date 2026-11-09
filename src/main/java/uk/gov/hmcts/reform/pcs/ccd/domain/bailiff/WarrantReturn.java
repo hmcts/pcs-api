@@ -17,6 +17,6 @@ public class WarrantReturn {
 
     private String additionalDetails;
 
-    private LocalDateTime evictionDate;
+    private LocalDateTime outcomeDate;
 
 }

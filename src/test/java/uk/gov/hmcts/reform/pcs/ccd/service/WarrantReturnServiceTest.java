@@ -53,7 +53,7 @@ public class WarrantReturnServiceTest {
             .returnType(WarrantReturnType.FINAL)
             .evictionOutcome(EvictionOutcome.SUCCESSFUL)
             .additionalDetails("additional details")
-            .evictionDate(LocalDateTime.of(2026, 4, 21, 9, 30))
+            .outcomeDate(LocalDateTime.of(2026, 4, 21, 9, 30))
             .build();
 
         WarrantEntity warrantEntity = WarrantEntity.builder().build();
@@ -82,7 +82,7 @@ public class WarrantReturnServiceTest {
             .returnType(WarrantReturnType.FINAL)
             .evictionOutcome(EvictionOutcome.SUCCESSFUL)
             .additionalDetails("additional details")
-            .evictionDate(LocalDateTime.of(2026, 4, 21, 9, 30))
+            .outcomeDate(LocalDateTime.of(2026, 4, 21, 9, 30))
             .build();
 
         List<WarrantReturnEntity> warrantReturnEntities = new ArrayList<>();
