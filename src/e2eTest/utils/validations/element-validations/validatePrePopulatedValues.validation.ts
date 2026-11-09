@@ -17,7 +17,15 @@ export class ValidatePrePopulatedValues implements IValidation {
   }
   private async validateRadioButtonValues(page: Page, fieldName: validationRecord, data: validationRecord): Promise<void> {
 
-    const radioButtons = page.locator(`//span[text()="${fieldName.question}"]/ancestor::fieldset[1]//child::input[@type='radio']`);
+    let radioButtons = page.locator(`//span[text()="${fieldName.question}"]/ancestor::fieldset[1]//child::input[@type='radio']`);
+    if (await radioButtons.count() === 0) {
+      radioButtons = page
+        .locator('fieldset')
+        .filter({
+          has: page.locator('legend').getByText(String(fieldName.question), { exact: true }),
+        })
+        .locator('input[type="radio"]');
+    }
     let retrieved;
     const count = await radioButtons.count();
 
@@ -26,17 +34,23 @@ export class ValidatePrePopulatedValues implements IValidation {
       const radioButton = radioButtons.nth(i);
       if (await radioButton.isChecked()) {
         const id = await radioButton.getAttribute("id") ?? "";
-        retrieved = await page.locator(`label[for="${id}"]`).textContent() ?? "";
+        retrieved = (await page.locator(`label[for="${id}"]`).textContent() ?? "")
+          .replace(/\s+/g, ' ')
+          .trim();
       }
     }
     expect(String(retrieved).toLowerCase(), `The PrePopulated value for the radio button: ${fieldName.question as string} is ${data.expected as string} and the retrieved value is: ${retrieved}`).toEqual(String(data.expected).toLowerCase());
   }
 
   private async validateInputTextValues(page: Page, fieldName: validationRecord, data: validationRecord): Promise<void> {
-    let locator = page.locator(`//span[text()="${fieldName.textLabel}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
+    let locator = fieldName.locatorType === 'label'
+      ? page.getByLabel(String(fieldName.textLabel), { exact: true })
+      : page.locator(
+        `//span[text()="${fieldName.textLabel}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`
+      );
     const count = await locator.count();
     if (count === 0) throw new Error(`Text field related to the label ${fieldName.textLabel} not found`);
-    if (typeof fieldName !== 'string' && fieldName.index !== null) {
+    if (fieldName.index !== null) {
       locator = count > 1
         ? locator.nth(Number(fieldName.index))
         : locator.first();
@@ -47,13 +61,16 @@ export class ValidatePrePopulatedValues implements IValidation {
   }
 
   private async validateCheckBoxSelection(page: Page, fieldName: validationRecord, data: validationRecord): Promise<void> {
-    const checkBoxes = page.locator(`//span[text()="${fieldName.question}"]/ancestor::fieldset[1]//child::input[@type='checkbox']`);
+    const checkBoxes = fieldName.locatorType === 'label'
+      ? page.getByLabel(String(fieldName.question), { exact: true })
+      : page.locator(`//span[text()="${fieldName.question}"]/ancestor::fieldset[1]//input[@type='checkbox']`
+      );
     let retrieved;
     let retrievedArray: string[] = [];
     let expectedString;
     const count = await checkBoxes.count();
 
-    if (count === 0) throw new Error(`Radio button related to the question ${fieldName.question} not found`);
+    if (count === 0) throw new Error(`check box related to the question ${fieldName.question} not found`);
 
     expectedString = Array.isArray(data.expected)
       ? data.expected.map((ele) => EnforcementCommonUtils.formatPayLoadData(ele)).join(",")
@@ -65,11 +82,10 @@ export class ValidatePrePopulatedValues implements IValidation {
       if (await checkBox.isChecked()) {
         const id = await checkBox.getAttribute("id") ?? "";
         const text = await page.locator(`label[for="${id}"]`).textContent() ?? "";
-        retrievedArray.push(text);
+        retrievedArray.push(text.replace(/\s+/g, ' ').trim());
       }
     }
     retrieved = retrievedArray.join(",");
-    expect(retrieved, `The PrePopulated value for the radio button: ${fieldName.question as string} is ${expectedString} and the retrieved value is: ${retrieved}`).toEqual(expectedString);
-
+    expect(retrieved, `The PrePopulated value for the Check Box: ${fieldName.question as string} is ${expectedString} and the retrieved value is: ${retrieved}`).toEqual(expectedString);
   }
 }
