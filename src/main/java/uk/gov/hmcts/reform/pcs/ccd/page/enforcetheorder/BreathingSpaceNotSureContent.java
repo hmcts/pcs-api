@@ -89,8 +89,7 @@ public class BreathingSpaceNotSureContent {
                    href="https://www.gov.uk/call-charges"
                    target="_blank"
                    rel="noopener noreferrer">
-                    Find out about call charges (opens in new tab)
-                </a>.
+                    Find out about call charges (opens in new tab)</a>.
             </p>
 
             <h2 class="govuk-heading-s govuk-!-font-size-19">
