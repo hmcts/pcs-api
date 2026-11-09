@@ -3,8 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.task;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -51,10 +53,13 @@ public class CaseDeletionScheduledTask {
 
     public CaseDeletionScheduledTask(@Value("${expired-case-deletion.schedule}") String schedule,
                                      @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
-                                     @Value("${expired-case-deletion.batch-size}") int batchSize,
+                                     @Value("${expired-case-deletion.db-concurrency-percent:30}")
+                                     int dbConcurrencyPercent,
                                      @Value("${expired-case-deletion.sql-limit}") int sqlLimit,
                                      @Value("${expired-case-deletion.ccd-call-control-size}") int ccdControlSize,
                                      @Value("${expired-case-deletion.doc-call-control-size}") int docControlSize,
+                                     @Value("${spring.datasource.hikari.maximum-pool-size:10}") int hikariPoolFallback,
+                                     ObjectProvider<HikariDataSource> hikariDataSource,
                                      CaseDeletionService caseDeletionService,
                                      CcdCaseDataDeletionService ccdCaseDataDeletionService,
                                      PcsCaseService pcsCaseService,
@@ -62,7 +67,8 @@ public class CaseDeletionScheduledTask {
                                      FeatureToggleService featureToggleService) {
         this.schedule = schedule;
         this.discardAfterDays = discardAfterDays;
-        this.batchSize = batchSize;
+        int hikariPoolSize = resolveHikariPoolSize(hikariDataSource, hikariPoolFallback);
+        this.batchSize = resolveBatchSize(hikariPoolSize, dbConcurrencyPercent);
         this.sqlLimit = sqlLimit;
         this.caseDeletionService = caseDeletionService;
         this.ccdCaseDataDeletionService = ccdCaseDataDeletionService;
@@ -71,6 +77,17 @@ public class CaseDeletionScheduledTask {
         this.documentCallThrottle = new Semaphore(docControlSize);
         this.documentImportService = documentImportService;
         this.featureToggleService = featureToggleService;
+        log.info("Case deletion batch size set to {} ({}% of Hikari pool {})",
+                 batchSize, dbConcurrencyPercent, hikariPoolSize);
+    }
+
+    static int resolveBatchSize(int hikariPoolSize, int dbConcurrencyPercent) {
+        return Math.max(1, hikariPoolSize * dbConcurrencyPercent / 100);
+    }
+
+    private static int resolveHikariPoolSize(ObjectProvider<HikariDataSource> hikariDataSource, int fallback) {
+        HikariDataSource dataSource = hikariDataSource.getIfAvailable();
+        return dataSource != null ? dataSource.getMaximumPoolSize() : fallback;
     }
 
     @Bean
