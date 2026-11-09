@@ -84,8 +84,8 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
     setPreviewEnvVars(githubApi)
-    // pr-values:ccd-am is a standalone alternative to pr-values:ccd (brings its own full CCD
-    // stack plus RAS/ORM) — apply only one of the two labels to a PR, never both.
+    // pr-values:ccd-am is a standalone alternative to pr-values:ccd (brings its own full CCD stack
+    // plus RAS/ORM) — apply only one of the two labels to a PR, never both.
     if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
@@ -118,7 +118,7 @@ withPipeline(type, product, component) {
     else if (hasLabel(githubApi, "enable_e2e_CM_test")) {
       env.E2E_SUITE = "caseManagement"
     }
-    else if (hasLabel(githubApi, "enable_e2e_enforcement_test")) {
+     else if (hasLabel(githubApi, "enable_e2e_enforcement_test")) {
       env.E2E_SUITE = "enforcement"
     }
     else if (hasLabel(githubApi, "enable_e2e_NOC_test")) {

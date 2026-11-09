@@ -89,8 +89,6 @@ ccd:
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
         ENABLE_CASE_GROUP_ACCESS: true
         DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,am_role_assignment_service,pcs_api"
-        IDAM_S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-        IDAM_USER_URL: https://idam-api.aat.platform.hmcts.net
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -177,7 +175,6 @@ ccd:
             - session-keys
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
-            - session-keys
   elasticsearch:
     nameOverride: ${SERVICE_NAME}-es
     clusterName: "es"
