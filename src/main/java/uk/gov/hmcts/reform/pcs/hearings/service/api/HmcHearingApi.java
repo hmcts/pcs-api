@@ -20,7 +20,11 @@ import uk.gov.hmcts.reform.pcs.hearings.model.GetHearingsResponse;
 
 
 @SuppressWarnings({"PMD.UseObjectForClearerAPI"})
-@FeignClient(name = "hmc-hearing", url = "${hmc.api-url}")
+@FeignClient(
+    name = "hmc-hearing",
+    url = "${hmc.api-url}",
+    configuration = HmcHearingFeignConfiguration.class
+)
 public interface HmcHearingApi {
 
     String SERVICE_AUTHORIZATION = "ServiceAuthorization";
