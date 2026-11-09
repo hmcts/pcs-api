@@ -16,7 +16,7 @@ ccd:
 # LAU's ccd-case-disposer, pointed at THIS preview environment's CCD database and Elasticsearch.
 # LAU's own scheduled instance can never reach a preview env (the CCD DB is on a private endpoint
 # in the preview VNet and ES is an in-cluster service), so we run their chart here instead.
-# Hard-deletes PCS cases whose resolved_ttl has passed, i.e. cases deleted via deleteThisCase.
+# Hard-deletes PCS cases whose resolved_ttl has passed (scheduled mark/confirm disposal, or soft delete).
 # Preview only: disabled by default in values.yaml. Credentials come from the ccd key vault.
 ccd-case-disposer:
   enabled: true
