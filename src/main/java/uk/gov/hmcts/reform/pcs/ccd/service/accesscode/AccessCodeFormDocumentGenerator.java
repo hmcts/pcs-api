@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -80,13 +80,9 @@ public class AccessCodeFormDocumentGenerator {
         this.featureToggleService = featureToggleService;
     }
 
-    public static String welshFileName(UUID partyId) {
-        return WELSH_OUTPUT_FILENAME_PREFIX + " " + partyId;
-    }
-
-    // Both letters have type DEFENDANT_ACCESS_CODE. The file name marks the Welsh one; the English one's is null.
-    public static boolean isWelshLetter(DocumentEntity document) {
-        return StringUtils.startsWith(document.getFileName(), WELSH_OUTPUT_FILENAME_PREFIX);
+    public static String outputFileName(UUID partyId, DocumentLanguage language) {
+        String prefix = language == DocumentLanguage.WELSH ? WELSH_OUTPUT_FILENAME_PREFIX : OUTPUT_FILENAME_PREFIX;
+        return prefix + " " + partyId;
     }
 
     public LetterContext resolveLetterContext(PcsCaseEntity pcsCaseEntity) {
@@ -97,17 +93,16 @@ public class AccessCodeFormDocumentGenerator {
                            ClaimEntity mainClaim,
                            PartyEntity defendant,
                            String plaintextAccessCode,
-                           AccessCodeLetterLanguage language,
+                           DocumentLanguage language,
                            LetterContext context) {
 
         String formattedPropertyAddress = formatAddress(pcsCaseEntity.getPropertyAddress());
         CourtVenue servingCourt = context.servingCourt();
-        boolean welsh = language == AccessCodeLetterLanguage.WELSH;
 
         AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCaseEntity.getCaseReference()))
             .claimantName(resolveClaimantName(mainClaim))
-            .defendantName(resolveDefendantName(defendant, welsh ? PERSONS_UNKNOWN_WELSH : PERSONS_UNKNOWN))
+            .defendantName(resolveDefendantName(defendant, language))
             .defendantAddress(resolveDefendantAddress(defendant, pcsCaseEntity))
             .propertyAddress(formattedPropertyAddress)
             .respondByPostCourtAddress(formatCourtAddress(servingCourt))
@@ -117,17 +112,15 @@ public class AccessCodeFormDocumentGenerator {
             .courtName(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? servingCourt.courtName() : null)
             .build();
 
-        String outputFilename = welsh
-            ? welshFileName(defendant.getId())
-            : OUTPUT_FILENAME_PREFIX + " " + defendant.getId();
+        return docAssemblyService.generateDocument(payload, templateId(language), OutputType.PDF,
+                                                   outputFileName(defendant.getId(), language));
+    }
 
-        String templateId = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
-            ? TEMPLATE_ID_V2 : TEMPLATE_ID;
-        if (welsh) {
-            templateId = WELSH_TEMPLATE_ID;
+    private String templateId(DocumentLanguage language) {
+        if (language == DocumentLanguage.WELSH) {
+            return WELSH_TEMPLATE_ID;
         }
-
-        return docAssemblyService.generateDocument(payload, templateId, OutputType.PDF, outputFilename);
+        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? TEMPLATE_ID_V2 : TEMPLATE_ID;
     }
 
     private String resolveClaimantName(ClaimEntity mainClaim) {
@@ -141,14 +134,14 @@ public class AccessCodeFormDocumentGenerator {
             .orElse(null);
     }
 
-    private String resolveDefendantName(PartyEntity defendant, String unknownName) {
+    private String resolveDefendantName(PartyEntity defendant, DocumentLanguage language) {
         if (defendant.getNameKnown() == VerticalYesNo.YES) {
             String name = formatPartyName(defendant);
             if (StringUtils.isNotBlank(name)) {
                 return name;
             }
         }
-        return unknownName;
+        return language == DocumentLanguage.WELSH ? PERSONS_UNKNOWN_WELSH : PERSONS_UNKNOWN;
     }
 
     private String formatPartyName(PartyEntity party) {

@@ -33,8 +33,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
-import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.ENGLISH;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.WELSH;
 
 @SpringBootTest
 @ActiveProfiles("integration")
@@ -134,8 +134,8 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
             () -> accessCodeGenerationService.createAccessCodesForParties("1781000000000021", true));
 
         assertThat(partyIdsWithCode(caseEntity)).containsExactly(d2);
-        assertThat(letterFileNames(d1)).isEmpty();
-        assertThat(letterFileNames(d2)).containsExactlyInAnyOrder(null, "Defendant Access Code Welsh " + d2);
+        assertThat(letterLanguages(d1)).isEmpty();
+        assertThat(letterLanguages(d2)).containsExactlyInAnyOrder("ENGLISH", "WELSH");
         assertThat(failureDetails(d1)).singleElement().satisfies(details -> assertThat(details)
             .contains("Welsh letter: DocAssemblyException")
             .contains("RENDER_FAILED"));
@@ -143,8 +143,8 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         accessCodeGenerationService.createAccessCodesForParties("1781000000000021", true);
 
         assertThat(partyIdsWithCode(caseEntity)).containsExactlyInAnyOrder(d1, d2);
-        assertThat(letterFileNames(d1)).containsExactlyInAnyOrder(null, "Defendant Access Code Welsh " + d1);
-        assertThat(letterFileNames(d2)).hasSize(2);
+        assertThat(letterLanguages(d1)).containsExactlyInAnyOrder("ENGLISH", "WELSH");
+        assertThat(letterLanguages(d2)).hasSize(2);
     }
 
     private List<UUID> partyIdsWithCode(PcsCaseEntity caseEntity) {
@@ -153,9 +153,9 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
             .toList();
     }
 
-    private List<String> letterFileNames(UUID partyId) {
+    private List<String> letterLanguages(UUID partyId) {
         return jdbcTemplate.queryForList(
-            "SELECT file_name FROM document WHERE party_id = ? AND type = 'DEFENDANT_ACCESS_CODE'",
+            "SELECT language FROM document WHERE party_id = ? AND type = 'DEFENDANT_ACCESS_CODE'",
             String.class, partyId);
     }
 

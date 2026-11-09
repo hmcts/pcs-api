@@ -14,11 +14,10 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -52,8 +51,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
-import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.ENGLISH;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage.WELSH;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -417,22 +416,16 @@ class AccessCodeFormDocumentGeneratorTest {
     }
 
     @Test
-    void shouldMarkOnlyTheWelshLetterByFileName() {
+    void shouldNameEachLetterByItsLanguage() {
         UUID partyId = UUID.randomUUID();
-        String welshFileName = AccessCodeFormDocumentGenerator.welshFileName(partyId);
 
-        assertThat(welshFileName).isEqualTo("Defendant Access Code Welsh " + partyId);
-        assertThat(AccessCodeFormDocumentGenerator.isWelshLetter(letterNamed(welshFileName))).isTrue();
-        assertThat(AccessCodeFormDocumentGenerator.isWelshLetter(letterNamed(null))).isFalse();
-        assertThat(AccessCodeFormDocumentGenerator.isWelshLetter(letterNamed("Defendant Access Code " + partyId)))
-            .isFalse();
+        assertThat(AccessCodeFormDocumentGenerator.outputFileName(partyId, DocumentLanguage.ENGLISH))
+            .isEqualTo("Defendant Access Code " + partyId);
+        assertThat(AccessCodeFormDocumentGenerator.outputFileName(partyId, DocumentLanguage.WELSH))
+            .isEqualTo("Defendant Access Code Welsh " + partyId);
     }
 
-    private static DocumentEntity letterNamed(String fileName) {
-        return DocumentEntity.builder().type(DocumentType.DEFENDANT_ACCESS_CODE).fileName(fileName).build();
-    }
-
-    private String render(PcsCaseEntity caseEntity, PartyEntity defendant, AccessCodeLetterLanguage language) {
+    private String render(PcsCaseEntity caseEntity, PartyEntity defendant, DocumentLanguage language) {
         return underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1", language,
                                   underTest.resolveLetterContext(caseEntity));
     }

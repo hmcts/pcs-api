@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SoftDelete;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -88,6 +89,10 @@ public class DocumentEntity {
 
     @Enumerated(EnumType.STRING)
     private DocumentType type;
+
+    // Set only where the language is known for certain (access-code letters); null on older rows and uploads.
+    @Enumerated(EnumType.STRING)
+    private DocumentLanguage language;
 
     private String contentType;
 

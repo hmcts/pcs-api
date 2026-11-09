@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -206,7 +207,8 @@ class DocumentsViewTest {
     void shouldExcludeTheWelshAccessCodeLetterFromCaseFile() {
         DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName(AccessCodeFormDocumentGenerator.welshFileName(UUID.randomUUID()))
+            .fileName(AccessCodeFormDocumentGenerator.outputFileName(UUID.randomUUID(), DocumentLanguage.WELSH))
+            .language(DocumentLanguage.WELSH)
             .url("welsh-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
@@ -236,7 +238,8 @@ class DocumentsViewTest {
             .build();
         DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName(AccessCodeFormDocumentGenerator.welshFileName(partyId))
+            .fileName(AccessCodeFormDocumentGenerator.outputFileName(partyId, DocumentLanguage.WELSH))
+            .language(DocumentLanguage.WELSH)
             .url("welsh-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
