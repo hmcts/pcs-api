@@ -657,7 +657,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1resjon">
-          <text></text>
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_18oekp4">
           <text>"region"</text>
@@ -677,7 +677,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0qt5zif">
-          <text></text>
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_02mwpqx">
           <text>"location"</text>
@@ -697,7 +697,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0qto678">
-          <text></text>
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0uklfvz">
           <text>"additionalProperties_roleAssignmentId"</text>
@@ -717,7 +717,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0q97jwt">
-          <text></text>
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0rix2ek">
           <text>"description"</text>
