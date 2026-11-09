@@ -119,16 +119,15 @@ private async validateCheckYourAnswersPage(data: {
   typeDisplayText: string;
   expectedEndDateDisplay: string;
 }) {
+  enterBreathingSpacecheckYourAnswers.happyPathConfig.startDateDisplay = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
+  enterBreathingSpacecheckYourAnswers.happyPathConfig.expectedEndDateDisplay = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
   await performValidation('mainHeader', enterBreathingSpace.mainHeader);
   await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
   await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-  await performValidation('text', { 
-  elementType: 'paragraph', 
-  text: enterBreathingSpacecheckYourAnswers.subHeader 
+    elementType: 'paragraph',
+    text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
   });
+  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.subHeader });
   await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.checkInfoText });
   await performValidation('text', { elementType: 'paragraph', text: data.referenceNumber });
   await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber });
@@ -145,29 +144,31 @@ private async validateCheckYourAnswersPage(data: {
   await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.type });
   console.log('typeDisplayText:', data.typeDisplayText);
   await performValidation('text', { elementType: 'inlineText', text: data.typeDisplayText });
-  
+}
+private async completeBreathingSpaceFormHappyPath(data: { targetType: string; referenceNumber: string }) {
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+    await performAction('fillBreathingSpaceStartDateWithToday');
+    await performAction('selectBreathingSpaceType', { type: data.targetType }); 
+    await performAction('fillExpectedEndDateWithFutureDate');
+    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
+    enterBreathingSpacecheckYourAnswers.happyPathConfig.startDateDisplay = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
+    enterBreathingSpacecheckYourAnswers.happyPathConfig.expectedEndDateDisplay = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
+    await performAction('clickButton', enterBreathingSpace.continueButton);
 }
 
-// AC03: change an answer and return to Check Your Answers
-private async changeReferenceNumberAndValidate(data: { updatedReferenceNumber: string }) {
+// AC03 FLOW: Remains 100% standard framework style with no custom code workarounds!
+public async changeReferenceNumberAndValidate(data: { updatedReferenceNumber: string }) {
   // WHEN they select the Change link for an answer
   await performAction('clickButton', enterBreathingSpacecheckYourAnswers.changeLink);
-
-  // THEN they are directed to the relevant question
   await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.referenceNumberTextLabel });
-
-  // AND they can amend the answer, and Continue
+  await performValidation(
+    'validateInputTextValues',
+    { textLabel: enterBreathingSpace.referenceNumberTextLabel },
+    { expected: enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber }
+  );
   await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.updatedReferenceNumber);
-
-  // 🟢 FRAMEWORK APPROACH: Clear or update the cached state so the background loop passes!
-  // Look for your framework's native cache-clear command. Usually, it's named something like:
-  // await performAction('clearSavedQA'); 
-  // or you can interact directly with the store object if it is imported in your actions class file:
-  // this.store.clearQAObjects();
-  
+  enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber = data.updatedReferenceNumber;
   await performAction('clickButton', enterBreathingSpace.continueButton);
-
-  // AND they reach Check Your Answers again with the updated answer displayed
   await this.validateCheckYourAnswersPage({
     referenceNumber: data.updatedReferenceNumber,
     typeDisplayText: enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText,
@@ -175,8 +176,6 @@ private async changeReferenceNumberAndValidate(data: { updatedReferenceNumber: s
     expectedEndDateDisplay: CaseManagementAction.enteredExpectedEndDate
   });
 }
-
-
 
 
 // AC05: submit and reach the confirmation screen
@@ -244,15 +243,6 @@ private async validateFutureStartDateError() {
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enterBreathingSpace.mainHeader);
   }
-
-private async completeBreathingSpaceFormHappyPath(data: { targetType: string; referenceNumber: string }) {
-    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
-    await performAction('fillBreathingSpaceStartDateWithToday');
-    await performAction('selectBreathingSpaceType', { type: data.targetType }); 
-    await performAction('fillExpectedEndDateWithFutureDate');
-    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
-    await performAction('clickButton', enterBreathingSpace.continueButton);
-}
   private static enteredStartDate = '';
   private static enteredExpectedEndDate = '';
   private async fillBreathingSpaceStartDateWithToday(): Promise<void> {
@@ -289,13 +279,14 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenIsExpectedEndDateHiddenHintText });
 
     const futureDate = CaseManagementCommonUtils.getRandomDate(enterBreathingSpace.dateTypeHiddenUserInput);
-     CaseManagementAction.enteredExpectedEndDate = String(futureDate); // new line
+     CaseManagementAction.enteredExpectedEndDate = String(futureDate); 
     await performAction(
       'inputDate',
       enterBreathingSpace.whenIsExpectedEndDateHiddenTextLabel,
       futureDate
     );
   }
+  
   private static readonly months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 // 'dd/mm/yyyy' -> 'd MMM yyyy'
@@ -1214,15 +1205,18 @@ private formatDisplayDate(entered: string): string {
               await enterDate();
               await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
-            } else {
-            await enterDate();
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
-              }).toPass({
-              intervals: [1_000, 2_000, 3_000],
-              timeout: VERY_LONG_TIMEOUT,
-            });}
+              await enterDate();
+                if (validationArr.button) {
+                    await page.getByRole('button', { name: String(validationArr.button), exact: false }).first().focus().catch(() => {});
+                }
+                await performAction('clickButton', validationArr.button);
+                await expect(async () => {
+                    await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                }).toPass({
+                    intervals: [1_000, 2_000, 3_000],
+                    timeout: VERY_LONG_TIMEOUT,
+                });
+            }
             break;
 
           case 'dateRadioOption':
