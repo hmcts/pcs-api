@@ -445,6 +445,25 @@ ccd:
       # endpoint configured a pack holding one fails with MERGE_FAILED.
       convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
       access-key: ${DOCMOSIS_ACCESS_KEY:}
+  bundling:
+    enabled: ${CASE_BUNDLE_ENABLED:false}
+    managed:
+      enabled: ${CASE_BUNDLE_ENABLED:false}
+    job:
+      # Regenerates the case bundle whenever a document that belongs in it is added, removed or
+      # restored. Managed publication is provided by the CCD SDK.
+      enabled: ${CASE_BUNDLE_ENABLED:false}
+      worker:
+        # Every pod queues bundle jobs; this decides whether it also renders them. Off on the API
+        # pods in environments that run the pcs-bundle-worker release (cnp-flux-config), so PDF
+        # rendering does not compete with request threads for heap and CPU.
+        enabled: ${CASE_BUNDLE_WORKER_ENABLED:true}
+        max-concurrent-renders: ${CASE_BUNDLE_WORKER_MAX_CONCURRENT_RENDERS:2}
+    docmosis:
+      # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with
+      # no endpoint configured, a case holding one fails to bundle with UNSUPPORTED_MEDIA_TYPE.
+      convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
+      access-key: ${DOCMOSIS_ACCESS_KEY:}
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
