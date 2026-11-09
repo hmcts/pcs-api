@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,18 +29,6 @@ public class CaseDocumentService {
             .pollInterval(Duration.ofMillis(1000))
             .ignoreExceptions()
             .until(() -> countCaseDocuments(caseReference, documentType, createdSince) >= minCount);
-    }
-
-    public List<String> findAccessCodeLetterFileNames(long caseReference) {
-        return jdbcTemplate.queryForList(
-            """
-                SELECT d.file_name FROM document d
-                JOIN pcs_case pcs ON pcs.id = d.case_id
-                WHERE pcs.case_reference = :caseReference
-                AND d.type = 'DEFENDANT_ACCESS_CODE'
-            """,
-            new MapSqlParameterSource("caseReference", caseReference),
-            String.class);
     }
 
     private int countCaseDocuments(long caseReference, DocumentType documentType, Instant createdSince) {
