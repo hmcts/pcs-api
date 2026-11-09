@@ -1,0 +1,84 @@
+package uk.gov.hmcts.reform.pcs.ccd.view;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
+import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundleView;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleMetadata;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.MissingBundleDocument;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+
+/** Judges alone receive a bundle reference; CCD field permissions also protect direct downloads. */
+@Component
+@RequiredArgsConstructor
+public class BundleTabView {
+
+    static final String PREPARING = "The bundle is being prepared.";
+    static final String CREATE_FAILED = "The bundle could not be created. It will be tried again when "
+        + "the case documents next change.";
+    static final String UPDATING = "An updated bundle is being prepared. The bundle below does not yet "
+        + "include the most recent changes to the case.";
+    static final String UPDATE_FAILED = "The bundle could not be updated with the most recent changes to "
+        + "the case. It will be tried again when the case documents next change.";
+    static final String UP_TO_DATE = "The bundle is up to date.";
+    static final String UP_TO_DATE_WITH_MISSING = "The bundle is up to date, but some documents could "
+        + "not be included. Each has a page in the bundle explaining why.";
+
+    private static final DateTimeFormatter LAST_UPDATED =
+        DateTimeFormatter.ofPattern("d MMMM yyyy 'at' h:mma", Locale.UK).withZone(ZoneId.of("Europe/London"));
+
+    private final ObjectProvider<CaseBundles> bundles;
+    private final UserRoleService roles;
+
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
+        CaseBundles managed = bundles.getIfAvailable();
+        // The judge roles are all organisational, so no case-level lookup is needed.
+        if (managed == null || !JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
+            return;
+        }
+        CaseBundleView view = managed.view(CaseBundleDefinition.NAME, entity.getId().toString());
+        if (view.lifecycle() == CaseBundleView.Lifecycle.NONE) {
+            return;
+        }
+        var publication = view.current();
+        List<ListValue<MissingBundleDocument>> missing = publication
+            .map(BundleTabView::missingDocuments).orElse(List.of());
+        String status = switch (view.lifecycle()) {
+            // NONE has returned above; the switch must still cover it.
+            case PREPARING, NONE -> PREPARING;
+            case UPDATING -> UPDATING;
+            case FAILED -> publication.isPresent() ? UPDATE_FAILED : CREATE_FAILED;
+            case UP_TO_DATE -> missing.isEmpty() ? UP_TO_DATE : UP_TO_DATE_WITH_MISSING;
+        };
+        pcsCase.setBundleTab(BundleTab.builder().status(status)
+            .bundle(publication.flatMap(current -> current.stored().map(stored -> Document.builder()
+                .url(stored.url())
+                .binaryUrl(stored.binaryUrl())
+                .filename(current.fileName())
+                .categoryId(CaseBundleDefinition.FOLDER_ID)
+                .build())).orElse(null))
+            .lastUpdated(publication.map(current -> LAST_UPDATED.format(current.recordedAt())).orElse(null))
+            .pages(publication.map(BundleMetadata::pageCount).orElse(null))
+            .missingDocuments(missing.isEmpty() ? null : missing).build());
+    }
+
+    private static List<ListValue<MissingBundleDocument>> missingDocuments(BundleMetadata bundle) {
+        return bundle.missingDocuments().stream().map(missing -> ListValue.<MissingBundleDocument>builder()
+            .id(missing.documentId()).value(new MissingBundleDocument(missing.title(),
+                String.join(" / ", missing.sectionPath()), missing.startPage(), missing.reason().message()))
+            .build()).toList();
+    }
+}
