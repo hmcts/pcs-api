@@ -25,6 +25,7 @@ class RedactingFeignLoggerTest {
         backingLogger.addAppender(appender);
         backingLogger.setLevel(Level.DEBUG);
 
+        // forcing commit
         try {
             Request request = Request.create(
                 Request.HttpMethod.POST,
