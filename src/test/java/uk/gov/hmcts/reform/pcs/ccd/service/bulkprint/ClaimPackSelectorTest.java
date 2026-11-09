@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -57,6 +58,7 @@ import static org.mockito.Mockito.when;
 class ClaimPackSelectorTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
+    private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
@@ -337,10 +339,20 @@ class ClaimPackSelectorTest {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
         PcsCaseEntity pcsCase = walesCaseWith(List.of(englishPinA), claimantAnd(defendantA));
 
-        assertThat(defendantCandidates(pcsCase)).singleElement().satisfies(candidate -> {
-            assertThat(candidate.documents()).containsExactly(englishPinA, claimForm);
-            assertThat(candidate.bilingual()).isFalse();
+        List<ILoggingEvent> logs = captureSelectorLogs(() ->
+            assertThat(defendantCandidates(pcsCase)).singleElement().satisfies(candidate -> {
+                assertThat(candidate.documents()).containsExactly(englishPinA, claimForm);
+                assertThat(candidate.bilingual()).isFalse();
+            }));
+
+        assertThat(logs).singleElement().satisfies(event -> {
+            assertThat(event.getLevel()).isEqualTo(Level.INFO);
+            assertThat(event.getFormattedMessage()).isEqualTo(
+                "No Welsh access-code letter, sending the English pack - case: " + CASE_REFERENCE
+                    + ", party: " + defendantA.getId());
+            assertCaseContext(event, defendantA);
         });
+        assertThat(MDC.getCopyOfContextMap()).isNullOrEmpty();
     }
 
     @Test
@@ -502,24 +514,43 @@ class ClaimPackSelectorTest {
         PcsCaseEntity pcsCase = caseWith(claimForm, documents, claimantAnd(defendantA));
         pcsCase.setLegislativeCountry(country);
 
+        List<ILoggingEvent> logs = captureSelectorLogs(() -> assertThat(defendantCandidates(pcsCase)).isEmpty());
+
+        assertThat(logs).singleElement().satisfies(event -> {
+            assertThat(event.getLevel()).isEqualTo(Level.DEBUG);
+            assertThat(event.getFormattedMessage()).isEqualTo(
+                "Claim pack held, awaiting access code - case: " + CASE_REFERENCE + ", party: " + defendantA.getId());
+            assertCaseContext(event, defendantA);
+        });
+    }
+
+    private List<ILoggingEvent> captureSelectorLogs(Runnable action) {
         Logger selectorLogger = (Logger) LoggerFactory.getLogger(ClaimPackSelector.class);
         Level previousLevel = selectorLogger.getLevel();
-        ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+        // Snapshot the MDC as each line is logged; the selector clears it straight after.
+        ListAppender<ILoggingEvent> logAppender = new ListAppender<>() {
+            @Override
+            protected void append(ILoggingEvent event) {
+                event.prepareForDeferredProcessing();
+                super.append(event);
+            }
+        };
         logAppender.start();
         selectorLogger.addAppender(logAppender);
         selectorLogger.setLevel(Level.DEBUG);
         try {
-            assertThat(defendantCandidates(pcsCase)).isEmpty();
+            action.run();
         } finally {
             selectorLogger.detachAppender(logAppender);
             selectorLogger.setLevel(previousLevel);
         }
+        return logAppender.list;
+    }
 
-        assertThat(logAppender.list).singleElement().satisfies(event -> {
-            assertThat(event.getLevel()).isEqualTo(Level.DEBUG);
-            assertThat(event.getFormattedMessage()).isEqualTo(
-                "Claim pack held for case " + CASE_ID + " defendant " + defendantA.getId() + " - awaiting access code");
-        });
+    private static void assertCaseContext(ILoggingEvent event, PartyEntity party) {
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("caseReference", String.valueOf(CASE_REFERENCE))
+            .containsEntry("partyId", party.getId().toString());
     }
 
     private PcsCaseEntity readyClaimCase() {
@@ -539,7 +570,8 @@ class ClaimPackSelectorTest {
             .claimParties(claimParties)
             .claimFormDocument(claimFormDocument)
             .build();
-        return PcsCaseEntity.builder().id(CASE_ID).claims(List.of(claim)).documents(documents).build();
+        return PcsCaseEntity.builder().id(CASE_ID).caseReference(CASE_REFERENCE).claims(List.of(claim))
+            .documents(documents).build();
     }
 
     private ClaimPartyEntity claimParty(PartyEntity party, PartyRole role, int rank) {

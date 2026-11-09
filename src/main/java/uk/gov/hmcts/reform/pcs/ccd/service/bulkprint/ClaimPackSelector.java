@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -28,6 +29,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 @Service
 @Slf4j
 public class ClaimPackSelector {
+
+    private static final String MDC_CASE_REFERENCE = "caseReference";
+    private static final String MDC_PARTY_ID = "partyId";
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
@@ -87,12 +91,25 @@ public class ClaimPackSelector {
         }
     }
 
+    // Same MDC keys as PackSendRecorder, so App Insights finds these lines by case and party.
+    private static void withCaseContext(PcsCaseEntity pcsCase, PartyEntity party, Runnable logLine) {
+        MDC.put(MDC_CASE_REFERENCE, String.valueOf(pcsCase.getCaseReference()));
+        MDC.put(MDC_PARTY_ID, String.valueOf(party.getId()));
+        try {
+            logLine.run();
+        } finally {
+            MDC.remove(MDC_CASE_REFERENCE);
+            MDC.remove(MDC_PARTY_ID);
+        }
+    }
+
     private ClaimPackCandidate defendantCandidate(PcsCaseEntity pcsCase, PartyEntity defendant,
                                                   DocumentEntity claimForm, Set<String> sent, boolean wales) {
         DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant, false);
         if (accessCode == null) {
-            log.debug("Claim pack held for case {} defendant {} - awaiting access code",
-                pcsCase.getId(), defendant.getId());
+            withCaseContext(pcsCase, defendant, () -> log.debug(
+                "Claim pack held, awaiting access code - case: {}, party: {}",
+                pcsCase.getCaseReference(), defendant.getId()));
             return null;
         }
         // Both letters are saved together, so a Wales defendant with no Welsh letter got their access code
@@ -112,8 +129,9 @@ public class ClaimPackSelector {
             return null;
         }
         if (wales && welshAccessCode == null) {
-            log.info("Wales case {} defendant {} has no Welsh access-code letter - sending the English pack",
-                pcsCase.getId(), defendant.getId());
+            withCaseContext(pcsCase, defendant, () -> log.info(
+                "No Welsh access-code letter, sending the English pack - case: {}, party: {}",
+                pcsCase.getCaseReference(), defendant.getId()));
         }
         return new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent, welshAccessCode != null);
     }
