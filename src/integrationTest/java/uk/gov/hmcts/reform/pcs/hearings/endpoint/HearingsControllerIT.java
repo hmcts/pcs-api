@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,6 +32,7 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 class HearingsControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
+    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
 

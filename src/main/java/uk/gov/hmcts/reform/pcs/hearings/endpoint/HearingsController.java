@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
 
 /**
  * This controller will just pass through the input to HMC currently,
@@ -29,6 +28,8 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 @RequestMapping("/hearing")
 @Tag(name = "Hearings")
 public class HearingsController {
+
+    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
 
     private final HmcHearingService hmcHearingService;
 

@@ -25,7 +25,7 @@ public interface HmcHearingApi {
 
     String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     String HEARING_ENDPOINT = "/hearing";
-    String HEARINGS_ENDPOINT = "/hearing";
+    String HEARINGS_ENDPOINT = "/hearings";
     String ID = "id";
     String HMCTS_DEPLOYMENT_ID = "hmctsDeploymentId";
     String ROLE_ASSIGNMENT_URL = "Role-Assignment-Url";
