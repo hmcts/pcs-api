@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
+import uk.gov.hmcts.reform.pcs.service.DocumentServiceStubs;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -48,6 +50,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -81,6 +85,8 @@ class BulkPrintPacksTest extends CftlibTest {
     private MockSendLetterServer mockSendLetterServer;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private DocumentServiceStubs documentServiceStubs;
 
     private String solicitorToken;
     private String defendant1Token;
@@ -103,23 +109,37 @@ class BulkPrintPacksTest extends CftlibTest {
         caseReference = caseCreationService.createAndIssueCase(solicitorToken, LanguageUsed.ENGLISH);
 
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.CLAIM, testStart, 1);
-        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
+        // Case-attached metadata makes CDAM check that CCD exposes each document to PCS's system user.
+        List<UUID> claimForms = caseDocumentService.waitForDocumentIds(caseReference, DocumentType.CLAIM, 1);
+        List<UUID> accessCodeLetters =
+            caseDocumentService.waitForDocumentIds(caseReference, DocumentType.DEFENDANT_ACCESS_CODE, 2);
+        List<StubMapping> attached = Stream.concat(claimForms.stream(), accessCodeLetters.stream())
+            .map(documentId -> documentServiceStubs.attachToCase(documentId, caseReference))
+            .toList();
+        try {
+            testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
 
-        List<Letter> defendantLetters = mockSendLetterServer.getSentLetters(caseReference, DEFENDANT_CLAIM_PACK,
-                                                                            testStart,
-                                                                            2
-        );
-        assertThat(defendantLetters)
-            .map(BulkPrintPacksTest::getRecipientName)
-            .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
+            List<Letter> defendantLetters = mockSendLetterServer.getSentLetters(caseReference, DEFENDANT_CLAIM_PACK,
+                                                                                testStart,
+                                                                                2
+            );
+            assertThat(defendantLetters)
+                .map(BulkPrintPacksTest::getRecipientName)
+                .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
-        // Rely on the fact that claimant letters would be sent before defendant letters, so
-        // we can assert that none have been sent without waiting any longer here.
-        List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK,
-                                                                           testStart,
-                                                                           0
-        );
-        assertThat(claimantLetters).isEmpty();
+            // Rely on the fact that claimant letters would be sent before defendant letters, so
+            // we can assert that none have been sent without waiting any longer here.
+            List<Letter> claimantLetters = mockSendLetterServer.getSentLetters(caseReference, CLAIMANT_CLAIM_PACK,
+                                                                               testStart,
+                                                                               0
+            );
+            assertThat(claimantLetters).isEmpty();
+            assertThat(attached)
+                .as("CDAM checked each pack document's access through CCD")
+                .allSatisfy(stub -> assertThat(documentServiceStubs.requestsServedBy(stub)).isPositive());
+        } finally {
+            attached.forEach(documentServiceStubs::remove);
+        }
     }
 
     @Test

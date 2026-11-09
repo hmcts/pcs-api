@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
@@ -71,6 +72,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumen
 import uk.gov.hmcts.reform.pcs.ccd.domain.maintenance.ReindexCasesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
@@ -678,6 +680,9 @@ public class PCSCase {
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
+    @CCD(access = SystemDocumentAccess.class)
+    private List<ListValue<Document>> systemDocuments;
+
     @CCD(
         label = "Case file view",
         access = {DocumentAccess.class}
@@ -768,7 +773,7 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
-    @CCD(access = DocumentAccess.class)
+    @CCD(access = {DocumentAccess.class, SystemDocumentAccess.class})
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
@@ -782,6 +787,10 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "detailsTab_")
     @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
+
+    @JsonUnwrapped(prefix = "bundleTab_")
+    @CCD(searchable = false, access = {JudicialReadAccess.class})
+    private BundleTab bundleTab;
 
     @CCD(
         label = NOTE_LABEL,
