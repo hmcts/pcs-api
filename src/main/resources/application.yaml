@@ -194,6 +194,15 @@ notify:
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
 
+sdp:
+  export:
+    enabled: ${SDP_EXPORT_ENABLED:false}
+    schedule: ${SDP_EXPORT_SCHEDULE:DAILY|02:00}
+    upload-enabled: ${SDP_EXPORT_UPLOAD_ENABLED:false}
+    account-url: ${SDP_EXPORT_ACCOUNT_URL:}
+    container-name: ${SDP_EXPORT_CONTAINER_NAME:sdp-export}
+    environment: ${SDP_EXPORT_ENVIRONMENT:local}
+
 access-code-form:
   respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
 
@@ -304,6 +313,11 @@ access-code:
 
 bulk-print:
   schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  # Claim packs for claims where the claimant said a gen app would follow are held for this long after issue.
+  claim-pack-gen-app-expected-hold: ${CLAIM_PACK_GEN_APP_EXPECTED_HOLD:24h}
+  blank-forms:
+    defence-form: classpath:forms/ONC-002R-defence-form.pdf
+    counterclaim-form: classpath:forms/ONC-003-counterclaim.pdf
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
@@ -424,6 +438,25 @@ ccd:
       username: pcs-system-event
       first-name: PCS
       last-name: System
+  bundling:
+    enabled: ${CASE_BUNDLE_ENABLED:false}
+    managed:
+      enabled: ${CASE_BUNDLE_ENABLED:false}
+    job:
+      # Regenerates the case bundle whenever a document that belongs in it is added, removed or
+      # restored. Managed publication is provided by the CCD SDK.
+      enabled: ${CASE_BUNDLE_ENABLED:false}
+      worker:
+        # Every pod queues bundle jobs; this decides whether it also renders them. Off on the API
+        # pods in environments that run the pcs-bundle-worker release (cnp-flux-config), so PDF
+        # rendering does not compete with request threads for heap and CPU.
+        enabled: ${CASE_BUNDLE_WORKER_ENABLED:true}
+        max-concurrent-renders: ${CASE_BUNDLE_WORKER_MAX_CONCURRENT_RENDERS:2}
+    docmosis:
+      # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with
+      # no endpoint configured, a case holding one fails to bundle with UNSUPPORTED_MEDIA_TYPE.
+      convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
+      access-key: ${DOCMOSIS_ACCESS_KEY:}
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
