@@ -88,11 +88,6 @@ java:
     # a safety mechanism in case the feature flag config is incorrect for a preview environment.
     WA_WORKFLOW_API: http://localhost/should-not-be-called
     TASK_MANAGEMENT_API_URL: http://localhost/should-not-be-called
-    HMC_HEARINGS_TOPIC_NAME: "hmc-to-cft-aat"
-    HMC_HEARINGS_TOPIC_SUBSCRIPTION_NAME: "pcs-api-pr-${CHANGE_ID}-servicebus-pcs"
-    HMC_HEARINGS_TOPIC_NAMESPACE: "hmc-servicebus-aat"
-    HMC_DEPLOYMENT_ID: "deployment-pcs-api-pr-${CHANGE_ID}"
-    HMC_HEARINGS_LISTENING_ENABLED: true
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
