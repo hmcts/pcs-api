@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.ENGLISH;
 import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage.WELSH;
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 
 /**
  * Generates a single defendant's access code letter in its own transaction, so that a failure
@@ -172,9 +173,8 @@ public class DefendantAccessCodeService {
                 .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                 .type(DocumentType.DEFENDANT_ACCESS_CODE)
                 .categoryId(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
-                // The English letter keeps no file name, as on master; the language column tells the letters apart.
-                .fileName(language == WELSH
-                    ? AccessCodeFormDocumentGenerator.outputFileName(defendant.getId(), WELSH) : null)
+                .fileName(AccessCodeFormDocumentGenerator.outputFileName(defendant.getId(), language)
+                    + GENERATED_DOC_EXTENSION)
                 .language(language)
                 .build()
         );

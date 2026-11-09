@@ -130,7 +130,7 @@ class DefendantAccessCodeServiceTest {
         assertThat(savedDoc.getUrl()).isEqualTo(DOC_URL);
         assertThat(savedDoc.getParty().getId()).isEqualTo(partyId);
         assertThat(savedDoc.getPcsCase()).isEqualTo(caseEntity);
-        assertThat(savedDoc.getFileName()).isNull();
+        assertThat(savedDoc.getFileName()).isEqualTo("Defendant Access Code " + partyId + ".pdf");
         assertThat(savedDoc.getLanguage()).isEqualTo(ENGLISH);
         verify(accessCodeFormDocumentGenerator).generate(any(), any(), any(), anyString(), eq(ENGLISH), any());
         verify(accessCodeFormDocumentGenerator, never()).generate(any(), any(), any(), anyString(), eq(WELSH), any());
@@ -225,7 +225,7 @@ class DefendantAccessCodeServiceTest {
         verify(accessCodeFormDocumentGenerator, never()).generate(any(), any(), any(), anyString(), eq(WELSH), any());
         verify(documentRepository).save(documentCaptor.capture());
         assertThat(documentCaptor.getValue().getUrl()).isEqualTo(DOC_URL);
-        assertThat(documentCaptor.getValue().getFileName()).isNull();
+        assertThat(documentCaptor.getValue().getFileName()).isEqualTo("Defendant Access Code " + partyId + ".pdf");
         assertThat(documentCaptor.getValue().getLanguage()).isEqualTo(ENGLISH);
         verify(partyAccessCodeRepo).save(any());
     }
@@ -265,10 +265,10 @@ class DefendantAccessCodeServiceTest {
         verify(documentRepository, times(2)).save(documentCaptor.capture());
         List<DocumentEntity> saved = documentCaptor.getAllValues();
         assertThat(saved.get(0).getUrl()).isEqualTo(DOC_URL);
-        assertThat(saved.get(0).getFileName()).isNull();
+        assertThat(saved.get(0).getFileName()).isEqualTo("Defendant Access Code " + partyId + ".pdf");
         assertThat(saved.get(0).getLanguage()).isEqualTo(ENGLISH);
         assertThat(saved.get(1).getUrl()).isEqualTo(WELSH_DOC_URL);
-        assertThat(saved.get(1).getFileName()).isEqualTo("Defendant Access Code Welsh " + partyId);
+        assertThat(saved.get(1).getFileName()).isEqualTo("Defendant Access Code Welsh " + partyId + ".pdf");
         assertThat(saved.get(1).getLanguage()).isEqualTo(WELSH);
         assertThat(saved).allSatisfy(document -> {
             assertThat(document.getType()).isEqualTo(DocumentType.DEFENDANT_ACCESS_CODE);

@@ -233,12 +233,14 @@ class DocumentsViewTest {
         UUID partyId = UUID.randomUUID();
         DocumentEntity englishAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
+            .fileName("Defendant Access Code " + partyId + ".pdf")
+            .language(AccessCodeLetterLanguage.ENGLISH)
             .url("english-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
         DocumentEntity welshAccessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName(AccessCodeFormDocumentGenerator.outputFileName(partyId, AccessCodeLetterLanguage.WELSH))
+            .fileName("Defendant Access Code Welsh " + partyId + ".pdf")
             .language(AccessCodeLetterLanguage.WELSH)
             .url("welsh-pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
@@ -250,7 +252,8 @@ class DocumentsViewTest {
 
         assertThat(pcsCase.getSystemDocuments())
             .extracting(document -> document.getValue().getFilename())
-            .containsExactlyInAnyOrder(null, "Defendant Access Code Welsh " + partyId);
+            .containsExactlyInAnyOrder("Defendant Access Code " + partyId + ".pdf",
+                                       "Defendant Access Code Welsh " + partyId + ".pdf");
     }
 
     @Test
