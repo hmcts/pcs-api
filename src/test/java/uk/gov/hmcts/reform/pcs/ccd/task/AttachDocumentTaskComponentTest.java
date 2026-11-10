@@ -104,7 +104,12 @@ class AttachDocumentTaskComponentTest {
     }
 
     @Test
-    void shouldCompleteWhenTheDocumentNoLongerExists() {
+    void shouldCompleteWhenADraftUploadNoLongerExists() {
+        when(taskInstance.getData()).thenReturn(AttachDocumentTaskData.builder()
+                                                    .caseReference(CASE_REFERENCE)
+                                                    .documentId(DOCUMENT_ID)
+                                                    .hashToken("hash")
+                                                    .build());
         when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
             .thenThrow(new FeignException.NotFound("not found", mock(Request.class), null, null));
 
@@ -112,6 +117,17 @@ class AttachDocumentTaskComponentTest {
 
         assertThat(task.execute(taskInstance, executionContext))
             .isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+    }
+
+    @Test
+    void shouldRetryWhenASubmittedDocumentIsNotFound() {
+        when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
+            .thenThrow(new FeignException.NotFound("not found", mock(Request.class), null, null));
+
+        CustomTask<AttachDocumentTaskData> task = underTest.attachDocumentTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(FeignException.NotFound.class);
     }
 
     @Test

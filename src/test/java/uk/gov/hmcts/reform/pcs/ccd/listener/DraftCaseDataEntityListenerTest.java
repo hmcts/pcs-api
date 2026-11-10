@@ -82,6 +82,16 @@ class DraftCaseDataEntityListenerTest {
     }
 
     @Test
+    void shouldNotAttachDocumentsWithANullOrBlankHashToken() {
+        underTest.onSave(draft(resumePossessionClaim, """
+            {"first": {"document_url": "http://dm-store/documents/%s", "document_hash": null},
+             "second": {"document_url": "http://dm-store/documents/%s", "document_hash": " "}}"""
+            .formatted(UPLOAD, UUID.randomUUID())));
+
+        verifyNoInteractions(schedulerClient);
+    }
+
+    @Test
     void shouldNotAttachRespondToClaimUploadsAsTheCaseViewDoesNotReturnThem() {
         underTest.onSave(draft(respondPossessionClaim, """
             {"first": %s}""".formatted(upload(UPLOAD))));

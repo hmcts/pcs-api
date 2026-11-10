@@ -52,7 +52,7 @@ public class DraftCaseDataEntityListener {
     @PostPersist
     @PostUpdate
     public void onSave(DraftCaseDataEntity draft) {
-        if (EVENTS.contains(draft.getEventId())) {
+        if (EVENTS.contains(draft.getEventId()) && hasHashToken(draft.getCaseData())) {
             try {
                 Map<UUID, String> uploads = uploads(draft.getCaseData());
                 uploads.keySet().removeAll(uploads(draft.getSavedCaseData()).keySet());
@@ -67,13 +67,21 @@ public class DraftCaseDataEntityListener {
 
     private static Map<UUID, String> uploads(String caseData) throws JsonProcessingException {
         Map<UUID, String> uploads = new LinkedHashMap<>();
-        if (caseData != null) {
+        if (hasHashToken(caseData)) {
             for (JsonNode document : JSON.readTree(caseData).findParents("document_hash")) {
-                DocumentEntityListener.dmStoreDocumentId(document.path("document_url").asText())
-                    .ifPresent(documentId -> uploads.put(documentId, document.get("document_hash").asText()));
+                String hashToken = document.get("document_hash").textValue();
+                if (hashToken != null && !hashToken.isBlank()) {
+                    DocumentEntityListener.dmStoreDocumentId(document.path("document_url").asText())
+                        .ifPresent(documentId -> uploads.put(documentId, hashToken));
+                }
             }
         }
         return uploads;
+    }
+
+    // Most saves hold no upload, so are not worth parsing.
+    private static boolean hasHashToken(String caseData) {
+        return caseData != null && caseData.contains("document_hash");
     }
 
     private void schedule(long caseReference, UUID documentId, String hashToken) {

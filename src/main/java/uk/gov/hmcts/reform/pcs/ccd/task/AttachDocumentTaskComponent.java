@@ -78,6 +78,9 @@ public class AttachDocumentTaskComponent {
                             .build()
                     );
                 } catch (FeignException.NotFound e) {
+                    if (taskData.getHashToken() == null) {
+                        throw e;
+                    }
                     // A file removed from a draft before this ran is gone; retrying would never succeed.
                     log.warn("Document {} not found, so not attached to case {}",
                              taskData.getDocumentId(), taskData.getCaseReference());

@@ -1,13 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.listener;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -16,6 +20,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @SpringBootTest
@@ -31,6 +37,22 @@ class DraftUploadAttachIT extends AbstractPostgresContainerIT {
     private JdbcTemplate jdbc;
     @Autowired
     private PlatformTransactionManager transactionManager;
+
+    @MockitoBean
+    private CaseDocumentClientApi caseDocumentClientApi;
+
+    // The executor runs in this profile; a failing attach stays queued, so the assertions cannot race it.
+    @BeforeEach
+    void failEveryAttach() {
+        when(caseDocumentClientApi.patchDocument(any(), any(), any()))
+            .thenThrow(new IllegalStateException("CDAM is not available"));
+    }
+
+    @AfterEach
+    void cleanUp() {
+        jdbc.update("DELETE FROM scheduled_tasks WHERE task_instance LIKE ?", "draft-" + CASE_REFERENCE + "-%");
+        jdbc.update("DELETE FROM draft.draft_case_data WHERE case_reference = ?", CASE_REFERENCE);
+    }
 
     @Test
     @DisplayName("queues an attach for each upload once, when the draft is created and when it is updated")
