@@ -8,6 +8,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -38,6 +43,27 @@ class CaseNameFormatterTest {
 
         // Then
         assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson");
+    }
+
+    @Test
+    void shouldFormatCaseNameFromPersistedCase() {
+        PartyEntity claimant = PartyEntity.builder().firstName("Sarah").lastName("Freeman").build();
+        PartyEntity defendant = PartyEntity.builder()
+            .firstName("David").lastName("Jackson").nameKnown(YES).build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .claims(List.of(claimWith(claimant, defendant)))
+            .build();
+
+        String caseName = underTest.formatCaseName(pcsCase);
+
+        assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson");
+    }
+
+    @Test
+    void shouldReturnNullCaseNameWhenPersistedCaseHasNoClaims() {
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().build();
+
+        assertThat(underTest.formatCaseName(pcsCase)).isNull();
     }
 
     @ParameterizedTest
@@ -199,6 +225,14 @@ class CaseNameFormatterTest {
     private static Party unknownDefendant() {
         return Party.builder()
             .nameKnown(NO)
+            .build();
+    }
+
+    private static ClaimEntity claimWith(PartyEntity claimant, PartyEntity defendant) {
+        return ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build()))
             .build();
     }
 
