@@ -24,7 +24,7 @@ export const enforcementApplication = {
   writFeeValidationParagraphHidden: `If you apply for a writ:`,
   writFeeValidationTextHidden: `it costs £82 to apply`,
   quoteFromBailiffLinkHidden: `you can get a quote from a bailiff to find out how much it will cost (opens in a new tab, High Court Enforcement Officers Association website)`,
-  theyUsuallyChargeByTheHourListItemHidden: `you can get a quote from a bailiff to find out how much it will cost(opens in a new tab, High Court Enforcement Officers Association website) (they usually charge by the hour)`,
+  theyUsuallyChargeByTheHourListItemHidden: `you can get a quote from a bailiff to find out how much it will cost \(opens in a new tab, High Court Enforcement Officers Association website\) \(they usually charge by the hour\)`,
   theAdditionalEvidenceParagraphHidden: `The additional evidence you’ll need to apply for a writ`,
   youllNeedToProvideReasonsParagraphHidden: `You’ll need to provide reasons for applying for a writ rather than a warrant.`,
   theJudgeWillConsiderParagraphHidden: `The judge will consider this evidence, along with the other information in your application, when deciding whether to grant your request.`,

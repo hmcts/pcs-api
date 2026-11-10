@@ -2,7 +2,7 @@ import {performValidation} from "@utils/controller-enforcement";
 
 export const validateHiddenElements = async (
   hiddenElements: {
-    elementType: 'paragraph' | 'listItem';
+    elementType: 'paragraph' | 'listItem'| 'p';
     text: string;
   }[] = []
 

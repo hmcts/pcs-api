@@ -177,7 +177,7 @@ export class PageContentValidation implements IValidation {
     try {
       let mappingPath;
       if(page.url().includes("enforceTheOrder")){
-        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-cy/urlToFileMappingEnforcement.ts');
       }
       else if(page.url().includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
@@ -249,7 +249,7 @@ export class PageContentValidation implements IValidation {
   private async loadPageDataFile(fileName: string, page: Page, testTitle = ''): Promise<any> {
     let filePath;
     if (page.url().includes("enforceTheOrder")) {
-      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-cy', `${fileName}.page.data.ts`);
     } else if (page.url().includes("makeAnApplication")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
     }else if (page.url().includes("claimantMakeAnApplication")) {
@@ -400,7 +400,7 @@ export class PageContentValidation implements IValidation {
     try {
       let mappingPath;
       if(url.includes("enforceTheOrder")){
-        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-cy/urlToFileMappingEnforcement.ts');
       } else if(url.includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       } else if(url.includes("claimantMakeAnApplication")) {
