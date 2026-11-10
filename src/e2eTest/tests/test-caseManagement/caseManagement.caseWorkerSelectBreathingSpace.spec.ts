@@ -53,12 +53,12 @@ test.describe('case management - case worker selects Breathing Space', () => {
   });
 
   test(
-    'caseworker enters breathing space details and validates',
+    'caseworker enters breathing space details, validates the check your answers screen, amends the reference number, and submits successfully',
     {
       tag: ['@CM', '@regression'],
       annotation: [
-        { type: 'jira', description: 'https://hmcts.atlassian.net/browse/HDPI-6289?' },
-        { type: 'ac', description: 'AC01, AC02, AC03, AC04, AC05, AC06, AC07, AC08, AC09' },
+        { type: 'jira', description: 'https://hmcts.atlassian.net/browse/HDPI-6289?||https://hmcts.atlassian.net/browse/HDPI-6290?' },
+        { type: 'ac', description: '6289 -AC01, AC02, AC03, AC04, AC05, AC06, AC07, AC08, AC09 || 6290 -AC01, AC02, AC03, AC05,' },
       ],
     },
     async () => {
@@ -139,7 +139,56 @@ test(
       });
     }
   );
-});
 
+test(
+    'cancelling from check your answers returns to the case dashboard without saving',
+    {
+      tag: ['@CM', '@regression'],
+      annotation: [
+        { type: 'jira', description: 'https://hmcts.atlassian.net/browse/HDPI-6290?' }, // Update with your actual Jira ID if needed
+        { type: 'ac', description: 'AC06: Cancel from Check Your Answers and ensure no data is saved' },
+      ],
+    },
+    async () => {
+      await test.step('Given the caseworker completes the form and is on Check Your Answers screen', async () => {
+        await performAction('completeBreathingSpaceFormHappyPath', enterBreathingSpace.happyPathConfig); 
+        await performAction('validateCheckYourAnswersPage', enterBreathingSpacecheckYourAnswers.happyPathConfig);
+      });
+
+      await test.step('When they select Cancel, they are returned to the case summary dashboard', async () => {
+      await performAction('cancelCheckYourAnswersAndValidate', enterBreathingSpacecheckYourAnswers.happyPathConfig);
+      });
+
+      await test.step('Then reopening the breathing space event verifies that the form configuration fields were not saved', async () => {
+        await performAction('reopenBreathingSpaceEvent');
+        await performValidation('validateInputTextValues', 
+          { textLabel: enterBreathingSpace.referenceNumberTextLabel }, 
+          { expected: '' }
+        );
+      });
+    }
+  );
+    test(
+    'previous on check your answers returns to enter breathing space with answers retained',
+    {
+      tag: ['@CM', '@regression'],
+      annotation: [
+        { type: 'jira', description: 'https://hmcts.atlassian.net/browse/HDPI-6290?' },
+        { type: 'ac', description: 'AC04: Return to Enter Breathing Space Screen via Previous' },
+      ],
+    },
+    async () => {
+      await test.step('Given the caseworker completes the form and is on Check Your Answers screen', async () => {
+        await performAction('completeBreathingSpaceFormHappyPath', enterBreathingSpace.happyPathConfig);
+        await performAction('validateCheckYourAnswersPage', enterBreathingSpacecheckYourAnswers.happyPathConfig);
+      });
+
+      await test.step('When they select Previous, they can directly amend the pre-populated details and return to CYA screen and validate the changes', async () => {
+        await performAction('clickPreviousAndValidateAnswersRetained');
+      });
+    }
+  );
+
+});
 
 

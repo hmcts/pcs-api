@@ -43,6 +43,23 @@ export class CYAStore {
       this.ignoreQuestions = [];
     }
   }
+  public updateCapturedAnswer(question: string, newAnswer: string): void {
+    const normalizedTarget = this.normalizeText(question);
+    const existingRecordIndex = this.qaObjects.findIndex(
+      (qa) => this.normalizeText(qa.question) === normalizedTarget
+    );
+
+    if (existingRecordIndex !== -1) {
+      this.qaObjects[existingRecordIndex].answer = newAnswer;
+    } else {
+      this.qaObjects.push({ question, answer: newAnswer });
+    }
+  }
+    public clearStore(): void {
+      this.qaObjects = [];
+      this.validationFailed = false;
+      this.failedValidations = [];
+    }
 
   private loadFormattingRules(): void {
     try {
