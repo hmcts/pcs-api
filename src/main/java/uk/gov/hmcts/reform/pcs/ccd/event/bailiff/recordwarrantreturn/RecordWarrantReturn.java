@@ -39,12 +39,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             .decentralisedEvent("ext:recordWarrantReturn", this::submit)
             .forStates(EventStates.recordWarrantOutcome())
             .name("Record warrant return")
-            .grant(
-                Permission.CRU,
-                UserRole.HEARING_CENTRE_ADMIN,
-                UserRole.HEARING_CENTRE_TEAM_LEADER,
-                UserRole.BAILIFF_ADMIN
-            ) // TODO - REMOVE Hearing center roles
+            .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
 
