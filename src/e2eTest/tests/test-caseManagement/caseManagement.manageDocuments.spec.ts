@@ -71,8 +71,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
   test('Case management - Manage documents - Amend @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
-    let party = allPartyDetails[0];    
-    const claimantIndex = 1;
+    let party = allPartyDetails[0];
     const partyType = party.split(' - ')[1].split(' ')[0];
     const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
@@ -142,7 +141,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       folder: 'Evidence',
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       claimantIndex: claimantIndex,
-      defendantIndex: partyIndex,
+      partyIndex: partyIndex,
       partyType: partyType,
       caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date,'',`${partyType} ${partyIndex}`)
       

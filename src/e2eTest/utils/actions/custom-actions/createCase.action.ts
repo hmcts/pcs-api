@@ -1632,13 +1632,13 @@ export class CreateCaseAction implements IAction {
 
     switch (folderName) {
       case 'Property documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments, caseFile.partyType as string || 'Claimant',caseFile.claimantIndex as number || 1);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents, caseFile.partyType as string || 'Claimant',caseFile.claimantIndex as number || 1);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments, caseFile.partyType as string || 'Claimant',caseFile.claimantIndex as number || 1);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance, caseFile.partyType as string || 'Claimant',caseFile.claimantIndex as number || 1);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport, caseFile.partyType as string || 'Claimant',caseFile.claimantIndex as number|| 1);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation, caseFile.partyType as string || 'Claimant',caseFile.claimantIndex as number || 1);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments, caseFile.partyType as string || 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport, 'Claimant',caseFile.claimantIndex as number|| 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments,'Claimant',caseFile.claimantIndex as number || 1);
         if (caseFile.caseWorkerAmend) {
           userInputFiles.push(...(Array.isArray(caseFile.caseWorkerAmend) ? caseFile.caseWorkerAmend : [caseFile.caseWorkerAmend]));
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
@@ -1648,7 +1648,7 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Statements of case':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, caseFile.partyType as string || 'Claimant', caseFile.claimantIndex as number || 1 ,'Notice for service out of the jurisdiction');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Claimant', caseFile.claimantIndex as number || 1 ,'Notice for service out of the jurisdiction');
         if (ccPayload) {
           this.readDocFilesFromPayLoad(
             userInputFiles,
@@ -1665,28 +1665,28 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Evidence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,caseFile.partyType as string || 'Claimant', caseFile.claimantIndex as number || 1, 'Inspection or report');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Inspection or report');
         if (caseFile.caseWorkerAmend) {
           let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
-          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, caseFile.date as string || '', caseFile.app as string || '', `Claimant ${caseFile.claimantIndex || 1}`);
-          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, ``, ``, `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string);
         } else if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
       case 'Correspondence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,caseFile.partyType as string || 'Claimant', caseFile.claimantIndex as number || 1, 'Legal aid certificate');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Legal aid certificate');
         break;
 
       case 'Uncategorised documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,caseFile.partyType as string || 'Claimant', caseFile.claimantIndex as number || 1, 'Other document');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Other document');
         if (ccPayload)
           this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments, caseFile.partyType as string || 'Defendant', caseFile.defendantIndex as number)
         if (caseFile.caseWorkerAmend) {
           let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
-          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, caseFile.date as string || '', caseFile.app as string || '', `Claimant ${caseFile.claimantIndex || 1}`);
-          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, ``, ``, `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string);
         } else if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
@@ -2159,7 +2159,7 @@ export class CreateCaseAction implements IAction {
       allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
     }
 
-  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string,): string[] {
+  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string): string[] {
     if (oldFile && amendedFile) {
       return files
         .filter(file => file !== oldFile)
