@@ -40,6 +40,8 @@ import {
   suspendedOrder,
   statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
+import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -809,4 +811,50 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         nextPage: checkYourAnswers.mainHeader,
       });
     });
+});
+
+test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a warrant of possession @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('resumeDraftApplication');
+  });
+
+  test('As a Claimant user, the enforcement draft application can be deleted after selecting a writ of possession @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('resumeDraftApplication');
+  });
+  test ('As a claimant user, I can resume the draft application of enforcement @enforcement @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('resumeDraftApplication');
+  });
 });
