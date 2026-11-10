@@ -112,6 +112,11 @@ final class AccessGrants {
         return readAccess(SYSTEM_USER);
     }
 
+    /** The roles that can draft a claim. No system user, so bundling and bulk print never see draft files. */
+    static SetMultimap<HasRole, Permission> claimDraftUploadAccess() {
+        return readAccess(PCS_SOLICITOR, GA_CLAIMANT_SOLICITOR, CLAIMANT);
+    }
+
     static SetMultimap<HasRole, Permission> caseLinkingAccess() {
         return internalReadAccess();
     }

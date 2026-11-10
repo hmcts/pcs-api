@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+
+import java.util.List;
 
 /**
  * Use this class to annotate fields that exist in {@link PCSCase} that
@@ -26,5 +29,9 @@ public abstract class DraftCaseDataMixIn {
     private String claimantName;
     @JsonIgnore
     private String claimantContactEmail;
+
+    // Built from the draft by the case view; saved back, a removed upload would stay in the draft.
+    @JsonIgnore
+    private List<ListValue<DraftUpload>> claimDraftUploads;
 
 }

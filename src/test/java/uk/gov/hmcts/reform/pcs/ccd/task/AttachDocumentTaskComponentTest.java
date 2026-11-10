@@ -4,6 +4,8 @@ import com.github.kagkarlsson.scheduler.task.CompletionHandler;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AttachDocumentTaskComponent.ATTACH_DOCUMENT_TASK_DESCRIPTOR;
@@ -81,6 +84,17 @@ class AttachDocumentTaskComponentTest {
                 assertThat(token.getId()).isEqualTo(DOCUMENT_ID.toString());
                 assertThat(token.getHashToken()).isNull();
             });
+    }
+
+    @Test
+    void shouldCompleteWhenTheDocumentNoLongerExists() {
+        when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
+            .thenThrow(new FeignException.NotFound("not found", mock(Request.class), null, null));
+
+        CustomTask<AttachDocumentTaskData> task = underTest.attachDocumentTask();
+
+        assertThat(task.execute(taskInstance, executionContext))
+            .isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
     @Test

@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.ClaimDraftUploadsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
@@ -72,6 +73,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
@@ -152,6 +154,8 @@ class PCSCaseViewTest {
     private HearingView hearingView;
     @Mock
     private EnforcementOrderView enforcementOrderView;
+    @Mock
+    private ClaimDraftUploadsView claimDraftUploadsView;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -180,7 +184,7 @@ class PCSCaseViewTest {
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    judicialNoteView, enforcementOrderView
+                                    judicialNoteView, enforcementOrderView, claimDraftUploadsView
         );
     }
 
@@ -456,6 +460,7 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
+        verify(claimDraftUploadsView).setCaseFields(pcsCase, draftCaseData);
         verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class), any(PcsCaseEntity.class));
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
     }
@@ -491,6 +496,7 @@ class PCSCaseViewTest {
         verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class),
             any(PcsCaseEntity.class));
         verify(caseTabView).setCaseTabFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        verifyNoInteractions(claimDraftUploadsView);
     }
 
     @Test

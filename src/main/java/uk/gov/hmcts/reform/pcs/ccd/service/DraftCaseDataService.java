@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DraftUploadAttacher;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
@@ -42,6 +43,7 @@ public class DraftCaseDataService {
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
     private final TransactionTemplate transactionTemplate;
+    private final DraftUploadAttacher draftUploadAttacher;
 
     private static final int LAST_WRITE_WINS_ATTEMPTS = 3;
 
@@ -50,13 +52,15 @@ public class DraftCaseDataService {
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
                                 SecurityContextService securityContextService,
-                                TransactionTemplate transactionTemplate) {
+                                TransactionTemplate transactionTemplate,
+                                DraftUploadAttacher draftUploadAttacher) {
         this.draftCaseDataRepository = draftCaseDataRepository;
         this.organisationService = organisationService;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
         this.transactionTemplate = transactionTemplate;
+        this.draftUploadAttacher = draftUploadAttacher;
     }
 
     private String getCurrentUserId() {
@@ -693,7 +697,10 @@ public class DraftCaseDataService {
                                Supplier<Optional<DraftCaseDataEntity>> findDraft,
                                Supplier<DraftCaseDataEntity> createDraft) {
 
-        DraftCaseDataEntity draftCaseDataEntity = findDraft.get()
+        Optional<DraftCaseDataEntity> existing = findDraft.get();
+        String draftBefore = existing.map(DraftCaseDataEntity::getCaseData).orElse(null);
+
+        DraftCaseDataEntity draftCaseDataEntity = existing
             .map(existingDraft -> {
                 log.debug(
                     draftCaseData.getPartyId() != null
@@ -715,7 +722,10 @@ public class DraftCaseDataService {
                 );
                 return createDraft.get();
             });
-        return draftCaseDataRepository.save(draftCaseDataEntity);
+        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
+        draftUploadAttacher.attachNewUploads(draftCaseData.getCaseReference(), draftCaseData.getEventId(),
+                                             draftBefore, draftCaseDataEntity.getCaseData());
+        return saved;
     }
 
     // Writes that post no version keep last-write-wins: a concurrent write only bumps the JPA version, so the

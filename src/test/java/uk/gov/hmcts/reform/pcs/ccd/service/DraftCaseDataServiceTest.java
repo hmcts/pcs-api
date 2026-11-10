@@ -25,10 +25,12 @@ import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DraftUploadAttacher;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -62,6 +65,8 @@ class DraftCaseDataServiceTest {
     private DraftCaseJsonMerger draftCaseJsonMerger;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private DraftUploadAttacher draftUploadAttacher;
     @Captor
     private ArgumentCaptor<DraftCaseDataEntity> unsubmittedCaseDataEntityCaptor;
 
@@ -78,7 +83,8 @@ class DraftCaseDataServiceTest {
             objectMapper,
             draftCaseJsonMerger,
             securityContextService,
-            new TransactionTemplate(mock(PlatformTransactionManager.class))
+            new TransactionTemplate(mock(PlatformTransactionManager.class)),
+            draftUploadAttacher
         );
     }
 
@@ -219,6 +225,29 @@ class DraftCaseDataServiceTest {
 
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
+        verify(draftUploadAttacher).attachNewUploads(CASE_REFERENCE, eventId, null, caseDataJson);
+    }
+
+    @Test
+    void shouldPassTheDraftBeforeAndAfterThePatchToTheUploadAttacher() throws IOException {
+        // Given
+        DraftCaseDataEntity existingDraft = new DraftCaseDataEntity();
+        existingDraft.setCaseReference(CASE_REFERENCE);
+        existingDraft.setCaseData("before json");
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.of(existingDraft));
+        when(draftCaseJsonMerger.mergeJson("before json", "patch json")).thenReturn("after json");
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().uid(USER_ID).build());
+        when(securityContextService.toUserId(USER_ID)).thenReturn(USER_ID);
+
+        // When
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, "patch json");
+
+        // Then
+        verify(draftUploadAttacher).attachNewUploads(CASE_REFERENCE, eventId, "before json", "after json");
     }
 
     @Test
@@ -565,7 +594,7 @@ class DraftCaseDataServiceTest {
         underTest.patchUnsubmittedEventData(CASE_REFERENCE, patchJson, eventId, partyId, organisationId);
 
         // Then
-        verify(draftCaseDataEntity).getCaseData();
+        verify(draftCaseDataEntity, atLeastOnce()).getCaseData();
         verify(draftCaseDataEntity).setCaseData(any()); // safer than strict match here
         verify(draftCaseDataRepository).save(draftCaseDataEntity);
     }
