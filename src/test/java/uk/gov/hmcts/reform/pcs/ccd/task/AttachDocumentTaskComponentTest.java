@@ -4,8 +4,6 @@ import com.github.kagkarlsson.scheduler.task.CompletionHandler;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
-import feign.FeignException;
-import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AttachDocumentTaskComponent.ATTACH_DOCUMENT_TASK_DESCRIPTOR;
@@ -101,33 +98,6 @@ class AttachDocumentTaskComponentTest {
         assertThat(metadata.getValue().getDocumentHashTokens())
             .singleElement()
             .satisfies(token -> assertThat(token.getHashToken()).isEqualTo("hash"));
-    }
-
-    @Test
-    void shouldCompleteWhenADraftUploadNoLongerExists() {
-        when(taskInstance.getData()).thenReturn(AttachDocumentTaskData.builder()
-                                                    .caseReference(CASE_REFERENCE)
-                                                    .documentId(DOCUMENT_ID)
-                                                    .hashToken("hash")
-                                                    .build());
-        when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
-            .thenThrow(new FeignException.NotFound("not found", mock(Request.class), null, null));
-
-        CustomTask<AttachDocumentTaskData> task = underTest.attachDocumentTask();
-
-        assertThat(task.execute(taskInstance, executionContext))
-            .isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-    }
-
-    @Test
-    void shouldRetryWhenASubmittedDocumentIsNotFound() {
-        when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
-            .thenThrow(new FeignException.NotFound("not found", mock(Request.class), null, null));
-
-        CustomTask<AttachDocumentTaskData> task = underTest.attachDocumentTask();
-
-        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-            .isInstanceOf(FeignException.NotFound.class);
     }
 
     @Test

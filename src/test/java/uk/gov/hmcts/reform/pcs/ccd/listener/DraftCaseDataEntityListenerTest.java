@@ -8,10 +8,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.AttachDocumentTaskData;
+import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +52,25 @@ class DraftCaseDataEntityListenerTest {
         assertThat(data.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(data.getDocumentId()).isEqualTo(UPLOAD);
         assertThat(data.getHashToken()).isEqualTo("hash");
+    }
+
+    @Test
+    void shouldFindTheHashTokenInADraftSavedThroughTheDraftMapper() throws Exception {
+        PCSCase caseData = PCSCase.builder()
+            .rentArrears(RentArrearsSection.builder()
+                             .statementDocuments(List.of(ListValue.<Document>builder()
+                                 .value(Document.builder()
+                                            .url("http://dm-store/documents/" + UPLOAD)
+                                            .hashToken("hash")
+                                            .build())
+                                 .build()))
+                             .build())
+            .build();
+        String savedJson = new JacksonConfiguration().draftCaseDataObjectMapper().writeValueAsString(caseData);
+
+        underTest.onSave(draft(resumePossessionClaim, savedJson));
+
+        assertThat(scheduledData("draft-" + CASE_REFERENCE + "-" + UPLOAD).getHashToken()).isEqualTo("hash");
     }
 
     @Test
