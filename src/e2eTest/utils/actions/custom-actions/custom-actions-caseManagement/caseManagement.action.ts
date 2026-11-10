@@ -519,7 +519,7 @@ export class CaseManagementAction implements IAction {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     const baseName = String(confirm.fileName).replace(/\.pdf$/i, '');
-    const gaNumber = String(confirm.app).match(/\bGA\d+\b/i)?.[0] ?? '';
+    const gaNumber = String(confirm.app).match(/\b(GA|CC)\d+\b/i)?.[0] ?? '';
     if (confirm.fileDate) {
       const [day, month, year] = String(confirm.fileDate).split('/');
       formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
