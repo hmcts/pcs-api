@@ -170,14 +170,14 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(asCaseworkerReviewing(undecided.id()).submitExpectingRejection(new ConfirmOrderReviewRequest(
             ISSUE, undecided.id(), undecided.version(), null, null, new Issue(new IssuedOrder(
                 undecided.orderType(), Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order"),
-                List.of(), HIGH_COURT, true, List.of(), true, false)))
+                List.of(), HIGH_COURT, true, List.of(), true, false, null)))
             .errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
     }
 
     private void issue(Order order) {
         asCaseworkerReviewing(order.id()).submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), null, null, new Issue(new IssuedOrder(order.orderType(), order.formData(), WORDING,
-                "the order"), List.of(), HIGH_COURT, true, List.of(), true, false)));
+                "the order"), List.of(), HIGH_COURT, true, List.of(), true, false, null)));
     }
 
     /** The judge following their task to decide the application, which names it. */

@@ -19,6 +19,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.FreeFormDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
@@ -82,6 +85,10 @@ public class OrderEntity {
 
     /** Whether the order gives permission to issue a warrant or writ of restitution, as court staff issuing it said. */
     private Boolean restitutionPermission;
+
+    /** What a free-form order does, as court staff issuing it recorded it; none for any other order. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    private FreeFormDetails freeFormDetails;
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "document_id")

@@ -25,13 +25,14 @@ public record ConfirmOrderReviewRequest(Action action,
     /**
      * How the order is issued: served on all parties, or without notice on the parties to serve, each one of the
      * case's parties as the start sent them; whether court staff have completed the next steps, without which it is
-     * not issued; and whether it gives permission to issue a warrant or writ of restitution. The frontend also asks
+     * not issued; whether it gives permission to issue a warrant or writ of restitution; and, for a free-form order,
+     * what it does. The frontend also asks
      * whether the order is final; nothing acts on that answer yet, so it is not read.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal,
                         boolean serveAllParties, List<UUID> partiesToServe, boolean nextStepsComplete,
-                        boolean restitutionPermission) {
+                        boolean restitutionPermission, FreeFormDetails freeFormDetails) {
 
         public Issue {
             reviewDates = reviewDates == null ? List.of() : reviewDates;

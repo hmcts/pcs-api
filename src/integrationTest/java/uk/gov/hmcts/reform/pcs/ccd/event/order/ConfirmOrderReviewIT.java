@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.FreeFormDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
@@ -208,7 +209,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null, new Issue(
                 new IssuedOrder(order.orderType(), order.formData(), null, null), List.of(), HIGH_COURT, true,
-                List.of(), true, false)))
+                List.of(), true, false, null)))
             .errors()).containsExactly(ConfirmOrderReview.NO_WORDING);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
@@ -224,7 +225,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of(), true, true)));
+            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of(), true, true, null)));
 
         Issued issued = outcome.changed("orders", Issued.class);
         assertThat(issued.state()).isEqualTo(ISSUED);
@@ -243,6 +244,30 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("records what a free-form order does, which it needs, and nothing of the kind for any other order")
+    void recordsWhatAFreeFormOrderDoes() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        var freeForm = new IssuedOrder(OrderType.FREE_FORM, Map.of(), WORDING, "the judge's wording");
+        var details = new FreeFormDetails(FreeFormDetails.Category.OUTRIGHT_POSSESSION, false,
+            LocalDate.of(2026, 12, 4), FreeFormDetails.Grounds.MANDATORY, "Ground 8", true, false, null, null, null,
+            null);
+
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), "staff-review", null,
+            new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true, false, null)))
+            .errors()).containsExactly(ConfirmOrderReview.NO_FREE_FORM_DETAILS);
+
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), "staff-review", null,
+            new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true, false, details)));
+
+        assertThat(jdbcTemplate.queryForObject("SELECT free_form_details::text FROM orders WHERE id = ?",
+            String.class, order.id())).isEqualTo("{\"grounds\": \"MANDATORY\", \"category\": \"OUTRIGHT_POSSESSION\", "
+                + "\"moneyJudgment\": true, \"groundsDetails\": \"Ground 8\", \"possessionDate\": \"2026-12-04\", "
+                + "\"possessionForthwith\": false, \"transferToHighCourt\": false}");
+    }
+
+    @Test
     @DisplayName("refuses to issue an order while court staff still have tasks to do, leaving it to review again")
     void refusesToIssueWithTasksOutstanding() {
         Order order = judgeSubmitsOrder("the judge's order");
@@ -250,7 +275,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null, new Issue(
                 new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
-                true, List.of(), false, false)))
+                true, List.of(), false, false, null)))
             .errors()).containsExactly(ConfirmOrderReview.TASKS_OUTSTANDING);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }

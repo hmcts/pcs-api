@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issued
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -67,6 +68,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
     static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
     static final String NO_PARTY_TO_SERVE = "Select who to serve the order on";
+    static final String NO_FREE_FORM_DETAILS = "Record what the order does";
     static final String TASKS_OUTSTANDING =
         "You must complete all outstanding tasks before issuing this order and serving it on the parties";
 
@@ -149,6 +151,10 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (!issue.nextStepsComplete()) {
             throw ExternalRejection.because(TASKS_OUTSTANDING);
         }
+        boolean freeForm = issuing.orderType() == OrderType.FREE_FORM;
+        if (freeForm && (issue.freeFormDetails() == null || issue.freeFormDetails().category() == null)) {
+            throw ExternalRejection.because(NO_FREE_FORM_DETAILS);
+        }
         // Court staff may change the order's answers, but not to decide an application another order decides.
         if (order.getPcsCase().getGenApps().stream()
             .anyMatch(genApp -> OrderTasks.decides(issuing.formData(), genApp)
@@ -157,6 +163,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         }
         order.setSeal(issue.seal());
         order.setRestitutionPermission(issue.restitutionPermission());
+        order.setFreeFormDetails(freeForm ? issue.freeFormDetails() : null);
         if (!issue.serveAllParties()) {
             order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
         }
