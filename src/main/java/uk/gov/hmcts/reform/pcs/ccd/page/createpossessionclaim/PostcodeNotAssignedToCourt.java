@@ -33,14 +33,13 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             .label(
                 "postcodeNotAssignedToCourt-header",
                 """
-                ---
-                <section tabindex="0">
+                <hr aria-hidden="true">
                 <p class="govuk-body">
                 Based on the postcode you provided, we cannot determine which court your claim should be
                 assigned to, so you cannot use this online service.
                 </p>
 
-                <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
+                <h2 class="govuk-heading-s govuk-!-font-size-19">What to do next</h2>
                 """
             )
             .label(
@@ -83,8 +82,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                     <li class="govuk-list govuk-!-font-size-19">
                         for claims in Northern Ireland, use the
                         <a href="https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland"
-                        rel="noreferrer noopener" target="_blank" class="govuk-link"
-                        aria-label="Go to Enforcement of Judgments Office website (opens in new tab)">
+                        rel="noreferrer noopener" target="_blank" class="govuk-link">
                         Enforcement of Judgments Office (EJO) (opens in new tab)</a>
                     </li>
                 </ul>
@@ -109,32 +107,29 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
 
     private static final String PCOL_LINK = """
             <a href="https://www.gov.uk/possession-claim-online-recover-property"
-            rel="noreferrer noopener" target="_blank" class="govuk-link"
-            aria-label="Go to Possession Claim Online service (opens in new tab)">
+            rel="noreferrer noopener" target="_blank" class="govuk-link">
             Possession Claim Online (PCOL) service (opens in new tab)</a>""";
 
     private static final String FORMS_LINK = """
             <p class="govuk-body">
             <a href="https://www.gov.uk/government/collections/property-possession-forms"
-            rel="noreferrer noopener" target="_blank" class="govuk-link"
-            aria-label="View all property possession forms (opens in new tab)">
-            View the full list of property possessions forms (opens in a new tab)</a>.
+            rel="noreferrer noopener" target="_blank" class="govuk-link">
+            View the full list of property possessions forms (opens in a new tab)</a>
             </p>""";
 
     private static final String LOCAL_SHERIFF_OFFICE_LINK = """
         <a href="https://www.scotcourts.gov.uk/home" rel="noreferrer noopener" target="_blank"
-        class="govuk-link" aria-label="Go to Scottish Courts website (opens in new tab)">
+        class="govuk-link">
         local sheriff court (opens in new tab)</a>""";
 
     private static final String FOOTER = """
-            <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
+            <div class="govuk-warning-text">
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                    <span id="warning-message">To exit back to the case list, select ‘Cancel’</span>
+                    To exit back to the case list, select ‘Cancel’
                 </strong>
             </div>
-            </section>
             """;
 
 }
