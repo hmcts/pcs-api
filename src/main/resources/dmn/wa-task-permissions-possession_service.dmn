@@ -180,10 +180,10 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_04gmv26">
-          <text>"leadership-judge"</text>
+          <text>"specific-access-approver-judiciary"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1ockg1h">
-          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
+          <text>"Read,Own,Claim,Unclaim,UnclaimAssign,CompleteOwn,CancelOwn"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1yxjf9p">
           <text>"JUDICIAL"</text>
@@ -195,7 +195,7 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_02j321b">
-          <text></text>
+          <text>false</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_0z3fse7">
@@ -209,10 +209,10 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1fu88n7">
-          <text>"senior-tribunal-caseworker"</text>
+          <text>"specific-access-approver-legal-ops"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0exrt10">
-          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
+          <text>"Read,Own,Claim,Unclaim,UnclaimAssign,CompleteOwn,CancelOwn"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jzfziv">
           <text>"LEGAL_OPERATIONS"</text>
@@ -224,7 +224,7 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0f6l6v3">
-          <text></text>
+          <text>false</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_14itjyg">
@@ -238,10 +238,10 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1jdix48">
-          <text>"hearing-centre-team-leader"</text>
+          <text>"specific-access-approver-admin"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0kaubdx">
-          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
+          <text>"Read,Own,Claim,Unclaim,UnclaimAssign,CompleteOwn,CancelOwn"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0wmxl81">
           <text>"ADMIN"</text>
@@ -253,7 +253,7 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1co0k0s">
-          <text></text>
+          <text>false</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_18262xm">
@@ -267,10 +267,10 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1muei45">
-          <text>"ctsc-team-leader"</text>
+          <text>"specific-access-approver-ctsc"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1pyfeul">
-          <text>"Read,Own,Claim,Unclaim,Manage,Assign,Unassign,Complete,Cancel"</text>
+          <text>"Read,Own,Claim,Unclaim,UnclaimAssign,CompleteOwn,CancelOwn"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1t7wqmn">
           <text>"CTSC"</text>
@@ -282,7 +282,7 @@
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0lhngtu">
-          <text></text>
+          <text>false</text>
         </outputEntry>
       </rule>
     </decisionTable>
