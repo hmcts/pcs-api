@@ -39,6 +39,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -71,7 +75,8 @@ class DefencePackSelectorTest {
             claimActivityLogRepository,
             sentPackDocuments,
             featureToggleService,
-            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null),
+                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)));
     }
 
     private final PartyEntity claimant = party();
@@ -253,19 +258,14 @@ class DefencePackSelectorTest {
     @DisplayName("Serves late counterclaims to every postal co-defendant without resending defences")
     void shouldSendOnlyLateCounterClaimToPostalCoDefendants() {
         PartyEntity respondingDefendant = partyWithPostPreference(VerticalYesNo.YES);
-        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
-        DocumentEntity response = defenceForm(respondingDefendant);
-        DocumentEntity issuedCounterClaim = counterClaim(respondingDefendant);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
-        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(
-            List.of(sent(respondingDefendant, response), sent(postalCoDefendant, response)));
+        assertLateCounterClaimGoesToPostalDefendants(counterClaim(respondingDefendant));
+    }
 
-        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
-            caseWith(List.of(response, issuedCounterClaim), claimant, respondingDefendant, postalCoDefendant));
-
-        assertThat(result).hasSize(2);
-        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(issuedCounterClaim);
-        assertThat(candidateFor(result, postalCoDefendant).documents()).containsExactly(issuedCounterClaim);
+    @Test
+    @DisplayName("Sends a late counterclaim that is linked only through the counterclaim")
+    void shouldSendLateCounterClaimLinkedOnlyThroughCounterClaim() {
+        PartyEntity respondingDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        assertLateCounterClaimGoesToPostalDefendants(counterClaimLinkedOnly(respondingDefendant));
     }
 
     @Test
@@ -611,9 +611,35 @@ class DefencePackSelectorTest {
             .build();
     }
 
+    private void assertLateCounterClaimGoesToPostalDefendants(DocumentEntity issuedCounterClaim) {
+        PartyEntity respondingDefendant = issuedCounterClaim.getParty() != null
+            ? issuedCounterClaim.getParty()
+            : issuedCounterClaim.getCounterClaim().getParty();
+        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity response = defenceForm(respondingDefendant);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(
+            List.of(sent(respondingDefendant, response), sent(postalCoDefendant, response)));
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(response, issuedCounterClaim), claimant, respondingDefendant, postalCoDefendant));
+
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, respondingDefendant).documents()).containsExactly(issuedCounterClaim);
+        assertThat(candidateFor(result, postalCoDefendant).documents()).containsExactly(issuedCounterClaim);
+    }
+
     private DocumentEntity counterClaim(PartyEntity owner) {
         return DocumentEntity.builder()
             .id(UUID.randomUUID()).type(DocumentType.COUNTERCLAIM).party(owner).build();
+    }
+
+    private DocumentEntity counterClaimLinkedOnly(PartyEntity owner) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.COUNTERCLAIM)
+            .counterClaim(CounterClaimEntity.builder().party(owner).build())
+            .build();
     }
 
     private DocumentEntity legalRepDefenceForm(PcsCaseEntity pcsCase, PartyEntity owner) {

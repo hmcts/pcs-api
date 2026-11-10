@@ -8,8 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,12 +15,10 @@ import java.util.stream.Collectors;
 public class CaseListView {
 
     private static final String PERSON_UNKNOWN = "persons unknown";
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public void setCaseFields(PCSCase pcsCase) {
         setClaimantNames(pcsCase);
         setDefendantNames(pcsCase);
-        setDateIssuedString(pcsCase);
         setPostCode(pcsCase);
     }
 
@@ -61,17 +57,10 @@ public class CaseListView {
         return PERSON_UNKNOWN;
     }
 
-    private void setDateIssuedString(PCSCase pcsCase) {
-        LocalDateTime dateIssued = pcsCase.getDateIssued();
-        if (dateIssued != null) {
-            pcsCase.setDateIssuedString(dateIssued.format(DATE_FORMATTER));
-        }
-    }
-
     private void setPostCode(PCSCase pcsCase) {
         AddressUK address = pcsCase.getPropertyAddress();
         if (address != null) {
             pcsCase.setPostCode(address.getPostCode());
         }
     }
-}   
+}
