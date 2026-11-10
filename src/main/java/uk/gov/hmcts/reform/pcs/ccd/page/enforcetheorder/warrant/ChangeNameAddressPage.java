@@ -43,14 +43,14 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
                 </ul>
                 <p class="govuk-body">You cannot continue with your application until you have asked the judge for
                     permission to make this change.</p>
-                <h2 class="govuk-heading-s">If you want to proceed with changing the name or
+                <h2 class="govuk-heading-s govuk-!-font-size-19">If you want to proceed with changing the name or
                     address for the eviction</h2>
                 <p class="govuk-body">
                     <a id="changeNameAddress-link" class="govuk-link">
                         Ask the judge if you can change the name or address for the eviction
                         (GOV.UK, opens in a new tab)</a>.
                 </p>
-                <h2 class="govuk-heading-s">If you want to keep the existing name or address</h2>
+                <h2 class="govuk-heading-s govuk-!-font-size-19">If you want to keep the existing name or address</h2>
                 <p class="govuk-body">If you are confident that the name or address is correct, you can go back to the
                     previous page and change your answer to the last question.</p>
                 <div class="govuk-warning-text">

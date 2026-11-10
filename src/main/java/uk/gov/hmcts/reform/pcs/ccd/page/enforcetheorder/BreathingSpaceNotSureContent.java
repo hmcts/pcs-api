@@ -25,7 +25,7 @@ public class BreathingSpaceNotSureContent {
                 Check if the defendants are in Breathing Space before you continue.
             </p>
 
-            <h2 class="govuk-heading-s">
+            <h2 class="govuk-heading-s govuk-!-font-size-19">
                 What you should do next
             </h2>
 
@@ -39,7 +39,7 @@ public class BreathingSpaceNotSureContent {
                    Contact the Insolvency Service (opens in new tab)</a> to confirm.
             </p>
 
-            <h2 class="govuk-heading-s">
+            <h2 class="govuk-heading-s govuk-!-font-size-19">
                 If the Insolvency Service confirms that the defendants
                 are using the Breathing Space scheme
             </h2>
@@ -49,7 +49,7 @@ public class BreathingSpaceNotSureContent {
                 are using the Breathing Space scheme.
             </p>
 
-            <h2 class="govuk-heading-s">
+            <h2 class="govuk-heading-s govuk-!-font-size-19">
                 Contact the court by email
             </h2>
 
@@ -64,17 +64,17 @@ public class BreathingSpaceNotSureContent {
 
             <p class="govuk-body">
                 If you’re applying for a warrant and you do not know the name
-                of your local court, select the 'Money' category and then
-                the 'Housing' category to find it.
+                of your local court, select the ‘Money’ category and then
+                the ‘Housing’ category to find it.
             </p>
 
             <p class="govuk-body">
                 If you’re applying for a writ and you do not know the name
-                of your local court, select the 'High Court district
-                registries' to find it.
+                of your local court, select the ‘High Court district
+                registries’ to find it.
             </p>
 
-            <h2 class="govuk-heading-s">
+            <h2 class="govuk-heading-s govuk-!-font-size-19">
                 Contact the court by telephone
             </h2>
 
@@ -89,11 +89,10 @@ public class BreathingSpaceNotSureContent {
                    href="https://www.gov.uk/call-charges"
                    target="_blank"
                    rel="noopener noreferrer">
-                    Find out about call charges (opens in new tab)
-                </a>
+                    Find out about call charges (opens in new tab)</a>.
             </p>
 
-            <h2 class="govuk-heading-s">
+            <h2 class="govuk-heading-s govuk-!-font-size-19">
                 If the Insolvency Service confirms that the defendants
                 are not using the Breathing Space scheme
             </h2>

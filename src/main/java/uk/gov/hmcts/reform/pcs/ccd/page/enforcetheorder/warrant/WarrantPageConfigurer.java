@@ -25,14 +25,14 @@ public class WarrantPageConfigurer implements PageConfigurer {
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
+            .add(new NameAndAddressForEvictionPage())
+            .add(new ChangeNameAddressPage())
+            .add(new GenAppHoldingPage())
             .add(new BreathingSpacePage())
             .add(new BreathingSpaceNotSurePage())
             .add(new MissedPaymentsPage())
             .add(new CannotApplyForWarrantInfoPage())
             .add(new UploadStatementPage())
-            .add(new NameAndAddressForEvictionPage())
-            .add(new ChangeNameAddressPage())
-            .add(new GenAppHoldingPage())
             .add(new ConfirmIfDOBKnownPage())
             .add(defendantsDOBPage)
             .add(new PeopleWhoWillBeEvictedPage())

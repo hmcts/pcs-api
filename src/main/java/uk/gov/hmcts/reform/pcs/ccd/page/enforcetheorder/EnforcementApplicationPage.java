@@ -49,13 +49,13 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body">You can use either a warrant or a writ to evict someone. You cannot
                             apply for a warrant if you have already transferred enforcement of the possession order
                             to the High Court.</p>
-                            <h2 class="govuk-heading-s">If you choose a warrant of possession</h2>
+                            <h2 class="govuk-heading-s govuk-!-font-size-19">If you choose a warrant of possession</h2>
                             <p class="govuk-body govuk-!-margin-bottom-1">If you apply for a warrant:</p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">it costs ${warrantFeeAmount} to apply</li>
                               <li class="govuk-!-font-size-19">it’s free to hire a County Court bailiff</li>
                             </ul>
-                            <h2 class="govuk-heading-s">If you ask the judge for a writ of
+                            <h2 class="govuk-heading-s govuk-!-font-size-19">If you ask the judge for a writ of
                             possession</h2>
                             <p class="govuk-body govuk-!-margin-bottom-4"> You’ll need to:</p>
                             <ul class="govuk-list govuk-list--bullet">
@@ -77,7 +77,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                               much it will cost (opens in a new tab, High Court Enforcement Officers Association
                               website)</a> (they usually charge by the hour)</li>
                             </ul>
-                            <h2 class="govuk-heading-s">The additional evidence you’ll need to
+                            <h2 class="govuk-heading-s govuk-!-font-size-19">The additional evidence you’ll need to
                             apply for a writ</h2>
                             <p class="govuk-body">You’ll need to provide reasons for applying for a writ rather
                             than a warrant.</p>
