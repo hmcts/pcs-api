@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -9,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DraftUpload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -31,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
-import uk.gov.hmcts.reform.pcs.ccd.view.ClaimDraftUploadsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
@@ -108,7 +110,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
     private final EnforcementOrderView enforcementOrderView;
-    private final ClaimDraftUploadsView claimDraftUploadsView;
+    private final ObjectMapper objectMapper;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -130,7 +132,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .ifPresentOrElse(
                     draft -> {
                         caseTabView.setDraftCaseTabFields(pcsCase, draft, pcsCaseEntity);
-                        claimDraftUploadsView.setCaseFields(pcsCase, draft);
+                        setClaimDraftUploads(pcsCase, draft);
                     },
                     () -> caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity)
                 );
@@ -233,6 +235,17 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .withZoneSameInstant(UK_ZONE_ID)
                 .toLocalDate())
             .orElse(null);
+    }
+
+    // Once a draft upload is attached to the case, CDAM asks the data store whether the user can see it, and the
+    // data store looks for its document_url anywhere in the case data. Without this, every draft upload 404s.
+    private void setClaimDraftUploads(PCSCase pcsCase, PCSCase draft) {
+        List<ListValue<DraftUpload>> uploads = objectMapper.<JsonNode>valueToTree(draft)
+            .findValuesAsText("document_url").stream()
+            .distinct()
+            .map(url -> ListValue.<DraftUpload>builder().value(new DraftUpload(url)).build())
+            .toList();
+        pcsCase.setClaimDraftUploads(uploads.isEmpty() ? null : uploads);
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

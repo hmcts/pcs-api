@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimDraftUploadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
@@ -694,7 +693,7 @@ public class PCSCase {
      * Files uploaded into the user's Make a claim draft. CDAM serves an attached document only to a user who can see
      * it in the case, so the case view returns them while the claim is a draft. Not shown in any tab.
      */
-    @CCD(access = ClaimDraftUploadAccess.class)
+    @CCD(access = ClaimantAccess.class)
     private List<ListValue<DraftUpload>> claimDraftUploads;
 
     @CCD(

@@ -20,6 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -39,6 +41,9 @@ public class DraftCaseDataEntityListener {
     // Respond to claim is left out until the case view returns its uploads: attached but not in the view, CDAM
     // answers 404.
     private static final Set<EventId> EVENTS = Set.of(resumePossessionClaim, enforceTheOrder);
+
+    private static final Pattern DOCUMENT_ID = Pattern.compile(
+        "/documents/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})");
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -71,8 +76,10 @@ public class DraftCaseDataEntityListener {
             for (JsonNode document : JSON.readTree(caseData).findParents("document_hash")) {
                 String hashToken = document.get("document_hash").textValue();
                 if (hashToken != null && !hashToken.isBlank()) {
-                    DocumentEntityListener.dmStoreDocumentId(document.path("document_url").asText())
-                        .ifPresent(documentId -> uploads.put(documentId, hashToken));
+                    Matcher url = DOCUMENT_ID.matcher(document.path("document_url").asText());
+                    if (url.find()) {
+                        uploads.put(UUID.fromString(url.group(1)), hashToken);
+                    }
                 }
             }
         }

@@ -36,7 +36,7 @@ public class DocumentEntityListener {
             return;
         }
 
-        Optional<UUID> documentId = dmStoreDocumentId(entity.getUrl());
+        Optional<UUID> documentId = dmStoreDocumentId(entity);
         if (documentId.isEmpty()) {
             log.warn("Not attaching document {} to its case, as its URL has no DM Store document id", entity.getId());
             return;
@@ -53,8 +53,8 @@ public class DocumentEntityListener {
         );
     }
 
-    static Optional<UUID> dmStoreDocumentId(String url) {
-        Matcher matcher = DOCUMENT_ID.matcher(String.valueOf(url));
+    private static Optional<UUID> dmStoreDocumentId(DocumentEntity entity) {
+        Matcher matcher = DOCUMENT_ID.matcher(String.valueOf(entity.getUrl()));
         return matcher.find() ? Optional.of(UUID.fromString(matcher.group(1))) : Optional.empty();
     }
 }
