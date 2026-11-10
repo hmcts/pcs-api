@@ -67,6 +67,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
     static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
     static final String NO_PARTY_TO_SERVE = "Select who to serve the order on";
+    static final String TASKS_OUTSTANDING =
+        "You must complete all outstanding tasks before issuing this order and serving it on the parties";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -144,6 +146,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             || issuing.html() == null || issuing.html().isBlank()) {
             throw ExternalRejection.because(NO_WORDING);
         }
+        if (!issue.nextStepsComplete()) {
+            throw ExternalRejection.because(TASKS_OUTSTANDING);
+        }
         // Court staff may change the order's answers, but not to decide an application another order decides.
         if (order.getPcsCase().getGenApps().stream()
             .anyMatch(genApp -> OrderTasks.decides(issuing.formData(), genApp)
@@ -151,6 +156,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             throw ExternalRejection.because(MakeOrder.ALREADY_DECIDED);
         }
         order.setSeal(issue.seal());
+        order.setRestitutionPermission(issue.restitutionPermission());
         if (!issue.serveAllParties()) {
             order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
         }

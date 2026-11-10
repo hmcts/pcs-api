@@ -208,13 +208,14 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null, new Issue(
                 new IssuedOrder(order.orderType(), order.formData(), null, null), List.of(), HIGH_COURT, true,
-                List.of())))
+                List.of(), true, false)))
             .errors()).containsExactly(ConfirmOrderReview.NO_WORDING);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
 
     @Test
-    @DisplayName("issues the order as the caseworker changed it, with its seal, and adds the review dates to the case")
+    @DisplayName("issues the order as the caseworker changed it, with its seal and whether it permits restitution, "
+        + "and adds the review dates to the case")
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");
         var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"),
@@ -223,11 +224,12 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of())));
+            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of(), true, true)));
 
         Issued issued = outcome.changed("orders", Issued.class);
         assertThat(issued.state()).isEqualTo(ISSUED);
         assertThat(issued.seal()).isEqualTo("HIGH_COURT");
+        assertThat(issued.restitutionPermission()).isTrue();
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
         PCSCase view = events.view(caseReference, caseworker);
         assertThat(view.getCaseReviewDatesMarkdown())
@@ -238,6 +240,19 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             .containsExactly("The order is no longer waiting for review");
         assertThat(asJudge.withClientContext(Map.of("orderId", order.id().toString())).startExpectingRejection())
             .containsExactly("The order is no longer waiting for you to change it");
+    }
+
+    @Test
+    @DisplayName("refuses to issue an order while court staff still have tasks to do, leaving it to review again")
+    void refusesToIssueWithTasksOutstanding() {
+        Order order = judgeSubmitsOrder("the judge's order");
+
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), "staff-review", null, new Issue(
+                new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
+                true, List.of(), false, false)))
+            .errors()).containsExactly(ConfirmOrderReview.TASKS_OUTSTANDING);
+        assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
 
     @Test
@@ -337,6 +352,6 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
     /** The orders row once issued. */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record Issued(OrderState state, String seal) {
+    record Issued(OrderState state, String seal, Boolean restitutionPermission) {
     }
 }

@@ -80,6 +80,9 @@ public class OrderEntity {
     @Enumerated(EnumType.STRING)
     private OrderSeal seal;
 
+    /** Whether the order gives permission to issue a warrant or writ of restitution, as court staff issuing it said. */
+    private Boolean restitutionPermission;
+
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "document_id")
     private DocumentEntity document;

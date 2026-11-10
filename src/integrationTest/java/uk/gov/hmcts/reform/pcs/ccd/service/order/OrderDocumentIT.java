@@ -98,7 +98,7 @@ class OrderDocumentIT extends OrderEventIT {
             submitted.version(), "staff-review", null,
             new Issue(
                 new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), WORDING, "the caseworker's wording"),
-                List.of(), COUNTY_COURT, true, List.of())));
+                List.of(), COUNTY_COURT, true, List.of(), true, false)));
         OrderDocumentTaskData job = scheduledGeneration();
         assertThat(job).extracting(OrderDocumentTaskData::getOrderId, OrderDocumentTaskData::getCaseReference,
                 OrderDocumentTaskData::getCaseworkerId, OrderDocumentTaskData::getCaseworkerFirstName,
@@ -222,7 +222,7 @@ class OrderDocumentIT extends OrderEventIT {
     private static ConfirmOrderReviewRequest issue(Order order, boolean serveAllParties, List<UUID> partiesToServe) {
         return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), null, null, new Issue(
             new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), COUNTY_COURT,
-            serveAllParties, partiesToServe));
+            serveAllParties, partiesToServe, true, false));
     }
 
     /** Issues the case's order, served as court staff chose, and runs the job that adds its document. */
