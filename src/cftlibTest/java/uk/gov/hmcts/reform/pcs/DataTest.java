@@ -78,7 +78,7 @@ public class DataTest extends CftlibTest {
 
             caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
 
-            List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference);
+            List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference, 1);
             PartyAccessCode partyAccessCode = partyAccessCodes.getFirst();
             accessCodeService.linkUserToCase(caseReference, partyAccessCode.getAccessCode(), citizenToken);
 
