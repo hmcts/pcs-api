@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -72,6 +75,45 @@ class PcsCaseEntityTest {
     }
 
     @Test
+    void shouldAddCounterClaimEntityAndSetCaseLevelRank() {
+        // Given
+        CounterClaimEntity counterClaim1 = mock(CounterClaimEntity.class);
+        CounterClaimEntity counterClaim2 = mock(CounterClaimEntity.class);
+        CounterClaimEntity counterClaim3 = mock(CounterClaimEntity.class);
+
+        // When
+        underTest.addCounterClaim(counterClaim1);
+        underTest.addCounterClaim(counterClaim2);
+        underTest.addCounterClaim(counterClaim3);
+
+        // Then
+        verify(counterClaim1).setRank(1);
+        verify(counterClaim1).setPcsCase(underTest);
+
+        verify(counterClaim2).setRank(2);
+        verify(counterClaim2).setPcsCase(underTest);
+
+        verify(counterClaim3).setRank(3);
+        verify(counterClaim3).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldContinueCounterClaimCaseLevelRankFromExistingCounterClaims() {
+        // Given
+        for (int i = 0; i < 3; i++) {
+            underTest.getCounterClaims().add(mock(CounterClaimEntity.class));
+        }
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+
+        // When
+        underTest.addCounterClaim(counterClaim);
+
+        // Then
+        verify(counterClaim).setRank(4);
+        verify(counterClaim).setPcsCase(underTest);
+    }
+
+    @Test
     void shouldAddCaseReviewDateEntityAndSetCaseLevelRank() {
         // Given
         CaseReviewDateEntity reviewDateEntity1 = mock(CaseReviewDateEntity.class);
@@ -138,4 +180,31 @@ class PcsCaseEntityTest {
         verify(judicialNoteEntity).setPcsCase(underTest);
     }
 
+    @Test
+    void shouldNotRequireModelKeysOrLastModifiedForExistingCases() {
+        // When
+        PcsCaseEntity legacyCase = PcsCaseEntity.builder().caseReference(1234L).build();
+
+        // Then
+        assertThat(legacyCase.getCaseReference()).isEqualTo(1234L);
+        assertThat(legacyCase.getCaseTypeKey()).isNull();
+        assertThat(legacyCase.getCaseSubtypeKey()).isNull();
+        assertThat(legacyCase.getLastModifiedDatetime()).isNull();
+    }
+
+    @Test
+    void shouldHoldCaseTypeKeysAndLastModifiedDatetime() {
+        // Given
+        LocalDateTime modified = LocalDateTime.of(2026, 10, 27, 9, 30);
+
+        // When
+        underTest.setCaseTypeKey("AAA3-RA-PL");
+        underTest.setCaseSubtypeKey("AAA3-RA-PL");
+        underTest.setLastModifiedDatetime(modified);
+
+        // Then
+        assertThat(underTest.getCaseTypeKey()).isEqualTo("AAA3-RA-PL");
+        assertThat(underTest.getCaseSubtypeKey()).isEqualTo("AAA3-RA-PL");
+        assertThat(underTest.getLastModifiedDatetime()).isEqualTo(modified);
+    }
 }

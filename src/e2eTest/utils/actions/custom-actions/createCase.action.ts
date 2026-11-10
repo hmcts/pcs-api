@@ -1629,11 +1629,11 @@ export class CreateCaseAction implements IAction {
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
 
-   const folderName = caseFile.folder as string;
+    const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
-    const file = (caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload)?.toString();
+    const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload;
 
     switch (folderName) {
       case 'Property documents':
@@ -1645,10 +1645,10 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
         if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles.push(...(Array.isArray(caseFile.caseWorkerAmend) ? caseFile.caseWorkerAmend : [caseFile.caseWorkerAmend]));
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1660,9 +1660,9 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
         if (caseFile.caseWorkerAmend) {
           const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
-          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1676,9 +1676,9 @@ export class CreateCaseAction implements IAction {
           this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments)
         if (caseFile.caseWorkerAmend) {
           const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
-          userInputFiles = this.updateFiles(userInputFiles, file, oldFile as string, caseFile.caseWorkerAmend as string,);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
         } else if (file) {
-          userInputFiles.push(file as string);
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
@@ -1733,11 +1733,26 @@ export class CreateCaseAction implements IAction {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
+    await expect(async () => {
+      expect(await fileLocator.count(), `Files have not rendered for "${folderName}"`).toBeGreaterThan(0);
+    }).toPass({
+      timeout: MEDIUM_TIMEOUT,
+    });
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
-    expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+    const expectedFiles = caseFile.expectedFiles as string[] | undefined;
+    const fileArray = expectedFiles
+      ? (await fileLocator.allTextContents()).map(text => text
+        .replace(/\s*\d{1,2} [A-Za-z]{3} \d{4} \d{1,2}:\d{2}\s*$/, '')
+        .trim())
+      : this.cleanFilesArray(await fileLocator.allTextContents());
+    const expectedFileArray = expectedFiles ?? userInputFiles;
+    if (expectedFiles) {
+      expect(fileArray, `validating files for "${folderName}"`).toEqual(expect.arrayContaining(expectedFiles));
+    } else {
+      expect(expectedFileArray.sort(), `validating files for "${folderName}"`).toEqual(fileArray.sort());
+    }
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
     if ((await folder.getAttribute('aria-expanded')) === 'true') {
@@ -1877,7 +1892,7 @@ export class CreateCaseAction implements IAction {
 
   public async validateTabAccess(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
-      const tabLoc = page.locator('div.mat-tab-label-content');
+      const tabLoc = page.getByRole('tab');
       await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
       const tabs = await tabLoc.allTextContents();
       expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));
