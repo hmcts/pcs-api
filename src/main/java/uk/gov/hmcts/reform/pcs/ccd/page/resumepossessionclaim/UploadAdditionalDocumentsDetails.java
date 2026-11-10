@@ -132,12 +132,10 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             return firstAdditionalDocument.getValue().getDocumentType().getListItems();
         }
 
-        List<DynamicListElement> documentTypes = createDocumentTypeItems(
+        return createDocumentTypeItems(
             caseData.getLegislativeCountry() == LegislativeCountry.WALES
             ? AdditionalDocumentTypeWales.values()
             : AdditionalDocumentTypeEngland.values());
-
-        return documentTypes;
     }
 
     private List<DynamicListElement> createDocumentTypeItems(HasLabel[] documentTypes) {
