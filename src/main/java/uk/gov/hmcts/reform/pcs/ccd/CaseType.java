@@ -144,8 +144,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDashboardData)
             .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags);
-          //  .field(PCSCase::getFormattedDefendantNames)
-           // .field(PCSCase::getFormattedPropertyAddress);
 
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))

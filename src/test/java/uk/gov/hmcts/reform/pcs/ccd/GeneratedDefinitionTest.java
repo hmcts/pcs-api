@@ -149,8 +149,7 @@ class GeneratedDefinitionTest {
         });
         assertThat(everyoneReadable).containsExactlyInAnyOrder(
             "nextSteps/nextStepsMarkdown", "nextSteps/nextStepsMarkdownLabel",
-            "hidden/caseTitleMarkdown", "hidden/featureFlags",
-            "hidden/formattedDefendantNames", "hidden/formattedPropertyAddress"
+            "hidden/caseTitleMarkdown", "hidden/featureFlags"
         );
     }
 
