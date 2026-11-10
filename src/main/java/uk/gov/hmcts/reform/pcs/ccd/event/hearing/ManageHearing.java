@@ -18,10 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
@@ -40,19 +41,23 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 @Slf4j
 public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
+    private static final String HEARING_LOCATION_NOT_FOUND = "Unable to find hearing location";
+
     private final ManageHearingConfigurer manageHearingConfigurer;
     private final HearingService hearingService;
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseService pcsCaseService;
     private final HearingSummaryRenderer hearingSummaryRenderer;
     private final ConfirmationBodyRenderer confirmationBodyRenderer;
+    private final HearingNoticeScheduler hearingNoticeScheduler;
 
     public ManageHearing(ManageHearingConfigurer manageHearingConfigurer,
                          HearingService hearingService,
                          LocationReferenceService locationReferenceService,
                          PcsCaseService pcsCaseService,
                          HearingSummaryRenderer hearingSummaryRenderer,
-                         ConfirmationBodyRenderer confirmationBodyRenderer) {
+                         ConfirmationBodyRenderer confirmationBodyRenderer,
+                         HearingNoticeScheduler hearingNoticeScheduler) {
 
         this.manageHearingConfigurer = manageHearingConfigurer;
         this.hearingService = hearingService;
@@ -60,6 +65,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         this.pcsCaseService = pcsCaseService;
         this.hearingSummaryRenderer = hearingSummaryRenderer;
         this.confirmationBodyRenderer = confirmationBodyRenderer;
+        this.hearingNoticeScheduler = hearingNoticeScheduler;
     }
 
     @Override
@@ -113,7 +119,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
         if (caseManagementLocation == null) {
             log.warn("Unable to find hearing location for case {}:", eventPayload.caseReference());
-            pcsCase.setHearingLocation("Unable to find hearing location");
+            pcsCase.setHearingLocation(HEARING_LOCATION_NOT_FOUND);
             return;
         }
 
@@ -127,11 +133,11 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                 pcsCase.setHearingLocation(courtVenue.courtName());
             } else {
                 log.warn("Unable to find hearing location for case {}:", eventPayload.caseReference());
-                pcsCase.setHearingLocation("Unable to find hearing location");
+                pcsCase.setHearingLocation(HEARING_LOCATION_NOT_FOUND);
             }
         } catch (Exception e) {
             log.warn("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
-            pcsCase.setHearingLocation("Unable to find hearing location");
+            pcsCase.setHearingLocation(HEARING_LOCATION_NOT_FOUND);
         }
     }
 
@@ -146,13 +152,15 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         String confirmationBody = "";
         switch (caseData.getManageHearingOption()) {
             case ADD: {
-                hearingService.addHearing(caseReference, caseData);
+                HearingEntity addedHearing = hearingService.addHearing(caseReference, caseData);
+                hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, addedHearing.getId());
                 confirmationBody = confirmationBodyRenderer
                     .renderHearingAddedConfirmationBody(caseData, caseReference);
                 break;
             }
             case EDIT: {
-                hearingService.updateHearing(caseReference, caseData);
+                HearingEntity updatedHearing = hearingService.updateHearing(caseReference, caseData);
+                hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, updatedHearing.getId());
                 confirmationBody = confirmationBodyRenderer
                     .renderHearingEditedConfirmationBody(caseData, caseReference);
                 break;
