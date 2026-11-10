@@ -63,15 +63,25 @@ public class BulkPrintService {
         List<byte[]> pdfs = new ArrayList<>();
         pdfs.add(coversheetProvider.render(recipientName, address, caseReference));
         documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));
-        if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
-            pdfs.add(blankClaimPackFormsProvider.getBlankResponseForm());
-            pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimForm());
-        }
+        addBlankForms(pdfs, letterType);
         Document mergedLetter = new Document(Base64.getEncoder().encodeToString(pdfMerger.merge(pdfs)), SINGLE_COPY);
 
         LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
             additionalData(caseReference, recipientName, address));
         return sendLetterApi.sendLetter(authTokenGenerator.generate(), letter).letterId;
+    }
+
+    // Blank forms always go last, however many documents come before them; each Welsh form follows its English one.
+    private void addBlankForms(List<byte[]> pdfs, LetterType letterType) {
+        if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
+            pdfs.add(blankClaimPackFormsProvider.getBlankResponseForm());
+            pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimForm());
+        } else if (letterType == LetterType.DEFENDANT_CLAIM_PACK_WELSH) {
+            pdfs.add(blankClaimPackFormsProvider.getBlankResponseForm());
+            pdfs.add(blankClaimPackFormsProvider.getBlankResponseFormWelsh());
+            pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimForm());
+            pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimFormWelsh());
+        }
     }
 
     private void requirePostalAddress(AddressUK address, PartyEntity recipient) {

@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.listener.DocumentEntityListener;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleChangeListener;
 
 import java.time.Instant;
@@ -89,6 +90,10 @@ public class DocumentEntity {
 
     @Enumerated(EnumType.STRING)
     private DocumentType type;
+
+    // Set only where the language is known for certain (access-code letters); null on older rows and uploads.
+    @Enumerated(EnumType.STRING)
+    private AccessCodeLetterLanguage language;
 
     private String contentType;
 

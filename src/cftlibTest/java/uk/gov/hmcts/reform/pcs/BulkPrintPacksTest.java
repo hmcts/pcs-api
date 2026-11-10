@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
@@ -51,6 +52,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +61,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterC
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.CLAIMANT_CLAIM_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENCE_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK;
+import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK_WELSH;
 import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT_TASK_NAME;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -66,6 +70,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT
 class BulkPrintPacksTest extends CftlibTest {
 
     private static final long INITIAL_DRAFT_VERSION = 0L;
+    private static final Pattern ACCESS_CODE = Pattern.compile("accessCode: ([A-Z0-9]{12})");
     @Autowired
     private CcdClient ccdClient;
     @Autowired
@@ -228,6 +233,35 @@ class BulkPrintPacksTest extends CftlibTest {
 
     }
 
+    @Test
+    @Order(4)
+    void verifyWelshClaimPacks() throws IOException {
+        Instant testStart = Instant.now();
+
+        long walesRef = caseCreationService.createAndIssueCase(solicitorToken, LanguageUsed.ENGLISH,
+                                                               LegislativeCountry.WALES);
+
+        // The packs are held until both letters exist for both defendants
+        caseDocumentService.waitForDocumentsOfType(walesRef, DocumentType.CLAIM, testStart, 1);
+        caseDocumentService.waitForDocumentsOfType(walesRef, DocumentType.DEFENDANT_ACCESS_CODE, testStart, 4);
+
+        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
+
+        List<Letter> letters = mockSendLetterServer.getSentLetters(walesRef, DEFENDANT_CLAIM_PACK_WELSH, testStart, 2);
+        assertThat(letters)
+            .map(BulkPrintPacksTest::getRecipientName)
+            .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
+
+        for (String recipientName : List.of("Danny Defendant", "Delia Defendant")) {
+            try (PDDocument pack = findPackPdf(recipientName, letters)) {
+                // Coversheet, both letters, claim form, then the real English and Welsh blank forms
+                assertThat(pack.getNumberOfPages()).isEqualTo(43);
+                assertThat(getPageContents(pack, 2)).contains("Template: CV-PCS-LET-WEL-Defendant-Access-Code.docx");
+                assertThat(accessCode(getPageContents(pack, 2))).isEqualTo(accessCode(getPageContents(pack, 1)));
+            }
+        }
+    }
+
     private void submitDefendantResponse(String emailAddress, CounterClaim counterClaim, String defendantToken) {
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByPost(VerticalYesNo.YES)
@@ -300,6 +334,12 @@ class BulkPrintPacksTest extends CftlibTest {
         try (InputStream inputStream = pdDocument.getPage(pageIndex).getContents()) {
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         }
+    }
+
+    private static String accessCode(String pageContents) {
+        Matcher matcher = ACCESS_CODE.matcher(pageContents);
+        assertThat(matcher.find()).as("access code on the letter").isTrue();
+        return matcher.group(1);
     }
 
     private static Letter findLetterSentTo(String recipientName, List<Letter> letters) {

@@ -28,10 +28,11 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * Renders the defendant access-code letter via Doc Assembly / Docmosis, one per defendant.
+ * Renders a defendant access-code letter via Doc Assembly / Docmosis, in English or Welsh.
  */
 @Service
 @Slf4j
@@ -39,8 +40,12 @@ public class AccessCodeFormDocumentGenerator {
 
     static final String TEMPLATE_ID = "CV-PCS-LET-ENG-Defendant-Access-Code.docx";
     static final String TEMPLATE_ID_V2 = "CV-PCS-LET-ENG-Defendant-Access-Code-V2.docx";
+    static final String WELSH_TEMPLATE_ID = "CV-PCS-LET-WEL-Defendant-Access-Code.docx";
     private static final String OUTPUT_FILENAME_PREFIX = "Defendant Access Code";
+    private static final String WELSH_OUTPUT_FILENAME_PREFIX = OUTPUT_FILENAME_PREFIX + " Welsh";
     private static final String PERSONS_UNKNOWN = "Persons unknown";
+    // Welsh text supplied by WLU via Jira: never edit or translate.
+    private static final String PERSONS_UNKNOWN_WELSH = "Unigolion yn anhysbys";
 
     private final DocAssemblyService docAssemblyService;
     private final LocationReferenceService locationReferenceService;
@@ -74,33 +79,48 @@ public class AccessCodeFormDocumentGenerator {
         this.featureToggleService = featureToggleService;
     }
 
+    public static String outputFileName(UUID partyId, AccessCodeLetterLanguage language) {
+        String prefix = language == AccessCodeLetterLanguage.WELSH
+            ? WELSH_OUTPUT_FILENAME_PREFIX : OUTPUT_FILENAME_PREFIX;
+        return prefix + " " + partyId;
+    }
+
+    public LetterContext resolveLetterContext(PcsCaseEntity pcsCaseEntity) {
+        return new LetterContext(resolveServingCourt(pcsCaseEntity), LocalDate.now(ukClock));
+    }
+
     public String generate(PcsCaseEntity pcsCaseEntity,
                            ClaimEntity mainClaim,
                            PartyEntity defendant,
-                           String plaintextAccessCode) {
+                           String plaintextAccessCode,
+                           AccessCodeLetterLanguage language,
+                           LetterContext context) {
 
         String formattedPropertyAddress = formatAddress(pcsCaseEntity.getPropertyAddress());
-        CourtVenue servingCourt = resolveServingCourt(pcsCaseEntity);
+        CourtVenue servingCourt = context.servingCourt();
 
         AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCaseEntity.getCaseReference()))
             .claimantName(resolveClaimantName(mainClaim))
-            .defendantName(resolveDefendantName(defendant))
+            .defendantName(resolveDefendantName(defendant, language))
             .defendantAddress(resolveDefendantAddress(defendant, pcsCaseEntity))
             .propertyAddress(formattedPropertyAddress)
             .respondByPostCourtAddress(formatCourtAddress(servingCourt))
             .accessCode(plaintextAccessCode)
-            .issuedOn(LocalDate.now(ukClock))
+            .issuedOn(context.issuedOn())
             .url(respondOnlineUrl)
             .courtName(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? servingCourt.courtName() : null)
             .build();
 
-        String outputFilename = OUTPUT_FILENAME_PREFIX + " " + defendant.getId();
+        return docAssemblyService.generateDocument(payload, templateId(language), OutputType.PDF,
+                                                   outputFileName(defendant.getId(), language));
+    }
 
-        String templateId = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
-            ? TEMPLATE_ID_V2 : TEMPLATE_ID;
-
-        return docAssemblyService.generateDocument(payload, templateId, OutputType.PDF, outputFilename);
+    private String templateId(AccessCodeLetterLanguage language) {
+        if (language == AccessCodeLetterLanguage.WELSH) {
+            return WELSH_TEMPLATE_ID;
+        }
+        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? TEMPLATE_ID_V2 : TEMPLATE_ID;
     }
 
     private String resolveClaimantName(ClaimEntity mainClaim) {
@@ -114,14 +134,14 @@ public class AccessCodeFormDocumentGenerator {
             .orElse(null);
     }
 
-    private String resolveDefendantName(PartyEntity defendant) {
+    private String resolveDefendantName(PartyEntity defendant, AccessCodeLetterLanguage language) {
         if (defendant.getNameKnown() == VerticalYesNo.YES) {
             String name = formatPartyName(defendant);
             if (StringUtils.isNotBlank(name)) {
                 return name;
             }
         }
-        return PERSONS_UNKNOWN;
+        return language == AccessCodeLetterLanguage.WELSH ? PERSONS_UNKNOWN_WELSH : PERSONS_UNKNOWN;
     }
 
     private String formatPartyName(PartyEntity party) {
@@ -175,5 +195,8 @@ public class AccessCodeFormDocumentGenerator {
         }
         AddressUK addressUK = addressMapper.toAddressUK(addressEntity);
         return addressFormatter.formatFullAddressWithoutCountry(addressUK, AddressFormatter.NEWLINE_DELIMITER);
+    }
+
+    public record LetterContext(CourtVenue servingCourt, LocalDate issuedOn) {
     }
 }

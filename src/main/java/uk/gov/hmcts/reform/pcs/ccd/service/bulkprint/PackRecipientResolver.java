@@ -77,7 +77,8 @@ public class PackRecipientResolver {
     private ResolvedRecipient resolveClaimRecipient(PcsCaseEntity pcsCase, ClaimPackCandidate candidate) {
         PartyEntity recipient = candidate.party();
         PartyRole role = candidate.recipientType();
-        return new ResolvedRecipient(pcsCase, recipient, claimLetterType(role), candidate.documents(),
+        LetterType letterType = claimLetterType(role, candidate.bilingual());
+        return new ResolvedRecipient(pcsCase, recipient, letterType, candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
             postalAddress(recipient, role, pcsCase.getPropertyAddress()));
     }
@@ -118,7 +119,10 @@ public class PackRecipientResolver {
         return resolved == null ? null : addressMapper.toAddressUK(resolved);
     }
 
-    private LetterType claimLetterType(PartyRole role) {
-        return role == PartyRole.CLAIMANT ? LetterType.CLAIMANT_CLAIM_PACK : LetterType.DEFENDANT_CLAIM_PACK;
+    private LetterType claimLetterType(PartyRole role, boolean bilingual) {
+        if (role == PartyRole.CLAIMANT) {
+            return LetterType.CLAIMANT_CLAIM_PACK;
+        }
+        return bilingual ? LetterType.DEFENDANT_CLAIM_PACK_WELSH : LetterType.DEFENDANT_CLAIM_PACK;
     }
 }
