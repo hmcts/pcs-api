@@ -14,6 +14,8 @@ import {
 } from '@data/api-data';
 import {actionRetries, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT} from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
+import { caseSummary, home } from '@data/page-data';
+import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {
   propertyAccessDetails,
   livingInTheProperty,
@@ -36,6 +38,8 @@ import {
   confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo,
   cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
+import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 import Axios from "axios";
 import {validateHiddenElements} from "@utils/common/hiddenElementValidation.utils";
 
@@ -85,6 +89,8 @@ export class EnforcementAction implements IAction{
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
+      ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
+      
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
       ['youNeedPermissionFromAJudge', () => this.youNeedPermissionFromAJudge(fieldName as actionRecord)],
@@ -93,6 +99,43 @@ export class EnforcementAction implements IAction{
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
+  }
+
+  private async deleteDraftApplication(): Promise<void> {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('errorMessage', {
+      header: deleteThisDraftApplication.errorMessageHeader,
+      message: deleteThisDraftApplication.deleteDraftApplicationRequiredError,
+    });
+    await performAction('clickRadioButton', {
+      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
+      option: deleteThisDraftApplication.noRadioOption,
+    });
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+    await performAction('clickTab', home.caseSummary);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
+    await performAction('clickRadioButton', {
+      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
+      option: deleteThisDraftApplication.yesRadioOption,
+    });
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('mainHeader', draftApplicationDeleted.mainHeader);
+    await performAction('clickButton', draftApplicationDeleted.closeAndReturnToCaseListButton);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+  }
+
+  private async resumeDraftApplication(page: Page): Promise<void> {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await expect(page.getByText('Resume draft application', { exact: true })).toBeVisible();
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
   }
 
   private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord) {
