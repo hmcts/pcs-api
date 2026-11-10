@@ -33,14 +33,13 @@ wa:
     java:
       image: hmctsprod.azurecr.io/camunda/bpm:latest
       # TODO HDPI-6947: REMOVE BEFORE MERGE
+      disableKeyVaults: false
       keyVaults:
         camunda:
           secrets:
             - name: s2s-secret-camunda-bpm
               alias: S2S_SECRET_CAMUNDA_BPM
       environment:
-        # TODO HDPI-6947: REMOVE BEFORE MERGE
-        TASK_MANAGEMENT_API_URL: http://{{ .Release.Name }}-wa-task-management-api
         SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
         SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
         CAMUNDA_BPM_JOB_EXECUTION_CORE_POOL_SIZE: "1"
