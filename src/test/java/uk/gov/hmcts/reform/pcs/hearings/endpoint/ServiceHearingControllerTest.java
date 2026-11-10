@@ -3,7 +3,10 @@ package uk.gov.hmcts.reform.pcs.hearings.endpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingLocation;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingValuesRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.PanelRequirements;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
@@ -16,7 +19,20 @@ class ServiceHearingControllerTest {
 
     private static final String AUTHORIZATION = "Bearer token";
 
-    private final ServiceHearingController underTest = new ServiceHearingController();
+    private final ServiceHearingController underTest = new ServiceHearingController(defaultConfiguration());
+
+    private static ServiceHearingValuesConfiguration defaultConfiguration() {
+        ServiceHearingValuesConfiguration configuration = new ServiceHearingValuesConfiguration();
+        configuration.setHmctsServiceId("AAA3");
+        configuration.setHearingLocations(List.of(
+            HearingLocation.builder().locationType("Court").build()
+        ));
+        configuration.setPanelRequirements(PanelRequirements.builder()
+            .roleType(List.of("24", "45"))
+            .build());
+        configuration.setPreferredHearingChannel("INTER");
+        return configuration;
+    }
 
     @Test
     void shouldReturnServiceHearingValuesWithDefaults() throws Exception {

@@ -19,11 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import uk.gov.hmcts.reform.pcs.hearings.model.HearingLocation;
+import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingValuesRequest;
-import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
-import uk.gov.hmcts.reform.pcs.hearings.model.PanelRequirements;
-import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
@@ -33,6 +30,8 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 @RestController
 @AllArgsConstructor
 public class ServiceHearingController {
+
+    private final ServiceHearingValuesConfiguration serviceHearingValuesConfiguration;
 
     @PostMapping(path = {
         "/serviceHearingValues"
@@ -47,35 +46,8 @@ public class ServiceHearingController {
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @NonNull @RequestBody HearingValuesRequest requestDetails) throws Exception {
 
-        // set defaults
-        List<PartyDetails> parties = List.of(
-            PartyDetails.builder()
-                .individualDetails(IndividualDetails.builder()
-                    .preferredHearingChannel("INTER")
-                    .build()
-            ).build()
-        );
-
-        ServiceHearingValues hearingValues = ServiceHearingValues.builder()
-            .caseId(requestDetails.getCaseReference() + "")
-            .hmctsServiceID("AAA3")
-            .caseAdditionalSecurityFlag(false)
-            .caseRestrictedFlag(false)
-            .autoListFlag(false)
-            .hearingInWelshFlag(false)
-            .privateHearingRequiredFlag(false)
-            .hearingIsLinkedFlag(false)
-            .hearingLocations(List.of(
-                HearingLocation.builder()
-                    .locationType("Court")
-                    .build()
-            ))
-            .panelRequirements(PanelRequirements.builder()
-                .roleType(List.of("24", "45")) // 24 = District Judge, 45 = Deputy District Judge- Fee-Paid
-                .build() 
-            )
-            .parties(parties)
-            .build();
+        ServiceHearingValues hearingValues = serviceHearingValuesConfiguration
+            .getDefaultValues(requestDetails.getCaseReference());
 
         return new ResponseEntity<>(hearingValues, HttpStatus.OK);
     }

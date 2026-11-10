@@ -473,3 +473,20 @@ manage_case:
 docweave:
   templates:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
+
+hmc-service-hearing-values:
+  number-of-days-offset: 57
+  hmcts-service-id: AAA3
+  case-additional-security-flag: false
+  case-restricted-flag: false
+  auto-list-flag: false
+  hearing-in-welsh-flag: false
+  private-hearing-required-flag: false
+  hearing-is-linked-flag: false
+  hearing-locations:
+    - location-type: Court
+  panel-requirements:
+    role-type:
+      - "24"
+      - "45"
+  preferred-hearing-channel: INTER
