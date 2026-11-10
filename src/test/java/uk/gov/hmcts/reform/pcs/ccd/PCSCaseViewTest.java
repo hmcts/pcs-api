@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicatio
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DraftResponseView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -95,6 +97,8 @@ class PCSCaseViewTest {
     @Mock
     private DocumentsView documentsView;
     @Mock
+    private BundleTabView bundleTabView;
+    @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
     private ClaimGroundsView claimGroundsView;
@@ -147,6 +151,8 @@ class PCSCaseViewTest {
     private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     @Mock
     private HearingView hearingView;
+    @Mock
+    private EnforcementOrderView enforcementOrderView;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -165,7 +171,8 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
-                                    caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
+                                    caseTitleService, claimView, documentsView, bundleTabView, tenancyLicenceView,
+                                    claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
@@ -174,7 +181,7 @@ class PCSCaseViewTest {
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    judicialNoteView
+                                    judicialNoteView, enforcementOrderView
         );
     }
 
@@ -503,6 +510,15 @@ class PCSCaseViewTest {
 
         // Then
         verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+    }
+
+    @Test
+    void shouldCallEnforcementOrderView() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
