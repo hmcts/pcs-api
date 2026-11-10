@@ -101,8 +101,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.CasePaymentHistoryViewer;
-
-
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Label;
 
 /**
  * The main domain model representing a possessions case.
@@ -398,8 +397,16 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
-    @CCD(searchable = false, access = DefendantSolicitorAccess.class)
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class, PartyVisibleTabAccess.class})
     private String summaryLegalRepresentativeMarkdown;
+
+    @CCD(
+        label = "${summaryLegalRepresentativeMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {DefendantSolicitorAccess.class, PartyVisibleTabAccess.class}
+    )
+    private String summaryLegalRepresentativeMarkdownLabel;
 
     @CCD(ignore = true)
     @JsonIgnore
@@ -440,7 +447,6 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private GroundsReasonsWales groundsReasonsWales;
-
 
     @JsonUnwrapped
     @CCD
@@ -767,8 +773,136 @@ public class PCSCase {
     )
     private DynamicList caseManagementCategory;
 
-    @CCD(searchable = false)
+    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
     private String confirmEvictionSummaryMarkup;
+
+    @CCD(
+        label = "${confirmEvictionSummaryMarkup}",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String confirmEvictionSummaryMarkupLabel;
+
+    @CCD(
+        label = "# Case Parties",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String casePartiesHeading;
+
+    @CCD(
+        label = "# Summary",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String summaryHeading;
+
+    @CCD(
+        label = "# Case details",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String caseDetailsHeading;
+
+    @CCD(
+        label = "## Claimant details",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String claimantDetailsHeading;
+
+    @CCD(
+        label = "## Defendant details",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String defendantDetailsHeading;
+
+    @CCD(
+        label = "## Rent arrears",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String rentArrearsHeading;
+
+    @CCD(
+        label = "## Tenancy, occupation contract or licence",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String tenancyOrOccupationContractOrLicenceHeading;
+
+    @CCD(
+        label = "## Occupation contract or licence",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String occupationContractOrLicenceHeading;
+
+    @CCD(
+        label = "## Notice",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String noticeHeading;
+
+    @CCD(
+        label = "## Underlessee or mortgagee entitled to claim relief against forfeiture",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String underlesseeOrMortgageeHeading;
+
+    @CCD(
+        label = "## Demotion of tenancy",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String demotionOfTenancyHeading;
+
+    @CCD(
+        label = "## Suspension of right to buy",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String suspensionOfRightToBuyHeading;
+
+    @CCD(
+        label = "## Prohibited conduct standard contract",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String prohibitedConductStandardContractHeading;
+
+    @CCD(
+        label = "## Required Documents",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String requiredDocumentsHeading;
+
+    @CCD(
+        label = "## Documents you’ve uploaded",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String documentsYouveUploadedHeading;
 
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
@@ -816,8 +950,24 @@ public class PCSCase {
     @CCD(searchable = false, access = {JudicialReadAccess.class})
     private String judicialNotesMarkdown;
 
+    @CCD(
+        label = "${judicialNotesMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {JudicialReadAccess.class}
+    )
+    private String judicialNotesMarkdownLabel;
+
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private String caseReviewDatesMarkdown;
+
+    @CCD(
+        label = "${caseReviewDatesMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {InternalTabAccess.class}
+    )
+    private String caseReviewDatesMarkdownLabel;
 
     @CCD(
         label = "Review date",
@@ -875,9 +1025,6 @@ public class PCSCase {
 
     @CCD
     private String defendantNames;
-
-    @CCD
-    private String dateIssuedString;
 
     @CCD(label = "Which state are you moving the case to?",
         typeOverride = FixedList,
