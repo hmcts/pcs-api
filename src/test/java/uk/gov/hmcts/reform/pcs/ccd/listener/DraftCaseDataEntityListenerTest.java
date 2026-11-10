@@ -117,11 +117,11 @@ class DraftCaseDataEntityListenerTest {
     }
 
     @Test
-    void shouldNotAttachRespondToClaimUploadsAsTheCaseViewDoesNotReturnThem() {
+    void shouldAttachRespondToClaimUploads() {
         underTest.onSave(draft(respondPossessionClaim, """
             {"first": %s}""".formatted(upload(UPLOAD))));
 
-        verifyNoInteractions(schedulerClient);
+        assertThat(scheduledData("draft-" + CASE_REFERENCE + "-" + UPLOAD).getDocumentId()).isEqualTo(UPLOAD);
     }
 
     @Test

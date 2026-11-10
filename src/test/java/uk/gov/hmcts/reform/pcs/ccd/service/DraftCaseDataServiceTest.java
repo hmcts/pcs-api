@@ -83,6 +83,41 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
+    void shouldReturnEachDocumentUrlOnceFromTheDraftsTheUserOrTheirOrganisationOwns() throws JsonProcessingException {
+        // Given
+        String claimDraft = """
+            {"first": {"document_url": "http://dm-store/documents/abc"},
+             "tab": {"copy": {"document_url": "http://dm-store/documents/abc"}}}""";
+        String responseDraft = """
+            {"second": [{"value": {"document": {"document_url": "http://dm-store/documents/def"}}}]}""";
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("ORG1");
+        when(draftCaseDataRepository.findCaseDataOwnedBy(CASE_REFERENCE, USER_ID, "ORG1"))
+            .thenReturn(List.of(claimDraft, responseDraft));
+        when(objectMapper.readTree(claimDraft)).thenReturn(new ObjectMapper().readTree(claimDraft));
+        when(objectMapper.readTree(responseDraft)).thenReturn(new ObjectMapper().readTree(responseDraft));
+
+        // When
+        List<String> urls = underTest.getOwnDraftDocumentUrls(CASE_REFERENCE);
+
+        // Then
+        assertThat(urls).containsExactly("http://dm-store/documents/abc", "http://dm-store/documents/def");
+    }
+
+    @Test
+    void shouldReturnNoDraftDocumentUrlsForACallerWithoutAnIdamUserId() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn("system");
+
+        // When
+        List<String> urls = underTest.getOwnDraftDocumentUrls(CASE_REFERENCE);
+
+        // Then
+        assertThat(urls).isEmpty();
+        verifyNoInteractions(draftCaseDataRepository);
+    }
+
+    @Test
     void shouldGetUnsubmittedCaseData() throws JsonProcessingException {
         // Given
         String unsubmittedCaseDataJson = "case data json";

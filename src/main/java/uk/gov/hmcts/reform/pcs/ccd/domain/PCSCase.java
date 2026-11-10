@@ -690,11 +690,11 @@ public class PCSCase {
     private List<ListValue<Document>> systemDocuments;
 
     /**
-     * Files uploaded into the user's Make a claim draft. CDAM serves an attached document only to a user who can see
-     * it in the case, so the case view returns them while the claim is a draft. Not shown in any tab.
+     * The files in the drafts the user, or their organisation, owns on this case. CDAM serves an attached document
+     * only to a user who can see it in the case, so the case view returns them. Not shown in any tab.
      */
-    @CCD(access = ClaimantAccess.class)
-    private List<ListValue<DraftUpload>> claimDraftUploads;
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<DraftUpload>> draftUploads;
 
     @CCD(
         label = "Case file view",

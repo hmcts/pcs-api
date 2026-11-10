@@ -32,6 +32,6 @@ public abstract class DraftCaseDataMixIn {
 
     // Built from the draft by the case view; saved back, a removed upload would stay in the draft.
     @JsonIgnore
-    private List<ListValue<DraftUpload>> claimDraftUploads;
+    private List<ListValue<DraftUpload>> draftUploads;
 
 }

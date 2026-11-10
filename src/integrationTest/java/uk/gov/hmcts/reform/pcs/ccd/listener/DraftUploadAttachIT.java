@@ -22,6 +22,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @SpringBootTest
@@ -75,6 +76,32 @@ class DraftUploadAttachIT extends AbstractPostgresContainerIT {
         });
 
         assertThat(queuedAttaches()).containsExactly("draft-" + CASE_REFERENCE + "-" + second);
+    }
+
+    @Test
+    @DisplayName("finds the drafts a user or their organisation owns, and no one else's")
+    void findsTheDraftsAUserOrTheirOrganisationOwns() {
+        String owner = UUID.randomUUID().toString();
+        DraftCaseDataEntity own = new DraftCaseDataEntity();
+        own.setCaseReference(CASE_REFERENCE);
+        own.setEventId(resumePossessionClaim);
+        own.setIdamUserId(owner);
+        own.setCaseData("{\"owner\": \"user\"}");
+        draftCaseDataRepository.saveAndFlush(own);
+        DraftCaseDataEntity organisations = new DraftCaseDataEntity();
+        organisations.setCaseReference(CASE_REFERENCE);
+        organisations.setEventId(respondPossessionClaim);
+        organisations.setIdamUserId(UUID.randomUUID().toString());
+        organisations.setOrganisationId("ORG1");
+        organisations.setPartyId(UUID.randomUUID());
+        organisations.setCaseData("{\"owner\": \"organisation\"}");
+        draftCaseDataRepository.saveAndFlush(organisations);
+
+        assertThat(draftCaseDataRepository.findCaseDataOwnedBy(CASE_REFERENCE, owner, null))
+            .singleElement().asString().contains("user");
+        assertThat(draftCaseDataRepository.findCaseDataOwnedBy(CASE_REFERENCE, owner, "ORG1")).hasSize(2);
+        assertThat(draftCaseDataRepository.findCaseDataOwnedBy(
+            CASE_REFERENCE, UUID.randomUUID().toString(), "ORG2")).isEmpty();
     }
 
     private List<String> queuedAttaches() {

@@ -10,13 +10,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DraftUpload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
@@ -56,7 +53,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
-import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -185,8 +181,7 @@ class PCSCaseViewTest {
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    judicialNoteView, enforcementOrderView,
-                                    new JacksonConfiguration().getMapper()
+                                    judicialNoteView, enforcementOrderView
         );
     }
 
@@ -487,33 +482,28 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldReturnEachDocumentInTheClaimDraftOnceSoTheDataStoreCanFindItsDocumentUrl() {
+    void shouldReturnTheDocumentsInTheUsersDraftsSoTheDataStoreCanFindTheirDocumentUrl() {
         // Given
-        Document statement = Document.builder().url("http://dm-store/documents/abc").build();
-        Document other = Document.builder().url("http://dm-store/documents/def").build();
-        PCSCase draftCaseData = PCSCase.builder()
-            .rentArrears(RentArrearsSection.builder()
-                             .statementDocuments(List.of(ListValue.<Document>builder().value(statement).build()))
-                             .build())
-            .additionalDocuments(List.of(
-                ListValue.<AdditionalDocument>builder()
-                    .value(AdditionalDocument.builder().document(other).build()).build(),
-                ListValue.<AdditionalDocument>builder()
-                    .value(AdditionalDocument.builder().document(statement).build()).build()))
-            .build();
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
-            .thenReturn(true);
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
-            .thenReturn(Optional.of(draftCaseData));
+        when(draftCaseDataService.getOwnDraftDocumentUrls(CASE_REFERENCE))
+            .thenReturn(List.of("http://dm-store/documents/abc", "http://dm-store/documents/def"));
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        assertThat(pcsCase.getClaimDraftUploads())
+        assertThat(pcsCase.getDraftUploads())
             .extracting(ListValue::getValue)
-            .containsExactlyInAnyOrder(new DraftUpload("http://dm-store/documents/abc"),
-                                       new DraftUpload("http://dm-store/documents/def"));
+            .containsExactly(new DraftUpload("http://dm-store/documents/abc"),
+                             new DraftUpload("http://dm-store/documents/def"));
+    }
+
+    @Test
+    void shouldLeaveDraftUploadsNullWhenTheUserHasNoDraftDocuments() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDraftUploads()).isNull();
     }
 
     @Test

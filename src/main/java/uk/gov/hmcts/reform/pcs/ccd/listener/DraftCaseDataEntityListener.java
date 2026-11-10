@@ -11,36 +11,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.AttachDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.AttachDocumentTaskComponent;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-
 /**
- * Attaches files uploaded into a draft to the draft's case in CDAM, as {@link DocumentEntityListener} does for
+ * Attaches files uploaded into any draft to the draft's case in CDAM, as {@link DocumentEntityListener} does for
  * submitted documents. Unattached, CDAM stops serving them after its one-day TTL.
  *
  * <p>An upload is any document in the draft that carries the hash token CDAM issued for it. Documents copied into
  * a draft from the case have none. The token goes to CDAM, which refuses a document already on another case.
+ * Once attached, the user opens the file through the draftUploads case field.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DraftCaseDataEntityListener {
-
-    // Respond to claim is left out until the case view returns its uploads: attached but not in the view, CDAM
-    // answers 404.
-    private static final Set<EventId> EVENTS = Set.of(resumePossessionClaim, enforceTheOrder);
 
     private static final Pattern DOCUMENT_ID = Pattern.compile(
         "/documents/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})");
@@ -57,7 +49,7 @@ public class DraftCaseDataEntityListener {
     @PostPersist
     @PostUpdate
     public void onSave(DraftCaseDataEntity draft) {
-        if (EVENTS.contains(draft.getEventId()) && hasHashToken(draft.getCaseData())) {
+        if (hasHashToken(draft.getCaseData())) {
             try {
                 Map<UUID, String> uploads = uploads(draft.getCaseData());
                 uploads.keySet().removeAll(uploads(draft.getSavedCaseData()).keySet());

@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -110,7 +108,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
     private final EnforcementOrderView enforcementOrderView;
-    private final ObjectMapper objectMapper;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -132,8 +129,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .ifPresentOrElse(
                     draft -> {
                         caseTabView.setDraftCaseTabFields(pcsCase, draft, pcsCaseEntity);
-                        setClaimDraftUploads(pcsCase, draft);
-                    },
+                        },
                     () -> caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity)
                 );
         } else {
@@ -145,6 +141,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
+        setDraftUploads(pcsCase, caseReference);
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -239,13 +236,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     // Once a draft upload is attached to the case, CDAM asks the data store whether the user can see it, and the
     // data store looks for its document_url anywhere in the case data. Without this, every draft upload 404s.
-    private void setClaimDraftUploads(PCSCase pcsCase, PCSCase draft) {
-        List<ListValue<DraftUpload>> uploads = objectMapper.<JsonNode>valueToTree(draft)
-            .findValuesAsText("document_url").stream()
-            .distinct()
+    private void setDraftUploads(PCSCase pcsCase, long caseReference) {
+        List<ListValue<DraftUpload>> uploads = draftCaseDataService.getOwnDraftDocumentUrls(caseReference).stream()
             .map(url -> ListValue.<DraftUpload>builder().value(new DraftUpload(url)).build())
             .toList();
-        pcsCase.setClaimDraftUploads(uploads.isEmpty() ? null : uploads);
+        pcsCase.setDraftUploads(uploads.isEmpty() ? null : uploads);
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
