@@ -59,11 +59,10 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
     /**
      * The general application an order decides, as the judge deciding it reads it: what was applied for,
      * by whom, the applicant's answers, the order they asked for, and their documents. The id names its answers on
-     * the make order form. An application to suspend the warrant of possession is decided by suspending the
-     * warrant on conditions or saying when the eviction may go ahead.
+     * the make order form. Granting an application to suspend enforcement suspends it on conditions.
      */
     public record Application(UUID id,
-                              boolean warrantSuspension,
+                              boolean enforcementSuspension,
                               String reference,
                               String type,
                               String somethingElseDetails,
