@@ -87,6 +87,23 @@ class AttachDocumentTaskComponentTest {
     }
 
     @Test
+    void shouldSendTheHashTokenOfADraftUploadSoCdamChecksIt() {
+        when(taskInstance.getData()).thenReturn(AttachDocumentTaskData.builder()
+                                                    .caseReference(CASE_REFERENCE)
+                                                    .documentId(DOCUMENT_ID)
+                                                    .hashToken("hash")
+                                                    .build());
+
+        underTest.attachDocumentTask().execute(taskInstance, executionContext);
+
+        ArgumentCaptor<CaseDocumentsMetadata> metadata = ArgumentCaptor.forClass(CaseDocumentsMetadata.class);
+        verify(caseDocumentClientApi).patchDocument(anyString(), anyString(), metadata.capture());
+        assertThat(metadata.getValue().getDocumentHashTokens())
+            .singleElement()
+            .satisfies(token -> assertThat(token.getHashToken()).isEqualTo("hash"));
+    }
+
+    @Test
     void shouldCompleteWhenTheDocumentNoLongerExists() {
         when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
             .thenThrow(new FeignException.NotFound("not found", mock(Request.class), null, null));

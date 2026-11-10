@@ -21,12 +21,4 @@ public class DraftUpload {
     @JsonProperty("document_url")
     @CCD(label = "Document URL")
     private String documentUrl;
-
-    @JsonProperty("document_binary_url")
-    @CCD(label = "Document binary URL")
-    private String documentBinaryUrl;
-
-    @JsonProperty("document_filename")
-    @CCD(label = "File name")
-    private String documentFilename;
 }

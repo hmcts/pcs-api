@@ -71,7 +71,10 @@ public class AttachDocumentTaskComponent {
                             .caseTypeId(CaseType.getCaseType())
                             .jurisdictionId(CaseType.getJurisdictionId())
                             .documentHashTokens(List.of(
-                                DocumentHashToken.builder().id(taskData.getDocumentId().toString()).build()))
+                                DocumentHashToken.builder()
+                                    .id(taskData.getDocumentId().toString())
+                                    .hashToken(taskData.getHashToken())
+                                    .build()))
                             .build()
                     );
                 } catch (FeignException.NotFound e) {
