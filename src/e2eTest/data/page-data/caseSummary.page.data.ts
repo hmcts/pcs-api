@@ -9,6 +9,7 @@ export const caseSummary = {
   createFlagsEvent: 'Create case flags',
   manageFlagsEvent: 'Manage case flags',
   confirmEvictionEvent: 'Confirm the eviction details',
+  enterBreathingSpaceEvent: 'Enter breathing space',
   makeAnApplication: 'Make an application',
   uploadAdditionalDocuments: 'Upload additional documents',
   addCaseNote: 'Add a case note',

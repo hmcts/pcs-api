@@ -33,5 +33,7 @@ export default {
   'addJudicialNoteaddJudicialNote': 'addJudicialNotes',
   'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
   'addJudicialNote/confirm': 'confirmJudicialNotes',
-  'managePartiesremovePartyDetails': 'checkFullPartyDetails'
+  'managePartiesremovePartyDetails': 'checkFullPartyDetails',
+  'enterBreathingSpacebreathingSpaceApplication': 'enterBreathingSpace'
+  
 };
