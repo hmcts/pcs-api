@@ -69,6 +69,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
     static final String NO_PARTY_TO_SERVE = "Select who to serve the order on";
     static final String NO_FREE_FORM_DETAILS = "Record what the order does";
+    static final String NO_RESTITUTION_ANSWER =
+        "Select if permission has been given to issue a warrant or writ of restitution";
     static final String TASKS_OUTSTANDING =
         "You must complete all outstanding tasks before issuing this order and serving it on the parties";
 
@@ -136,7 +138,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 .formData(submitted.getFormData())
                 .docweaveSnapshot(submitted.getDocweaveSnapshot())
                 .messageEntry(messageService.recordOrderQuery(order, submitted.getCreatedAt(),
-                    orderTasks.currentUserName("Court staff"), query)));
+                    IdamUserIds.normalise(caseworker.getUid()), orderTasks.currentUserName("Court staff"), query)));
         orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned);
         return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
     }
@@ -150,6 +152,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         }
         if (!issue.nextStepsComplete()) {
             throw ExternalRejection.because(TASKS_OUTSTANDING);
+        }
+        if (issue.restitutionPermission() == null) {
+            throw ExternalRejection.because(NO_RESTITUTION_ANSWER);
         }
         boolean freeForm = issuing.orderType() == OrderType.FREE_FORM;
         if (freeForm && (issue.freeFormDetails() == null || issue.freeFormDetails().category() == null)) {

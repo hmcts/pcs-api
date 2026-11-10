@@ -7,7 +7,8 @@ import java.time.LocalDate;
 
 /**
  * What a judge's free-form order does, as court staff record it on issuing it, so the case can act on the order
- * without its wording changing. Only the answers for its category are given, and only they are stored.
+ * without its wording changing. The frontend sends only the answers for its category; nothing reads them yet, so
+ * only the category is checked here.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record FreeFormDetails(Category category,

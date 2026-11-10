@@ -268,7 +268,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("refuses to issue an order while court staff still have tasks to do, leaving it to review again")
+    @DisplayName("refuses to issue an order while court staff still have tasks to do, or without saying whether it "
+        + "permits restitution, leaving it to review again")
     void refusesToIssueWithTasksOutstanding() {
         Order order = judgeSubmitsOrder("the judge's order");
 
@@ -277,6 +278,11 @@ class ConfirmOrderReviewIT extends OrderEventIT {
                 new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
                 true, List.of(), false, false, null)))
             .errors()).containsExactly(ConfirmOrderReview.TASKS_OUTSTANDING);
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), "staff-review", null, new Issue(
+                new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
+                true, List.of(), true, null, null)))
+            .errors()).containsExactly(ConfirmOrderReview.NO_RESTITUTION_ANSWER);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
 

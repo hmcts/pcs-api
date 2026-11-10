@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageAction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageSide;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -34,6 +35,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -185,7 +188,9 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         }
         caseData.setMessageSummaryMarkdown(summary(message.get()));
         caseData.setMessageHistory(history(message.get()));
-        caseData.setMessageReplyRecipient(message.get().latest().getSenderRole());
+        // A reply goes back to court staff, or to a judge of whichever rank the replier chooses.
+        caseData.setMessageReplyRecipient(message.get().latest().getSenderSide().isJudicial()
+            ? null : MessageRecipient.COURT_STAFF);
         return respond(caseData, List.of());
     }
 
@@ -206,10 +211,11 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         }
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(eventPayload.caseReference());
-        MessageRecipient senderRole = MessageRecipient.of(userRoleService.isJudge());
-        // A message is signed with the sender's name, or their role if IDAM gives none.
-        String name = Optional.ofNullable(securityContextService.getCurrentUserDetails().getName())
-            .filter(given -> !given.isBlank()).orElse(senderRole.getLabel());
+        MessageSide side = MessageSide.of(userRoleService.isJudge());
+        UserInfo user = securityContextService.getCurrentUserDetails();
+        // A message is signed with the sender's name, or their side if IDAM gives none.
+        String name = Optional.ofNullable(user.getName()).filter(given -> !given.isBlank()).orElse(side.getLabel());
+        Sender sender = new Sender(IdamUserIds.normalise(user.getUid()), name, side);
 
         // The pages check these as the user goes; an event submitted without them is checked here.
         boolean sending = caseData.getMessageAction() == MessageAction.SEND;
@@ -220,8 +226,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         Optional<UUID> tasksMessage = boundMessage(caseData, pcsCase);
         boolean fromItsTask = !sending && tasksMessage.isPresent() && tasksMessage.get().equals(chosenId(caseData));
         SubmitResponse<State> response = sending
-            ? send(pcsCase, caseData, name, senderRole)
-            : answer(pcsCase, caseData, name, senderRole, fromItsTask);
+            ? send(pcsCase, caseData, sender)
+            : answer(pcsCase, caseData, sender, fromItsTask);
         // XUI completes the task the event was started from whatever the user did, so a message they left for
         // another is asked about again.
         if ((response.getErrors() == null || response.getErrors().isEmpty()) && !fromItsTask) {
@@ -231,14 +237,18 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return response;
     }
 
-    private SubmitResponse<State> answer(PcsCaseEntity pcsCase, PCSCase caseData, String name,
-                                         MessageRecipient senderRole, boolean fromItsTask) {
+    /** Who is writing: their IDAM id, the name they sign with, and their side. */
+    private record Sender(String idamUserId, String name, MessageSide side) {
+    }
+
+    private SubmitResponse<State> answer(PcsCaseEntity pcsCase, PCSCase caseData, Sender sender,
+                                         boolean fromItsTask) {
         Optional<CaseMessageEntity> message = chosen(pcsCase, caseData);
         if (message.isEmpty()) {
             return rejected(List.of(NO_MESSAGES));
         }
         if (caseData.getMessageNeedReply() == VerticalYesNo.YES) {
-            messageService.reply(message.get(), new Writing(name, senderRole,
+            messageService.reply(message.get(), new Writing(sender.idamUserId(), sender.name(), sender.side(),
                 caseData.getMessageReplyRecipient(), caseData.getMessageReplyUrgent() == VerticalYesNo.YES,
                 caseData.getMessageReply().trim()), fromItsTask);
             return confirmed("Reply sent",
@@ -247,13 +257,13 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         }
         String note = caseData.getMessageClosureNote() == null || caseData.getMessageClosureNote().isBlank()
             ? null : caseData.getMessageClosureNote().trim();
-        MessageRecipient told = messageService.closeWithoutReply(message.get(), name, note, fromItsTask);
+        MessageSide told = messageService.closeWithoutReply(message.get(), sender.idamUserId(), sender.name(), note,
+            fromItsTask);
         return confirmed("Message closed",
             "A task has been created for " + told.getLabel() + " to review.");
     }
 
-    private SubmitResponse<State> send(PcsCaseEntity pcsCase, PCSCase caseData, String name,
-                                       MessageRecipient senderRole) {
+    private SubmitResponse<State> send(PcsCaseEntity pcsCase, PCSCase caseData, Sender sender) {
         Set<MessageCategory> categories = caseData.getMessageCategories();
         boolean aboutApplication = categories.contains(MessageCategory.APPLICATION);
         GenAppEntity genApp = aboutApplication ? chosenGenApp(pcsCase, caseData).orElse(null) : null;
@@ -262,7 +272,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
             return rejected(List.of("Choose the open application the message is about"));
         }
         messageService.send(pcsCase, caseData.getMessageSubject().trim(), categories, genApp,
-            new Writing(name, senderRole, caseData.getMessageRecipient(),
+            new Writing(sender.idamUserId(), sender.name(), sender.side(), caseData.getMessageRecipient(),
                 caseData.getMessageUrgent() == VerticalYesNo.YES, caseData.getMessageBody().trim()));
         return confirmed("Your message has been sent",
             "A task to review the message has been created for " + caseData.getMessageRecipient().getLabel() + ".");

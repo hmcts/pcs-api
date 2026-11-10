@@ -74,6 +74,8 @@ public class CaseMessageEntity {
     /** When the thread was closed; it is open until then. */
     private Instant closedAt;
 
+    private String closedByIdamUserId;
+
     private String closedByName;
 
     private String closureNote;

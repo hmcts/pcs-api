@@ -18,9 +18,4 @@ public enum MessageRecipient implements HasLabel {
 
     private final String label;
     private final boolean judicial;
-
-    /** The role a user writes as: a judge as a District Judge, anyone else as court staff. */
-    public static MessageRecipient of(boolean judge) {
-        return judge ? DISTRICT_JUDGE : COURT_STAFF;
-    }
 }

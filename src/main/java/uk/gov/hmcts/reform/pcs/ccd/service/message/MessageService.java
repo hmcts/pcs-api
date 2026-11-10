@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageSide;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseMessageEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -44,9 +45,9 @@ public class MessageService {
     private final OrderStepRepository orderStepRepository;
     private final Clock utcClock;
 
-    /** What someone writes in a message: who, as what, to whom, whether it is urgent, and what it says. */
-    public record Writing(String senderName, MessageRecipient senderRole, MessageRecipient recipient,
-                          boolean urgent, String body) {
+    /** What someone writes in a message: who, on which side, to whom, whether it is urgent, and what it says. */
+    public record Writing(String senderIdamUserId, String senderName, MessageSide senderSide,
+                          MessageRecipient recipient, boolean urgent, String body) {
     }
 
     /** The case's open messages whose latest message is for the user's side: a judge's, or court staff's. */
@@ -98,25 +99,30 @@ public class MessageService {
     }
 
     private static TaskType taskFor(MessageRecipient side) {
-        return side.isJudicial() ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF;
+        return taskFor(side.isJudicial());
     }
 
-    private void close(CaseMessageEntity message, String closedBy, String note) {
+    private static TaskType taskFor(boolean judicial) {
+        return judicial ? TaskType.REVIEW_MESSAGE_JUDGE : TaskType.REVIEW_MESSAGE_STAFF;
+    }
+
+    private void close(CaseMessageEntity message, String closedByIdamUserId, String closedBy, String note) {
         message.setClosedAt(Instant.now(utcClock));
+        message.setClosedByIdamUserId(closedByIdamUserId);
         message.setClosedByName(closedBy);
         message.setClosureNote(note);
     }
 
     /** Closes the message without a reply, telling the side that wrote its latest message, whose side it returns. */
-    public MessageRecipient closeWithoutReply(CaseMessageEntity message, String closedBy, String note,
-                                              boolean fromItsTask) {
+    public MessageSide closeWithoutReply(CaseMessageEntity message, String closedByIdamUserId, String closedBy,
+                                         String note, boolean fromItsTask) {
         closeTaskUnlessFrom(message, fromItsTask);
-        close(message, closedBy, note);
-        MessageRecipient told = message.latest().getSenderRole();
+        close(message, closedByIdamUserId, closedBy, note);
+        MessageSide told = message.latest().getSenderSide();
         long caseReference = message.getPcsCase().getCaseReference();
         String description = taskDescriptionService.createReviewClosedMessageDescription(closedBy,
             message.getSubject(), note, caseReference);
-        camundaService.createTask(caseReference, taskFor(told), description, false, null);
+        camundaService.createTask(caseReference, taskFor(told.isJudicial()), description, false, null);
         return told;
     }
 
@@ -124,18 +130,18 @@ public class MessageService {
      * Court staff's query on the order they return to its judge, kept on the Messages tab as a closed message that says
      * it came with the order and when the judge wrote it. Saved so the returning step can point at it.
      */
-    public CaseMessageEntryEntity recordOrderQuery(OrderEntity order, Instant written, String staffName,
-                                                   String query) {
+    public CaseMessageEntryEntity recordOrderQuery(OrderEntity order, Instant written, String staffIdamUserId,
+                                                   String staffName, String query) {
         // Signed with the role if IDAM gave them no name.
         String name = staffName == null || staffName.isBlank() ? MessageRecipient.COURT_STAFF.getLabel() : staffName;
         CaseMessageEntity message = CaseMessageEntity.builder()
             .subject("Query on the order written " + WRITTEN.format(written.atZone(UK_ZONE_ID)))
             .categories(EnumSet.of(MessageCategory.OTHER))
             .build();
-        CaseMessageEntryEntity entry = entry(new Writing(name, MessageRecipient.COURT_STAFF,
-            MessageRecipient.of(true), false, query), Instant.now(utcClock));
+        CaseMessageEntryEntity entry = entry(new Writing(staffIdamUserId, name, MessageSide.COURT_STAFF,
+            MessageRecipient.DISTRICT_JUDGE, false, query), Instant.now(utcClock));
         message.addEntry(entry);
-        close(message, name, "Sent with the order, which went back to its judge");
+        close(message, staffIdamUserId, name, "Sent with the order, which went back to its judge");
         order.getPcsCase().addMessage(message);
         // The case cascades to its messages, so flushing inserts the entry the step is about to point at.
         orderStepRepository.flush();
@@ -146,14 +152,15 @@ public class MessageService {
      * Closes the case's open messages about the applications that wait for a judge, once a judge sends an order
      * deciding them for review: the order answers them.
      */
-    public void closeAnsweredByOrder(OrderEntity order, Collection<GenAppEntity> decided, String judgeName) {
+    public void closeAnsweredByOrder(OrderEntity order, Collection<GenAppEntity> decided, String judgeIdamUserId,
+                                     String judgeName) {
         PcsCaseEntity pcsCase = order.getPcsCase();
         pcsCase.getMessages().stream()
             .filter(CaseMessageEntity::isOpen)
             .filter(message -> decided.contains(message.getGenApp()))
             .filter(message -> message.latest().getRecipientRole().isJudicial())
             .forEach(message -> {
-                close(message, judgeName, "Answered by an order on the application");
+                close(message, judgeIdamUserId, judgeName, "Answered by an order on the application");
                 // Its task, if the judge did not come from it, has nothing left to do.
                 camundaService.cancelMessageTask(pcsCase.getCaseReference(), message.getId(),
                     TaskType.REVIEW_MESSAGE_JUDGE);
@@ -185,8 +192,9 @@ public class MessageService {
     private static CaseMessageEntryEntity entry(Writing writing, Instant at) {
         return CaseMessageEntryEntity.builder()
             .createdAt(at)
+            .senderIdamUserId(writing.senderIdamUserId())
             .senderName(writing.senderName())
-            .senderRole(writing.senderRole())
+            .senderSide(writing.senderSide())
             .recipientRole(writing.recipient())
             .urgent(writing.urgent())
             .body(writing.body())

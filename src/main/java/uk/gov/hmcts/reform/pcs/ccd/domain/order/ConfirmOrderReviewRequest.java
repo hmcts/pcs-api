@@ -32,7 +32,7 @@ public record ConfirmOrderReviewRequest(Action action,
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal,
                         boolean serveAllParties, List<UUID> partiesToServe, boolean nextStepsComplete,
-                        boolean restitutionPermission, FreeFormDetails freeFormDetails) {
+                        Boolean restitutionPermission, FreeFormDetails freeFormDetails) {
 
         public Issue {
             reviewDates = reviewDates == null ? List.of() : reviewDates;

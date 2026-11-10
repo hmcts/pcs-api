@@ -148,6 +148,12 @@ class SendReplyMessageIT extends OrderEventIT {
         String tab = events.view(caseReference, caseworker).getMessagesMarkdown();
         assertThat(tab).contains("Closed messages", "Please list it for a hearing on notice.",
             "Closed by Tom Caseworker: Listed.");
+        // Each entry and the closure name who wrote it, and on which side.
+        assertThat(jdbcTemplate.queryForList("SELECT sender_idam_user_id, sender_side FROM case_message_entry "
+            + "WHERE message_id = ? ORDER BY created_at", messageId)).extracting(row -> List.copyOf(row.values()))
+            .containsExactly(List.of(caseworker.uid(), "COURT_STAFF"), List.of(judge.uid(), "JUDGE"));
+        assertThat(jdbcTemplate.queryForObject("SELECT closed_by_idam_user_id FROM case_message WHERE id = ?",
+            String.class, messageId)).isEqualTo(caseworker.uid());
     }
 
     @Test

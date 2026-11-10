@@ -186,7 +186,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         }
         // The task the judge opened the order from: its return, a hearing's, or the application it decides.
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
-        messageService.closeAnsweredByOrder(order, decided, orderTasks.currentUserName("Judge"));
+        messageService.closeAnsweredByOrder(order, decided, judge, orderTasks.currentUserName("Judge"));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");

@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageSide;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -43,10 +44,12 @@ public class CaseMessageEntryEntity {
 
     private Instant createdAt;
 
+    private String senderIdamUserId;
+
     private String senderName;
 
     @Enumerated(EnumType.STRING)
-    private MessageRecipient senderRole;
+    private MessageSide senderSide;
 
     @Enumerated(EnumType.STRING)
     private MessageRecipient recipientRole;
