@@ -54,6 +54,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType.PAYMENT_OR_COMPENSATION;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.CLAIMANT_CLAIM_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENCE_PACK;
@@ -156,25 +157,25 @@ class BulkPrintPacksTest extends CftlibTest {
 
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.DEFENDANT_RESPONSE, testStart, 1);
 
-        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
-
-        List<Letter> letters = mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, 2);
+        List<Letter> letters = waitForDefencePacks(testStart, 2);
         assertThat(letters)
             .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(2);
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
             // The fake document renderer writes the template name into the PDF page
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
+            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(2);
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
             // The fake document renderer writes the template name into the PDF page
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
+            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
         }
 
     }
@@ -203,29 +204,41 @@ class BulkPrintPacksTest extends CftlibTest {
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.DEFENDANT_RESPONSE, testStart, 1);
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.COUNTERCLAIM, testStart, 1);
 
-        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
-
-        List<Letter> letters = mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, 2);
+        List<Letter> letters = waitForDefencePacks(testStart, 2);
         assertThat(letters)
             .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
             // The fake document renderer writes the template name into the PDF page
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
+            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
+            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            assertThat(getPageContents(pdDocument, 3)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
             // The fake document renderer writes the template name into the PDF page
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
+            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
+            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            assertThat(getPageContents(pdDocument, 3)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
         }
 
+    }
+
+    private List<Letter> waitForDefencePacks(Instant testStart, int minLetterCount) {
+        await("Defence packs available for case " + caseReference)
+            .atMost(Duration.ofSeconds(90))
+            .pollInterval(Duration.ofSeconds(2))
+            .ignoreExceptions()
+            .until(() -> {
+                testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
+                return mockSendLetterServer.countSentLetters(caseReference, DEFENCE_PACK, testStart) >= minLetterCount;
+            });
+        return mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, minLetterCount);
     }
 
     private void submitDefendantResponse(String emailAddress, CounterClaim counterClaim, String defendantToken) {
