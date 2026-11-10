@@ -4,10 +4,12 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class StatementOfTruthPage implements CcdPageConfiguration {
@@ -26,6 +28,36 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
+                        .label("statementOfTruth-cert-suspended",
+                            """
+                            <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
+                            <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-0">
+                                <li>the defendant has not vacated the land as ordered and has failed to
+                                comply with the terms upon which the order was suspended.</li>
+                                <li>a statement of the payments due and made under the judgement or order
+                                is attached to this request.</li>
+                                <li>I believe that the facts stated in this form are true</li>
+                            </ul>
+                            </div>
+                            """,
+                            "warrantIsSuspendedOrder=\"YES\""
+                        )
+                        .label("statementOfTruth-cert-not-suspended",
+                            """
+                            <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
+                            <ul class="govuk-list govuk-list--bullet" style="margin-left: 40px;">
+                                <li>the defendant has not vacated the land as ordered</li>
+                                <li>I believe the facts stated in this form are true.</li>
+                            </ul>
+                            </div>
+                            """,
+                            "warrantIsSuspendedOrder=\"NO\""
+                        )
+                    .done()
+                    .complex(WarrantDetails::getRepaymentCosts)
+                        .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
+                        .label("statementOfTruth-payments-table",
+                            "${warrantStatementOfTruthRepaymentSummaryMarkdown}")
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)

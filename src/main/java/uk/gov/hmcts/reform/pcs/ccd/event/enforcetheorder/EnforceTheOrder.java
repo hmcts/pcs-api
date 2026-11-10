@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -34,6 +33,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
@@ -58,6 +59,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final DefendantService defendantService;
     private final FeeApplier feeApplier;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
+    private final EnforcementSubmitEvent enforcementSubmitEvent;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -69,7 +71,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
+                .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
@@ -137,16 +139,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         enforcementOrder.setWarrantOfRestitutionInfoText(text);
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
-        return submitOrder(caseReference, eventPayload.caseData());
-    }
-
-    public SubmitResponse<State> submitOrder(long caseReference, PCSCase pcsCase) {
-        enforcementOrderService.saveAndClearDraftData(caseReference, pcsCase.getEnforcementOrder());
-        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}",
-                  caseReference);
-        return SubmitResponse.defaultResponse();
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        return enforcementSubmitEvent.submit(eventPayload);
     }
 
 }

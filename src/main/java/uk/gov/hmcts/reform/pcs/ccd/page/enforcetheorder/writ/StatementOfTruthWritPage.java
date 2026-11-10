@@ -46,7 +46,7 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
                         </li>
                         <li>
                             I request an order for enforcement in the High Court by
-                            Writ of Possession.
+                            writ of possession.
                         </li>
                         <li>
                             I believe that the facts stated in this form are true.
