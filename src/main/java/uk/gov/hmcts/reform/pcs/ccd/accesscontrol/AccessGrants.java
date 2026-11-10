@@ -44,6 +44,13 @@ final class AccessGrants {
         WLU_ADMIN
     };
 
+    static final UserRole[] JUDICIAL_READ_ROLES = {
+        JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE
+    };
+
     static final UserRole[] INTERNAL_READ_ROLES = {
         JUDGE,
         FEE_PAID_JUDGE,
@@ -74,6 +81,10 @@ final class AccessGrants {
         return readAccess(PARTY_VISIBLE_ROLES);
     }
 
+    static SetMultimap<HasRole, Permission> judicialReadAccess() {
+        return readAccess(JUDICIAL_READ_ROLES);
+    }
+
     static SetMultimap<HasRole, Permission> internalReadAccess() {
         return readAccess(INTERNAL_READ_ROLES);
     }
@@ -92,11 +103,13 @@ final class AccessGrants {
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
         grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CR);
-        // Bulk print downloads documents through CDAM as the system user, and CDAM only serves a document attached to
-        // a case to a user who can read it in the case.
-        grants.put(SYSTEM_USER, Permission.R);
         addReadAccess(grants, INTERNAL_READ_ROLES);
+        grants.putAll(new InternalDocumentMoveAccess().getGrants());
         return grants;
+    }
+
+    static SetMultimap<HasRole, Permission> systemDocumentAccess() {
+        return readAccess(SYSTEM_USER);
     }
 
     static SetMultimap<HasRole, Permission> caseLinkingAccess() {

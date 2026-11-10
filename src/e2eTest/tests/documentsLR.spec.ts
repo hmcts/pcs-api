@@ -39,7 +39,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   const isGenAppsSubmitted = /gen\s*apps\s+submitted/.test(title);
 
   const isMultiDef = title.toLowerCase().includes('multi def');
-
   submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload() : submitCaseApiData.submitCasePayloadDefault();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitPayload });
@@ -348,7 +347,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     const firstTab = pages[0];
     await firstTab.bringToFront();
     await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('login', { email: user.localAuthorityOrg1Usr1.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);

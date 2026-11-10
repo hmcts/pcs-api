@@ -33,7 +33,7 @@ class OutstandingCounterClaimPaymentServiceTest {
 
     private static final long CASE_REFERENCE = 12_345_678L;
     private static final UUID PARTY_ID = UUID.randomUUID();
-    private static final UUID IDAM_USER_ID = UUID.randomUUID();
+    private static final String IDAM_USER_ID = UUID.randomUUID().toString();
     private static final UUID COUNTER_CLAIM_ID = UUID.randomUUID();
     private static final String SERVICE_REQUEST_REFERENCE = "2026-1234567890123";
 

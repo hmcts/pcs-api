@@ -1,10 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.LOCALAUTH_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_CHARITY_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_NFP_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_PROP_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_REALT_PROFILE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.ORGANISATION_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
@@ -13,6 +9,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.util.Optional;
+import lombok.Builder;
 import lombok.Getter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -23,48 +20,65 @@ import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
 @Getter
 public enum GroupAccessType implements CCDAccessGroup {
 
-    LOCAL_AUTHORITY_CLAIMANT_ACCESS(
-        LOCALAUTH_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants claimant access on all cases associated with this organisation", 1
+    PROFESSIONAL_ORG_CLAIMANT_ACCESS(
+        ORGANISATION_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
+        DisplaySettings.builder()
+            .description("Claims made by your organisation")
+            .hintText("View and manage all possession claims your organisation has made.")
+            .displayOrder(1)
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(true)
+            .groupAccessEnabled(true)
+            .build()
     ),
-    REAL_ESTATE_ORG_CLAIMANT_ACCESS(
-        OTHER_REALT_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants claimant access on all cases associated with this organisation", 2
-    ),
-    PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS(
-        OTHER_PROP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants claimant access on all cases associated with this organisation", 3
-    ),
-    NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS(
-        OTHER_NFP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants claimant access on all cases associated with this organisation", 4
-    ),
-    CHARITY_ORG_CLAIMANT_ACCESS(
-        OTHER_CHARITY_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants claimant access on all cases associated with this organisation", 5
-    ),
+
     SOLICITOR_ORG_CLAIMANT_ACCESS(
         SOLICITOR_PROFILE, CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
-        "Grants solicitors claimant access on all cases associated with this organisation", 6
+        DisplaySettings.builder()
+            .description("Claims you have made for a claimant")
+            .hintText("View and manage all possession claims your organisation has made as the legal representative "
+                + "for the claimant.")
+            .displayOrder(2)
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(true)
+            .groupAccessEnabled(true)
+            .build()
     ),
+
     SOLICITOR_ORG_DEFENDANT_ACCESS(
         SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
-        "Grants solicitors defendant access on all cases associated with this organisation", 7
+        DisplaySettings.builder()
+            .description("Cases where you represent a defendant")
+            .hintText("View and manage all possession cases where your organisation is the legal representative "
+                + "for a defendant.")
+            .displayOrder(3)
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(true)
+            .groupAccessEnabled(true)
+            .build()
     ),
+
     DUTY_ADVISOR_ACCESS(
         SOLICITOR_PROFILE, null, "duty-advisor-access", "duty-advisor-request",
-        "Grants solicitors access to request time-bound duty-advisor role",
-        "Assign to Users who may need to request time-bound duty-advisor access", 8,
-        false, false, true, true
+        DisplaySettings.builder()
+            .description("In court duty advisor access")
+            .hintText("Where the organisation is the provider of the Housing Loss Prevention Advice Service (HLPAS) "
+                + "In Court Duty Scheme, this grants users temporary access to possession cases.")
+            .displayOrder(4)
+            .accessMandatory(false)
+            .accessDefault(false)
+            .display(false)
+            .groupAccessEnabled(true)
+            .build()
     );
 
-    private static final String ASSIGN_HINT =
-        "Assign to Users to enable access to all cases associated with this organisation";
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
     private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
-    /** Null for duty-advisor access, which is requested per case rather than stamped on one. */
     private final PartyRole partyRole;
     private final String organisationProfileId;
     private final String accessTypeId;
@@ -78,36 +92,31 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     private final String caseAssignedRoleField;
 
-    GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
-                    String caseAssignedRoleField, String description, int displayOrder) {
+    GroupAccessType(OrganisationProfile orgProfile, PartyRole partyRole, String accessTypeId,
+                    String caseAssignedRoleField, DisplaySettings displaySettings) {
         this.partyRole = partyRole;
-        this.organisationProfileId = orgProfileId.getId();
+        this.organisationProfileId = orgProfile.getId();
         this.accessTypeId = accessTypeId;
-        this.accessMandatory = true;
-        this.accessDefault = true;
-        this.display = true;
-        this.description = description;
-        this.hintText = ASSIGN_HINT;
-        this.groupAccessEnabled = true;
-        this.displayOrder = displayOrder;
         this.caseAssignedRoleField = caseAssignedRoleField;
+        this.description = displaySettings.description();
+        this.hintText = displaySettings.hintText();
+        this.displayOrder = displaySettings.displayOrder();
+        this.accessMandatory = displaySettings.accessMandatory();
+        this.accessDefault = displaySettings.accessDefault();
+        this.display = displaySettings.display();
+        this.groupAccessEnabled = displaySettings.groupAccessEnabled();
     }
 
-    GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
-                    String caseAssignedRoleField, String description, String hintText, int displayOrder,
-                    boolean accessMandatory, boolean accessDefault, boolean display, boolean groupAccessEnabled) {
-        this.partyRole = partyRole;
-        this.organisationProfileId = orgProfileId.getId();
-        this.accessTypeId = accessTypeId;
-        this.accessMandatory = accessMandatory;
-        this.accessDefault = accessDefault;
-        this.display = display;
-        this.description = description;
-        this.hintText = hintText;
-        this.displayOrder = displayOrder;
-        this.groupAccessEnabled = groupAccessEnabled;
-        this.caseAssignedRoleField = caseAssignedRoleField;
-    }
+    @Builder
+    private record DisplaySettings(
+        String description,
+        String hintText,
+        int displayOrder,
+        boolean accessMandatory,
+        boolean accessDefault,
+        boolean display,
+        boolean groupAccessEnabled
+    ) { }
 
     private record Key(String organisationProfileId, PartyRole partyRole) { }
 
@@ -123,14 +132,27 @@ public enum GroupAccessType implements CCDAccessGroup {
      * The group ID template for an organisation profile acting in a party role, empty where the
      * combination has no access type. Keyed lookup, so selection does not depend on the order these
      * constants are declared in.
+     *
+     * <p>MyHMCTS grants claimant access against the generic {@code ORGANISATION_PROFILE}, but parties
+     * may still carry a specific PRD profile (for example {@code LOCALAUTH_PROFILE}). Unmapped claimant
+     * profiles therefore fall back to {@link #PROFESSIONAL_ORG_CLAIMANT_ACCESS}.
      */
     public static Optional<String> caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole,
                                                         String organisationId) {
-        return Optional.ofNullable(orgProfileId)
-            .map(profileId -> new Key(profileId, partyRole))
-            .map(CASE_ACCESS_GROUP_MAP::get)
-            .map(groupAccessType ->
-                     groupAccessType.getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
+        if (orgProfileId == null || partyRole == null) {
+            return Optional.empty();
+        }
+
+        GroupAccessType accessType = CASE_ACCESS_GROUP_MAP.get(new Key(orgProfileId, partyRole));
+        if (accessType == null && partyRole == CLAIMANT) {
+            accessType = PROFESSIONAL_ORG_CLAIMANT_ACCESS;
+        }
+        if (accessType == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+            accessType.getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
     }
 
     /**

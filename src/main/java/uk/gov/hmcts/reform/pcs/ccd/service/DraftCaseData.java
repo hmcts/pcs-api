@@ -12,6 +12,6 @@ public class DraftCaseData {
     private long caseReference;
     private EventId eventId;
     private UUID partyId;
-    private UUID userId;
+    private String userId;
     private String organisationId;
 }

@@ -25,7 +25,7 @@ class CitizenClaimListControllerTest {
 
     private static final String AUTH_HEADER = "Bearer user-token";
     private static final String S2S_TOKEN = "service-token";
-    private static final UUID IDAM_ID = UUID.randomUUID();
+    private static final String IDAM_ID = UUID.randomUUID().toString();
 
     @Mock
     private IdamAuthenticator idamAuthenticator;
@@ -40,7 +40,7 @@ class CitizenClaimListControllerTest {
     void shouldReturn200WithClaims_WhenClaimsExist() {
         // Given
         UserInfo userDetails = mock(UserInfo.class);
-        when(userDetails.getUid()).thenReturn(IDAM_ID.toString());
+        when(userDetails.getUid()).thenReturn(IDAM_ID);
         User user = mock(User.class);
         when(user.getUserDetails()).thenReturn(userDetails);
         when(idamAuthenticator.validateAuthToken(AUTH_HEADER)).thenReturn(user);
@@ -62,7 +62,7 @@ class CitizenClaimListControllerTest {
     void shouldReturn200WithEmptyList_WhenNoClaimsExist() {
         // Given
         UserInfo userDetails = mock(UserInfo.class);
-        when(userDetails.getUid()).thenReturn(IDAM_ID.toString());
+        when(userDetails.getUid()).thenReturn(IDAM_ID);
         User user = mock(User.class);
         when(user.getUserDetails()).thenReturn(userDetails);
         when(idamAuthenticator.validateAuthToken(AUTH_HEADER)).thenReturn(user);

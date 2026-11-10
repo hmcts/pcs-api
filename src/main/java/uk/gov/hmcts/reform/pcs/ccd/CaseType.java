@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -29,32 +30,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
-    static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
-        AccessProfile.CITIZEN,
-        AccessProfile.DEFENDANT,
-        AccessProfile.GA_DEFENDANT_SOLICITOR,
-        AccessProfile.CLAIMANT,
-        AccessProfile.PCS_SOLICITOR,
-        AccessProfile.GA_CLAIMANT_SOLICITOR,
-        AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE,
-        AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
-    };
     static final AccessProfile[] INTERNAL_TAB_ROLES = {
-        AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE,
-        AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
-    };
-
-    static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -71,19 +47,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     };
 
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
-
-    static final AccessProfile[] PAYMENT_HISTORY_TAB_ROLES = {
-        AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE,
-        AccessProfile.HEARING_CENTRE_TEAM_LEADER,
-        AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_TEAM_LEADER,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_TEAM_LEADER,
-        AccessProfile.WLU_ADMIN
-    };
 
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
@@ -143,6 +106,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchInputFields()
             .caseReferenceField();
 
+        builder.tabsRespectDeclaredFieldAccess();
         builder.omitHistoryForRoles(NON_INTERNAL_HISTORY_ROLES);
 
         builder.searchCasesFields()
@@ -163,14 +127,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildCaseDetailsTab(builder);
 
         builder.tab("caseFileView", "Case File View")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
+
+        buildBundleTab(builder);
 
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
-            .forRoles(INTERNAL_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
 
@@ -182,27 +146,25 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getFeatureFlags);
 
         builder.tab("serviceRequest", "Service Request")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
         buildCaseNotesTab(builder);
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
         builder.tab("caseFlags", "Case flags")
-            .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildSupportTab(builder);
 
+        buildJudicialNotesTab(builder);
+
         builder.tab("paymentHistory", "Payment History")
-            .forRoles(PAYMENT_HISTORY_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCasePaymentHistoryViewer);
 
@@ -221,6 +183,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+        builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
+            .categoryID(CaseBundleDefinition.FOLDER_ID)
+            .categoryLabel(CaseBundleDefinition.FOLDER_LABEL)
+            .displayOrder(CaseFileCategory.values().length + 1)
+            .build();
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -233,15 +200,24 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
-            .forRoles(CASE_NOTE_TAB_ROLES)
-            .field(PCSCase::getCaseReviewDates)
+            .field("caseReviewDatesMarkdownLabel")
+            .field("caseReviewDatesMarkdown", NEVER_SHOW)
             .field(PCSCase::getCaseNotes);
+    }
+
+    private void buildBundleTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("bundle", "Bundle")
+            .showCondition("bundleTab_Status=\"*\"")
+            .field("bundleTab_Status")
+            .field("bundleTab_Bundle")
+            .field("bundleTab_LastUpdated")
+            .field("bundleTab_Pages")
+            .field("bundleTab_MissingDocuments");
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .label("Case parties", null, "# Case Parties")
+            .field("casePartiesHeading")
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_ClaimantsDetails")
             .field("casePartiesTab_DefendantOneDetails")
@@ -252,48 +228,33 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("summary", "Summary")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .label("summaryLegalRepresentativeMarkdownLabel", null,
-                   "${summaryLegalRepresentativeMarkdown}")
+            .field("summaryLegalRepresentativeMarkdownLabel")
             .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
-            .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
+            .field("confirmEvictionSummaryMarkupLabel")
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
-            .label("Summary", null, "# Summary")
+            .field("summaryHeading")
             .field("summaryTab_RepossessedPropertyAddress")
             .field("summaryTab_GroundsForPossession")
             .field("summaryTab_ReasonsForPossession")
             .field("summaryTab_DateClaimSubmitted")
-            .label("Claimant details",
-                   "summaryTab_ClaimantDetails!=\"\"",
-                   "## Claimant details")
+            .field("claimantDetailsHeading", "summaryTab_ClaimantDetails!=\"\"")
             .field("summaryTab_ClaimantDetails")
-            .label("Defendant details",
-                   "summaryTab_DefendantDetails!=\"\"",
-                   "## Defendant details")
+            .field("defendantDetailsHeading", "summaryTab_DefendantDetails!=\"\"")
             .field("summaryTab_DefendantDetails")
             .field("summaryTab_AdditionalDefendants")
-            .label("Rent arrears",
-                   "summaryTab_RentArrearsDetails!=\"\"",
-                   "## Rent arrears")
+            .field("rentArrearsHeading", "summaryTab_RentArrearsDetails!=\"\"")
             .field("summaryTab_RentArrearsDetails")
-            .label("Tenancy or occupation contract or licence",
-                   "summaryTab_TenancyDetails!=\"\"",
-                   "## Tenancy, occupation contract or licence")
+            .field("tenancyOrOccupationContractOrLicenceHeading", "summaryTab_TenancyDetails!=\"\"")
             .field("summaryTab_TenancyDetails")
-            .label("Occupation contract or licence",
-                   "summaryTab_OccupationContractOrLicenceDetails!=\"\"",
-                   "## Occupation contract or licence")
+            .field("occupationContractOrLicenceHeading", "summaryTab_OccupationContractOrLicenceDetails!=\"\"")
             .field("summaryTab_OccupationContractOrLicenceDetails")
-            .label("Notice",
-                   "summaryTab_NoticeDetails!=\"\"",
-                   "## Notice")
+            .field("noticeHeading", "summaryTab_NoticeDetails!=\"\"")
             .field("summaryTab_NoticeDetails");
     }
 
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseDetails", "Case Details")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .label("Case details", null, "# Case details")
+            .field("caseDetailsHeading")
             .field("detailsTab_ClaimDetails")
             .field("detailsTab_PropertyAddress")
             .field("detailsTab_GroundsForPossessionDetails")
@@ -306,60 +267,29 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_ReasonsForPossessionDetails")
             .field("detailsTab_AntisocialAndConductDetails")
             .field("detailsTab_ApplicationsDetails")
-            .label(
-                "Claimant details",
-                "detailsTab_ClaimantInformation!=\"\"",
-                "## Claimant details"
-            )
+            .field("claimantDetailsHeading", "detailsTab_ClaimantInformation!=\"\"")
             .field("detailsTab_ClaimantInformation")
             .field("detailsTab_ClaimantAddress")
             .field("detailsTab_ClaimantContactDetails")
             .field("detailsTab_ClaimantRegistrationAndLicensingDetails")
             .field("detailsTab_ClaimantCircumstances")
-            .label(
-                "Defendant details",
-                "detailsTab_DefendantInformationDetails!=\"\"",
-                "## Defendant details"
-            )
+            .field("defendantDetailsHeading", "detailsTab_DefendantInformationDetails!=\"\"")
             .field("detailsTab_DefendantInformationDetails")
             .field("detailsTab_AdditionalDefendants")
             .field("detailsTab_DefendantCircumstanceDetails")
-            .label(
-                "Underlessee or mortgagee",
-                "detailsTab_MortgageDetails!=\"\"",
-                "## Underlessee or mortgagee entitled to claim relief against forfeiture"
-            )
+            .field("underlesseeOrMortgageeHeading", "detailsTab_MortgageDetails!=\"\"")
             .field("detailsTab_MortgageOneDetails")
             .field("detailsTab_MortgageDetails")
-            .label(
-                "Demotion of tenancy",
-                "detailsTab_DemotionOfTenancyDetails!=\"\"",
-                "## Demotion of tenancy"
-            )
+            .field("demotionOfTenancyHeading", "detailsTab_DemotionOfTenancyDetails!=\"\"")
             .field("detailsTab_DemotionOfTenancyDetails")
-            .label(
-                "Suspension of right to buy",
-                "detailsTab_SuspensionOfRightToBuyDetails!=\"\"",
-                "## Suspension of right to buy"
-            )
+            .field("suspensionOfRightToBuyHeading", "detailsTab_SuspensionOfRightToBuyDetails!=\"\"")
             .field("detailsTab_SuspensionOfRightToBuyDetails")
-            .label(
-                "Prohibited conduct standard contract",
-                "detailsTab_ProhibitedConductStandardContractDetails!=\"\"",
-                "## Prohibited conduct standard contract"
-            )
+            .field("prohibitedConductStandardContractHeading",
+                   "detailsTab_ProhibitedConductStandardContractDetails!=\"\"")
             .field("detailsTab_ProhibitedConductStandardContractDetails")
-            .label(
-                "Required Documents",
-                "detailsTab_RequiredDocumentsDetails!=\"\"",
-                "## Required Documents"
-            )
+            .field("requiredDocumentsHeading", "detailsTab_RequiredDocumentsDetails!=\"\"")
             .field("detailsTab_RequiredDocumentsDetails")
-            .label(
-                "Documents you've uploaded",
-                "detailsTab_UploadedDocumentsChecklistDetails!=\"\"",
-                "## Documents you've uploaded"
-            )
+            .field("documentsYouveUploadedHeading", "detailsTab_UploadedDocumentsChecklistDetails!=\"\"")
             .field("detailsTab_UploadedDocumentsChecklistDetails");
     }
 
@@ -371,5 +301,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("judicialNotes", "Judicial notes")
+            .field("judicialNotesMarkdownLabel")
+            .field("judicialNotesMarkdown", NEVER_SHOW);
     }
 }

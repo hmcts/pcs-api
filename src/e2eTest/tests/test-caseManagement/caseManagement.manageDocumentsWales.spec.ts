@@ -22,14 +22,14 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   initializeExecutor(page);
   initializeCMExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseFileView });
+  await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
   await performAction('getAddressInfo', { data: createCaseApiWalesData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseFileView.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseFileView.addAnotherDefendant,
-    payLoad: submitCaseApiDataWales.submitCasePayloadCaseFileView
+    defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseFileView().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseFileView().addAnotherDefendant,
+    payLoad: submitCaseApiDataWales.submitCasePayloadCaseFileView()
   });
 
   genAppPayload =
@@ -86,7 +86,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -122,13 +122,13 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
       caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date)
     });
   });
@@ -158,13 +158,13 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Uncategorised documents',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
       caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName)
     });
   });
@@ -187,7 +187,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(), });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -202,7 +202,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     const firstTab = pages[0];
     await firstTab.bringToFront();
     await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('login', { email: user.localAuthorityOrg1Usr1.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);
@@ -210,7 +210,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
@@ -238,7 +238,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(), });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -253,7 +253,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     const firstTab = pages[0];
     await firstTab.bringToFront();
     await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('login', { email: user.localAuthorityOrg1Usr1.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);
@@ -261,11 +261,11 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
       allowEmptyFolder: true
     });
 

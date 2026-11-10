@@ -78,7 +78,7 @@ public class PartyEntity {
     @Builder.Default
     private Set<ClaimActivityLogEntity> claimActivityLogs = new HashSet<>();
 
-    private UUID idamId;
+    private String idamId;
 
     private String firstName;
 
@@ -125,6 +125,8 @@ public class PartyEntity {
     private String emailAddress;
 
     private String pcqId;
+
+    private boolean removed;
 
     @Column(name = "dob")
     private LocalDate dateOfBirth;

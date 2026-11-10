@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.task;
 
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
+import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -9,6 +10,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import org.springframework.beans.factory.ObjectProvider;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.DeletionCaseData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -35,6 +37,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -47,6 +50,8 @@ class CaseDeletionScheduledTaskTest {
     private static final String VALID_SCHEDULE = "DAILY|00:00";
     private static final int DISCARD_AFTER_DAYS = 30;
     private static final int SQL_LIMIT = 200;
+    private static final int DB_CONCURRENCY_PERCENT = 30;
+    private static final int HIKARI_POOL_FALLBACK = 10;
     private static final long SIMULATED_LATENCY_MS = 100;
     private static final long CASE_1 = 1L;
     private static final long CASE_2 = 2L;
@@ -83,6 +88,14 @@ class CaseDeletionScheduledTaskTest {
         // Then
         assertThat(task).isNotNull();
         assertThat(task.getName()).isEqualTo("case-deletion-task");
+    }
+
+    @Test
+    void shouldDeriveBatchSizeAsPercentOfHikariPool() {
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(10, 30)).isEqualTo(3);
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(4, 30)).isEqualTo(1);
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(15, 30)).isEqualTo(4);
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(1, 30)).isEqualTo(1);
     }
 
     @Test
@@ -510,8 +523,15 @@ class CaseDeletionScheduledTaskTest {
     }
 
     private CaseDeletionScheduledTask createTask(int ccdControlSize, int docControlSize, int batchSize) {
-        return new CaseDeletionScheduledTask(VALID_SCHEDULE, DISCARD_AFTER_DAYS, batchSize, SQL_LIMIT,
-                                             ccdControlSize, docControlSize,
+        int hikariPoolSize = Math.max(1, (int) Math.ceil(batchSize * 100.0 / DB_CONCURRENCY_PERCENT));
+        HikariDataSource hikariDataSource = mock(HikariDataSource.class);
+        when(hikariDataSource.getMaximumPoolSize()).thenReturn(hikariPoolSize);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<HikariDataSource> hikariProvider = mock(ObjectProvider.class);
+        when(hikariProvider.getIfAvailable()).thenReturn(hikariDataSource);
+
+        return new CaseDeletionScheduledTask(VALID_SCHEDULE, DISCARD_AFTER_DAYS, DB_CONCURRENCY_PERCENT, SQL_LIMIT,
+                                             ccdControlSize, docControlSize, HIKARI_POOL_FALLBACK, hikariProvider,
                                              caseDeletionService, ccdCaseDataDeletionService,
                                              pcsCaseService, documentImportService, featureToggleService);
     }

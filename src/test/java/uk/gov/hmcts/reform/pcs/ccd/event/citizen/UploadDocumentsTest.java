@@ -340,7 +340,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
         private PartyEntity stubCurrentUserParty() {
             PartyEntity currentUserParty = mock(PartyEntity.class);
-            UUID currentUserId = UUID.randomUUID();
+            String currentUserId = UUID.randomUUID().toString();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE))
                 .willReturn(currentUserParty);
@@ -355,12 +355,12 @@ class UploadDocumentsTest extends BaseEventTest {
         @Mock
         private PcsCaseEntity pcsCaseEntity;
 
-        private UUID currentUserId;
+        private String currentUserId;
 
         @BeforeEach
         void setUp() {
             given(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).willReturn(pcsCaseEntity);
-            currentUserId = UUID.randomUUID();
+            currentUserId = UUID.randomUUID().toString();
             lenient().when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
         }
 
@@ -509,19 +509,16 @@ class UploadDocumentsTest extends BaseEventTest {
         }
 
         @Test
-        void shouldNotSurfaceSuspendCategoryWhileGenAppTypeSuspendIsAbsent() {
-            // SUSPEND was removed from GenAppType by PR #1804. Until it is restored, the
-            // SUSPEND_EVICTION_APPLICATION category must be filtered out so we don't render
-            // a radio backed by no data.
-            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, LocalDateTime.now());
-            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
+        void shouldSurfaceSuspendCategoryWhenSuspendGenAppExists() {
+            GenAppEntity suspend = stubGenApp(GenAppType.SUSPEND, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(suspend));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
                 .isNotEmpty()
                 .extracting(option -> option.getValue().getCategory())
-                .doesNotContain(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
+                .containsExactly(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
         }
 
         @Test
