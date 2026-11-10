@@ -23,6 +23,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatUkDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.toLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.toDomainParties;
 
 @Service
 @AllArgsConstructor
@@ -143,7 +144,4 @@ public class CounterClaimFormPayloadBuilder {
         return PartyDisplayMapper.joinName(party.getFirstName(), party.getLastName());
     }
 
-    private static List<uk.gov.hmcts.reform.pcs.ccd.domain.Party> toDomainParties(List<PartyEntity> parties) {
-        return parties.stream().map(PartyDisplayMapper::toDomainParty).toList();
-    }
 }
