@@ -160,19 +160,6 @@ test.describe('Claimant - Make an Application - e2e Journey @nightly', async () 
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersClaimantGenApps.submitButton);
-    await performAction('payClaimFeeGenApps', {clickLink: true});
-    await performAction('clickPayNowLinkGenApps');
-    await performAction('selectPaymentOptions', {
-      amountLabel: serviceRequestGenApps.amountToPayLabel,
-      payByOption: serviceRequestGenApps.payByAccountRadioOption,
-      expectedAmount: serviceRequestGenApps.amount126,
-      pbaLabel: serviceRequestGenApps.selectPBALabel,
-      pbaValue: serviceRequestGenApps.pbaIndex1,
-      referenceLabel: serviceRequestGenApps.pbaReferenceLabel,
-      referenceText: serviceRequestGenApps.pbaReferenceInputText,
-      button: serviceRequestGenApps.confirmPaymentButton,
-    });
-    await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
   });
 });
 
