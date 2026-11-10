@@ -1656,8 +1656,6 @@ export class CreateCaseAction implements IAction {
           );
         }
         if (caseFile.caseWorkerAmend) {
-          // const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
-          // userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
           let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
           oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, caseFile.date as string || '',caseFile.app as string || '', `Claimant ${caseFile.claimantIndex || 1}`);
           userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);

@@ -60,6 +60,7 @@ export class ActionGenAppsRegistry {
     ['navigateToSummaryPage', new GenAppsAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
+    ['getAllPartyDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {
