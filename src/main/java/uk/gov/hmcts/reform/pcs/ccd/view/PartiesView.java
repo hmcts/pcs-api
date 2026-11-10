@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,6 +58,9 @@ public class PartiesView {
         Optional.ofNullable(pcsCase.getAllDefendants())
             .ifPresent(defendants -> defendants
                 .forEach(def -> initialiseOrgPolicy(def.getValue())));
+
+        // workaround for https://hmcts.atlassian.net/browse/EXUI-5537
+        setFormattedDefendantNames(pcsCase);
     }
 
     private void initialiseOrgPolicy(Party party) {
@@ -181,5 +186,35 @@ public class PartiesView {
             return null;
         }
         return modelMapper.map(address, AddressUK.class);
+    }
+
+    public void setFormattedDefendantNames(PCSCase pcsCase) {
+        List<ListValue<Party>> defendants = pcsCase.getAllDefendants();
+        if (defendants != null && !defendants.isEmpty()) {
+            List<String> knownNames = new ArrayList<>();
+            int unknownDefendants = 0;
+
+            for (ListValue<Party> defendant : defendants) {
+                Party party = defendant.getValue();
+                if (isNameUnknown(party)) {
+                    unknownDefendants++;
+                    continue;
+                }
+                knownNames.add("<div class=\"govuk-!-margin-bottom-2\">"
+                                   + party.getFirstName() + " " + party.getLastName()
+                                   + "</div>");
+            }
+
+            pcsCase.setFormattedDefendantNames(StringUtils.join(knownNames, StringUtils.EMPTY));
+            pcsCase.setUnknownDefendantCount(unknownDefendants);
+        }
+    }
+
+    private static boolean isNameUnknown(Party party) {
+        if (party.getNameKnown() != null) {
+            return !party.getNameKnown().toBoolean();
+        }
+        // fallback
+        return StringUtils.isBlank(party.getFirstName()) && StringUtils.isBlank(party.getLastName());
     }
 }

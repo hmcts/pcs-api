@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -11,14 +13,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.NameAndAddressForEvictionPageHelper;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage.MAX_UNKNOWN_DEFENDANTS;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage.PERSON_UNKNOWN_LABEL;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage.unknownDefendantShowCondition;
 
+@Component
+@AllArgsConstructor
 public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
+
+    private final NameAndAddressForEvictionPageHelper nameAndAddressForEvictionPageHelper;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -34,10 +38,7 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
                    "<p class=\"govuk-body govuk-!-font-weight-bold\">Defendants</p>")
             .label("nameAndAddressForEvictionWrit-defendants-value", "${formattedDefendantNames}");
 
-        for (int i = 0; i < MAX_UNKNOWN_DEFENDANTS; i++) {
-            nameAddressPageBuilder.label("nameAndAddressForEvictionWrit-defendant-unknown-" + i,
-                                   PERSON_UNKNOWN_LABEL, unknownDefendantShowCondition(i));
-        }
+        nameAndAddressForEvictionPageHelper.addUnknownDefendantLabels(nameAddressPageBuilder, "Writ");
 
         nameAddressPageBuilder
             .label("nameAndAddressForEvictionWrit-defendants-hr", "<hr>")

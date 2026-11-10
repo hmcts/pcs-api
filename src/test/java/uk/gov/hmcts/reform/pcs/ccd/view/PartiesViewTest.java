@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,6 +37,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,7 +65,7 @@ class PartiesViewTest {
     void setUp() {
         underTest = new PartiesView(securityContextService, modelMapper, claimPartyContactDetailsRepository);
         pcsCase = PCSCase.builder().build();
-        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        lenient().when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
     }
 
     @Test
@@ -526,6 +528,145 @@ class PartiesViewTest {
         assertThat(pcsCase.getAllClaimants())
             .extracting(lv -> lv.getValue().getOrganisationPolicy())
             .containsOnlyNulls();
+    }
+
+    @Test
+    void shouldSetFormattedNamesOnCaseLoad() {
+        // Given
+        String currentUserId = UUID.randomUUID().toString();
+        stubCitizenUser(currentUserId);
+
+        PartyEntity knownDefendant = buildParty(UUID.randomUUID().toString(), "John", "Doe",
+                                                null, null, null);
+        PartyEntity unknownDefendant = buildParty(UUID.randomUUID().toString(), null, null,
+                                                  null, null, null);
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(knownDefendant, PartyRole.DEFENDANT),
+            buildClaimPartyEntity(unknownDefendant, PartyRole.DEFENDANT)
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
+        assertThat(pcsCase.getUnknownDefendantCount()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_SingleDefendant() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant("John", "Doe"));
+
+        // When
+        underTest.setFormattedDefendantNames(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
+        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_SingleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant(null, null));
+
+        // When
+        underTest.setFormattedDefendantNames(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames()).isEmpty();
+        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_MultipleDefendant() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(
+            createDefendant("John", "Doe"),
+            createDefendant("Test", "Testing"),
+            createDefendant("Third", "Def")
+        );
+
+        // When
+        underTest.setFormattedDefendantNames(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Test Testing</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_MultipleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(
+            createDefendant("John", "Doe"),
+            createDefendant(null, null),
+            createDefendant("Third", "Def")
+        );
+
+        // When
+        underTest.setFormattedDefendantNames(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
+        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldCountMultipleUnknownDefendants() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(
+            createDefendant(null, null),
+            createDefendant("John", "Doe"),
+            createDefendant(null, null),
+            createDefendant(null, null)
+        );
+
+        // When
+        underTest.setFormattedDefendantNames(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
+        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(3);
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_NoDefendants() {
+        // Given
+        PCSCase caseData = PCSCase.builder().build();
+
+        // When
+        underTest.setFormattedDefendantNames(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames()).isNull();
+    }
+
+    private PCSCase createCaseWithDefendants(Party... defendants) {
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+
+        for (Party defendant : defendants) {
+            defendantList.add(ListValue.<Party>builder().value(defendant).build());
+        }
+
+        PCSCase caseData = PCSCase.builder().build();
+        caseData.setAllDefendants(defendantList);
+        return caseData;
+    }
+
+    private Party createDefendant(String firstName, String lastName) {
+        return Party.builder()
+            .firstName(firstName)
+            .lastName(lastName)
+            .build();
     }
 
     private void stubCitizenUser(String userId) {

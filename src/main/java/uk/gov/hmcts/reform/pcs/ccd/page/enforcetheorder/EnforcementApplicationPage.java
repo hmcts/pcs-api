@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -16,10 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
-import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -29,10 +25,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnf
 @Component
 @AllArgsConstructor
 public class EnforcementApplicationPage implements CcdPageConfiguration {
-
-    public static final int MAX_UNKNOWN_DEFENDANTS = 10;
-    public static final String PERSON_UNKNOWN_LABEL =
-        "<div class=\"govuk-!-margin-bottom-2\">" + CaseTabView.NAME_UNKNOWN + "</div>";
 
     private final EnforcementOrderService enforcementOrderService;
     private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
@@ -140,7 +132,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         data.setHasUnsubmittedEnforcementData(YesOrNo.YES);
-        EnforcementOrderView.setFormattedDefendantNames(data);
+
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
@@ -194,11 +186,4 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
-    public static String unknownDefendantShowCondition(int position) {
-        List<String> conditions = new ArrayList<>();
-        for (int i = position; i < MAX_UNKNOWN_DEFENDANTS; i++) {
-            conditions.add("unknownDefendantCount=\"" + (i + 1) + "\"");
-        }
-        return ShowConditions.or(conditions.toArray(new String[0]));
-    }
 }

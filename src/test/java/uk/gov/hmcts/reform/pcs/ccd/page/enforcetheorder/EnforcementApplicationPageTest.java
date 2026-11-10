@@ -8,10 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
@@ -21,9 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -31,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage.MAX_UNKNOWN_DEFENDANTS;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrder;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,109 +41,6 @@ class EnforcementApplicationPageTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         setPageUnderTest(enforcementApplicationPage);
-    }
-
-    @Test
-    void shouldSetFormattedDefendantNames_SingleDefendant() {
-        // Given
-        PCSCase caseData = createCaseWithDefendants(createDefendant("John", "Doe"));
-        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getFormattedDefendantNames())
-                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(0);
-    }
-
-    @Test
-    void shouldSetFormattedDefendantNames_SingleDefendantNameUnknown() {
-        // Given
-        PCSCase caseData = createCaseWithDefendants(createDefendant(null, null));
-        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getFormattedDefendantNames()).isEmpty();
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(1);
-    }
-
-    @Test
-    void shouldSetFormattedDefendantNames_MultipleDefendant() {
-        // Given
-        PCSCase caseData = createCaseWithDefendants(
-                createDefendant("John", "Doe"),
-                createDefendant("Test", "Testing"),
-                createDefendant("Third", "Def")
-        );
-        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getFormattedDefendantNames())
-                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
-                        + "<div class=\"govuk-!-margin-bottom-2\">Test Testing</div>"
-                        + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
-    }
-
-    @Test
-    void shouldSetFormattedDefendantNames_MultipleDefendantNameUnknown() {
-        // Given
-        PCSCase caseData = createCaseWithDefendants(
-            createDefendant("John", "Doe"),
-            createDefendant(null, null),
-            createDefendant("Third", "Def")
-        );
-        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
-                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(1);
-    }
-
-    @Test
-    void shouldCountMultipleUnknownDefendants() {
-        // Given
-        PCSCase caseData = createCaseWithDefendants(
-            createDefendant(null, null),
-            createDefendant("John", "Doe"),
-            createDefendant(null, null),
-            createDefendant(null, null)
-        );
-        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(3);
-    }
-
-    @Test
-    void shouldSetFormattedDefendantNames_NoDefendants() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT))
-                .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getFormattedDefendantNames()).isNull();
     }
 
     @Test
@@ -270,39 +161,6 @@ class EnforcementApplicationPageTest extends BasePageTest {
         verify(warrantOfRestitutionMapper, never()).prePopulateFieldsFromWarrantDetails(any(), any());
     }
 
-    @Test
-    void shouldShowFirstUnknownDefendantForAnyCount() {
-        assertThat(EnforcementApplicationPage.unknownDefendantShowCondition(0))
-            .startsWith("unknownDefendantCount=\"1\" OR unknownDefendantCount=\"2\" OR ")
-            .endsWith(" OR unknownDefendantCount=\"" + MAX_UNKNOWN_DEFENDANTS + "\"");
-    }
-
-    @Test
-    void shouldShowThirdUnknownDefendantOnlyFromThreeUnknownDefendants() {
-        assertThat(EnforcementApplicationPage.unknownDefendantShowCondition(2))
-            .startsWith("unknownDefendantCount=\"3\" OR unknownDefendantCount=\"4\"")
-            .doesNotContain("unknownDefendantCount=\"2\"");
-    }
-
-    @Test
-    void shouldShowLastUnknownDefendantOnlyAtMaximumCount() {
-        assertThat(EnforcementApplicationPage.unknownDefendantShowCondition(MAX_UNKNOWN_DEFENDANTS - 1))
-            .isEqualTo("unknownDefendantCount=\"" + MAX_UNKNOWN_DEFENDANTS + "\"");
-    }
-
-    private PCSCase createCaseWithDefendants(Party... defendants) {
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
-        List<ListValue<Party>> defendantList = new ArrayList<>();
-
-        for (Party defendant : defendants) {
-            defendantList.add(ListValue.<Party>builder().value(defendant).build());
-        }
-
-        PCSCase caseData = PCSCase.builder().enforcementOrder(enforcementOrder).build();
-        caseData.setAllDefendants(defendantList);
-        return caseData;
-    }
-
     private PCSCase createCaseWithEnforcementType(WritDetails writDetails, SelectEnforcementType enforcementType) {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
             .chooseEnforcementType(EnforcementDataUtil.buildEnforcementTypes(enforcementType))
@@ -312,11 +170,5 @@ class EnforcementApplicationPageTest extends BasePageTest {
         return PCSCase.builder()
             .enforcementOrder(enforcementOrder)
             .build();
-    }
-
-    private Party createDefendant(String firstName, String lastName) {
-        return Party.builder()
-                .firstName(firstName)
-                .lastName(lastName).build();
     }
 }
