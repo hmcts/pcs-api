@@ -32,13 +32,6 @@ wa:
   camunda-bpm:
     java:
       image: hmctsprod.azurecr.io/camunda/bpm:latest
-      # TODO HDPI-6947: REMOVE BEFORE MERGE
-      disableKeyVaults: false
-      keyVaults:
-        camunda:
-          secrets:
-            - name: s2s-secret-camunda-bpm
-              alias: S2S_SECRET_CAMUNDA_BPM
       environment:
         SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
         SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
@@ -76,6 +69,10 @@ wa:
   wa-task-monitor:
     java:
       ingressHost: wa-task-monitor-${SERVICE_FQDN}
+      environment:
+        # TODO HDPI-6947: REMOVE BEFORE MERGE - preview Camunda can't read camunda-aat for its S2S
+        # secret, so its immediate push to task-management gets a 401; let the monitor batch initiate instead
+        WA_INITIATE_TASKS_ON_CREATE_ENABLED: "false"
       keyVaults:
         wa:
           secrets:
