@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
+import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotFeeParty;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotGround;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotMilestones;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
@@ -181,6 +182,24 @@ class SnapshotMapperTest {
     }
 
     @Test
+    void shouldMapPropertyAddressWhenPostcodeIsNull() {
+        List<SnapshotPropertyAddress> result = claimSnapshotMapper.mapPropertyAddress(
+            "1 High Street",
+            null,
+            null,
+            "Cambridge",
+            null,
+            null,
+            null
+        );
+
+        assertThat(result).singleElement().satisfies(address -> {
+            assertThat(address.getAddress()).isEqualTo("1 High Street, Cambridge");
+            assertThat(address.getPostcode()).isEmpty();
+        });
+    }
+
+    @Test
     void shouldMapMilestonesWithPostalNotice() {
         SnapshotMilestones result = claimSnapshotMapper.mapMilestones(
             "FIRST_CLASS_POST",
@@ -277,7 +296,7 @@ class SnapshotMapperTest {
         assertThat(result.getFeeAmount()).isEqualByComparingTo("355.00");
         assertThat(result.getFeeStatus()).isEqualTo("Fully Paid");
         assertThat(result.getFeeRequestedOfTheseParties()).singleElement()
-            .extracting(party -> party.getPartyId()).isEqualTo(partyId.toString());
+            .extracting(SnapshotFeeParty::getPartyId).isEqualTo(partyId.toString());
         assertThat(result.getFeeRequestedDate()).isEqualTo("2026-02-03T10:00:00Z");
         assertThat(result.getResponsiblePartyId()).isEqualTo(partyId.toString());
     }
