@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,22 +62,36 @@ public class AttachDocumentTaskComponent {
                 AttachDocumentTaskData taskData = taskInstance.getData();
                 log.info("Attaching document {} to case {}", taskData.getDocumentId(), taskData.getCaseReference());
 
-                caseDocumentClientApi.patchDocument(
-                    systemUpdateUserTokenProvider.getAuthToken(),
-                    authTokenGenerator.generate(),
-                    CaseDocumentsMetadata.builder()
-                        .caseId(String.valueOf(taskData.getCaseReference()))
-                        .caseTypeId(CaseType.getCaseType())
-                        .jurisdictionId(CaseType.getJurisdictionId())
-                        .documentHashTokens(List.of(
-                            DocumentHashToken.builder()
-                                .id(taskData.getDocumentId().toString())
-                                .hashToken(taskData.getHashToken())
-                                .build()))
-                        .build()
-                );
+                try {
+                    caseDocumentClientApi.patchDocument(
+                        systemUpdateUserTokenProvider.getAuthToken(),
+                        authTokenGenerator.generate(),
+                        CaseDocumentsMetadata.builder()
+                            .caseId(String.valueOf(taskData.getCaseReference()))
+                            .caseTypeId(CaseType.getCaseType())
+                            .jurisdictionId(CaseType.getJurisdictionId())
+                            .documentHashTokens(List.of(
+                                DocumentHashToken.builder()
+                                    .id(taskData.getDocumentId().toString())
+                                    .hashToken(taskData.getHashToken())
+                                    .build()))
+                            .build()
+                    );
+                } catch (FeignException.NotFound e) {
+                    if (!isDraftUpload(taskData)) {
+                        throw e;
+                    }
+                    // The user removed the file from their draft before it was attached; retrying cannot succeed.
+                    log.warn("Draft upload {} no longer exists, so not attached to case {}",
+                             taskData.getDocumentId(), taskData.getCaseReference());
+                }
 
                 return new CompletionHandler.OnCompleteRemove<>();
             });
+    }
+
+    // Only draft uploads carry the hash token CDAM issued on upload.
+    private static boolean isDraftUpload(AttachDocumentTaskData taskData) {
+        return taskData.getHashToken() != null;
     }
 }
