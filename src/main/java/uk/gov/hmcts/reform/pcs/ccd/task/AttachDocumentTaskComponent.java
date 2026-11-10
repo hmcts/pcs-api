@@ -81,7 +81,7 @@ public class AttachDocumentTaskComponent {
                     if (!isDraftUpload(taskData)) {
                         throw e;
                     }
-                    // The user removed the file from their draft before it was attached; retrying cannot succeed.
+                    // pcs-frontend's removeDraftDocument deleted the file before it was attached; a retry cannot work.
                     log.warn("Draft upload {} no longer exists, so not attached to case {}",
                              taskData.getDocumentId(), taskData.getCaseReference());
                 }

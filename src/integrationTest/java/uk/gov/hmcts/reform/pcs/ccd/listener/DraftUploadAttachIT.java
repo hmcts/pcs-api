@@ -79,6 +79,22 @@ class DraftUploadAttachIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("queues nothing when the draft save rolls back")
+    void queuesNothingWhenTheDraftSaveRollsBack() {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            DraftCaseDataEntity draft = new DraftCaseDataEntity();
+            draft.setCaseReference(CASE_REFERENCE);
+            draft.setEventId(resumePossessionClaim);
+            draft.setIdamUserId(UUID.randomUUID().toString());
+            draft.setCaseData("{\"first\": " + upload(UUID.randomUUID()) + "}");
+            draftCaseDataRepository.saveAndFlush(draft);
+            status.setRollbackOnly();
+        });
+
+        assertThat(queuedAttaches()).isEmpty();
+    }
+
+    @Test
     @DisplayName("finds the drafts a user or their organisation owns, and no one else's")
     void findsTheDraftsAUserOrTheirOrganisationOwns() {
         String owner = UUID.randomUUID().toString();

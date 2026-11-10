@@ -8,6 +8,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -25,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -52,6 +55,31 @@ class DraftCaseDataEntityListenerTest {
         assertThat(data.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(data.getDocumentId()).isEqualTo(UPLOAD);
         assertThat(data.getHashToken()).isEqualTo("hash");
+    }
+
+    @Test
+    void shouldQueueTheAttachOnlyOnceTheDraftSaveCommits() {
+        DraftCaseDataEntity draft = draft(resumePossessionClaim, upload(UPLOAD));
+
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            underTest.onSave(draft);
+            verifyNoInteractions(schedulerClient);
+
+            TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        scheduledData("draft-" + CASE_REFERENCE + "-" + UPLOAD);
+    }
+
+    @Test
+    void shouldNotFailTheSavedDraftWhenTheAttachCannotBeQueued() {
+        when(schedulerClient.scheduleIfNotExists(any())).thenThrow(new IllegalStateException("database unavailable"));
+
+        assertThatCode(() -> underTest.onSave(draft(resumePossessionClaim, upload(UPLOAD))))
+            .doesNotThrowAnyException();
     }
 
     @Test

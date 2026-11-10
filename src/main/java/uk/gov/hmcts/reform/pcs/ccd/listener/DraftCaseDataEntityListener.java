@@ -10,6 +10,8 @@ import jakarta.persistence.PostUpdate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AttachDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.AttachDocumentTaskComponent;
@@ -53,13 +55,39 @@ public class DraftCaseDataEntityListener {
             try {
                 Map<UUID, String> uploads = uploads(draft.getCaseData());
                 uploads.keySet().removeAll(uploads(draft.getSavedCaseData()).keySet());
-                uploads.forEach((documentId, hashToken) -> schedule(draft.getCaseReference(), documentId, hashToken));
+                if (!uploads.isEmpty()) {
+                    long caseReference = draft.getCaseReference();
+                    afterCommit(() -> scheduleAll(caseReference, uploads));
+                }
             } catch (JsonProcessingException e) {
                 // Never fail the draft save: the file stays unattached, as it was before this existed.
                 log.error("Could not read draft uploads for case {}", draft.getCaseReference(), e);
             }
         }
         draft.setSavedCaseData(draft.getCaseData());
+    }
+
+    // The draft is already saved by now, so a scheduler failure must not be reported to the user as a failed save.
+    private void scheduleAll(long caseReference, Map<UUID, String> uploads) {
+        try {
+            uploads.forEach((documentId, hashToken) -> schedule(caseReference, documentId, hashToken));
+        } catch (RuntimeException e) {
+            log.error("Could not queue the attach of draft uploads {} to case {}", uploads.keySet(), caseReference, e);
+        }
+    }
+
+    // The scheduler writes on its own connection, so a task queued here would survive a rolled-back draft save.
+    private static void afterCommit(Runnable action) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            action.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                action.run();
+            }
+        });
     }
 
     private static Map<UUID, String> uploads(String caseData) throws JsonProcessingException {
