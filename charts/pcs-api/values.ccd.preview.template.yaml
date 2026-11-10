@@ -94,7 +94,7 @@ ccd:
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
         ENABLE_CASE_GROUP_ACCESS: true
         # TODO HDPI-6947: REMOVE BEFORE MERGE - xui_mo_webapp added only for the preview manage-org below
-        DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,pcs_api,xui_mo_webapp"
+        DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,am_role_assignment_service,pcs_api,xui_mo_webapp"
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -184,7 +184,6 @@ ccd:
             - session-keys
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
-            - session-keys
   elasticsearch:
     nameOverride: ${SERVICE_NAME}-es
     clusterName: "es"
