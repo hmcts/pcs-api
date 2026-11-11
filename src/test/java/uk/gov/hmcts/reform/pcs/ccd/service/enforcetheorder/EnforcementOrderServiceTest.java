@@ -30,10 +30,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
@@ -153,6 +150,21 @@ class EnforcementOrderServiceTest {
         assertThat(application.getState())
             .isEqualTo(EnforcementState.DRAFT_DISCARD);
     }
+
+    @Test
+    void shouldHandleNoEnforcementApplications() {
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .enforcementOrders(Set.of())
+            .build();
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        verify(enforcementOrderRepository, never()).save(any());
+    }
+
 
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
