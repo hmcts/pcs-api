@@ -552,7 +552,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
      await performAction('missedPayments', {option: missedPayments.noRadioOption,  nextPage: cannotApplyForWarrantInfo.mainHeader});
      await performAction('clickButton', changeNameAddress.continueButton);
-     await performValidation('errorMessage', { header: cannotApplyForWarrantInfo.eventCouldNotBeCreatedHeader, message: cannotApplyForWarrantInfo.errorValidationField.errMessage });
+     await performValidation('errorMessage', { header: cannotApplyForWarrantInfo.eventCouldNotBeCreatedHeader, message: cannotApplyForWarrantInfo.errorValidationField });
   });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] NonSuspendedOrder no defendants added @noDefendants @enforcement',
