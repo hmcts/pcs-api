@@ -158,7 +158,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.tab("caseFlags", "Case flags")
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
-            .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
+            .field(PCSCase::getAllDefendants, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildSupportTab(builder);
 
