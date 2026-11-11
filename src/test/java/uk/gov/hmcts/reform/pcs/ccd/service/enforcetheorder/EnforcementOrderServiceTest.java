@@ -89,7 +89,7 @@ class EnforcementOrderServiceTest {
 
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
-    void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
+    void shouldSetDependenciesAndStateBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
         // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
@@ -111,6 +111,7 @@ class EnforcementOrderServiceTest {
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        assertThat(savedEntity.getState()).isEqualTo(PENDING_CASE_ISSUED);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 

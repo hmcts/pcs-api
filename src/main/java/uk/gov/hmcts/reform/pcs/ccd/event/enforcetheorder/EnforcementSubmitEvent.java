@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
 
 @Component("enforcementSubmitEventHandler")
@@ -33,7 +32,6 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(getFeeAmount(enforcementOrder), caseReference))
-            .state(PENDING_ENFORCEMENT_ISSUED)
             .build();
     }
 

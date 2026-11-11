@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementSubmitEventTest {
@@ -60,7 +59,6 @@ class EnforcementSubmitEventTest {
         verify(enforcementOrderService).saveAndClearDraftData(caseReference, enforcementOrder,
                 EnforcementState.PENDING_CASE_ISSUED);
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
     }
 
     @ParameterizedTest
