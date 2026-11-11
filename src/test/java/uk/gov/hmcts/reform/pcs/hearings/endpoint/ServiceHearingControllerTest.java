@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 class ServiceHearingControllerTest {
 
@@ -56,6 +57,13 @@ class ServiceHearingControllerTest {
     }
 
     @Test
+    void shouldRejectNullHearingValuesRequest() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> underTest.getHearingValues(AUTHORIZATION, null))
+            .withMessage("requestDetails is marked non-null but is null");
+    }
+
+    @Test
     void shouldReturnNoLinkedCases() throws Exception {
         ServiceHearingRequest request = ServiceHearingRequest.builder()
             .caseId("1234567890123456")
@@ -66,5 +74,12 @@ class ServiceHearingControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEmpty();
+    }
+
+    @Test
+    void shouldRejectNullLinkedCasesRequest() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> underTest.getLinkedCases(AUTHORIZATION, null))
+            .withMessage("requestDetails is marked non-null but is null");
     }
 }
