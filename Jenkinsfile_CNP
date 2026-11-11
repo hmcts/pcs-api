@@ -354,6 +354,7 @@ if (env.PCS_FRONTEND_CHANGE_ID) {
 } else {
   env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
 }
+}
 
 def setAatEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
