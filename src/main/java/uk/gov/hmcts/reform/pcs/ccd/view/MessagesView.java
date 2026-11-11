@@ -59,8 +59,10 @@ public class MessagesView {
         if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
             return;
         }
-        // Only a judge can decide an application, so only a judge is offered the link.
-        boolean judge = !pcsCaseEntity.getMessages().isEmpty() && userRoleService.isJudge();
+        // Only a judge can decide an application, so only a judge is offered the link, which names them so the
+        // frontend signs in again anyone else whose session it holds.
+        String judge = !pcsCaseEntity.getMessages().isEmpty() && userRoleService.isJudge()
+            ? userRoleService.getCurrentUserOrganisationalRoles().userId() : null;
         Comparator<CaseMessageEntity> order = Comparator.comparing((CaseMessageEntity message) -> !message.isUrgent())
             .thenComparing(CaseMessageEntity::createdAt);
         List<Thread> open = pcsCaseEntity.getMessages().stream().filter(CaseMessageEntity::isOpen)
@@ -77,7 +79,7 @@ public class MessagesView {
         pcsCase.setMessagesMarkdown(writer.toString());
     }
 
-    private Thread thread(CaseMessageEntity message, PcsCaseEntity pcsCase, boolean judge) {
+    private Thread thread(CaseMessageEntity message, PcsCaseEntity pcsCase, String judge) {
         CaseMessageEntryEntity first = message.getEntries().getFirst();
         CaseMessageEntryEntity latest = message.latest();
         GenAppEntity genApp = message.getGenApp();
@@ -85,9 +87,9 @@ public class MessagesView {
             message.getSubject(),
             message.categoryLabels(),
             genApp == null ? null : "GA%d: %s".formatted(genApp.getRank(), genApp.getType().getShortName()),
-            !judge || genApp == null || !message.isOpen() || !orderTasks.canDecide(genApp) ? null
-                : "%s/case/%d/make-order?genAppId=%s".formatted(frontendUrl, pcsCase.getCaseReference(),
-                    genApp.getId()),
+            judge == null || genApp == null || !message.isOpen() || !orderTasks.canDecide(genApp) ? null
+                : "%s/cases/%d/event/ext:makeOrder?expected_sub=%s&genAppId=%s".formatted(frontendUrl,
+                    pcsCase.getCaseReference(), judge, genApp.getId()),
             first.getSenderName(),
             first.getRecipientRole().getLabel(),
             message.isUrgent(),

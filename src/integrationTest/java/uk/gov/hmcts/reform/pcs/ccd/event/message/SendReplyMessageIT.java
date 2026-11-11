@@ -99,7 +99,7 @@ class SendReplyMessageIT extends OrderEventIT {
         // Only a judge can decide the application, so only a judge is offered the link to.
         assertThat(tab).doesNotContain("Decide the application");
         assertThat(events.view(caseReference, judge).getMessagesMarkdown())
-            .contains("Decide the application", "make-order?genAppId=" + genAppId);
+            .contains("Decide the application", "/event/ext:makeOrder?expected_sub=", "genAppId=" + genAppId);
     }
 
     @Test
