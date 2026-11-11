@@ -1924,7 +1924,6 @@ export class CreateCaseAction implements IAction {
         .toEqual((tab.tabs as string[]).slice().sort());
     });
   }
-
   
   public async validateTabNotPresent(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
