@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.FreeFormDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ClaimOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -99,7 +99,8 @@ class OrderDocumentIT extends OrderEventIT {
             submitted.version(), "staff-review", null,
             new Issue(
                 new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), WORDING, "the caseworker's wording"),
-                List.of(), COUNTY_COURT, true, List.of(), true, false, null)));
+                List.of(), COUNTY_COURT, true, List.of(), true, false, false,
+                ClaimOutcome.of(ClaimOutcome.Kind.OTHER))));
         OrderDocumentTaskData job = scheduledGeneration();
         assertThat(job).extracting(OrderDocumentTaskData::getOrderId, OrderDocumentTaskData::getCaseReference,
                 OrderDocumentTaskData::getCaseworkerId, OrderDocumentTaskData::getCaseworkerFirstName,
@@ -223,9 +224,7 @@ class OrderDocumentIT extends OrderEventIT {
     private static ConfirmOrderReviewRequest issue(Order order, boolean serveAllParties, List<UUID> partiesToServe) {
         return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), null, null, new Issue(
             new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), COUNTY_COURT,
-            serveAllParties, partiesToServe, true, false,
-            new FreeFormDetails(FreeFormDetails.Category.OTHER, null, null, null, null, null, null, null, null, null,
-                null)));
+            serveAllParties, partiesToServe, true, false, false, ClaimOutcome.of(ClaimOutcome.Kind.OTHER)));
     }
 
     /** Issues the case's order, served as court staff chose, and runs the job that adds its document. */

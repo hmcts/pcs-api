@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,14 +22,25 @@ public record MakeOrderRequest(Action action, OrderChange order, String taskId, 
     }
 
     /**
-     * The order as the judge submitted it: which order they are making (none yet has no id), the
-     * make order form, and the order document from the docweave editor, if they have edited it.
+     * The order as the judge submitted it: which order they are making (none yet has no id), what it decides about
+     * each application, and the frontend's own state for reopening it: its make order form, stored and returned but
+     * never read here, and the order document from the docweave editor, if they have edited it.
      */
     public record OrderChange(UUID id,
                               long version,
                               OrderType orderType,
                               Map<String, Object> formData,
-                              JsonNode docweaveSnapshot) {
+                              JsonNode docweaveSnapshot,
+                              List<ApplicationDecision> applicationDecisions) {
+
+        public OrderChange {
+            applicationDecisions = applicationDecisions == null ? List.of() : applicationDecisions;
+        }
+
+        public OrderChange(UUID id, long version, OrderType orderType, Map<String, Object> formData,
+                           JsonNode docweaveSnapshot) {
+            this(id, version, orderType, formData, docweaveSnapshot, List.of());
+        }
     }
 
     /**

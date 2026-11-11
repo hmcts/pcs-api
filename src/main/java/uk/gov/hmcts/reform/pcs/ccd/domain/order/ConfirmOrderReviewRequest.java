@@ -25,14 +25,13 @@ public record ConfirmOrderReviewRequest(Action action,
     /**
      * How the order is issued: served on all parties, or without notice on the parties to serve, each one of the
      * case's parties as the start sent them; whether court staff have completed the next steps, without which it is
-     * not issued; whether it gives permission to issue a warrant or writ of restitution; and, for a free-form order,
-     * what it does. The frontend also asks
-     * whether the order is final; nothing acts on that answer yet, so it is not read.
+     * not issued; whether it gives permission to issue a warrant or writ of restitution; whether it finally resolves
+     * any part of the case; and what it decides about the claim.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal,
                         boolean serveAllParties, List<UUID> partiesToServe, boolean nextStepsComplete,
-                        Boolean restitutionPermission, FreeFormDetails freeFormDetails) {
+                        Boolean restitutionPermission, Boolean finalOrder, ClaimOutcome claimOutcome) {
 
         public Issue {
             reviewDates = reviewDates == null ? List.of() : reviewDates;
@@ -41,11 +40,21 @@ public record ConfirmOrderReviewRequest(Action action,
     }
 
     /**
-     * The order as issued, with any changes the caseworker made; {@code html} is Docweave's export,
+     * The order as issued, with any changes the caseworker made: what it decides about each application, the
+     * frontend's form state (stored, never read here), its Docweave document, and {@code html}, Docweave's export,
      * issued as is.
      */
     public record IssuedOrder(OrderType orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
-                              String html) {
+                              String html, List<ApplicationDecision> applicationDecisions) {
+
+        public IssuedOrder {
+            applicationDecisions = applicationDecisions == null ? List.of() : applicationDecisions;
+        }
+
+        public IssuedOrder(OrderType orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
+                           String html) {
+            this(orderType, formData, docweaveSnapshot, html, List.of());
+        }
     }
 
     public record ReviewDateEntry(LocalDate date, ReviewReason reason, String description) {

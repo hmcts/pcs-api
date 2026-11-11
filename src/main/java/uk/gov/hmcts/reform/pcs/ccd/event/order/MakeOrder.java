@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
@@ -159,7 +158,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             ? newDraft(caseReference, judge, request.hearing())
             : workingDraft(caseReference, judge, change);
         final List<GenAppEntity> decided = order.getPcsCase().getGenApps().stream()
-            .filter(genApp -> GenAppDecision.in(change.formData(), genApp).isPresent())
+            .filter(genApp -> change.applicationDecisions().stream()
+                .anyMatch(decision -> decision.genAppId().equals(genApp.getId())))
             .toList();
         Integer hearingId = order.getHearing() == null ? null : order.getHearing().getId();
         if (!Objects.equals(hearingId, request.hearing() == null ? null : request.hearing().id())) {

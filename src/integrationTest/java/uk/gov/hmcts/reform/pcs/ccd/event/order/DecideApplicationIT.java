@@ -10,6 +10,9 @@ import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ApplicationDecision;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ClaimOutcome;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
@@ -56,6 +59,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
  */
 @DisplayName("Decide an application")
 class DecideApplicationIT extends OrderEventIT {
+
+    private static final ClaimOutcome NO_ORDER = ClaimOutcome.of(ClaimOutcome.Kind.NO_ORDER);
 
     private static final String WHAT_ORDER_WANTED = "The hearing on 14 October is adjourned to the first open date.";
     private static final UUID FORM_ID = UUID.randomUUID();
@@ -176,20 +181,47 @@ class DecideApplicationIT extends OrderEventIT {
 
         ConfirmOrderReviewRequest changed = new ConfirmOrderReviewRequest(ISSUE, undecided.id(), undecided.version(),
             null, null, new Issue(new IssuedOrder(undecided.orderType(),
-                Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order"),
-                List.of(), HIGH_COURT, true, List.of(), true, false, null));
+                Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order",
+                List.of(new ApplicationDecision(genAppId, GenAppDecision.DISMISS))),
+                List.of(), HIGH_COURT, true, List.of(), true, false, false, NO_ORDER));
         assertThatThrownBy(() -> asCaseworkerReviewing(undecided.id()).submit(changed))
             .hasStackTraceContaining("order_gen_app_decided_once_idx");
+    }
+
+    @Test
+    @DisplayName("leaves the application open after an order that decides it some other way, for another to grant")
+    void leavesTheApplicationOpenAfterSomethingElse() {
+        issue(judgeDecides(genAppId, "other"));
+
+        assertThat(asJudgeDeciding(genAppId).start().caseContext().applications()).extracting(Application::id)
+            .containsExactly(genAppId);
+        issue(judgeDecides(genAppId, "grant"));
+        assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
+            String.class, genAppId)).containsExactlyInAnyOrder("OTHER", "GRANT");
     }
 
     private void issue(Order order) {
         asCaseworkerReviewing(order.id()).submitExpectingSuccess(issueRequest(order));
     }
 
-    private static ConfirmOrderReviewRequest issueRequest(Order order) {
+    private ConfirmOrderReviewRequest issueRequest(Order order) {
         return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), null, null, new Issue(
-            new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT, true,
-            List.of(), true, false, null));
+            new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order",
+                decided(String.valueOf(order.formData().get("app-" + genAppId + "-decision")))),
+            List.of(), HIGH_COURT, true, List.of(), true, false, false, NO_ORDER));
+    }
+
+    /** What the frontend sends for the make order form's decision on the application. */
+    private List<ApplicationDecision> decided(String answer) {
+        GenAppDecision decision = switch (answer) {
+            case "grant" -> GenAppDecision.GRANT;
+            case "dismiss" -> GenAppDecision.DISMISS;
+            case "strike-out" -> GenAppDecision.STRIKE_OUT;
+            case "list" -> GenAppDecision.LIST;
+            case "other" -> GenAppDecision.OTHER;
+            default -> null;
+        };
+        return decision == null ? List.of() : List.of(new ApplicationDecision(genAppId, decision));
     }
 
     /** The judge following their task to decide the application, which names it. */
@@ -216,7 +248,7 @@ class DecideApplicationIT extends OrderEventIT {
     private MakeOrderRequest decision(MakeOrderRequest.Action action, Order order, String decision,
                                       String taskId) {
         return new MakeOrderRequest(action, new OrderChange(order.id(), order.version(), NO_ORDER_ON_CLAIM,
-            Map.of("app-" + genAppId + "-decision", decision), WORDING), taskId);
+            Map.of("app-" + genAppId + "-decision", decision), WORDING, decided(decision)), taskId);
     }
 
     private static DocumentEntity document(PcsCaseEntity pcsCase, GenAppEntity genApp, UUID documentId,

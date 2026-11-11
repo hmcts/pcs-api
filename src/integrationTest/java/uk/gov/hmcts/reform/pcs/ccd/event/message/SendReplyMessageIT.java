@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageAction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ApplicationDecision;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
@@ -235,7 +237,8 @@ class SendReplyMessageIT extends OrderEventIT {
 
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.FREE_FORM,
-                Map.of("app-" + genAppId + "-decision", "grant"), WORDING), null));
+                Map.of("app-" + genAppId + "-decision", "grant"), WORDING,
+                List.of(new ApplicationDecision(genAppId, GenAppDecision.GRANT))), null));
 
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())

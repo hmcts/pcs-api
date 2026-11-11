@@ -6,9 +6,11 @@ CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_id
     NULLS NOT DISTINCT WHERE state = 'DRAFT';
 
 -- What court staff record on issuing an order: whether it gives permission to issue a warrant or writ of
--- restitution and, for a free-form order, what it does.
+-- restitution, whether it finally resolves any part of the case, and what it decides about the claim, recorded the
+-- same way however its wording was written.
 ALTER TABLE orders ADD COLUMN restitution_permission BOOLEAN,
-    ADD COLUMN free_form_details JSONB;
+    ADD COLUMN final_order BOOLEAN,
+    ADD COLUMN claim_outcome JSONB;
 
 -- An issued order's recipients are looked up from its document.
 CREATE INDEX orders_document_id_idx ON orders(document_id) WHERE document_id IS NOT NULL;
@@ -20,8 +22,8 @@ CREATE TABLE order_served_party (
     PRIMARY KEY (order_id, party_id)
 );
 
--- What an issued order decided about each application it covers. An application is decided once; an order that
--- lists it for a hearing leaves it to be decided.
+-- What an issued order decided about each application it covers. An application is granted, dismissed or struck out
+-- by one order only; listing it for a hearing, or any other decision, leaves it to be decided.
 CREATE TABLE order_gen_app (
     order_id   UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     gen_app_id UUID NOT NULL REFERENCES general_application(id),
@@ -29,7 +31,8 @@ CREATE TABLE order_gen_app (
     PRIMARY KEY (order_id, gen_app_id)
 );
 
-CREATE UNIQUE INDEX order_gen_app_decided_once_idx ON order_gen_app(gen_app_id) WHERE decision <> 'LIST';
+CREATE UNIQUE INDEX order_gen_app_decided_once_idx ON order_gen_app(gen_app_id)
+    WHERE decision IN ('GRANT', 'DISMISS', 'STRIKE_OUT');
 
 -- A message thread between court staff and judges on a case. Either side replies until someone closes it;
 -- it is open while closed_at is null.
