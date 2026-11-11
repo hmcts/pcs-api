@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimViewTest {
@@ -47,13 +50,15 @@ class ClaimViewTest {
     private ClaimEntity claimEntity;
     @Mock
     private UploadTimestampProvider uploadTimestampProvider;
+    @Mock
+    private AddressFormatter addressFormatter;
 
     private ClaimView underTest;
 
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
-        underTest = new ClaimView(uploadTimestampProvider);
+        underTest = new ClaimView(uploadTimestampProvider, addressFormatter);
     }
 
     @Test
@@ -289,6 +294,26 @@ class ClaimViewTest {
         assertThat(pcsCase.getDefendantCircumstances()).isNull();
         assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();
         assertThat(pcsCase.getClaimantType()).isNull();
+    }
+
+    @Test
+    void shouldSetFormattedAddressOnCaseLoad() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("1 Rse Way")
+            .postCode("SW11 1PD")
+            .build();
+        pcsCase.setPropertyAddress(propertyAddress);
+
+        when(addressFormatter.formatMediumAddress(propertyAddress, BR_DELIMITER))
+            .thenReturn("1 Rse Way<br>SW11 1PD");
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getFormattedPropertyAddress()).isEqualTo("1 Rse Way<br>SW11 1PD");
     }
 
     private static Stream<Arguments> complexClaimFieldsScenarios() {

@@ -9,11 +9,13 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class WritPageConfigurer implements PageConfigurer {
 
+    private final NameAndAddressForEvictionWritPage nameAndAddressForEvictionWritPage;
+
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(new CannotApplyForWritInfoPage())
-            .add(new NameAndAddressForEvictionWritPage())
+            .add(nameAndAddressForEvictionWritPage)
             .add(new ChangeNameAddressWritPage())
             .add(new BreathingSpaceWritPage())
             .add(new MissedPaymentsWritPage())

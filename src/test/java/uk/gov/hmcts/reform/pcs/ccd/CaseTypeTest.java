@@ -164,7 +164,7 @@ class CaseTypeTest {
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
-        assertThat(hiddenTab.getFields()).hasSize(4);
+        assertThat(hiddenTab.getFields()).hasSize(6);
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
         assertThat(paymentHistoryTab.getFields()).extracting(TabField::getId)
             .containsExactly("casePaymentHistoryViewer");

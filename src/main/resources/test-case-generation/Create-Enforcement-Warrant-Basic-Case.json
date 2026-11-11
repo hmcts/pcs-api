@@ -166,7 +166,7 @@
   "suspensionOfRTB_Reason": "asdfasdf",
   "warrantRepaymentChoice": "ALL",
   "claimAgainstTrespassers": "NO",
-  "formattedDefendantNames": "TVR HN<br>\nTest1 Testing1<br>",
+  "formattedDefendantNames": "<div class=\"govuk-!-margin-bottom-2\">TVR HN</div><div class=\"govuk-!-margin-bottom-2\">Test1 Testing1</div>",
   "vulnerablePeoplePresent": "NO",
   "warrantAnyRiskToBailiff": "NO",
   "warrantFullNameParty": "fgsdfg",

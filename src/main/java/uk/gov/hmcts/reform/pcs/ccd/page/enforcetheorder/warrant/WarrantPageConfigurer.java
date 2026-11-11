@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class WarrantPageConfigurer implements PageConfigurer {
 
+    private final NameAndAddressForEvictionPage nameAndAddressForEvictionPage;
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
     private final ProtestorGroupRiskPage protestorGroupRiskPage;
@@ -25,7 +26,7 @@ public class WarrantPageConfigurer implements PageConfigurer {
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
-            .add(new NameAndAddressForEvictionPage())
+            .add(nameAndAddressForEvictionPage)
             .add(new ChangeNameAddressPage())
             .add(new BreathingSpacePage())
             .add(new MissedPaymentsPage())
