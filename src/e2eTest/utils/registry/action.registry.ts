@@ -150,6 +150,7 @@ export class ActionRegistry {
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
+    ['validateTabNotPresent', new CreateCaseAction()],
     ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
     ['navigateToSummaryPage', new RespondToAClaimAction()],
     ['deleteDraftResponseOption', new RespondToAClaimAction()],
