@@ -44,7 +44,7 @@ public class ServiceHearingController {
     })
     public ResponseEntity<ServiceHearingValues> getHearingValues(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-        @NonNull @RequestBody HearingValuesRequest requestDetails) throws Exception {
+        @NonNull @RequestBody HearingValuesRequest requestDetails) {
 
         ServiceHearingValues hearingValues = serviceHearingValuesConfiguration
             .getDefaultValues(requestDetails.getCaseReference());
@@ -64,7 +64,7 @@ public class ServiceHearingController {
     })
     public ResponseEntity<List<ServiceLinkedCases>> getLinkedCases(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-        @NonNull @RequestBody ServiceHearingRequest requestDetails) throws Exception {
+        @NonNull @RequestBody ServiceHearingRequest requestDetails) {
 
         // Need to load linked cases from PCS
 
