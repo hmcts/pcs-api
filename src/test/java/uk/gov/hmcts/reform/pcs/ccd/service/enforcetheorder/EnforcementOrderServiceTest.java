@@ -186,16 +186,17 @@ class EnforcementOrderServiceTest {
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
-                ArgumentCaptor.forClass(EnforcementOrderEntity.class);
+            ArgumentCaptor.forClass(EnforcementOrderEntity.class);
         inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
+            .verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
         inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
+            .verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
+
 
     private static Stream<Arguments> enforcementOrderTypes() {
         return Stream.of(

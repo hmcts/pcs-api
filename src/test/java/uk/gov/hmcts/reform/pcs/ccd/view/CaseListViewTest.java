@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -166,20 +165,6 @@ public class CaseListViewTest {
     }
 
     @Test
-    void shouldSetDateIssuedStringWhenDateIssuedIsPresent() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .dateIssued(LocalDateTime.of(2026, 2, 1, 9, 0, 0))
-            .build();
-
-        // When
-        caseListView.setCaseFields(pcsCase);
-
-        // Then
-        assertThat(pcsCase.getDateIssuedString()).isEqualTo("01/02/2026");
-    }
-
-    @Test
     void shouldSetPostCode() {
         // Given
         AddressUK address = AddressUK.builder()
@@ -207,7 +192,6 @@ public class CaseListViewTest {
         // Then
         assertThat(pcsCase.getClaimantNames()).isNull();
         assertThat(pcsCase.getDefendantNames()).isNull();
-        assertThat(pcsCase.getDateIssuedString()).isNull();
         assertThat(pcsCase.getPostCode()).isNull();
     }
 }
