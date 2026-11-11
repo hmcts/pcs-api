@@ -76,6 +76,10 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             warrantDetails.setShowChangeNameAddressPage(YesOrNo.NO);
         }
 
+        // This is a 'temp' fix as the SuspendOrder page has been removed so the SOT page does not have a means of
+        //  identifying which messaging to display until the business logic has been finalised.
+        warrantDetails.setIsSuspendedOrder(VerticalYesNo.NO);
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
