@@ -55,8 +55,16 @@ public class CitizenPossessionClaimCaseService {
         if (propertyAddress == null || StringUtils.isBlank(propertyAddress.getPostCode())) {
             return Optional.of(PROPERTY_ADDRESS_REQUIRED);
         }
+        return checkPostcodeInEngland(propertyAddress.getPostCode(), chosenCountry);
+    }
 
-        String postcode = propertyAddress.getPostCode();
+    /**
+     * The postcode half of {@link #checkPropertyInEngland}, shared with the property-eligibility
+     * endpoint so the frontend can check a postcode before the case is created.
+     *
+     * @return the refusal code, if a property with this postcode cannot be claimed for on this journey
+     */
+    public Optional<String> checkPostcodeInEngland(String postcode, LegislativeCountry chosenCountry) {
         EligibilityResult result = eligibilityService.checkEligibility(postcode, null);
 
         if (result.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
