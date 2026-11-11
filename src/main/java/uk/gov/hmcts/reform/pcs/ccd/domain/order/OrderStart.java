@@ -53,7 +53,12 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               List<Party> claimants,
                               List<Party> defendants,
                               boolean openCounterclaim,
-                              List<Application> applications) {
+                              List<Application> applications,
+                              CaseBundle caseBundle) {
+    }
+
+    /** The case's bundle, every document on it in one PDF, for a judge once one has been made. */
+    public record CaseBundle(UUID id, String fileName, Instant updatedAt) {
     }
 
     /**
