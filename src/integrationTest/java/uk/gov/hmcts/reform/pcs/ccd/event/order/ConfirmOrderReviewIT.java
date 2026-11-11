@@ -222,7 +222,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         Order order = judgeSubmitsOrder("the judge's order");
         var freeForm = new IssuedOrder(OrderType.FREE_FORM, Map.of(), WORDING, "the judge's wording");
         var outright = new ClaimOutcome(ClaimOutcome.Kind.OUTRIGHT_POSSESSION, false, LocalDate.of(2026, 12, 4),
-            ClaimOutcome.Grounds.MANDATORY, "Ground 8", true, false, null, null);
+            ClaimOutcome.Grounds.MANDATORY, "Ground 8", null);
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
@@ -240,13 +240,11 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         // Recorded against the case's claim.
         assertThat(jdbcTemplate.queryForMap("SELECT oc.kind, oc.possession_forthwith, "
-            + "oc.possession_date::text AS date, oc.grounds, oc.grounds_details, oc.money_judgment, "
-            + "oc.transfer_to_high_court FROM order_claim oc "
+            + "oc.possession_date::text AS date, oc.grounds, oc.grounds_details FROM order_claim oc "
             + "JOIN claim c ON c.id = oc.claim_id JOIN pcs_case pc ON pc.id = c.case_id "
             + "WHERE oc.order_id = ? AND pc.case_reference = ?", order.id(), caseReference))
             .containsAllEntriesOf(Map.of("kind", "OUTRIGHT_POSSESSION", "possession_forthwith", false,
-                "date", "2026-12-04", "grounds", "MANDATORY", "grounds_details", "Ground 8", "money_judgment", true,
-                "transfer_to_high_court", false));
+                "date", "2026-12-04", "grounds", "MANDATORY", "grounds_details", "Ground 8"));
     }
 
     @Test

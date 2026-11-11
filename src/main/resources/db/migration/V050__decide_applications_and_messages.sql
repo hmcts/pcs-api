@@ -39,9 +39,6 @@ CREATE TABLE order_claim (
     possession_date        DATE,
     grounds                TEXT CHECK (grounds IN ('MANDATORY', 'DISCRETIONARY')),
     grounds_details        TEXT,
-    money_judgment         BOOLEAN,
-    transfer_to_high_court BOOLEAN,
-    condition              TEXT CHECK (condition IN ('MONEY', 'NON_MONEY')),
     warrant_on_notice      BOOLEAN,
     PRIMARY KEY (order_id, claim_id)
 );

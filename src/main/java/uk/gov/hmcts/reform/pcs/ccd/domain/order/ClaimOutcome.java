@@ -19,13 +19,10 @@ public record ClaimOutcome(@Enumerated(EnumType.STRING) Kind kind,
                            @JsonFormat(shape = JsonFormat.Shape.STRING) LocalDate possessionDate,
                            @Enumerated(EnumType.STRING) Grounds grounds,
                            String groundsDetails,
-                           Boolean moneyJudgment,
-                           Boolean transferToHighCourt,
-                           @Enumerated(EnumType.STRING) Condition condition,
                            Boolean warrantOnNotice) {
 
     public static ClaimOutcome of(Kind kind) {
-        return new ClaimOutcome(kind, null, null, null, null, null, null, null, null);
+        return new ClaimOutcome(kind, null, null, null, null, null);
     }
 
     /** Whether it says what its kind needs: when possession is ordered. */
@@ -51,10 +48,5 @@ public record ClaimOutcome(@Enumerated(EnumType.STRING) Kind kind,
     public enum Grounds {
         MANDATORY,
         DISCRETIONARY
-    }
-
-    public enum Condition {
-        MONEY,
-        NON_MONEY
     }
 }
