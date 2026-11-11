@@ -29,16 +29,19 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -85,6 +88,8 @@ class ClaimServiceTest {
                                         noticeOfPossessionService, statementOfTruthService, utcClock);
         lenient().when(claimRepository.save(any(ClaimEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
+        lenient().when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
     }
 
     @Test
@@ -443,15 +448,33 @@ class ClaimServiceTest {
     void shouldSetClaimIssuedDate() {
         // Given
         ClaimEntity claimEntity = ClaimEntity.builder().build();
-        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
 
         // When
         claimService.setClaimIssuedDate(claimEntity);
         verify(claimRepository, times(1)).save(claimEntity);
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
     }
-    
+
+    @Test
+    void shouldLoadClaimWhenExists() {
+        long caseReference = 12345L;
+        ClaimEntity expectedClaim = new ClaimEntity();
+        when(claimRepository.findClaimByCaseReference(caseReference)).thenReturn(Optional.of(expectedClaim));
+
+        ClaimEntity actualClaim = claimService.loadClaim(caseReference);
+
+        assertThat(actualClaim).isSameAs(expectedClaim);
+    }
+
+    @Test
+    void shouldThrowClaimNotFoundExceptionWhenClaimDoesNotExist() {
+        long caseReference = 12345L;
+        when(claimRepository.findClaimByCaseReference(caseReference)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> claimService.loadClaim(caseReference))
+            .isInstanceOf(ClaimNotFoundException.class);
+    }
+
     private static Stream<Arguments> claimantTypeScenarios() {
         return Stream.of(
             arguments(ClaimantType.PRIVATE_LANDLORD),

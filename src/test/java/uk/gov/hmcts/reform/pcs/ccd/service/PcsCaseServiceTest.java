@@ -471,6 +471,26 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldAllocateCaseManagementLocationOnPersistedCase() {
+        int epimsId = 123456;
+        AddressEntity addressEntity = AddressEntity.builder().postcode("SW1A 1AA").build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .propertyAddress(addressEntity)
+            .legislativeCountry(ENGLAND)
+            .claims(List.of(claimEntity))
+            .build();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(postCodeCourtService.getCourtManagementLocation("SW1A 1AA", ENGLAND)).thenReturn(epimsId);
+
+        underTest.allocateCaseManagementLocation(CASE_REFERENCE);
+
+        assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(epimsId);
+        assertThat(claimEntity.getLastModified()).isNull();
+        assertThat(pcsCaseEntity.getLastModifiedDatetime()).isNull();
+    }
+
+    @Test
     void shouldAllocateRegionId() {
         // Given
         Integer caseManagementLocation = 123;
@@ -718,6 +738,21 @@ class PcsCaseServiceTest {
 
         // Then
         verify(caseFlagService, never()).applyReviewedSupportFlags(any(), any());
+    }
+
+    @Test
+    void shouldReturnFirstClaimFromPcsCaseEntity() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity firstClaim = new ClaimEntity();
+        ClaimEntity secondClaim = new ClaimEntity();
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(firstClaim, secondClaim));
+
+        // When
+        ClaimEntity result = underTest.retrieveClaimEntity(CASE_REFERENCE);
+
+        // Then
+        assertThat(result).isSameAs(firstClaim);
     }
 
     private PcsCaseEntity stubFindCase() {

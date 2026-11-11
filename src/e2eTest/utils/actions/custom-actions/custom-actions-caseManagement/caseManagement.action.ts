@@ -1240,8 +1240,20 @@ private formatDisplayDate(entered: string): string {
                     intervals: [1_000, 2_000, 3_000],
                     timeout: VERY_LONG_TIMEOUT,
                 });
+             } else {
+            await enterDate();
+            if (validationArr.button) {
+                await page.getByRole('button', { name: String(validationArr.button), exact: false }).first().focus().catch(() => {});
             }
-            break;
+            await performAction('clickButton', validationArr.button);
+            await expect(async () => {
+                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+            }).toPass({
+                intervals: [1_000, 2_000, 3_000],
+                timeout: VERY_LONG_TIMEOUT,
+            });
+        }
+        break;
 
           case 'dateRadioOption':
             let dateOfReview: string = CaseManagementCommonUtils.getRandomDate(item.type as string);

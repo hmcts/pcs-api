@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationFee;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ConsentAndNotice;
@@ -64,7 +65,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(enterGenApp.name(), this::submit, this::start)
-            .forStates(State.CASE_ISSUED)
+            .forStates(EventStates.enterGenApp())
             .name("Enter a general application")
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
             .grant(Permission.CRU, CASEWORKER_ROLES)
