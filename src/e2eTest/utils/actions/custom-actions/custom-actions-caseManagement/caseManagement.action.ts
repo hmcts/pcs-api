@@ -105,7 +105,8 @@ export class CaseManagementAction implements IAction {
       ['submitCheckYourAnswers', () => this.submitCheckYourAnswers()],
       ['clickPreviousAndValidateAnswersRetained', () => this.clickPreviousAndValidateAnswersRetained()],
       ['cancelCheckYourAnswersAndValidate', () => this.cancelCheckYourAnswersAndValidate(fieldName as any)],
-    ]);
+    ]); 
+    
 
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
