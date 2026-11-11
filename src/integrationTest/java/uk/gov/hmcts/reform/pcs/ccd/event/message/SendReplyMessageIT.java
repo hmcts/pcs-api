@@ -269,20 +269,6 @@ class SendReplyMessageIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("leaves the judge's message for court staff with their order off the Messages tab, as the order "
-        + "carries it to court staff reviewing it")
-    void leavesTheOrdersStaffMessageOffTheTab() {
-        events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
-            SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.FREE_FORM,
-                Map.of("staff-message", List.of("yes"), "staff-message-text", "Serve this by post."), WORDING),
-            null));
-
-        assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
-            .contains("There are no open messages").doesNotContain("Serve this by post.");
-        assertThat(replyList(caseworker)).isEmpty();
-    }
-
-    @Test
     @DisplayName("with the make order flag off, refuses to start or submit the event and leaves the Messages tab "
         + "empty")
     void refusedWhenMakeOrderIsOff() {

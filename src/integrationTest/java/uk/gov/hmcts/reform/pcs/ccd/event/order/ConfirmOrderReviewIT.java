@@ -50,6 +50,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.sendReplyMessage;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 
 /**
@@ -305,6 +306,11 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         asJudge.submitExpectingSuccess(startDraft("the judge's order"));
         Order draft = asJudge.start().order();
         asJudge.submitExpectingSuccess(withStaffMessage(draft, "Serve this by post."));
+        // The order carries the judge's message to court staff, so it stays off the Messages tab.
+        assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())
+            .contains("There are no open messages").doesNotContain("Serve this by post.");
+        assertThat(events.start(caseReference, sendReplyMessage.name()).as(caseworker).startExpectingSuccess()
+            .caseData().getMessageReplyList().getListItems()).isEmpty();
         choose(draft.id());
         Order order = asCaseworker.start().order();
         asCaseworker.submitExpectingSuccess(returnToJudge(order));

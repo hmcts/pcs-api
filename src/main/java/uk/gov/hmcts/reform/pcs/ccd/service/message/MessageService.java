@@ -78,7 +78,8 @@ public class MessageService {
      */
     public void reply(CaseMessageEntity message, Writing writing, boolean fromItsTask) {
         // A reply to the same side gets a task that only the time it is made tells apart from the one it answers.
-        closeTaskUnlessFrom(message, fromItsTask || taskFor(writing.recipient()) == taskFor(waitingSide(message)));
+        closeTaskUnlessFrom(message, fromItsTask
+            || writing.recipient().isJudicial() == message.latest().getRecipientRole().isJudicial());
         message.addEntry(entry(writing, Instant.now(utcClock)));
         askToReview(message);
     }
@@ -90,16 +91,8 @@ public class MessageService {
     private void closeTaskUnlessFrom(CaseMessageEntity message, boolean keepTask) {
         if (!keepTask) {
             camundaService.cancelMessageTask(message.getPcsCase().getCaseReference(), message.getId(),
-                taskFor(waitingSide(message)));
+                taskFor(message.latest().getRecipientRole().isJudicial()));
         }
-    }
-
-    private static MessageRecipient waitingSide(CaseMessageEntity message) {
-        return message.latest().getRecipientRole();
-    }
-
-    private static TaskType taskFor(MessageRecipient side) {
-        return taskFor(side.isJudicial());
     }
 
     private static TaskType taskFor(boolean judicial) {
@@ -185,7 +178,7 @@ public class MessageService {
         String description = taskDescriptionService.createReviewMessageDescription(
             latest.getSenderName(), message.getSubject(), latest.isUrgent(), caseReference,
             genApp == null ? null : "GA" + genApp.getRank(), decideUrl);
-        camundaService.createTask(caseReference, taskFor(latest.getRecipientRole()), description, latest.isUrgent(),
+        camundaService.createTask(caseReference, taskFor(toJudge), description, latest.isUrgent(),
             message.getId());
     }
 
