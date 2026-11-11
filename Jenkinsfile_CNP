@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@DTSPO-34796/recover-from-agent-disconnect")
+@Library("Infrastructure@DTSPO-34796/improve-build-recovery")
 
 import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
