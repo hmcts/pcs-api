@@ -8,13 +8,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_NO_DATES;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_WITH_DATES;
@@ -23,8 +23,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.M
 @Slf4j
 @AllArgsConstructor
 public class EnforcementOrderMediator {
-
-    private final EnforcementOrderRepository enforcementOrderRepository;
 
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity != null && pcsCase != null) {
@@ -42,10 +40,9 @@ public class EnforcementOrderMediator {
         if (claims != null && !claims.isEmpty()) {
             // At this point we do not know which Enforcement Order the Confirm Eviction is placed against.
             // this to be confirmed beyond this ticket scope (HDPI-4312)
-            List<EnforcementOrderEntity> enforcementOrderEntities = enforcementOrderRepository
-                .findByClaimId(claims.getFirst().getId());
+            Set<EnforcementOrderEntity> enforcementOrderEntities = pcsCaseEntity.getEnforcementOrders();
             if (!enforcementOrderEntities.isEmpty()) {
-                return Optional.of(enforcementOrderEntities.getFirst());
+                return Optional.of(enforcementOrderEntities.stream().findAny().orElse(null));
             }
         }
         return Optional.empty();

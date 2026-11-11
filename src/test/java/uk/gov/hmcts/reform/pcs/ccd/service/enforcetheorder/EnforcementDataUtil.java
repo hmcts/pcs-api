@@ -136,7 +136,7 @@ public final class EnforcementDataUtil {
 
     public static RiskProfileEntity createExpectedRiskProfileEntity(EnforcementOrderEntity enforcementOrderEntity) {
         RiskProfileEntity entity = new RiskProfileEntity();
-        entity.setEnforcementOrder(enforcementOrderEntity);
+        entity.setEnfApplication(enforcementOrderEntity);
         entity.setAnyRiskToBailiff(YesNoNotSure.YES);
         entity.setViolentDetails("Violent behavior reported");
         entity.setFirearmsDetails("Firearms present");

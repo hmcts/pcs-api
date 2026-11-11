@@ -79,7 +79,7 @@ class SelectedDefendantsMapperTest {
             .containsExactlyInAnyOrder(jessMayID, jamesMayID);
 
         assertThat(entities)
-            .allSatisfy(e -> assertThat(e.getEnfCase())
+            .allSatisfy(e -> assertThat(e.getEnfApplication())
                 .isEqualTo(enforcementOrderEntity));
     }
 

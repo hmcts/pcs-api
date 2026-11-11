@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementSubmitEventTest {
@@ -77,9 +77,8 @@ class EnforcementSubmitEventTest {
         SubmitResponse<State> response = event.submit(payload);
 
         // Then
-        verify(enforcementOrderService).saveAndClearDraftData(caseReference, enforcementOrder);
+        verify(enforcementOrderService).saveAndClearDraftData(caseReference, enforcementOrder, PENDING_CASE_ISSUED);
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo(CASE_ISSUED);
         verify(feeService).getFee(any());
         verify(pcsCaseService).loadCase(anyLong());
         verify(partyService).getPrimaryClaimantPartyEntity(any());

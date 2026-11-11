@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -24,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.time.Instant;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
@@ -48,12 +48,13 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
         EnforcementFee enforcementFee = getEnforcementFee(enforcementOrder);
         FeeDetails feeDetails = feeService.getFee(enforcementFee.feeType());
-        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder,
+                EnforcementState.PENDING_CASE_ISSUED);
         scheduleFeePayment(caseReference, getClaimantParty(caseReference), feeDetails);
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(enforcementFee.amount(), caseReference))
-            .state(CASE_ISSUED).build();
+            .build();
     }
 
     private record EnforcementFee(FeeType feeType, String amount) {}

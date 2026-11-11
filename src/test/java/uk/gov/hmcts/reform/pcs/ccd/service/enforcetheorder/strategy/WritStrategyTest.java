@@ -39,7 +39,7 @@ class WritStrategyTest {
         // Then
         verify(writDetailsMapper).toEntity(writDetails);
         assertThat(enforcementOrderEntity.getWritDetails()).isSameAs(writEntity);
-        assertThat(writEntity.getEnforcementOrder()).isSameAs(enforcementOrderEntity);
+        assertThat(writEntity.getEnfApplication()).isSameAs(enforcementOrderEntity);
     }
 
 }
