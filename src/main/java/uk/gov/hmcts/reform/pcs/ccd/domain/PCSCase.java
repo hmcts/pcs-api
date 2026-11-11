@@ -1033,9 +1033,6 @@ public class PCSCase {
     @CCD
     private String defendantNames;
 
-    @CCD
-    private String dateIssuedString;
-
     @CCD(label = "Which state are you moving the case to?",
         typeOverride = FixedList,
         typeParameterOverride = "CaseStateOption"

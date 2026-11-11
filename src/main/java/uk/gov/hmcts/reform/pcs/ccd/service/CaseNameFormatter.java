@@ -6,6 +6,10 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +37,21 @@ public class CaseNameFormatter {
         final List<Party> defendants = unwrapListItems(pcsCase.getAllDefendants());
 
         return formatCaseName(claimants, defendants);
+    }
+
+    /**
+     * Case name for a persisted case, using the parties on its first claim.
+     * Returns null when the case has no claims yet, because there are no parties to name.
+     *
+     * @param pcsCase The persisted case
+     */
+    public String formatCaseName(PcsCaseEntity pcsCase) {
+        if (pcsCase.getClaims().isEmpty()) {
+            return null;
+        }
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+        return formatCaseName(domainParties(claim, PartyRole.CLAIMANT),
+            domainParties(claim, PartyRole.DEFENDANT));
     }
 
     /**
@@ -96,6 +115,12 @@ public class CaseNameFormatter {
 
     private boolean isPartyNameKnown(final Party party) {
         return party != null && party.getNameKnown() == VerticalYesNo.YES;
+    }
+
+    private List<Party> domainParties(ClaimEntity claim, PartyRole role) {
+        return PartyDisplayMapper.partiesByRole(claim, role).stream()
+            .map(PartyDisplayMapper::toDomainParty)
+            .toList();
     }
 
 }
