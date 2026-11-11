@@ -197,7 +197,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         ordersView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
-        flagsView.setDefendantsCaseFlags(pcsCase, pcsCaseEntity);
         caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);

@@ -33,7 +33,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
     static final State[] CREATE_FLAG_STATES =
         ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED);
 
-    private final PcsCaseService pcsCaseService;
+    private  final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -53,10 +53,10 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .pageLabel("Create case flags")
                 .label("caseworkerCaseFlag-lineSeparator", "---")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-                .optional(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW, true, true)
+                .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
                 .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
-                .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
-                .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
+                    .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                    .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,
@@ -70,9 +70,8 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker created case flag for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase, pcsCase.getAllDefendants());
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }
-
 }

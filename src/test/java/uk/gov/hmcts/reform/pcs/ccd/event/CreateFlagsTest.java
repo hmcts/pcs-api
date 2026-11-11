@@ -11,7 +11,6 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -26,6 +25,7 @@ class CreateFlagsTest extends  BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+
 
     @InjectMocks
     private CreateFlags underTest;
@@ -49,15 +49,13 @@ class CreateFlagsTest extends  BaseEventTest {
             .details(flagDetails)
             .build();
 
-        List<ListValue<Party>> parties = List.of();
-
-        PCSCase pcsCase = PCSCase.builder().caseFlags(flags).allDefendants(parties).build();
+        PCSCase pcsCase = PCSCase.builder().caseFlags(flags).build();
 
         // When
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase, parties);
+        verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
     }
 
     @Test

@@ -408,7 +408,6 @@ class PCSCaseViewTest {
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(caseFlagsView).setDefendantsCaseFlags(pcsCase, pcsCaseEntity);
         verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseListView).setCaseFields(pcsCase);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
