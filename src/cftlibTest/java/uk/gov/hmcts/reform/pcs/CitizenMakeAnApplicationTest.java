@@ -2,31 +2,25 @@ package uk.gov.hmcts.reform.pcs;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
-import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
 import uk.gov.hmcts.reform.pcs.notification.CapturedNotification;
 import uk.gov.hmcts.reform.pcs.notification.MockNotificationServer;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
-import uk.gov.hmcts.reform.pcs.service.CaseStateService;
-import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -40,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CitizenMakeAnApplicationTest extends CftlibTest {
 
     private static final String CITIZEN_EMAIL_ADDRESS = "test@test.com";
-    private static final String GEN_APP_NOTIFICATION_TEMPLATE_ID = "e5daba0d-5c66-4c76-9e0f-06646200dc89";
+    private static final String GEN_APP_NOTIFICATION_TEMPLATE_ID = "fa721ba0-18ab-4018-a2fa-e55056f2c847";
 
     @Autowired
     private CcdClient ccdClient;
@@ -49,15 +43,11 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     @Autowired
     private CaseCreationService caseCreationService;
     @Autowired
-    private CaseStateService caseStateService;
-    @Autowired
-    private FeePaymentService feePaymentService;
-    @Autowired
     private AccessCodeService accessCodeService;
     @Autowired
     private TestingSupportClient testingSupportClient;
-
-    private final MockNotificationServer mockNotificationServer = new MockNotificationServer();
+    @Autowired
+    private MockNotificationServer mockNotificationServer;
 
     private String solicitorToken;
     private String citizenToken;
@@ -66,32 +56,13 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     void setup() {
         solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
         citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
-
-        mockNotificationServer.startServer();
-    }
-
-    @AfterAll
-    void tearDown() {
-        mockNotificationServer.stopServer();
-    }
-
-    @BeforeEach
-    void setUp() {
-        mockNotificationServer.resetServer();
     }
 
     @Test
     void makeAnApplication() {
-        long caseReference = caseCreationService.createMinimalCase(solicitorToken);
+        long caseReference = caseCreationService.createAndIssueCase(solicitorToken, LanguageUsed.ENGLISH);
 
-        List<FeePaymentSummary> feePaymentSummaries
-            = feePaymentService.waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.CLAIM);
-
-        feePaymentService.simulatePayments(caseReference, feePaymentSummaries);
-
-        caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
-
-        List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference);
+        List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference, 1);
         PartyAccessCode partyAccessCode = partyAccessCodes.getFirst();
         accessCodeService.linkUserToCase(caseReference, partyAccessCode.getAccessCode(), citizenToken);
 
@@ -116,7 +87,7 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
 
         ccdClient.updateCase(EventId.makeAnApplication, caseReference, caseData, citizenToken);
 
-        List<CapturedNotification> sentNotifications = mockNotificationServer.getSentNotifications(1);
+        List<CapturedNotification> sentNotifications = mockNotificationServer.getSentNotifications(caseReference, 1);
 
         CapturedNotification sentNotification = sentNotifications.getFirst();
         assertThat(sentNotification.getTemplateId()).isEqualTo(GEN_APP_NOTIFICATION_TEMPLATE_ID);

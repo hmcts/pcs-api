@@ -5,15 +5,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -23,16 +25,15 @@ import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
-import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
@@ -43,6 +44,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -284,11 +287,14 @@ public class NotificationService {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
 
         List<PartyEntity> recipients = new ArrayList<>();
-        recipients.add(partyService.getPrimaryClaimantPartyEntity(pcsCase));
+        getActivePartiesByRole(pcsCase, PartyRole.CLAIMANT).stream()
+            .findFirst()
+            .ifPresent(recipients::add);
 
         pcsCase.getClaims().getFirst().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
+            .filter(this::isActiveParty)
             .filter(defendant -> !defendant.getId().equals(representedDefendant.getId()))
             .forEach(recipients::add);
 
@@ -305,6 +311,51 @@ public class NotificationService {
                 notificationPersonalisationFactory.forParty(recipient, pcsCase)
             );
         }
+    }
+
+    private List<PartyEntity> getActivePartiesByRole(PcsCaseEntity pcsCase, PartyRole role) {
+        return pcsCase.getClaims().getFirst().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == role)
+            .map(ClaimPartyEntity::getParty)
+            .filter(this::isActiveParty)
+            .toList();
+    }
+
+    private boolean isActiveParty(PartyEntity party) {
+        return party != null && !party.isRemoved();
+    }
+
+    public void sendHearingNoticeEmail(PcsCaseEntity pcsCase, PartyEntity recipient, PartyRole role) {
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+        TemplatePersonalisation personalisation = notificationPersonalisationFactory.hearingNotice();
+        OrganisationEntity legalRep = role == PartyRole.DEFENDANT ? activeLegalRep(recipient) : null;
+
+        if (legalRep != null) {
+            ClaimPartyContactDetailsEntity contactDetails = getClaimPartyContactDetailsForCase(legalRep, pcsCase);
+            sendEmailForOrganisation(
+                new OrganisationNotificationRecipient(
+                    contactDetails != null ? contactDetails.getEmailAddress() : null, recipient, pcsCase, claim),
+                EmailTemplate.NOTICE_OF_HEARING,
+                NotificationClaimType.HEARING,
+                personalisation
+            );
+        } else {
+            sendEmail(
+                new NotificationRecipient(recipient.getEmailAddress(), recipient, pcsCase, claim, role),
+                EmailTemplate.NOTICE_OF_HEARING,
+                NotificationClaimType.HEARING,
+                personalisation
+            );
+        }
+    }
+
+    private static OrganisationEntity activeLegalRep(PartyEntity party) {
+        return party.getClaimPartyOrganisationList().stream()
+            .filter(link -> YesOrNo.YES.equals(link.getActive()))
+            .map(ClaimPartyOrganisationEntity::getOrganisation)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
     }
 
     private NotificationRecipient partyRecipient(PartyEntity party) {
@@ -589,16 +640,23 @@ public class NotificationService {
         );
     }
 
-    protected static EmailNotificationRequest buildRequest(
+    protected EmailNotificationRequest buildRequest(
         String templateId,
         String email,
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
+        Map<String, Object> fields = personalisation.toMap();
+        if (!templateConfiguration.isRelease14Enabled()) {
+            fields = new HashMap<>(fields);
+            fields.remove("caseName");
+            fields.remove("nextStepUrl");
+        }
+
         return EmailNotificationRequest.builder()
             .templateId(templateId)
             .emailAddress(email)
-            .personalisation(personalisation.toMap())
+            .personalisation(fields)
             .claimType(claimType)
             .build();
     }

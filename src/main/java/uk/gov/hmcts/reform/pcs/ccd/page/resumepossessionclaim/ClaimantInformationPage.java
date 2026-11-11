@@ -38,9 +38,9 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             .readonlyNoSummary(ClaimantInformation::getClaimantName, ORG_NAME_FOUND)
             .mandatory(ClaimantInformation::getIsClaimantNameCorrect, ORG_NAME_FOUND)
             .label("claimantInformation-name-missing", """
-                    <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
+                    <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve the claimant name linked to your My HMCTS account
-                    </h3>
+                    </h2>
                     <p class="govuk-hint govuk-!-margin-top-1">
                         You must enter the claimant name you’d like to use for this claim
                     </p>

@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -131,6 +133,34 @@ class PartyAccessCodeLinkServiceTest {
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid access code");
+    }
+
+    @Test
+    void shouldNotLinkAccessCodeForRemovedDefendant() {
+        UUID caseId = UUID.randomUUID();
+        UUID activePartyId = UUID.randomUUID();
+        UUID removedPartyId = UUID.randomUUID();
+
+        PartyEntity activeDefendant = createParty(activePartyId, null);
+        PartyEntity removedDefendant = createParty(removedPartyId, null);
+        removedDefendant.setRemoved(true);
+        PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(activeDefendant, removedDefendant));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(removedPartyId)
+            .code(ACCESS_CODE)
+            .build();
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(List.of(activeDefendant), removedPartyId))
+            .thenThrow(new InvalidPartyForAccessCodeException("The party this access code was generated for"
+                                                                  + " is not a defendant in this case"));
+
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
+            .isInstanceOf(InvalidPartyForAccessCodeException.class);
+
+        verify(validator).validatePartyIsADefendant(List.of(activeDefendant), removedPartyId);
     }
 
     @Test

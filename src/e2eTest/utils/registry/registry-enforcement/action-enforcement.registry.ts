@@ -35,6 +35,7 @@ export class ActionEnforcementRegistry {
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['validateWritOrWarrantFeeAmount', new EnforcementAction()],
     ['validateGetQuoteFromBailiffLink', new EnforcementAction()],
+    ['deleteDraftApplication', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['confirmClaimTransferredToHighCourt', new EnforcementAction()],
     ['selectHaveHiredHCEO', new EnforcementAction()],
@@ -55,6 +56,7 @@ export class ActionEnforcementRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
@@ -92,6 +94,15 @@ export class ActionEnforcementRegistry {
     ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
+    ['isDefendantInBreathingSpace', new EnforcementAction()],
+    ['missedPayments', new EnforcementAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['resumeDraftApplication', new EnforcementAction()],
+    ['getCaseAPI', new CreateCaseAPIAction()],
+    ['errorValidationIsDefendantInBreathingSpacePage', new ErrorValidationAction()],
+    ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
+    ['cannotApplyForWarrantInfo', new EnforcementAction()],
+    ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {

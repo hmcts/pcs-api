@@ -17,8 +17,10 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -33,6 +35,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.utils.TestDataGenerator.createDefendant;
+import static uk.gov.hmcts.reform.pcs.utils.TestDataGenerator.createTestAddress;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -41,10 +46,8 @@ class CreatePossessionClaimTest extends CftlibTest {
 
     @Autowired
     private CcdClient ccdClient;
-
     @Autowired
     private IdamClient idamClient;
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -87,15 +90,21 @@ class CreatePossessionClaimTest extends CftlibTest {
         PCSCase caseData = PCSCase.builder()
             .caseManagementLocationNumber(20262)
             .regionId(1)
+            .claimantInformation(ClaimantInformation.builder()
+                                     .claimantName("CftLibTest Claimant")
+                                     .isClaimantNameCorrect(VerticalYesNo.YES)
+                                     .build())
+            .claimantContactPreferences(ClaimantContactPreferences.builder()
+                                            .overriddenClaimantContactAddress(createTestAddress())
+                                            .build())
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                        .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                                        .build())
-            .defendant1(DefendantDetails.builder()
-                            .nameKnown(VerticalYesNo.YES)
-                            .firstName("Danny")
-                            .lastName("Defendant")
-                            .build())
+            .addAnotherDefendant(VerticalYesNo.YES)
+            .defendant1(createDefendant("Danny", "Defendant"))
+            .additionalDefendants(wrapListItems(List.of(createDefendant("Delia", "Jones"))))
             .noticeServed(YesOrNo.NO)
+            .languageUsed(LanguageUsed.ENGLISH)
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
             .build();
 
@@ -112,13 +121,14 @@ class CreatePossessionClaimTest extends CftlibTest {
             retrievedCase.getData().get("allDefendants"),
             partyList
         );
-        assertThat(allDefendants).hasSize(1);
+        assertThat(allDefendants).hasSize(2);
         assertThat(allDefendants)
             .extracting(ListValue::getValue)
             .extracting(Party::getFirstName)
-                .containsExactly("Danny");
+                .containsExactly("Danny", "Delia");
 
         assertThat(retrievedCase.getState()).isEqualTo(State.PENDING_CASE_ISSUED.name());
     }
+
 
 }

@@ -16,11 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationFee;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ConsentAndNotice;
@@ -31,16 +34,21 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.UploadRelatedEvid
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterGenApp;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @Component
 @RequiredArgsConstructor
@@ -51,12 +59,13 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     private final GenAppService genAppService;
     private final ApplicationDetails applicationDetails;
     private final AddressFormatter addressFormatter;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(enterGenApp.name(), this::submit, this::start)
-            .forStates(State.CASE_ISSUED)
+            .forStates(EventStates.enterGenApp())
             .name("Enter a general application")
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
             .grant(Permission.CRU, CASEWORKER_ROLES)
@@ -81,14 +90,35 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         caseData.setPartyRadioList(buildApplicantPartyList(mainClaim));
+        EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest() == null
+            ? EnterGenAppRequest.builder().build()
+            : caseData.getEnterGenAppRequest();
+        enterGenAppRequest.setApplicationTypeOptionList(buildApplicationTypeList());
+        caseData.setEnterGenAppRequest(enterGenAppRequest);
 
         return caseData;
+    }
+
+    private DynamicStringList buildApplicationTypeList() {
+        boolean release1bEnabled = featureToggleService.isEnabled(FeatureFlag.RELEASE_1B);
+        List<DynamicStringListElement> listItems = Arrays.stream(EnterGenAppType.values())
+            .filter(value -> release1bEnabled || value != EnterGenAppType.SUSPEND)
+            .map(value -> DynamicStringListElement.builder()
+                .code(value.name())
+                .label(value.getLabel())
+                .build())
+            .toList();
+
+        return DynamicStringList.builder()
+            .listItems(listItems)
+            .build();
     }
 
     private DynamicList buildApplicantPartyList(ClaimEntity mainClaim) {
         List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
             .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.CLAIMANT
                 || claimPartyEntity.getRole() == PartyRole.DEFENDANT)
+            .filter(claimPartyEntity -> !claimPartyEntity.getParty().isRemoved())
             .map(claimPartyEntity -> DynamicListElement.builder()
                 .code(claimPartyEntity.getParty().getId())
                 .label("%s - %s".formatted(
