@@ -83,12 +83,11 @@ class BreathingSpaceServiceTest {
     }
 
     private BreathingSpaceDetails stub() {
-        BreathingSpaceDetails breathingSpaceDetails = BreathingSpaceDetails.builder()
+        return BreathingSpaceDetails.builder()
             .referenceNumber(REFERENCE_NUMBER)
             .startDate(START_DATE)
             .type(BreathingSpaceType.STANDARD)
             .expectedEndDate(EXPECTED_END_DATE)
             .build();
-        return breathingSpaceDetails;
     }
 }

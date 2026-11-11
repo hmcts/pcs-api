@@ -51,9 +51,6 @@ class EnforcementOrderServiceTest {
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
 
-    private final UUID claimId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
-    private final UUID pcsCaseId = UUID.fromString("7b9e0f1a-2b3c-4d5e-6f7a-8b9c0d1e2f3a");
-
     private static final long CASE_REFERENCE = 1234L;
 
     @Test
