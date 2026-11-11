@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
@@ -27,7 +28,8 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         long caseReference = payload.caseReference();
         PCSCase pcsCase = payload.caseData();
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
-        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder,
+                EnforcementState.PENDING_CASE_ISSUED);
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(getFeeAmount(enforcementOrder), caseReference))

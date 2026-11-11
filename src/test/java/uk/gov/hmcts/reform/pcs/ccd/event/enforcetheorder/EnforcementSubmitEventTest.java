@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -56,7 +57,8 @@ class EnforcementSubmitEventTest {
         SubmitResponse<State> response = event.submit(payload);
 
         // Then
-        verify(enforcementOrderService).saveAndClearDraftData(caseReference, enforcementOrder);
+        verify(enforcementOrderService).saveAndClearDraftData(caseReference, enforcementOrder,
+                EnforcementState.PENDING_CASE_ISSUED);
         assertThat(response).isNotNull();
         assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
     }

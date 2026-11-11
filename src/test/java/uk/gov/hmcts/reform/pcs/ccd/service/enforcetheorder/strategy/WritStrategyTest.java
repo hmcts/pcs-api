@@ -77,7 +77,7 @@ class WritStrategyTest {
 
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(writEntity);
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(savedEntity.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     @Test
@@ -92,7 +92,7 @@ class WritStrategyTest {
         // Then
         verify(writRepository).save(writEntityCaptor.capture());
         WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(savedEntity.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     @Test
@@ -114,7 +114,7 @@ class WritStrategyTest {
 
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(emptyWritEntity);
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(savedEntity.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     @Test
@@ -152,7 +152,7 @@ class WritStrategyTest {
         verify(writRepository).save(writEntityCaptor.capture());
 
         WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(savedEntity.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     @Test
@@ -181,7 +181,7 @@ class WritStrategyTest {
         verify(writRepository).save(writEntityCaptor.capture());
 
         WritEntity savedEntity = writEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(savedEntity.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     @Test

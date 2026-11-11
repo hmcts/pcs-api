@@ -20,7 +20,7 @@ public class WritStrategy implements EnforcementTypeStrategy {
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         WritDetails writDetails = enforcementOrder.getWritDetails();
         WritEntity writEntity = writDetailsMapper.toEntity(writDetails);
-        writEntity.setEnforcementOrder(enforcementOrderEntity);
+        writEntity.setEnfApplication(enforcementOrderEntity);
         writRepository.save(writEntity);
     }
 

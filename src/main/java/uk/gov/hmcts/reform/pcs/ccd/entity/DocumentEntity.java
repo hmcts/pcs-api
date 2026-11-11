@@ -110,9 +110,9 @@ public class DocumentEntity {
     private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "enf_case_id")
+    @JoinColumn(name = "enf_application_id")
     @JsonBackReference
-    private EnforcementOrderEntity enfCase;
+    private EnforcementOrderEntity enfApplication;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "counter_claim_id")
