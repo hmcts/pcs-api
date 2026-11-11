@@ -18,12 +18,14 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ClaimOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -159,7 +161,11 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .filter(decided -> order.getPcsCase().findGenApp(decided.genAppId()).isPresent())
             .forEach(decided -> order.getGenAppDecisions().put(decided.genAppId(), decided.decision()));
         order.setSeal(issue.seal());
-        order.setClaimOutcome(issue.claimOutcome());
+        // What it decides about the case's claim; an order making no order on it records nothing.
+        ClaimEntity claim = order.getPcsCase().getMainClaim();
+        if (claim != null && issue.claimOutcome().kind() != ClaimOutcome.Kind.NO_ORDER) {
+            order.getClaimOutcomes().put(claim.getId(), issue.claimOutcome());
+        }
         if (!issue.serveAllParties()) {
             order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
         }

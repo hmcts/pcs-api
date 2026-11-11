@@ -22,8 +22,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ClaimOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
@@ -86,6 +84,14 @@ public class OrderEntity {
     @Setter(AccessLevel.NONE)
     private Map<UUID, GenAppDecision> genAppDecisions = new HashMap<>();
 
+    /** What the order decided about each claim it makes an order on, by claim id, recorded when it is issued. */
+    @ElementCollection
+    @CollectionTable(name = "order_claim", joinColumns = @JoinColumn(name = "order_id"))
+    @MapKeyColumn(name = "claim_id")
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private Map<UUID, ClaimOutcome> claimOutcomes = new HashMap<>();
+
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)
     private String authorName;
@@ -98,10 +104,6 @@ public class OrderEntity {
 
     @Enumerated(EnumType.STRING)
     private OrderSeal seal;
-
-    /** What the issued order decides about the claim, recorded the same way however its wording was written. */
-    @JdbcTypeCode(SqlTypes.JSON)
-    private ClaimOutcome claimOutcome;
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "document_id")

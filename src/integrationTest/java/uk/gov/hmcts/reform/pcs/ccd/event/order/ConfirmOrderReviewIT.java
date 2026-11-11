@@ -222,7 +222,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         Order order = judgeSubmitsOrder("the judge's order");
         var freeForm = new IssuedOrder(OrderType.FREE_FORM, Map.of(), WORDING, "the judge's wording");
         var outright = new ClaimOutcome(ClaimOutcome.Kind.OUTRIGHT_POSSESSION, false, LocalDate.of(2026, 12, 4),
-            ClaimOutcome.Grounds.MANDATORY, "Ground 8", true, false, null, null, null);
+            ClaimOutcome.Grounds.MANDATORY, "Ground 8", true, false, null, null);
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
@@ -238,10 +238,15 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             order.version(), "staff-review", null,
             new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true, outright)));
 
-        assertThat(jdbcTemplate.queryForMap("SELECT claim_outcome::text AS outcome FROM orders WHERE id = ?",
-            order.id())).containsEntry("outcome", "{\"kind\": \"OUTRIGHT_POSSESSION\", \"grounds\": \"MANDATORY\", "
-                + "\"moneyJudgment\": true, \"groundsDetails\": \"Ground 8\", \"possessionDate\": \"2026-12-04\", "
-                + "\"possessionForthwith\": false, \"transferToHighCourt\": false}");
+        // Recorded against the case's claim.
+        assertThat(jdbcTemplate.queryForMap("SELECT oc.kind, oc.possession_forthwith, "
+            + "oc.possession_date::text AS date, oc.grounds, oc.grounds_details, oc.money_judgment, "
+            + "oc.transfer_to_high_court FROM order_claim oc "
+            + "JOIN claim c ON c.id = oc.claim_id JOIN pcs_case pc ON pc.id = c.case_id "
+            + "WHERE oc.order_id = ? AND pc.case_reference = ?", order.id(), caseReference))
+            .containsAllEntriesOf(Map.of("kind", "OUTRIGHT_POSSESSION", "possession_forthwith", false,
+                "date", "2026-12-04", "grounds", "MANDATORY", "grounds_details", "Ground 8", "money_judgment", true,
+                "transfer_to_high_court", false));
     }
 
     @Test

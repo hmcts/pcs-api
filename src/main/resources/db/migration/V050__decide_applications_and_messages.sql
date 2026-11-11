@@ -5,8 +5,6 @@ DROP INDEX orders_one_draft_per_author_idx;
 CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id, hearing_id)
     NULLS NOT DISTINCT WHERE state = 'DRAFT';
 
--- What an issued order decides about the claim, recorded the same way however its wording was written.
-ALTER TABLE orders ADD COLUMN claim_outcome JSONB;
 
 -- An issued order's recipients are looked up from its document.
 CREATE INDEX orders_document_id_idx ON orders(document_id) WHERE document_id IS NOT NULL;
@@ -29,6 +27,26 @@ CREATE TABLE order_gen_app (
 
 CREATE UNIQUE INDEX order_gen_app_decided_once_idx ON order_gen_app(gen_app_id)
     WHERE decision IN ('GRANT', 'DISMISS', 'STRIKE_OUT');
+
+-- What an issued order decides about a claim, recorded the same way however its wording was written. An order that
+-- makes no order on the claim, such as an adjournment, which manages the case without deciding it, has no row.
+CREATE TABLE order_claim (
+    order_id               UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    claim_id               UUID NOT NULL REFERENCES claim(id),
+    kind                   TEXT NOT NULL CHECK (kind IN ('OUTRIGHT_POSSESSION', 'SUSPENDED_POSSESSION', 'STRUCK_OUT',
+                                                         'DISMISSED', 'OTHER')),
+    possession_forthwith   BOOLEAN,
+    possession_date        DATE,
+    grounds                TEXT CHECK (grounds IN ('MANDATORY', 'DISCRETIONARY')),
+    grounds_details        TEXT,
+    money_judgment         BOOLEAN,
+    transfer_to_high_court BOOLEAN,
+    condition              TEXT CHECK (condition IN ('MONEY', 'NON_MONEY')),
+    warrant_on_notice      BOOLEAN,
+    PRIMARY KEY (order_id, claim_id)
+);
+
+CREATE INDEX order_claim_claim_id_idx ON order_claim(claim_id);
 
 -- A message thread between court staff and judges on a case. Either side replies until someone closes it;
 -- it is open while closed_at is null.
