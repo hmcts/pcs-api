@@ -25,8 +25,8 @@ public class ServiceHearingValuesConfiguration {
     private boolean hearingInWelshFlag;
     private boolean privateHearingRequiredFlag;
     private boolean hearingIsLinkedFlag;
-    private List<HearingLocation> hearingLocations;
-    private PanelRequirements panelRequirements;
+    private String locationType;
+    private List<String> roleTypes;
     private String preferredHearingChannel;
 
     public ServiceHearingValues getDefaultValues(long caseReference) {
@@ -47,8 +47,14 @@ public class ServiceHearingValuesConfiguration {
             .hearingInWelshFlag(hearingInWelshFlag)
             .privateHearingRequiredFlag(privateHearingRequiredFlag)
             .hearingIsLinkedFlag(hearingIsLinkedFlag)
-            .hearingLocations(hearingLocations)
-            .panelRequirements(panelRequirements)
+            .hearingLocations(List.of(
+                HearingLocation.builder()
+                    .locationType(locationType)
+                    .build()
+            ))
+            .panelRequirements(PanelRequirements.builder()
+                .roleType(roleTypes)
+                .build())
             .parties(parties)
             .build();
     }

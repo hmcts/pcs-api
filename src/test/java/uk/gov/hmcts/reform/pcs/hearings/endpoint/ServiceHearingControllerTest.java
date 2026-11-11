@@ -24,12 +24,8 @@ class ServiceHearingControllerTest {
     private static ServiceHearingValuesConfiguration defaultConfiguration() {
         ServiceHearingValuesConfiguration configuration = new ServiceHearingValuesConfiguration();
         configuration.setHmctsServiceId("AAA3");
-        configuration.setHearingLocations(List.of(
-            HearingLocation.builder().locationType("Court").build()
-        ));
-        configuration.setPanelRequirements(PanelRequirements.builder()
-            .roleType(List.of("24", "45"))
-            .build());
+        configuration.setLocationType("Court");
+        configuration.setRoleTypes(List.of("24", "45"));
         configuration.setPreferredHearingChannel("INTER");
         return configuration;
     }

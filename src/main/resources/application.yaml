@@ -483,10 +483,8 @@ hmc-service-hearing-values:
   hearing-in-welsh-flag: false
   private-hearing-required-flag: false
   hearing-is-linked-flag: false
-  hearing-locations:
-    - location-type: Court
-  panel-requirements:
-    role-type:
+  location-type: Court
+  role-types:
       - "24"
       - "45"
   preferred-hearing-channel: INTER
