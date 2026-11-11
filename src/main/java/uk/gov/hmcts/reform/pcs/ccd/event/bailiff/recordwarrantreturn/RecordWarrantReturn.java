@@ -49,11 +49,15 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         Optional<EnforcementOrderEntity> enforcementOrderEntity = enforcementOrderMediator
             .getEnforcementOrder(pcsCaseEntity);
 
-        if (enforcementOrderEntity.isEmpty() || enforcementOrderEntity.get().getWarrantDetails() == null) {
+        Optional<WarrantEntity> warrantEntityOptional = enforcementOrderEntity.map(
+            EnforcementOrderEntity::getWarrantDetails
+        );
+
+        if (warrantEntityOptional.isEmpty()) {
             return createErrorMessage();
         }
 
-        WarrantEntity warrantEntity = enforcementOrderEntity.get().getWarrantDetails();
+        WarrantEntity warrantEntity = warrantEntityOptional.get();
         PCSCase caseData = eventPayload.caseData();
         WarrantReturn warrantReturn = caseData.getWarrantReturn();
 

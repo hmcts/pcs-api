@@ -28,7 +28,7 @@ public class WarrantReturnServiceTest {
     private WarrantRepository warrantRepository;
 
     @InjectMocks
-    WarrantReturnService warrantReturnService;
+    private WarrantReturnService warrantReturnService;
 
     @Test
     void shouldSaveWarrantReturnWithNoPreexistingWarrantReturns() {
