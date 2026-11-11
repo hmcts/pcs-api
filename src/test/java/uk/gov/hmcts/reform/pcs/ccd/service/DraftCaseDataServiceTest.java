@@ -9,6 +9,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -105,9 +106,29 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldReturnNoDraftDocumentUrlsForACallerWithoutAnIdamUserId() {
+    void shouldReturnTheDraftDocumentUrlsOfALegacyUserWithANumericIdamId() throws JsonProcessingException {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn("system");
+        String legacyUserId = "123456";
+        String draft = """
+            {"first": {"document_url": "http://dm-store/documents/abc"}}""";
+        when(securityContextService.getCurrentUserId()).thenReturn(legacyUserId);
+        when(draftCaseDataRepository.findCaseDataOwnedBy(CASE_REFERENCE, legacyUserId, null))
+            .thenReturn(List.of(draft));
+        when(objectMapper.readTree(draft)).thenReturn(new ObjectMapper().readTree(draft));
+
+        // When
+        List<String> urls = underTest.getOwnDraftDocumentUrls(CASE_REFERENCE);
+
+        // Then
+        assertThat(urls).containsExactly("http://dm-store/documents/abc");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    void shouldReturnNoDraftDocumentUrlsForACallerWithoutAnIdamUserId(String userId) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
 
         // When
         List<String> urls = underTest.getOwnDraftDocumentUrls(CASE_REFERENCE);

@@ -129,8 +129,11 @@ public class DraftCaseDataService {
         String userId;
         try {
             userId = securityContextService.getCurrentUserId();
-            UUID.fromString(userId);
-        } catch (SecurityContextException | IllegalArgumentException | NullPointerException e) {
+        } catch (SecurityContextException e) {
+            return List.of();
+        }
+        // IDAM ids are opaque: legacy accounts have numeric ones, so only a missing id means there is no owner.
+        if (userId == null || userId.isBlank()) {
             return List.of();
         }
         return draftCaseDataRepository
