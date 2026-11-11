@@ -545,15 +545,15 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       });
      await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-        option: nameAndAddressForEviction.noRadioOption,
+        option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: defendantInBreathingSpace.mainHeader
       });
      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-     await performAction('missedPayments', {option: missedPayments.noRadioOption,  nextPage: changeNameAddress.mainHeader});
+     await performAction('missedPayments', {option: missedPayments.noRadioOption,  nextPage: cannotApplyForWarrantInfo.mainHeader});
      await performAction('clickButton', changeNameAddress.continueButton);
-     await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
-    });
+     await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: cannotApplyForWarrantInfo.errorValidationField });
+  });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] NonSuspendedOrder no defendants added @noDefendants @enforcement',
     async () => {
@@ -692,7 +692,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
       });
-    });
+  });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] - NonSuspendedOrder only main defendants name known @onlyMain @enforcement',
     async () => {
@@ -810,7 +810,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader,
       });
-    });
+  });
 });
 
 test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
