@@ -55,7 +55,7 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
-      ['updatePaymentAPI', () => this.updatePaymentAPI(fieldName as actionRecord)],
+      ['updatePaymentAPI', () => this.updatePaymentAPI()],
       ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord)],
       ['submitPossessionClaimResponseLRAPI', () => this.submitPossessionClaimResponseLRAPI(fieldName as actionRecord)],
       ['midEventRespondPossessionClaimLRAPI', () => this.midEventRespondPossessionClaimLRAPI(fieldName as actionRecord)],
@@ -547,7 +547,7 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async updatePaymentAPI(payType?: actionRecord): Promise<void> {
+  private async updatePaymentAPI(): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
     const caseNumber = process.env.CASE_NUMBER;
     if (!caseNumber) {
@@ -572,12 +572,10 @@ export class CreateCaseAPIAction implements IAction {
           ? unpaidFeeRequests.filter(fee => !previousReferences.has(fee.serviceRequestReference))
           : unpaidFeeRequests;
         if (payableFeeRequests.length === 0) throw new Error('No unpaid fee service request found.');
-        if (payableFeeRequests.length > 1 && payType?.app !== 'Counter Claim') {
+        if (payableFeeRequests.length > 1) {
           throw new Error(`Expected one unpaid fee service request but found ${payableFeeRequests.length}.`);
         }
-        const selectedPayment = payType?.app === 'Counter Claim'
-          ? this.selectCounterClaimPayment(payableFeeRequests, payType.amt)
-          : payableFeeRequests[0];
+        const selectedPayment = payableFeeRequests[0];
         const requestReference = selectedPayment.serviceRequestReference;
         const updateResponse = await paymentApi.put(
           paymentApiData.updatePaymentApiEndPoint,
@@ -608,37 +606,6 @@ export class CreateCaseAPIAction implements IAction {
       }
     }
     throw new Error('Payment API failed after multiple retries');
-  }
-
-  private selectCounterClaimPayment(paymentInfo: any[], amount?: actionData): any {
-    const callbackPayment = paymentInfo.find(
-      payment => payment?.paymentCallbackHandlerType === 'COUNTER_CLAIM_ISSUE'
-    );
-    if (callbackPayment) {
-      return callbackPayment;
-    }
-
-    const requestedAmount = Number(amount);
-    const amountRepresentations = new Set([
-      requestedAmount,
-      requestedAmount / 100,
-    ].filter(value => Number.isFinite(value)));
-
-    const matchingPayments = paymentInfo.filter(payment => {
-      const paymentAmount = Number(payment?.amount);
-      return amountRepresentations.has(paymentAmount)
-        || amountRepresentations.has(Number(payment?.amountInPence));
-    });
-
-    if (matchingPayments.length > 0) {
-      return matchingPayments[matchingPayments.length - 1];
-    }
-
-    if (paymentInfo.length === 1) {
-      return paymentInfo[0];
-    }
-
-    throw new Error(`No counterclaim payment found for amount ${amount}`);
   }
 
   private defendantIds: string[] = [];
