@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -85,6 +86,72 @@ class EnforcementOrderServiceTest {
 
         // Then
         assertThat(retOrder).isNull();
+    }
+
+    @Test
+    void shouldChangeLiveEnforcementToBreathingSpace() {
+        long caseReference = 1234567890123456L;
+
+        EnforcementOrderEntity application =
+            EnforcementOrderEntity.builder()
+                .state(EnforcementState.CASE_PROGRESSION)
+                .build();
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .enforcementOrders(Set.of(application))
+            .build();
+
+        when(pcsCaseService.loadCase(caseReference))
+            .thenReturn(pcsCase);
+
+        enforcementOrderService.updateStatesForBreathingSpace(caseReference);
+
+        assertThat(application.getState())
+            .isEqualTo(EnforcementState.BREATHING_SPACE);
+    }
+
+    @Test
+    void shouldChangeDraftEnforcementToDraftState() {
+        long caseReference = 1234567890123456L;
+
+        EnforcementOrderEntity application =
+            EnforcementOrderEntity.builder()
+                .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
+                .build();
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .enforcementOrders(Set.of(application))
+            .build();
+
+        when(pcsCaseService.loadCase(caseReference))
+            .thenReturn(pcsCase);
+
+        enforcementOrderService.updateStatesForBreathingSpace(caseReference);
+
+        assertThat(application.getState())
+            .isEqualTo(EnforcementState.DRAFT_DISCARD);
+    }
+
+    @Test
+    void shouldChangePendingEnforcementToDraftState() {
+        long caseReference = 1234567890123456L;
+
+        EnforcementOrderEntity application =
+            EnforcementOrderEntity.builder()
+                .state(PENDING_CASE_ISSUED)
+                .build();
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .enforcementOrders(Set.of(application))
+            .build();
+
+        when(pcsCaseService.loadCase(caseReference))
+            .thenReturn(pcsCase);
+
+        enforcementOrderService.updateStatesForBreathingSpace(caseReference);
+
+        assertThat(application.getState())
+            .isEqualTo(EnforcementState.DRAFT_DISCARD);
     }
 
     @ParameterizedTest
