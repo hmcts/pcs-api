@@ -1,6 +1,6 @@
 export const breathingSpaceNotSure = {
   EnforceTheOrderCaption: `Enforce the order`,
-  mainHeader: 'You will not be able to submit this application if the defendants are using the Breathing Space scheme',
+  mainHeader: `You will not be able to submit this application if the defendants are using the Breathing Space scheme`,
   youWillNotBeAbleToSubmitParagraph: `You will not be able to submit this application if the defendants are using the Breathing Space scheme.`,
   checkIfDefendantInBreathingSpaceParagraph: `Check if the defendants are in Breathing Space before you continue.`,
   whatYouShouldDoParagraph: `What you should do next`,
@@ -24,5 +24,5 @@ export const breathingSpaceNotSure = {
   continueButton: `Continue`,
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   errorMessage: `You cannot continue with this application while the defendants are using the Breathing Space scheme.`,
-  cancelButton: 'Cancel',
+  cancelButton: `Cancel`,
 };

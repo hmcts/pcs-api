@@ -1,7 +1,7 @@
 export const missedPayments = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'Missed payments',
-  haveDefendantsMissedPaymentsQuestion: 'Are you alleging that the defendant has failed to make payments which are a condition of the suspension of the order for possession?',
+  mainHeader: `Missed payments`,
+  haveDefendantsMissedPaymentsQuestion: `Are you alleging that the defendant has failed to make payments which are a condition of the suspension of the order for possession?`,
   thisWillSaveHiddenParagraph: `This will save your progress and take you to the case overview.`,
   chooseHiddenListItem: `Choose ‘Continue’.`,
   cancelHiddenListItem: `On the next page choose ‘Cancel’.`,

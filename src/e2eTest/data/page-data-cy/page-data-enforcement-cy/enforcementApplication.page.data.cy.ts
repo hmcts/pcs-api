@@ -28,7 +28,7 @@ export const enforcementApplication = {
   theAdditionalEvidenceParagraphHidden: `Y dystiolaeth ychwanegol fydd ei hangen arnoch i wneud cais am writ`,
   youllNeedToProvideReasonsParagraphHidden: `Bydd angen i chi ddarparu rhesymau dros wneud cais am writ yn hytrach na gwarant.`,
   theJudgeWillConsiderParagraphHidden: `The judge will consider this evidence, along with the other information in your application, when deciding whether to grant your request.`,
-  youCanContactALawyerParagraphHidden: `You can contact a lawyer or a High Court Enforcement Officer before you apply for a writ. They can help you to check if you have the evidence to apply successfully.`,
+  youCanContactALawyerParagraphHidden: `Gallwch gysylltu â chyfreithiwr neu Swyddog Gorfodi yr Uchel Lys cyn ichi wneud cais am writ. Gallant eich helpu i wirio a oes gennych y dystiolaeth i wneud cais llwyddiannus.`,
   summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
   previousButton: `Blaenorol`,
   continueButton: `Parhau`,

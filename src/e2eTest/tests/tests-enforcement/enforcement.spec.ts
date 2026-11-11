@@ -366,7 +366,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
       option: enforcementApplication.warrantOfPossessionRadioOption,
-      nextPage: defendantInBreathingSpace.mainHeader
+      nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
@@ -610,23 +610,16 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', enforcementApplication.mainHeader);
-
-     await performAction('selectApplicationType', {
-        question: enforcementApplication.typeOfApplicationQuestion,
-        option: enforcementApplication.warrantOfPossessionRadioOption,
-        nextPage: nameAndAddressForEviction.mainHeader
-      });
-      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
-      await performAction('uploadStatement', {
-        continueButton: uploadStatement.continueButton,
-        nextPage: nameAndAddressForEviction.mainHeader
-      });
+      await performAction('selectApplicationType', {
+          question: enforcementApplication.typeOfApplicationQuestion,
+          option: enforcementApplication.warrantOfPossessionRadioOption,
+          nextPage: nameAndAddressForEviction.mainHeader
+        });
       await performAction('selectNameAndAddressForEviction', {
-        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-        option: nameAndAddressForEviction.noRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-        nextPage: defendantInBreathingSpace.mainHeader
+          question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+          option: nameAndAddressForEviction.noRadioOption,
+          defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+          nextPage: changeNameAddress.mainHeader
       });
       await performAction('youNeedPermissionFromAJudge', {
         continueButton: changeNameAddress.continueButton,
