@@ -285,6 +285,9 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       let fileName = (enterGenAppUploadGeneralApplication.uploadDocHiddenOption)[4].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
       let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
       let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+      let party = allPartyDetails[0];
+      const partyType = party.split(' - ')[1].split(' ')[0];
+      const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
 
       await test.step(`Given the user has selected the Enter a general application event`, async () => {
         await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
@@ -341,7 +344,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
         await performAction('validateCaseFileViewFolders', home.caseFileFolders);
         await performAction('validateCaseFileViewIndividualFolder', {
           folder: 'Applications',
-          caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+          caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType,`${partyType} ${partyIndex}`)
         });
       });
   });
