@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -245,6 +246,13 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             + "WHERE oc.order_id = ? AND pc.case_reference = ?", order.id(), caseReference))
             .containsAllEntriesOf(Map.of("kind", "OUTRIGHT_POSSESSION", "possession_forthwith", false,
                 "date", "2026-12-04", "grounds", "MANDATORY", "grounds_details", "Ground 8"));
+        // The database holds possession to a date or forthwith, as the event does.
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            "UPDATE order_claim SET possession_forthwith = true WHERE order_id = ?", order.id()))
+            .hasMessageContaining("order_claim_outright_check");
+        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE order_claim SET kind = 'SUSPENDED_POSSESSION', "
+            + "possession_date = NULL WHERE order_id = ?", order.id()))
+            .hasMessageContaining("order_claim_suspended_check");
     }
 
     @Test

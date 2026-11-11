@@ -1,10 +1,9 @@
--- A judge's order decides general applications, and court staff and judges message each other on a case.
+-- A judge's order decides general applications and the claim, and court staff and judges message each other on a case.
 
 -- A judge has one draft per hearing on a case, and one made without a hearing.
 DROP INDEX orders_one_draft_per_author_idx;
 CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id, hearing_id)
     NULLS NOT DISTINCT WHERE state = 'DRAFT';
-
 
 -- An issued order's recipients are looked up from its document.
 CREATE INDEX orders_document_id_idx ON orders(document_id) WHERE document_id IS NOT NULL;
@@ -40,7 +39,11 @@ CREATE TABLE order_claim (
     grounds                TEXT CHECK (grounds IN ('MANDATORY', 'DISCRETIONARY')),
     grounds_details        TEXT,
     warrant_on_notice      BOOLEAN,
-    PRIMARY KEY (order_id, claim_id)
+    PRIMARY KEY (order_id, claim_id),
+    -- Possession is ordered forthwith or by a date, and a suspended order says the date.
+    CONSTRAINT order_claim_outright_check
+        CHECK (kind <> 'OUTRIGHT_POSSESSION' OR (possession_forthwith IS TRUE) = (possession_date IS NULL)),
+    CONSTRAINT order_claim_suspended_check CHECK (kind <> 'SUSPENDED_POSSESSION' OR possession_date IS NOT NULL)
 );
 
 CREATE INDEX order_claim_claim_id_idx ON order_claim(claim_id);
