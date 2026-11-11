@@ -149,6 +149,7 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
       ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
+      ['validateTabNotPresent', () => this.validateTabNotPresent(page, fieldName as actionRecord)],
       ['noticeOfChange', () => this.noticeOfChange(fieldName as actionRecord)],
       ['clientDetails', () => this.clientDetails(fieldName as actionRecord)],
       ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
@@ -1924,15 +1925,26 @@ export class CreateCaseAction implements IAction {
     });
   }
 
-  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number,party: string = 'Defendant'): string[] {
+  
+  public async validateTabNotPresent(page: Page, tab: actionRecord) {
+    await test.step(`Tab access check for user "${tab.user}"`, async () => {
+      const tabLoc = page.getByRole('tab');
+      await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
+      const tabs = (await tabLoc.allTextContents()).map(t => t.trim());
+      expect(tabs.slice().sort(), `tabs seen: ${tabs.join(' | ')}`)
+        .not.toContain((tab.tabs as string[]));
+    });
+  }
+
+  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number, party: string = 'Defendant'): string[] {
     const result: string[] = [];
 
-    
-      for (const file of filesArray) {
-        result.push(
-          ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantCount, file, party)
-          
-        );
+
+    for (const file of filesArray) {
+      result.push(
+        ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantCount, file, party)
+
+      );
     }
 
     return result;
