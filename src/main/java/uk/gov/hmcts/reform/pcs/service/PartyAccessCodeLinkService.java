@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +35,7 @@ public class PartyAccessCodeLinkService {
     ) {
         String idamUserId = IdamUserIds.normalise(userInfo.getUid());
 
-        PcsCaseEntity caseEntity = loadCaseWithoutRevealingExistence(caseReference);
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyAccessCodeEntity pac = validator.validateAccessCode(
             caseEntity.getId(),
@@ -66,16 +64,6 @@ public class PartyAccessCodeLinkService {
         partyEntity.setIdamId(idamUserId);
 
         caseRoleAssignmentService.assignRasRole(caseReference, idamUserId, UserRole.DEFENDANT);
-    }
-
-    // An unknown case must look the same as a wrong access code, otherwise callers can find
-    // valid case numbers by trying them one after another.
-    private PcsCaseEntity loadCaseWithoutRevealingExistence(long caseReference) {
-        try {
-            return pcsCaseService.loadCase(caseReference);
-        } catch (CaseNotFoundException e) {
-            throw new InvalidAccessCodeException("Invalid data", e);
-        }
     }
 
 }

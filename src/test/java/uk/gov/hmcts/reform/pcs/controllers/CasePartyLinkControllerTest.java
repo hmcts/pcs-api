@@ -115,4 +115,13 @@ class CasePartyLinkControllerTest {
             .isInstanceOf(CaseNotFoundException.class);
     }
 
+    @Test
+    void shouldReturnInvalidAccessCodeResponseWhenCaseNotFound() {
+        ResponseEntity<RestExceptionHandler.Error> response =
+            underTest.handleCaseNotFound(new CaseNotFoundException(CASE_REFERENCE));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isEqualTo(new RestExceptionHandler.Error("Invalid access code"));
+    }
+
 }
