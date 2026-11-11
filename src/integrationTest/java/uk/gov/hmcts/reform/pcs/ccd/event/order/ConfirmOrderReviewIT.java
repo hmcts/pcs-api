@@ -184,14 +184,13 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null, new Issue(
                 new IssuedOrder(order.orderType(), order.formData(), null, null), List.of(), HIGH_COURT, true,
-                List.of(), true, false, false, OTHER)))
+                List.of(), true, OTHER)))
             .errors()).containsExactly(ConfirmOrderReview.NO_WORDING);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
 
     @Test
-    @DisplayName("issues the order as the caseworker changed it, with its seal and whether it permits restitution, "
-        + "and adds the review dates to the case")
+    @DisplayName("issues the order as the caseworker changed it, with its seal, and adds the review dates to the case")
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");
         var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"),
@@ -200,12 +199,11 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of(), true, true, false, OTHER)));
+            new Issue(changed, List.of(reviewDate), HIGH_COURT, true, List.of(), true, OTHER)));
 
         Issued issued = outcome.changed("orders", Issued.class);
         assertThat(issued.state()).isEqualTo(ISSUED);
         assertThat(issued.seal()).isEqualTo("HIGH_COURT");
-        assertThat(issued.restitutionPermission()).isTrue();
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
         PCSCase view = events.view(caseReference, caseworker);
         assertThat(view.getCaseReviewDatesMarkdown())
@@ -219,8 +217,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("records what every issued order decides about the claim, which it needs, and whether it finally "
-        + "resolves any part of the case")
+    @DisplayName("records what every issued order decides about the claim, which it needs")
     void recordsWhatTheOrderDecidesAboutTheClaim() {
         Order order = judgeSubmitsOrder("the judge's order");
         var freeForm = new IssuedOrder(OrderType.FREE_FORM, Map.of(), WORDING, "the judge's wording");
@@ -229,46 +226,34 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true, false, true, null)))
+            new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true, null)))
             .errors()).containsExactly(ConfirmOrderReview.NO_CLAIM_OUTCOME);
         // Possession is ordered forthwith or by a date, which an outright order must say.
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null, new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true,
-                false, true, ClaimOutcome.of(ClaimOutcome.Kind.OUTRIGHT_POSSESSION))))
+                ClaimOutcome.of(ClaimOutcome.Kind.OUTRIGHT_POSSESSION))))
             .errors()).containsExactly(ConfirmOrderReview.NO_CLAIM_OUTCOME);
 
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true, false, true, outright)));
+            new Issue(freeForm, List.of(), HIGH_COURT, true, List.of(), true, outright)));
 
-        assertThat(jdbcTemplate.queryForMap("SELECT claim_outcome::text AS outcome, final_order FROM orders "
-            + "WHERE id = ?", order.id())).containsEntry("final_order", true)
-            .containsEntry("outcome", "{\"kind\": \"OUTRIGHT_POSSESSION\", \"grounds\": \"MANDATORY\", "
+        assertThat(jdbcTemplate.queryForMap("SELECT claim_outcome::text AS outcome FROM orders WHERE id = ?",
+            order.id())).containsEntry("outcome", "{\"kind\": \"OUTRIGHT_POSSESSION\", \"grounds\": \"MANDATORY\", "
                 + "\"moneyJudgment\": true, \"groundsDetails\": \"Ground 8\", \"possessionDate\": \"2026-12-04\", "
                 + "\"possessionForthwith\": false, \"transferToHighCourt\": false}");
     }
 
     @Test
-    @DisplayName("refuses to issue an order while court staff still have tasks to do, or without saying whether it "
-        + "permits restitution, leaving it to review again")
+    @DisplayName("refuses to issue an order while court staff still have tasks to do, leaving it to review again")
     void refusesToIssueWithTasksOutstanding() {
         Order order = judgeSubmitsOrder("the judge's order");
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null, new Issue(
                 new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
-                true, List.of(), false, false, false, OTHER)))
+                true, List.of(), false, OTHER)))
             .errors()).containsExactly(ConfirmOrderReview.TASKS_OUTSTANDING);
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), "staff-review", null, new Issue(
-                new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
-                true, List.of(), true, null, false, OTHER)))
-            .errors()).containsExactly(ConfirmOrderReview.NO_RESTITUTION_ANSWER);
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), "staff-review", null, new Issue(
-                new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT,
-                true, List.of(), true, false, null, OTHER)))
-            .errors()).containsExactly(ConfirmOrderReview.NO_FINAL_ORDER_ANSWER);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
     }
 
@@ -374,6 +359,6 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
     /** The orders row once issued. */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record Issued(OrderState state, String seal, Boolean restitutionPermission) {
+    record Issued(OrderState state, String seal) {
     }
 }

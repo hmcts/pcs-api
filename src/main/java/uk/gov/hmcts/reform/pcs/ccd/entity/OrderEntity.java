@@ -99,12 +99,6 @@ public class OrderEntity {
     @Enumerated(EnumType.STRING)
     private OrderSeal seal;
 
-    /** Whether the order gives permission to issue a warrant or writ of restitution, as court staff issuing it said. */
-    private Boolean restitutionPermission;
-
-    /** Whether court staff issuing it said it finally resolves any part of the case. */
-    private Boolean finalOrder;
-
     /** What the issued order decides about the claim, recorded the same way however its wording was written. */
     @JdbcTypeCode(SqlTypes.JSON)
     private ClaimOutcome claimOutcome;

@@ -183,7 +183,7 @@ class DecideApplicationIT extends OrderEventIT {
             null, null, new Issue(new IssuedOrder(undecided.orderType(),
                 Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order",
                 List.of(new ApplicationDecision(genAppId, GenAppDecision.DISMISS))),
-                List.of(), HIGH_COURT, true, List.of(), true, false, false, NO_ORDER));
+                List.of(), HIGH_COURT, true, List.of(), true, NO_ORDER));
         assertThatThrownBy(() -> asCaseworkerReviewing(undecided.id()).submit(changed))
             .hasStackTraceContaining("order_gen_app_decided_once_idx");
     }
@@ -208,7 +208,7 @@ class DecideApplicationIT extends OrderEventIT {
         return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), null, null, new Issue(
             new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order",
                 decided(String.valueOf(order.formData().get("app-" + genAppId + "-decision")))),
-            List.of(), HIGH_COURT, true, List.of(), true, false, false, NO_ORDER));
+            List.of(), HIGH_COURT, true, List.of(), true, NO_ORDER));
     }
 
     /** What the frontend sends for the make order form's decision on the application. */

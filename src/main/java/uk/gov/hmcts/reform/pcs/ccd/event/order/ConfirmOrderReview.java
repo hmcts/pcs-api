@@ -68,9 +68,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
     static final String NO_PARTY_TO_SERVE = "Select who to serve the order on";
     static final String NO_CLAIM_OUTCOME = "Record what the order does";
-    static final String NO_RESTITUTION_ANSWER =
-        "Select if permission has been given to issue a warrant or writ of restitution";
-    static final String NO_FINAL_ORDER_ANSWER = "Select if this order finally resolves any part of the case";
     static final String TASKS_OUTSTANDING =
         "You must complete all outstanding tasks before issuing this order and serving it on the parties";
 
@@ -153,12 +150,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (!issue.nextStepsComplete()) {
             throw ExternalRejection.because(TASKS_OUTSTANDING);
         }
-        if (issue.restitutionPermission() == null) {
-            throw ExternalRejection.because(NO_RESTITUTION_ANSWER);
-        }
-        if (issue.finalOrder() == null) {
-            throw ExternalRejection.because(NO_FINAL_ORDER_ANSWER);
-        }
         if (issue.claimOutcome() == null || !issue.claimOutcome().complete()) {
             throw ExternalRejection.because(NO_CLAIM_OUTCOME);
         }
@@ -168,8 +159,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .filter(decided -> order.getPcsCase().findGenApp(decided.genAppId()).isPresent())
             .forEach(decided -> order.getGenAppDecisions().put(decided.genAppId(), decided.decision()));
         order.setSeal(issue.seal());
-        order.setRestitutionPermission(issue.restitutionPermission());
-        order.setFinalOrder(issue.finalOrder());
         order.setClaimOutcome(issue.claimOutcome());
         if (!issue.serveAllParties()) {
             order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
