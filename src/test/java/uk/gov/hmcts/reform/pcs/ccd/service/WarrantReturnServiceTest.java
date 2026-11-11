@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public class WarrantReturnServiceTest {
             .returnType(WarrantReturnType.FINAL)
             .evictionOutcome(EvictionOutcome.SUCCESSFUL)
             .additionalDetails("additional details")
-            .outcomeDate(LocalDateTime.of(2026, 4, 21, 9, 30))
+            .outcomeDate(LocalDateTime.of(2026, 4, 21, 8, 30))
             .build();
 
         WarrantEntity warrantEntity = WarrantEntity.builder().build();
@@ -54,7 +55,7 @@ public class WarrantReturnServiceTest {
         assertThat(warrantReturnEntity.getReturnType()).isEqualTo(WarrantReturnType.FINAL);
         assertThat(warrantReturnEntity.getOutcome()).isEqualTo(EvictionOutcome.SUCCESSFUL);
         assertThat(warrantReturnEntity.getAdditionalDetails()).isEqualTo("additional details");
-        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
+        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(Instant.parse("2026-04-21T08:30:00Z"));
     }
 
     @Test
@@ -65,7 +66,7 @@ public class WarrantReturnServiceTest {
             .returnType(WarrantReturnType.FINAL)
             .evictionOutcome(EvictionOutcome.SUCCESSFUL)
             .additionalDetails("additional details")
-            .outcomeDate(LocalDateTime.of(2026, 4, 21, 9, 30))
+            .outcomeDate(LocalDateTime.of(2026, 4, 21, 8, 30))
             .build();
 
         List<WarrantReturnEntity> warrantReturnEntities = new ArrayList<>();
@@ -86,7 +87,7 @@ public class WarrantReturnServiceTest {
         assertThat(warrantReturnEntity.getReturnType()).isEqualTo(WarrantReturnType.FINAL);
         assertThat(warrantReturnEntity.getOutcome()).isEqualTo(EvictionOutcome.SUCCESSFUL);
         assertThat(warrantReturnEntity.getAdditionalDetails()).isEqualTo("additional details");
-        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
+        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(Instant.parse("2026-04-21T08:30:00Z"));
     }
 
 }

@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.bailiff.WarrantReturnName;
 import uk.gov.hmcts.reform.pcs.ccd.domain.bailiff.WarrantReturnType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "warrant_return")
@@ -52,9 +52,9 @@ public class WarrantReturnEntity {
 
     private String additionalDetails;
 
-    private LocalDateTime outcomeDate;
+    private Instant outcomeDate;
 
     @CreationTimestamp
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private Instant createdAt;
 }

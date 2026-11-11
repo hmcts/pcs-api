@@ -6,7 +6,7 @@ CREATE TABLE public.warrant_return (
   return_name TEXT NOT NULL,
   additional_details TEXT,
   outcome_date TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP NOT NULL
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE ONLY public.warrant_return
