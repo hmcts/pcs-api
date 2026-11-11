@@ -164,7 +164,7 @@ public class MessageService {
     public Optional<String> lastQuery(OrderEntity order) {
         return orderStepRepository.findQueriesByOrderId(order.getId()).stream()
             .findFirst()
-            .map(step -> step.getMessageEntry() == null ? step.getNote().getNote() : step.getMessageEntry().getBody());
+            .map(step -> step.getMessageEntry().getBody());
     }
 
     /** Gives the pool of the side the message waits for a task to review it. */

@@ -164,34 +164,6 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("keeps a legacy case-note query readable and replaces it with the next message query")
-    void readsQueriesAcrossTheMessagingMigration() {
-        Order order = judgeSubmitsOrder("the judge's order");
-        asCaseworker.submitExpectingSuccess(returnToJudge(order));
-        // Reproduce the representation written by the previous application version.
-        Integer noteId = jdbcTemplate.queryForObject("""
-            INSERT INTO case_note (case_id, created_by, note)
-            SELECT case_id, 'A Caseworker', 'Legacy query' FROM orders WHERE id = ?
-            RETURNING id
-            """, Integer.class, order.id());
-        jdbcTemplate.update("""
-            UPDATE order_steps SET message_entry_id = NULL, note_id = ?, docweave_snapshot = NULL
-            WHERE order_id = ? AND state = 'RETURNED_TO_JUDGE'
-            """, noteId, order.id());
-
-        var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
-        Order legacy = asAuthor.start().order();
-        assertThat(legacy.queryFromCaseworker()).isEqualTo("Legacy query");
-        asAuthor.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
-            new OrderChange(legacy.id(), legacy.version(), legacy.orderType(), legacy.formData(), WORDING), null));
-        asCaseworker.submitExpectingSuccess(returnToJudge(asCaseworker.start().order()));
-
-        assertThat(asAuthor.start().order().queryFromCaseworker()).isEqualTo(QUERY);
-        assertThat(jdbcTemplate.queryForObject("SELECT note FROM case_note WHERE id = ?", String.class, noteId))
-            .isEqualTo("Legacy query");
-    }
-
-    @Test
     @DisplayName("refuses an order sent for review without the wording its page builds, which could not be issued")
     void refusesToSendAnOrderWithoutWording() {
         asJudge.submitExpectingSuccess(startDraft("the judge's order"));

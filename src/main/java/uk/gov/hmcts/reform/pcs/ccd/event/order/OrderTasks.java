@@ -4,21 +4,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.EnumSet;
 import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Map;
 
 /**
  * The Work Allocation tasks an order passes between court staff and its judge, and the link that starts a judge's
@@ -31,25 +26,22 @@ public class OrderTasks {
 
     private static final String A_JUDGE = "A judge";
     private static final String COURT_STAFF = "Court staff";
-    /** The states of an order that has decided, or is deciding, what it says about an application. */
-    private static final Set<OrderState> DECIDING =
-        EnumSet.of(OrderState.SUBMITTED_FOR_REVIEW, OrderState.RETURNED_TO_JUDGE, OrderState.ISSUED);
 
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
     private final SecurityContextService securityContextService;
-    private final OrderStepRepository orderStepRepository;
+    private final OrderRepository orderRepository;
     private final String frontendUrl;
 
     public OrderTasks(CamundaService camundaService,
                       TaskDescriptionService taskDescriptionService,
                       SecurityContextService securityContextService,
-                      OrderStepRepository orderStepRepository,
+                      OrderRepository orderRepository,
                       @Value("${frontend.url}") String frontendUrl) {
         this.camundaService = camundaService;
         this.taskDescriptionService = taskDescriptionService;
         this.securityContextService = securityContextService;
-        this.orderStepRepository = orderStepRepository;
+        this.orderRepository = orderRepository;
         this.frontendUrl = frontendUrl;
     }
 
@@ -70,34 +62,9 @@ public class OrderTasks {
             order.getAuthorIdamUserId());
     }
 
-    /**
-     * Whether a judge can decide the application: it is open, and no order on the case that decides it, made on it
-     * or at a hearing, is with court staff, back with its judge, whose own tasks lead to it, or issued. Listing it
-     * for a hearing leaves it to decide.
-     */
+    /** Whether a judge can decide the application: it is open, and no issued order has decided it. */
     public boolean canDecide(GenAppEntity genApp) {
-        return canDecide(genApp, null);
-    }
-
-    /** Whether a judge can decide the application with the order, which is not one already deciding it. */
-    public boolean canDecide(GenAppEntity genApp, UUID except) {
-        return genApp.isOpen() && orderStepRepository.findLatestByCaseId(genApp.getPcsCase().getId()).stream()
-            .filter(step -> DECIDING.contains(step.getOrder().getState()))
-            .filter(step -> !step.getOrder().getId().equals(except))
-            .filter(step -> decides(step.getFormData(), genApp))
-            .noneMatch(step -> step.getOrder().getState() != OrderState.ISSUED
-                || !"list".equals(step.getFormData().get(decisionField(genApp))));
-    }
-
-    /** Whether the order's answers decide the application. */
-    public static boolean decides(Map<String, Object> formData, GenAppEntity genApp) {
-        Object decision = formData == null ? null : formData.get(decisionField(genApp));
-        return decision != null && !"none".equals(decision);
-    }
-
-    /** The make order form's answer to what the judge decides about the application. */
-    private static String decisionField(GenAppEntity genApp) {
-        return "app-" + genApp.getId() + "-decision";
+        return genApp.isOpen() && !orderRepository.isGenAppDecided(genApp.getId());
     }
 
     /** The task link that starts the judge's order deciding the application. */

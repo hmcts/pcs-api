@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
@@ -65,7 +66,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     static final String NOT_AVAILABLE = "Making orders is not available";
     static final String ALREADY_DECIDED =
-        "Another order on this application is with court staff, back with its judge, or has decided it";
+        "Another order has decided this application";
 
     /** The states that leave an order its author's to change. */
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
@@ -117,11 +118,10 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             ? Optional.of(chosenOrder(link.orderId(), caseReference, judge))
             : orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
                 caseReference, judge, DRAFT, link.hearingId());
-        UUID orderId = order.map(OrderEntity::getId).orElse(null);
         GenAppEntity task = link.orderId() != null || link.genAppId() == null ? null
             : openGenApp(pcsCase, link.genAppId());
-        // A judge reopens their draft whatever another order has done since, which refuses it when it is sent.
-        if (task != null && !orderTasks.canDecide(task, orderId)) {
+        // A judge reopens their draft whatever another order has done since, which refuses it when it is issued.
+        if (task != null && !orderTasks.canDecide(task)) {
             if (order.isEmpty()) {
                 throw ExternalRejection.because(ALREADY_DECIDED);
             }
@@ -133,7 +133,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
                 link.orderId() != null ? messageService.lastQuery(o).orElse(null) : null))
             .orElse(OrderStart.Order.NONE);
-        return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase, orderId),
+        return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
             hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId()));
     }
 
@@ -158,14 +158,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge, request.hearing())
             : workingDraft(caseReference, judge, change);
-        List<GenAppEntity> decided = order.getPcsCase().getGenApps().stream()
-            .filter(genApp -> OrderTasks.decides(change.formData(), genApp))
+        final List<GenAppEntity> decided = order.getPcsCase().getGenApps().stream()
+            .filter(genApp -> GenAppDecision.in(change.formData(), genApp).isPresent())
             .toList();
-        // Every application the order decides must still be the judge's to decide.
-        if (request.action() == SUBMIT_FOR_REVIEW
-            && decided.stream().anyMatch(genApp -> !orderTasks.canDecide(genApp, order.getId()))) {
-            throw ExternalRejection.because(ALREADY_DECIDED);
-        }
         Integer hearingId = order.getHearing() == null ? null : order.getHearing().getId();
         if (!Objects.equals(hearingId, request.hearing() == null ? null : request.hearing().id())) {
             throw ExternalRejection.because("The order is for a different hearing");

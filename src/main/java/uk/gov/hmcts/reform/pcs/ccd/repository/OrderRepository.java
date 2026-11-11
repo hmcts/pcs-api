@@ -24,6 +24,11 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     boolean existsByIdAndDocumentIsNotNull(UUID id);
 
+    /** Whether an issued order has decided the application, other than by listing it for a hearing. */
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM order_gen_app WHERE gen_app_id = :genAppId AND decision <> 'LIST')",
+        nativeQuery = true)
+    boolean isGenAppDecided(UUID genAppId);
+
     /** The recipients of a generated without-notice order; uploaded documents have no linked order. */
     @Query("select party from OrderEntity o join o.servedParties party where o.document.id = :documentId")
     List<PartyEntity> findServedPartiesByDocumentId(UUID documentId);

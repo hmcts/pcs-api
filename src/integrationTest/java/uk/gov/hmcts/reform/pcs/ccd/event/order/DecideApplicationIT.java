@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -132,25 +133,31 @@ class DecideApplicationIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("refuses another order on the application while one is under way, and once one decides it, "
-        + "though listing it for a hearing leaves it to decide")
+    @DisplayName("refuses issuing a second order deciding the application, and offers it no more once one decides "
+        + "it, though listing it for a hearing leaves it to decide")
     void refusesAnotherOrderOnADecidedApplication() {
         Actor otherJudge = events.registerActor("Another", "Judge", "caseworker-pcs");
         var asOtherJudge = events.external(caseReference, MAKE_ORDER).as(otherJudge)
             .withClientContext(Map.of("genAppId", genAppId.toString()));
-        // The other judge started a draft before the first sent theirs for review.
+        // The other judge sends theirs for review alongside the first judge's.
         asOtherJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asOtherJudge.start().order(), "dismiss", null));
+        final UUID dismissedId = asOtherJudge
+            .submitExpectingSuccess(decision(SUBMIT_FOR_REVIEW, asOtherJudge.start().order(), "dismiss", null))
+            .changed("orders", OrderRow.class).id();
         Order listed = judgeDecides(genAppId, "list");
         // Court staff reviewing the order still see the application it decides.
         assertThat(asCaseworkerReviewing(listed.id()).start().caseContext().applications())
             .extracting(Application::id).containsExactly(genAppId);
 
-        assertThat(asOtherJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, asOtherJudge.start().order(),
-            "dismiss", null)).errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
-
         issue(listed);
         Order granted = judgeDecides(genAppId, "grant");
         issue(granted);
+
+        Order dismissed = asCaseworkerReviewing(dismissedId).start().order();
+        assertThatThrownBy(() -> asCaseworkerReviewing(dismissedId).submit(issueRequest(dismissed)))
+            .hasStackTraceContaining("order_gen_app_decided_once_idx");
+        assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
+            String.class, genAppId)).containsExactlyInAnyOrder("LIST", "GRANT");
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
             .containsExactly(MakeOrder.ALREADY_DECIDED);
@@ -167,17 +174,22 @@ class DecideApplicationIT extends OrderEventIT {
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
         issue(judgeDecides(genAppId, "grant"));
 
-        assertThat(asCaseworkerReviewing(undecided.id()).submitExpectingRejection(new ConfirmOrderReviewRequest(
-            ISSUE, undecided.id(), undecided.version(), null, null, new Issue(new IssuedOrder(
-                undecided.orderType(), Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order"),
-                List.of(), HIGH_COURT, true, List.of(), true, false, null)))
-            .errors()).containsExactly(MakeOrder.ALREADY_DECIDED);
+        ConfirmOrderReviewRequest changed = new ConfirmOrderReviewRequest(ISSUE, undecided.id(), undecided.version(),
+            null, null, new Issue(new IssuedOrder(undecided.orderType(),
+                Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order"),
+                List.of(), HIGH_COURT, true, List.of(), true, false, null));
+        assertThatThrownBy(() -> asCaseworkerReviewing(undecided.id()).submit(changed))
+            .hasStackTraceContaining("order_gen_app_decided_once_idx");
     }
 
     private void issue(Order order) {
-        asCaseworkerReviewing(order.id()).submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), null, null, new Issue(new IssuedOrder(order.orderType(), order.formData(), WORDING,
-                "the order"), List.of(), HIGH_COURT, true, List.of(), true, false, null)));
+        asCaseworkerReviewing(order.id()).submitExpectingSuccess(issueRequest(order));
+    }
+
+    private static ConfirmOrderReviewRequest issueRequest(Order order) {
+        return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), null, null, new Issue(
+            new IssuedOrder(order.orderType(), order.formData(), WORDING, "the order"), List.of(), HIGH_COURT, true,
+            List.of(), true, false, null));
     }
 
     /** The judge following their task to decide the application, which names it. */

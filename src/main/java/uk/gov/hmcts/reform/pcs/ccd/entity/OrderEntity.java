@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -22,12 +25,15 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.FreeFormDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -69,6 +75,16 @@ public class OrderEntity {
     @Builder.Default
     @Setter(AccessLevel.NONE)
     private Set<PartyEntity> servedParties = new HashSet<>();
+
+    /** What the order decided about each application it covers, by application id, recorded when it is issued. */
+    @ElementCollection
+    @CollectionTable(name = "order_gen_app", joinColumns = @JoinColumn(name = "order_id"))
+    @MapKeyColumn(name = "gen_app_id")
+    @Column(name = "decision")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private Map<UUID, GenAppDecision> genAppDecisions = new HashMap<>();
 
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)

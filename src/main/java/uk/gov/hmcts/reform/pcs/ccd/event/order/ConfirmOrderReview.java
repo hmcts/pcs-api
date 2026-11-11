@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
@@ -113,7 +114,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
             OrderStart.Order.of(order, orderSteps.latest(order), null),
-            orderCaseContext.of(order.getPcsCase(), order.getId()), OrderStart.Hearing.ofOrder(order), null));
+            orderCaseContext.of(order.getPcsCase()), OrderStart.Hearing.ofOrder(order), null));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
@@ -160,12 +161,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (freeForm && (issue.freeFormDetails() == null || issue.freeFormDetails().category() == null)) {
             throw ExternalRejection.because(NO_FREE_FORM_DETAILS);
         }
-        // Court staff may change the order's answers, but not to decide an application another order decides.
-        if (order.getPcsCase().getGenApps().stream()
-            .anyMatch(genApp -> OrderTasks.decides(issuing.formData(), genApp)
-                && !orderTasks.canDecide(genApp, order.getId()))) {
-            throw ExternalRejection.because(MakeOrder.ALREADY_DECIDED);
-        }
+        // What the order decides about each application, as issued; the database refuses a second order deciding one.
+        order.getPcsCase().getGenApps().forEach(genApp -> GenAppDecision.in(issuing.formData(), genApp)
+            .ifPresent(decision -> order.getGenAppDecisions().put(genApp.getId(), decision)));
         order.setSeal(issue.seal());
         order.setRestitutionPermission(issue.restitutionPermission());
         order.setFreeFormDetails(freeForm ? issue.freeFormDetails() : null);

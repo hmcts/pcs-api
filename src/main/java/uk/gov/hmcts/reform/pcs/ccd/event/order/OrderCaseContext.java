@@ -32,8 +32,8 @@ class OrderCaseContext {
     private final PartyService partyService;
     private final OrderTasks orderTasks;
 
-    /** The case for the order, which offers the applications no other order is deciding or has decided. */
-    public OrderStart.CaseContext of(PcsCaseEntity pcsCase, UUID orderId) {
+    /** The case for the order, which offers the applications no issued order has decided. */
+    public OrderStart.CaseContext of(PcsCaseEntity pcsCase) {
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
         return new OrderStart.CaseContext(
             pcsCase.getCaseReference(),
@@ -43,7 +43,7 @@ class OrderCaseContext {
             pcsCase.getCounterClaims().stream()
                 .map(CounterClaimEntity::getStatus).anyMatch(COUNTER_CLAIM_ISSUED::equals),
             pcsCase.getGenApps().stream()
-                .filter(genApp -> orderTasks.canDecide(genApp, orderId))
+                .filter(orderTasks::canDecide)
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
                 .toList()
