@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -39,6 +40,10 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         if (warrantDetails.getRiskDetails() == null) {
             warrantDetails.setRiskDetails(RiskDetails.builder().build());
         }
+
+        // This is a 'temp' fix as the SuspendOrder page has been removed so the SOT page does not have a means of
+        //  identifying which messaging to display until the
+        warrantDetails.setIsSuspendedOrder(VerticalYesNo.NO);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)

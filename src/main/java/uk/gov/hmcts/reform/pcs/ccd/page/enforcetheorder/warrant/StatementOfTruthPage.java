@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTrut
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class StatementOfTruthPage implements CcdPageConfiguration {
@@ -24,6 +25,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")
+                    .readonly(WarrantDetails::getIsSuspendedOrder, NEVER_SHOW)
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
                         .label("statementOfTruth-cert-suspended",
@@ -37,7 +39,8 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                                 <li>I believe that the facts stated in this form are true</li>
                             </ul>
                             </div>
-                            """
+                            """,
+                            "warrantIsSuspendedOrder=\"YES\""
                         )
                         .label("statementOfTruth-cert-not-suspended",
                             """
@@ -47,7 +50,8 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                                 <li>I believe the facts stated in this form are true.</li>
                             </ul>
                             </div>
-                            """
+                            """,
+                            "warrantIsSuspendedOrder=\"NO\""
                         )
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)

@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDeta
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.claimantmakeanapplication.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
@@ -60,6 +61,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final FeeApplier feeApplier;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final EnforcementSubmitEvent enforcementSubmitEvent;
+    private final StatementOfTruth statementOfTruth;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -89,7 +91,9 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         populateDefendantSelectionList(pcsCase);
         applyWarrantFeeAmount(pcsCase);
         applyWritFeeAmount(pcsCase);
-        setEnforcementTypes(eventPayload.caseReference(), pcsCase.getEnforcementOrder());
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+        setEnforcementTypes(eventPayload.caseReference(), enforcementOrder);
+
         return pcsCase;
     }
 
