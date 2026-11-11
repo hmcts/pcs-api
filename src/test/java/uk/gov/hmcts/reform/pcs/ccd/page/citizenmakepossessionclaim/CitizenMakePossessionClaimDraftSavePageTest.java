@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -118,6 +120,20 @@ class CitizenMakePossessionClaimDraftSavePageTest extends BasePageTest {
         assertThat(echoed.getServiceRequestReference()).isNull();
         assertThat(echoed.getFeeAmount()).isNull();
         assertThat(echoed.getPaymentStatus()).isNull();
+    }
+
+    @Test
+    void shouldSaveAndEchoTheConfirmedSections() {
+        givenTheCase(true);
+        PCSCase caseData = caseData();
+        caseData.getCitizenPossessionClaim().setConfirmedSections(
+            Set.of(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY));
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        verify(caseService).saveDraft(TEST_CASE_REFERENCE, caseData.getCitizenPossessionClaim());
+        assertThat(response.getData().getCitizenPossessionClaim().getConfirmedSections())
+            .containsExactlyInAnyOrder(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY);
     }
 
     @Test

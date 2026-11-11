@@ -161,6 +161,7 @@ public class CitizenPossessionClaimSubmitService {
         final CitizenPossessionClaim claim = answers.toBuilder()
             .propertyAddress(addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress()))
             .draftVersion(null)
+            .confirmedSections(null)
             .build();
         final String submittedAnswers = writeSubmittedAnswers(claim);
 

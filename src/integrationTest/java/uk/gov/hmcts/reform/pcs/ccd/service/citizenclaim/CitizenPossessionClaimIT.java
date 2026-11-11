@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import com.google.common.collect.ImmutableSet;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim;
@@ -40,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
@@ -64,6 +67,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,6 +96,8 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     private CitizenPossessionClaimApplicableAnswers applicableAnswers;
     @Autowired
     private PcsCaseRepository pcsCaseRepository;
+    @Autowired
+    private DraftCaseDataService draftCaseDataService;
     @Autowired
     private RentHistoryLedgerEntryRepository ledgerEntryRepository;
     @Autowired
@@ -175,6 +181,84 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("Confirmed sections survive a draft save and reload, and an emptied set saves as empty")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void shouldRoundTripConfirmedSectionsThroughTheDraftSave() {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+        MidEvent midEvent = configuredEvent().getFields().getPagesToMidEvent().values().iterator().next();
+
+        CitizenPossessionClaim started = caseService.loadOrInitialiseDraft(caseService.loadCase(caseReference));
+        CitizenPossessionClaim confirmed = completeClaimOrThrow();
+        confirmed.setDraftVersion(started.getDraftVersion());
+        confirmed.setConfirmedSections(Set.of(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY));
+        AboutToStartOrSubmitResponse<PCSCase, State> saved = (AboutToStartOrSubmitResponse<PCSCase, State>)
+            midEvent.handle(draftSaveDetails(caseReference, confirmed), null);
+
+        assertThat(saved.getErrors()).isNullOrEmpty();
+        assertThat(saved.getData().getCitizenPossessionClaim().getConfirmedSections())
+            .containsExactlyInAnyOrder(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY);
+        CitizenPossessionClaim reloaded = caseService.loadOrInitialiseDraft(caseService.loadCase(caseReference));
+        assertThat(reloaded.getConfirmedSections())
+            .containsExactlyInAnyOrder(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY);
+        assertThat(draftJson(caseReference).at("/citizenPossessionClaim/confirmedSections"))
+            .extracting(JsonNode::asText)
+            .containsExactlyInAnyOrder("claimant-cya", "tenancy-cya");
+
+        CitizenPossessionClaim emptied = reloaded.toBuilder().confirmedSections(Set.of()).build();
+        AboutToStartOrSubmitResponse<PCSCase, State> cleared = (AboutToStartOrSubmitResponse<PCSCase, State>)
+            midEvent.handle(draftSaveDetails(caseReference, emptied), null);
+
+        assertThat(cleared.getErrors()).isNullOrEmpty();
+        assertThat(caseService.loadDraft(caseReference).orElseThrow().getConfirmedSections()).isEmpty();
+        assertThat(draftJson(caseReference).at("/citizenPossessionClaim/confirmedSections").isArray()).isTrue();
+    }
+
+    @Test
+    @DisplayName("A draft patch leaves confirmed sections it does not mention alone and clears them when sent empty")
+    void shouldPatchConfirmedSectionsOnlyWhenSent() {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draftWithSections(
+            Set.of(CitizenClaimSection.CLAIMANT)), EventId.citizenMakePossessionClaim);
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draftWithSections(null),
+                                                       EventId.citizenMakePossessionClaim);
+        assertThat(caseService.loadDraft(caseReference).orElseThrow().getConfirmedSections())
+            .containsExactly(CitizenClaimSection.CLAIMANT);
+
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draftWithSections(Set.of()),
+                                                       EventId.citizenMakePossessionClaim);
+        assertThat(caseService.loadDraft(caseReference).orElseThrow().getConfirmedSections()).isEmpty();
+    }
+
+    private static CaseDetails<PCSCase, State> draftSaveDetails(long caseReference, CitizenPossessionClaim claim) {
+        return CaseDetails.<PCSCase, State>builder()
+            .id(caseReference)
+            .data(PCSCase.builder().citizenPossessionClaim(claim).build())
+            .build();
+    }
+
+    private static PCSCase draftWithSections(Set<CitizenClaimSection> sections) {
+        return PCSCase.builder()
+            .citizenPossessionClaim(CitizenPossessionClaim.builder().confirmedSections(sections).build())
+            .build();
+    }
+
+    private JsonNode draftJson(long caseReference) {
+        String caseData = jdbcTemplate.queryForObject(
+            "select case_data::text from draft.draft_case_data where case_reference = ? and event_id = ?",
+            String.class, caseReference, EventId.citizenMakePossessionClaim.name());
+        try {
+            return draftObjectMapper.readTree(caseData);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Test
     @DisplayName("Email columns the citizen claim writes to hold an RFC 5321 length address")
     void shouldWidenEmailColumnsTo254() {
         String sql = """
@@ -225,6 +309,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         CitizenPossessionClaim answers = completeClaim();
         answers.setDraftVersion(started.getDraftVersion());
         answers.getClaimant().setEmailAddress(LONGEST_EMAIL);
+        answers.setConfirmedSections(Set.of(CitizenClaimSection.CLAIMANT));
         Long savedVersion = caseService.saveDraft(caseReference, answers);
         CitizenPossessionClaim draft = caseService.loadDraft(caseReference).orElseThrow();
         assertThat(draft.getDraftVersion()).isEqualTo(savedVersion).isNotEqualTo(started.getDraftVersion());
@@ -279,7 +364,9 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         assertThat(ledgerEntryRepository.findByClaimId(claim.getId())).hasSize(2);
         assertThat(periodRepository.findByClaimId(claim.getId())).isEmpty();
         assertThat(submissionRepository.findByClaimId(claim.getId())).singleElement()
-            .satisfies(row -> assertThat(row.getSubmittedClaim()).contains("tom.tenant@example.com"));
+            .satisfies(row -> assertThat(row.getSubmittedClaim())
+                .contains("tom.tenant@example.com")
+                .doesNotContain("confirmedSections"));
     }
 
     private CitizenPossessionClaim completeClaim() throws Exception {

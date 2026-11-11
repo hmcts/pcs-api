@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -31,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -242,6 +244,35 @@ class CitizenPossessionClaimCaseServiceTest {
         assertThat(stored.getSubmission().getFeeAmount()).isNull();
         assertThat(stored.getSubmission().getPaymentStatus()).isNull();
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(any(Long.class), any(), any());
+    }
+
+    @Test
+    void shouldKeepTheConfirmedSectionsTheFrontendSent() {
+        CitizenPossessionClaim claim = CitizenPossessionClaim.builder()
+            .draftVersion(3L)
+            .confirmedSections(Set.of(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY))
+            .build();
+
+        assertThat(CitizenPossessionClaimCaseService.withoutServerOwnedFields(claim).getConfirmedSections())
+            .containsExactlyInAnyOrder(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY);
+    }
+
+    @Test
+    void shouldSaveAnEmptiedConfirmedSectionsAsEmptyRatherThanLeavingItUnchanged() {
+        CitizenPossessionClaim claim = CitizenPossessionClaim.builder()
+            .draftVersion(3L)
+            .confirmedSections(Set.of())
+            .build();
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, citizenMakePossessionClaim))
+            .thenReturn(true);
+
+        underTest.saveDraft(CASE_REFERENCE, claim);
+
+        verify(draftCaseDataService).saveUnsubmittedEventData(eq(CASE_REFERENCE), draftCaptor.capture(),
+                                                              eq(citizenMakePossessionClaim), eq(3L));
+        assertThat(draftCaptor.getValue().getCitizenPossessionClaim().getConfirmedSections())
+            .isNotNull()
+            .isEmpty();
     }
 
     @Test

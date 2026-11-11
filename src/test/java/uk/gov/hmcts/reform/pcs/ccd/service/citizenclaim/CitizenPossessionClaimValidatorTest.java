@@ -43,6 +43,14 @@ class CitizenPossessionClaimValidatorTest {
     }
 
     @Test
+    void shouldNotRequireAnyConfirmedSections() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.setConfirmedSections(Set.of());
+
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
     void shouldReportEveryMissingRequiredAnswer() {
         assertThat(validate(CitizenPossessionClaim.builder().build())).containsExactly(
             CitizenPossessionClaimValidator.CLAIMANT_TYPE_NOT_ELIGIBLE,

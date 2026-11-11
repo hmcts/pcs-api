@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.HasDraftVersion;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
+import java.util.Set;
 
 @Builder(toBuilder = true)
 @Data
@@ -43,6 +44,9 @@ public class CitizenPossessionClaim implements HasDraftVersion {
     private CitizenClaimOtherInformation otherInformation;
 
     private CitizenClaimSubmission submission;
+
+    // Draft only: the sections whose check your answers page the claimant has continued from
+    private Set<CitizenClaimSection> confirmedSections;
 
     // Version of the stored draft these answers were read from; a save or submit that echoes it is bound to it.
     private Long draftVersion;

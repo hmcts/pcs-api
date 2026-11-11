@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
@@ -505,6 +506,19 @@ class CitizenPossessionClaimSubmitServiceTest {
             .doesNotContain("Claimant 1");
         assertThat(claim.getTenancy().getTenancyAgreementDocuments().getFirst().getValue().getFilename())
             .isEqualTo("tenancy.pdf");
+    }
+
+    @Test
+    void shouldLeaveTheConfirmedSectionsOutOfTheSubmittedAnswers() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.setConfirmedSections(Set.of(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY));
+
+        submit(claim);
+
+        verify(submissionRepository).save(submissionCaptor.capture());
+        assertThat(submissionCaptor.getValue().getSubmittedClaim())
+            .doesNotContain("confirmedSections")
+            .doesNotContain("claimant-cya");
     }
 
     @Test

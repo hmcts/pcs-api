@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -81,6 +82,34 @@ class CitizenPossessionClaimJsonTest {
         assertThat(objectMapper.readTree(stored).at("/citizenPossessionClaim/defendantsConfirmed").asText())
             .isEqualTo("YES");
         assertThat(restored.getCitizenPossessionClaim().getDefendantsConfirmed()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldRoundTripConfirmedSectionsAsTheFrontendStepNames() throws Exception {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.setConfirmedSections(Set.of(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY));
+        PCSCase pcsCase = PCSCase.builder().citizenPossessionClaim(claim).build();
+
+        String stored = objectMapper.writeValueAsString(pcsCase);
+        PCSCase restored = objectMapper.readValue(stored, PCSCase.class);
+
+        assertThat(objectMapper.readTree(stored).at("/citizenPossessionClaim/confirmedSections"))
+            .extracting(JsonNode::asText)
+            .containsExactlyInAnyOrder("claimant-cya", "tenancy-cya");
+        assertThat(restored.getCitizenPossessionClaim().getConfirmedSections())
+            .containsExactlyInAnyOrder(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY);
+    }
+
+    @Test
+    void shouldStoreAnEmptiedConfirmedSectionsAsAnEmptyArray() throws Exception {
+        CitizenPossessionClaim claim = CitizenPossessionClaim.builder().confirmedSections(Set.of()).build();
+        PCSCase pcsCase = PCSCase.builder().citizenPossessionClaim(claim).build();
+
+        String stored = objectMapper.writeValueAsString(pcsCase);
+
+        assertThat(objectMapper.readTree(stored).at("/citizenPossessionClaim/confirmedSections").isArray()).isTrue();
+        assertThat(objectMapper.readValue(stored, PCSCase.class).getCitizenPossessionClaim().getConfirmedSections())
+            .isEmpty();
     }
 
 }

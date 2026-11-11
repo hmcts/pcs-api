@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
@@ -44,6 +45,15 @@ class CitizenPossessionClaimApplicableAnswersTest {
         assertThat(claim.getGrounds().getOtherGrounds()).isNotEmpty();
         assertThat(claim.getTenancy().getTenancyAgreementDocuments().getFirst().getValue().getFilename())
             .isEqualTo("tenancy.pdf");
+    }
+
+    @Test
+    void shouldLeaveOutTheConfirmedSectionsAsTheyAreJourneyStateNotAnAnswer() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.setConfirmedSections(Set.of(CitizenClaimSection.CLAIMANT));
+
+        assertThat(underTest.of(claim).getConfirmedSections()).isNull();
+        assertThat(claim.getConfirmedSections()).containsExactly(CitizenClaimSection.CLAIMANT);
     }
 
     @Test

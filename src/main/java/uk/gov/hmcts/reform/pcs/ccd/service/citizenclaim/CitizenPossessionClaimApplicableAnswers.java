@@ -45,6 +45,7 @@ public class CitizenPossessionClaimApplicableAnswers {
      */
     public CitizenPossessionClaim of(CitizenPossessionClaim claim) {
         CitizenPossessionClaim applicable = draftCaseDataObjectMapper.convertValue(claim, CitizenPossessionClaim.class);
+        applicable.setConfirmedSections(null);
 
         reduceClaimant(applicable.getClaimant());
         reduceDefendants(applicable);
