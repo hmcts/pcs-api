@@ -148,6 +148,7 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
       ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
+      ['validateTabNotPresent', () => this.validateTabNotPresent(page, fieldName as actionRecord)],
       ['noticeOfChange', () => this.noticeOfChange(fieldName as actionRecord)],
       ['clientDetails', () => this.clientDetails(fieldName as actionRecord)],
       ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
@@ -1910,6 +1911,16 @@ export class CreateCaseAction implements IAction {
       // Exact match (HDPI-9534): fails on a duplicated tab and on a tab the user should not see.
       expect(tabs.slice().sort(), `tabs seen: ${tabs.join(' | ')}`)
         .toEqual((tab.tabs as string[]).slice().sort());
+    });
+  }
+
+    public async validateTabNotPresent(page: Page, tab: actionRecord) {
+    await test.step(`Tab access check for user "${tab.user}"`, async () => {
+      const tabLoc = page.getByRole('tab');
+      await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
+      const tabs = (await tabLoc.allTextContents()).map(t => t.trim());
+      expect(tabs.slice().sort(), `tabs seen: ${tabs.join(' | ')}`)
+        .not.toContain((tab.tabs as string[]));
     });
   }
 
