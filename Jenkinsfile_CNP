@@ -100,6 +100,9 @@ withPipeline(type, product, component) {
     if (waPRLabels.contains("pr-values:wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
+    if (hasLabel(githubApi, "run_e2e_in_welsh")) {
+      env.RUN_E2E_IN_WELSH = "true"
+    }
     if (hasLabel(githubApi, "enable_e2e_full_regression")) {
       env.E2E_SUITE = "chrome"
     }
@@ -346,11 +349,12 @@ def setPreviewEnvVars(githubApi) {
     env.PCS_FRONTEND_CHANGE_ID = frontendLabels[0].replace("pcs-frontend-pr:", "")
   }
 
-  // pr-values:ccd deploys the frontend into this preview, so link to it rather than to AAT.
-  if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
-    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-  } else if (env.PCS_FRONTEND_CHANGE_ID) {
+  // A paired pcs-frontend PR's preview is the frontend under test; otherwise the CCD
+  // preview labels deploy master's frontend into this preview, so link to it rather than to AAT.
+  if (env.PCS_FRONTEND_CHANGE_ID) {
     env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${env.PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+  } else if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   } else {
     env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
   }

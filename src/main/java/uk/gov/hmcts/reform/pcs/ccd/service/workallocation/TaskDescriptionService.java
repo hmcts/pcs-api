@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -228,17 +229,56 @@ public class TaskDescriptionService {
 
     public String createReviewOrderQueryDescription(String caseworkerName,
                                                     String orderType,
-                                                    String query,
                                                     String changeUrl) {
         Map<String, Object> context = Map.of(
             "caseworkerName", caseworkerName,
             "orderType", orderType,
-            "query", query,
             "changeUrl", changeUrl
         );
 
         String templateName = "review-order-query";
         return renderTemplate(templateName, context);
+    }
+
+    /**
+     * A message for a role's pool to review: who sent it, its subject, and links to the case's Messages tab, to
+     * replying to or closing it and, for a message about an application, to deciding that application with an order.
+     * The reply link passes XUI the task's id, so XUI closes this task when the event is submitted.
+     */
+    public String createReviewMessageDescription(String senderName,
+                                                 String subject,
+                                                 boolean urgent,
+                                                 long caseReference,
+                                                 String application,
+                                                 String decideUrl) {
+        Map<String, Object> context = new HashMap<>();
+        context.put("senderName", plain(senderName));
+        context.put("subject", plain(subject));
+        context.put("urgent", urgent);
+        context.put("caseReference", caseReference);
+        context.put("application", application);
+        context.put("decideUrl", decideUrl);
+        return renderTemplate("review-message", context);
+    }
+
+    public String createReviewClosedMessageDescription(String closedBy, String subject, String note,
+                                                       long caseReference) {
+        Map<String, Object> context = new HashMap<>();
+        context.put("closedBy", plain(closedBy));
+        context.put("subject", plain(subject));
+        context.put("note", plain(note));
+        context.put("caseReference", caseReference);
+        return renderTemplate("review-closed-message", context);
+    }
+
+    /**
+     * What someone wrote, put so that no HTML entity is made of it, nor of its brackets below: XUI keeps a task's
+     * details for the event it starts only as far as their first semicolon, so a task whose description has one
+     * cannot start its event.
+     */
+    private static String plain(String text) {
+        return text == null ? null : text.replace("&", "and").replace(";", ",").replace("'", "’")
+            .replace("\"", "”").replace("<", "").replace(">", "").replace("(", "[").replace(")", "]");
     }
 
     private String renderTemplate(String templateName, Map<String, Object> context) {

@@ -3,6 +3,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
+import { home } from '@data/page-data-cy';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -80,6 +81,9 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  if (process.env.RUN_E2E_IN_WELSH === 'true') {
+    await performAction('clickButton', home.cymraegLink);
+  }
 });
 
 test.afterEach(async () => {
