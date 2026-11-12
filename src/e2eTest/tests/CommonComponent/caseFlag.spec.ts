@@ -3,7 +3,7 @@ import { allPartyDetails, caseNumber } from '@utils/actions/custom-actions/creat
 import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, paymentApiData, submitCaseApiData } from '@data/api-data';
 import { caseSummary, user } from '@data/page-data';
-import { staff, staffUsers } from '@data/user-data/staff.user.data';
+import { staffUsers } from '@data/user-data/staff.user.data';
 import { judicial, judicialUsers } from '@data/user-data/judicial.user.data';
 import {
   addCommentsForFlag,
@@ -63,7 +63,7 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () => {
 
-  test('Case Flags - Create and Manage case flag menu @smoke', async ({ page }) => {
+  test('Case Flags - Create and Manage case flag menu', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
@@ -73,7 +73,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
-    
+
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
   test('Case Flags - Claimant organisation details are not displayed', async ({ page }) => {
@@ -110,6 +110,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await expect(page.getByRole('radio', { name: /claimant/i })).toHaveCount(0);
     await expect(flagLevelRadios).toHaveCount(defendantNames.length + 1);
   });
+
   test('Case Flags - Create case level Flag', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
@@ -180,6 +181,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
+
   test('Case Flags - Create Party Level Case Flag', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
@@ -251,7 +253,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags', async () => {
+test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags', async () => {
   test.describe.configure({ retries: 0 });
   test('Staff users can create, manage and view case-level and party-level flags @release', async ({ page, context }) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
