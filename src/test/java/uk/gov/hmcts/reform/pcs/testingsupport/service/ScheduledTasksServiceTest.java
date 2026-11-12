@@ -9,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
@@ -50,7 +52,10 @@ class ScheduledTasksServiceTest {
     void setUp() {
         when(utcClock.instant()).thenReturn(TEST_INSTANT);
 
-        underTest = new ScheduledTasksService(jdbcTemplate, schedulerClient, scheduler, utcClock);
+        var beans = new DefaultListableBeanFactory();
+        beans.registerSingleton("scheduler", scheduler);
+        underTest = new ScheduledTasksService(jdbcTemplate, schedulerClient,
+            beans.getBeanProvider(Scheduler.class), utcClock);
     }
 
     @Test
@@ -91,6 +96,28 @@ class ScheduledTasksServiceTest {
         assertThat(capturedTaskInstanceId.getId()).isSameAs(taskId);
         assertThat(capturedTaskInstanceId.getTaskName()).isSameAs(taskName);
         assertThat(scheduledInstant).isEqualTo(Instant.now(utcClock));
+        verify(scheduler).triggerCheckForDueExecutions();
+    }
+
+    @Test
+    void shouldStartAndRescheduleTasksWithoutLocalExecutor() {
+        when(jdbcTemplate.queryForList(anyString(), any(SqlParameterSource.class), eq(String.class)))
+            .thenReturn(List.of("db-task-id"));
+
+        new ApplicationContextRunner()
+            .withPropertyValues("testing-support.enabled=true", "db-scheduler.executor-enabled=false")
+            .withBean(NamedParameterJdbcTemplate.class, () -> jdbcTemplate)
+            .withBean(SchedulerClient.class, () -> schedulerClient)
+            .withBean("utcClock", Clock.class, () -> utcClock)
+            .withUserConfiguration(ScheduledTasksService.class)
+            .run(context -> {
+                assertThat(context).hasNotFailed().hasSingleBean(ScheduledTasksService.class);
+                assertThat(context).doesNotHaveBean(Scheduler.class);
+                context.getBean(ScheduledTasksService.class)
+                    .executeFutureDbSchedulerTasks("test-task", Duration.ofHours(1));
+
+                verify(schedulerClient).reschedule(TaskInstanceId.of("test-task", "db-task-id"), TEST_INSTANT);
+            });
     }
 
 }

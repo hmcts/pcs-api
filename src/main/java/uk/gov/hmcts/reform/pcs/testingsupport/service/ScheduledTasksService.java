@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.exceptions.TaskInstanceCurrentlyExecutingException;
 import com.github.kagkarlsson.scheduler.task.TaskInstanceId;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -24,12 +25,12 @@ public class ScheduledTasksService {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final SchedulerClient schedulerClient;
-    private final Scheduler scheduler;
+    private final ObjectProvider<Scheduler> scheduler;
     private final Clock utcClock;
 
     public ScheduledTasksService(NamedParameterJdbcTemplate jdbcTemplate,
                                  SchedulerClient schedulerClient,
-                                 Scheduler scheduler,
+                                 ObjectProvider<Scheduler> scheduler,
                                  @Qualifier("utcClock") Clock utcClock) {
         this.jdbcTemplate = jdbcTemplate;
         this.schedulerClient = schedulerClient;
@@ -64,7 +65,8 @@ public class ScheduledTasksService {
             }
         }
 
-        scheduler.triggerCheckForDueExecutions();
+        // Pods without a local executor still reschedule tasks for the API's scheduler to pick up.
+        scheduler.ifAvailable(Scheduler::triggerCheckForDueExecutions);
     }
 
 }
