@@ -1,104 +1,260 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import com.sun.net.httpserver.HttpServer;
+import feign.FeignException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import org.springframework.security.oauth2.core.OAuth2Error;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignClientsConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import uk.gov.hmcts.reform.idam.client.IdamApi;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.OAuth2Configuration;
+import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-@ExtendWith(MockitoExtension.class)
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
+
 class IdamTokenProviderTest {
 
-    private static final String SYSTEM_USERNAME = "system-user@test.com";
-    private static final String SYSTEM_PASSWORD = "top-secret";
-
-    @Mock
-    private OAuth2AuthorizedClientManager authorizedClientManager;
-
-    private IdamTokenProvider underTest;
+    private HttpServer server;
+    private ApplicationContextRunner contextRunner;
+    private final List<Map<String, String>> requests = new CopyOnWriteArrayList<>();
+    private volatile String responseBody;
+    private volatile int responseStatus;
 
     @BeforeEach
-    void setUp() {
-        underTest = new IdamTokenProvider(authorizedClientManager, "system-user", SYSTEM_USERNAME, SYSTEM_PASSWORD);
+    void setUp() throws IOException {
+        responseBody = tokenResponse("first-token");
+        responseStatus = 200;
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/o/token", exchange -> {
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            requests.add(Arrays.stream(body.split("&"))
+                .map(part -> part.split("=", 2))
+                .collect(Collectors.toMap(parts -> decode(parts[0]), parts -> decode(parts[1]))));
+            byte[] response = responseBody.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(responseStatus, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+        contextRunner = new ApplicationContextRunner()
+            .withUserConfiguration(ClientConfiguration.class)
+            .withPropertyValues(
+                "idam.api.url=http://127.0.0.1:" + server.getAddress().getPort(),
+                "idam.client.id=pcs-api",
+                "idam.client.secret=client-secret",
+                "idam.client.scope=openid profile roles",
+                "idam.system-user.username=system@example.test",
+                "idam.system-user.password=p&ss word",
+                "idam.prd-admin.username=admin@example.test",
+                "idam.prd-admin.password=admin-secret",
+                "spring.http.converters.preferred-json-mapper=jackson2");
+    }
+
+    @AfterEach
+    void tearDown() {
+        server.stop(0);
     }
 
     @Test
-    @DisplayName("Should get the access token for the system update user via OAuth2 client manager")
-    void shouldGetAuthToken() {
-        String expectedAccessToken = "some access token";
-        OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
-        OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
-        given(authorizedClient.getAccessToken()).willReturn(accessToken);
-        given(accessToken.getTokenValue()).willReturn(expectedAccessToken);
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willReturn(authorizedClient);
+    void obtainsAndCachesTheSystemUserTokenThroughTheHmctsClient() {
+        contextRunner.run(context -> {
+            var provider = context.getBean("systemUpdateUserTokenProvider", IdamTokenProvider.class);
 
-        String authToken = underTest.getAuthToken();
-
-        assertThat(authToken).isEqualTo("Bearer %s", expectedAccessToken);
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
+            assertThat(requests).singleElement().satisfies(request -> assertThat(request).containsAllEntriesOf(Map.of(
+                "client_id", "pcs-api", "client_secret", "client-secret", "grant_type", "password",
+                "username", "system@example.test", "password", "p&ss word", "scope", "openid profile roles")));
+        });
     }
 
     @Test
-    @DisplayName("Should throw IdamException when OAuth2 client manager returns null")
-    void shouldThrowIdamExceptionWhenAuthorizedClientIsNull() {
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willReturn(null);
+    void keepsTheTwoServiceIdentitiesAndTheirCachedTokensSeparate() {
+        contextRunner.run(context -> {
+            var systemUser = context.getBean("systemUpdateUserTokenProvider", IdamTokenProvider.class);
+            var adminUser = context.getBean("prdAdminTokenProvider", IdamTokenProvider.class);
+            assertThat(systemUser.getAuthToken()).isEqualTo("Bearer first-token");
+            responseBody = tokenResponse("admin-token");
 
-        Throwable throwable = catchThrowable(() -> underTest.getAuthToken());
-
-        assertThat(throwable)
-            .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response");
+            assertThat(adminUser.getAuthToken()).isEqualTo("Bearer admin-token");
+            assertThat(systemUser.getAuthToken()).isEqualTo("Bearer first-token");
+            assertThat(adminUser.getAuthToken()).isEqualTo("Bearer admin-token");
+            assertThat(requests).hasSize(2);
+            assertThat(requests.getLast()).containsEntry("username", "admin@example.test")
+                .containsEntry("password", "admin-secret");
+        });
     }
 
     @Test
-    @DisplayName("Should throw IdamException when the authorized client has a null access token")
-    void shouldThrowIdamExceptionWhenAccessTokenIsNull() {
-        OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willReturn(authorizedClient);
+    void reacquiresTheTokenSixtySecondsBeforeItsExpiry() {
+        contextRunner.run(context -> {
+            var clock = new MutableClock();
+            var provider = new IdamTokenProvider(
+                context.getBean(IdamClient.class), "system@example.test", "secret", clock);
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
+            clock.advance(Duration.ofSeconds(3539));
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
+            responseBody = tokenResponse("renewed-token");
+            clock.advance(Duration.ofSeconds(1));
 
-        Throwable throwable = catchThrowable(() -> underTest.getAuthToken());
-
-        assertThat(throwable)
-            .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response");
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer renewed-token");
+            assertThat(requests).hasSize(2).allSatisfy(request -> assertThat(request)
+                .containsEntry("grant_type", "password").doesNotContainKey("refresh_token"));
+        });
     }
 
     @Test
-    @DisplayName("Should wrap OAuth2AuthorizationException thrown when fetching system update user token")
-    void shouldWrapOAuth2AuthorizationExceptionGettingAuthToken() {
-        OAuth2Error error = new OAuth2Error("invalid_token_response", "throttled", null);
-        OAuth2AuthorizationException oauthException = new OAuth2AuthorizationException(error);
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(oauthException);
+    void concurrentCallersShareOneTokenRequest() {
+        contextRunner.run(context -> {
+            var provider = context.getBean("systemUpdateUserTokenProvider", IdamTokenProvider.class);
+            var start = new CountDownLatch(1);
+            var executor = Executors.newFixedThreadPool(8);
+            try {
+                var results = IntStream.range(0, 8).mapToObj(index -> executor.submit(() -> {
+                    start.await();
+                    return provider.getAuthToken();
+                })).toList();
+                start.countDown();
 
-        Throwable throwable = catchThrowable(() -> underTest.getAuthToken());
-
-        assertThat(throwable)
-            .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response")
-            .hasCause(oauthException);
+                for (var result : results) {
+                    assertThat(result.get(10, TimeUnit.SECONDS)).isEqualTo("Bearer first-token");
+                }
+                assertThat(requests).hasSize(1);
+            } finally {
+                executor.shutdownNow();
+            }
+        });
     }
 
     @Test
-    @DisplayName("Should propagate unexpected exceptions unchanged (no catch-all wrapping)")
-    void shouldPropagateUnexpectedExceptionUnchanged() {
-        RuntimeException unexpected = new RuntimeException("boom");
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(unexpected);
+    void failedRenewalDoesNotReturnAnExpiredTokenAndCanBeRetried() {
+        contextRunner.run(context -> {
+            var clock = new MutableClock();
+            var provider = new IdamTokenProvider(
+                context.getBean(IdamClient.class), "system@example.test", "secret", clock);
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
+            clock.advance(Duration.ofHours(1));
+            responseStatus = 503;
+            responseBody = "{\"error\":\"temporarily_unavailable\"}";
 
-        Throwable throwable = catchThrowable(() -> underTest.getAuthToken());
+            assertThat(catchThrowableOfType(IdamException.class, provider::getAuthToken))
+                .hasCauseInstanceOf(FeignException.class);
+            responseStatus = 200;
+            responseBody = tokenResponse("recovered-token");
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer recovered-token");
+            assertThat(requests).hasSize(3);
+        });
+    }
 
-        assertThat(throwable).isSameAs(unexpected);
+    @ParameterizedTest
+    @ValueSource(ints = {400, 401, 429, 500, 503})
+    void preservesTheUpstreamHttpFailureForTheExistingErrorHandler(int status) {
+        contextRunner.run(context -> {
+            responseStatus = status;
+            responseBody = "{\"error\":\"invalid_grant\"}";
+            var provider = context.getBean("systemUpdateUserTokenProvider", IdamTokenProvider.class);
+
+            IdamException failure = catchThrowableOfType(IdamException.class, provider::getAuthToken);
+
+            assertThat(failure).hasMessage("Unable to get access token response")
+                .hasCauseInstanceOf(FeignException.class);
+            assertThat(((FeignException) failure.getCause()).status()).isEqualTo(status);
+            responseStatus = 200;
+            responseBody = tokenResponse("recovered-token");
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer recovered-token");
+            assertThat(requests).hasSize(2);
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "{}", "{\"access_token\":\"\",\"expires_in\":3600}",
+        "{\"access_token\":\"token\"}", "{\"access_token\":\"token\",\"expires_in\":0}",
+        "{\"access_token\":\"token\",\"expires_in\":-1}", "{\"access_token\":\"token\",\"expires_in\":\"invalid\"}"
+    })
+    void rejectsInvalidTokenResponsesWithoutCachingThem(String body) {
+        contextRunner.run(context -> {
+            responseBody = body;
+            var provider = context.getBean("systemUpdateUserTokenProvider", IdamTokenProvider.class);
+
+            assertThat(catchThrowableOfType(IdamException.class, provider::getAuthToken))
+                .hasMessage("Unable to get access token response");
+            responseBody = tokenResponse("valid-token");
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer valid-token");
+            assertThat(requests).hasSize(2);
+        });
+    }
+
+    private static String tokenResponse(String token) {
+        return "{\"access_token\":\"" + token + "\",\"expires_in\":3600,\"refresh_token\":\"unused\"}";
+    }
+
+    private static String decode(String value) {
+        return URLDecoder.decode(value, StandardCharsets.UTF_8);
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @EnableFeignClients(clients = IdamApi.class)
+    @Import({IdamTokenProviderConfig.class, IdamClient.class, OAuth2Configuration.class, JacksonConfiguration.class})
+    @SuppressWarnings("removal")
+    @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
+        Jackson2AutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class})
+    static class ClientConfiguration {
+    }
+
+    private static class MutableClock extends Clock {
+        private Instant now = Instant.parse("2026-01-01T00:00:00Z");
+
+        void advance(Duration duration) {
+            now = now.plus(duration);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return Clock.fixed(now, zone);
+        }
+
+        @Override
+        public Instant instant() {
+            return now;
+        }
     }
 }

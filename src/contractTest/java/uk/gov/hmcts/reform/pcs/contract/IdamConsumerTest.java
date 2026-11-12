@@ -30,8 +30,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Test-only use of the deprecated idam-java-client to preserve the pre-existing pact contract
-// (already verified by IDAM provider). Production code uses our own IdamUserInfoApi instead.
+// Token contract for the shared HMCTS IDAM client; user info uses PCS IdamUserInfoApi.
 @SuppressWarnings("removal")
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class, Jackson2AutoConfiguration.class})

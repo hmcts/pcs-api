@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -69,15 +68,13 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     @MockitoBean
     private FeeService feeService;
     @MockitoBean
-    private OAuth2AuthorizedClientManager authorizedClientManager;
-    @MockitoBean
     private IdamClient idamClient;
     @MockitoBean
     private OrganisationService organisationService;
 
     @BeforeEach
     void setUp() {
-        idamHelper.setUpAuthenticatedUser(authorizedClientManager, SYSTEM_USER_ID_STUB, USER_ID, idamClient);
+        idamHelper.setUpAuthenticatedUser(idamClient, SYSTEM_USER_ID_STUB, USER_ID);
         FeeDetails feeDetails = FeeDetails.builder().code("FEE0001").feeAmount(new BigDecimal("123.45")).build();
         when(feeService.getFee(any(FeeType.class))).thenReturn(feeDetails);
         OrganisationDetailsResponse orgDetails = new OrganisationDetailsResponse();

@@ -28,6 +28,8 @@ spring:
       show-dql: true
 
 idam:
+  client:
+    secret: unused-for-integration-tests
   system-user:
     username: ${PLACEHOLDER_INTEGRATION_IDAM_USERNAME:pcs-system-user-it}
     password: ${PLACEHOLDER_INTEGRATION_IDAM_PASSWORD:pcs-system-password-it}

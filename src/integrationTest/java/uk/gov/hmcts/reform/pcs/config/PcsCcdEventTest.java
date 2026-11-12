@@ -24,6 +24,6 @@ import java.lang.annotation.Target;
 })
 @ActiveProfiles("integration")
 @EnableCcdEventTesting
-@Import(IssuedCases.class)
+@Import({IssuedCases.class, CcdEventTestIdentityConfiguration.class})
 public @interface PcsCcdEventTest {
 }

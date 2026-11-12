@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
@@ -46,13 +46,13 @@ class HearingsControllerIT extends AbstractPostgresContainerIT {
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
     @MockitoBean
-    private OAuth2AuthorizedClientManager authorizedClientManager;
+    private IdamClient idamClient;
     @MockitoBean
     private HmcHearingApi hmcHearingApi;
 
     @BeforeEach
     void setUp() {
-        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
+        idamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
     }
 
     @Test

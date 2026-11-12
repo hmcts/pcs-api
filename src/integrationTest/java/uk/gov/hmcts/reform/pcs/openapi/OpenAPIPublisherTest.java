@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -22,7 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Each CI run on master should automatically save and upload (if updated) documentation.
  */
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(properties = { "spring.flyway.enabled=false" })
+@SpringBootTest
+@ActiveProfiles("integration")
 @AutoConfigureMockMvc
 class OpenAPIPublisherTest extends AbstractPostgresContainerIT {
 

@@ -40,7 +40,7 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamUserInfoApi.class,
-        IdamApi.class, // not used by pcs-api code; required so ccd-sdk's IdamClient can wire.
+        IdamApi.class,
         RdProfessionalApi.class,
         FeesApi.class,
         CoreCaseDataApi.class,

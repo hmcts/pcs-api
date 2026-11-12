@@ -450,7 +450,6 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aspectj', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-flyway', version: springFrameworkBootVersion
@@ -563,9 +562,6 @@ dependencies {
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 
-  // cftlib does not pull oauth2-client transitively from `implementation`; needed by OAuth2ClientConfig
-  cftlibImplementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
   mockitoAgentConfig group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   mockitoAgent "org.mockito:mockito-core:$mockitoVersion"
 
@@ -604,6 +600,7 @@ project.tasks.named("generateCCDConfig") {
   // random port, so generating never clashes with a running pcs-api or bootWithCCD
   environment 'SERVER_PORT', '0'
   environment 'SPRING_PROFILES_ACTIVE', 'config-gen'
+  environment 'IDAM_CLIENT_SECRET', 'unused-for-config-generation'
   environment 'SPRING_FLYWAY_ENABLED', 'false'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'

@@ -1,64 +1,71 @@
 package uk.gov.hmcts.reform.pcs.security;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import uk.gov.hmcts.reform.pcs.config.PasswordGrantOAuth2AuthorizedClientProvider;
+import feign.FeignException;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
+import java.time.Clock;
+import java.time.DateTimeException;
+import java.time.Instant;
+
 /**
- * Fetches an IDAM access token for a specific OAuth2 client-registration id. One instance
- * is created per service identity (e.g. {@code system-user}, {@code prd-admin}) by
- * {@link IdamTokenProviderConfig}. Tokens are cached by the underlying
- * {@link OAuth2AuthorizedClientManager}; IDAM is only hit on cache miss or refresh.
+ * Caches an IDAM token for one service identity and renews it before expiry.
  */
-@Slf4j
 public class IdamTokenProvider {
 
     public static final String BEARER_PREFIX = "Bearer ";
+    private static final String TOKEN_ERROR = "Unable to get access token response";
+    private static final long EXPIRY_SKEW_SECONDS = 60;
 
-    private final OAuth2AuthorizedClientManager authorizedClientManager;
-    private final String clientRegistrationId;
+    private final IdamClient idamClient;
     private final String username;
     private final String password;
+    private final Clock clock;
+    private CachedToken cachedToken;
 
-    public IdamTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
-                                              String clientRegistrationId,
-                                              String username,
-                                              String password) {
-        this.authorizedClientManager = authorizedClientManager;
-        this.clientRegistrationId = clientRegistrationId;
-        this.username = username;
-        this.password = password;
+    public IdamTokenProvider(IdamClient idamClient, String username, String password) {
+        this(idamClient, username, password, Clock.systemUTC());
     }
 
-    public String getAuthToken() {
-        try {
-            log.debug("Requesting {} token via OAuth2 (cached if available)", clientRegistrationId);
+    IdamTokenProvider(IdamClient idamClient, String username, String password, Clock clock) {
+        this.idamClient = idamClient;
+        this.username = username;
+        this.password = password;
+        this.clock = clock;
+    }
 
-            OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                .withClientRegistrationId(clientRegistrationId)
-                .principal(username)
-                .attribute(PasswordGrantOAuth2AuthorizedClientProvider.USERNAME_ATTRIBUTE_NAME, username)
-                .attribute(PasswordGrantOAuth2AuthorizedClientProvider.PASSWORD_ATTRIBUTE_NAME, password)
-                .build();
-
-            OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
-
-            if (authorizedClient == null || authorizedClient.getAccessToken() == null) {
-                log.error("Failed to authorize OAuth2 client for {} - client or token is null",
-                          clientRegistrationId);
-                throw new IdamException("Unable to get access token response");
-            }
-
-            return BEARER_PREFIX + authorizedClient.getAccessToken().getTokenValue();
-
-        } catch (OAuth2AuthorizationException ex) {
-            log.error("OAuth2 authorization error retrieving {} token. Error: {}",
-                clientRegistrationId, ex.getError().getErrorCode(), ex);
-            throw new IdamException("Unable to get access token response", ex);
+    // Keep cache checks and renewal together so concurrent callers share one IDAM request.
+    public synchronized String getAuthToken() {
+        Instant requestedAt = clock.instant();
+        if (cachedToken != null
+            && requestedAt.isBefore(cachedToken.expiresAt().minusSeconds(EXPIRY_SKEW_SECONDS))) {
+            return cachedToken.authorization();
         }
+
+        TokenResponse response;
+        try {
+            response = idamClient.getAccessTokenResponse(username, password);
+        } catch (FeignException exception) {
+            throw new IdamException(TOKEN_ERROR, exception);
+        }
+        if (response == null || response.accessToken == null || response.accessToken.isBlank()) {
+            throw new IdamException(TOKEN_ERROR);
+        }
+
+        try {
+            long lifetimeSeconds = Long.parseLong(response.expiresIn);
+            if (lifetimeSeconds <= 0) {
+                throw new IdamException(TOKEN_ERROR);
+            }
+            cachedToken = new CachedToken(BEARER_PREFIX + response.accessToken,
+                requestedAt.plusSeconds(lifetimeSeconds));
+        } catch (NumberFormatException | DateTimeException exception) {
+            throw new IdamException(TOKEN_ERROR, exception);
+        }
+        return cachedToken.authorization();
+    }
+
+    private record CachedToken(String authorization, Instant expiresAt) {
     }
 }
