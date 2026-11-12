@@ -50,6 +50,36 @@ public class EnforcementOrderService {
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
     }
 
+    @Transactional
+    public void updateStatesForBreathingSpace(long caseReference) {
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+
+        Set<EnforcementOrderEntity> applications =
+            pcsCase.getEnforcementOrders();
+
+        if (CollectionUtils.isEmpty(applications)) {
+            log.info(
+                "No enforcement applications found for case {}",
+                caseReference
+            );
+            return;
+        }
+
+        for (EnforcementOrderEntity application : applications) {
+            EnforcementState currentState = application.getState();
+
+            if (currentState == EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
+                || currentState == EnforcementState.PENDING_CASE_ISSUED) {
+
+                application.setState(EnforcementState.DRAFT_DISCARD);
+
+            } else if (currentState == EnforcementState.CASE_PROGRESSION) {
+
+                application.setState(EnforcementState.BREATHING_SPACE);
+            }
+        }
+    }
+
     private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder, EnforcementState state) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
