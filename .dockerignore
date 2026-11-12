@@ -5,3 +5,6 @@
 build/*
 !build/libs
 !build/libs/*
+*
+!build/libs/pcs-api.jar
+!lib/applicationinsights.json
