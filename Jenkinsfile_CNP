@@ -195,7 +195,7 @@ withPipeline(type, product, component) {
     }
     onIthc{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-ithc.service.core-compute-ithc.internal"
-      env.CASE_API_URL = "http://pcs-api-ithc.service.core-compute-ithc.internal"
+      env.CASE_API_URL = "https://pcs-api-ithc.service.core-compute-ithc.internal"
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-ithc.service.core-compute-ithc.internal"
     }
     generateDefinitions(builder)
@@ -414,7 +414,7 @@ def runIthcSmokeTests(builder, Map secrets, String product) {
   stageWithEnvironmentAgent('Smoke Test - ithc', product, 'ithc') {
     withTeamSecrets(vaultConfig, 'ithc', 'pcs') {
     withEnv([
-      "TEST_URL=http://pcs-api-ithc.service.core-compute-ithc.internal",
+      "TEST_URL=https://pcs-api-ithc.service.core-compute-ithc.internal",
       "ENVIRONMENT_NAME=ithc",
       "DATA_STORE_URL_BASE=http://ccd-data-store-api-ithc.service.core-compute-ithc.internal",
       "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal",
