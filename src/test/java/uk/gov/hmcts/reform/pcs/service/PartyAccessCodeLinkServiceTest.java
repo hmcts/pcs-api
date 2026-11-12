@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -133,6 +135,19 @@ class PartyAccessCodeLinkServiceTest {
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid access code");
+    }
+
+    @Test
+    void shouldThrowInvalidAccessCodeException_WhenCaseNotFound() {
+        // GIVEN
+        InvalidAccessCodeException rejection = new InvalidAccessCodeException("Invalid data");
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenThrow(new CaseNotFoundException(CASE_REFERENCE));
+        when(validator.rejectForUnknownCase(ACCESS_CODE)).thenReturn(rejection);
+
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
+            .isSameAs(rejection);
+        verifyNoInteractions(caseRoleAssignmentService);
     }
 
     @Test

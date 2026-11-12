@@ -29,6 +29,12 @@ public class PartyAccessCodeLinkValidator {
             });
     }
 
+    public InvalidAccessCodeException rejectForUnknownCase(String accessCode) {
+        hashingService.matchAgainstDummyCodes(accessCode);
+        log.error("Invalid access code - case not found, accessCodeProvided: {}", accessCode != null);
+        return new InvalidAccessCodeException("Invalid data");
+    }
+
     public PartyEntity validatePartyIsADefendant(
         List<PartyEntity> defendantEntities,
         UUID partyId

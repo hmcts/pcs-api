@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,6 +69,14 @@ class PartyAccessCodeLinkValidatorTest {
         assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid data");
+    }
+
+    @Test
+    void shouldSpendDummyMatchTimeAndReturnSameException_WhenCaseIsUnknown() {
+        InvalidAccessCodeException result = validator.rejectForUnknownCase(ACCESS_CODE);
+
+        verify(hashingService).matchAgainstDummyCodes(ACCESS_CODE);
+        assertThat(result).isInstanceOf(InvalidAccessCodeException.class).hasMessage("Invalid data");
     }
 
     @Test

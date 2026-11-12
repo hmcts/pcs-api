@@ -15,4 +15,9 @@ public interface PartyAccessCodeHashingService {
         UUID caseId,
         String accessCode
     );
+
+    /**
+     * Spends the same BCrypt time as a non-matching lookup, for a case that does not exist.
+     */
+    void matchAgainstDummyCodes(String accessCode);
 }
