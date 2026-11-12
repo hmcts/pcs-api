@@ -99,7 +99,7 @@ public class CaseDeletionScheduledTask {
     public void runSweep() {
         MDC.put(MDC_TASK_NAME, CASE_DELETION_TASK_NAME);
 
-        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+        if (!featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)) {
             log.info("Case deletion sweep disabled");
             return;
         }
