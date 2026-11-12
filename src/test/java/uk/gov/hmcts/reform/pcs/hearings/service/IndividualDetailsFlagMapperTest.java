@@ -269,22 +269,6 @@ class IndividualDetailsFlagMapperTest {
                 "Reasonable Adjustments: Step free / wheelchair access (Comment: adjustment comment).\n"
                     + "Party Flags: Detained individual, Sign Language Interpreter (Language entered: Makaton).");
         }
-
-        @Test
-        void shouldTruncateToHmcMaximumLength() {
-            String longComment = "x".repeat(255);
-            List<CasePartyFlagEntity> flags = List.of(
-                "PF0004", "PF0007", "PF0008", "PF0009", "PF0011", "PF0012", "PF0013",
-                "PF0014", "PF0016", "PF0017", "PF0018", "PF0019", "PF0020"
-            ).stream().map(code -> flag(code, "Party flag " + code, "Active", longComment, false)).toList();
-
-            IndividualDetails result = underTest.map(flags);
-
-            assertThat(result.getOtherReasonableAdjustmentDetails())
-                .hasSize(IndividualDetailsFlagMapper.OTHER_DETAILS_MAX_LENGTH)
-                .startsWith("Party Flags: Party flag PF0004")
-                .endsWith(IndividualDetailsFlagMapper.TRUNCATION_MARKER);
-        }
     }
 
     private static CasePartyFlagEntity flag(String code, String name, String status, String comment,

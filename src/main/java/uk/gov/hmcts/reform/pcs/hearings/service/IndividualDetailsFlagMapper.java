@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
@@ -16,13 +15,8 @@ import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
 /**
  * Fills the hearing fields that come from one person's flags.
  */
-@Slf4j
 @Component
 public class IndividualDetailsFlagMapper {
-
-    // HMC rejects the whole hearing request if otherReasonableAdjustmentDetails is longer than this
-    static final int OTHER_DETAILS_MAX_LENGTH = 3000;
-    static final String TRUNCATION_MARKER = "...";
 
     static final String ACTIVE = "Active";
     static final String VULNERABLE_USER = "PF0002";
@@ -126,16 +120,7 @@ public class IndividualDetailsFlagMapper {
         if (details.isEmpty()) {
             return null;
         }
-        return truncateToHmcLimit(details);
-    }
-
-    private String truncateToHmcLimit(String details) {
-        if (details.length() <= OTHER_DETAILS_MAX_LENGTH) {
-            return details;
-        }
-        log.warn("otherReasonableAdjustmentDetails truncated from {} to {} characters for HMC",
-                 details.length(), OTHER_DETAILS_MAX_LENGTH);
-        return details.substring(0, OTHER_DETAILS_MAX_LENGTH - TRUNCATION_MARKER.length()) + TRUNCATION_MARKER;
+        return details;
     }
 
     private Optional<String> groupLine(FlagGroup group, List<CasePartyFlagEntity> activeFlags) {
