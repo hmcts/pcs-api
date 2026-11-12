@@ -4,17 +4,14 @@ import {
   performValidation
 } from '@utils/controller';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import { expect, test } from '@utils/test-fixtures';
+import { test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, user } from '@data/page-data';
 import { beforeYouStart } from '@data/page-data/beforeYouStart.page.data';
 import { selectCasesToLink } from '@data/page-data/selectCaseToLink.page.data';
 import { selectCasesToUnLink } from '@data/page-data/selectCasesToUnLink.page.data';
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { staff } from '@data/user-data/staff.user.data';
 import { judicial } from '@data/user-data/judicial.user.data';
 
@@ -42,7 +39,7 @@ test.afterEach(async () => {
 //Case Linking is not working in preview env as explained in https://tools.hmcts.net/jira/browse/HDPI-6095
 //So these tests won't be executed in preview
 test.describe('[Common Component Case Linking] @nightly @caseLinking @CC', async () => {
-  test('Case Linking can be done and managed by Hearing Centre Team Lead @smoke @caseLinking', async ({page}) => {
+  test('Case Linking can be done and managed by Hearing Centre Team Lead @caseLinking', async ({page}) => {
     await performAction('login', {email: staff.pcs_hearing_centre_team_leader_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
@@ -117,7 +114,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking @CC', async
 
 test.describe('[Common Component Case Linking - Access Management] @nightly @caseLinking', async () => {
   test.describe.configure({ retries: 0 });
-  test('CTSC Admin users can view but cannot create, manage case linking  @CC  @nightly @caseLinking', async ({page, context}) => {
+  test('CTSC Admin users can view but cannot create, manage case linking @CC @caseLinking', async ({page}) => {
      await performAction('login', {email: staff.pcs_ctsc_team_leader_email, password: process.env.IDAM_PCS_USER_PASSWORD});
      await dismissCookieBanner(page, 'analytics');
      await performAction('navigateToCaseSummary', 'yes');
@@ -126,7 +123,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
      await performAction('canViewLinkedCases', 'yes');
   });
 
-  test('Judicial users can view but cannot create manage case linking  @CC @nightly @caseLinking', async ({ page, context }) => {
+  test('Judicial users can view but cannot create manage case linking @CC @caseLinking', async ({ page }) => {
     await performAction('login', { email: judicial.possession_Salaried_Judge_email1, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
@@ -135,7 +132,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
     await performAction('canViewLinkedCases', 'yes');
   });
 
-  test('Solicitor user cannot view, create or manage case linking @CC @nightly @caseLinking', async ({ page, context }) => {
+  test('Solicitor user cannot view, create or manage case linking @CC @caseLinking', async ({ page }) => {
     const { email, password } = user.claimantSolicitor;
     await performAction('login', { email, password });
     await performAction('createCaseAPIDynamicUsers', { data: createCaseApiData.createCasePayload, email: user.claimantSolicitor.email, password: user.claimantSolicitor.password });
@@ -148,7 +145,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
     await performAction('canViewLinkedCases', 'no');
   });
 
-  test('WLU user can view but cannot create or manage case linking @CC @nightly @caseLinking', async ({ page, context }) => {
+  test('WLU user can view but cannot create or manage case linking @CC @caseLinking', async ({ page }) => {
     await performAction('login', {email: staff.pcs_wlu_administrator_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
@@ -157,7 +154,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
     await performAction('canViewLinkedCases', 'yes');
   });
 
-  test('WLU Team Lead user can view but cannot create or manage case linking @CC @nightly @caseLinking', async ({ page, context }) => {
+  test('WLU Team Lead user can view but cannot create or manage case linking @CC @caseLinking', async ({ page }) => {
    await performAction('login', {email: staff.pcs_wlu_team_leader_ca_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');

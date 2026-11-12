@@ -529,7 +529,8 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
+  // It will be enabled as part of HDPI-9502
+  test.skip('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
@@ -846,6 +847,7 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
     await performValidation('mainHeader', caseSummary.mainHeader);
     await performAction('resumeDraftApplication');
   });
+
   test ('As a claimant user, I can resume the draft application of enforcement @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
