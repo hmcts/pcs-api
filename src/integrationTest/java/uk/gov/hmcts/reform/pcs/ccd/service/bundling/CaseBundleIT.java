@@ -51,7 +51,7 @@ import static org.mockito.Mockito.doReturn;
 @PcsCcdEventTest
 @TestPropertySource(properties = {
     "ccd.bundling.enabled=true", "ccd.bundling.managed.enabled=true", "ccd.bundling.job.enabled=true",
-    "ccd.bundling.job.worker.poll-delay=1h"
+    "ccd.bundling.job.worker.enabled=true", "ccd.bundling.job.worker.poll-delay=1h"
 })
 class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
