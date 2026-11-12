@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
 
 import java.sql.ResultSet;
@@ -184,6 +185,7 @@ public class SdpClaimSnapshotJdbcRepository {
         return query(RESPONSE_SQL, ids, this::mapResponse);
     }
 
+    @Transactional
     public void upsertSnapshots(List<SdpClaimSnapshotEntity> snapshots) {
         if (snapshots == null || snapshots.isEmpty()) {
             return;

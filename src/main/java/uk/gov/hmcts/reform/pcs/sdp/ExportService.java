@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
@@ -73,7 +72,6 @@ public class ExportService {
         this.environment = environment;
     }
 
-    @Transactional
     public ExportResult exportClaims() {
         String extractDate = LocalDate.now(utcClock).minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
         List<UUID> ids = sdpClaimSnapshotJdbcRepository.findIdsForExport();
@@ -83,12 +81,13 @@ public class ExportService {
         String filename = snapshotFilename(extractDate);
         Path snapshotFile = createSnapshotFile();
         try {
-            int recordCount = writeSnapshotFile(snapshotFile, ids, extractDate, publishedDate, now);
-            if (recordCount > 0) {
+            List<SdpClaimSnapshotEntity> changed = writeSnapshotFile(snapshotFile, ids, extractDate, publishedDate, now);
+            if (!changed.isEmpty()) {
                 blobUploader.ifPresent(uploader -> uploader.upload(filename, snapshotFile));
+                sdpClaimSnapshotJdbcRepository.upsertSnapshots(changed);
             }
-            log.info("SDP claim snapshot export complete: {} record(s) -> {}", recordCount, filename);
-            return new ExportResult(filename, recordCount);
+            log.info("SDP claim snapshot export complete: {} record(s) -> {}", changed.size(), filename);
+            return new ExportResult(filename, changed.size());
         } finally {
             deleteSnapshotFile(snapshotFile);
         }
@@ -99,15 +98,14 @@ public class ExportService {
         return prefix + extractDate + JSON_EXTENSION;
     }
 
-    private int writeSnapshotFile(Path snapshotFile,
-                                  List<UUID> ids,
-                                  String extractDate,
-                                  String publishedDate,
-                                  LocalDateTime now) {
+    private List<SdpClaimSnapshotEntity> writeSnapshotFile(Path snapshotFile,
+                                                           List<UUID> ids,
+                                                           String extractDate,
+                                                           String publishedDate,
+                                                           LocalDateTime now) {
         try (OutputStream out = Files.newOutputStream(snapshotFile);
              JsonGenerator generator = objectMapper.getFactory().createGenerator(out)) {
             claimSnapshotFileWriter.writeStartArray(generator);
-            int recordCount = 0;
             List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
             for (int i = 0; i < ids.size(); i += EXPORT_CHUNK_SIZE) {
                 List<UUID> chunk = ids.subList(i, Math.min(i + EXPORT_CHUNK_SIZE, ids.size()));
@@ -133,7 +131,6 @@ public class ExportService {
                         generator,
                         changed
                     );
-                    recordCount++;
                 }
                 log.info(
                     "SDP claim snapshot export progress: {}/{} claim(s)",
@@ -141,9 +138,8 @@ public class ExportService {
                     ids.size()
                 );
             }
-            sdpClaimSnapshotJdbcRepository.upsertSnapshots(changed);
             claimSnapshotFileWriter.finishArray(generator);
-            return recordCount;
+            return changed;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write SDP claim snapshot", e);
         }
