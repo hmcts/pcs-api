@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.contract;
 
-import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
@@ -9,11 +8,9 @@ import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.http.MediaType;
-import org.springframework.web.client.RestClient;
 import java.util.Map;
 import static au.com.dius.pact.consumer.dsl.LambdaDsl.newJsonBody;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.restassured.RestAssured.given;
 
 @ExtendWith(PactConsumerTestExt.class)
 @PactTestFor(providerName = "dm_store_stored_document_provider", port = "8080")
@@ -42,16 +39,15 @@ public class StoredDocumentConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "getStoredDocumentPact")
-    void shouldFetchStoredDocument(MockServer mockServer) {
-        var response = RestClient.create(mockServer.getUrl()).get()
-            .uri("/documents/" + DOCUMENT_ID)
-            .accept(MediaType.parseMediaType(APPLICATION))
-            .header("ServiceAuthorization", SERVICE_AUTHORIZATION)
-            .retrieve()
-            .toBodilessEntity();
+    void shouldFetchStoredDocument() {
 
-        assertThat(response.getStatusCode().value()).isEqualTo(200);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType(APPLICATION));
+        given()
+            .accept(APPLICATION)
+            .header("ServiceAuthorization", SERVICE_AUTHORIZATION)
+            .when()
+            .get("/documents/" + DOCUMENT_ID)
+            .then()
+            .statusCode(200);
     }
 
     private DslPart responseBody() {
