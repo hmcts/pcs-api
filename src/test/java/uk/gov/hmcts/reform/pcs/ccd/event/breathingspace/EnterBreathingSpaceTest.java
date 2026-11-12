@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.time.LocalDate;
@@ -35,6 +36,8 @@ class EnterBreathingSpaceTest extends BaseEventTest {
     private BreathingSpaceService breathingSpaceService;
     @Mock
     private AddressFormatter addressFormatter;
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
 
     @InjectMocks
     private EnterBreathingSpace enterBreathingSpace;
@@ -67,6 +70,7 @@ class EnterBreathingSpaceTest extends BaseEventTest {
 
         // Then
         verify(breathingSpaceService).createBreathingSpace(TEST_CASE_REFERENCE, details);
+        verify(enforcementOrderService).updateStatesForBreathingSpace(TEST_CASE_REFERENCE);
     }
 
     @Test
@@ -90,5 +94,22 @@ class EnterBreathingSpaceTest extends BaseEventTest {
             .contains("1 Test Street, London")
             .contains("Claimant v Defendant");
     }
+
+
+    @Test
+    void shouldTransitionCaseToBreathingSpaceOnSubmit() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .breathingSpaceDetails(BreathingSpaceDetails.builder().build())
+            .build();
+
+        // When
+        SubmitResponse<State> response = callSubmitHandler(pcsCase);
+
+        // Then
+        assertThat(response.getState())
+            .isEqualTo(State.BREATHING_SPACE);
+    }
+
 
 }
