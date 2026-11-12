@@ -56,7 +56,7 @@ properties([
     ),
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
-      choices: ['@nightly', '@smoke', '@regression', '@release'],
+      choices: ['@nightly', '@healthCheck', '@regression', '@release'],
       description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default. @release option will run all tests tagged @nightly and also @release'
 
     ),
