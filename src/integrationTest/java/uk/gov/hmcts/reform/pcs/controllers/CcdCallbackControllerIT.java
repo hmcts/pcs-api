@@ -74,6 +74,7 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
     private OAuth2AuthorizedClientManager authorizedClientManager;
 
     @Test
+    @Transactional
     @SuppressWarnings("removal")
     void callbacksUseTheApplicationJackson2Mapper() {
         var jsonConverters = handlerAdapter.getMessageConverters().stream()
@@ -87,6 +88,7 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @Transactional
     void callbackCaseDataPreservesNestedUnwrappedDocuments() throws Exception {
         var payload = objectMapper.readTree("""
             {
