@@ -35,6 +35,7 @@ class InternalUserAccessTest {
     void shouldNotGrantAccessToExternalUsers() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
+        assertThat(grants.keySet()).isNotEmpty();
         assertThat(grants.keySet()).doesNotContain(
             UserRole.CITIZEN,
             UserRole.DEFENDANT,
