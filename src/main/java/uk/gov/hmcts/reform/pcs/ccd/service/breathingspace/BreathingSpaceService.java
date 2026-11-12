@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.breathingspace.BreathingSpaceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class BreathingSpaceService {
@@ -33,6 +35,18 @@ public class BreathingSpaceService {
                     ? breathingSpaceDetails.getExpectedEndDate() : null
             )
             .build();
+    }
+
+    public List<BreathingSpaceDetails> getBreathingSpaces(long caseReference) {
+        return breathingSpaceRepository.findByCaseReference(caseReference)
+            .stream()
+            .map(entity -> BreathingSpaceDetails.builder()
+                .referenceNumber(entity.getReferenceNumber())
+                .startDate(entity.getStartDate())
+                .type(entity.getType())
+                .expectedEndDate(entity.getExpectedEndDate())
+                .build())
+            .toList();
     }
 
 }

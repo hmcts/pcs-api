@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -81,6 +82,42 @@ class BreathingSpaceServiceTest {
         // Then
         verify(breathingSpaceRepository, never()).save(any());
     }
+
+    @Test
+    void shouldRetrieveBreathingSpaceDetailsForCase() {
+        // Given
+        long caseReference = 1234567890123456L;
+
+        BreathingSpaceEntity entity = BreathingSpaceEntity.builder()
+            .referenceNumber("BS12345")
+            .startDate(LocalDate.of(2026, 11, 12))
+            .type(BreathingSpaceType.STANDARD)
+            .expectedEndDate(LocalDate.of(2027, 1, 12))
+            .build();
+
+        when(breathingSpaceRepository.findByCaseReference(caseReference))
+            .thenReturn(List.of(entity));
+
+        // When
+        List<BreathingSpaceDetails> result =
+            underTest.getBreathingSpaces(caseReference);
+
+        // Then
+        assertThat(result).hasSize(1);
+
+        assertThat(result.getFirst().getReferenceNumber())
+            .isEqualTo("BS12345");
+
+        assertThat(result.getFirst().getStartDate())
+            .isEqualTo(LocalDate.of(2026, 11, 12));
+
+        assertThat(result.getFirst().getType())
+            .isEqualTo(BreathingSpaceType.STANDARD);
+
+        assertThat(result.getFirst().getExpectedEndDate())
+            .isEqualTo(LocalDate.of(2027, 1, 12));
+    }
+
 
     private BreathingSpaceDetails stub() {
         return BreathingSpaceDetails.builder()
