@@ -559,7 +559,7 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'testcontainers-junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'testcontainers-postgresql', version: testcontainersVersion
 
-  integrationTestImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+  integrationTestImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner:5.0.3'
   integrationTestImplementation 'com.github.hmcts:ccd-sdk-test-support'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
