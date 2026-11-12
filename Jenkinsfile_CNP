@@ -100,6 +100,9 @@ withPipeline(type, product, component) {
     if (waPRLabels.contains("pr-values:wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
+    if (hasLabel(githubApi, "run_e2e_in_welsh")) {
+      env.RUN_E2E_IN_WELSH = "true"
+    }
     if (hasLabel(githubApi, "enable_e2e_full_regression")) {
       env.E2E_SUITE = "chrome"
     }
