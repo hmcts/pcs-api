@@ -2,7 +2,6 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary } from '@data/page-data';
 import {
   yourHCEO,
   theNICEWillChoose,
@@ -15,6 +14,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
+  caseSummary,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
@@ -22,7 +22,8 @@ import {
   languageUsed, missedPayments,
   nameAndAddressForEviction,
   statementOfTruth
-} from '@data/page-data-figma/page-data-enforcement-figma';
+} from '@data/index.selector.enforcement';
+import {home} from "@data/page-data-cy";
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -64,6 +65,9 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  if (process.env.RUN_E2E_IN_WELSH === 'true') {
+    await performAction('clickButton', home.cymraegLink);
+  }
 });
 
 test.afterEach(async () => {

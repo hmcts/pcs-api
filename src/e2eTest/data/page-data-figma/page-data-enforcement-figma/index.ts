@@ -1,3 +1,4 @@
+export * from '@data/page-data-figma/page-data-enforcement-figma/caseSummary.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/nameAndAddressForEviction.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/additionalInformation.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/aggressiveAnimalsRisk.page.data';
