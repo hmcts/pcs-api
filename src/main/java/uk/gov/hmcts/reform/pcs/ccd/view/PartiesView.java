@@ -192,12 +192,12 @@ public class PartiesView {
         List<ListValue<Party>> defendants = pcsCase.getAllDefendants();
         if (defendants != null && !defendants.isEmpty()) {
             List<String> knownNames = new ArrayList<>();
-            int unknownDefendants = 0;
+            boolean hasUnknownDefendants = false;
 
             for (ListValue<Party> defendant : defendants) {
                 Party party = defendant.getValue();
                 if (isNameUnknown(party)) {
-                    unknownDefendants++;
+                    hasUnknownDefendants = true;
                     continue;
                 }
                 knownNames.add("<div class=\"govuk-!-margin-bottom-2\">"
@@ -206,7 +206,7 @@ public class PartiesView {
             }
 
             pcsCase.setFormattedDefendantNames(StringUtils.join(knownNames, StringUtils.EMPTY));
-            pcsCase.setUnknownDefendantCount(unknownDefendants);
+            pcsCase.setHasUnknownDefendants(hasUnknownDefendants ? YesOrNo.YES : YesOrNo.NO);
         }
     }
 

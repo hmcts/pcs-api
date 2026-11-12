@@ -701,7 +701,7 @@ public class PCSCase {
     private String formattedPropertyAddress;
 
     @CCD(searchable = false)
-    private Integer unknownDefendantCount;
+    private YesOrNo hasUnknownDefendants;
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;

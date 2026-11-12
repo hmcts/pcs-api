@@ -551,7 +551,7 @@ class PartiesViewTest {
         // Then
         assertThat(pcsCase.getFormattedDefendantNames())
             .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
-        assertThat(pcsCase.getUnknownDefendantCount()).isEqualTo(1);
+        assertThat(pcsCase.getHasUnknownDefendants()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -565,7 +565,7 @@ class PartiesViewTest {
         // Then
         assertThat(caseData.getFormattedDefendantNames())
             .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(0);
+        assertThat(caseData.getHasUnknownDefendants()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -578,7 +578,7 @@ class PartiesViewTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames()).isEmpty();
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(1);
+        assertThat(caseData.getHasUnknownDefendants()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -606,7 +606,8 @@ class PartiesViewTest {
         PCSCase caseData = createCaseWithDefendants(
             createDefendant("John", "Doe"),
             createDefendant(null, null),
-            createDefendant("Third", "Def")
+            createDefendant("Third", "Def"),
+            createDefendant(null, null)
         );
 
         // When
@@ -616,26 +617,7 @@ class PartiesViewTest {
         assertThat(caseData.getFormattedDefendantNames())
             .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
                            + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(1);
-    }
-
-    @Test
-    void shouldCountMultipleUnknownDefendants() {
-        // Given
-        PCSCase caseData = createCaseWithDefendants(
-            createDefendant(null, null),
-            createDefendant("John", "Doe"),
-            createDefendant(null, null),
-            createDefendant(null, null)
-        );
-
-        // When
-        underTest.setFormattedDefendantNames(caseData);
-
-        // Then
-        assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
-        assertThat(caseData.getUnknownDefendantCount()).isEqualTo(3);
+        assertThat(caseData.getHasUnknownDefendants()).isEqualTo(YesOrNo.YES);
     }
 
     @Test

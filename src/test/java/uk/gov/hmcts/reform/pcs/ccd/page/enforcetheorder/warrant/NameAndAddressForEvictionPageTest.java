@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -16,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.NameAndAddressForEvictionPageHelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,12 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("NameAndAddressForEvictionPage tests")
 class NameAndAddressForEvictionPageTest extends BasePageTest {
 
-    @Mock
-    private NameAndAddressForEvictionPageHelper nameAndAddressForEvictionPageHelper;
-
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new NameAndAddressForEvictionPage(nameAndAddressForEvictionPageHelper));
+        setPageUnderTest(new NameAndAddressForEvictionPage());
     }
 
     @Nested
