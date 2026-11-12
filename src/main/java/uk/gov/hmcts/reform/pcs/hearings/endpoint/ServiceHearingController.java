@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
+import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingService;
 
 @Tag(name = "Service Hearing Controller")
 @Slf4j
@@ -30,7 +30,7 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 @AllArgsConstructor
 public class ServiceHearingController {
 
-    private final ServiceHearingValuesConfiguration serviceHearingValuesConfiguration;
+    private final ServiceHearingService serviceHearingService;
 
     @PostMapping(path = {
         "/serviceHearingValues"
@@ -45,8 +45,8 @@ public class ServiceHearingController {
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
         @NonNull @RequestBody ServiceHearingRequest requestDetails) {
 
-        ServiceHearingValues hearingValues = serviceHearingValuesConfiguration
-            .getDefaultValues(requestDetails.getCaseId());
+        ServiceHearingValues hearingValues = serviceHearingService
+            .getServiceHearingValues(Long.parseLong(requestDetails.getCaseId()));
 
         return new ResponseEntity<>(hearingValues, HttpStatus.OK);
     }
