@@ -29,7 +29,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final EnforcementOrderService enforcementOrderService;
+    private EnforcementOrderService enforcementOrderService;
     private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
     private BreathingSpaceService breathingSpaceService;
     private AddressFormatter addressFormatter;

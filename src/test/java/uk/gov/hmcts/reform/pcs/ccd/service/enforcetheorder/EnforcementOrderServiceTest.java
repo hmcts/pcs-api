@@ -94,7 +94,7 @@ class EnforcementOrderServiceTest {
     @Test
     void shouldUpdateAllEligibleEnforcementApplications() {
         // Given
-        PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
 
         EnforcementOrderEntity liveApplication = new EnforcementOrderEntity();
         liveApplication.setState(EnforcementState.CASE_PROGRESSION);
@@ -132,7 +132,7 @@ class EnforcementOrderServiceTest {
     @Test
     void shouldHandleCaseWithNoEnforcementApplications() {
         // Given
-        PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
         pcsCase.setEnforcementOrders(Set.of());
 
         when(pcsCaseService.loadCase(CASE_REFERENCE))
@@ -149,7 +149,7 @@ class EnforcementOrderServiceTest {
     @Test
     void shouldHandleNullEnforcementApplications() {
         // Given
-        PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
         pcsCase.setEnforcementOrders(null);
 
         when(pcsCaseService.loadCase(CASE_REFERENCE))
@@ -199,7 +199,7 @@ class EnforcementOrderServiceTest {
         EnforcementState expectedState) {
 
         // Given
-        PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
 
         EnforcementOrderEntity application = new EnforcementOrderEntity();
         application.setState(initialState);
