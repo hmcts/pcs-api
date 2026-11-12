@@ -13,19 +13,25 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CreateFlagsTest extends  BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+
+    @Mock
+    private CaseFlagsView caseFlagsView;
 
     @InjectMocks
     private CreateFlags underTest;
@@ -39,6 +45,20 @@ class CreateFlagsTest extends  BaseEventTest {
     void shouldBeConfiguredForEventStates() {
         assertConfiguredForStates(
             ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED));
+    }
+
+    @Test
+    void shouldPopulateCaseFlagsInAllDefendantsList() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        callStartHandler(pcsCase);
+
+        // Then
+        verify(caseFlagsView).setDefendantsCaseFlags(pcsCase, pcsCaseEntity);
     }
 
     @Test
