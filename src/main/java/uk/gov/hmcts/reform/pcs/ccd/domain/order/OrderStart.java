@@ -49,6 +49,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
     /** Open means issued: nothing yet closes a counterclaim or an application. */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
+                              String caseName,
                               List<Party> claimants,
                               List<Party> defendants,
                               boolean openCounterclaim,
