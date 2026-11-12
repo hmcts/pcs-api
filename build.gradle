@@ -190,7 +190,7 @@ tasks.register('functional', Test) {
   group = "verification"
   dependsOn assemble, testClasses
   testClassesDirs = sourceSets.functionalTest.output.classesDirs
-  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
+  classpath = sourceSets.functionalTest.runtimeClasspath
 
   useJUnitPlatform {
     includeTags System.getProperty("tags", "Functional")
@@ -239,7 +239,7 @@ tasks.register('smoke', Test) {
   group = "verification"
   dependsOn assemble, testClasses
   testClassesDirs = sourceSets.functionalTest.output.classesDirs
-  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
+  classpath = sourceSets.functionalTest.runtimeClasspath
   useJUnitPlatform {
     includeTags System.getProperty("tags", "Smoke")
   }

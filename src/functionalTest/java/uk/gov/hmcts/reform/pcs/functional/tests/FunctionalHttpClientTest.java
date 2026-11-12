@@ -7,6 +7,7 @@ import net.serenitybdd.rest.SerenityRest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
@@ -20,11 +21,13 @@ class FunctionalHttpClientTest {
 
     @Test
     void sendsAGetWithQueryParametersUsingTheFunctionalTestClient() throws Exception {
+        String caseType = CaseType.getCaseType();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/eligibility", exchange -> {
             String query = URLDecoder.decode(exchange.getRequestURI().getRawQuery(), StandardCharsets.UTF_8);
             boolean matches = "GET".equals(exchange.getRequestMethod()) && "postcode=W3 7RX".equals(query);
-            byte[] body = "{\"status\":\"ELIGIBLE\"}".getBytes(StandardCharsets.UTF_8);
+            byte[] body = ("{\"status\":\"ELIGIBLE\",\"case_type\":\"" + caseType + "\"}")
+                .getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(matches ? 200 : 400, body.length);
             exchange.getResponseBody().write(body);
@@ -37,7 +40,9 @@ class FunctionalHttpClientTest {
                 .contentType(ContentType.JSON)
                 .queryParam("postcode", "W3 7RX")
                 .when().get("/eligibility")
-                .then().statusCode(200).body("status", equalTo("ELIGIBLE"));
+                .then().statusCode(200)
+                .body("status", equalTo("ELIGIBLE"))
+                .body("case_type", equalTo(caseType));
         } finally {
             server.stop(0);
         }
