@@ -7,7 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.pebble.PlainTextFilter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CurrencyFormatterExtension extends AbstractExtension {
+/** The filters the app's Pebble templates use: currency amounts, and text shown as typed. */
+public class PebbleFiltersExtension extends AbstractExtension {
 
     @Override
     public Map<String, Filter> getFilters() {

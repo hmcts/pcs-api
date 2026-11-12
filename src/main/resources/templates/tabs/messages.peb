@@ -1,3 +1,5 @@
+{# XUI renders this tab as markdown and fills in ${...} as case fields, so anything a user typed goes through
+   plaintext: one line of HTML, with those characters escaped, so it shows as typed and cannot break the tab. #}
 {% macro thread(message) %}
 <details class="govuk-details govuk-!-margin-bottom-3">
   <summary class="govuk-details__summary">
