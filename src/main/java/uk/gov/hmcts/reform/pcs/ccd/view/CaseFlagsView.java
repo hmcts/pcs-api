@@ -149,7 +149,7 @@ public class CaseFlagsView {
             partyListValue.setId(partyEntity.getId().toString());
 
             PartyRole partyRole = supportedPartyRoles.get(partyEntity.getId());
-            if (partyRole == null) {
+            if (partyRole == null || partyRole.equals(PartyRole.CLAIMANT)) {
                 continue;
             }
 
