@@ -4,12 +4,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
@@ -17,9 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -28,6 +29,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnf
 @Component
 @AllArgsConstructor
 public class EnforcementApplicationPage implements CcdPageConfiguration {
+
+    public static final int MAX_UNKNOWN_DEFENDANTS = 10;
+    public static final String PERSON_UNKNOWN_LABEL =
+        "<div class=\"govuk-!-margin-bottom-2\">" + CaseTabView.NAME_UNKNOWN + "</div>";
 
     private final EnforcementOrderService enforcementOrderService;
     private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
@@ -109,6 +114,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .label("enforcementApplication-content", "---")
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
+            .readonly(PCSCase::getUnknownDefendantCount, NEVER_SHOW, true)
             .readonly(PCSCase::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getChooseEnforcementType)
@@ -134,7 +140,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         data.setHasUnsubmittedEnforcementData(YesOrNo.YES);
-        setFormattedDefendantNames(data.getAllDefendants(), data);
+        EnforcementOrderView.setFormattedDefendantNames(data);
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
@@ -145,16 +151,6 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .data(data)
             .errors(errors.isEmpty() ? null : errors)
             .build();
-    }
-
-    private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
-        if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.setFormattedDefendantNames(defendants.stream()
-                .map(defendant ->
-                    defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
-                    + "<br>")
-                .collect(Collectors.joining("\n")));
-        }
     }
 
     private static boolean toBoolean(YesOrNo yesOrNo) {
@@ -196,5 +192,13 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             warrantOfRestitutionMapper.prePopulateFieldsFromWarrantDetails(
                     warrantEnforcementOrder, currentEnforcementOrder);
         }
+    }
+
+    public static String unknownDefendantShowCondition(int position) {
+        List<String> conditions = new ArrayList<>();
+        for (int i = position; i < MAX_UNKNOWN_DEFENDANTS; i++) {
+            conditions.add("unknownDefendantCount=\"" + (i + 1) + "\"");
+        }
+        return ShowConditions.or(conditions.toArray(new String[0]));
     }
 }
