@@ -179,6 +179,32 @@ class ServiceHearingServiceTest {
             .isEqualTo("Case Flags: Complex case, Urgent case (Comments: so urgent)");
     }
 
+    @Test
+    void shouldIncludeOnlyActiveFlags() {
+        givenCase(caseBuilder().caseFlags(flags(
+            flag("Complex case", null, 1, "Active"),
+            flag("Urgent case", "so urgent", 2, "Inactive"),
+            flag("Vulnerable user", null, 3, "Requested"),
+            flag("Lack of capacity", null, 4, "Not approved")
+        )).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments()).isEqualTo("Case Flags: Complex case");
+    }
+
+    @Test
+    void shouldOmitListingCommentsWhenNoActiveFlags() {
+        givenCase(caseBuilder().caseFlags(flags(
+            flag("Urgent case", "so urgent", 1, "Inactive"),
+            flag("Complex case", null, 2, "Requested")
+        )).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments()).isNull();
+    }
+
     private void givenCase(PcsCaseEntity pcsCase) {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCase));
     }
@@ -192,9 +218,14 @@ class ServiceHearingServiceTest {
     }
 
     private static CaseFlagEntity flag(String name, String comment, int createdOrder) {
+        return flag(name, comment, createdOrder, "Active");
+    }
+
+    private static CaseFlagEntity flag(String name, String comment, int createdOrder, String status) {
         return CaseFlagEntity.builder()
             .flagRefData(FlagRefDataEntity.builder().flagName(name).build())
             .flagComment(comment)
+            .defaultStatus(status)
             .dateTimeCreated(LocalDateTime.of(2026, 1, createdOrder, 9, 0))
             .build();
     }

@@ -32,6 +32,7 @@ public class ServiceHearingService {
 
     static final int DUTY_SOLICITOR_ATTENDEES = 1;
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
+    static final String ACTIVE_FLAG_STATUS = "Active";
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/PCS/PCS/%d#Case%%20File%%20View";
 
     private final ServiceHearingValuesConfiguration defaults;
@@ -91,6 +92,7 @@ public class ServiceHearingService {
 
     private String listingComments(PcsCaseEntity pcsCase) {
         List<String> flags = pcsCase.getCaseFlags().stream()
+            .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
             .filter(flag -> flag.getFlagRefData() != null)
             .sorted(Comparator.comparing(BaseCaseFlag::getDateTimeCreated,
                 Comparator.nullsLast(Comparator.naturalOrder())))
