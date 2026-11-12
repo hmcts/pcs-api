@@ -1,13 +1,15 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Expiry;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Ticker;
 import feign.FeignException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
-import java.time.Clock;
-import java.time.DateTimeException;
-import java.time.Instant;
+import java.time.Duration;
 
 /**
  * Caches an IDAM token for one service identity and renews it before expiry.
@@ -21,28 +23,31 @@ public class IdamTokenProvider {
     private final IdamClient idamClient;
     private final String username;
     private final String password;
-    private final Clock clock;
-    private CachedToken cachedToken;
+    private final Ticker ticker;
+    private final LoadingCache<String, CachedToken> tokens;
 
     public IdamTokenProvider(IdamClient idamClient, String username, String password) {
-        this(idamClient, username, password, Clock.systemUTC());
+        this(idamClient, username, password, Ticker.systemTicker());
     }
 
-    IdamTokenProvider(IdamClient idamClient, String username, String password, Clock clock) {
+    IdamTokenProvider(IdamClient idamClient, String username, String password, Ticker ticker) {
         this.idamClient = idamClient;
         this.username = username;
         this.password = password;
-        this.clock = clock;
+        this.ticker = ticker;
+        this.tokens = Caffeine.newBuilder()
+            .maximumSize(1)
+            .ticker(ticker)
+            .expireAfter(Expiry.creating((String key, CachedToken token) -> token.cacheLifetime()))
+            .build(key -> requestToken());
     }
 
-    // Keep cache checks and renewal together so concurrent callers share one IDAM request.
-    public synchronized String getAuthToken() {
-        Instant requestedAt = clock.instant();
-        if (cachedToken != null
-            && requestedAt.isBefore(cachedToken.expiresAt().minusSeconds(EXPIRY_SKEW_SECONDS))) {
-            return cachedToken.authorization();
-        }
+    public String getAuthToken() {
+        return tokens.get(username).authorization();
+    }
 
+    private CachedToken requestToken() {
+        long requestedAt = ticker.read();
         TokenResponse response;
         try {
             response = idamClient.getAccessTokenResponse(username, password);
@@ -58,14 +63,15 @@ public class IdamTokenProvider {
             if (lifetimeSeconds <= 0) {
                 throw new IdamException(TOKEN_ERROR);
             }
-            cachedToken = new CachedToken(BEARER_PREFIX + response.accessToken,
-                requestedAt.plusSeconds(lifetimeSeconds));
-        } catch (NumberFormatException | DateTimeException exception) {
+            Duration cacheLifetime = Duration.ofSeconds(lifetimeSeconds - EXPIRY_SKEW_SECONDS)
+                .minusNanos(ticker.read() - requestedAt);
+            return new CachedToken(BEARER_PREFIX + response.accessToken,
+                cacheLifetime.isNegative() ? Duration.ZERO : cacheLifetime);
+        } catch (NumberFormatException | ArithmeticException exception) {
             throw new IdamException(TOKEN_ERROR, exception);
         }
-        return cachedToken.authorization();
     }
 
-    private record CachedToken(String authorization, Instant expiresAt) {
+    private record CachedToken(String authorization, Duration cacheLifetime) {
     }
 }

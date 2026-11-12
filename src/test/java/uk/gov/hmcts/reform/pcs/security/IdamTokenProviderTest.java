@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import com.github.benmanes.caffeine.cache.Ticker;
 import com.sun.net.httpserver.HttpServer;
 import feign.FeignException;
 import org.junit.jupiter.api.AfterEach;
@@ -26,11 +27,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +35,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -121,18 +119,51 @@ class IdamTokenProviderTest {
     @Test
     void reacquiresTheTokenSixtySecondsBeforeItsExpiry() {
         contextRunner.run(context -> {
-            var clock = new MutableClock();
+            var ticker = new FakeTicker();
             var provider = new IdamTokenProvider(
-                context.getBean(IdamClient.class), "system@example.test", "secret", clock);
+                context.getBean(IdamClient.class), "system@example.test", "secret", ticker);
             assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
-            clock.advance(Duration.ofSeconds(3539));
+            ticker.advance(Duration.ofSeconds(3539));
             assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
             responseBody = tokenResponse("renewed-token");
-            clock.advance(Duration.ofSeconds(1));
+            ticker.advance(Duration.ofSeconds(1));
 
             assertThat(provider.getAuthToken()).isEqualTo("Bearer renewed-token");
             assertThat(requests).hasSize(2).allSatisfy(request -> assertThat(request)
                 .containsEntry("grant_type", "password").doesNotContainKey("refresh_token"));
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {120, 7200})
+    void respectsTheLifetimeReturnedByIdam(int lifetimeSeconds) {
+        contextRunner.run(context -> {
+            var ticker = new FakeTicker();
+            var provider = new IdamTokenProvider(
+                context.getBean(IdamClient.class), "system@example.test", "secret", ticker);
+            responseBody = "{\"access_token\":\"first-token\",\"expires_in\":" + lifetimeSeconds + "}";
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
+            ticker.advance(Duration.ofSeconds(lifetimeSeconds - 61));
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
+            responseBody = tokenResponse("renewed-token");
+            ticker.advance(Duration.ofSeconds(1));
+
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer renewed-token");
+            assertThat(requests).hasSize(2);
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {30, 60})
+    void doesNotCacheTokensAlreadyWithinTheExpiryMargin(int lifetimeSeconds) {
+        contextRunner.run(context -> {
+            var provider = context.getBean("systemUpdateUserTokenProvider", IdamTokenProvider.class);
+            responseBody = "{\"access_token\":\"short-token\",\"expires_in\":" + lifetimeSeconds + "}";
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer short-token");
+            responseBody = tokenResponse("renewed-token");
+
+            assertThat(provider.getAuthToken()).isEqualTo("Bearer renewed-token");
+            assertThat(requests).hasSize(2);
         });
     }
 
@@ -162,11 +193,11 @@ class IdamTokenProviderTest {
     @Test
     void failedRenewalDoesNotReturnAnExpiredTokenAndCanBeRetried() {
         contextRunner.run(context -> {
-            var clock = new MutableClock();
+            var ticker = new FakeTicker();
             var provider = new IdamTokenProvider(
-                context.getBean(IdamClient.class), "system@example.test", "secret", clock);
+                context.getBean(IdamClient.class), "system@example.test", "secret", ticker);
             assertThat(provider.getAuthToken()).isEqualTo("Bearer first-token");
-            clock.advance(Duration.ofHours(1));
+            ticker.advance(Duration.ofHours(1));
             responseStatus = 503;
             responseBody = "{\"error\":\"temporarily_unavailable\"}";
 
@@ -235,26 +266,16 @@ class IdamTokenProviderTest {
     static class ClientConfiguration {
     }
 
-    private static class MutableClock extends Clock {
-        private Instant now = Instant.parse("2026-01-01T00:00:00Z");
+    private static class FakeTicker implements Ticker {
+        private final AtomicLong nanos = new AtomicLong();
 
         void advance(Duration duration) {
-            now = now.plus(duration);
+            nanos.addAndGet(duration.toNanos());
         }
 
         @Override
-        public ZoneId getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return Clock.fixed(now, zone);
-        }
-
-        @Override
-        public Instant instant() {
-            return now;
+        public long read() {
+            return nanos.get();
         }
     }
 }
