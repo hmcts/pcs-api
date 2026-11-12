@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -33,10 +34,15 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,10 +63,12 @@ class ClaimPackSelectorTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
         underTest = new ClaimPackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
-            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null),
+                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)));
     }
 
     private final PartyEntity claimant = party();
@@ -93,7 +101,7 @@ class ClaimPackSelectorTest {
         assertThat(result.getFirst().documents()).containsExactly(claimForm);
         assertThat(result.get(1).recipientType()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(result.get(1).party()).isEqualTo(defendantA);
-        assertThat(result.get(1).documents()).containsExactly(claimForm, pinA);
+        assertThat(result.get(1).documents()).containsExactly(pinA, claimForm);
     }
 
     @Test
@@ -141,7 +149,26 @@ class ClaimPackSelectorTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().party()).isEqualTo(defendantA);
-        assertThat(result.getFirst().documents()).containsExactly(claimForm, pinA);
+        assertThat(result.getFirst().documents()).containsExactly(pinA, claimForm);
+    }
+
+    @Test
+    @DisplayName("Excludes removed parties from claim pack recipients")
+    void shouldExcludeRemovedPartiesFromClaimPackRecipients() {
+        defendantB.setRemoved(true);
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity pinB = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantB);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA, pinB), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1),
+            claimParty(defendantB, PartyRole.DEFENDANT, 2)));
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result)
+            .extracting(ClaimPackCandidate::party)
+            .containsExactly(claimant, defendantA);
     }
 
     @ParameterizedTest
@@ -261,6 +288,23 @@ class ClaimPackSelectorTest {
         pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
 
         assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false, false", "false, true", "true, false", "true, true"})
+    @DisplayName("Release 1.4 excludes claimant from receiving claim pack without changing defendant receiving pack")
+    void shouldExcludeClaimantFromReceivingClaimPack(boolean release14Enabled, boolean release13Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(release13Enabled);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = readyClaimCase();
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result).extracting(ClaimPackCandidate::party)
+            .containsExactlyElementsOf(release14Enabled ? List.of(defendantA) : List.of(claimant, defendantA));
+        assertThat(result.getLast().recipientType()).isEqualTo(PartyRole.DEFENDANT);
+        assertThat(result.getLast().documents()).containsExactly(pcsCase.getDocuments().getFirst(), claimForm);
     }
 
     private PcsCaseEntity readyClaimCase() {

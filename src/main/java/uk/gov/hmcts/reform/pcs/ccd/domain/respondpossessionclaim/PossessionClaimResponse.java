@@ -65,6 +65,9 @@ public class PossessionClaimResponse {
     @CCD(access = {DefendantAccess.class})
     private String responseDocumentId;
 
+    @CCD(access = {DefendantAccess.class})
+    private String counterclaimDocumentId;
+
     // Version of the stored draft these answers were read from; the UI echoes it back so the submit is bound to it.
     @CCD(access = {DefendantAccess.class}, label = "Draft version")
     private Long draftVersion;

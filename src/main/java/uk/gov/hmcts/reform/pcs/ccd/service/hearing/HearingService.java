@@ -3,20 +3,21 @@ package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -40,34 +41,35 @@ import java.util.stream.Collectors;
 public class HearingService {
 
     private final PcsCaseService pcsCaseService;
-    private final PcsCaseRepository pcsCaseRepository;
     private final HearingRepository hearingRepository;
     private final PartyRepository partyRepository;
     private final PartyService partyService;
+    private final DocumentRepository documentRepository;
     private final Clock ukClock;
 
     public HearingService(PcsCaseService pcsCaseService,
-                          PcsCaseRepository pcsCaseRepository,
                           HearingRepository hearingRepository,
                           PartyRepository partyRepository,
                           PartyService partyService,
+                          DocumentRepository documentRepository,
                           @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
-        this.pcsCaseRepository = pcsCaseRepository;
         this.hearingRepository = hearingRepository;
         this.partyRepository = partyRepository;
         this.partyService = partyService;
+        this.documentRepository = documentRepository;
         this.ukClock = ukClock;
     }
 
-    public void addHearing(long caseReference, PCSCase pcsCase) {
+    public HearingEntity addHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         HearingEntity hearingEntity = populateHearingEntity(new HearingEntity(), pcsCase);
         pcsCaseEntity.addHearing(hearingEntity);
-        pcsCaseRepository.save(pcsCaseEntity);
+        assignNoticeNumber(pcsCaseEntity, hearingEntity);
+        return hearingRepository.save(hearingEntity);
     }
 
-    public void updateHearing(long caseReference, PCSCase pcsCase) {
+    public HearingEntity updateHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         Integer selectedHearingId = Integer.valueOf(Objects.requireNonNull(
             pcsCase.getSelectedHearingId(),
@@ -82,7 +84,24 @@ public class HearingService {
             ));
 
         populateHearingEntity(hearingEntity, pcsCase);
-        pcsCaseRepository.save(pcsCaseEntity);
+        // Edits before the notice is generated keep the same notice number and later edits get the next number
+        if (hearingEntity.getNoticeNumber() == null
+            || documentRepository.existsByHearing_IdAndType(hearingEntity.getId(), DocumentType.NOTICE_OF_HEARING)) {
+            assignNoticeNumber(pcsCaseEntity, hearingEntity);
+        }
+        return hearingRepository.save(hearingEntity);
+    }
+
+    private static void assignNoticeNumber(PcsCaseEntity pcsCaseEntity, HearingEntity hearingEntity) {
+        if (hearingEntity.getIssueNotice() != VerticalYesNo.YES) {
+            return;
+        }
+        int latestNoticeNumber = pcsCaseEntity.getHearings().stream()
+            .map(HearingEntity::getNoticeNumber)
+            .filter(Objects::nonNull)
+            .max(Integer::compare)
+            .orElse(0);
+        hearingEntity.setNoticeNumber(latestNoticeNumber + 1);
     }
 
     public void cancelHearing(Hearing hearing) {
@@ -96,7 +115,9 @@ public class HearingService {
     }
 
     public void clearHearingForm(PCSCase pcsCase) {
-        pcsCase.setHearing(Hearing.builder().build());
+        Hearing currentHearing = pcsCase.getHearing();
+        String hearingSummaryMarkdown = currentHearing == null ? null : currentHearing.getHearingSummaryMarkdown();
+        pcsCase.setHearing(Hearing.builder().hearingSummaryMarkdown(hearingSummaryMarkdown).build());
         pcsCase.setManageHearingDraft(null);
         pcsCase.setPartyMultiSelectionList(clearSelectedParties(pcsCase.getPartyMultiSelectionList()));
         pcsCase.setMhDraftPartyList(null);
@@ -161,6 +182,7 @@ public class HearingService {
     public DynamicMultiSelectStringList buildPartyList(PcsCaseEntity pcsCaseEntity) {
         ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
         Map<PartyRole, List<ClaimPartyEntity>> partyRoleListMap = mainClaim.getClaimParties().stream()
+            .filter(this::isActiveClaimParty)
             .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
 
         List<DynamicStringListElement> partyElementList = new ArrayList<>();
@@ -238,7 +260,9 @@ public class HearingService {
                 }
             }
 
-            List<PartyEntity> partyEntities = partyRepository.findAllById(partyIds);
+            List<PartyEntity> partyEntities = partyRepository.findAllById(partyIds).stream()
+                .filter(party -> party != null && !party.isRemoved())
+                .toList();
             partyEntities.forEach(hearingEntity::addParty);
         } else {
             hearingNoticeParties.forEach(HearingNoticePartyEntity::removeHearingNoticeParty);
@@ -264,6 +288,11 @@ public class HearingService {
             .code(partyEntity.getId().toString())
             .label(label)
             .build();
+    }
+
+    private boolean isActiveClaimParty(ClaimPartyEntity claimPartyEntity) {
+        return claimPartyEntity != null
+            && !claimPartyEntity.getParty().isRemoved();
     }
 
     private Set<UUID> selectedNoticePartyIds(PCSCase pcsCase) {

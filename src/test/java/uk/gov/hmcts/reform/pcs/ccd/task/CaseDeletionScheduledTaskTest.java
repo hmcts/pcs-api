@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.task;
 
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
+import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -9,6 +10,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import org.springframework.beans.factory.ObjectProvider;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.DeletionCaseData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -35,6 +37,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -47,6 +50,8 @@ class CaseDeletionScheduledTaskTest {
     private static final String VALID_SCHEDULE = "DAILY|00:00";
     private static final int DISCARD_AFTER_DAYS = 30;
     private static final int SQL_LIMIT = 200;
+    private static final int DB_CONCURRENCY_PERCENT = 30;
+    private static final int HIKARI_POOL_FALLBACK = 10;
     private static final long SIMULATED_LATENCY_MS = 100;
     private static final long CASE_1 = 1L;
     private static final long CASE_2 = 2L;
@@ -86,9 +91,17 @@ class CaseDeletionScheduledTaskTest {
     }
 
     @Test
+    void shouldDeriveBatchSizeAsPercentOfHikariPool() {
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(10, 30)).isEqualTo(3);
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(4, 30)).isEqualTo(1);
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(15, 30)).isEqualTo(4);
+        assertThat(CaseDeletionScheduledTask.resolveBatchSize(1, 30)).isEqualTo(1);
+    }
+
+    @Test
     void shouldDoNothingWhenNoExpiredCasesFound() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of());
 
@@ -102,7 +115,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldDoNothingWhenExpiredCasesIsNull() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(null);
 
@@ -118,7 +131,7 @@ class CaseDeletionScheduledTaskTest {
         // Given
         String url1 = "url1";
         String url2 = "url2";
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1)));
         when(pcsCaseService.getDocumentUrls(anyLong())).thenReturn(List.of(url1, url2));
@@ -138,7 +151,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldDeleteCaseWithNoDocuments() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1)));
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of());
@@ -154,7 +167,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldProcessAllCasesInBatch() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1), caseData(CASE_2), caseData(CASE_3)));
 
@@ -170,7 +183,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldContinueDeletionWhenCaseNotFoundInCcdDataStore() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1)));
         doThrow(new CcdCaseNotFoundException(CASE_1)).when(ccdCaseDataDeletionService).markCaseForDeletion(CASE_1);
@@ -185,7 +198,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldSkipCcdDeletionForDraftDiscardedCases() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1, State.DRAFT_DISCARDED)));
 
@@ -203,7 +216,7 @@ class CaseDeletionScheduledTaskTest {
         // Given
         String url = "url";
         DocumentEntity doc = document(url);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1)));
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of(url));
@@ -221,7 +234,7 @@ class CaseDeletionScheduledTaskTest {
         // Given
         String url1 = "url1";
         String url2 = "url2";
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1)));
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of(url1, url2));
@@ -238,7 +251,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldIsolateFailuresSoOtherCasesStillComplete() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1), caseData(CASE_2)));
         doThrow(new PcsCaseDeletionException(CASE_1)).when(caseDeletionService).deleteCaseData(CASE_1);
@@ -259,7 +272,7 @@ class CaseDeletionScheduledTaskTest {
         List<DeletionCaseData> cases = LongStream.rangeClosed(1, 8)
             .mapToObj(this::caseData)
             .toList();
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(cases);
         doAnswer(inv -> trackConcurrencyWithLatency())
@@ -293,7 +306,7 @@ class CaseDeletionScheduledTaskTest {
         when(pcsCaseService.getDocumentUrls(cases.get(3).getCaseRef())).thenReturn(List.of(url, url2));
         when(pcsCaseService.getDocumentUrls(cases.get(4).getCaseRef())).thenReturn(List.of(url, url2));
         when(pcsCaseService.getDocumentUrls(cases.get(5).getCaseRef())).thenReturn(List.of(url, url2));
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         doAnswer(inv -> trackConcurrencyWithLatency()).when(documentImportService)
             .deleteDocument(anyString());
 
@@ -312,7 +325,7 @@ class CaseDeletionScheduledTaskTest {
     void shouldReleaseCcdWhenCallsFailSoSweepDoesNotDeadlock() {
         // Given
         underTest = createTask(1, 25, 10);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1), caseData(CASE_2)));
         doThrow(new RuntimeException("ccd issue"))
@@ -335,7 +348,7 @@ class CaseDeletionScheduledTaskTest {
 
         // Given
         String url = "url";
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(caseData(CASE_1), caseData(CASE_2)));
 
@@ -359,7 +372,7 @@ class CaseDeletionScheduledTaskTest {
         int batchSize = 2;
         underTest = createTask(10, 25, batchSize);
         List<DeletionCaseData> cases = List.of(caseData(CASE_1), caseData(CASE_2), caseData(CASE_3), caseData(CASE_4));
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
                 .thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(anyLong())).thenReturn(List.of());
@@ -380,7 +393,7 @@ class CaseDeletionScheduledTaskTest {
         int batchSize = 2;
         underTest = createTask(10, 25, batchSize);
         List<DeletionCaseData> cases = List.of(caseData(CASE_1), caseData(CASE_2), caseData(CASE_3), caseData(CASE_4));
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
                 .thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of());
@@ -404,7 +417,7 @@ class CaseDeletionScheduledTaskTest {
         int batchSize = 3;
         underTest = createTask(10, 25, batchSize);
         List<DeletionCaseData> cases = List.of(caseData(CASE_1), caseData(CASE_2), caseData(CASE_3));
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
                 .thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(anyLong())).thenReturn(List.of());
@@ -421,7 +434,7 @@ class CaseDeletionScheduledTaskTest {
         // Given
         int batchSize = 10;
         underTest = createTask(10, 25, batchSize);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
                 .thenReturn(List.of(caseData(CASE_1)));
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of());
@@ -440,7 +453,7 @@ class CaseDeletionScheduledTaskTest {
         underTest = createTask(10, 25, batchSize);
         List<DeletionCaseData> cases = List.of(caseData(CASE_1), caseData(CASE_2), caseData(CASE_3),
                 caseData(CASE_4), caseData(CASE_5));
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
                 .thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of());
@@ -462,7 +475,7 @@ class CaseDeletionScheduledTaskTest {
         // Given
         String url = "url1";
         List<DeletionCaseData> cases = List.of(caseData(CASE_1));
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
                 .thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of(url));
@@ -482,7 +495,7 @@ class CaseDeletionScheduledTaskTest {
         String url = "url1";
         UUID documentId = UUID.randomUUID();
         List<DeletionCaseData> cases = List.of(caseData(CASE_1));
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
                 .thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of(url));
@@ -499,7 +512,7 @@ class CaseDeletionScheduledTaskTest {
     @Test
     void shouldSkipSweepIfFeatureFlagNotEnabled() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.DELETE_UNISSUED_CLAIM)).thenReturn(false);
 
         // When
         underTest.runSweep();
@@ -510,8 +523,15 @@ class CaseDeletionScheduledTaskTest {
     }
 
     private CaseDeletionScheduledTask createTask(int ccdControlSize, int docControlSize, int batchSize) {
-        return new CaseDeletionScheduledTask(VALID_SCHEDULE, DISCARD_AFTER_DAYS, batchSize, SQL_LIMIT,
-                                             ccdControlSize, docControlSize,
+        int hikariPoolSize = Math.max(1, (int) Math.ceil(batchSize * 100.0 / DB_CONCURRENCY_PERCENT));
+        HikariDataSource hikariDataSource = mock(HikariDataSource.class);
+        when(hikariDataSource.getMaximumPoolSize()).thenReturn(hikariPoolSize);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<HikariDataSource> hikariProvider = mock(ObjectProvider.class);
+        when(hikariProvider.getIfAvailable()).thenReturn(hikariDataSource);
+
+        return new CaseDeletionScheduledTask(VALID_SCHEDULE, DISCARD_AFTER_DAYS, DB_CONCURRENCY_PERCENT, SQL_LIMIT,
+                                             ccdControlSize, docControlSize, HIKARI_POOL_FALLBACK, hikariProvider,
                                              caseDeletionService, ccdCaseDataDeletionService,
                                              pcsCaseService, documentImportService, featureToggleService);
     }

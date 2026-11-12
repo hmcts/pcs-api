@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -89,6 +91,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    private List<JudicialNoteEntity> judicialNotes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
     private List<CaseReviewDateEntity> reviewDates = new ArrayList<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
@@ -132,6 +139,13 @@ public class PcsCaseEntity {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    private String caseTypeKey;
+
+    private String caseSubtypeKey;
+
+    @UpdateTimestamp
+    private LocalDateTime lastModifiedDatetime;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
@@ -188,6 +202,8 @@ public class PcsCaseEntity {
     }
 
     public void addCounterClaim(CounterClaimEntity counterClaim) {
+        int rank = counterClaims.size() + 1;
+        counterClaim.setRank(rank);
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
     }
@@ -197,7 +213,14 @@ public class PcsCaseEntity {
         caseNote.setPcsCase(this);
     }
 
+    public void addJudicialNote(JudicialNoteEntity judicialNote) {
+        judicialNotes.add(judicialNote);
+        judicialNote.setPcsCase(this);
+    }
+
     public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {
+        int reviewDateNumber = reviewDates.size() + 1;
+        reviewDate.setReviewDateNumber(reviewDateNumber);
         reviewDates.add(reviewDate);
         reviewDate.setPcsCase(this);
     }

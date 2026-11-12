@@ -26,7 +26,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.markCaseForDeletion;
 
 /**
  * Delete feature to allow ccd data to be deleted via the ccd-case-disposer microservice for cases in the data-store.
- * This relies on running the events that transition the case to Draft Discarded and marks the resolvedTtl.
+ * This relies on running the events that transition the case to Draft Discarded.
+ * Central CCD hard-delete via the disposer also needs resolved_ttl set (via TTLIncrement on confirmCaseDisposal).
  * The data in the decentralised ccd schema is deleted separately via the Repository.
  */
 @AllArgsConstructor

@@ -47,7 +47,8 @@ public class CounterClaimFormPersistenceService {
             return Optional.empty();
         }
         CounterClaimFormPayload payload = payloadBuilder.build(counterClaim);
-        return Optional.of(new CounterClaimFormRenderContext(payload, defendantNumber(counterClaim)));
+        return Optional.of(new CounterClaimFormRenderContext(
+            payload, counterClaim.getRank(), defendantNumber(counterClaim)));
     }
 
     @Transactional
@@ -84,7 +85,7 @@ public class CounterClaimFormPersistenceService {
                 "No counter claim found for id: " + counterClaimId));
     }
 
-    private static int defendantNumber(CounterClaimEntity counterClaim) {
+    public static int defendantNumber(CounterClaimEntity counterClaim) {
         UUID defendantPartyId = counterClaim.getParty().getId();
         return counterClaim.getPcsCase().getClaims().stream()
             .flatMap(claim -> claim.getClaimParties().stream())

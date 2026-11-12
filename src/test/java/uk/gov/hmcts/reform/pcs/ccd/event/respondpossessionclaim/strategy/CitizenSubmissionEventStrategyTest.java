@@ -41,7 +41,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 @ExtendWith(MockitoExtension.class)
 class CitizenSubmissionEventStrategyTest {
 
-    private static final UUID TEST_IDAM_ID = UUID.randomUUID();
+    private static final String TEST_IDAM_ID = UUID.randomUUID().toString();
     private static final long CASE_REFERENCE = 1234567890L;
     private static final JourneyType JOURNEY_TYPE = JourneyType.CITIZEN;
 

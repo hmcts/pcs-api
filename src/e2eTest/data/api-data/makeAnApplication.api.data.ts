@@ -1,3 +1,5 @@
+import { testDocument } from "@utils/common/uploadDocument.utils";
+
 export const makeAnApplicationApiData = {
 
   makeAnApplicationEventName: 'makeAnApplication',
@@ -31,11 +33,7 @@ export const makeAnApplicationApiData = {
             documentType: 'WITNESS_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099`,
-              document_binary_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099/binary`,
-              document_filename: 'witnessStatement.pdf',
-            }
+            document: testDocument('witnessStatement.pdf')
           },
           id: null
         },
@@ -44,11 +42,7 @@ export const makeAnApplicationApiData = {
             documentType: 'RENT_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c`,
-              document_binary_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c/binary`,
-              document_filename: `rentStatement.pdf`,
-            }
+            document: testDocument('rentStatement.pdf')
           },
           id: null
         },
@@ -57,12 +51,7 @@ export const makeAnApplicationApiData = {
             documentType: 'TENANCY_AGREEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7`,
-              document_binary_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7/binary`,
-              document_filename: 'tenancy.pdf',
-
-            }
+            document: testDocument('tenancy.pdf')
           },
           id: null
         },
@@ -71,11 +60,7 @@ export const makeAnApplicationApiData = {
             documentType: 'OTHER',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd`,
-              document_binary_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd/binary`,
-              document_filename: 'otherDocument.pdf',
-            }
+            document: testDocument('otherDocument.pdf')
           },
           id: null
         }
@@ -119,11 +104,7 @@ export const makeAnApplicationApiData = {
             documentType: 'WITNESS_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099`,
-              document_binary_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099/binary`,
-              document_filename: 'witnessStatement.pdf',
-            }
+            document: testDocument('witnessStatement.pdf')
           },
           id: null
         },
@@ -132,11 +113,7 @@ export const makeAnApplicationApiData = {
             documentType: 'RENT_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c`,
-              document_binary_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c/binary`,
-              document_filename: `rentStatement.pdf`,
-            }
+            document: testDocument('rentStatement.pdf')
           },
           id: null
         },
@@ -145,11 +122,7 @@ export const makeAnApplicationApiData = {
             documentType: 'OTHER',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd`,
-              document_binary_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd/binary`,
-              document_filename: 'otherDocument.pdf',
-            }
+            document: testDocument('otherDocument.pdf')
           },
           id: null
         }
@@ -195,11 +168,7 @@ export const makeAnApplicationApiData = {
             documentType: 'WITNESS_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099`,
-              document_binary_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099/binary`,
-              document_filename: 'witnessStatement.pdf',
-            }
+            document: testDocument('witnessStatement.pdf')
           },
           id: null
         },
@@ -208,11 +177,7 @@ export const makeAnApplicationApiData = {
             documentType: 'RENT_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c`,
-              document_binary_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c/binary`,
-              document_filename: `rentStatement.pdf`,
-            }
+            document: testDocument('rentStatement.pdf')
           },
           id: null
         },
@@ -221,11 +186,7 @@ export const makeAnApplicationApiData = {
             documentType: 'OTHER',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd`,
-              document_binary_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd/binary`,
-              document_filename: 'otherDocument.pdf',
-            }
+            document: testDocument('otherDocument.pdf')
           },
           id: null
         }
@@ -270,11 +231,7 @@ export const makeAnApplicationApiData = {
             documentType: 'WITNESS_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099`,
-              document_binary_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099/binary`,
-              document_filename: 'witnessStatement.pdf',
-            }
+            document: testDocument('witnessStatement.pdf')
           },
           id: null
         },
@@ -283,11 +240,7 @@ export const makeAnApplicationApiData = {
             documentType: 'RENT_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c`,
-              document_binary_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c/binary`,
-              document_filename: `rentStatement.pdf`,
-            }
+            document: testDocument('rentStatement.pdf')
           },
           id: null
         },
@@ -296,12 +249,7 @@ export const makeAnApplicationApiData = {
             documentType: 'TENANCY_AGREEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7`,
-              document_binary_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7/binary`,
-              document_filename: 'tenancy.pdf',
-
-            }
+            document: testDocument('tenancy.pdf')
           },
           id: null
         },
@@ -310,11 +258,7 @@ export const makeAnApplicationApiData = {
             documentType: 'OTHER',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd`,
-              document_binary_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd/binary`,
-              document_filename: 'otherDocument.pdf',
-            }
+            document: testDocument('otherDocument.pdf')
           },
           id: null
         }
@@ -362,11 +306,7 @@ export const makeAnApplicationApiData = {
             documentType: 'WITNESS_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099`,
-              document_binary_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099/binary`,
-              document_filename: 'witnessStatement.pdf',
-            }
+            document: testDocument('witnessStatement.pdf')
           },
           id: null
         },
@@ -375,11 +315,7 @@ export const makeAnApplicationApiData = {
             documentType: 'RENT_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c`,
-              document_binary_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c/binary`,
-              document_filename: `rentStatement.pdf`,
-            }
+            document: testDocument('rentStatement.pdf')
           },
           id: null
         },
@@ -388,12 +324,7 @@ export const makeAnApplicationApiData = {
             documentType: 'TENANCY_AGREEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7`,
-              document_binary_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7/binary`,
-              document_filename: 'tenancy.pdf',
-
-            }
+            document: testDocument('tenancy.pdf')
           },
           id: null
         },
@@ -402,11 +333,7 @@ export const makeAnApplicationApiData = {
             documentType: 'OTHER',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd`,
-              document_binary_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd/binary`,
-              document_filename: 'otherDocument.pdf',
-            }
+            document: testDocument('otherDocument.pdf')
           },
           id: null
         }
@@ -454,11 +381,7 @@ export const makeAnApplicationApiData = {
             documentType: 'WITNESS_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099`,
-              document_binary_url: `${process.env.DM_STORE}/documents/079b5999-5876-4bd9-9695-9147f4ded099/binary`,
-              document_filename: 'witnessStatement.pdf',
-            }
+            document: testDocument('witnessStatement.pdf')
           },
           id: null
         },
@@ -467,11 +390,7 @@ export const makeAnApplicationApiData = {
             documentType: 'RENT_STATEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c`,
-              document_binary_url: `${process.env.DM_STORE}/documents/103362f6-f2bb-47ad-ac71-97a5036d808c/binary`,
-              document_filename: `rentStatement.pdf`,
-            }
+            document: testDocument('rentStatement.pdf')
           },
           id: null
         },
@@ -480,12 +399,7 @@ export const makeAnApplicationApiData = {
             documentType: 'TENANCY_AGREEMENT',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7`,
-              document_binary_url: `${process.env.DM_STORE}/documents/7ea36f71-b935-4cd0-8205-3332a4b4c8a7/binary`,
-              document_filename: 'tenancy.pdf',
-
-            }
+            document: testDocument('tenancy.pdf')
           },
           id: null
         },
@@ -494,11 +408,7 @@ export const makeAnApplicationApiData = {
             documentType: 'OTHER',
             contentType: null,
             sizeInBytes: null,
-            document: {
-              document_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd`,
-              document_binary_url: `${process.env.DM_STORE}/documents/9a1694f1-d38c-4b6b-9ca5-4a61ce554fdd/binary`,
-              document_filename: 'otherDocument.pdf',
-            }
+            document: testDocument('otherDocument.pdf')
           },
           id: null
         }
