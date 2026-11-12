@@ -113,8 +113,8 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
         }
         assertThat(restored.getFeeAmount()).isNull();
         assertThat(result.has("feeAmount")).isFalse();
-        assertThat(objectMapper.valueToTree(objectMapper.treeToValue(result, PCSCase.class)))
-            .isEqualTo(result);
+        var roundTripped = objectMapper.valueToTree(objectMapper.treeToValue(result, PCSCase.class));
+        assertThat(roundTripped).isEqualTo(result);
     }
 
     @BeforeEach
