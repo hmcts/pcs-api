@@ -88,17 +88,21 @@ public class CcdClient {
      * @return The created case details
      */
     public CaseDetails createCase(PCSCase caseData, String authorisation) {
+        return createCase(CASE_CREATION_EVENT, caseData, authorisation);
+    }
+
+    public CaseDetails createCase(EventId creationEvent, PCSCase caseData, String authorisation) {
 
         StartEventResponse startEventResponse = ccdApi.startCase(
             authorisation,
             serviceAuthorisation,
             CaseType.getCaseType(),
-            CASE_CREATION_EVENT.name()
+            creationEvent.name()
         );
 
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .data(caseData)
-            .event(Event.builder().id(CASE_CREATION_EVENT.name()).build())
+            .event(Event.builder().id(creationEvent.name()).build())
             .eventToken(startEventResponse.getToken())
             .build();
 

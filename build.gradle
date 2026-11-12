@@ -733,6 +733,7 @@ cftlibTest {
 
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
+  systemProperty 'feature.private-landlord-make-a-claim-enabled', 'true'
   // Covering letters in defence/gen-app packs are gated on release 1.4
   systemProperty 'feature.release-1.4-enabled', 'true'
 
@@ -786,6 +787,10 @@ composeUp.doFirst {
 
 tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
+  // Shared with the unit tests, which own the file
+  from('src/test/resources') {
+    include 'citizenclaim/**'
+  }
 }
 
 tasks.named("processContractTestResources") {
