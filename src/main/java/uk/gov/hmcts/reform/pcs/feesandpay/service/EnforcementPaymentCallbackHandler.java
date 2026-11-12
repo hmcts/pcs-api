@@ -1,31 +1,17 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.system.SystemAction;
-
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforcementPayment;
-import static uk.gov.hmcts.reform.pcs.system.SystemAction.ENFORCEMENT_PAYMENT;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 @Component
-public class EnforcementPaymentCallbackHandler extends AbstractCcdPaymentCallbackHandler {
-
-    public EnforcementPaymentCallbackHandler(CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
-                                             PartyService partyService, ObjectMapper objectMapper) {
-        super(ccdPaymentStateUpdateService, partyService, objectMapper);
-    }
+@Slf4j
+public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     @Override
-    protected EventId successEventId() {
-        return enforcementPayment;
+    public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
+        log.info("Enforcement payment made: {}", paymentStatusCallback);
+        // To be applied within https://hmcts.atlassian.net/browse/HDPI-9662
     }
-
-    @Override
-    protected SystemAction actionId() {
-        return ENFORCEMENT_PAYMENT;
-    }
-
 }
