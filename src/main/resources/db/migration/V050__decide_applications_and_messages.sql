@@ -98,6 +98,10 @@ ALTER TABLE order_steps DROP COLUMN note_id,
     ADD COLUMN message_entry_id UUID REFERENCES case_message_entry(id),
     ADD CONSTRAINT order_steps_message_check CHECK (message_entry_id IS NULL OR state = 'RETURNED_TO_JUDGE');
 
+-- The day an issued order was made, which it must bear (CPR 40.2): its hearing's, or else the day its judge sent it
+-- for review. When it was issued is its issuing step's.
+ALTER TABLE orders ADD COLUMN made_on DATE;
+
 -- What an issued order says about costs. Any sum to be paid is a money judgment.
 ALTER TABLE orders ADD COLUMN costs TEXT CHECK (costs IN (
     'DEFENDANT_PAYS', 'DEFENDANT_PAYS_FIXED', 'DEFENDANT_PAYS_SUMMARY', 'CLAIMANT_PAYS_SUMMARY',

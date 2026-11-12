@@ -117,7 +117,7 @@ public class OrderDocumentService {
             .propertyAddress(addressFormatter.formatFullAddressWithoutCountry(
                 addressMapper.toAddressUK(pcsCase.getPropertyAddress()), AddressFormatter.COMMA_DELIMITER))
             .judgeName(Optional.ofNullable(order.getAuthorName()).orElse("the Judge"))
-            .orderDate(ORDER_DATE.format(issued.getCreatedAt().atZone(UK_ZONE_ID)))
+            .orderDate(ORDER_DATE.format(order.getMadeOn()))
             .orderHtml(issued.getOrderHtml())
             .sealName(order.getSeal() == OrderSeal.HIGH_COURT
                 ? "High Court" : Optional.ofNullable(courtName).orElse("County Court"))

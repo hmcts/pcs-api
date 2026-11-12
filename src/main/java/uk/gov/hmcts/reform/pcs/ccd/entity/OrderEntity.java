@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.HashMap;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -102,6 +103,9 @@ public class OrderEntity {
     @Builder.Default
     @Setter(AccessLevel.NONE)
     private List<MoneyJudgmentEntity> moneyJudgments = new ArrayList<>();
+
+    /** The day the order was made, which its document bears, recorded when it is issued. */
+    private LocalDate madeOn;
 
     /** What the order says about costs, recorded when it is issued; none if it says nothing. */
     @Enumerated(EnumType.STRING)

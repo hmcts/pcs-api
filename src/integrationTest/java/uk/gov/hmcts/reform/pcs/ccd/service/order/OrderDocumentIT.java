@@ -92,6 +92,9 @@ class OrderDocumentIT extends OrderEventIT {
         var asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker)
             .withClientContext(Map.of("orderId", draft.id().toString()));
         Order submitted = asCaseworker.start().order();
+        // The judge sent it for review some days before court staff issue it.
+        jdbcTemplate.update("UPDATE order_steps SET created_at = '2026-10-01T12:00:00Z' "
+            + "WHERE order_id = ? AND state = 'SUBMITTED_FOR_REVIEW'", submitted.id());
         Document order = events.documents().store("Order for possession.pdf");
         when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString())).thenReturn(order.getUrl());
 
@@ -108,6 +111,10 @@ class OrderDocumentIT extends OrderEventIT {
             .containsExactly(submitted.id(), caseReference, caseworker.uid(), "Tom", "Baker");
         OrderDocumentPayload issued = job.getPayload();
         assertThat(issued.getJudgeName()).isEqualTo("Sarah Hughes");
+        // It bears the day it was made, not the day it was issued (CPR 40.2).
+        assertThat(issued.getOrderDate()).isEqualTo("1 October 2026");
+        assertThat(jdbcTemplate.queryForObject("SELECT made_on::text FROM orders WHERE id = ?", String.class,
+            submitted.id())).isEqualTo("2026-10-01");
         assertThat(issued.isCountyCourtSeal()).isTrue();
         assertThat(issued.isHighCourtSeal()).isFalse();
         assertThat(issued.getOrderHtml()).isEqualTo("the caseworker's wording");

@@ -56,6 +56,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
  * A caseworker reviews an order a judge submitted, opened from their Work Allocation task, and either
@@ -129,7 +130,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         UserInfo caseworker = securityContextService.getCurrentUserDetails();
         return request.action() == RETURN_TO_JUDGE
             ? returnToJudge(order, submitted, validQuery(request.queryToJudge()), caseworker)
-            : issue(order, request.issue(), caseworker);
+            : issue(order, submitted, request.issue(), caseworker);
     }
 
     /** The order goes back as the judge submitted it, with the query the judge will read, kept on the Messages tab. */
@@ -147,7 +148,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
     }
 
-    private ExternalSubmitResponse<State> issue(OrderEntity order, Issue issue, UserInfo caseworker) {
+    private ExternalSubmitResponse<State> issue(OrderEntity order, OrderStepEntity submitted, Issue issue,
+                                                UserInfo caseworker) {
         // The review page posts the wording its script built, as Docweave and as the HTML the document is made from.
         IssuedOrder issuing = issue.order();
         if (issuing == null || issuing.docweaveSnapshot() == null || issuing.docweaveSnapshot().isNull()
@@ -166,6 +168,10 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .filter(decided -> order.getPcsCase().findGenApp(decided.genAppId()).isPresent())
             .forEach(decided -> order.getGenAppDecisions().put(decided.genAppId(), decided.decision()));
         order.setSeal(issue.seal());
+        // Made at its hearing, or else when its judge sent it for review, however long court staff take to issue it.
+        order.setMadeOn(order.getHearing() != null && order.getHearing().getHearingDate() != null
+            ? order.getHearing().getHearingDate().toLocalDate()
+            : submitted.getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
         // What it decides about the case's claim; an order making no order on it records nothing.
         ClaimEntity claim = order.getPcsCase().getMainClaim();
         if (claim != null && issue.claimOutcome().kind() != ClaimOutcome.Kind.NO_ORDER) {
