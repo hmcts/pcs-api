@@ -515,7 +515,8 @@ dependencies {
   implementation 'com.azure:azure-core-http-jdk-httpclient'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.3.0'
+  // BEFTA preview data setup also uses REST Assured on the main runtime classpath.
+  implementation group: 'io.rest-assured', name: 'rest-assured', version: '6.3.0'
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
   testImplementation group: 'org.instancio', name: 'instancio', version: '5.6.0'
   testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.2'
@@ -732,6 +733,14 @@ cftlibTest {
 
   systemProperty 'logging.level.root', 'INFO'
 }
+
+// Use the setup runtime rather than the test runtime, which can hide dependency conflicts.
+def highLevelDataSetupHttpClientCheck = tasks.register('highLevelDataSetupHttpClientCheck', JavaExec) {
+  dependsOn testClasses
+  mainClass.set('uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupHttpClientCheck')
+  classpath = sourceSets.main.runtimeClasspath + sourceSets.test.output
+}
+check.dependsOn highLevelDataSetupHttpClientCheck
 
 tasks.register('highLevelDataSetup', JavaExec) {
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
