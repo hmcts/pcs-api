@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.camunda.WorkAllocationWorkflowApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
@@ -48,6 +49,7 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
         SendLetterApiProxy.class,
         CaseDocumentClientApi.class,
         WorkAllocationWorkflowApi.class,
+        TaskManagementApi.class,
         RoleAssignmentApi.class
     }
 )

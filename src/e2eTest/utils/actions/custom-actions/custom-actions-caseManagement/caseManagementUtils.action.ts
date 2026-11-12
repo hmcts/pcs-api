@@ -73,7 +73,7 @@ export class CaseManagementCommonUtils {
     let minDate: Date;
     let maxDate: Date;
 
-    if (type === 'future'|| type === 'validFuture') {
+    if (type === 'future' || type === 'validFuture') {
       minDate = today;
       maxDate = new Date(
         today.getFullYear() + 10,
@@ -144,12 +144,13 @@ export class CaseManagementCommonUtils {
   }
 
   public static renameDocument(fileName: string, fileDate?: string, app?: string): string {
-    const baseName = fileName.replace(/\.pdf$/i, '');
+    const extension = fileName.match(/\.[^.]+$/)?.[0] ?? '';
+    const baseName = fileName.replace(/\.[^.]+$/, '');
     const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
     const formattedDate = fileDate ? (() => {
       const [day, month, year] = fileDate.split('/');
       return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
-    })(): '';
+    })() : '';
     const parts = [baseName];
 
     if (formattedDate) {
@@ -159,7 +160,26 @@ export class CaseManagementCommonUtils {
     if (gaNumber) {
       parts.push(gaNumber);
     }
+    return `${parts.join(' ')}${extension}`;
+  }
 
-    return `${parts.join(' ')}.pdf`;
+  /* returns notice documents based on party count and the sequence */
+  public static getHearingNoticeFileDetails(party: string, partyCount: number, sequence: number): string[] {
+    const today = new Date()
+      .toLocaleString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+      .replace(',', '');
+      
+    return Array.from(
+      { length: partyCount },
+      (_, index) =>
+        `Notice of hearing ${sequence} - ${party} ${index + 1}.pdf ${today}`
+    );
   }
 }

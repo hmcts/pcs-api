@@ -55,6 +55,7 @@ public class ConfirmationScreenFactory {
         GenAppType applicationType = genAppRequest.getApplicationType();
 
         String receivedRequestMessage = switch (applicationType) {
+            case SUSPEND -> "We have received your request to suspend the eviction.";
             case ADJOURN -> "We have received your request to adjourn (delay) the court hearing.";
             case SET_ASIDE -> "We have received your request to set aside (cancel) the order.";
             case SOMETHING_ELSE -> "We have received your request to ask the court to make an order.";
@@ -70,7 +71,7 @@ public class ConfirmationScreenFactory {
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body">
-            You do not need to do anything else. We will send the defendant’s application to the judge and we will
+            You do not need to do anything else. We will send the application to the judge and we will
             contact you again when they have made a decision.
             </p>
 

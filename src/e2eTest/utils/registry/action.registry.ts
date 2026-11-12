@@ -20,11 +20,14 @@ import {ExpandSummaryAction, InputDateAction} from '@utils/actions/element-actio
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
-import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
-import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
+import {LinkSolicitorAPIAction} from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+import {RespondToAClaimAction} from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
-import { YourSupportAction } from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
+import {RetryOnCallBackError} from '@utils/actions/element-actions/reTryOnCallBackError.action';
+import {YourSupportAction} from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
+import {RemoveFileAction} from '@utils/actions/element-actions/removeFile.action';
+import {FetchPINsAndValidateAccessCodeAPIAction} from '@utils/actions/custom-actions/fetchPINsAndValidateAccessCodeAPI.action';
 
 
 
@@ -43,7 +46,9 @@ export class ActionRegistry {
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
     ['createUserAndLogin', new LoginAction()],
+    ['createUser', new LoginAction()],
     ['login', new LoginAction()],
+    ['generateCitizenAccessToken', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
@@ -70,6 +75,10 @@ export class ActionRegistry {
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimCitizenAPI', new CreateCaseAPIAction()],
+    ['fetchPINsAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
+    ['validateAccessCodeAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
+    ['submitPossessionClaimResponseCitizenAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],
@@ -141,7 +150,13 @@ export class ActionRegistry {
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
+    ['validateTabNotPresent', new CreateCaseAction()],
     ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
+    ['navigateToSummaryPage', new RespondToAClaimAction()],
+    ['deleteDraftResponseOption', new RespondToAClaimAction()],
+    ['confirmDeleteDraftResponse', new RespondToAClaimAction()],
+    ['getAddressInfo', new RespondToAClaimAction()],
+    ['validateDropDownValues', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
@@ -167,6 +182,13 @@ export class ActionRegistry {
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
+    ['navigateToCaseSummary', new CaseLinking()],
+    ['canLinkCases', new CaseLinking()],
+    ['canManageCases', new CaseLinking()],
+    ['canViewLinkedCases', new CaseLinking()],
+    ['handleJudgeBookingPage', new CaseLinking()],
+    ['createCases', new CaseLinking()],
+    ['handleJudgeBookingPage', new CaseFlagAction()],
     ['handleJudgeBookingPageForCaseFlags', new CaseFlagAction()],
     ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
     ['searchResults', new GlobalSearchCaseAction()],
@@ -182,17 +204,29 @@ export class ActionRegistry {
     ['validateErrorPage', new CreateCaseAction()],
     ['noticeOfChangeSuccessful', new CreateCaseAction()],
     ['createPartialClaimDetails', new CreateCaseAction()],
-    ['resumePartialClaim', new CreateCaseAction()],  
+    ['resumePartialClaim', new CreateCaseAction()],
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
     ['uploadFiles', new DocumentsAction()],
+    ['uploadAdditionalDocsLR', new DocumentsAction()],
+    ['selectDocumentRelatingTo', new DocumentsAction()],
+    ['verifyPdfLinks', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['selectAnEvent', new CreateCaseAction()],
+    ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
+    ['validateChallengedAccessLink', new GlobalSearchCaseAction()],
+    ['requestChallengedAccess', new GlobalSearchCaseAction()],
+    ['removeFile', new RemoveFileAction()],
+    ['getAllPartyDetails', new CreateCaseAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
+    ['removeFile', new RemoveFileAction()],
   ]);
 
   static getAction(actionName: string): IAction {

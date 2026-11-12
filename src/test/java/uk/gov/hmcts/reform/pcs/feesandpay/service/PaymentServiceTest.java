@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -50,7 +51,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
@@ -103,7 +104,7 @@ class PaymentServiceTest {
     @Mock
     private IdamAuthenticator idamAuthenticator;
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationService organisationService;
     @Mock
     private User user;
     @Mock
@@ -185,6 +186,7 @@ class PaymentServiceTest {
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
             assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
+            assertThat(saved.getClaim().getLastModified()).isNull();
         }
 
         @Test
@@ -219,14 +221,16 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(status.getValue())
                 .payment(payment).build();
 
+            ClaimEntity claimEntity = new ClaimEntity();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+                .claim(claimEntity)
                 .paymentStatus(status)
                 .serviceRequestReference(requestReference)
                 .externalReference(paymentReference)
                 .paymentCallbackHandlerType(CLAIM)
                 .build();
 
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(any(PaymentCallbackHandlerType.class)))
                 .thenReturn(mock(MakeAClaimPaymentCallbackHandler.class));
@@ -235,7 +239,7 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
             verify(feePaymentRepository).save(feePaymentCaptor.capture());
             FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
@@ -243,6 +247,7 @@ class PaymentServiceTest {
             assertThat(paymentEntity.getServiceRequestReference()).isEqualTo(requestReference);
             assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
+            assertThat(claimEntity.getLastModified()).isNull();
         }
 
         @Test
@@ -254,13 +259,14 @@ class PaymentServiceTest {
                 .serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
                 .build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference)).thenReturn(Optional.empty());
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
+                .thenReturn(Optional.empty());
 
             // When
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
         }
 
@@ -273,9 +279,13 @@ class PaymentServiceTest {
             PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
-            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
-                .serviceRequestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+                .claim(new ClaimEntity())
+                .paymentStatus(PaymentStatus.PAID)
+                .serviceRequestReference(requestReference)
+                .paymentCallbackHandlerType(CLAIM)
+                .build();
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
@@ -297,9 +307,12 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID).serviceRequestReference(requestReference)
-                .paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+                .claim(new ClaimEntity())
+                .paymentStatus(PaymentStatus.PAID)
+                .serviceRequestReference(requestReference)
+                .paymentCallbackHandlerType(CLAIM)
+                .build();
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
 
@@ -332,6 +345,7 @@ class PaymentServiceTest {
             FeePaymentEntity saved = captor.getValue();
 
             assertThat(saved.getClaim()).isSameAs(claimEntity);
+            assertThat(claimEntity.getLastModified()).isNull();
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         }
@@ -368,7 +382,7 @@ class PaymentServiceTest {
             final String serviceRequestReference = "SR-1234";
 
             final BigDecimal expectedAmount = new BigDecimal("10.99");
-            final String expectedLanguage = "some language";
+            final String expectedLanguage = "en";
             final String expectedReturnUrl = "some return URL";
 
             final String expectedPaymentReference = "some payment reference";
@@ -415,6 +429,39 @@ class PaymentServiceTest {
             assertThat(cardPaymentResponse.getPaymentReference()).isEqualTo(expectedPaymentReference);
             assertThat(cardPaymentResponse.getStatus()).isEqualTo(expectedPaymentStatus);
             assertThat(cardPaymentResponse.getNextUrl()).isEqualTo(expectedNextUrl);
+        }
+
+        @ParameterizedTest
+        @CsvSource(nullValues = "null", value = {
+            "cy, cy", "CY, cy", "Welsh, cy", "welsh, cy",
+            "en, en", "English, en", "some language, en", "null, en"
+        })
+        void shouldSendGovPayLanguageCode(String requestLanguage, String expectedLanguage) {
+            // Given
+            final String serviceRequestReference = "SR-1234";
+
+            CreateCardPaymentRequest cardPaymentRequest = CreateCardPaymentRequest.builder()
+                .amount(new BigDecimal("10.99"))
+                .language(requestLanguage)
+                .returnUrl("some return URL")
+                .build();
+
+            when(paymentsClient.createGovPayCardPaymentRequest(anyString(),
+                                                               anyString(),
+                                                               any(CardPaymentServiceRequestDTO.class)))
+                .thenReturn(CardPaymentServiceRequestResponse.builder().build());
+
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(mock(FeePaymentEntity.class)));
+
+            // When
+            underTest.createPaymentRequest(serviceRequestReference, cardPaymentRequest);
+
+            // Then
+            verify(paymentsClient).createGovPayCardPaymentRequest(eq(serviceRequestReference),
+                                                                  eq(SYSTEM_USER_BEARER),
+                                                                  cardPaymentRequestCaptor.capture());
+            assertThat(cardPaymentRequestCaptor.getValue().getLanguage()).isEqualTo(expectedLanguage);
         }
 
         @Test
@@ -545,7 +592,7 @@ class PaymentServiceTest {
             when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
             when(user.getUserDetails()).thenReturn(userDetails);
             when(userDetails.getUid()).thenReturn(uid);
-            when(organisationDetailsService.getOrganisationPaymentAccount(uid)).thenReturn(pbaAccounts);
+            when(organisationService.getOrganisationPaymentAccount(uid)).thenReturn(pbaAccounts);
 
             // When
             PbaAccountsResponse response = underTest.getPbaAccounts(authToken);
@@ -617,7 +664,7 @@ class PaymentServiceTest {
             );
 
             // Then
-            verify(organisationDetailsService).getOrganisationName(uid);
+            verify(organisationService).getOrganisationName(uid);
             verify(paymentsClient).createPbaPayment(eq(serviceRequestReference),
                                                                   eq(SYSTEM_USER_BEARER),
                                                                   pbaPaymentRequestCaptor.capture());
@@ -658,7 +705,7 @@ class PaymentServiceTest {
             ));
 
             // Then
-            verify(organisationDetailsService, never()).getOrganisationName(anyString());
+            verify(organisationService, never()).getOrganisationName(anyString());
             assertThat(throwable).isInstanceOf(IllegalStateException.class);
             assertThat(throwable).hasMessage(
                 "Service request " + serviceRequestReference + " already has a completed status"
@@ -687,7 +734,7 @@ class PaymentServiceTest {
 
             // Then
             verify(paymentsClient, never()).createPbaPayment(any(), anyString(), any());
-            verify(organisationDetailsService, never()).getOrganisationName(anyString());
+            verify(organisationService, never()).getOrganisationName(anyString());
             assertThat(throwable).isInstanceOf(FeePaymentNotFoundException.class);
         }
 

@@ -20,7 +20,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClient;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -29,6 +28,7 @@ import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -64,10 +64,10 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             idamClient.getAccessToken("pcs-solicitor1@test.com", "password")
         );
         Map<String, Object> caseParameters = Map.of("caseReference", caseReference);
-        UUID defendantId = defendantPartyId(caseParameters);
+        UUID defendant1Id = getFirstDefendantPartyId(caseParameters);
 
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
-            .partyId(defendantId.toString())
+            .partyId(defendant1Id.toString())
             .organisationDetailsResponse(testOrganisation())
             .userId(ACTING_SOLICITOR_ID)
             .email(LEGAL_REP_EMAIL)
@@ -116,7 +116,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
 
         JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
-        assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
+        assertThat(countActiveOrganisationLinks(defendant1Id)).isEqualTo(1);
 
         long caseDataId = jdbcTemplate.queryForObject(
             "select id from ccd.case_data where reference = :caseReference",
@@ -144,10 +144,10 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             Map.of("caseReference", caseReference, "eventId", EVENT_ID),
             Integer.class
         )).isEqualTo(1);
-        assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
+        assertThat(countActiveOrganisationLinks(defendant1Id)).isEqualTo(1);
     }
 
-    private UUID defendantPartyId(Map<String, Object> caseParameters) {
+    private UUID getFirstDefendantPartyId(Map<String, Object> caseParameters) {
         return jdbcTemplate.queryForObject(
             """
                 select cp.party_id
@@ -156,6 +156,8 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
                   join claim_party cp on cp.claim_id = c.id
                  where pc.case_reference = :caseReference
                    and cp.role = 'DEFENDANT'
+                   order by cp.rank
+                   limit 1
                 """,
             caseParameters,
             UUID.class
@@ -179,7 +181,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
         return OrganisationDetailsResponse.builder()
             .name("Test Organisation")
             .organisationIdentifier(ORGANISATION_ID)
-            .organisationProfileIds(List.of(OrganisationProfile.SOLICITOR_PROFILE.getId()))
+            .organisationProfileIds(List.of(SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId()))
             .contactInformation(List.of(OrganisationDetailsResponse.ContactInformation.builder()
                 .addressLine1("1 Test Street")
                 .townCity("London")

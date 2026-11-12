@@ -1,11 +1,12 @@
+type BreathingSpaceDate = { day: string; month: string; year: string };
 
-import { expect, Page } from '@playwright/test';
+import test, { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { generateRandomString } from "@utils/common/string.utils";
+import {formatDateTimeNonBST, generateRandomString} from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
 import {
   addReviewDates,
@@ -30,12 +31,13 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
+import {manageHearingApiData} from "@data/api-data";
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -81,8 +83,26 @@ export class CaseManagementAction implements IAction {
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
+      ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
+      ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
+      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes()],
+      ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
+      ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
+      ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['validateEnterBreathingSpacePage', () => this.validateEnterBreathingSpacePage()],
+      ['selectBreathingSpaceType', () => this.selectBreathingSpaceType(fieldName as actionRecord)],
+      ['fillExpectedEndDateWithFutureDate', () => this.fillExpectedEndDateWithFutureDate()],
+      ['fillBreathingSpaceStartDateWithToday', () => this.fillBreathingSpaceStartDateWithToday()],
+      ['completeBreathingSpaceFormHappyPath', () => this.completeBreathingSpaceFormHappyPath(fieldName as any)],
+      ['enterBreathingSpaceDetailsAndCancel', () => this.enterBreathingSpaceDetailsAndCancel(fieldName as any)],
+      ['reopenBreathingSpaceEvent', () => this.reopenBreathingSpaceEvent()],
+      ['validateReferenceNumberLengthError', () => this.validateReferenceNumberLengthError()],
+      ['validateFutureStartDateError', () => this.validateFutureStartDateError()],
+
+
     ]);
+
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
       throw new Error(`No action found for '${action}'`);
@@ -90,6 +110,94 @@ export class CaseManagementAction implements IAction {
     await actionToPerform();
   }
 
+private async validateReferenceNumberLengthError() {
+    await performAction('inputErrorValidation', {
+        validationType: enterBreathingSpace.errorValidationType.one,
+        inputArray: enterBreathingSpace.errorValidationField.errorTextField,
+        label: enterBreathingSpace.referenceNumberTextLabel,
+        question: enterBreathingSpace.referenceNumberTextLabel,
+        header: enterBreathingSpace.eventCouldNotBeCreatedErrorMessageHeader,
+        button: enterBreathingSpace.continueButton,
+    });
+}
+private async validateFutureStartDateError() {
+    await performAction('inputErrorValidation', {
+        validationType: enterBreathingSpace.errorValidationType.five,
+        inputArray: enterBreathingSpace.errorValidationField.errorDateField,
+        label1: enterBreathingSpace.dayTextLabel,
+        label2: enterBreathingSpace.monthTextLabel,
+        label3: enterBreathingSpace.yearTextLabel,
+        question: enterBreathingSpace.whenDidBreathingSpaceStartQuestion,
+        header: enterBreathingSpace.eventCouldNotBeCreatedHeader,
+        header1: enterBreathingSpace.eventCouldNotBeCreatedHeader,
+        button: enterBreathingSpace.continueButton,
+    });
+}
+  private async enterBreathingSpaceDetailsAndCancel(data: {
+  referenceNumber: string;
+  startDate: string;
+  targetType: string;
+  }) {
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
+    await performAction('inputDate', enterBreathingSpace.whenDidBreathingSpaceStartQuestion, data.startDate);
+    await performAction('selectBreathingSpaceType', { type: data.targetType });
+    await performAction('clickButton', enterBreathingSpace.cancelLink);
+  }
+
+  private async reopenBreathingSpaceEvent() {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enterBreathingSpaceEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+  }
+
+private async completeBreathingSpaceFormHappyPath(data: { targetType: string; referenceNumber: string }) {
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+    await performAction('fillBreathingSpaceStartDateWithToday');
+    await performAction('selectBreathingSpaceType', { type: data.targetType }); 
+    await performAction('fillExpectedEndDateWithFutureDate');
+    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
+    await performAction('clickButton', enterBreathingSpace.continueButton);
+}
+  private async fillBreathingSpaceStartDateWithToday(): Promise<void> {
+    const today = CaseManagementCommonUtils.getRandomDate('today');
+    await performAction('inputDate', enterBreathingSpace.whenDidBreathingSpaceStartQuestion, today);
+  }
+  private async validateEnterBreathingSpacePage(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.referenceNumberTextLabel });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenDidBreathingSpaceStartQuestion });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.youShouldEnterStartDateHintText });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whichTypeOfBreathingSpace });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.standardBreathingSpaceHintText });
+    await performValidation('elementToBeVisible', enterBreathingSpace.mentalHealthRadioOption);
+    await performValidation('elementToBeVisible', enterBreathingSpace.standardBreathingSpaceRadioOption);
+    await performValidation('elementNotToBeVisible', enterBreathingSpace.previousButton);
+  }
+  private async selectBreathingSpaceType(details: any): Promise<void> {
+    const { type } = details;
+    const question = enterBreathingSpace.whichTypeOfBreathingSpace;
+    if (type === 'mentalHealthCrisisMoratorium') {
+      await performAction('clickRadioButton', { question, option: enterBreathingSpace.mentalHealthRadioOption });
+    } else {
+      await performAction('clickRadioButton', { question, option: enterBreathingSpace.standardBreathingSpaceRadioOption });
+    }
+  }
+  private async fillExpectedEndDateWithFutureDate(): Promise<void> {
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenIsExpectedEndDateHiddenTextLabel });
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenIsExpectedEndDateHiddenHintText });
+
+    const futureDate = CaseManagementCommonUtils.getRandomDate(enterBreathingSpace.dateTypeHiddenUserInput);
+    await performAction(
+      'inputDate',
+      enterBreathingSpace.whenIsExpectedEndDateHiddenTextLabel,
+      futureDate
+    );
+  }
   private async navigateToSummaryPage(page: Page) {
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await expect(async () => {
@@ -144,15 +252,7 @@ export class CaseManagementAction implements IAction {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    const userInput =
-      typeof reviewDateData.input === 'number'
-        ? generateRandomString(reviewDateData.input)
-        : (reviewDateData.input as string);
-    let date = CaseManagementCommonUtils.getRandomDate(reviewDateData.dateType as string);
-    await performActions('Date of Review',
-      ['inputText', reviewDateData.day, date.split('/')[0]],
-      ['inputText', reviewDateData.month, date.split('/')[1]],
-      ['inputText', reviewDateData.year, date.split('/')[2]]);
+    await performAction('inputDate', reviewDateData.reviewDateLabel as string, reviewDateData.date);
     await performAction('clickRadioButton', { question: reviewDateData.question, option: reviewDateData.option });
     await performAction('inputText', reviewDateData.label, reviewDateData.userInput);
     await performAction('reTryOnCallBackError', addReviewDates.continueButton, reviewDateData.nextPage as string);
@@ -425,11 +525,49 @@ export class CaseManagementAction implements IAction {
   }
 
   private async cancelHearing(cancelHearingData: actionRecord) {
+    const hearingInfo = manageHearingApiData.AddHearingPayload;
+    const formattedHearingDate = formatDateTimeNonBST(hearingInfo.hearing_Date)
+      .replace(':00:00AM', ':00am')
+      .replace(':00:00PM', ':00pm');
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
+    const validations = [
+      {
+        heading: cancelHearing.hearingLocationHeader,
+        value: `${hearingInfo.hearingLocation}`,
+      },
+      {
+        heading: cancelHearing.hearingTypeHeader,
+        value: 'Application hearing',
+      },
+      {
+        heading: cancelHearing.hearingDateHeader,
+        value: formattedHearingDate,
+      },
+      {
+        heading: cancelHearing.hearingDurationHeader,
+        value: `${hearingInfo.hearing_DurationDays} days ${hearingInfo.hearing_DurationHours} hour ${hearingInfo.hearing_DurationMinutes} minutes`,
+      },
+      {
+        heading: cancelHearing.hearingNotesHeader,
+        value: hearingInfo.hearing_Notes,
+      },
+    ];
+
+    for (const validation of validations) {
+      await performValidation('text', {
+        elementType: 'subHeader',
+        text: validation.heading,
+      });
+
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: validation.value,
+      });
+    }
     await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
     await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
   }
@@ -637,11 +775,23 @@ export class CaseManagementAction implements IAction {
       option: partyData.option1
     });
 
-    if (partyData.option1 === manageParty.updatePartyRadioOption) {
+    if (partyData.singleDefendant) {
+      await performAction('clickButton', manageParty.continueButton);
+      await performValidation('errorMessage', { header: partyData.errorHeader, message: partyData.errorMessage });
+      return;
+    }
+
+    if (partyData.option1 === manageParty.updatePartyRadioOption || partyData.option1 === manageParty.removePartyRadioOption ) {
       await performAction('clickRadioButton', {
         question: partyData.question2,
         option: partyData.option2
       });
+    }
+
+    if (partyData.activeApp) {
+      await performAction('clickButton', manageParty.continueButton);
+      await performValidation('errorMessage', { header: partyData.errorHeader, message: partyData.errorMessage });
+      return;
     }
     await performAction('reTryOnCallBackError', manageParty.continueButton, partyData.nextPage as string);
   }
@@ -769,6 +919,111 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
+  private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('inputText', judicialNotes.label, judicialNotes.noteTextInput);
+    await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
+  }
+
+  private async confirmAddJudicialNotes(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', confirmJudicialNotes.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedParagraph});
+    await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedParagraph});
+    await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
+    const judicialNote = new Map<string, string>();
+
+    judicialNote.set('Note', judicialNotes.userInput as string);
+    const expectedCreatedOn = judicialNotes.createdOn as string;
+    judicialNote.set('Created on', expectedCreatedOn.replace(/:\d{2}(?=\s(?:AM|PM)$)/, ''));
+
+    const noteCards = page.locator('.govuk-summary-card');
+    const index = judicialNotes.index !== undefined ? Number(judicialNotes.index) : 0;
+    const noteCard = noteCards.nth(index);
+
+    await expect(noteCard).toBeVisible();
+    const cardTitle = (await noteCard.locator('.govuk-summary-card__title').textContent())?.trim();
+    expect(cardTitle).toBe(judicialNotes.table as string);
+    const rows = noteCard.locator('.govuk-summary-list__row');
+    const caseTabMap = new Map<string, string>();
+    for (let i = 0; i < await rows.count(); i++) {
+      const row = rows.nth(i);
+      const key = (
+        await row.locator('.govuk-summary-list__key').textContent())?.trim();
+      let value = (await row.locator('.govuk-summary-list__value').textContent())?.trim();
+
+      if (key === 'Created by') {
+        continue;
+      }
+      if (key === 'Created on' && value) {
+        value = value.replace(/:\d{2}(?=\s(?:AM|PM)$)/, '');
+      }
+      if (key) {
+        caseTabMap.set(key, value ?? '');
+      }
+    }
+    const misMatchMap = compareMaps(
+      judicialNote,
+      caseTabMap,
+      {
+        name1: 'JudicialNote',
+        name2: 'CaseNotesTab',
+      }
+    );
+
+    if (misMatchMap.size > 0) {
+      console.log(
+        `\n❌ Differences found: ${misMatchMap.size}`
+      );
+
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+
+        console.log(
+          '============================================================'
+        );
+
+        console.log(
+          `• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`
+        );
+      }
+
+      throw new Error(
+        `Judicial Notes validations failed for ${misMatchMap.size} ${
+          misMatchMap.size === 1 ? 'item' : 'items'}`
+      );
+    }
+    console.log(
+      `✅ ${judicialNotes.table} validation passed`
+    );
+  }
+    private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
+      let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
+      const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
+      await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: `${newUser} removed` });
+    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await performValidation('mainHeader', confirmManageParties.mainHeader);
+    await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
+  }
+
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
@@ -816,6 +1071,11 @@ export class CaseManagementAction implements IAction {
                 await performAction('clickButton', validationArr.button);
                 if (item.type === 'moreThanMax') {
                   await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
+                   if (item.errDetailMessage) {
+                    const detail = item.errDetailMessage;
+                    await expect(page.locator('li.ccd-error-summary-li').filter({ hasText: detail })).toBeVisible();
+                    await expect(page.locator('#caseEditForm span.error-message').filter({ hasText: detail })).toBeVisible();
+                  }
                 } else {
                   await performValidation('inputError', validationArr.label, item.errMessage);
                   await performValidation('errorMessage', validationArr.label, item.errMessage);
@@ -827,7 +1087,10 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'dateField':
-            let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+             const date: string =
+            item.day && item.month && item.year
+              ? `${item.day}/${item.month}/${item.year}`
+              : CaseManagementCommonUtils.getRandomDate(item.type as string);
             const enterDate = () =>
               performActions(
                 'Enter Date',
@@ -846,12 +1109,20 @@ export class CaseManagementAction implements IAction {
               await enterDate();
               await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
-            } else {
-              await enterDate();
-              await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+             } else {
+            await enterDate();
+            if (validationArr.button) {
+                await page.getByRole('button', { name: String(validationArr.button), exact: false }).first().focus().catch(() => {});
             }
-            break;
+            await performAction('clickButton', validationArr.button);
+            await expect(async () => {
+                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+            }).toPass({
+                intervals: [1_000, 2_000, 3_000],
+                timeout: VERY_LONG_TIMEOUT,
+            });
+        }
+        break;
 
           case 'dateRadioOption':
             let dateOfReview: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
@@ -935,32 +1206,29 @@ export class CaseManagementAction implements IAction {
 
     const defendant = new Map<string, string>();
     let section = String(`${defendantsDetails.mainTable}-${defendantsDetails.subTable}`);
+    let index = section.split('-')[0] !== 'Defendant' ? 'last' : ''
+    let defAddress = defendantsDetails.defAddress as any;
 
-    switch (section) {
-      case 'Additional defendant 3-Service address':
-        defendant.set(`Building and Street`, addressInfo.buildingStreet);
-        defendant.set(`Address Line 2`, addressInfo.addressLine2);
-        defendant.set(`Town or City`, addressInfo.townCity);
-        defendant.set(`Postcode/Zipcode`, addressInfo.engOrWalPostcode);
-        defendant.set('Country', addressInfo.country);
-        expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
-        expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
-        break;
-      
-      case 'Litigation friend-Service address':
-        defendant.set(`Building and Street`, addressInfo.buildingStreet);
-        defendant.set(`Address Line 2`, addressInfo.addressLine2);
-        defendant.set(`Town or City`, addressInfo.townCity);
-        defendant.set(`Postcode/Zipcode`, addressInfo.engOrWalPostcode);
-        defendant.set('Country', addressInfo.country);
+    await test.step(`Service address verification for ${defendantsDetails.firstName} `, async () => {
+      if (defAddress) {
+        defendant.set(`Building and Street`, defAddress.AddressLine1 ?? '');
+        defendant.set(`Address Line 2`, defAddress.AddressLine2 ?? '');
+        defendant.set(`Town or City`, defAddress.PostTown ?? '');
+        defendant.set(`Postcode/Zipcode`, defAddress.PostCode ?? '');
+        defendant.set('Country', defAddress.Country ?? '');
+      }
+    });
+
+    await test.step(`User Name verification for ${defendantsDetails.firstName}`, async () => {
+      if (section.split('-')[0] === 'Litigation friend') {
         let actingFor = (defendantsDetails.actingFor as string).split('-')[0].trim()
         expect(await this.getTableDataValue(page, `Name`, 'last')).toEqual(`${defendantsDetails.firstName} ${defendantsDetails.lastName}`);
         expect(await this.getTableDataValue(page, `Acting for`, 'last')).toEqual(actingFor);
-        break;
-
-      default:
-        break;
-    };
+      } else {
+        expect(await this.getTableDataValue(page, `Defendant’s first name`, index)).toEqual(`${defendantsDetails.firstName}`);
+        expect(await this.getTableDataValue(page, `Defendant’s last name`, index)).toEqual(`${defendantsDetails.lastName}`);
+      }
+    });
 
     await this.caseTabTableData(page, defendantsDetails.mainTable as string, defendantsDetails.subTable as string);
 
@@ -989,7 +1257,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();  
+    const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);
@@ -1034,8 +1302,7 @@ export class CaseManagementAction implements IAction {
           /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
           /ancestor::div[1]
-          //table[@aria-describedby="complex field table"]`;
-
+          //table[@class="complex-panel-table"]`;
 
     const tables = page.locator(tableLocator);
     const tableCount = await tables.count();
@@ -1067,7 +1334,7 @@ export class CaseManagementAction implements IAction {
         const keyText = (await keyQns.first().innerText()).trim();
         let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
 
-        if (keyText === "Created on") {
+        if (keyText === "Created on" || keyText === "Created date") {
           valText = valText.replace(/:\d{2} /, " ");
         }
 
@@ -1083,5 +1350,115 @@ export class CaseManagementAction implements IAction {
     let ct = await tdLocator.count();
     const locator = ct > 1 && index ? tdLocator.last() : tdLocator.first();
     return ((await locator.textContent()) || '').trim();
+  }
+
+  private async validateCaseNotesDetails(page: Page, caseNotes: actionRecord) {
+
+    const caseNote = new Map<string, string>();
+    caseNote.set(`Created by`, process.env.Display_NAME as string);
+    caseNote.set(`Created date`, caseNotes.createdDate as string);
+    caseNote.set(`Date of review`, caseNotes.reviewDate as string);
+    caseNote.set(`Reason`, caseNotes.reviewReason as string);
+    caseNote.set(`Description of review`, caseNotes.reviewDescription as string);
+
+    await this.caseTabReviewDateTableData(page, caseNotes.table as string);
+
+    const misMatchMap = compareMaps(caseNote, caseTabMap, {
+      name1: 'CaseNote',
+      name2: 'CaseNotesTab',
+    })
+
+    if (misMatchMap.size > 0) {
+      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+        console.log('============================================================');
+        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+      }
+      console.log(`\n**********  END OF FAILURE LIST. ***************`);
+      throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+    } else {
+      console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+    }
+
+    caseTabMap.clear();
+
+  }
+
+  private async caseTabReviewDateTableData(page: Page, mainTable: string, subTable?: string) {
+
+    
+    const summaryLocator =  `//h2[normalize-space()="${mainTable}"]
+                             /ancestor::div[@class="govuk-summary-card"]
+                             //dl[@class="govuk-summary-list"]`;
+
+    const tables = page.locator(summaryLocator);
+    const tableCount = await tables.count();
+
+    if (tableCount === 0) {
+      throw new Error(
+        `Table ${subTable ? `${mainTable} -> ${subTable}` : mainTable
+        } not found.`
+      );
+    }
+
+
+    for (let i = 0; i < tableCount; i++) {
+      const table = tables.nth(i);
+      await expect(table).toBeVisible();
+
+      const rows = table.locator('.govuk-summary-list__row');
+      const rowCount = await rows.count();
+
+      for (let j = 0; j < rowCount; j++) {
+        const row = rows.nth(j);
+        if (!(await row.isVisible())) continue;
+
+        const keyQns = row.locator('dt');
+        const valAns = row.locator('dd');
+
+        if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
+
+        const keyText = (await keyQns.first().innerText()).trim();
+        let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+
+        if (keyText === "Created on" || keyText === "Created date") {
+          valText = valText.replace(/:\d{2} /, " ");
+        }
+
+        if (keyText && keyText.length > 0) {
+          caseTabMap.set(keyText ?? '', valText ?? '');
+        }
+      }
+    }
+  };
+  private async validateFullPartyDetails(page: Page, partyDetails: actionRecord) {
+
+    expect(await this.getCaseFieldValue(page, 'Name')).toEqual(partyDetails.defName);
+    expect(await this.getCaseFieldValue(page, 'Date of birth')).toEqual(partyDetails.defDOB);
+    expect(await this.getCaseFieldValue(page, 'Address for service')).toEqual(partyDetails.defAddress);
+
+    if (partyDetails.dobVal) return;
+
+    await performAction('clickRadioButton', {
+      question: partyDetails.question,
+      option: partyDetails.option,
+    });
+
+    if(partyDetails.option === 'No'){
+      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+      await performAction('clickButton', checkFullPartyDetails.continueButton);
+      await performValidation('errorMessage', { header: partyDetails.errorHeader, message: partyDetails.errorMessage });
+      return;
+    }
+    await performAction('reTryOnCallBackError', checkFullPartyDetails.continueButton, partyDetails.nextPage as string);
+
+  }
+
+  private async getCaseFieldValue(page: Page, label: string): Promise<string> {
+    return page
+      .locator(`dt.case-field__label:text-is("${label}") + dd.case-field__value`)
+      .innerText();
   }
 }

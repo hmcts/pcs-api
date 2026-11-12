@@ -1,9 +1,9 @@
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { allPartyDetails, caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import { test } from '@utils/test-fixtures';
-import { createCaseApiData, paymentApiData, submitCaseApiData } from '@data/api-data';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseSummary, user } from '@data/page-data';
-import { staff, staffUsers } from '@data/user-data/staff.user.data';
+import { staffUsers } from '@data/user-data/staff.user.data';
 import { judicial, judicialUsers } from '@data/user-data/judicial.user.data';
 import {
   addCommentsForFlag,
@@ -35,12 +35,22 @@ async function clearBrowserSession(page: Page, context: BrowserContext): Promise
 }
 
 test.use({ storageState: undefined });
+let partyNames: { firstName: string; lastName: string }[] = [];
 
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
+  await performAction('getAllPartyDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload()
+  });
+  partyNames = allPartyDetails.map(p => {
+    const [firstName, ...lastName] = p.split(' - ')[0].trim().split(/\s+/)
+    return { firstName, lastName: lastName.join(' ') };
+  });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
 });
@@ -53,7 +63,7 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () => {
 
-  test('Case Flags - Create and Manage case flag menu @smoke', async ({ page }) => {
+  test('Case Flags - Create and Manage case flag menu', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
@@ -63,9 +73,10 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
-    
+
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
+
   test('Case Flags - Create case level Flag', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
@@ -136,6 +147,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
+
   test('Case Flags - Create Party Level Case Flag', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
@@ -145,7 +157,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
     await performAction('whereShouldThisFlagBeAdded', {
       flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
-      flagLevelOption: whereShouldThisFlagBeAdded.respondentRadioOption,
+      flagLevelOption: `${partyNames[0].firstName} ${partyNames[0].lastName} ${whereShouldThisFlagBeAdded.respondentHiddenRadioOption}`,
       continueButton: whereShouldThisFlagBeAdded.continueButton
     });
     await performValidation('mainHeader', selectFlagType.mainHeader);
@@ -196,7 +208,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
-      flagOption: manageCaseFlags.respondentRadioOption,
+      flagOption: `${partyNames[0].firstName} ${partyNames[0].lastName} ${manageCaseFlags.respondentHiddenRadioOption}`,
       continueButton: manageCaseFlags.continueButton
     });
     await performAction('clickButton', manageCaseFlags.continueButton);
@@ -207,7 +219,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags', async () => {
+test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags', async () => {
   test.describe.configure({ retries: 0 });
   test('Staff users can create, manage and view case-level and party-level flags @release', async ({ page, context }) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
@@ -215,19 +227,19 @@ test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags',
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     const runStaffUserTest = async (email: string) => {
       await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
       await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       await performAction('navigateToCaseSummary', 'yes');
       if (email.includes("pcs-hearing-centre")) {
         await performAction('canCreateCaseLevelFlag', 'yes');
-        await performAction('canCreatePartyLevelFlag', 'yes');
+        await performAction('canCreatePartyLevelFlag', {condition:'yes',name:`${partyNames[0].firstName} ${partyNames[0].lastName}`});
         await performAction('canManageCaseLevelFlag', 'yes');
         await performAction('canManagePartyLevelFlag', 'yes');
         await performAction('canViewCaseAndPartyFlag', 'yes');
       } else {
         await performAction('canCreateCaseLevelFlag', 'no');
-        await performAction('canCreatePartyLevelFlag', 'no');
+        await performAction('canCreatePartyLevelFlag', {condition:'no',name:`${partyNames[0].firstName} ${partyNames[0].lastName}`});
         await performAction('canManageCaseLevelFlag', 'no');
         await performAction('canManagePartyLevelFlag', 'no');
         await performAction('canViewCaseAndPartyFlag', 'no');
@@ -318,7 +330,7 @@ test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags',
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
     await performAction('canCreateCaseLevelFlag', 'no');
-    await performAction('canCreatePartyLevelFlag', 'no');
+    await performAction('canCreatePartyLevelFlag', {condition:'no'});
     await performAction('canManageCaseLevelFlag', 'no');
     await performAction('canManagePartyLevelFlag', 'no');
     await performAction('canViewCaseAndPartyFlag', 'no');

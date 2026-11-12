@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -150,10 +151,13 @@ public class RespondPossessionClaimSubmitService {
             feeDetails
         );
 
+        Map<String, Object> taskDetails = Map.of("counterClaimId", counterClaimEntity.getId());
         camundaService.createTask(
             caseReference,
             TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM,
-            taskDescription);
+            taskDescription,
+            taskDetails
+        );
     }
 
     private void createTranslationTaskForCounterClaim(List<DocumentEntity> counterClaimDocuments,
@@ -164,12 +168,9 @@ public class RespondPossessionClaimSubmitService {
             return;
         }
 
-        List<DocumentEntity> documents = counterClaimDocuments.stream()
-            .filter(document -> !document.isRemoved())
-            .toList();
-
         PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty,
+                                                                           counterClaimDocuments);
     }
 
     private void scheduleDefendantResponseSubmittedNotification(DefendantResponseEntity defendantResponse) {

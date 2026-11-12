@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -40,7 +39,7 @@ public class DefendantResponseView {
             return;
         }
 
-        UUID userId = securityContextService.getCurrentUserId();
+        String userId = securityContextService.getCurrentUserId();
         accessValidator.validateAndGetDefendant(pcsCaseEntity, userId);
 
         PossessionClaimResponse response =

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -23,8 +24,8 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
@@ -36,12 +37,16 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -49,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
@@ -64,8 +70,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.maintenance.ReindexCasesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
@@ -93,7 +101,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
-
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.CasePaymentHistoryViewer;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Label;
 
 /**
  * The main domain model representing a possessions case.
@@ -109,11 +118,16 @@ public class PCSCase {
     public static final String PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL =
         "Explain why you have not followed the pre-action protocol";
     public static final String NOTE_LABEL = "Note";
+    public static final String JUDICIAL_NOTE_LABEL = "Write a note about this case";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
+
+    @CCD(searchable = false)
+    @JsonUnwrapped(prefix = "reindexCases_")
+    private ReindexCasesDetails reindexCases;
 
     @CCD(
         searchable = false
@@ -148,7 +162,6 @@ public class PCSCase {
     private VerticalYesNo multipleRepresentedParties;
 
     @CCD(
-        label = "Property address",
         access = {DefendantAccess.class}
     )
     @External
@@ -385,8 +398,20 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
-    @CCD(searchable = false, access = DefendantSolicitorAccess.class)
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class, PartyVisibleTabAccess.class})
     private String summaryLegalRepresentativeMarkdown;
+
+    @CCD(
+        label = "${summaryLegalRepresentativeMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {DefendantSolicitorAccess.class, PartyVisibleTabAccess.class}
+    )
+    private String summaryLegalRepresentativeMarkdownLabel;
+
+    @CCD(ignore = true)
+    @JsonIgnore
+    private String ordersMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -423,7 +448,6 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private GroundsReasonsWales groundsReasonsWales;
-
 
     @JsonUnwrapped
     @CCD
@@ -663,6 +687,9 @@ public class PCSCase {
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
+    @CCD(access = SystemDocumentAccess.class)
+    private List<ListValue<Document>> systemDocuments;
+
     @CCD(
         label = "Case file view",
         access = {DocumentAccess.class}
@@ -702,6 +729,12 @@ public class PCSCase {
     )
     @JsonUnwrapped(prefix = "enter_genapp_")
     private EnterGenAppRequest enterGenAppRequest;
+
+    @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "breathingSpace_")
+    private BreathingSpaceDetails breathingSpaceDetails;
 
     @CCD(label = "Which party made the application?",
         searchable = false,
@@ -747,13 +780,141 @@ public class PCSCase {
     )
     private DynamicList caseManagementCategory;
 
-    @CCD(searchable = false)
+    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
     private String confirmEvictionSummaryMarkup;
+
+    @CCD(
+        label = "${confirmEvictionSummaryMarkup}",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String confirmEvictionSummaryMarkupLabel;
+
+    @CCD(
+        label = "# Case Parties",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String casePartiesHeading;
+
+    @CCD(
+        label = "# Summary",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String summaryHeading;
+
+    @CCD(
+        label = "# Case details",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String caseDetailsHeading;
+
+    @CCD(
+        label = "## Claimant details",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String claimantDetailsHeading;
+
+    @CCD(
+        label = "## Defendant details",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String defendantDetailsHeading;
+
+    @CCD(
+        label = "## Rent arrears",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String rentArrearsHeading;
+
+    @CCD(
+        label = "## Tenancy, occupation contract or licence",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String tenancyOrOccupationContractOrLicenceHeading;
+
+    @CCD(
+        label = "## Occupation contract or licence",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String occupationContractOrLicenceHeading;
+
+    @CCD(
+        label = "## Notice",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String noticeHeading;
+
+    @CCD(
+        label = "## Underlessee or mortgagee entitled to claim relief against forfeiture",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String underlesseeOrMortgageeHeading;
+
+    @CCD(
+        label = "## Demotion of tenancy",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String demotionOfTenancyHeading;
+
+    @CCD(
+        label = "## Suspension of right to buy",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String suspensionOfRightToBuyHeading;
+
+    @CCD(
+        label = "## Prohibited conduct standard contract",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String prohibitedConductStandardContractHeading;
+
+    @CCD(
+        label = "## Required Documents",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String requiredDocumentsHeading;
+
+    @CCD(
+        label = "## Documents you’ve uploaded",
+        typeOverride = Label,
+        searchable = false,
+        access = {PartyVisibleTabAccess.class}
+    )
+    private String documentsYouveUploadedHeading;
 
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
-    @CCD(access = DocumentAccess.class)
+    @CCD(access = {DocumentAccess.class, SystemDocumentAccess.class})
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
@@ -767,6 +928,10 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "detailsTab_")
     @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
+
+    @JsonUnwrapped(prefix = "bundleTab_")
+    @CCD(searchable = false, access = {JudicialReadAccess.class})
+    private BundleTab bundleTab;
 
     @CCD(
         label = NOTE_LABEL,
@@ -782,12 +947,34 @@ public class PCSCase {
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
 
-    @CCD (
-        label = "Review date",
-        access = {InternalTabAccess.class},
-        typeOverride = Collection,
-        typeParameterOverride = "CaseReviewDate")
-    private List<ListValue<CaseReviewDate>> caseReviewDates;
+    @CCD(
+        label = JUDICIAL_NOTE_LABEL,
+        hint = "You can enter up to 30,000 characters",
+        typeOverride = TextArea
+    )
+    private String judicialNote;
+
+    @CCD(searchable = false, access = {JudicialReadAccess.class})
+    private String judicialNotesMarkdown;
+
+    @CCD(
+        label = "${judicialNotesMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {JudicialReadAccess.class}
+    )
+    private String judicialNotesMarkdownLabel;
+
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String caseReviewDatesMarkdown;
+
+    @CCD(
+        label = "${caseReviewDatesMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {InternalTabAccess.class}
+    )
+    private String caseReviewDatesMarkdownLabel;
 
     @CCD(
         label = "Review date",
@@ -829,6 +1016,9 @@ public class PCSCase {
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo hasUnsubmittedDefendantResponses;
+
     /**
      * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
      * than stored - the name must be CaseAccessGroups to match what data store expects.
@@ -845,9 +1035,6 @@ public class PCSCase {
 
     @CCD
     private String defendantNames;
-
-    @CCD
-    private String dateIssuedString;
 
     @CCD(label = "Which state are you moving the case to?",
         typeOverride = FixedList,
@@ -871,6 +1058,8 @@ public class PCSCase {
     @JsonUnwrapped
     private UpdatePartyDetails updatePartyDetails;
 
+    @JsonUnwrapped
+    private RemovePartyDetails removePartyDetails;
 
     @CCD(
         label = "Do you want to add, edit or cancel a hearing?",
@@ -924,4 +1113,20 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
+
+    @CCD(label = "Are you sure you want to permanently delete this draft response? You will no longer be able "
+        + "to view the details in the future.", searchable = false)
+    private YesOrNo deleteDraftResponse;
+
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo hasDraftResponse;
+    @CCD(
+        typeOverride = CasePaymentHistoryViewer,
+        access = {PaymentHistoryTabAccess.class}
+    )
+    private String casePaymentHistoryViewer;
+
+    @CCD(searchable = false)
+    private YesOrNo hasUnsubmittedEnforcementData;
+
 }

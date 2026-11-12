@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@2.4.9")
+@Library("Infrastructure@2.13.4")
 
 import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
@@ -26,6 +26,12 @@ def secrets = [
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
     secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
     secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
+    secret('pcs-frontend-idam-secret', 'PCS_FRONTEND_IDAM_SECRET'),
+    secret('pcs-local-auth-automation-uid', 'PCS_LOCAL_AUTH_AUTOMATION_UID'),
+    secret('launchdarkly-sdk-key', 'LAUNCHDARKLY_SDK_KEY'),
+  ],
+  'ccd-${env}': [
+    secret('session-keys', 'SESSION_KEYS')
   ]
 ]
 
@@ -39,6 +45,11 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 }
 
 GradleBuilder builder = new GradleBuilder(this, product)
+
+// Checks whether the current PR branch has a matching label.
+boolean hasLabel(githubApi, String label) {
+  return githubApi.getLabelsbyPattern(env.BRANCH_NAME, label).size() > 0
+}
 
 // Shutters the PCS case type across all environments (bakes shutterService() into the generated
 // CCD definition). While shuttered, cases cannot be created, so the e2e suite is not run.
@@ -59,10 +70,8 @@ withPipeline(type, product, component) {
   // so there is no smoketest:/functionalTest: stage to hang this off.
   afterSuccess('checkout') {
     if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
-      withSubscription('nonprod') {
-        uploadDmnDiagrams()
-        uploadBpmnDiagram()
-      }
+      uploadDmnDiagrams()
+      uploadBpmnDiagram()
     }
   }
 
@@ -75,7 +84,9 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
     setPreviewEnvVars(githubApi)
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+    // pr-values:ccd-am is a standalone alternative to pr-values:ccd (brings its own full CCD stack
+    // plus RAS/ORM) — apply only one of the two labels to a PR, never both.
+    if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } else {
@@ -86,28 +97,31 @@ withPipeline(type, product, component) {
     env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
-    if (waPRLabels.contains("pr-values:wa-ft-tests")) {
+    if (waPRLabels.contains("pr-values:wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
+    if (hasLabel(githubApi, "enable_e2e_full_regression")) {
       env.E2E_SUITE = "chrome"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_healthCheck").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_healthCheck")) {
       env.E2E_SUITE = "healthCheck"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_regression")) {
       env.E2E_SUITE = "regression"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_makeAClaim_test").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_makeAClaim_test")) {
       env.E2E_SUITE = "makeAClaim"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CC_test").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_CC_test")) {
       env.E2E_SUITE = "commonComponent"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_CM_test")) {
       env.E2E_SUITE = "caseManagement"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
+     else if (hasLabel(githubApi, "enable_e2e_enforcement_test")) {
+      env.E2E_SUITE = "enforcement"
+    }
+    else if (hasLabel(githubApi, "enable_e2e_NOC_test")) {
       env.E2E_SUITE = "noticeOfChange"
     }
   }
@@ -117,6 +131,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
+    // Do not modify: imports the CCD definition into production.
     enableHighLevelDataSetup()
     setAatEnvVars()
     env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
@@ -151,9 +166,9 @@ withPipeline(type, product, component) {
     }
     onMaster{
       if(env.ENVIRONMENT == "prod") {
-        env.SHUTTER_SERVICE = true
+        env.SHUTTER_SERVICE = false
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-        env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
+        env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
         env.CASE_TYPE_SUFFIX=""
       } else {
         env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
@@ -184,7 +199,7 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:preview') {
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+    if (env.CCD_ENABLED == "true") {
       sh "./bin/trigger-global-search-index.sh"
     }
   }
@@ -202,11 +217,29 @@ withPipeline(type, product, component) {
     archiveSmokeTestReports()
   }
 
+  afterSuccess('dbmigrate:demo') {
+    runDemoSmokeTests(builder, secrets, product)
+  }
+
+  afterAlways('dbmigrate:demo') {
+    archiveSmokeTestReports()
+  }
+
+  afterSuccess('dbmigrate:ithc') {
+    runIthcSmokeTests(builder, secrets, product)
+  }
+
+  afterAlways('dbmigrate:ithc') {
+    archiveSmokeTestReports()
+  }
+
   afterSuccess('akschartsinstall') {
     onPR {
-      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
+      if (hasLabel(githubApi, "pr-values:wa")) {
         env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
+        // This install creates Camunda's ingress, so its hostname can take a few minutes to resolve.
+        sh "timeout 600 bash -c 'until curl -sfo /dev/null ${env.CAMUNDA_BASE_URL}/engine-rest/version; do sleep 15; done'"
         uploadDmnDiagrams()
         uploadBpmnDiagram()
       }
@@ -233,6 +266,41 @@ withPipeline(type, product, component) {
     archiveSmokeTestReports()
   }
 
+  afterSuccess('functionalTest:preview') {
+    if (env.CCD_ENABLED == "true") {
+      dir('pcs-frontend-e2e') {
+        deleteDir()
+        sh """
+          git init -q .
+          git remote add origin https://github.com/hmcts/pcs-frontend.git
+          git fetch -q --depth=1 origin refs/heads/master
+          git checkout -q FETCH_HEAD
+          git log --oneline -1
+        """
+
+        withEnv([
+          "NODE_CONFIG_ENV=test",
+          "TEST_URL=https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+          "PCS_API_URL=https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+          "CASE_TYPE_ID=PCS",
+          "DATA_STORE_URL_BASE=https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+          "CDAM_URL=https://ccd-case-document-am-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net",
+          "E2E_TEST_SCOPE=@sanity",
+          "CI=true",
+        ]) {
+          try {
+            sh '''
+              node --version
+              yarn install --immutable
+              yarn test:functional
+            '''
+          } finally {
+            publishHTML([reportDir: 'allure-report', reportFiles: 'index.html', reportName: 'Frontend E2E Test Report', allowMissing: true, keepAll: true, alwaysLinkToLastBuild: true])
+          }
+        }
+      }
+    }
+  }
   afterAlways('smoketest:aat') {
     archiveSmokeTestReports()
   }
@@ -248,11 +316,22 @@ withPipeline(type, product, component) {
   afterAlways('E2eTest:aat') {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
+      env.E2E_TEST_FAILED = "true"
     }
   }
 
   afterSuccess('E2eTest:aat') {
     env.ENVIRONMENT= "prod"
+  }
+
+  // catchError() in the shared library's sectionDeployToAKS swallows the e2e failure
+  // throw error here to aborts the build before Helm chart publish / prod deploy run.
+  before('Publish Helm chart') {
+    onMaster {
+      if (env.E2E_TEST_FAILED == "true") {
+        error('Aborting pipeline: AAT E2E tests failed')
+      }
+    }
   }
 }
 
@@ -264,9 +343,14 @@ def setPreviewEnvVars(githubApi) {
 
   def frontendLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pcs-frontend-pr:")
   if (frontendLabels && frontendLabels.size() > 0) {
-    def labelName = frontendLabels[0]
-    def PCS_FRONTEND_CHANGE_ID = labelName.replace("pcs-frontend-pr:", "")
-    env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+    env.PCS_FRONTEND_CHANGE_ID = frontendLabels[0].replace("pcs-frontend-pr:", "")
+  }
+
+  // pr-values:ccd deploys the frontend into this preview, so link to it rather than to AAT.
+  if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  } else if (env.PCS_FRONTEND_CHANGE_ID) {
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${env.PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
   } else {
     env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
   }
@@ -284,7 +368,7 @@ def setProdEnvVars() {
   env.ENVIRONMENT= "prod"
   env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
   env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-  env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
+  env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
 }
 
 def setDemoEnvVars() {
@@ -293,10 +377,52 @@ def setDemoEnvVars() {
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
 }
 
+def runDemoSmokeTests(builder, Map secrets, String product) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  stageWithEnvironmentAgent('Smoke Test - demo', product, 'demo') {
+    withTeamSecrets(vaultConfig, 'demo', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-demo.service.core-compute-demo.internal",
+      "ENVIRONMENT_NAME=demo",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-demo.service.core-compute-demo.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-demo.service.core-compute-demo.internal",
+      "IDAM_API_URL=https://idam-api.demo.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
+}
+}
+
 def setIthcEnvVars() {
   env.ENVIRONMENT= "ithc"
   env.CAMUNDA_BASE_URL = "http://camunda-api-ithc.service.core-compute-ithc.internal"
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal"
+}
+
+def runIthcSmokeTests(builder, Map secrets, String product) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  stageWithEnvironmentAgent('Smoke Test - ithc', product, 'ithc') {
+    withTeamSecrets(vaultConfig, 'ithc', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-ithc.service.core-compute-ithc.internal",
+      "ENVIRONMENT_NAME=ithc",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-ithc.service.core-compute-ithc.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal",
+      "IDAM_API_URL=https://idam-api.ithc.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
+}
 }
 
 def setPerftestEnvVars() {

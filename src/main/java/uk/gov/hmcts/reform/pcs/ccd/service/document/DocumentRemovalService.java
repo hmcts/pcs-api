@@ -24,10 +24,11 @@ public class DocumentRemovalService {
         DocumentEntity documentEntity = documentRepository.findById(documentEntityId)
             .orElseThrow(() -> new DocumentNotFoundException(documentEntityId));
 
-        documentEntity.setRemoved(true);
         documentEntity.setRemovalReason(reason);
         documentEntity.setRemovedAt(LocalDateTime.now());
-        documentRepository.save(documentEntity);
+        // Written before the soft delete: Hibernate does not flush changes to an entity it is removing.
+        documentRepository.flush();
+        documentRepository.delete(documentEntity);
 
         documentImportService.deleteDocument(documentEntity.getUrl());
     }

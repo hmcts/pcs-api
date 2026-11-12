@@ -11,7 +11,6 @@ import {
   asbQuestionsWales,
   whatAreYourGroundsForPossessionWales,
   checkYourAnswers,
-  propertyDetails,
   home
 } from '@data/page-data';
 import {
@@ -62,7 +61,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - Wales]', async () => {
-  test('Wales - Standard Contract - Rent arrears only @MAC', async () => {
+  test('Wales - Standard Contract - Rent arrears only @MAC @nightly', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -106,7 +105,8 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performValidation('text', {"text": preactionProtocol.walesCommunityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.noRadioOption);
@@ -379,7 +379,8 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour, whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performAction('selectAsb', {
       asbChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,

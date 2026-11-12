@@ -33,14 +33,16 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @Slf4j
 @Component
@@ -57,16 +59,10 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final DefendantService defendantService;
     private final FeeApplier feeApplier;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
+    private final EnforcementSubmitEvent enforcementSubmitEvent;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        if (isDev() && Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT"))) {
-            log.info("Configuring non-production Enforcement event: {}", enforceTheOrder.name());
-            configure(configBuilder);
-        }
-    }
-
-    void configure(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
@@ -74,6 +70,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
@@ -92,7 +90,6 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         applyWarrantFeeAmount(pcsCase);
         applyWritFeeAmount(pcsCase);
         setEnforcementTypes(eventPayload.caseReference(), pcsCase.getEnforcementOrder());
-
         return pcsCase;
     }
 
@@ -142,16 +139,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         enforcementOrder.setWarrantOfRestitutionInfoText(text);
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
-        return submitOrder(caseReference, eventPayload.caseData());
-    }
-
-    public SubmitResponse<State> submitOrder(long caseReference, PCSCase pcsCase) {
-        enforcementOrderService.saveAndClearDraftData(caseReference, pcsCase.getEnforcementOrder());
-        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}",
-                  caseReference);
-        return SubmitResponse.defaultResponse();
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        return enforcementSubmitEvent.submit(eventPayload);
     }
 
 }

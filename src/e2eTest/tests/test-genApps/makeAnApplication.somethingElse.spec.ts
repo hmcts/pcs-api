@@ -33,13 +33,13 @@ test.beforeEach(async ({ page, context }) => {
   defendantDetails.length = 0;
   FieldsStore.clear();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getDefendantDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayload
+    defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload()
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   // await page.evaluate(() => {
@@ -74,7 +74,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Something else @regression @smoke', async () => {
+  test('Select an Application - Something else @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
@@ -125,7 +125,6 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     });
     await performValidation('mainHeader', statementOfTruth.mainHeader);
     await performAction('selectStatementOfTruth', {
-      question: statementOfTruth.completedByTheDefendantsLegalParagraph,
       option: statementOfTruth.theDefendantBelievesCheckBox,
       label1: statementOfTruth.fullNameTextLabel,
       input1: statementOfTruth.fullNameTextInput,

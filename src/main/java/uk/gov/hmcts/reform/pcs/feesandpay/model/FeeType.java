@@ -10,6 +10,7 @@ public enum FeeType {
     ENFORCEMENT_WRIT_FEE("enforcementWritFee"),
     GEN_APP_STANDARD_FEE("genAppStandardFee"),
     GEN_APP_MAX_FEE("genAppMaxFee"),
+    GEN_APP_SUSPEND_FEE("genAppSuspendFee"),
     COUNTER_CLAIM_FLAT_FEE("counterClaimFlatFee"),
     COUNTER_CLAIM_RANGED("counterClaimRanged"),
     COUNTER_CLAIM("counterClaim");
@@ -20,4 +21,3 @@ public enum FeeType {
         this.code = code;
     }
 }
-

@@ -40,15 +40,19 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         var users = new HashMap<String, List<String>>();
         users.put("caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"));
+        users.put("judge@pcs.com", List.of("caseworker", "caseworker-pcs"));
         users.put("pcs-hearing-centre-team-leader-01@localhost", List.of("caseworker", "caseworker-pcs"));
         users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
         users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
                                                               "caseworker-pcs-solicitor",  "caseworker-pcs"));
         users.put("citizen@pcs.com", List.of("citizen"));
+        users.put("defendant1@localhost", List.of("citizen"));
+        users.put("defendant2@localhost", List.of("citizen"));
         users.put("data.store.idam.system.user@gmail.com", List.of());
         users.put("ccd.import@pcs.com", List.of("ccd-import"));
         users.put("pcs-system-user@localhost",
                   List.of("caseworker", "caseworker-pcs", "ccd-import", "pcs-system-update"));
+        users.put("pcs-superuser@localhost", List.of("caseworker", "caseworker-pcs", "caseworker-pcs-superuser"));
         users.put("wa-system-user@localhost",
                   List.of("caseworker", "caseworker-civil", "caseworker-wa-task-configuration"));
         users.put("exui-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import"));
@@ -82,6 +86,7 @@ public class CftlibConfig implements CFTLibConfigurer {
         roleNames.add("caseworker-wa-task-configuration");
         roleNames.add("pui-case-manager");
         roleNames.add("caseworker-caa");
+        roleNames.add("caseworker-pcs-superuser");
 
         lib.createRoles(roleNames.toArray(new String[0]));
     }

@@ -34,7 +34,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
                     </p>
 
                     <p class="govuk-body">
-                       You can upload the following file types: DOC/DOCX (Word), XLS/XLSM
+                       You can upload the following file types: DOC/DOCX (Word), XLS/XLSX
                        (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP,
                        TIF/TIFF.
                     </p>

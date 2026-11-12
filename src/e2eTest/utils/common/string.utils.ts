@@ -66,20 +66,30 @@ export function getCurrentBSTTime(): string {
 /* convert YYY-MM-DD to DD/MM/YYYY format or DD MONTH YYYY */
 export function formatDate(dateStr: string, formatType: string): string {
 
-  const date = new Date(dateStr);
+  let date: Date;
+
+  if (/^\d{2}[/-]\d{2}[/-]\d{4}$/.test(dateStr)) {
+    const [day, month, year] = dateStr.split(/[/-]/).map(Number);
+    date = new Date(year, month - 1, day);
+  } else {
+    date = new Date(dateStr);
+  };
+
   let finalDate: string = '';
   if (formatType === 'DD/MM/YYYY') {
     finalDate = date.toLocaleDateString("en-GB");
   } else if (formatType === 'DD/MONTH/YYYY') {
-
     const day = date.getDate();
     const month = date.toLocaleString("en-GB", { month: "long" });
     const year = date.getFullYear();
-
+    finalDate = `${day} ${month} ${year}`;
+  } else if (formatType === 'DD/MON/YYYY') {
+    const day = date.getDate();
+    const month = date.toLocaleString('en-GB', { month: 'long' }).slice(0, 3);
+    const year = date.getFullYear();
     finalDate = `${day} ${month} ${year}`;
   }
   return finalDate;
-
 }
 
 /* convert string for ex RENT_ARREARS to Rent arrears */
@@ -127,6 +137,24 @@ export function formatDateTimeBST(dataTime: string): string {
 
   return new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/London',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  })
+    .format(date)
+    .replace(' at ', ', ')
+    .replace(' am', 'AM')
+    .replace(' pm', 'PM');
+}
+
+export function formatDateTimeNonBST(dataTime: string): string {
+  const date = new Date(dataTime);
+
+  return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

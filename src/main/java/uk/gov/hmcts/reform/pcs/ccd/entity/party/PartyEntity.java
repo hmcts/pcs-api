@@ -67,7 +67,7 @@ public class PartyEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
-    private UUID idamId;
+    private String idamId;
 
     private String firstName;
 
@@ -114,6 +114,8 @@ public class PartyEntity {
     private String emailAddress;
 
     private String pcqId;
+
+    private boolean removed;
 
     @Column(name = "dob")
     private LocalDate dateOfBirth;

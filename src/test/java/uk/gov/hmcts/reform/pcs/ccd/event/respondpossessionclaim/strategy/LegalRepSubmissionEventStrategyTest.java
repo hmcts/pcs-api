@@ -57,7 +57,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 class LegalRepSubmissionEventStrategyTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final UUID REPRESENTED_PARTY_ID = UUID.randomUUID();
     private static final String HWF_REFERENCE_NUMBER = "myHwfReferenceNumber";
 
@@ -348,7 +348,7 @@ class LegalRepSubmissionEventStrategyTest {
             .thenReturn(Optional.of(caseData));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(securityContextService.getCurrentUserId()).thenReturn(representedPartyId);
+        when(securityContextService.getCurrentUserId()).thenReturn(representedPartyId.toString());
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(defendantResponse);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse,
                                                                     defendantResponse,

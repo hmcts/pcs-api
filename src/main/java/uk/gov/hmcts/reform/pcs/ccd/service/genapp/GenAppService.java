@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -21,13 +22,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -46,6 +50,10 @@ public class GenAppService {
     private final DocumentTypeMapper documentTypeMapper;
     private final DocumentRepository documentRepository;
     private final ClaimActivityLogService claimActivityLogService;
+    private final DocumentIdExtractor documentIdExtractor;
+    private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final NotificationService notificationService;
+    private final GenAppWaTaskService genAppWaTaskService;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
@@ -53,6 +61,10 @@ public class GenAppService {
                          DocumentTypeMapper documentTypeMapper,
                          DocumentRepository documentRepository,
                          ClaimActivityLogService claimActivityLogService,
+                         DocumentIdExtractor documentIdExtractor,
+                         GenAppDocumentGenerator genAppDocumentGenerator,
+                         NotificationService notificationService,
+                         GenAppWaTaskService genAppWaTaskService,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
@@ -60,6 +72,10 @@ public class GenAppService {
         this.documentTypeMapper = documentTypeMapper;
         this.documentRepository = documentRepository;
         this.claimActivityLogService = claimActivityLogService;
+        this.documentIdExtractor = documentIdExtractor;
+        this.genAppDocumentGenerator = genAppDocumentGenerator;
+        this.notificationService = notificationService;
+        this.genAppWaTaskService = genAppWaTaskService;
         this.utcClock = utcClock;
     }
 
@@ -139,6 +155,7 @@ public class GenAppService {
                                    GenAppState initialState) {
 
         EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest();
+        boolean isSuspendApplication = enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SUSPEND;
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(enterGenAppRequest.getApplicationTypeOption().getStandardGenAppType())
@@ -149,7 +166,7 @@ public class GenAppService {
             .state(initialState)
             .feeAmountReceived(enterGenAppRequest.getFeeAmountReceived())
             .appliedForHwf(enterGenAppRequest.getAppliedForHwf())
-            .otherPartiesAgreed(enterGenAppRequest.getAllPartiesAgree())
+            .otherPartiesAgreed(isSuspendApplication ? null : enterGenAppRequest.getAllPartiesAgree())
             .build();
 
         if (enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SOMETHING_ELSE) {
@@ -166,7 +183,7 @@ public class GenAppService {
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
         }
 
-        if (enterGenAppRequest.getAllPartiesAgree() == VerticalYesNo.NO) {
+        if (!isSuspendApplication && enterGenAppRequest.getAllPartiesAgree() == VerticalYesNo.NO) {
             genAppEntity.setWithoutNotice(enterGenAppRequest.getWithoutNotice());
         }
 
@@ -190,6 +207,21 @@ public class GenAppService {
     public GenAppEntity loadGenApp(UUID genAppId) {
         return genAppRepository.findById(genAppId)
             .orElseThrow(() -> new GenAppNotFoundException("No gen app found with ID " + genAppId));
+    }
+
+    @Transactional
+    public void generateSubmissionDocument(UUID genAppId) {
+        GenAppEntity genAppEntity = loadGenApp(genAppId);
+
+        if (genAppEntity.getSubmissionDocument() != null) {
+            return;
+        }
+
+        long caseReference = genAppEntity.getPcsCase().getCaseReference();
+        genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+        notificationService.sendGenAppReceivedEmail(genAppEntity);
+        genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+        genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
     }
 
     private DocumentEntity createSubmissionDocumentEntity(Document document,
@@ -278,6 +310,7 @@ public class GenAppService {
             .pcsCase(pcsCaseEntity)
             .generalApplication(genAppEntity)
             .url(document.getUrl())
+            .documentId(documentIdExtractor.extractDocumentId(document.getUrl()))
             .fileName(fileName)
             .binaryUrl(document.getBinaryUrl())
             .categoryId(categoryId)
