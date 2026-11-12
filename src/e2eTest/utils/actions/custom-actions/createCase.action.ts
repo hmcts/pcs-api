@@ -1694,7 +1694,7 @@ export class CreateCaseAction implements IAction {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
-      
+
       case 'Orders and Notice of Hearings':
         if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
@@ -1779,6 +1779,7 @@ export class CreateCaseAction implements IAction {
         filesArray.map(f =>
           f
             .replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
+            .replace(/\s+(?:CC)\d+/i, '')
             .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
             .trim()
         )
