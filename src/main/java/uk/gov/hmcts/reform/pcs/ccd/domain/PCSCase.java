@@ -55,6 +55,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
@@ -737,6 +738,12 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "enter_genapp_")
     private EnterGenAppRequest enterGenAppRequest;
 
+    @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "breathingSpace_")
+    private BreathingSpaceDetails breathingSpaceDetails;
+
     @CCD(label = "Which party made the application?",
         searchable = false,
         typeOverride = DynamicRadioList
@@ -1017,6 +1024,9 @@ public class PCSCase {
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo hasUnsubmittedDefendantResponses;
+
     /**
      * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
      * than stored - the name must be CaseAccessGroups to match what data store expects.
@@ -1033,9 +1043,6 @@ public class PCSCase {
 
     @CCD
     private String defendantNames;
-
-    @CCD
-    private String dateIssuedString;
 
     @CCD(label = "Which state are you moving the case to?",
         typeOverride = FixedList,
