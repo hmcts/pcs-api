@@ -602,7 +602,7 @@ class DocumentAmendServiceTest {
 
     @Test
     void shouldStoreCounterclaimDocumentInStatementsOfCase() {
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().id(COUNTERCLAIM_ID).build();
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().id(COUNTERCLAIM_ID).rank(1).build();
         DocumentAmendDetails amendDetails = baseDetails()
             .amendedFileName("counterclaim evidence.pdf")
             .showRelatedSubmissionsList(VerticalYesNo.YES)

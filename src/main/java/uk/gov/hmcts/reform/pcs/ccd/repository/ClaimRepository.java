@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @Repository
 public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
 

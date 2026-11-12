@@ -61,6 +61,7 @@ class CounterClaimFormPersistenceServiceTest {
     void buildsContextWithPayloadAndDefendantNumberWhenNotAttached() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 2);
+        counterClaim.setRank(1);
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
@@ -79,6 +80,7 @@ class CounterClaimFormPersistenceServiceTest {
     void returnsEmptyAndDoesNotBuildWhenAlreadyAttached() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
             .thenReturn(true);
@@ -99,6 +101,7 @@ class CounterClaimFormPersistenceServiceTest {
         Optional<CounterClaimFormRenderContext> context = underTest.buildContextIfNotAttached(COUNTER_CLAIM_ID);
 
         assertThat(context).isPresent();
+        assertThat(context.get().counterClaimRank()).isNull();
         assertThat(context.get().defendantNumber()).isOne();
     }
 
@@ -106,6 +109,7 @@ class CounterClaimFormPersistenceServiceTest {
     void attachStoresTypeLinksDocumentAndLogsSuccess() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         PcsCaseEntity pcsCase = counterClaim.getPcsCase();
         DocumentEntity document = DocumentEntity.builder().build();
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
@@ -126,6 +130,7 @@ class CounterClaimFormPersistenceServiceTest {
     void attachSkipsWhenAlreadyAttached() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
             .thenReturn(true);
@@ -141,6 +146,7 @@ class CounterClaimFormPersistenceServiceTest {
     void recordGenerationFailureLogsAgainstFilingDefendantAndReturnsCaseReference() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
 
         long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"), false);
@@ -160,10 +166,6 @@ class CounterClaimFormPersistenceServiceTest {
     }
 
     private CounterClaimEntity counterClaimFor(PartyEntity defendant, Integer rank) {
-        return counterClaimFor(defendant, 1, rank);
-    }
-
-    private CounterClaimEntity counterClaimFor(PartyEntity defendant, Integer ccRank, Integer rank) {
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
         ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
             .party(defendant)
@@ -178,7 +180,6 @@ class CounterClaimFormPersistenceServiceTest {
             .id(COUNTER_CLAIM_ID)
             .pcsCase(pcsCase)
             .party(defendant)
-            .rank(ccRank)
             .build();
     }
 }

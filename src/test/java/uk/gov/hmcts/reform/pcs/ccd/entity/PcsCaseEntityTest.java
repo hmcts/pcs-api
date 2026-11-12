@@ -76,17 +76,41 @@ class PcsCaseEntityTest {
 
     @Test
     void shouldAddCounterClaimEntityAndSetCaseLevelRank() {
-        CounterClaimEntity counterClaim1 = CounterClaimEntity.builder().build();
-        CounterClaimEntity counterClaim2 = CounterClaimEntity.builder().build();
+        // Given
+        CounterClaimEntity counterClaim1 = mock(CounterClaimEntity.class);
+        CounterClaimEntity counterClaim2 = mock(CounterClaimEntity.class);
+        CounterClaimEntity counterClaim3 = mock(CounterClaimEntity.class);
 
+        // When
         underTest.addCounterClaim(counterClaim1);
         underTest.addCounterClaim(counterClaim2);
+        underTest.addCounterClaim(counterClaim3);
 
-        assertThat(counterClaim1.getRank()).isEqualTo(1);
-        assertThat(counterClaim1.getPcsCase()).isSameAs(underTest);
+        // Then
+        verify(counterClaim1).setRank(1);
+        verify(counterClaim1).setPcsCase(underTest);
 
-        assertThat(counterClaim2.getRank()).isEqualTo(2);
-        assertThat(counterClaim2.getPcsCase()).isSameAs(underTest);
+        verify(counterClaim2).setRank(2);
+        verify(counterClaim2).setPcsCase(underTest);
+
+        verify(counterClaim3).setRank(3);
+        verify(counterClaim3).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldContinueCounterClaimCaseLevelRankFromExistingCounterClaims() {
+        // Given
+        for (int i = 0; i < 3; i++) {
+            underTest.getCounterClaims().add(mock(CounterClaimEntity.class));
+        }
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+
+        // When
+        underTest.addCounterClaim(counterClaim);
+
+        // Then
+        verify(counterClaim).setRank(4);
+        verify(counterClaim).setPcsCase(underTest);
     }
 
     @Test
