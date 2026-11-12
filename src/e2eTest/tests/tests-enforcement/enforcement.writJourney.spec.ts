@@ -267,7 +267,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
-  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
+  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey @enforcement', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
