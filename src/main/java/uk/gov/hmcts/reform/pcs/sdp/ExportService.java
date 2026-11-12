@@ -81,7 +81,8 @@ public class ExportService {
         String filename = snapshotFilename(extractDate);
         Path snapshotFile = createSnapshotFile();
         try {
-            List<SdpClaimSnapshotEntity> changed = writeSnapshotFile(snapshotFile, ids, extractDate, publishedDate, now);
+            List<SdpClaimSnapshotEntity> changed = writeSnapshotFile(
+                snapshotFile, ids, extractDate, publishedDate, now);
             if (!changed.isEmpty()) {
                 blobUploader.ifPresent(uploader -> uploader.upload(filename, snapshotFile));
                 sdpClaimSnapshotJdbcRepository.upsertSnapshots(changed);
