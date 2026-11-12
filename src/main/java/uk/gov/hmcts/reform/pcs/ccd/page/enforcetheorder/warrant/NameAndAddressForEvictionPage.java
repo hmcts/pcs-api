@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.NameAndAddressForEvictionPageHelper;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -22,11 +21,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 @AllArgsConstructor
 public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
 
-    private final NameAndAddressForEvictionPageHelper nameAndAddressForEvictionPageHelper;
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        var nameAddressPageBuilder = pageBuilder
+        pageBuilder
             .page("nameAndAddressForEviction", this::midEvent)
             .pageLabel("The name and address for the eviction")
             .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
@@ -36,11 +33,10 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                    "<h3 class=\"govuk-heading-s\">Check the name and address for the eviction</h3>")
             .label("nameAndAddressForEviction-defendants-heading",
                    "<p class=\"govuk-body govuk-!-font-weight-bold\">Defendants</p>")
-            .label("nameAndAddressForEviction-defendants-value", "${formattedDefendantNames}");
-
-        nameAndAddressForEvictionPageHelper.addUnknownDefendantLabels(nameAddressPageBuilder, "Warrant");
-
-        nameAddressPageBuilder
+            .label("nameAndAddressForEviction-defendants-value", "${formattedDefendantNames}")
+            .label("nameAndAddressForEviction-defendants-unknown",
+                   "<div class=\"govuk-!-margin-bottom-2\">Person(s) unknown</div>",
+                   "hasUnknownDefendants=\"Yes\"")
             .label("nameAndAddressForEviction-defendants-hr", "<hr>")
             .label("nameAndAddressForEviction-address-heading",
                    "<p class=\"govuk-body govuk-!-font-weight-bold\">Address</p>")
