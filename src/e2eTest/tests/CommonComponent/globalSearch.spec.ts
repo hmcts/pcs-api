@@ -116,7 +116,7 @@ const runFieldSearch = async (label: string, value: string) => {
 };
 
 const runGlobalSearchScenarios = () => {
-  test('Global search menu @smoke', async () => {
+  test('Global search menu', async () => {
     await performAction('accessingTheSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
