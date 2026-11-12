@@ -1,5 +1,5 @@
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import { expect, test } from '@utils/test-fixtures';
+import { test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { user } from '@data/user-data';
@@ -9,9 +9,6 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import {contactDetailsLR} from '@data/page-data-figma';
 import {startNow } from "@data/page-data-figma/page-data-legalRepresentative/startNow.page.data";
 import {deleteDraftResponse} from "@data/page-data-figma/page-data-legalRepresentative";
-
-test.beforeEach(async ({ page, context }, testInfo) => {
-import {startNow} from "@data/page-data-figma/page-data-legalRepresentative/startNow.page.data";
 import { midEventLRRespondPossessionClaimApiData } from '@data/api-data/respondPossessionClaimMidEventLR.api.data';
 
 test.beforeEach(async ({ page, context }, testInfo) => {
