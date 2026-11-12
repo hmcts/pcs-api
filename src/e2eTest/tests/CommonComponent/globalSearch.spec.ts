@@ -105,6 +105,21 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
       text: whyDoYouNeedToAccessThisCase.otherReasonInputText
     });
   });
+
+  test('Challenged access - Judge user can view the case after submitting a request', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      judicial.walesRegion_Judge_email
+    );
+
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer
+    });
+  });
 });
 
 const runFieldSearch = async (label: string, value: string) => {
