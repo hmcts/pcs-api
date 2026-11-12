@@ -14,9 +14,9 @@ public enum LetterType {
     DEFENDANT_CLAIM_PACK("CPD-01-IN1", false),
     DEFENCE_PACK("DEF-01-IN0", true),
     DEFENCE_PACK_LEGAL_REP("DEF-01-IN1", true),
-    GEN_APP_PACK("GEN-00-IN0", true);
+    GEN_APP_PACK("GEN-00-IN0", true),
     // Non-production only: the test support event that posts uploaded documents to check print conversion.
-    TEST_SUPPORT_PACK("TST-00-IN0, false");
+    TEST_SUPPORT_PACK("TST-00-IN0", false);
 
     @Getter
     private final String code;
