@@ -460,10 +460,10 @@ ccd:
       # restored. Managed publication is provided by the CCD SDK.
       enabled: ${CASE_BUNDLE_ENABLED:false}
       worker:
-        # Every pod queues bundle jobs; this decides whether it also renders them. Off on the API
-        # pods in environments that run the pcs-bundle-worker release (cnp-flux-config), so PDF
-        # rendering does not compete with request threads for heap and CPU.
-        enabled: ${CASE_BUNDLE_WORKER_ENABLED:true}
+        # Every pod queues bundle jobs; this decides whether it also renders them. Only the
+        # pcs-bundle-worker release (cnp-flux-config) turns it on, so PDF rendering does not
+        # compete with request threads for heap and CPU on the API pods.
+        enabled: ${CASE_BUNDLE_WORKER_ENABLED:false}
         max-concurrent-renders: ${CASE_BUNDLE_WORKER_MAX_CONCURRENT_RENDERS:2}
     docmosis:
       # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with

@@ -66,7 +66,7 @@ test.afterEach(async () => {
 
 test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
 
-  test('Claimant LR Upload documents when GenApps submitted - Multi def - ADJOURN @smoke @regression', async () => {
+  test('Claimant LR Upload documents when GenApps submitted - Multi def - ADJOURN @regression', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -263,9 +263,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
       submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
       defendantIndex: 1
     });
-
   });
-
 
 });
 
