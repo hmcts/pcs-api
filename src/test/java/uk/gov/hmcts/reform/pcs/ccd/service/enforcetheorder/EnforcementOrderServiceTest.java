@@ -101,10 +101,12 @@ class EnforcementOrderServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(strategy);
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder,
-                EnforcementState.PENDING_CASE_ISSUED);
+        EnforcementOrderEntity result = enforcementOrderService.saveAndClearDraftData(
+                CASE_REFERENCE, enforcementOrder, EnforcementState.PENDING_CASE_ISSUED);
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
@@ -116,6 +118,8 @@ class EnforcementOrderServiceTest {
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        assertThat(savedEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
+        assertThat(result).isSameAs(savedEntity);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -19,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementT
 import java.util.Set;
 
 @Service
-@Slf4j
 @AllArgsConstructor
 public class EnforcementOrderService {
 
@@ -45,19 +43,24 @@ public class EnforcementOrderService {
     }
 
     @Transactional
-    public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder, EnforcementState state) {
-        createEnforcementOrder(caseReference, enforcementOrder, state);
+    public EnforcementOrderEntity saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder,
+                                                        EnforcementState state) {
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrder(caseReference, enforcementOrder, state);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
+
+        return enforcementOrderEntity;
     }
 
-    private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder, EnforcementState state) {
+    private EnforcementOrderEntity createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder,
+                                                          EnforcementState state) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, pcsCaseEntity, state);
         strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enforcementOrderEntity, enforcementOrder);
-        enforcementOrderRepository.save(enforcementOrderEntity);
+
+        return enforcementOrderRepository.save(enforcementOrderEntity);
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, PcsCaseEntity pcsCaseEntity,
