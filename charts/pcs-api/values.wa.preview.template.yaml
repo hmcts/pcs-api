@@ -35,12 +35,18 @@ wa:
         CAMUNDA_BPM_JOB_EXECUTION_MAX_POOL_SIZE: "2"
         WA_TASK_MANAGEMENT_API_URL: http://{{ .Release.Name }}-wa-task-management-api
       disableKeyVaults: false
-      aadIdentityName: pcs
+      aadIdentityName: camunda
       keyVaults:
-        pcs:
+        camunda:
           secrets:
+            - name: bpm-POSTGRES-PASS
+              alias: spring.datasource.password
+            - name: camunda-admin-password
+              alias: CAMUNDA_ADMIN_PASSWORD
             - name: s2s-secret-camunda-bpm
               alias: S2S_SECRET_CAMUNDA_BPM
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
 
   wa-task-management-api:
     java:
