@@ -77,7 +77,6 @@ public class CasePartyLinkController {
         return ResponseEntity.ok().build();
     }
 
-    // Same response as a wrong access code, so callers cannot tell which case numbers exist.
     @ExceptionHandler(CaseNotFoundException.class)
     public ResponseEntity<Error> handleCaseNotFound(CaseNotFoundException ex) {
         log.warn("Access code validation attempted for an unknown case", ex);
