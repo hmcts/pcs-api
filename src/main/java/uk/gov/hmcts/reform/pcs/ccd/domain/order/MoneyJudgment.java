@@ -39,7 +39,9 @@ public record MoneyJudgment(BigDecimal arrears,
      */
     public boolean complete() {
         Set<UUID> parties = new HashSet<>(debtors);
-        return Stream.of(arrears, otherAmount, costs).anyMatch(Objects::nonNull)
+        return Stream.of(arrears, otherAmount, costs, oneOffAmount, instalmentAmount)
+                .filter(Objects::nonNull).allMatch(MoneyJudgment::inPence)
+            && Stream.of(arrears, otherAmount, costs).anyMatch(Objects::nonNull)
             && Stream.of(arrears, otherAmount, costs).filter(Objects::nonNull).allMatch(sum -> sum.signum() >= 0)
             && !debtors.isEmpty() && !creditors.isEmpty()
             && creditors.stream().noneMatch(parties::contains)
@@ -48,6 +50,12 @@ public record MoneyJudgment(BigDecimal arrears,
             && Stream.of(instalmentAmount, instalmentFrequency, firstInstalmentDate).allMatch(Objects::isNull)
                 != Stream.of(instalmentAmount, instalmentFrequency, firstInstalmentDate).allMatch(Objects::nonNull)
             && (instalmentAmount == null || instalmentAmount.signum() > 0);
+    }
+
+    /** A sum in pounds and pence that the database holds as it is. */
+    private static boolean inPence(BigDecimal sum) {
+        BigDecimal pence = sum.stripTrailingZeros();
+        return Math.max(pence.scale(), 0) <= 2 && pence.precision() - pence.scale() <= 16;
     }
 
     public enum InstalmentFrequency {

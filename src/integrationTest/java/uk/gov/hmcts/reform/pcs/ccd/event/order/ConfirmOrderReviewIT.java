@@ -283,6 +283,12 @@ class ConfirmOrderReviewIT extends OrderEventIT {
                 List.of(UUID.randomUUID()), List.of(claimant))))).errors())
             .containsExactly(ConfirmOrderReview.INCOMPLETE_MONEY_JUDGMENT);
 
+        // Sums are in pounds and pence.
+        assertThat(asCaseworker.submitExpectingRejection(issuing(order, freeForm,
+            List.of(new MoneyJudgment(new BigDecimal("1.234"), null, null, null, null, null, null, null, null, false,
+                List.of(defendant), List.of(claimant))))).errors())
+            .containsExactly(ConfirmOrderReview.INCOMPLETE_MONEY_JUDGMENT);
+
         asCaseworker.submitExpectingSuccess(issuing(order, freeForm, List.of(arrears, costs)));
 
         assertThat(jdbcTemplate.queryForObject("SELECT costs FROM orders WHERE id = ?", String.class, order.id()))
