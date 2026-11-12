@@ -3,7 +3,6 @@ import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  yourHCEO,
   evidenceUpload
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
@@ -36,7 +35,7 @@ import {
   suspendedOrder,
   statementOfTruth,
   confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo,
-  cannotApplyForWarrantInfo
+  cannotApplyForWarrantInfo, hCEOfficerDetails
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
@@ -90,7 +89,7 @@ export class EnforcementAction implements IAction{
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
       ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
-      
+
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
       ['youNeedPermissionFromAJudge', () => this.youNeedPermissionFromAJudge(fieldName as actionRecord)],
@@ -278,7 +277,7 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', nameHCEO.label, nameHCEO.input);
-    await performAction('reTryOnCallBackError', yourHCEO.continueButton, nameHCEO.nextPage as string);
+    await performAction('reTryOnCallBackError', hCEOfficerDetails.continueButton, nameHCEO.nextPage as string);
   }
 
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord, page: Page) {

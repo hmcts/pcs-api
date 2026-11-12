@@ -4,8 +4,6 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  yourHCEO,
-  theNICEWillChoose,
   youCannotApplyForWrit,
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -20,12 +18,13 @@ import {
   confirmHCEOfficer,
   defendantInBreathingSpace,
   enforcementApplication,
-  generalApplication,
+  generalApplication, hCEOfficerDetails,
   languageUsed,
   missedPayments,
   nameAndAddressForEviction,
   statementOfTruth,
-  uploadStatement
+  theNICEWillChoose,
+  uploadStatement,
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -114,13 +113,13 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
         option: confirmHCEOfficer.yesRadioOption,
-        nextPage: yourHCEO.mainHeader
+        nextPage: hCEOfficerDetails.mainHeader
       });
-      await performValidation('mainHeader', yourHCEO.mainHeader);
-      await performAction('errorValidationYourHCEOPage', yourHCEO.errorValidation);
+      await performValidation('mainHeader', hCEOfficerDetails.mainHeader);
+      await performAction('errorValidationYourHCEOPage', hCEOfficerDetails.errorValidation);
       await performAction('nameYourHCEO', {
-        label: yourHCEO.nameOfYourHCEOTextLabel,
-        input: yourHCEO.nameOfYourHCEOTextInput,
+        label: hCEOfficerDetails.nameOfYourHCEOTextLabel,
+        input: hCEOfficerDetails.nameOfYourHCEOTextInput,
         nextPage: languageUsed.mainHeader
       });
       await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);

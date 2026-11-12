@@ -1,6 +1,5 @@
 export const hCEOfficerDetails = {
   mainHeader: `Eich Swyddog Gorfodi yr Uchel Lys`,
-  //Raised under HDPI-5199 E and O is capital in Figma but its small in implementation.
   whoHaveYouHiredQuestion: `Pwy ydych chi wedi llogi i weithredu'r troi allan?`,
   nameOfYourHCEOTextLabel: `Enw eich Swyddog Gorfodi yr Uchel Lys`,
   ifYouDoNotKnowHintText: `Os nad ydych yn gwybod eu henw, defnyddiwch enw'r sefydliad maent yn gweithio iddo`,
@@ -8,5 +7,13 @@ export const hCEOfficerDetails = {
   summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
   previousButton: `Yn ôl`,
   continueButton: `Parhau`,
-  cancelLink: `Canslo`
+  cancelLink: `Canslo`,
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  errorValidationField: {
+    errorTextField: [
+      { type: 'moreThanMax', input: 120, errMessage: 'Name of your High Court Enforcement Officer exceeds the maximum length' },
+      { type: 'empty', input: 'EMPTY', errMessage: 'Name of your High Court Enforcement Officer is required' },
+    ]
+  }
 }
