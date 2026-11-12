@@ -62,7 +62,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         FeesAndPayTaskData taskData = toFeesAndPayTaskData(feePaymentEntity);
         feePaymentEntity.setParty(getResponsibleParty(taskData));
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            PaymentStateTaskData paymentStateTaskData = createPaymentStateTaskData(
+            PaymentStateTaskData paymentStateTaskData = createPaymentStateTaskData(feePaymentEntity,
                 taskData.getCaseReference(), resumePossessionClaim, paymentStatusCallback, CLAIM_ISSUED_PAYMENT);
             executeEvent(paymentStateTaskData);
         } else {
@@ -71,18 +71,18 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         }
     }
 
-    public PaymentStateTaskData createPaymentStateTaskData(long caseId, EventId eventId,
-                                                           PaymentStatusCallback paymentStatusCallback,
+    PaymentStateTaskData createPaymentStateTaskData(FeePaymentEntity feePaymentEntity, long caseId,
+                                                           EventId eventId, PaymentStatusCallback paymentStatusCallback,
                                                            SystemAction systemAction) {
         return PaymentStateTaskData.builder()
             .caseReference(caseId)
             .eventId(eventId)
             .systemAction(systemAction)
             .paymentReference(paymentStatusCallback.getPaymentReference())
-            .idempotencyKey(UUID.randomUUID()).build();
+            .idempotencyKey(feePaymentEntity.getClaim().getId()).build();
     }
 
-    public void executeEvent(PaymentStateTaskData taskData) {
+    void executeEvent(PaymentStateTaskData taskData) {
         log.info("Updating the CCD State for Case: {} in Event: {} and PaymentReference: {}",
                  taskData.getCaseReference(), taskData.getEventId(), taskData.getPaymentReference());
         TransactionTemplate noTransaction = new TransactionTemplate(transactionManager);

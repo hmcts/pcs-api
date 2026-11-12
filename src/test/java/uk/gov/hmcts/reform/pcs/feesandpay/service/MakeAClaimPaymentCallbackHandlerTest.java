@@ -100,6 +100,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
 
         ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setId(UUID.randomUUID());
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
         claimEntity.setPcsCase(pcsCase);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
@@ -285,6 +286,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
                                        CASE_REFERENCE + ":" + defendantTwo);
     }
 
+    private FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+        .claim(ClaimEntity.builder().id(UUID.randomUUID()).build())
+        .build();
+
     @Test
     void shouldBuildPaymentStateTaskData() {
         // Given
@@ -292,7 +297,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
             Payment.builder().paymentReference("RC-1234-5678").build()).build();
 
         // When
-        PaymentStateTaskData result = underTest.createPaymentStateTaskData(
+        PaymentStateTaskData result = underTest.createPaymentStateTaskData(feePaymentEntity,
             CASE_REFERENCE, resumePossessionClaim, callback, CLAIM_ISSUED_PAYMENT);
 
         // Then
@@ -301,22 +306,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(result.getSystemAction()).isEqualTo(CLAIM_ISSUED_PAYMENT);
         assertThat(result.getPaymentReference()).isEqualTo("RC-1234-5678");
         assertThat(result.getIdempotencyKey()).isNotNull();
-    }
-
-    @Test
-    void shouldGenerateDifferentIdempotencyKeyForEachTaskData() {
-        // Given
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().payment(
-            Payment.builder().paymentReference("RC-1").build()).build();
-
-        // When
-        PaymentStateTaskData first = underTest.createPaymentStateTaskData(
-            CASE_REFERENCE, resumePossessionClaim, callback, CLAIM_ISSUED_PAYMENT);
-        PaymentStateTaskData second = underTest.createPaymentStateTaskData(
-            CASE_REFERENCE, resumePossessionClaim, callback, CLAIM_ISSUED_PAYMENT);
-
-        // Then
-        assertThat(first.getIdempotencyKey()).isNotEqualTo(second.getIdempotencyKey());
     }
 
     @Test
