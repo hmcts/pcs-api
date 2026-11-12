@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -23,18 +24,21 @@ import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
+
 import java.math.BigDecimal;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
+@SuppressWarnings("removal")
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
-    HttpMessageConvertersAutoConfiguration.class
+    HttpMessageConvertersAutoConfiguration.class, Jackson2AutoConfiguration.class
 })
 @EnableFeignClients(clients = PaymentsApi.class)
-@TestPropertySource(properties = "payments.api.url=http://localhost:8080")
+@TestPropertySource(properties = {"payments.api.url=http://localhost:8080",
+    "spring.http.converters.preferred-json-mapper=jackson2"})
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "payment_accounts", port = "8080")
 @RequiredArgsConstructor

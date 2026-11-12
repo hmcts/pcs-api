@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -29,14 +30,16 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
+@SuppressWarnings("removal")
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
-    HttpMessageConvertersAutoConfiguration.class
+    HttpMessageConvertersAutoConfiguration.class, Jackson2AutoConfiguration.class
 })
-@EnableFeignClients(clients = RdProfessionalApi.class)
 @Import(RdProfessionalApi.class)
-@TestPropertySource(properties = "rd-professional.api-url=http://localhost:6668")
+@EnableFeignClients(clients = RdProfessionalApi.class)
+@TestPropertySource(properties = {"rd-professional.api-url=http://localhost:6668",
+    "spring.http.converters.preferred-json-mapper=jackson2"})
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "referenceData_organisationalDetailsInternal", port = "6668")
 @RequiredArgsConstructor

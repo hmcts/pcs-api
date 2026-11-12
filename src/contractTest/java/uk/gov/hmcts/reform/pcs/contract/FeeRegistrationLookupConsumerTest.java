@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -28,13 +29,15 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
+@SuppressWarnings("removal")
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
-    HttpMessageConvertersAutoConfiguration.class
+    HttpMessageConvertersAutoConfiguration.class, Jackson2AutoConfiguration.class
 })
 @EnableFeignClients(clients = FeesApi.class)
-@TestPropertySource(properties = "fees.api.url=http://localhost:8484")
+@TestPropertySource(properties = {"fees.api.url=http://localhost:8484",
+    "spring.http.converters.preferred-json-mapper=jackson2"})
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "feeRegister_lookUp", port = "8484")
 @RequiredArgsConstructor
