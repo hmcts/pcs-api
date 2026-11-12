@@ -81,7 +81,7 @@ public class WarrantOfRestitutionMapper {
     public WarrantOfRestitutionEntity toEntity(EnforcementOrder enforcementOrder,
                                                EnforcementOrderEntity enforcementOrderEntity) {
         WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder()
-                .enforcementOrder(enforcementOrderEntity).build();
+                .enfApplication(enforcementOrderEntity).build();
         if (enforcementOrder.getWarrantOfRestitutionDetails() != null) {
             WarrantOfRestitutionDetails warrantOfRestitutionDetails = enforcementOrder.getWarrantOfRestitutionDetails();
             mapDefendantReturned(warrantOfRestitutionEntity, warrantOfRestitutionDetails);

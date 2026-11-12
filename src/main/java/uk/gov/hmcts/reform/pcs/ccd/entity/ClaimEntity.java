@@ -32,7 +32,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -175,11 +174,6 @@ public class ClaimEntity {
     @Builder.Default
     @JsonManagedReference
     private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
-
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
-    @Builder.Default
-    @JsonManagedReference
-    private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference

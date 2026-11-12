@@ -52,7 +52,7 @@ class WarrantDetailsMapperTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(result.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     @Test
@@ -395,7 +395,7 @@ class WarrantDetailsMapperTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(result.getEnfApplication()).isEqualTo(enforcementOrderEntity);
         assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1000.00"));
     }

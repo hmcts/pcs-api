@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -63,13 +64,10 @@ class EnforcementOrderServiceTest {
     void shouldReturnEnforcementOrderIfFoundInDatabase() {
         // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
-        ClaimEntity claimEntity = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(claimEntity));
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
-        enforcementOrderEntity.setClaim(claimEntity);
         EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
-        claimEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         // When
         EnforcementOrder retOrder = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
@@ -93,36 +91,22 @@ class EnforcementOrderServiceTest {
         assertThat(retOrder).isNull();
     }
 
-    @Test
-    void shouldReturnFirstClaimFromPcsCaseEntity() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        ClaimEntity firstClaim = new ClaimEntity();
-        ClaimEntity secondClaim = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(firstClaim, secondClaim));
-
-        // When
-        ClaimEntity result = enforcementOrderService.retrieveClaimEntity(pcsCaseEntity);
-
-        // Then
-        assertThat(result).isSameAs(firstClaim);
-    }
-
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
     void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
         // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
-        final ClaimEntity claimEntity = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(claimEntity));
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
         final EnforcementTypeStrategy strategy = mock(EnforcementTypeStrategy.class);
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(strategy);
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+        EnforcementOrderEntity result = enforcementOrderService.saveAndClearDraftData(
+                CASE_REFERENCE, enforcementOrder, EnforcementState.PENDING_CASE_ISSUED);
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
@@ -133,8 +117,9 @@ class EnforcementOrderServiceTest {
                 .verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
-        assertThat(savedEntity.getClaim()).isSameAs(claimEntity);
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        assertThat(savedEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
+        assertThat(result).isSameAs(savedEntity);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 

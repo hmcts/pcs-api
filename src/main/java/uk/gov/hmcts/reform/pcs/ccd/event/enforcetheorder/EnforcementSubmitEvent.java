@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
@@ -23,8 +24,9 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.time.Instant;
+import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
@@ -48,12 +50,13 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
         EnforcementFee enforcementFee = getEnforcementFee(enforcementOrder);
         FeeDetails feeDetails = feeService.getFee(enforcementFee.feeType());
-        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
-        scheduleFeePayment(caseReference, getClaimantParty(caseReference), feeDetails);
+        EnforcementOrderEntity enforcementOrderEntity =
+                enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder, PENDING_CASE_ISSUED);
+        scheduleFeePayment(caseReference, getClaimantParty(caseReference), feeDetails, enforcementOrderEntity.getId());
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(enforcementFee.amount(), caseReference))
-            .state(CASE_ISSUED).build();
+            .build();
     }
 
     private record EnforcementFee(FeeType feeType, String amount) {}
@@ -79,7 +82,7 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
     }
 
-    void scheduleFeePayment(long caseReference, PartyEntity partyEntity, FeeDetails feeDetails) {
+    void scheduleFeePayment(long caseReference, PartyEntity partyEntity, FeeDetails feeDetails, UUID enfApplicationId) {
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
@@ -87,6 +90,7 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             .responsiblePartyId(partyEntity.getId())
             .responsiblePartyName(partyService.getPartyName(partyEntity))
             .paymentCallbackHandlerType(ENFORCEMENT)
+            .relatedEntityId(enfApplicationId)
             .build();
         String instanceId = enforceTheOrder.name() + "-" + caseReference;
         schedulerClient.scheduleIfNotExists(FEES_AND_PAY_TASK_DESCRIPTOR.instance(instanceId)

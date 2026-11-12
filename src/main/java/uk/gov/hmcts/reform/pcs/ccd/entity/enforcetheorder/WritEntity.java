@@ -36,9 +36,9 @@ public class WritEntity {
     private Integer id;
 
     @OneToOne
-    @JoinColumn(name = "enf_case_id", nullable = false)
+    @JoinColumn(name = "enf_application_id", nullable = false)
     @JsonBackReference
-    private EnforcementOrderEntity enforcementOrder;
+    private EnforcementOrderEntity enfApplication;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
