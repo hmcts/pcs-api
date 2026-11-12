@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.message;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -33,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService.Writing;
-import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -70,6 +70,8 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     static final int MESSAGE_LIMIT = 750;
     static final int CLOSURE_NOTE_LIMIT = 250;
     private static final String MESSAGE_ACTION = "messageAction";
+    /** Where XUI puts the message a task is for, which Work Allocation set as one of the task's properties. */
+    private static final String TASK_MESSAGE_ID = "/client_context/user_task/task_data/additional_properties/messageId";
     private static final String REPLYING = "messageNeedReply=\"YES\"";
     static final String NO_MESSAGES = "There are no open messages for you to reply to on this case";
     static final String NOT_AVAILABLE = "Messages are not available";
@@ -83,7 +85,6 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
     private final TextAreaValidationService textAreaValidationService;
     private final FeatureToggleService featureToggleService;
     private final UserRoleService userRoleService;
-    private final ClientContextRetriever clientContextRetriever;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -155,7 +156,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         List<CaseMessageEntity> awaiting = messageService.awaiting(pcsCase, userRoleService.isJudge());
         // Started from a message's task, as XUI also does from the case when the user has one task for the event,
         // the event starts on replying to that message.
-        Optional<UUID> taskMessage = taskMessageId(pcsCase);
+        Optional<UUID> taskMessage = taskMessageId(eventPayload, pcsCase);
         List<DynamicListElement> choices = awaiting.stream()
             .map(message -> DynamicListElement.builder().code(message.getId())
                 .label("%s, from %s, %s".formatted(message.getSubject(), message.latest().getSenderName(),
@@ -223,7 +224,7 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         if (!errors.isEmpty()) {
             return rejected(errors);
         }
-        Optional<UUID> tasksMessage = boundMessage(caseData, pcsCase);
+        Optional<UUID> tasksMessage = boundMessage(caseData);
         boolean fromItsTask = !sending && tasksMessage.isPresent() && tasksMessage.get().equals(chosenId(caseData));
         SubmitResponse<State> response = sending
             ? send(pcsCase, caseData, sender)
@@ -290,17 +291,22 @@ public class SendReplyMessage implements CCDConfig<PCSCase, State, UserRole> {
         return caseData.getMessageReplyList() == null ? null : caseData.getMessageReplyList().getValueCode();
     }
 
-    /** The message the event was started from the task of, as the client context or the event's own data says. */
-    private Optional<UUID> boundMessage(PCSCase caseData, PcsCaseEntity pcsCase) {
-        return taskMessageId(pcsCase)
-            .or(() -> Optional.ofNullable(caseData.getMessageTaskMessageId()).map(UUID::fromString));
+    /** The message the event was started from the task of, as its start recorded. */
+    private static Optional<UUID> boundMessage(PCSCase caseData) {
+        return Optional.ofNullable(caseData.getMessageTaskMessageId()).map(UUID::fromString);
     }
 
-    /** The message the task the event was started from is for, if it was started from one. */
-    private Optional<UUID> taskMessageId(PcsCaseEntity pcsCase) {
+    /**
+     * The message the Work Allocation task the event was started from is for, which XUI passes in the client context,
+     * if it was started from one.
+     */
+    private static Optional<UUID> taskMessageId(EventPayload<PCSCase, State> eventPayload, PcsCaseEntity pcsCase) {
         try {
             // XUI can keep a task's context after the user has left it, so only one of this case's messages counts.
-            return clientContextRetriever.getTaskProperty("messageId").map(UUID::fromString)
+            return eventPayload.clientContext().as(JsonNode.class)
+                .map(context -> context.at(TASK_MESSAGE_ID).asText(null))
+                .filter(id -> !id.isBlank())
+                .map(UUID::fromString)
                 .filter(id -> pcsCase.getMessages().stream().anyMatch(message -> message.getId().equals(id)));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
