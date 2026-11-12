@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.DELETE_UNISSUED_CLAIM;
 
 @Component
 @AllArgsConstructor
@@ -29,7 +29,7 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(EventId.deleteThisCase.name(), this::submit)
                 .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED)
                 .name("Delete this case")
-                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4))
+                .showCondition(ShowConditions.featureFlagsEnabled(DELETE_UNISSUED_CLAIM))
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
