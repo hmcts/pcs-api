@@ -37,12 +37,10 @@ wa:
       disableKeyVaults: false
       aadIdentityName: camunda
       keyVaults:
-        pcs:
+        camunda:
           secrets:
             - name: s2s-secret-camunda-bpm
               alias: S2S_SECRET_CAMUNDA_BPM
-        camunda:
-          secrets:
 
   wa-task-management-api:
     java:
