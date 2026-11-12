@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-configuration-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-configuration-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.52.0">
   <decision id="wa-task-configuration-pcs-pcs" name="Task configuration DMN" camunda:historyTimeToLive="P90D">
     <decisionTable id="DecisionTable_14cx079" hitPolicy="RULE ORDER">
       <input id="InputClause_1gxyo7f" label="CCD Case Data" camunda:inputVariable="caseData">
@@ -73,7 +73,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1otkpft">
-          <text></text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0bk5dx2">
           <text>"region"</text>
@@ -94,7 +94,7 @@
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_001vqzf">
-          <text></text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_08jsjbj">
           <text>"location"</text>
@@ -117,7 +117,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0o3zrg4">
-          <text></text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1izav92">
           <text>"locationName"</text>
@@ -409,6 +409,26 @@ Short name</description>
           <text>true</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_0kcpr99">
+        <inputEntry id="UnaryTests_1q32rvx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1cvyr5m">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10oxlrc">
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dvlm9l">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1pqijpr">
+          <text>"access_requests"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0175zcx">
+          <text>true</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_0v7suji">
         <inputEntry id="UnaryTests_01uali5">
           <text></text>
@@ -417,7 +437,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_055g5ba">
-          <text>not("ReviewOrderQuery")</text>
+          <text>not("ReviewOrderQuery","reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1ubz0s5">
           <text>"roleCategory"</text>
@@ -437,7 +457,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_gcr15ti">
-          <text>"ReviewOrderQuery"</text>
+          <text>"ReviewOrderQuery","reviewSpecificAccessRequestJudiciary"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_sa3s2nd">
           <text>"roleCategory"</text>
@@ -446,6 +466,46 @@ Short name</description>
           <text>"JUDICIAL"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_d8c5q6o">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1uk76yu">
+        <inputEntry id="UnaryTests_126mv9i">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ldisw8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1elgiy3">
+          <text>"reviewSpecificAccessRequestLegalOps"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1y0aqjb">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ua6s7q">
+          <text>"LEGAL_OPERATIONS"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ng2peu">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_01s1rnp">
+        <inputEntry id="UnaryTests_0fzta3a">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1qba3zs">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0fhk3u5">
+          <text>"reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ecj2yu">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1spz8st">
+          <text>"CTSC"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ya7w6x">
           <text>true</text>
         </outputEntry>
       </rule>
@@ -477,7 +537,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1kieu3i">
-          <text>-</text>
+          <text>not("reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1u9r7ki">
           <text>"description"</text>
@@ -586,6 +646,86 @@ Short name</description>
           <text>time("17:00")</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1t9vr9a">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_13wzhm4">
+        <inputEntry id="UnaryTests_02nfvmx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0c2nyga">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1resjon">
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_18oekp4">
+          <text>"region"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1wrh1eh">
+          <text>if (caseData.caseManagementLocation != null) then caseData.caseManagementLocation.region else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_10mq2m3">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1viop2c">
+        <inputEntry id="UnaryTests_151efza">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0iz9nk5">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qt5zif">
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_02mwpqx">
+          <text>"location"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_02uuiuh">
+          <text>if (caseData.caseManagementLocation != null) then caseData.caseManagementLocation.baseLocation else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1jt73dn">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1al8f9d">
+        <inputEntry id="UnaryTests_0skgion">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0n3vf1e">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qto678">
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0uklfvz">
+          <text>"additionalProperties_roleAssignmentId"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0z1y5ss">
+          <text>if (taskAttributes != null and taskAttributes.roleAssignmentId != null) then taskAttributes.roleAssignmentId else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ad8m5u">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0dzs9mw">
+        <inputEntry id="UnaryTests_00zha0r">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15zkfbx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0q97jwt">
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin","reviewSpecificAccessRequestCTSC"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0rix2ek">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0y3t6tx">
+          <text>if (taskAttributes != null and taskAttributes.taskId != null and taskAttributes.roleAssignmentId != null) then "[Review Access Request](/role-access/" + taskAttributes.taskId + "/assignment/" + taskAttributes.roleAssignmentId + "/specific-access)" else ""</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ccc5m0">
           <text>false</text>
         </outputEntry>
       </rule>
