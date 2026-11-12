@@ -553,7 +553,9 @@ export class CreateCaseAPIAction implements IAction {
     if (!caseNumber) {
       throw new Error('Cannot update payment because CASE_NUMBER is not set.');
     }
-    const maxRetries = actionRetries;
+    // Fee payment records are created asynchronously after case submission.
+    // Enforcement journeys can take longer than the standard action retry window.
+    const maxRetries = actionRetries + actionRetries;
     const delayMs = VERY_SHORT_TIMEOUT;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
