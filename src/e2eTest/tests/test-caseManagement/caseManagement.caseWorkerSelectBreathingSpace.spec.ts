@@ -145,7 +145,7 @@ test(
     {
       tag: ['@CM', '@regression'],
       annotation: [
-        { type: 'jira', description: 'https://hmcts.atlassian.net/browse/HDPI-6290?' }, // Update with your actual Jira ID if needed
+        { type: 'jira', description: 'https://hmcts.atlassian.net/browse/HDPI-6290?' }, 
         { type: 'ac', description: 'AC06: Cancel from Check Your Answers and ensure no data is saved' },
       ],
     },

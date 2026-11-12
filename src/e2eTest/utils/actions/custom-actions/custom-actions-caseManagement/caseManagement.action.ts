@@ -202,7 +202,7 @@ private async clickPreviousAndValidateAnswersRetained() {
   await performAction('clickButton', enterBreathingSpacecheckYourAnswers.previousButton);
   await performValidation('mainHeader', enterBreathingSpace.mainHeader);
   await performValidation('validateInputTextValues', 
-    { textLabel: enterBreathingSpace.referenceNumberTextLabel }, // Matches "Reference Number (Optional)"
+    { textLabel: enterBreathingSpace.referenceNumberTextLabel },
     { expected: enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber }
   );
   const updatedRef = enterBreathingSpacecheckYourAnswers.changeConfig.updatedReferenceNumber;
@@ -1235,7 +1235,10 @@ private formatDisplayDate(entered: string): string {
                 }
                 await performAction('clickButton', validationArr.button);
                 await expect(async () => {
-                    await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                  await performValidation('errorMessage', {
+                      header: validationArr.header1 || validationArr.header,
+                      message: item.errMessage.trim(),
+                  });
                 }).toPass({
                     intervals: [1_000, 2_000, 3_000],
                     timeout: VERY_LONG_TIMEOUT,
