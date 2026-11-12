@@ -102,6 +102,10 @@ ALTER TABLE order_steps DROP COLUMN note_id,
 -- for review. When it was issued is its issuing step's.
 ALTER TABLE orders ADD COLUMN made_on DATE;
 
+-- Whether an issued order gives permission to issue a warrant or writ of restitution (CPR 83.26(8), 83.13(4A)), which
+-- enforcement checks for; it may be a possession order or an order on an application for it.
+ALTER TABLE orders ADD COLUMN restitution_permitted BOOLEAN;
+
 -- What an issued order says about costs. Any sum to be paid is a money judgment.
 ALTER TABLE orders ADD COLUMN costs TEXT CHECK (costs IN (
     'DEFENDANT_PAYS', 'DEFENDANT_PAYS_FIXED', 'DEFENDANT_PAYS_SUMMARY', 'CLAIMANT_PAYS_SUMMARY',

@@ -107,6 +107,9 @@ public class OrderEntity {
     /** The day the order was made, which its document bears, recorded when it is issued. */
     private LocalDate madeOn;
 
+    /** Whether the order permits a warrant or writ of restitution, recorded when it is issued. */
+    private Boolean restitutionPermitted;
+
     /** What the order says about costs, recorded when it is issued; none if it says nothing. */
     @Enumerated(EnumType.STRING)
     private OrderCosts costs;

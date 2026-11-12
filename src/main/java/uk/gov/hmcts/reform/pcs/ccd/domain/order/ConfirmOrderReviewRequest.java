@@ -25,12 +25,14 @@ public record ConfirmOrderReviewRequest(Action action,
     /**
      * How the order is issued: served on all parties, or without notice on the parties to serve, each one of the
      * case's parties as the start sent them; whether court staff have completed the next steps, without which it is
-     * not issued; what it decides about the claim; what it says about costs; and the sums it says one side pays.
+     * not issued; what it decides about the claim; what it says about costs; the sums it says one side pays; and
+     * whether it permits a warrant or writ of restitution.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal,
                         boolean serveAllParties, List<UUID> partiesToServe, boolean nextStepsComplete,
-                        ClaimOutcome claimOutcome, OrderCosts costs, List<MoneyJudgment> moneyJudgments) {
+                        ClaimOutcome claimOutcome, OrderCosts costs, List<MoneyJudgment> moneyJudgments,
+                        boolean restitutionPermitted) {
 
         public Issue {
             reviewDates = reviewDates == null ? List.of() : reviewDates;
@@ -41,7 +43,7 @@ public record ConfirmOrderReviewRequest(Action action,
         public Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal, boolean serveAllParties,
                      List<UUID> partiesToServe, boolean nextStepsComplete, ClaimOutcome claimOutcome) {
             this(order, reviewDates, seal, serveAllParties, partiesToServe, nextStepsComplete, claimOutcome, null,
-                null);
+                null, false);
         }
     }
 

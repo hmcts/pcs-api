@@ -181,6 +181,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
         }
         order.setCosts(issue.costs());
+        order.setRestitutionPermitted(issue.restitutionPermitted());
         issue.moneyJudgments().stream()
             .map(judgment -> MoneyJudgmentEntity.of(order, validJudgment(order, judgment)))
             .forEach(order.getMoneyJudgments()::add);

@@ -259,7 +259,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("records the order's costs and each money judgment, between the case's parties")
+    @DisplayName("records the order's costs, each money judgment between the case's parties, and restitution")
     void recordsMoneyJudgments() {
         Order order = judgeSubmitsOrder("the judge's order");
         var context = asCaseworker.start().caseContext();
@@ -291,8 +291,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             false, List.of(claimant), List.of(defendant));
         asCaseworker.submitExpectingSuccess(issuing(order, freeForm, List.of(arrears, costs)));
 
-        assertThat(jdbcTemplate.queryForObject("SELECT costs FROM orders WHERE id = ?", String.class, order.id()))
-            .isEqualTo("CLAIMANT_PAYS_SUMMARY");
+        assertThat(jdbcTemplate.queryForMap("SELECT costs, restitution_permitted FROM orders WHERE id = ?",
+            order.id())).containsAllEntriesOf(Map.of("costs", "CLAIMANT_PAYS_SUMMARY", "restitution_permitted", true));
         assertThat(jdbcTemplate.queryForList("SELECT mj.arrears::text AS arrears, mj.costs::text AS costs, "
             + "mj.instalment_frequency, mj.suspended, mj.status, mjp.role, mjp.party_id FROM money_judgment mj "
             + "JOIN money_judgment_party mjp ON mjp.judgment_id = mj.id WHERE mj.order_id = ?", order.id()))
@@ -316,7 +316,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     private static ConfirmOrderReviewRequest issuing(Order order, IssuedOrder issued, List<MoneyJudgment> judgments) {
         return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), "staff-review", null,
             new Issue(issued, List.of(), HIGH_COURT, true, List.of(), true, OTHER, OrderCosts.CLAIMANT_PAYS_SUMMARY,
-                judgments));
+                judgments, true));
     }
 
     @Test
