@@ -72,7 +72,7 @@ public class BulkPrintService {
                          String recipientName, AddressUK address, List<DocumentEntity> documents) {
         requirePostalAddress(address, recipient);
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
-        byte[] coversheet = coversheetProvider.render(recipientName, address, caseReference);
+        final byte[] coversheet = coversheetProvider.render(recipientName, address, caseReference);
         List<BulkPrintLetterAssembler.LetterDocument> letterDocuments = new ArrayList<>();
         if (letterType.includesCoveringLetter()
             && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
