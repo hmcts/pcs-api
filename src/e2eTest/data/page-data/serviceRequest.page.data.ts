@@ -3,6 +3,7 @@ export const serviceRequest = {
   payNowLink: `Pay now`,
   amountToPayLabel: `Amount to pay`,
   amount415: `£415.00`,
+  enforcementWarrantFeeAmount152: `£152.00`,
   payByAccountRadioOption: `Pay fee using Payment by Account (PBA)`,
   payByCardRadioOption: `Pay by credit or debit card`,
   selectPBALabel: `Select a PBA`,

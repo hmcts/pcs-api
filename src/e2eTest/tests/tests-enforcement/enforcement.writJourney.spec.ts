@@ -2,7 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary } from '@data/page-data';
+import { caseSummary, serviceRequest } from '@data/page-data';
 import {
   yourHCEO,
   theNICEWillChoose,
@@ -27,6 +27,7 @@ import {
   repayments,
   statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -136,6 +137,29 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader,
         iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      });
+
+      await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+      await performAction('payEnforcementFee', {
+        headerName: confirm.mainHeader,
+        feePayText: confirm.pay152ApplicationFeeParagraph,
+        payLink: confirm.payYourApplicationFeeLink,
+        serviceTab: caseSummary.serviceRequestTab
+      });
+      await performAction('selectPaymentTypePBA', {
+        amountLabel: serviceRequest.amountToPayLabel,
+        expectedAmount: serviceRequest.enforcementWarrantFeeAmount152,
+        payByOption: serviceRequest.payByAccountRadioOption,
+        pbaLabel: serviceRequest.selectPBALabel,
+        pbaValue: serviceRequest.pbaIndex1,
+        referenceLabel: serviceRequest.pbaReferenceLable,
+        referenceText: serviceRequest.pbaReferenceInputText,
+        confirmButton: serviceRequest.confirmPaymentButton,
+      });
+      await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+      await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
+      await performAction('verifyFeeStatusInServiceTab', {
+        status: serviceRequest.paidStatus
       });
     });
 

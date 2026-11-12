@@ -2,7 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary } from '@data/page-data';
+import { caseSummary, home, serviceRequest } from '@data/page-data';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -42,6 +42,7 @@ import {
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
+import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -283,6 +284,28 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         label2: statementOfTruth.nameOfFirmHiddenTextLabel,
         input2: statementOfTruth.nameOfFirmHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
+      });
+      await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+      await performAction('payEnforcementFee', {
+        headerName: confirm.mainHeader,
+        feePayText: confirm.pay152ApplicationFeeParagraph,
+        payLink: confirm.payYourApplicationFeeLink,
+        serviceTab: caseSummary.serviceRequestTab
+      });
+      await performAction('selectPaymentTypePBA', {
+        amountLabel: serviceRequest.amountToPayLabel,
+        expectedAmount: serviceRequest.enforcementWarrantFeeAmount152,
+        payByOption: serviceRequest.payByAccountRadioOption,
+        pbaLabel: serviceRequest.selectPBALabel,
+        pbaValue: serviceRequest.pbaIndex1,
+        referenceLabel: serviceRequest.pbaReferenceLable,
+        referenceText: serviceRequest.pbaReferenceInputText,
+        confirmButton: serviceRequest.confirmPaymentButton,
+      });
+      await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+      await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
+      await performAction('verifyFeeStatusInServiceTab', {
+        status: serviceRequest.paidStatus
       });
     });
 
