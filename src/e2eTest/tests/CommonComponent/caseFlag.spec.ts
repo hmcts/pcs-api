@@ -111,6 +111,24 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await expect(flagLevelRadios).toHaveCount(defendantNames.length + 1);
   });
 
+  test('Case Flags - Claimant organisation name is not displayed on the table', async ({ page }) => {
+  await performAction('login', {
+    email: user.hearingCenterAdmin.email,
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  });
+  await dismissCookieBanner(page, 'analytics');
+  await performAction('navigateToCaseSummary');
+  await performAction('clickTab', viewCaseFlag.caseFlagsTab);
+  await performValidation('text', {
+    elementType: 'subHeading',
+    text: viewCaseFlag.caseFlagsViewHeader
+  });
+
+  const claimantName = submitCaseApiData.submitCasePayload().claimantName;
+  await expect(page.getByText(claimantName, { exact: true }).filter({ visible: true })).toHaveCount(0);
+});
+
+
   test('Case Flags - Create case level Flag', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
