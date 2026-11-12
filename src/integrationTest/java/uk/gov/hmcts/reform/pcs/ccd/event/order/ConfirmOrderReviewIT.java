@@ -19,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issued
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ClaimOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -253,6 +256,61 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThatThrownBy(() -> jdbcTemplate.update("UPDATE order_claim SET kind = 'SUSPENDED_POSSESSION', "
             + "possession_date = NULL WHERE order_id = ?", order.id()))
             .hasMessageContaining("order_claim_suspended_check");
+    }
+
+    @Test
+    @DisplayName("records the order's costs and each money judgment, between the case's parties")
+    void recordsMoneyJudgments() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        var context = asCaseworker.start().caseContext();
+        UUID claimant = UUID.fromString(context.claimants().getFirst().id());
+        UUID defendant = UUID.fromString(context.defendants().getFirst().id());
+        var arrears = new MoneyJudgment(new BigDecimal("2450.00"), new BigDecimal("12.50"), null,
+            new BigDecimal("100.00"), LocalDate.of(2026, 12, 1), LocalDate.of(2027, 6, 1), new BigDecimal("50.00"),
+            MoneyJudgment.InstalmentFrequency.MONTHLY, LocalDate.of(2027, 1, 1), true, List.of(defendant),
+            List.of(claimant));
+        var costs = new MoneyJudgment(null, null, new BigDecimal("355.00"), null, null, null, null, null, null,
+            false, List.of(claimant), List.of(defendant));
+        var freeForm = new IssuedOrder(OrderType.FREE_FORM, Map.of(), WORDING, "the judge's wording");
+
+        // A judgment needs a debtor, and parties of the case.
+        assertThat(asCaseworker.submitExpectingRejection(issuing(order, freeForm,
+            List.of(new MoneyJudgment(BigDecimal.TEN, null, null, null, null, null, null, null, null, false,
+                List.of(), List.of(claimant))))).errors())
+            .containsExactly(ConfirmOrderReview.INCOMPLETE_MONEY_JUDGMENT);
+        assertThat(asCaseworker.submitExpectingRejection(issuing(order, freeForm,
+            List.of(new MoneyJudgment(BigDecimal.TEN, null, null, null, null, null, null, null, null, false,
+                List.of(UUID.randomUUID()), List.of(claimant))))).errors())
+            .containsExactly(ConfirmOrderReview.INCOMPLETE_MONEY_JUDGMENT);
+
+        asCaseworker.submitExpectingSuccess(issuing(order, freeForm, List.of(arrears, costs)));
+
+        assertThat(jdbcTemplate.queryForObject("SELECT costs FROM orders WHERE id = ?", String.class, order.id()))
+            .isEqualTo("CLAIMANT_PAYS_SUMMARY");
+        assertThat(jdbcTemplate.queryForList("SELECT mj.arrears::text AS arrears, mj.costs::text AS costs, "
+            + "mj.instalment_frequency, mj.suspended, mj.status, mjp.role, mjp.party_id FROM money_judgment mj "
+            + "JOIN money_judgment_party mjp ON mjp.judgment_id = mj.id WHERE mj.order_id = ?", order.id()))
+            .extracting(row -> row.get("arrears"), row -> row.get("costs"), row -> row.get("instalment_frequency"),
+                row -> row.get("suspended"), row -> row.get("status"), row -> row.get("role"),
+                row -> row.get("party_id"))
+            .containsExactlyInAnyOrder(
+                tuple("2450.00", null, "MONTHLY", true, "ACTIVE", "DEBTOR", defendant),
+                tuple("2450.00", null, "MONTHLY", true, "ACTIVE", "CREDITOR", claimant),
+                tuple(null, "355.00", null, false, "ACTIVE", "DEBTOR", claimant),
+                tuple(null, "355.00", null, false, "ACTIVE", "CREDITOR", defendant));
+        // The database holds each way of paying in full, and a status date exactly when it is no longer active.
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            "UPDATE money_judgment SET one_off_date = NULL WHERE order_id = ?", order.id()))
+            .hasMessageContaining("money_judgment_one_off_check");
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            "UPDATE money_judgment SET status = 'SATISFIED' WHERE order_id = ?", order.id()))
+            .hasMessageContaining("money_judgment_status_date_check");
+    }
+
+    private static ConfirmOrderReviewRequest issuing(Order order, IssuedOrder issued, List<MoneyJudgment> judgments) {
+        return new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(), "staff-review", null,
+            new Issue(issued, List.of(), HIGH_COURT, true, List.of(), true, OTHER, OrderCosts.CLAIMANT_PAYS_SUMMARY,
+                judgments));
     }
 
     @Test

@@ -97,3 +97,46 @@ CREATE INDEX case_message_entry_message_idx ON case_message_entry(message_id, cr
 ALTER TABLE order_steps DROP COLUMN note_id,
     ADD COLUMN message_entry_id UUID REFERENCES case_message_entry(id),
     ADD CONSTRAINT order_steps_message_check CHECK (message_entry_id IS NULL OR state = 'RETURNED_TO_JUDGE');
+
+-- What an issued order says about costs. Any sum to be paid is a money judgment.
+ALTER TABLE orders ADD COLUMN costs TEXT CHECK (costs IN (
+    'DEFENDANT_PAYS', 'DEFENDANT_PAYS_FIXED', 'DEFENDANT_PAYS_SUMMARY', 'CLAIMANT_PAYS_SUMMARY',
+    'PUBLIC_FUNDING', 'COSTS_IN_CASE', 'RESERVED', 'NO_ORDER', 'OTHER'));
+
+-- A sum an issued order says one side pays the other. Different sums or terms for different parties are separate
+-- judgments.
+CREATE TABLE money_judgment (
+    id                    UUID PRIMARY KEY,
+    order_id              UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    arrears               NUMERIC(18,2) CHECK (arrears >= 0),
+    -- Interest and any other sum.
+    other_amount          NUMERIC(18,2) CHECK (other_amount >= 0),
+    costs                 NUMERIC(18,2) CHECK (costs >= 0),
+    -- Paid by a one-off payment, by the whole or the balance by a date, by instalments, or any of these. With none,
+    -- it is due within 14 days (CPR 40.11).
+    one_off_amount        NUMERIC(18,2) CHECK (one_off_amount > 0),
+    one_off_date          DATE,
+    pay_by                DATE,
+    instalment_amount     NUMERIC(18,2) CHECK (instalment_amount > 0),
+    instalment_frequency  TEXT CHECK (instalment_frequency IN ('WEEKLY', 'FORTNIGHTLY', 'MONTHLY')),
+    first_instalment_date DATE,
+    -- Its enforcement is suspended on the terms the possession order is suspended on.
+    suspended             BOOLEAN NOT NULL,
+    status                TEXT NOT NULL CHECK (status IN ('ACTIVE', 'SATISFIED', 'CANCELLED', 'SET_ASIDE')),
+    status_date           DATE,
+    CONSTRAINT money_judgment_sum_check CHECK (num_nonnulls(arrears, other_amount, costs) > 0),
+    CONSTRAINT money_judgment_one_off_check CHECK (num_nulls(one_off_amount, one_off_date) IN (0, 2)),
+    CONSTRAINT money_judgment_instalments_check
+        CHECK (num_nulls(instalment_amount, instalment_frequency, first_instalment_date) IN (0, 3)),
+    CONSTRAINT money_judgment_status_date_check CHECK ((status = 'ACTIVE') = (status_date IS NULL))
+);
+
+CREATE INDEX money_judgment_order_id_idx ON money_judgment(order_id);
+
+-- Who owes a money judgment and who is owed it. More than one debtor are jointly and severally liable.
+CREATE TABLE money_judgment_party (
+    judgment_id UUID NOT NULL REFERENCES money_judgment(id) ON DELETE CASCADE,
+    party_id    UUID NOT NULL REFERENCES party(id),
+    role        TEXT NOT NULL CHECK (role IN ('DEBTOR', 'CREDITOR')),
+    PRIMARY KEY (judgment_id, party_id)
+);

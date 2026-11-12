@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -24,17 +25,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ClaimOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
@@ -91,6 +96,16 @@ public class OrderEntity {
     @Builder.Default
     @Setter(AccessLevel.NONE)
     private Map<UUID, ClaimOutcome> claimOutcomes = new HashMap<>();
+
+    /** The sums the order says one side pays the other, recorded when it is issued. */
+    @OneToMany(mappedBy = "order", cascade = ALL)
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private List<MoneyJudgmentEntity> moneyJudgments = new ArrayList<>();
+
+    /** What the order says about costs, recorded when it is issued; none if it says nothing. */
+    @Enumerated(EnumType.STRING)
+    private OrderCosts costs;
 
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)

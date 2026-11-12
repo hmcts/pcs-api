@@ -23,9 +23,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.MoneyJudgmentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -45,6 +47,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -70,6 +73,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     static final String NO_WORDING = "The order's wording did not load. Reload the review and issue the order again";
     static final String NO_PARTY_TO_SERVE = "Select who to serve the order on";
     static final String NO_CLAIM_OUTCOME = "Record what the order does";
+    static final String INCOMPLETE_MONEY_JUDGMENT =
+        "Record who each money judgment is between, its sums and how they are paid";
     static final String TASKS_OUTSTANDING =
         "You must complete all outstanding tasks before issuing this order and serving it on the parties";
 
@@ -169,6 +174,10 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (!issue.serveAllParties()) {
             order.getServedParties().addAll(partiesToServe(order, issue.partiesToServe()));
         }
+        order.setCosts(issue.costs());
+        issue.moneyJudgments().stream()
+            .map(judgment -> MoneyJudgmentEntity.of(order, validJudgment(order, judgment)))
+            .forEach(order.getMoneyJudgments()::add);
         OrderStepEntity issued = orderSteps.append(order, ISSUED, IdamUserIds.normalise(caseworker.getUid()),
             OrderStepEntity.builder()
                 .orderType(issue.order().orderType())
@@ -186,6 +195,17 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 issue.reviewDates().stream().map(ConfirmOrderReview::toReviewDate).toList());
         }
         return ExternalSubmitResponse.accepted("Order issued", "Reviewed and issued an order");
+    }
+
+    /** A judgment that says what it needs, between the case's own parties. */
+    private static MoneyJudgment validJudgment(OrderEntity order, MoneyJudgment judgment) {
+        Set<UUID> caseParties = order.getPcsCase().getParties().stream().map(PartyEntity::getId)
+            .collect(Collectors.toSet());
+        if (!judgment.complete() || !caseParties.containsAll(judgment.debtors())
+            || !caseParties.containsAll(judgment.creditors())) {
+            throw ExternalRejection.because(INCOMPLETE_MONEY_JUDGMENT);
+        }
+        return judgment;
     }
 
     /** The case's parties court staff chose to serve the order on without notice, at least one. */
