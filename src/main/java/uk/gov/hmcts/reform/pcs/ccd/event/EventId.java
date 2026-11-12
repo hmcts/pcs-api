@@ -43,5 +43,6 @@ public enum EventId {
     resumeEnforcementOrder,
     deleteDraftApplication,
     markCaseForDeletion,
-    confirmCaseDisposal
+    confirmCaseDisposal,
+    deleteThisCase
 }

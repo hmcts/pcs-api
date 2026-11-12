@@ -127,7 +127,7 @@ public enum State {
 
     @CCD(
             label = "Draft Discarded",
-            access = {SystemUserAccess.class}
+            access = {SystemUserAccess.class, ClaimantAccess.class}
     )
     DRAFT_DISCARDED,
 
