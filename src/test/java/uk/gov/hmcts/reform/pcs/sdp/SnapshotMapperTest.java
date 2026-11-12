@@ -317,6 +317,11 @@ class SnapshotMapperTest {
         assertThat(claimSnapshotMapper.mapRequestedFee(partial, null).getFeeStatus())
             .isEqualTo("Partially Paid");
         assertThat(claimSnapshotMapper.mapRequestedFee(partial, null).getFeeReference()).isNull();
+
+        SdpClaimSnapshotPayment noStatus = new SdpClaimSnapshotPayment(
+            UUID.randomUUID(), 13, null, null, null, null, null, "CLAIM", null);
+        assertThat(claimSnapshotMapper.mapRequestedFee(noStatus, null).getFeeStatus())
+            .isEqualTo("Requested Not Paid");
     }
 
     @Test

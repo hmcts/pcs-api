@@ -149,13 +149,11 @@ public class SnapshotMapper {
     }
 
     private static String resolveFeeStatus(String paymentStatus) {
-        if ("PAID".equals(paymentStatus)) {
-            return "Fully Paid";
-        }
-        if ("PARTIALLY_PAID".equals(paymentStatus)) {
-            return "Partially Paid";
-        }
-        return "Requested Not Paid";
+        return switch (paymentStatus) {
+            case "PAID" -> "Fully Paid";
+            case "PARTIALLY_PAID" -> "Partially Paid";
+            case null, default -> "Requested Not Paid";
+        };
     }
 
     private static String firstNonBlank(String first, String second) {

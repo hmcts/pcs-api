@@ -53,6 +53,9 @@ public class ExportService {
     private final Clock utcClock;
     private final String environment;
     static final int EXPORT_CHUNK_SIZE = 200;
+    private static final String SNAPSHOT_FILENAME_PREFIX = "claim_snapshot_";
+    private static final String PREVIEW_FILENAME_PREFIX = SNAPSHOT_FILENAME_PREFIX + "preview_";
+    private static final String JSON_EXTENSION = ".json";
 
     public ExportService(SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository,
                          SnapshotMapper claimSnapshotMapper,
@@ -92,10 +95,8 @@ public class ExportService {
     }
 
     private String snapshotFilename(String extractDate) {
-        if ("preview".equals(environment)) {
-            return "claim_snapshot_preview_" + extractDate + ".json";
-        }
-        return "claim_snapshot_" + extractDate + ".json";
+        String prefix = "preview".equals(environment) ? PREVIEW_FILENAME_PREFIX : SNAPSHOT_FILENAME_PREFIX;
+        return prefix + extractDate + JSON_EXTENSION;
     }
 
     private int writeSnapshotFile(Path snapshotFile,
@@ -174,7 +175,7 @@ public class ExportService {
         try {
             return Files.createTempFile(
                 "sdp-claim-snapshot-",
-                ".json",
+                JSON_EXTENSION,
                 PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))
             );
         } catch (IOException e) {

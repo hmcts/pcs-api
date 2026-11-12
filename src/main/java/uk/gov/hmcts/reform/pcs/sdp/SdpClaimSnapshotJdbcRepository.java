@@ -20,6 +20,7 @@ import java.util.UUID;
 public class SdpClaimSnapshotJdbcRepository {
 
     private static final String CLAIM_ID = "claim_id";
+    private static final String PARTY_ID = "party_id";
 
     // Claim, case, tenancy, notice and property address fields for the snapshot,
     // plus the current version if already exported.
@@ -231,7 +232,7 @@ public class SdpClaimSnapshotJdbcRepository {
     private SdpClaimSnapshotParty mapParty(ResultSet rs, int rowNum) throws SQLException {
         return new SdpClaimSnapshotParty(
             rs.getObject(CLAIM_ID, UUID.class),
-            rs.getObject("party_id", UUID.class),
+            rs.getObject(PARTY_ID, UUID.class),
             rs.getString("role"),
             rs.getBoolean("represented")
         );
@@ -241,7 +242,7 @@ public class SdpClaimSnapshotJdbcRepository {
         return new SdpClaimSnapshotPayment(
             rs.getObject(CLAIM_ID, UUID.class),
             rs.getObject("id", Integer.class),
-            rs.getObject("party_id", UUID.class),
+            rs.getObject(PARTY_ID, UUID.class),
             rs.getString("service_request_reference"),
             rs.getString("external_reference"),
             rs.getBigDecimal("amount"),
@@ -264,7 +265,7 @@ public class SdpClaimSnapshotJdbcRepository {
         return new SdpClaimSnapshotResponse(
             rs.getObject(CLAIM_ID, UUID.class),
             rs.getObject("response_id", Integer.class),
-            rs.getObject("party_id", UUID.class),
+            rs.getObject(PARTY_ID, UUID.class),
             rs.getString("make_counter_claim"),
             toLocalDateTime(rs, "response_submitted_date")
         );

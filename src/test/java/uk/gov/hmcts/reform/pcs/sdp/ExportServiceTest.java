@@ -103,25 +103,27 @@ class ExportServiceTest {
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
 
         String json = uploadedJson();
-        assertThat(json).contains("\"contract_version\":\"4.2.0\"");
-        assertThat(json).contains("\"claim_reference\":\"1234567890123456\"");
-        assertThat(json).contains("\"claim_type\":\"AAA3-SLD\"");
-        assertThat(json).contains("\"claim_sub_type\":\"Social\"");
-        assertThat(json).contains("\"party_role\":\"Defendant\"");
-        assertThat(json).contains("\"party_represented\":\"No\"");
-        assertThat(json).contains("\"party_language\":\"eng\"");
-        assertThat(json).contains("\"grounds\":[]");
-        assertThat(json).contains("\"property_address\":[]");
-        assertThat(json).contains("\"requested_fees\":[]");
-        assertThat(json).contains("\"responses\":[]");
-        assertThat(json).contains("\"postal_claim_received_by_court_date\":\"2026-01-10\"");
-        assertThat(json).contains("\"claim_submitted_to_system_date\":\"2026-02-01T14:30:00Z\"");
-        assertThat(json).contains("\"claim_fee_paid_date\":null");
-        assertThat(json).contains("\"claim_issued_to_defendant_date\":\"2026-02-05T09:00:00Z\"");
-        assertThat(json).contains("\"recorded_date\":\"2026-02-01T14:30:00Z\"");
-        assertThat(json).contains("\"environment\":\"dev\"");
-        assertThat(json).contains("\"snapshot_version\":1");
-        assertThat(json).contains("\"published_date\":\"2026-03-09T12:00:00Z\"");
+        assertThat(json).contains(
+            "\"contract_version\":\"4.2.0\"",
+            "\"claim_reference\":\"1234567890123456\"",
+            "\"claim_type\":\"AAA3-SLD\"",
+            "\"claim_sub_type\":\"Social\"",
+            "\"party_role\":\"Defendant\"",
+            "\"party_represented\":\"No\"",
+            "\"party_language\":\"eng\"",
+            "\"grounds\":[]",
+            "\"property_address\":[]",
+            "\"requested_fees\":[]",
+            "\"responses\":[]",
+            "\"postal_claim_received_by_court_date\":\"2026-01-10\"",
+            "\"claim_submitted_to_system_date\":\"2026-02-01T14:30:00Z\"",
+            "\"claim_fee_paid_date\":null",
+            "\"claim_issued_to_defendant_date\":\"2026-02-05T09:00:00Z\"",
+            "\"recorded_date\":\"2026-02-01T14:30:00Z\"",
+            "\"environment\":\"dev\"",
+            "\"snapshot_version\":1",
+            "\"published_date\":\"2026-03-09T12:00:00Z\""
+        );
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(Path.class));
     }
 
@@ -246,8 +248,10 @@ class ExportServiceTest {
 
         assertThat(result.recordCount()).isEqualTo(1);
         String json = uploadedJson();
-        assertThat(json).contains("\"address\":\"1 High Street, Cambridge, England\"");
-        assertThat(json).contains("\"postcode\":\"CB5 8BL\"");
+        assertThat(json).contains(
+            "\"address\":\"1 High Street, Cambridge, England\"",
+            "\"postcode\":\"CB5 8BL\""
+        );
     }
 
     @Test
