@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,7 +26,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * off, the claimant too. When release flag 1.4 is on, only defendants will receive the claim pack.
  * Defendants also get their own access code once it exists. Only documents not covered by a {@code PACK_SENT}
  * success row are included, so a failed access-code letter self-heals without re-sending the claim form.
- * English defendants also receive the application uploads, after the claim form, on that same send.
+ * When release flag 1.4 is on, English defendants also receive the application uploads, after the claim
+ * form, on that same send.
  */
 @Service
 @Slf4j
@@ -33,13 +36,16 @@ public class ClaimPackSelector {
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
     private final PackSkipRules packSkipRules;
+    private final FeatureToggleService featureToggleService;
 
     public ClaimPackSelector(ClaimActivityLogRepository claimActivityLogRepository,
                              SentPackDocuments sentPackDocuments,
-                             PackSkipRules packSkipRules) {
+                             PackSkipRules packSkipRules,
+                             FeatureToggleService featureToggleService) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
         this.packSkipRules = packSkipRules;
+        this.featureToggleService = featureToggleService;
     }
 
     public List<ClaimPackCandidate> findClaimPackCandidates(PcsCaseEntity pcsCase) {
@@ -102,7 +108,8 @@ public class ClaimPackSelector {
 
     private void addUnsentEvidence(List<DocumentEntity> unsent, PcsCaseEntity pcsCase, ClaimEntity claim,
                                    PartyEntity defendant, Set<String> sent) {
-        if (pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
+            || pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
             return;
         }
         claim.getClaimDocuments().stream()

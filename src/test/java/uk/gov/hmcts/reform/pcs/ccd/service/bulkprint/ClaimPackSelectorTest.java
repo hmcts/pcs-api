@@ -71,7 +71,8 @@ class ClaimPackSelectorTest {
             claimActivityLogRepository,
             sentPackDocuments,
             new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null),
-                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)));
+                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)),
+            featureToggleService);
     }
 
     private final PartyEntity claimant = party();
@@ -110,6 +111,7 @@ class ClaimPackSelectorTest {
     @Test
     @DisplayName("Puts application evidence after the claim form for an English defendant")
     void shouldIncludeApplicationEvidenceAfterTheClaimForm() {
+        enableRelease14();
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity laterNotice = evidence("notice.pdf", Instant.parse("2026-10-02T10:00:00Z"));
         DocumentEntity earlierRent = evidence("rent.pdf", Instant.parse("2026-10-01T10:00:00Z"));
@@ -119,16 +121,16 @@ class ClaimPackSelectorTest {
 
         List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.getFirst().recipientType()).isEqualTo(PartyRole.CLAIMANT);
-        assertThat(result.getFirst().documents()).containsExactly(claimForm);
-        assertThat(result.get(1).party()).isEqualTo(defendantA);
-        assertThat(result.get(1).documents()).containsExactly(pinA, claimForm, earlierRent, laterNotice);
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.party()).isEqualTo(defendantA);
+            assertThat(candidate.documents()).containsExactly(pinA, claimForm, earlierRent, laterNotice);
+        });
     }
 
     @Test
     @DisplayName("Does not add application evidence to a Welsh defendant pack")
     void shouldLeaveWelshDefendantPackWithoutEvidence() {
+        enableRelease14();
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
@@ -140,12 +142,14 @@ class ClaimPackSelectorTest {
 
         List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
 
-        assertThat(result.get(1).documents()).containsExactly(pinA, claimForm);
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents()).containsExactly(pinA, claimForm));
     }
 
     @Test
     @DisplayName("Does not reprint a sent claim pack just because evidence was never included")
     void shouldNotReopenASentPackToAddEvidence() {
+        enableRelease14();
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
@@ -165,6 +169,7 @@ class ClaimPackSelectorTest {
     @Test
     @DisplayName("Gives each defendant the same application evidence")
     void shouldGiveEachDefendantTheSameEvidence() {
+        enableRelease14();
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity pinB = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantB);
         DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
@@ -446,6 +451,10 @@ class ClaimPackSelectorTest {
 
     private void enableRelease13() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+    }
+
+    private void enableRelease14() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
     }
 
     private PcsCaseEntity caseWith(DocumentEntity claimFormDocument, List<DocumentEntity> documents,
