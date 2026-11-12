@@ -18,7 +18,8 @@ import {
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   helpPayingTheFee, selectParty,
   statementOfTruth, uploadDocumentsToSupportDefendantsApplication, whatOrderDoYouWantTheCourtToMakeAndWhy,
-  whichLanguageDidYouUseToCompleteThisService
+  whichLanguageDidYouUseToCompleteThisService,
+  confirmGenApps
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 import { home } from '@data/page-data';
@@ -126,6 +127,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
     await performAction('updatePaymentAPI');
+    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
