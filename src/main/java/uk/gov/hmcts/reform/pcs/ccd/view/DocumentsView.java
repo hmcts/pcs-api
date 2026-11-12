@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -76,10 +78,18 @@ public class DocumentsView {
 
         UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+        // Court staff and judges see every without-notice order, so only a party's view looks up who each was served
+        // on, for all of them at once.
+        Map<UUID, List<PartyEntity>> recipients = GenAppVisibilityService.isInternalUser(userRoles.roles())
+            ? Map.of()
+            : orderRepository.findServedPartiesByDocumentIds(pcsCaseEntity.getDocuments().stream()
+                .filter(document -> document.getType() == DocumentType.WITHOUT_NOTICE_ORDER)
+                .map(DocumentEntity::getId)
+                .toList());
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
-                                                                   organisationId))
+                                                                   organisationId, recipients))
             .map(this::toListValue)
             .collect(Collectors.toList());
     }
@@ -97,7 +107,8 @@ public class DocumentsView {
             .build();
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId,
+                                            Map<UUID, List<PartyEntity>> recipients) {
         // Access code letters are only for bulk print, which finds them in systemDocuments.
         if (documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;
@@ -117,8 +128,8 @@ public class DocumentsView {
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
             // Generated orders use their recorded recipients; uploads retain the selected party's access rules.
             // Enforce this even when making new orders is disabled.
-            List<PartyEntity> recipients = orderRepository.findServedPartiesByDocumentId(documentEntity.getId());
-            return (recipients.isEmpty() ? Collections.singletonList(documentEntity.getParty()) : recipients).stream()
+            List<PartyEntity> servedOn = recipients.getOrDefault(documentEntity.getId(), List.of());
+            return (servedOn.isEmpty() ? Collections.singletonList(documentEntity.getParty()) : servedOn).stream()
                 .anyMatch(party -> genAppVisibilityService
                     .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles()));
         }

@@ -8,8 +8,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
@@ -29,7 +31,17 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
         + "AND decision IN ('GRANT', 'DISMISS', 'STRIKE_OUT'))", nativeQuery = true)
     boolean isGenAppDecided(UUID genAppId);
 
-    /** The recipients of a generated without-notice order; uploaded documents have no linked order. */
-    @Query("select party from OrderEntity o join o.servedParties party where o.document.id = :documentId")
-    List<PartyEntity> findServedPartiesByDocumentId(UUID documentId);
+    /**
+     * The recipients of each generated without-notice order among the documents, by document id, in one query;
+     * uploaded documents have no linked order, so none.
+     */
+    default Map<UUID, List<PartyEntity>> findServedPartiesByDocumentIds(Collection<UUID> documentIds) {
+        return documentIds.isEmpty() ? Map.of() : findServedPartyRows(documentIds).stream()
+            .collect(Collectors.groupingBy(row -> (UUID) row[0],
+                Collectors.mapping(row -> (PartyEntity) row[1], Collectors.toList())));
+    }
+
+    @Query("select o.document.id, party from OrderEntity o join o.servedParties party "
+        + "where o.document.id in :documentIds")
+    List<Object[]> findServedPartyRows(Collection<UUID> documentIds);
 }

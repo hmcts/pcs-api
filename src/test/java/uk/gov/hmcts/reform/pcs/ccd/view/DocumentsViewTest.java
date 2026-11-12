@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -430,8 +432,8 @@ class DocumentsViewTest {
             .type(DocumentType.WITHOUT_NOTICE_ORDER)
             .build();
 
-        when(orderRepository.findServedPartiesByDocumentId(documentEntity.getId()))
-            .thenReturn(List.of(served, alsoServed));
+        when(orderRepository.findServedPartiesByDocumentIds(List.of(documentEntity.getId())))
+            .thenReturn(Map.of(documentEntity.getId(), List.of(served, alsoServed)));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
@@ -439,6 +441,29 @@ class DocumentsViewTest {
 
         // Then
         assertThat(pcsCase.getAllDocuments()).hasSize(visibleToOne ? 1 : 0);
+    }
+
+    @Test
+    void shouldNotLookUpAWithoutNoticeOrdersRecipientsForCourtStaff() {
+        // Given
+        String role = CaseworkerRoles.CASEWORKER_ROLES[0].getRole();
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of(role)));
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(any(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of(role)))).thenReturn(true);
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(1);
+        verifyNoInteractions(orderRepository);
     }
 
     @ParameterizedTest(name = "court staff: {0}")
