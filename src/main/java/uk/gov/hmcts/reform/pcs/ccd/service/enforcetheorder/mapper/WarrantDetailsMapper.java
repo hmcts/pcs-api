@@ -3,12 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
@@ -26,16 +22,9 @@ public class WarrantDetailsMapper {
             warrantEntity.setLanguageUsed(warrantDetails.getLanguageUsed());
             breathingSpace(warrantEntity, warrantDetails);
             missedPayments(warrantEntity, warrantDetails);
-            controlFlags(warrantEntity, warrantDetails);
-            suspendTheOrder(warrantEntity, warrantDetails);
             additionalInformation(warrantDetails, warrantEntity);
             nameAndAddressForEviction(warrantDetails, warrantEntity);
-            peopleToEvict(warrantDetails, warrantEntity);
             propertyAccessDetails(warrantDetails, warrantEntity);
-            legalCosts(warrantDetails, warrantEntity);
-            moneyOwed(warrantDetails, warrantEntity);
-            landRegistry(warrantDetails, warrantEntity);
-            repayment(warrantDetails, warrantEntity);
             defendantsDOB(warrantEntity, warrantDetails);
         }
         return warrantEntity;
@@ -58,12 +47,6 @@ public class WarrantDetailsMapper {
 
     private void missedPayments(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setDefendantMissedPayments(warrantDetails.getDefendantMissedPayments());
-    }
-
-    private void peopleToEvict(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
-        if (warrantDetails.getPeopleToEvict() != null) {
-            warrantEntity.setEvictEveryone(warrantDetails.getPeopleToEvict().getEvictEveryone());
-        }
     }
 
     private void nameAndAddressForEviction(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
@@ -91,32 +74,6 @@ public class WarrantDetailsMapper {
         }
     }
 
-    private void legalCosts(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
-        LegalCosts legalCosts = warrantDetails.getLegalCosts();
-        if (legalCosts != null) {
-            warrantEntity.setAreLegalCostsToBeClaimed(legalCosts.getAreLegalCostsToBeClaimed());
-            warrantEntity.setAmountOfLegalCosts(legalCosts.getAmountOfLegalCosts());
-        }
-    }
-
-    private void landRegistry(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
-        LandRegistryFees landRegistryFees = warrantDetails.getLandRegistryFees();
-        if (landRegistryFees != null) {
-            warrantEntity.setHaveLandRegistryFeesBeenPaid(landRegistryFees.getHaveLandRegistryFeesBeenPaid());
-            warrantEntity.setAmountOfLandRegistryFees(landRegistryFees.getAmountOfLandRegistryFees());
-        }
-    }
-
-    private void repayment(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
-        if (warrantDetails.getRepaymentCosts() != null) {
-            RepaymentCosts repaymentCosts = warrantDetails.getRepaymentCosts();
-            RepaymentPreference repaymentChoice = repaymentCosts.getRepaymentChoice();
-            warrantEntity.setRepaymentChoice(repaymentChoice.getLabel());
-            warrantEntity.setAmountOfRepaymentCosts(repaymentCosts.getAmountOfRepaymentCosts());
-            warrantEntity.setRepaymentSummaryMarkdown(repaymentCosts.getRepaymentSummaryMarkdown());
-        }
-    }
-
     private void defendantsDOB(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setDefendantsDOBKnown(warrantDetails.getDefendantsDOBKnown());
         if (warrantDetails.getDefendantsDOB() != null) {
@@ -125,13 +82,8 @@ public class WarrantDetailsMapper {
         }
     }
 
-    private void moneyOwed(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
-        if (warrantDetails.getMoneyOwedByDefendants() != null) {
-            warrantEntity.setAmountOwed(warrantDetails.getMoneyOwedByDefendants().getAmountOwed());
-        }
-    }
-
     private VerticalYesNo convertYesOrNoToVerticalYesNo(YesOrNo yesOrNo) {
         return yesOrNo == YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
     }
+
 }
