@@ -1,0 +1,43 @@
+{
+  "roleAssignmentResponse" : [ {
+    "id" : "44b03c90-daad-3f22-99a3-795c58afb0ec",
+    "actorIdType" : "XXRLUPR",
+    "actorId" : "UYEM",
+    "roleType" : "RVSKP",
+    "roleName" : "QHAZXHO",
+    "classification" : "VNVXUFMINE",
+    "grantType" : "JJVTLMXHU",
+    "roleCategory" : "KOA",
+    "readOnly" : true,
+    "beginTime" : "1987-04-22T00:36:30.904756277",
+    "created" : "2071-04-23T11:14:09.56637033",
+    "attributes" : {
+      "substantive" : "TMKHAQBGA",
+      "caseId" : 1721,
+      "jurisdiction" : "MFDJHLKZLU",
+      "caseType" : "YUJ",
+      "workTypes" : "MJVH",
+      "primaryLocation" : "PSYW"
+    }
+  }, {
+    "id" : "ab899c57-0e54-3c4a-b334-37a89e42a9ad",
+    "actorIdType" : "EQGPDOI",
+    "actorId" : "GULDVX",
+    "roleType" : "ZRXPGCURMA",
+    "roleName" : "LJDR",
+    "classification" : "HFZA",
+    "grantType" : "MUJ",
+    "roleCategory" : "FYSDGOA",
+    "readOnly" : false,
+    "beginTime" : "1975-03-09T17:22:31.635468657",
+    "created" : "2058-12-21T21:03:25.099786148",
+    "attributes" : {
+      "substantive" : "ZSSLR",
+      "caseId" : 4128,
+      "jurisdiction" : "PKNMNCXD",
+      "caseType" : "DKTCDUNE",
+      "workTypes" : "IERSX",
+      "primaryLocation" : "GXYLQJLS"
+    }
+  } ]
+}
