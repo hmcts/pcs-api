@@ -94,16 +94,14 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
-
         PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(RESPONSIBLE_PARTY).build();
         when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-
         ClaimEntity claimEntity = new ClaimEntity();
         claimEntity.setId(UUID.randomUUID());
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
         claimEntity.setPcsCase(pcsCase);
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity)
+            .taskData(new ObjectMapper().writeValueAsString(taskData))
             .paymentStatus(paymentStatus).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
