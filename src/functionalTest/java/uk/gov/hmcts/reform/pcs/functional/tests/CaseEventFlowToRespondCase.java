@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 
 import java.util.Map;
 
-@Tag("Functional1")
+@Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
