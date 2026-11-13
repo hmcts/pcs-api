@@ -28,7 +28,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   if (testInfo.title.includes('verifyLink')) {
     await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
     await performAction('submitCaseAPI', {data: submitCaseApiData.submitCaseDefendantAddressKnown()});
-  } else {
+  } else if (!testInfo.title.includes('Delete Draft Response')) {
     await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
     await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
   }
