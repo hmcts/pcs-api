@@ -36,11 +36,21 @@ public class DefenceCorrespondenceAddressResolver {
 
     public AddressUK resolveCorrespondenceAddress(PartyEntity defendant, AddressEntity propertyAddress) {
         AddressUK assertedAddress = assertedCorrespondenceAddress(defendant);
-        if (assertedAddress != null) {
+        if (hasAddressLine1(assertedAddress)) {
             return assertedAddress;
         }
-        AddressEntity fallback = defendant.getAddress() != null ? defendant.getAddress() : propertyAddress;
-        return fallback == null ? null : addressMapper.toAddressUK(fallback);
+        if (hasAddressLine1(defendant.getAddress())) {
+            return addressMapper.toAddressUK(defendant.getAddress());
+        }
+        return hasAddressLine1(propertyAddress) ? addressMapper.toAddressUK(propertyAddress) : null;
+    }
+
+    private static boolean hasAddressLine1(AddressUK address) {
+        return address != null && StringUtils.isNotBlank(address.getAddressLine1());
+    }
+
+    private static boolean hasAddressLine1(AddressEntity address) {
+        return address != null && StringUtils.isNotBlank(address.getAddressLine1());
     }
 
     private AddressUK assertedCorrespondenceAddress(PartyEntity defendant) {

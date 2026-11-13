@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -133,6 +134,8 @@ class CaseTypeTest {
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
+        final TabBuilder<PCSCase, AccessProfile> messagesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        when(builder.tab("Messages", "Messages")).thenReturn(messagesTabBuilder);
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(judicialNotesTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
@@ -155,6 +158,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> messagesTab = messagesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> bundleTab = bundleTabBuilder.build();
         final Tab<PCSCase, AccessProfile> judicialNotesTab = judicialNotesTabBuilder.build();
 
@@ -167,10 +171,10 @@ class CaseTypeTest {
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
         assertThat(paymentHistoryTab.getFields()).extracting(TabField::getId)
             .containsExactly("casePaymentHistoryViewer");
-        assertThat(paymentHistoryTab.getForRoles())
-            .containsExactlyInAnyOrder(CaseType.PAYMENT_HISTORY_TAB_ROLES);
         assertThat(paymentHistoryTab.getShowCondition())
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
+        assertThat(messagesTab.getShowCondition())
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\" AND featureFlags.makeOrderEnabled=\"YES\"");
         assertThat(caseLinksTab.getFields()).extracting(TabField::getShowCondition)
             .contains("LinkedCasesComponentLauncher!=\"\"");
         assertThat(caseFileViewTab.getFields()).hasSize(1);
@@ -180,25 +184,32 @@ class CaseTypeTest {
         assertThat(caseNotesTab.getFields()).extracting(TabField::getId).doesNotContain("caseReviewDates");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
-        assertThat(summaryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(casePartiesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseDetailsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseFileViewTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(serviceRequestTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
-        assertThat(caseHistoryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.CASE_NOTE_TAB_ROLES);
-        assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(judicialNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.JUDICIAL_NOTE_TAB_ROLES);
         assertThat(judicialNotesTab.getShowCondition()).isNull();
+        // One tab per topic: field permissions decide who sees it, so no tab but Support names roles.
+        for (Tab<PCSCase, AccessProfile> tab : List.of(nextStepsTab, summaryTab, caseHistoryTab, hiddenTab,
+            serviceRequestTab, paymentHistoryTab, caseLinksTab, casePartiesTab, caseFileViewTab, caseDetailsTab,
+            caseNotesTab, caseFlagsTab, judicialNotesTab, messagesTab)) {
+            assertThat(tab.getForRoles()).as(tab.getTabID()).isEmpty();
+        }
+        verify(builder).tabsRespectDeclaredFieldAccess();
+        assertThat(summaryTab.getFields()).extracting(TabField::getId)
+            .contains("summaryHeading", "claimantDetailsHeading");
+        assertThat(caseDetailsTab.getFields()).extracting(TabField::getId)
+            .contains("caseDetailsHeading", "claimantDetailsHeading");
+        assertThat(showCondition(summaryTab, "claimantDetailsHeading")).isEqualTo("summaryTab_ClaimantDetails!=\"\"");
+        assertThat(showCondition(summaryTab, "defendantDetailsHeading")).isEqualTo("summaryTab_DefendantDetails!=\"\"");
+        assertThat(showCondition(caseDetailsTab, "claimantDetailsHeading"))
+            .isEqualTo("detailsTab_ClaimantInformation!=\"\"");
+        assertThat(showCondition(caseDetailsTab, "defendantDetailsHeading"))
+            .isEqualTo("detailsTab_DefendantInformationDetails!=\"\"");
+        assertThat(judicialNotesTab.getFields()).extracting(TabField::getId)
+            .containsExactly("judicialNotesMarkdownLabel", "judicialNotesMarkdown");
         assertThat(supportTab.getForRoles())
             .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
 
-        assertThat(bundleTab.getForRoles()).containsExactlyInAnyOrder(
-            AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE,
-            AccessProfile.CIRCUIT_JUDGE, AccessProfile.LEADERSHIP_JUDGE);
+        assertThat(bundleTab.getForRoles()).isEmpty();
         assertThat(bundleTab.getShowCondition()).isEqualTo("bundleTab_Status=\"*\"");
         assertThat(bundleTab.getFields()).extracting(TabField::getId).containsExactly(
             "bundleTab_Status", "bundleTab_Bundle", "bundleTab_LastUpdated", "bundleTab_Pages",
@@ -216,7 +227,6 @@ class CaseTypeTest {
     @Test
     void shouldNotRepeatAnAccessProfileWithinATabRoleSet() {
         assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).doesNotHaveDuplicates();
-        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES).doesNotHaveDuplicates();
         assertThat(CaseType.INTERNAL_TAB_ROLES).doesNotHaveDuplicates();
     }
 
@@ -236,12 +246,6 @@ class CaseTypeTest {
                             AccessProfile.CLAIMANT_SOLICITOR,
                             AccessProfile.PCS_SOLICITOR)
             .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
-    }
-
-    @Test
-    void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
-        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
-            .contains(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
     }
 
     @Test
@@ -297,9 +301,18 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("Messages", "Messages")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
+    }
+
+    private static String showCondition(Tab<PCSCase, AccessProfile> tab, String fieldId) {
+        return tab.getFields().stream()
+            .filter(field -> field.getId().equals(fieldId))
+            .map(TabField::getShowCondition)
+            .findFirst()
+            .orElseThrow();
     }
 }

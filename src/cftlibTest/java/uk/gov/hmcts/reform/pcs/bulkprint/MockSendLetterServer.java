@@ -58,6 +58,10 @@ public class MockSendLetterServer {
             .toList();
     }
 
+    public int countSentLetters(long caseReference, LetterType letterType, Instant sentSince) {
+        return getSentLetterCount(caseReference, letterType, sentSince);
+    }
+
     private void waitForMinLetterCount(long caseReference,
                                        LetterType letterType,
                                        Instant sentSince,
