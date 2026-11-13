@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftUploadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
@@ -692,6 +693,13 @@ public class PCSCase {
 
     @CCD(access = SystemDocumentAccess.class)
     private List<ListValue<Document>> systemDocuments;
+
+    /**
+     * The files in the drafts the user, or their organisation, owns on this case. CDAM serves an attached document
+     * only to a user who can see it in the case, so the case view returns them. Not shown in any tab.
+     */
+    @CCD(access = DraftUploadAccess.class)
+    private List<ListValue<DraftUpload>> draftUploads;
 
     @CCD(
         label = "Case file view",

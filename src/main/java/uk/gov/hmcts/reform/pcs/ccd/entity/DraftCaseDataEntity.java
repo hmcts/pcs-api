@@ -2,12 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +20,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.listener.DraftCaseDataEntityListener;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -26,6 +29,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(schema = "draft", name = "draft_case_data")
+@EntityListeners(DraftCaseDataEntityListener.class)
 @Getter
 @Setter
 public class DraftCaseDataEntity {
@@ -59,5 +63,9 @@ public class DraftCaseDataEntity {
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
+
+    /** The case data as last loaded or saved, so DraftCaseDataEntityListener can tell which uploads are new. */
+    @Transient
+    private String savedCaseData;
 
 }

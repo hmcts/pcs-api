@@ -9,6 +9,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -80,6 +81,61 @@ class DraftCaseDataServiceTest {
             securityContextService,
             new TransactionTemplate(mock(PlatformTransactionManager.class))
         );
+    }
+
+    @Test
+    void shouldReturnEachDocumentUrlOnceFromTheDraftsTheUserOrTheirOrganisationOwns() throws JsonProcessingException {
+        // Given
+        String claimDraft = """
+            {"first": {"document_url": "http://dm-store/documents/abc"},
+             "tab": {"copy": {"document_url": "http://dm-store/documents/abc"}}}""";
+        String responseDraft = """
+            {"second": [{"value": {"document": {"document_url": "http://dm-store/documents/def"}}}]}""";
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("ORG1");
+        when(draftCaseDataRepository.findCaseDataOwnedBy(CASE_REFERENCE, USER_ID, "ORG1"))
+            .thenReturn(List.of(claimDraft, responseDraft));
+        when(objectMapper.readTree(claimDraft)).thenReturn(new ObjectMapper().readTree(claimDraft));
+        when(objectMapper.readTree(responseDraft)).thenReturn(new ObjectMapper().readTree(responseDraft));
+
+        // When
+        List<String> urls = underTest.getOwnDraftDocumentUrls(CASE_REFERENCE);
+
+        // Then
+        assertThat(urls).containsExactly("http://dm-store/documents/abc", "http://dm-store/documents/def");
+    }
+
+    @Test
+    void shouldReturnTheDraftDocumentUrlsOfALegacyUserWithANumericIdamId() throws JsonProcessingException {
+        // Given
+        String legacyUserId = "123456";
+        String draft = """
+            {"first": {"document_url": "http://dm-store/documents/abc"}}""";
+        when(securityContextService.getCurrentUserId()).thenReturn(legacyUserId);
+        when(draftCaseDataRepository.findCaseDataOwnedBy(CASE_REFERENCE, legacyUserId, null))
+            .thenReturn(List.of(draft));
+        when(objectMapper.readTree(draft)).thenReturn(new ObjectMapper().readTree(draft));
+
+        // When
+        List<String> urls = underTest.getOwnDraftDocumentUrls(CASE_REFERENCE);
+
+        // Then
+        assertThat(urls).containsExactly("http://dm-store/documents/abc");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    void shouldReturnNoDraftDocumentUrlsForACallerWithoutAnIdamUserId(String userId) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+
+        // When
+        List<String> urls = underTest.getOwnDraftDocumentUrls(CASE_REFERENCE);
+
+        // Then
+        assertThat(urls).isEmpty();
+        verifyNoInteractions(draftCaseDataRepository);
     }
 
     @Test
