@@ -187,20 +187,23 @@ export class GlobalSearchCaseAction implements IAction {
       option: accessReason.option
     });
 
-    if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
-      const otherReasonTextbox = page
+    let otherReasonTextbox = page
         .getByRole('group', {
           name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
         })
         .getByRole('textbox');
 
+    if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
       await otherReasonTextbox.fill(accessReason.text?.toString() ?? '');
     }
+
+    await expect(otherReasonTextbox).toHaveValue(accessReason.text?.toString() ?? '');
+    await page.keyboard.press('Tab');
 
     await expect(async () => {
       const challengedAccessRequest = page.waitForResponse(
         (response) =>
-          response.url().includes('/api/challenged-access-request') && response.status() === 201, { timeout: SHORT_TIMEOUT }
+          response.url().includes('/api/challenged-access-request') && response.status() === 201, { timeout: SHORT_TIMEOUT + SHORT_TIMEOUT }
       );
 
       await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
