@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -19,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.notify.template.GenAppNotificationCopy;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.GenAppPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
@@ -105,6 +108,18 @@ public class NotificationPersonalisationFactory {
 
     public BasePersonalisation forParty(PartyEntity partyEntity, PcsCaseEntity pcsCaseEntity) {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
+    }
+
+    public GenAppPersonalisation forGenApp(PartyEntity recipient, GenAppEntity genApp,
+                                           boolean respondent, boolean legalRep) {
+        GenAppNotificationCopy.Copy copy = GenAppNotificationCopy.forType(genApp.getType());
+
+        return GenAppPersonalisation.builder()
+            .base(buildPersonalisation(recipient, genApp.getPcsCase()))
+            .subjectLine(respondent ? copy.respondentSubject() : copy.applicantSubject())
+            .applicationTypePhrase(copy.applicationTypePhrase())
+            .signInUrl(legalRep ? manageCaseUrl : frontendUrl)
+            .build();
     }
 
     public OrganisationBasePersonalisation forOrganisation(
