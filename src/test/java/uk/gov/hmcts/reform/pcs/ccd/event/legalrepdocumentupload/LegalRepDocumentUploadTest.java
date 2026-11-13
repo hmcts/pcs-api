@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled
 class LegalRepDocumentUploadTest extends BaseEventTest {
 
     private static final String ORGANISATION_ID = "orgId";

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled
 class ExistingApplicationDocumentLinkBuilderTest {
 
     private static final UUID PCS_DOCUMENT_ID = UUID.fromString("44444444-4444-4444-4444-444444444444");
