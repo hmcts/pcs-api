@@ -20,10 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.TestInstance;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.PCSApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.CCDDataStoreApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
+import uk.gov.hmcts.reform.pcs.functional.testutils.TestUsers;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 
 @Slf4j
@@ -36,7 +37,10 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @Steps
-    ApiSteps apiSteps;
+    PCSApiSteps apiSteps;
+
+    @Steps
+    CCDDataStoreApiSteps ccdDataStoreApiSteps;
 
     private Long caseReference;
     private String accessCode;
@@ -47,7 +51,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     void setUp() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
     }
 
     @AfterAll
@@ -71,7 +75,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
@@ -89,10 +93,10 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
             "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
             Map.of("caseTypeId", caseType, "caseId", caseReference)
         );
-        apiSteps.validateAccessCode(caseReference.toString(), accessCode);
+        apiSteps.validateAccessCodeAsCitizen(caseReference.toString(), accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
@@ -106,14 +110,14 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     @Test
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
-        Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
+        Map<String,String> caseInternalDetails = ccdDataStoreApiSteps.getInternalCaseDetails(caseReference);
         String validateClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-validateEventCallbackRequest.json",
             Map.of("caseReference", caseReference, "draftVersion", 0)
         );
-        Response draftSaveResponse = apiSteps.validateEventData(
+        Response draftSaveResponse = ccdDataStoreApiSteps.validateEventData(
             caseType,
-            PcsIdamTokenClient.UserType.citizenUser,
+            TestUsers.UserType.citizenUser,
             "respondPossessionClaimrespondToPossessionDraftSavePage",
             validateClaimRequestBody);
         long reviewedDraftVersion = draftSaveResponse.jsonPath().getLong("data.possessionClaimResponse.draftVersion");
@@ -129,7 +133,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
             )
         );
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");

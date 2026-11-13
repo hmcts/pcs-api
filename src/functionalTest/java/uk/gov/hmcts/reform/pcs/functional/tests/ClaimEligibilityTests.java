@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.PCSApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 
 //Although this is a testing support endpoint, we’re adding some functional tests to ensure the logic works as expected
@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 class ClaimEligibilityTests extends BaseApi {
 
     @Steps
-    ApiSteps apiSteps;
+    PCSApiSteps apiSteps;
 
     @Title("Claim Eligibility endpoint - returns 200 and ELIGIBLE for an active whitelisted postcode")
     @Test
