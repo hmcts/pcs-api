@@ -1,4 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
