@@ -10,15 +10,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,9 +33,41 @@ public class DocumentsView {
     private final GenAppVisibilityService genAppVisibilityService;
     private final UploadTimestampProvider uploadTimestampProvider;
     private final SecurityContextService securityContextService;
+    private final OrderRepository orderRepository;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
+        // CDAM only serves a document attached to a case to a user who can see it in the case. Bulk print and
+        // bundling download documents as PCS's IDAM system account, so it sees what they send: access code letters
+        // and what an internal user sees in case file view. It cannot read allDocuments, so that is not built.
+        if (securityContextService.isIdamSystemUser()) {
+            pcsCase.setSystemDocuments(pcsCaseEntity.getDocuments().stream()
+                .filter(document -> document.getType() == DocumentType.DEFENDANT_ACCESS_CODE
+                    || isVisibleToInternalReaders(document))
+                .map(this::toListValue)
+                .toList());
+        } else {
+            pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
+        }
+    }
+
+    /** What an internal user sees in case file view. The case bundle holds the same documents. */
+    public static boolean isVisibleToInternalReaders(DocumentEntity document) {
+        if (document.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
+            return false;
+        }
+        GenAppEntity genApp = document.getGeneralApplication();
+        CounterClaimEntity counterClaim = document.getCounterClaim();
+        return (genApp == null || isVisibleToInternalReaders(genApp))
+            && (counterClaim == null || isVisibleToInternalReaders(counterClaim));
+    }
+
+    public static boolean isVisibleToInternalReaders(GenAppEntity genApp) {
+        return GenAppVisibilityService.isGenAppDocumentVisibleToInternalUsers(genApp);
+    }
+
+    /** Every user sees an issued counterclaim's documents, and none sees an unissued one's. */
+    public static boolean isVisibleToInternalReaders(CounterClaimEntity counterClaim) {
+        return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
     }
 
     private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
@@ -42,25 +78,39 @@ public class DocumentsView {
 
         UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+        // Court staff and judges see every without-notice order, so only a party's view looks up who each was served
+        // on, for all of them at once.
+        Map<UUID, List<PartyEntity>> recipients = GenAppVisibilityService.isInternalUser(userRoles.roles())
+            ? Map.of()
+            : orderRepository.findServedPartiesByDocumentIds(pcsCaseEntity.getDocuments().stream()
+                .filter(document -> document.getType() == DocumentType.WITHOUT_NOTICE_ORDER)
+                .map(DocumentEntity::getId)
+                .toList());
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
-                                                                   organisationId))
-            .map(entity -> ListValue.<Document>builder()
-                .id(entity.getId().toString())
-                .value(Document.builder()
-                           .filename(entity.getFileName())
-                           .url(entity.getUrl())
-                           .binaryUrl(entity.getBinaryUrl())
-                           .categoryId(entity.getCategoryId())
-                           .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
-                           .build())
-                .build())
+                                                                   organisationId, recipients))
+            .map(this::toListValue)
             .collect(Collectors.toList());
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
-        if (isExcludedFromCaseFile(documentEntity)) {
+    private ListValue<Document> toListValue(DocumentEntity entity) {
+        return ListValue.<Document>builder()
+            .id(entity.getId().toString())
+            .value(Document.builder()
+                       .filename(entity.getFileName())
+                       .url(entity.getUrl())
+                       .binaryUrl(entity.getBinaryUrl())
+                       .categoryId(entity.getCategoryId())
+                       .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
+                       .build())
+            .build();
+    }
+
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId,
+                                            Map<UUID, List<PartyEntity>> recipients) {
+        // Access code letters are only for bulk print, which finds them in systemDocuments.
+        if (documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;
         }
 
@@ -76,24 +126,20 @@ public class DocumentsView {
         }
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
-            PartyEntity party = documentEntity.getParty();
-            return genAppVisibilityService
-                .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles());
+            // Generated orders use their recorded recipients; uploads retain the selected party's access rules.
+            // Enforce this even when making new orders is disabled.
+            List<PartyEntity> servedOn = recipients.getOrDefault(documentEntity.getId(), List.of());
+            return (servedOn.isEmpty() ? Collections.singletonList(documentEntity.getParty()) : servedOn).stream()
+                .anyMatch(party -> genAppVisibilityService
+                    .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles()));
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
         if (counterClaim != null) {
-            return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
+            return isVisibleToInternalReaders(counterClaim);
         }
 
         return true;
-    }
-
-    private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
-        // Access code letters are only for bulk print, which downloads them through CDAM as PCS's IDAM system
-        // account. CDAM only serves a document attached to a case to a user who can see it in the case.
-        return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE
-            && !securityContextService.isIdamSystemUser();
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {

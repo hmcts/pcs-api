@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -11,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CamundaRequestTaskData {
 
-    enum Action {
+    public enum Action {
         CREATE,
         CANCEL
     }
@@ -26,7 +27,15 @@ public class CamundaRequestTaskData {
 
     private final UUID idempotencyKey;
 
+    private Map<String, Object> taskDetails;
+
     /** Whom the task is for, which the configuration DMN makes its assignee. */
     private final String assignee;
+
+    /** Whether the task is urgent, which the configuration DMN gives a higher priority; null if it does not say. */
+    private final Boolean urgent;
+
+    /** The message the task is about, which the configuration DMN gives the task, so its event acts on that one. */
+    private final String messageId;
 
 }

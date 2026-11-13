@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -89,6 +91,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    private List<CaseMessageEntity> messages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
     private List<JudicialNoteEntity> judicialNotes = new ArrayList<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
@@ -142,6 +149,7 @@ public class PcsCaseEntity {
 
     private String caseSubtypeKey;
 
+    @UpdateTimestamp
     private LocalDateTime lastModifiedDatetime;
 
     public ClaimEntity getMainClaim() {
@@ -163,6 +171,11 @@ public class PcsCaseEntity {
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
         claim.setPcsCase(this);
+    }
+
+    /** The case's general application with the id, if it has one. */
+    public Optional<GenAppEntity> findGenApp(UUID genAppId) {
+        return genApps.stream().filter(genApp -> genApp.getId().equals(genAppId)).findFirst();
     }
 
     public void addGenApp(GenAppEntity genApp) {
@@ -194,6 +207,8 @@ public class PcsCaseEntity {
     }
 
     public void addCounterClaim(CounterClaimEntity counterClaim) {
+        int rank = counterClaims.size() + 1;
+        counterClaim.setRank(rank);
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
     }
@@ -201,6 +216,11 @@ public class PcsCaseEntity {
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);
         caseNote.setPcsCase(this);
+    }
+
+    public void addMessage(CaseMessageEntity message) {
+        messages.add(message);
+        message.setPcsCase(this);
     }
 
     public void addJudicialNote(JudicialNoteEntity judicialNote) {

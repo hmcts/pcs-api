@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +23,6 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -40,7 +40,7 @@ public class WarrantEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enf_case_id", nullable = false)
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
@@ -122,27 +122,6 @@ public class WarrantEntity {
 
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;
-
-    // Statement of Truth
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private StatementOfTruthCompletedBy completedBy;
-
-    private String agreementClaimant;
-
-    private String fullNameClaimant;
-
-    private String positionClaimant;
-
-    private String agreementLegalRep;
-
-    private String fullNameLegalRep;
-
-    private String firmNameLegalRep;
-
-    private String positionLegalRep;
-
-    private String certification;
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
