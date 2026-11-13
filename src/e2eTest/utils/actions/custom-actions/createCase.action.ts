@@ -148,6 +148,7 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
       ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
+      ['validateTabNotPresent', () => this.validateTabNotPresent(page, fieldName as actionRecord)],
       ['noticeOfChange', () => this.noticeOfChange(fieldName as actionRecord)],
       ['clientDetails', () => this.clientDetails(fieldName as actionRecord)],
       ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
@@ -1626,7 +1627,7 @@ export class CreateCaseAction implements IAction {
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
-    const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload;
+    const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload ?? caseFile.caseWorkerHearing;
 
     switch (folderName) {
       case 'Property documents':
@@ -1684,6 +1685,12 @@ export class CreateCaseAction implements IAction {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
+      
+      case 'Orders and Notice of Hearings':
+        if (file) {
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
+        }
+        break;
 
       default:
         break;
@@ -1705,7 +1712,7 @@ export class CreateCaseAction implements IAction {
       return;
     }
 
-    if (!caseFile.allowEmptyFolder && fileCount === 0) {
+    if (!caseFile.allowEmptyFolder && (fileCount === 0 || (Array.isArray(file) && fileCount < file.length))) {
       await expect(async () => {
         await performAction('clickTab', home.caseSummary);
         await performAction('clickTab', home.caseFileView);
@@ -1739,7 +1746,7 @@ export class CreateCaseAction implements IAction {
       ? (await fileLocator.allTextContents()).map(text => text
         .replace(/\s*\d{1,2} [A-Za-z]{3} \d{4} \d{1,2}:\d{2}\s*$/, '')
         .trim())
-      : this.cleanFilesArray(await fileLocator.allTextContents());
+      : this.cleanFilesArray(await fileLocator.allTextContents(),!!caseFile.caseWorkerHearing);
     const expectedFileArray = expectedFiles ?? userInputFiles;
     if (expectedFiles) {
       expect(fileArray, `validating files for "${folderName}"`).toEqual(expect.arrayContaining(expectedFiles));
@@ -1754,12 +1761,18 @@ export class CreateCaseAction implements IAction {
     }
   }
 
-  public  cleanFilesArray(filesArray: string[]): string[] {
-    const uniqueFiles = [...new Set(filesArray.map(f =>
-      f.replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
-        .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
-        .trim()
-    ))];
+  public  cleanFilesArray(filesArray: string[],formatting?:boolean): string[] {
+
+    const uniqueFiles = formatting
+      ? [...new Set(filesArray.map(text => text.trim()))]
+      : [...new Set(
+        filesArray.map(f =>
+          f
+            .replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
+            .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
+            .trim()
+        )
+      )];
 
     return uniqueFiles;
   }
@@ -1891,6 +1904,16 @@ export class CreateCaseAction implements IAction {
       // Exact match (HDPI-9534): fails on a duplicated tab and on a tab the user should not see.
       expect(tabs.slice().sort(), `tabs seen: ${tabs.join(' | ')}`)
         .toEqual((tab.tabs as string[]).slice().sort());
+    });
+  }
+
+    public async validateTabNotPresent(page: Page, tab: actionRecord) {
+    await test.step(`Tab access check for user "${tab.user}"`, async () => {
+      const tabLoc = page.getByRole('tab');
+      await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
+      const tabs = (await tabLoc.allTextContents()).map(t => t.trim());
+      expect(tabs.slice().sort(), `tabs seen: ${tabs.join(' | ')}`)
+        .not.toContain((tab.tabs as string[]));
     });
   }
 

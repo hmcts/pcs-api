@@ -13,6 +13,7 @@ export class RespondToAClaimAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['selectRespondToClaimContactPreferences', () => this.selectContactPreferences(fieldName as actionRecord)],
+      ['validateDropDownValues', () => this.validateDropDownValues(page, fieldName as string[])],
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
       ['deleteDraftResponseOption', () => this.deleteDraftResponseOption(fieldName as actionRecord)],
       ['confirmDeleteDraftResponse',() => this.confirmDeleteDraftResponse()],
@@ -78,6 +79,16 @@ export class RespondToAClaimAction implements IAction {
       }
     }
     await performAction('clickButton', contactDetailsLR.saveAndContinueButton);
+  }
+
+  private async validateDropDownValues(page: Page, expectedValues: string[]): Promise<void> {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    const dropdown = page.locator('#next-step');
+    await dropdown.waitFor({state: 'visible'});
+    const actualValues = (await dropdown.locator('option').allTextContents())
+      .map((value) => value.trim())
+      .filter(Boolean);
+    expect(actualValues).toEqual(expectedValues);
   }
 
 
