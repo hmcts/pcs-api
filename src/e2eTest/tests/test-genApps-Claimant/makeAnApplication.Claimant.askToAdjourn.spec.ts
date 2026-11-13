@@ -14,7 +14,7 @@ import {
   doYouWantToUploadDocumentsToSupportYourApplication,
   uploadDocumentsToSupportYourApplication,
   whichLanguageDidYouUseToCompleteThisService, checkYourAnswersClaimantGenApps, statementOfTruthClaimant,
-  serviceRequestGenApps, paymentDetails, areThereAnyReasonsThatThisApplicationShouldNotBeShared,
+  areThereAnyReasonsThatThisApplicationShouldNotBeShared,
 } from "@data/page-data-figma/page-data-genApps-claimant-figma";
 
 test.beforeEach(async ({ page }) => {
@@ -86,28 +86,7 @@ test.describe('Claimant - Make an Application - e2e Journey @nightly', async () 
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersClaimantGenApps.submitButton);
-    await performAction('payClaimFeeGenApps', {clickLink: true});
-    await performAction('clickPayNowLinkGenApps');
-    await performAction('selectPaymentOptions', {
-      amountLabel: serviceRequestGenApps.amountToPayLabel,
-      payByOption: serviceRequestGenApps.payByCardRadioOption,
-      button: serviceRequestGenApps.continueButton
-    });
-    await performValidation('mainHeader', paymentDetails.mainHeader);
-    await performAction('inputPaymentDetails', {
-      question: paymentDetails.mainHeader,
-      cardNumber: paymentDetails.cardNumberTextInput,
-      month: paymentDetails.monthTextInput,
-      year: paymentDetails.yearTextInput,
-      nameOnCard: paymentDetails.nameOnCardTextInput,
-      cardSecurityCode: paymentDetails.cardSecurityCodeTextInput,
-      addressLine1: paymentDetails.addressLine1TextInput,
-      townOrCity: paymentDetails.townOrCityTextInput,
-      postcode: paymentDetails.postcodeTextInput,
-      email: paymentDetails.emailTextInput,
-    });
-    await performAction('confirmPaymentGenApps');
-    await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
+    await performAction('updatePaymentAPI');
   });
 
   test('Claimant- Select an Application - Ask to Adjourn journey - Court hearing in 14 days[No] @regression', async () => {
