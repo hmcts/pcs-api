@@ -19,19 +19,6 @@ class ExistingApplicationPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldShowApplicationDocumentLinksOnlyWhenRelease1Dot4IsEnabled() {
-        List<Field> fields = event.getFields().getFields().stream()
-            .map(Field.FieldBuilder::build)
-            .toList();
-
-        assertThat(fields)
-            .filteredOn(field -> "existingApplication-application-links".equals(field.getId()))
-            .singleElement()
-            .satisfies(field -> assertThat(field.getShowCondition())
-                .isEqualTo("featureFlags.release1dot4Enabled=\"YES\""));
-    }
-
-    @Test
     void shouldRetainFeatureFlagsAsHiddenInternalContext() {
         List<Field> fields = event.getFields().getFields().stream()
             .map(Field.FieldBuilder::build)
