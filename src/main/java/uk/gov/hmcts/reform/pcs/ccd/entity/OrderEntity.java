@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -8,7 +10,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -17,12 +23,24 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ClaimOutcome;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.GenAppDecision;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.HashMap;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
@@ -49,10 +67,52 @@ public class OrderEntity {
     @Column(nullable = false, updatable = false)
     private String authorIdamUserId;
 
-    /** The hearing the judge made the order for, if they made it for one. */
+    /** The hearing the judge made the order for, if they made it for one; an order keeps its hearing. */
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "hearing_id")
+    @JoinColumn(name = "hearing_id", updatable = false)
     private HearingEntity hearing;
+
+    /** The parties court staff served the order on without notice; none means it is served on all parties. */
+    @ManyToMany
+    @JoinTable(name = "order_served_party", joinColumns = @JoinColumn(name = "order_id"),
+        inverseJoinColumns = @JoinColumn(name = "party_id"))
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private Set<PartyEntity> servedParties = new HashSet<>();
+
+    /** What the order decided about each application it covers, by application id, recorded when it is issued. */
+    @ElementCollection
+    @CollectionTable(name = "order_gen_app", joinColumns = @JoinColumn(name = "order_id"))
+    @MapKeyColumn(name = "gen_app_id")
+    @Column(name = "decision")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private Map<UUID, GenAppDecision> genAppDecisions = new HashMap<>();
+
+    /** What the order decided about each claim it makes an order on, by claim id, recorded when it is issued. */
+    @ElementCollection
+    @CollectionTable(name = "order_claim", joinColumns = @JoinColumn(name = "order_id"))
+    @MapKeyColumn(name = "claim_id")
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private Map<UUID, ClaimOutcome> claimOutcomes = new HashMap<>();
+
+    /** The sums the order says one side pays the other, recorded when it is issued. */
+    @OneToMany(mappedBy = "order", cascade = ALL)
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private List<MoneyJudgmentEntity> moneyJudgments = new ArrayList<>();
+
+    /** The day the order was made, which its document bears, recorded when it is issued. */
+    private LocalDate madeOn;
+
+    /** Whether the order permits a warrant or writ of restitution, recorded when it is issued. */
+    private Boolean restitutionPermitted;
+
+    /** What the order says about costs, recorded when it is issued; none if it says nothing. */
+    @Enumerated(EnumType.STRING)
+    private OrderCosts costs;
 
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)

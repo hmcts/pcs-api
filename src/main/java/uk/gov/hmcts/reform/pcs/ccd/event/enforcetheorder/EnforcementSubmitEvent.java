@@ -94,8 +94,7 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
             .build();
         String instanceId = enforceTheOrder.name() + "-" + caseReference;
         schedulerClient.scheduleIfNotExists(FEES_AND_PAY_TASK_DESCRIPTOR.instance(instanceId)
-                                                .data(taskData).scheduledTo(Instant.now())
-        );
+                                                .data(taskData).scheduledTo(Instant.now()));
     }
 
     private static @NonNull SelectEnforcementType getSelectEnforcementType(EnforcementOrder enforcementOrder) {
