@@ -42,7 +42,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.notify.service.GenAppNotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -94,7 +94,7 @@ class SubmitEventHandlerTest {
     @Mock
     private PaymentService paymentService;
     @Mock
-    private NotificationService notificationService;
+    private GenAppNotificationService genAppNotificationService;
     @Mock
     private SchedulerClient schedulerClient;
     @Mock
@@ -115,7 +115,7 @@ class SubmitEventHandlerTest {
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            organisationRepository, confirmationScreenFactory,
-                                           paymentService, schedulerClient, notificationService,
+                                           paymentService, schedulerClient, genAppNotificationService,
                                            genAppWaTaskService, objectMapper, organisationService
         );
     }
@@ -377,7 +377,7 @@ class SubmitEventHandlerTest {
             // Then
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
-            verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+            verify(genAppNotificationService).sendGenAppIssuedNotifications(genAppEntity.getId());
             verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
             verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
         }

@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.GenAppPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
@@ -926,7 +927,6 @@ class NotificationServiceTest {
 
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             GenAppEntity genAppEntity = mock(GenAppEntity.class);
-            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
 
             PartyEntity applicantPartyEntity = mock(PartyEntity.class);
@@ -936,15 +936,17 @@ class NotificationServiceTest {
             when(partyService.canSendEmailNotification(applicantPartyEntity, PartyRole.DEFENDANT)).thenReturn(true);
             when(applicantPartyEntity.getEmailAddress()).thenReturn(expectedEmailAddress);
 
-            BasePersonalisation personalisation = mock(BasePersonalisation.class);
+            when(applicantPartyEntity.getClaimPartyOrganisationList()).thenReturn(List.of());
+
+            GenAppPersonalisation personalisation = mock(GenAppPersonalisation.class);
             Map<String, Object> expectedPersonalisationMap = Map.of("foo", 1);
             when(personalisation.toMap()).thenReturn(expectedPersonalisationMap);
 
-            when(notificationPersonalisationFactory.forParty(applicantPartyEntity, pcsCaseEntity))
+            when(notificationPersonalisationFactory.forGenApp(applicantPartyEntity, genAppEntity, false, false))
                     .thenReturn(personalisation);
 
             // When
-            notificationService.sendGenAppReceivedEmail(genAppEntity);
+            notificationService.sendGenAppApplicantNotification(genAppEntity);
 
             // Then
             verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
@@ -970,11 +972,12 @@ class NotificationServiceTest {
             when(applicantParty.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
             when(applicantParty.getEmailAddress()).thenReturn("applicant@example.com");
+            when(applicantParty.getClaimPartyOrganisationList()).thenReturn(List.of());
             when(partyService.getPartyRole(applicantParty)).thenReturn(PartyRole.DEFENDANT);
             when(partyService.canSendEmailNotification(applicantParty, PartyRole.DEFENDANT)).thenReturn(false);
 
             // When
-            notificationService.sendGenAppReceivedEmail(genAppEntity);
+            notificationService.sendGenAppApplicantNotification(genAppEntity);
 
             // Then
             verify(schedulerClient, never()).scheduleIfNotExists(any());

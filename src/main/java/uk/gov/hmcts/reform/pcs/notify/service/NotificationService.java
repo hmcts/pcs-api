@@ -232,15 +232,66 @@ public class NotificationService {
         );
     }
 
-    public void sendGenAppReceivedEmail(GenAppEntity genAppEntity) {
-        PartyEntity applicantPartyEntity = genAppEntity.getParty();
+    public void sendGenAppApplicantNotification(GenAppEntity genApp) {
+        PartyEntity applicant = genApp.getParty();
+        OrganisationEntity legalRep = activeLegalRep(applicant);
 
-        sendEmail(
-                partyRecipient(applicantPartyEntity),
+        if (legalRep != null) {
+            sendEmail(
+                legalRepresentativeRecipient(applicant, legalRepEmail(legalRep, applicant.getPcsCase())),
+                EmailTemplate.GENERAL_APPLICATION_RECEIVED_LEGAL_REP,
+                NotificationClaimType.GENERAL_APPLICATION,
+                notificationPersonalisationFactory.forGenApp(applicant, genApp, false, true)
+            );
+        } else {
+            sendEmail(
+                partyRecipient(applicant),
                 EmailTemplate.GENERAL_APPLICATION_RECEIVED,
                 NotificationClaimType.GENERAL_APPLICATION,
-                notificationPersonalisationFactory.forParty(applicantPartyEntity, genAppEntity.getPcsCase())
-        );
+                notificationPersonalisationFactory.forGenApp(applicant, genApp, false, false)
+            );
+        }
+    }
+
+    public void sendGenAppRespondentNotifications(GenAppEntity genApp) {
+        PartyEntity applicant = genApp.getParty();
+        PcsCaseEntity pcsCase = genApp.getPcsCase();
+
+        otherActiveParties(pcsCase, applicant)
+            .forEach(respondent -> sendGenAppRespondentNotification(genApp, respondent));
+    }
+
+    private void sendGenAppRespondentNotification(GenAppEntity genApp, PartyEntity respondent) {
+        OrganisationEntity legalRep = activeLegalRep(respondent);
+
+        if (legalRep != null) {
+            sendEmail(
+                legalRepresentativeRecipient(respondent, legalRepEmail(legalRep, respondent.getPcsCase())),
+                EmailTemplate.GENERAL_APPLICATION_RESPONDENT_LEGAL_REP,
+                NotificationClaimType.GENERAL_APPLICATION,
+                notificationPersonalisationFactory.forGenApp(respondent, genApp, true, true)
+            );
+        } else {
+            sendEmail(
+                partyRecipient(respondent),
+                EmailTemplate.GENERAL_APPLICATION_RESPONDENT,
+                NotificationClaimType.GENERAL_APPLICATION,
+                notificationPersonalisationFactory.forGenApp(respondent, genApp, true, false)
+            );
+        }
+    }
+
+    private List<PartyEntity> otherActiveParties(PcsCaseEntity pcsCase, PartyEntity applicant) {
+        return pcsCase.getClaims().getFirst().getClaimParties().stream()
+            .map(ClaimPartyEntity::getParty)
+            .filter(this::isActiveParty)
+            .filter(party -> !party.getId().equals(applicant.getId()))
+            .toList();
+    }
+
+    private String legalRepEmail(OrganisationEntity legalRep, PcsCaseEntity pcsCase) {
+        ClaimPartyContactDetailsEntity contactDetails = getClaimPartyContactDetailsForCase(legalRep, pcsCase);
+        return contactDetails != null ? contactDetails.getEmailAddress() : null;
     }
 
     public void sendNoticeOfChangeCompletedEmailNotification(PartyEntity defendant) {
