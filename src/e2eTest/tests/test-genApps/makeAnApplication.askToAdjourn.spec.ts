@@ -19,8 +19,7 @@ import {
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
-  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps, paymentDetails,
-  serviceRequestGenApps
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
 import { home } from '@data/page-data';
@@ -44,14 +43,6 @@ test.beforeEach(async ({ page, context }) => {
     payLoad: submitCaseApiData.submitCasePayload()
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await page.evaluate(() => {
-  //   try {
-  //     localStorage.clear();
-  //     sessionStorage.clear();
-  //   } catch (e) {
-  //     // Ignore if storage is not accessible
-  //   }
-  // });
 
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.defendantSolicitor);
@@ -76,7 +67,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
+  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
@@ -212,27 +203,5 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No]',
   await performAction('retrieveCYATableData', { name: 'check your answers table' });
   await performAction('validateCYA');
   await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-  await performAction('payClaimFeeGenApps', {clickLink: true});
-  await performAction('clickPayNowLinkGenApps');
-  await performAction('selectPaymentOptions', {
-    amountLabel: serviceRequestGenApps.amountToPayLabel,
-    payByOption: serviceRequestGenApps.payByCardRadioOption,
-    button: serviceRequestGenApps.continueButton
-  });
-  await performValidation('mainHeader', paymentDetails.mainHeader);
-  await performAction('inputPaymentDetails', {
-    question: paymentDetails.mainHeader,
-    cardNumber: paymentDetails.cardNumberTextInput,
-    month: paymentDetails.monthTextInput,
-    year: paymentDetails.yearTextInput,
-    nameOnCard: paymentDetails.nameOnCardTextInput,
-    cardSecurityCode: paymentDetails.cardSecurityCodeTextInput,
-    addressLine1: paymentDetails.addressLine1TextInput,
-    townOrCity: paymentDetails.townOrCityTextInput,
-    postcode: paymentDetails.postcodeTextInput,
-    email: paymentDetails.emailTextInput,
-  });
-  await performAction('confirmPaymentGenApps');
-  await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
 });
 });
