@@ -6,5 +6,9 @@ CREATE TABLE public.warrant_return (
   return_name TEXT NOT NULL,
   additional_details TEXT,
   outcome_date TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP NOT NULL
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE ONLY public.warrant_return
+  ADD CONSTRAINT warrant_return_pkey PRIMARY KEY (id),
+  ADD CONSTRAINT warrant_return_enf_warrant_id_fkey FOREIGN KEY (enf_warrant_id) REFERENCES public.enf_warrant(id);

@@ -30,16 +30,16 @@ import static org.mockito.Mockito.when;
 public class RecordWarrantReturnTest extends BaseEventTest {
 
     @Mock
-    WarrantReturnService warrantReturnService;
+    private WarrantReturnService warrantReturnService;
 
     @Mock
-    PcsCaseService pcsCaseService;
+    private PcsCaseService pcsCaseService;
 
     @Mock
-    EnforcementOrderMediator enforcementOrderMediator;
+    private EnforcementOrderMediator enforcementOrderMediator;
 
     @InjectMocks
-    RecordWarrantReturn underTest;
+    private RecordWarrantReturn underTest;
 
     @BeforeEach
     void setUp() {

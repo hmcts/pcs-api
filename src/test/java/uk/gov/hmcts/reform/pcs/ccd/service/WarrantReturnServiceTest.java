@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,36 +13,22 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantRepository;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class WarrantReturnServiceTest {
 
     @Mock
-    private Clock utcClock;
-
-    @Mock
     private WarrantRepository warrantRepository;
 
     @InjectMocks
-    WarrantReturnService warrantReturnService;
-
-    private static final Instant FIXED_INSTANT = Instant.parse("2026-04-22T21:05:30Z");
-
-    @BeforeEach
-    void setUp() {
-        when(utcClock.instant()).thenReturn(FIXED_INSTANT);
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
-    }
+    private WarrantReturnService warrantReturnService;
 
     @Test
     void shouldSaveWarrantReturnWithNoPreexistingWarrantReturns() {
@@ -53,7 +38,7 @@ public class WarrantReturnServiceTest {
             .returnType(WarrantReturnType.FINAL)
             .evictionOutcome(EvictionOutcome.SUCCESSFUL)
             .additionalDetails("additional details")
-            .outcomeDate(LocalDateTime.of(2026, 4, 21, 9, 30))
+            .outcomeDate(LocalDateTime.of(2026, 4, 21, 8, 30))
             .build();
 
         WarrantEntity warrantEntity = WarrantEntity.builder().build();
@@ -70,8 +55,7 @@ public class WarrantReturnServiceTest {
         assertThat(warrantReturnEntity.getReturnType()).isEqualTo(WarrantReturnType.FINAL);
         assertThat(warrantReturnEntity.getOutcome()).isEqualTo(EvictionOutcome.SUCCESSFUL);
         assertThat(warrantReturnEntity.getAdditionalDetails()).isEqualTo("additional details");
-        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
-        assertThat(warrantReturnEntity.getCreatedAt()).isEqualTo(LocalDateTime.of(2026, 4, 22, 21, 5, 30));
+        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(Instant.parse("2026-04-21T08:30:00Z"));
     }
 
     @Test
@@ -82,7 +66,7 @@ public class WarrantReturnServiceTest {
             .returnType(WarrantReturnType.FINAL)
             .evictionOutcome(EvictionOutcome.SUCCESSFUL)
             .additionalDetails("additional details")
-            .outcomeDate(LocalDateTime.of(2026, 4, 21, 9, 30))
+            .outcomeDate(LocalDateTime.of(2026, 4, 21, 8, 30))
             .build();
 
         List<WarrantReturnEntity> warrantReturnEntities = new ArrayList<>();
@@ -103,8 +87,7 @@ public class WarrantReturnServiceTest {
         assertThat(warrantReturnEntity.getReturnType()).isEqualTo(WarrantReturnType.FINAL);
         assertThat(warrantReturnEntity.getOutcome()).isEqualTo(EvictionOutcome.SUCCESSFUL);
         assertThat(warrantReturnEntity.getAdditionalDetails()).isEqualTo("additional details");
-        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(LocalDateTime.of(2026, 4, 21, 9, 30));
-        assertThat(warrantReturnEntity.getCreatedAt()).isEqualTo(LocalDateTime.of(2026, 4, 22, 21, 5, 30));
+        assertThat(warrantReturnEntity.getOutcomeDate()).isEqualTo(Instant.parse("2026-04-21T08:30:00Z"));
     }
 
 }

@@ -7,14 +7,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.WarrantReturnEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantRepository;
 
-import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @AllArgsConstructor
 @Service
 public class WarrantReturnService {
 
-    private final Clock utcClock;
     private final WarrantRepository warrantRepository;
 
     public void addWarrantReturn(WarrantEntity warrantEntity, WarrantReturn warrantReturn) {
@@ -30,8 +30,11 @@ public class WarrantReturnService {
             .outcome(warrantReturn.getEvictionOutcome())
             .returnName(warrantReturn.getReturnName())
             .additionalDetails(warrantReturn.getAdditionalDetails())
-            .outcomeDate(warrantReturn.getOutcomeDate())
-            .createdAt(LocalDateTime.now(utcClock))
+            .outcomeDate(toInstant(warrantReturn.getOutcomeDate()))
             .build();
+    }
+
+    private static Instant toInstant(LocalDateTime utcDateTime) {
+        return utcDateTime == null ? null : utcDateTime.toInstant(ZoneOffset.UTC);
     }
 }

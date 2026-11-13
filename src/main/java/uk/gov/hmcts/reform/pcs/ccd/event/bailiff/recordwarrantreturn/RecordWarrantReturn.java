@@ -18,10 +18,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.WarrantReturnService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @AllArgsConstructor
@@ -39,12 +41,8 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             .decentralisedEvent("ext:recordWarrantReturn", this::submit)
             .forStates(EventStates.recordWarrantOutcome())
             .name("Record warrant return")
-            .grant(
-                Permission.CRU,
-                UserRole.HEARING_CENTRE_ADMIN,
-                UserRole.HEARING_CENTRE_TEAM_LEADER,
-                UserRole.BAILIFF_ADMIN
-            ) // TODO - REMOVE Hearing center roles
+            .showCondition(featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN))
+            .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
 
@@ -54,15 +52,15 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
         Optional<EnforcementOrderEntity> enforcementOrderEntity = enforcementOrderMediator
             .getEnforcementOrder(pcsCaseEntity);
 
-        if (enforcementOrderEntity.isEmpty()) {
+        Optional<WarrantEntity> warrantEntityOptional = enforcementOrderEntity.map(
+            EnforcementOrderEntity::getWarrantDetails
+        );
+
+        if (warrantEntityOptional.isEmpty()) {
             return createErrorMessage();
         }
 
-        WarrantEntity warrantEntity = enforcementOrderEntity.get().getWarrantDetails();
-        if (warrantEntity == null) {
-            return createErrorMessage();
-        }
-
+        WarrantEntity warrantEntity = warrantEntityOptional.get();
         PCSCase caseData = eventPayload.caseData();
         WarrantReturn warrantReturn = caseData.getWarrantReturn();
 
