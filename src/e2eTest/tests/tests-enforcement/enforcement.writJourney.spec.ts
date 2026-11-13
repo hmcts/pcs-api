@@ -85,7 +85,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       tag: ['@enforcement', '@regression'],
       annotation: [
         { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
-        { type: 'ac', description: 'AC1, AC2, AC8, AC9' },
+        { type: 'ac', description: 'AC1, AC2' },
       ],
     },
     async () => {
@@ -149,7 +149,15 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       });
     });
 
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement @regression', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : ` },
+        { type: 'ac', description: '' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -203,7 +211,15 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     });
   });
 
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth @enforcement', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth',
+    {
+      tag: ['@enforcement'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC1, AC2' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -315,7 +331,15 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     });
   });
 
-  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement', async () => {
+  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement',
+    {
+      tag: ['@enforcement'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : ` },
+        { type: 'ac', description: '' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -337,7 +361,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
   });
 
   test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
-      tag: ['@enforcement', '@regression'],
+      tag: ['@enforcement'],
       annotation: [
         { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
         { type: 'ac', description: 'AC10' },
@@ -371,7 +395,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
 
   test('Writ of Possession - Breathing space: claimant selects Im not sure is directed to  screen',
     {
-      tag: ['@enforcement', '@regression'],
+      tag: ['@enforcement'],
       annotation: [
         { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
         { type: 'ac', description: 'AC3-AC7' },
