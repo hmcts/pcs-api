@@ -61,7 +61,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () => {
+test.describe('[Common Component Case Flags] @nightly @CC @caseFlags @rerun', async () => {
 
   test('Case Flags - Create and Manage case flag menu', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
