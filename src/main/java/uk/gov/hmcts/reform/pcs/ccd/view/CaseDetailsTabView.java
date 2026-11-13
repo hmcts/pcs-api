@@ -545,6 +545,12 @@ public class CaseDetailsTabView {
             return null;
         }
 
+        // The exempt-landlord question is removed when release 1.4 is enabled.
+        if (pcsCase.getFeatureFlags() == null
+            || pcsCase.getFeatureFlags().getRelease1dot4Enabled() != VerticalYesNo.NO) {
+            return null;
+        }
+
         VerticalYesNo isExemptLandlord = pcsCase.getIsExemptLandlord();
 
         return ClaimantRegistrationAndLicensingTabDetails.builder()
