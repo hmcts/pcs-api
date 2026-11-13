@@ -3,6 +3,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
+import { home } from '@data/page-data-cy';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -38,10 +39,8 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments, cannotApplyForWarrantInfo
+  statementOfTruth, defendantInBreathingSpace, missedPayments
 } from '@data/page-data-figma/page-data-enforcement-figma';
-import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
-import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -82,6 +81,9 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  if (process.env.RUN_E2E_IN_WELSH === 'true') {
+    await performAction('clickButton', home.cymraegLink);
+  }
 });
 
 test.afterEach(async () => {
@@ -527,7 +529,8 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
+  // It will be enabled as part of HDPI-9502
+  test.skip('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
@@ -844,6 +847,7 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
     await performValidation('mainHeader', caseSummary.mainHeader);
     await performAction('resumeDraftApplication');
   });
+
   test ('As a claimant user, I can resume the draft application of enforcement @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);

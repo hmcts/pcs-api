@@ -322,14 +322,10 @@ bulk-print:
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
+# Candidate selection for PcsRetainAndDisposePolicy (SDK retain-and-dispose marks these cases).
 expired-case-deletion:
-  schedule: ${EXPIRED_CASE_DELETION_SCHEDULE:DAILY|03:00}
   discard-after-days: ${EXPIRED_CASE_DELETION_DISCARD_AFTER_DAYS:30}
-  # Parallel case deletes are capped as a share of the Hikari pool so request traffic keeps connections.
-  db-concurrency-percent: ${EXPIRED_CASE_DELETION_DB_CONCURRENCY_PERCENT:30}
   sql-limit: ${EXPIRED_CASE_DELETION_SQL_LIMIT:200}
-  ccd-call-control-size: ${EXPIRED_CASE_DELETION_CCD_CALL_CONTROL_SIZE:5}
-  doc-call-control-size: ${EXPIRED_CASE_DELETION_DOC_CALL_CONTROL_SIZE:15}
 
 respond-to-claim-draft-deletion:
   schedule: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SCHEDULE:DAILY|01:00}
@@ -443,6 +439,14 @@ shutter:
 
 ccd:
   decentralised-runtime:
+    retain-and-dispose:
+      # off | dry-run | live. Prefer dry-run in preview before enabling live.
+      mode: ${CCD_RETAIN_AND_DISPOSE_MODE:off}
+      cron: ${CCD_RETAIN_AND_DISPOSE_CRON:0 0 2 * * *}
+      zone: ${CCD_RETAIN_AND_DISPOSE_ZONE:UTC}
+      system-user:
+        username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
+        password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
     noc:
       enabled: true
     system-user:
