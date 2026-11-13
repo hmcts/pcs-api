@@ -16,14 +16,15 @@ public class CannotApplyForWarrantInfoPage implements CcdPageConfiguration {
 
     private static final String MARKDOWN_TEXT = """
             <p class="govuk-body">You need permission from a judge before you can apply for the warrant of possession.
-             This is because the defendants have not missed any of the payments outlined in the suspended order.</p>
+             This is because the defendants have not failed to make payments which are a condition of the
+             suspension of the order for possession. You can do this by making a general application.</p>
             <p class="govuk-body govuk-!-font-weight-bold">If the defendants have breached a
              different term in the suspended order</p>
             <p class="govuk-body">If the defendants have breached a different term in the order,
              you still need permission from a judge.  For example, if they have breached an order
               to reduce their antisocial behaviour.</p>
             <p><a id="cannotApplyForWarrantInfo-link" class="govuk-link" target="_blank" href="#">
-        Ask the judge for permission to apply for a warrant of possession (opens in a new tab, GOV.UK).</a></p>
+        Ask the judge for permission to apply for a warrant of possession (opens in a new tab, GOV.UK)</a>.</p>
             """;
 
     @Override
