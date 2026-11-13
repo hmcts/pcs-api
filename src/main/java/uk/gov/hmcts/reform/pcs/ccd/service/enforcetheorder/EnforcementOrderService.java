@@ -55,6 +55,20 @@ public class EnforcementOrderService {
 
     @Transactional
     public void updateStatesForBreathingSpace(long caseReference) {
+        // Discard all unsubmitted Enforce the Order drafts for this case.
+        int discardedDrafts =
+            draftCaseDataService.discardAllUnsubmittedEventData(
+                caseReference,
+                EventId.enforceTheOrder
+            );
+
+        log.info(
+            "Discarded {} enforcement drafts for case {}",
+            discardedDrafts,
+            caseReference
+        );
+
+        // Preserve AC02: transition live enforcement applications.
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
         Set<EnforcementOrderEntity> applications =

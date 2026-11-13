@@ -157,6 +157,29 @@ class EnforcementOrderServiceTest {
     }
 
 
+    @Test
+    void shouldDiscardUnsubmittedEnforcementDraftsWhenEnteringBreathingSpace() {
+        // Given
+        PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCase.setEnforcementOrders(Set.of());
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        when(draftCaseDataService.discardAllUnsubmittedEventData(
+            CASE_REFERENCE, EventId.enforceTheOrder
+        )).thenReturn(2);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        verify(draftCaseDataService).discardAllUnsubmittedEventData(
+            CASE_REFERENCE, EventId.enforceTheOrder
+        );
+    }
+
+
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
     void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
