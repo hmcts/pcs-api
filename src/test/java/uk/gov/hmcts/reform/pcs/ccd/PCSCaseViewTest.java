@@ -396,6 +396,7 @@ class PCSCaseViewTest {
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     @Test
@@ -498,6 +499,18 @@ class PCSCaseViewTest {
         // Then
         verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
+
+    @Test
+    void shouldPopulateBreathingSpaceSummaryWhenLoadingCase() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.BREATHING_SPACE));
+
+        // Then
+        verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
+
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, State.BREATHING_SPACE);
+    }
+
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
         AddressUK addressUK = mock(AddressUK.class);

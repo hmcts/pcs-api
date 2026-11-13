@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -118,6 +119,75 @@ class BreathingSpaceServiceTest {
             .isEqualTo(LocalDate.of(2027, 1, 12));
     }
 
+
+    @Test
+    void shouldReturnEmptyWhenNoBreathingSpaceExists() {
+        // Given
+        when(breathingSpaceRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(List.of());
+
+        // When
+        Optional<BreathingSpaceDetails> result =
+            underTest.getLatestBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+
+    @Test
+    void shouldReturnLatestBreathingSpaceRecord() {
+        // Given
+        BreathingSpaceEntity newest = BreathingSpaceEntity.builder()
+            .referenceNumber("BS-NEW")
+            .startDate(LocalDate.of(2026, 11, 12))
+            .build();
+
+        BreathingSpaceEntity oldest = BreathingSpaceEntity.builder()
+            .referenceNumber("BS-OLD")
+            .startDate(LocalDate.of(2026, 10, 1))
+            .build();
+
+        // Repository returns newest first
+        when(breathingSpaceRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(List.of(newest, oldest));
+
+        // When
+        Optional<BreathingSpaceDetails> result =
+            underTest.getLatestBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.orElseThrow().getReferenceNumber())
+            .isEqualTo("BS-NEW");
+    }
+
+
+    @Test
+    void shouldNotSaveExpectedEndDateForMentalHealthMoratorium() {
+        // Given
+        ClaimEntity claimEntity = new ClaimEntity();
+
+        when(claimService.loadClaim(CASE_REFERENCE))
+            .thenReturn(claimEntity);
+
+        BreathingSpaceDetails details = BreathingSpaceDetails.builder()
+            .referenceNumber("BS123456")
+            .type(BreathingSpaceType.MENTAL_HEALTH_CRISIS_MORATORIUM)
+            .expectedEndDate(LocalDate.of(2027, 1, 12))
+            .build();
+
+        // When
+        underTest.createBreathingSpace(CASE_REFERENCE, details);
+
+        // Then
+        verify(breathingSpaceRepository)
+            .save(breathingSpaceEntityCaptor.capture());
+
+        assertThat(breathingSpaceEntityCaptor.getValue()
+                       .getExpectedEndDate())
+            .isNull();
+    }
 
     private BreathingSpaceDetails stub() {
         return BreathingSpaceDetails.builder()
