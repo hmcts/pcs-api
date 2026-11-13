@@ -25,8 +25,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
@@ -34,6 +36,8 @@ import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUND
 @Slf4j
 @Service
 public class CamundaService {
+
+    private static final String PROCESS_CATEGORY = "__processCategory__";
 
     private final WorkAllocationWorkflowApi workAllocationWorkflowApi;
     private final AuthTokenGenerator authTokenGenerator;
@@ -104,6 +108,15 @@ public class CamundaService {
         createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of(), assignee);
     }
 
+    /**
+     * Creates a task for a role's pool about a message, urgent or not, which the configuration DMN prioritises and
+     * names the message on.
+     */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, boolean urgent, UUID messageId) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of(), null, urgent,
+            messageId == null ? null : messageId.toString());
+    }
+
     public void createTask(
         long caseId,
         TaskType taskType,
@@ -112,6 +125,11 @@ public class CamundaService {
         Map<String, Object> taskDetails,
         String assignee
     ) {
+        createTask(caseId, taskType, taskDescription, scheduledTo, taskDetails, assignee, null, null);
+    }
+
+    private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
+                            Map<String, Object> taskDetails, String assignee, Boolean urgent, String messageId) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
@@ -120,9 +138,29 @@ public class CamundaService {
             .idempotencyKey(UUID.randomUUID())
             .taskDetails(taskDetails)
             .assignee(assignee)
+            .urgent(urgent)
+            .messageId(messageId)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
+    }
+
+    /**
+     * Cancels one side's task about the message, once the message is answered without it. The other side's task about
+     * the same message, such as the one the answer creates, is left alone.
+     */
+    public void cancelMessageTask(long caseId, UUID messageId, TaskType side) {
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(caseId)
+            .messageId(messageId.toString())
+            .taskType(side)
+            .build();
+        scheduleCamundaRequest(taskData, Instant.now(utcClock));
+    }
+
+    private static String messageCategory(String messageId) {
+        return "message_" + messageId;
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
@@ -142,11 +180,16 @@ public class CamundaService {
                 taskData.getTaskDescription(),
                 taskData.getIdempotencyKey(),
                 taskData.getTaskDetails(),
-                taskData.getAssignee()
+                taskData.getAssignee(),
+                taskData.getUrgent(),
+                taskData.getMessageId()
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
-                taskData.getTaskType()
+                taskData.getTaskType(),
+                Stream.of(taskData.getTaskType() == null ? null : taskData.getTaskType().getId(),
+                        taskData.getMessageId() == null ? null : messageCategory(taskData.getMessageId()))
+                    .filter(Objects::nonNull).toList()
             );
         }
     }
@@ -169,7 +212,9 @@ public class CamundaService {
         String taskDescription,
         UUID idempotencyKey,
         Map<String, Object> taskDetails,
-        String assignee
+        String assignee,
+        Boolean urgent,
+        String messageId
     ) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
@@ -197,7 +242,7 @@ public class CamundaService {
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
-        processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processVariables.put(PROCESS_CATEGORY + taskType.getId(), dmnBooleanValue(true));
         processVariables.put("pcsApiEnv", dmnStringValue(pcsApiEnvironment));
         if (idempotencyKey != null) {
             processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
@@ -207,6 +252,14 @@ public class CamundaService {
         // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
         if (assignee != null) {
             processVariables.put("assigneeId", dmnStringValue(assignee));
+        }
+        if (urgent != null) {
+            processVariables.put("urgent", dmnStringValue(urgent ? "Yes" : "No"));
+        }
+        if (messageId != null) {
+            processVariables.put("messageId", dmnStringValue(messageId));
+            // So the task can be cancelled on its own when its message is closed without it.
+            processVariables.put(PROCESS_CATEGORY + messageCategory(messageId), dmnBooleanValue(true));
         }
 
         // Default values - WA task due date is configured in configuration dmn
@@ -230,7 +283,8 @@ public class CamundaService {
         sendCamundaRequest(request, caseId);
     }
 
-    private void requestTaskCancellation(Long caseId, TaskType taskType) {
+    /** Cancels the case's tasks in every one of the process categories. */
+    private void requestTaskCancellation(Long caseId, TaskType taskType, List<String> processCategories) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped cancelling task for {}", caseId);
             return;
@@ -238,7 +292,7 @@ public class CamundaService {
 
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
-        correlationKeys.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processCategories.forEach(category -> correlationKeys.put(PROCESS_CATEGORY + category, dmnBooleanValue(true)));
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
         processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));
