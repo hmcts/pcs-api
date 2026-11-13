@@ -111,8 +111,12 @@ export class ActionCMRegistry {
     ['reopenBreathingSpaceEvent', new CaseManagementAction()],
     ['validateReferenceNumberLengthError', new CaseManagementAction()],
     ['validateFutureStartDateError', new CaseManagementAction()],
-
-  ]);
+    ['validateCheckYourAnswersPage', new CaseManagementAction()],
+    ['changeReferenceNumberAndValidate', new CaseManagementAction()],
+    ['submitCheckYourAnswers', new CaseManagementAction()],
+    ['clickPreviousAndValidateAnswersRetained', new CaseManagementAction()],
+    ['cancelCheckYourAnswersAndValidate', new CaseManagementAction()],
+      ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);
