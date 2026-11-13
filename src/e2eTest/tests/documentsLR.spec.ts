@@ -37,8 +37,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const title = testInfo.title;
 
-  const isGenAppsSubmitted = /gen\s*apps\s+submitted/.test(title);
-
   const isMultiDef = title.toLowerCase().includes('multi def');
   submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload() : submitCaseApiData.submitCasePayloadDefault();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -103,7 +101,7 @@ test.afterEach(async () => {
 
 });
 /* The skipped tests will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755 */
-test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
+test.describe('Legal Representative - Upload Documents- e2e Journey', async () => {
 
   test.skip('Upload documents when GenApps submitted - Multi def', {
     annotation: {
@@ -111,7 +109,6 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async () => {
-    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
@@ -143,7 +140,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test('Upload documents when GenApps submitted - Single def SET_ASIDE @regression', async () => {
+  test('Upload documents when GenApps submitted - Single def SET_ASIDE @regression @nightly', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -177,7 +174,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
 
   });
 
-  test('Upload documents when GenApps submitted - Single def MULTI_APP @regression', async () => {
+  test('Upload documents when GenApps submitted - Single def MULTI_APP @regression @nightly', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -295,7 +292,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
   });
 
-  test('Upload documents when GenApps not submitted - Single def @regression', async () => {
+  test('Upload documents when GenApps not submitted - Single def @regression @nightly', async () => {
 
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let fileName1 = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[3];
@@ -329,7 +326,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE @regression', async ({ page, context }) => {
+  test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE @regression @nightly', async ({ page, context }) => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[5];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];

@@ -16,9 +16,10 @@ import {
   askTheCourtToSetAsideTheOrder, checkYourAnswersGenApps, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  helpPayingTheFee, selectParty, serviceRequestGenApps,
+  helpPayingTheFee, selectParty,
   statementOfTruth, uploadDocumentsToSupportDefendantsApplication, whatOrderDoYouWantTheCourtToMakeAndWhy,
-  whichLanguageDidYouUseToCompleteThisService
+  whichLanguageDidYouUseToCompleteThisService,
+  confirmGenApps
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 import { home } from '@data/page-data';
@@ -129,19 +130,8 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('payClaimFeeGenApps', { clickLink: true });
-    await performAction('clickPayNowLinkGenApps');
-    await performAction('selectPaymentOptions', {
-      amountLabel: serviceRequestGenApps.amountToPayLabel,
-      payByOption: serviceRequestGenApps.payByAccountRadioOption,
-      expectedAmount: serviceRequestGenApps.amount126,
-      pbaLabel: serviceRequestGenApps.selectPBALabel,
-      pbaValue: serviceRequestGenApps.pbaIndex1,
-      referenceLabel: serviceRequestGenApps.pbaReferenceLabel,
-      referenceText: serviceRequestGenApps.pbaReferenceInputText,
-      button: serviceRequestGenApps.confirmPaymentButton,
-    });
-    await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
+    await performAction('updatePaymentAPI');
+    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
