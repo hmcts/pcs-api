@@ -29,16 +29,19 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -53,6 +56,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ClaimServiceTest {
 
+    private static final long CASE_REFERENCE = 1234L;
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
         .atTime(12, 51, 19);
 
@@ -451,7 +455,35 @@ class ClaimServiceTest {
         verify(claimRepository, times(1)).save(claimEntity);
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
     }
-    
+
+    @Test
+    void shouldLoadClaim() {
+        // Given
+        ClaimEntity expectedClaimEntity = ClaimEntity.builder().build();
+
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(expectedClaimEntity));
+
+        // When
+        ClaimEntity actualClaimEntity = claimService.loadClaim(CASE_REFERENCE);
+
+        // Then
+        assertThat(actualClaimEntity).isSameAs(expectedClaimEntity);
+    }
+
+    @Test
+    void shouldThrowExceptionLoadingClaimForUnknownCaseReference() {
+        // Given
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.empty());
+
+        // When
+        Throwable throwable = catchThrowable(() -> claimService.loadClaim(CASE_REFERENCE));
+
+        // Then
+        assertThat(throwable).isInstanceOf(ClaimNotFoundException.class);
+    }
+
     private static Stream<Arguments> claimantTypeScenarios() {
         return Stream.of(
             arguments(ClaimantType.PRIVATE_LANDLORD),

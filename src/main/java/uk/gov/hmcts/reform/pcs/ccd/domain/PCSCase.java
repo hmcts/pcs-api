@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnforcementDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
@@ -621,6 +622,10 @@ public class PCSCase {
 
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
+
+    @JsonUnwrapped(prefix = "enfDecision_")
+    @CCD(searchable = false)
+    private EnforcementDecision enforcementDecision;
 
     @JsonUnwrapped
     private LegalRepDocumentUploadDetails legalRepDocumentUploadDetails;
