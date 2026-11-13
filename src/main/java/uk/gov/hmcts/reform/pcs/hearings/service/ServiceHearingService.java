@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
+import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -69,6 +71,23 @@ public class ServiceHearingService {
         log.info("Built service hearing values for case {}", caseReference);
         return values;
     }
+
+    @Transactional(readOnly = true)
+    public List<ServiceLinkedCases> getServiceLinkedCases(long caseReference) {
+        PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        return pcsCase.getCaseLinks().stream()
+            .map(link -> ServiceLinkedCases.builder()
+                .caseReference(String.valueOf(link.getLinkedCaseReference()))
+                .caseName(pcsCaseRepository.findByCaseReference(link.getLinkedCaseReference())
+                    .map(caseNameFormatter::formatCaseName)
+                    .orElse(null))
+                .reasonsForLink(link.getReasons().stream().map(CaseLinkReasonEntity::getReasonCode).toList())
+                .build())
+            .toList();
+    }
+
 
     private String caseDeepLink(long caseReference) {
         return manageCaseUrl + String.format(CASE_FILE_VIEW_PATH, caseReference);

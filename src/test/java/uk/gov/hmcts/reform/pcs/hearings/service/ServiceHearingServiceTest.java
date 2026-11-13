@@ -1,11 +1,14 @@
 package uk.gov.hmcts.reform.pcs.hearings.service;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -15,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
+import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +30,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +39,7 @@ class ServiceHearingServiceTest {
     private static final long CASE_REFERENCE = 1234567890123456L;
     private static final String MANAGE_CASE_URL = "https://manage-case.example";
     private static final String CASE_NAME = "Jane Landlord vs John Tenant";
+    private static final long LINKED_CASE_REFERENCE = 6543210987654321L;
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -46,7 +52,7 @@ class ServiceHearingServiceTest {
     void setUp() {
         ServiceHearingValuesConfiguration defaults = new ServiceHearingValuesConfiguration();
         defaults.setHmctsServiceId("AAA3");
-        defaults.setLocationType("Court");
+        defaults.setLocationType("court");
         defaults.setRoleTypes(List.of("24", "45"));
         defaults.setPreferredHearingChannel("INTER");
 
@@ -69,7 +75,7 @@ class ServiceHearingServiceTest {
 
         assertThat(values.getHmctsServiceID()).isEqualTo("AAA3");
         assertThat(values.getHearingLocations()).singleElement()
-            .extracting("locationType").isEqualTo("Court");
+            .extracting("locationType").isEqualTo("court");
         assertThat(values.getPanelRequirements().getRoleType()).containsExactly("24", "45");
     }
 
@@ -216,8 +222,106 @@ class ServiceHearingServiceTest {
             .isEqualTo("Case Flags: Urgent case (Comments: " + longComment + ")");
     }
 
+    @Test
+    void shouldThrowWhenCaseNotFoundForLinkedCases() {
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> underTest.getServiceLinkedCases(CASE_REFERENCE))
+            .isInstanceOf(CaseNotFoundException.class);
+    }
+
+    @Test
+    void shouldReturnNoLinkedCasesWhenCaseHasNoLinks() {
+        givenCase(caseBuilder().build());
+
+        List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
+
+        assertThat(linkedCases).isEmpty();
+    }
+
+    @Test
+    void shouldMapLinkedCaseReferenceNameAndReasons() {
+        PcsCaseEntity linkedCase = PcsCaseEntity.builder().caseReference(LINKED_CASE_REFERENCE).build();
+        givenCase(caseBuilder()
+            .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001", "CLRC002")))
+            .build());
+        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.of(linkedCase));
+        when(caseNameFormatter.formatCaseName(linkedCase)).thenReturn(CASE_NAME);
+
+        List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
+
+        assertThat(linkedCases).singleElement().satisfies(linked -> {
+            assertThat(linked.getCaseReference()).isEqualTo("6543210987654321");
+            assertThat(linked.getCaseName()).isEqualTo(CASE_NAME);
+            assertThat(linked.getReasonsForLink()).containsExactly("CLRC001", "CLRC002");
+        });
+    }
+
+    @Test
+    void shouldLeaveCaseNameEmptyWhenLinkedCaseIsNotInPcs() {
+        givenCase(caseBuilder()
+            .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001")))
+            .build());
+        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
+
+        assertThat(linkedCases).singleElement().satisfies(linked -> {
+            assertThat(linked.getCaseReference()).isEqualTo("6543210987654321");
+            assertThat(linked.getCaseName()).isNull();
+            assertThat(linked.getReasonsForLink()).containsExactly("CLRC001");
+        });
+        verifyNoInteractions(caseNameFormatter);
+    }
+
+    @Test
+    void shouldReturnEmptyReasonsWhenLinkHasNoReasons() {
+        givenCase(caseBuilder()
+            .caseLinks(links(link(LINKED_CASE_REFERENCE)))
+            .build());
+        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
+
+        assertThat(linkedCases).singleElement()
+            .extracting(ServiceLinkedCases::getReasonsForLink)
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
+            .isEmpty();
+    }
+
+    @Test
+    void shouldReturnEveryLinkedCaseInStoredOrder() {
+        long secondLinkedCase = 1111222233334444L;
+        givenCase(caseBuilder()
+            .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001"), link(secondLinkedCase, "CLRC003")))
+            .build());
+        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(pcsCaseRepository.findByCaseReference(secondLinkedCase)).thenReturn(Optional.empty());
+
+        List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
+
+        assertThat(linkedCases)
+            .extracting(ServiceLinkedCases::getCaseReference)
+            .containsExactly("6543210987654321", "1111222233334444");
+    }
+
     private void givenCase(PcsCaseEntity pcsCase) {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCase));
+    }
+
+    private static List<CaseLinkEntity> links(CaseLinkEntity... links) {
+        return new ArrayList<>(List.of(links));
+    }
+
+    private static CaseLinkEntity link(long linkedCaseReference, String... reasonCodes) {
+        CaseLinkEntity link = CaseLinkEntity.builder()
+            .linkedCaseReference(linkedCaseReference)
+            .ccdListId("PCS")
+            .build();
+        for (String reasonCode : reasonCodes) {
+            link.getReasons().add(CaseLinkReasonEntity.builder().caseLink(link).reasonCode(reasonCode).build());
+        }
+        return link;
     }
 
     private static PcsCaseEntity.PcsCaseEntityBuilder caseBuilder() {

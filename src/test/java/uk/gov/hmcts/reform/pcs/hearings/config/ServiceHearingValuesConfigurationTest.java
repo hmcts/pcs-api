@@ -42,7 +42,7 @@ class ServiceHearingValuesConfigurationTest {
         assertThat(result.getHearingLocations())
             .singleElement()
             .extracting("locationType")
-            .isEqualTo("Court");
+            .isEqualTo("court");
         assertThat(result.getPanelRequirements().getRoleType()).containsExactly("24", "45");
         assertThat(result.getParties())
             .singleElement()

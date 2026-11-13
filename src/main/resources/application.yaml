@@ -482,7 +482,7 @@ hmc-service-hearing-values:
   hearing-in-welsh-flag: false
   private-hearing-required-flag: false
   hearing-is-linked-flag: false
-  location-type: Court
+  location-type: court
   role-types:
       - "24"
       - "45"

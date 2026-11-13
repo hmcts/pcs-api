@@ -55,7 +55,8 @@ class IdamAuthenticationFilterTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/ccd", "/ccd/cases", "/callbacks", "/callbacks/mid-event"})
+    @ValueSource(strings = {"/ccd", "/ccd/cases", "/callbacks", "/callbacks/mid-event", "/serviceHearingValues", 
+        "/serviceLinkedCases"})
     void shouldFilterForSpecificRequestPaths(String requestURI) {
         when(request.getRequestURI()).thenReturn(requestURI);
 
