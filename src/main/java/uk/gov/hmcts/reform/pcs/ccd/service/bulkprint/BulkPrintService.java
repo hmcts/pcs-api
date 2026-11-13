@@ -3,15 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.service.coverletter.CoveringLetterProvider;
 import uk.gov.hmcts.reform.pcs.ccd.service.coversheet.CoversheetProvider;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.LetterV3;
@@ -24,8 +21,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Assembles one pack — coversheet then documents, merged into a single PDF by {@link PdfMerger} — into a
- * Send Letter letter and posts it. Recording the outcome is the caller's job.
+ * Assembles one pack — coversheet then documents, made into a single print-ready PDF by
+ * {@link BulkPrintLetterAssembler} — into a Send Letter letter and posts it. Recording the outcome is the caller's job.
+ * Defendant claim packs also append the static blank defence and counterclaim forms after the case documents.
  */
 @Service
 public class BulkPrintService {
@@ -33,34 +31,31 @@ public class BulkPrintService {
     private static final int SINGLE_COPY = 1;
     private static final String RECIPIENTS = "recipients";
     private static final String CASE_REFERENCE = "caseReference";
+    private static final String APPLICATION_PDF = "application/pdf";
+    private static final String BLANK_RESPONSE_FORM_NAME = "ONC-002R-defence-form.pdf";
+    private static final String BLANK_COUNTERCLAIM_FORM_NAME = "ONC-003-counterclaim.pdf";
 
     private final CoversheetProvider coversheetProvider;
-    private final CoveringLetterProvider coveringLetterProvider;
     private final LetterDocumentFetcher letterDocumentFetcher;
-    private final PdfMerger pdfMerger;
+    private final BulkPrintLetterAssembler letterAssembler;
     private final SendLetterApi sendLetterApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseReferenceFormatter caseReferenceFormatter;
-    private final FeatureToggleService featureToggleService;
     private final BlankClaimPackFormsProvider blankClaimPackFormsProvider;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
-                            CoveringLetterProvider coveringLetterProvider,
                             LetterDocumentFetcher letterDocumentFetcher,
-                            PdfMerger pdfMerger,
+                            BulkPrintLetterAssembler letterAssembler,
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter,
-                            FeatureToggleService featureToggleService,
                             BlankClaimPackFormsProvider blankClaimPackFormsProvider) {
         this.coversheetProvider = coversheetProvider;
-        this.coveringLetterProvider = coveringLetterProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
-        this.pdfMerger = pdfMerger;
+        this.letterAssembler = letterAssembler;
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
         this.caseReferenceFormatter = caseReferenceFormatter;
-        this.featureToggleService = featureToggleService;
         this.blankClaimPackFormsProvider = blankClaimPackFormsProvider;
     }
 
@@ -69,18 +64,21 @@ public class BulkPrintService {
         requirePostalAddress(address, recipient);
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
 
-        List<byte[]> pdfs = new ArrayList<>();
-        pdfs.add(coversheetProvider.render(recipientName, address, caseReference));
-        if (letterType.includesCoveringLetter()
-            && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
-            pdfs.add(coveringLetterProvider.render(pcsCase, recipient, recipientName, address, caseReference));
-        }
-        documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));
+        byte[] coversheet = coversheetProvider.render(recipientName, address, caseReference);
+        List<BulkPrintLetterAssembler.LetterDocument> letterDocuments = new ArrayList<>();
+        documents.forEach(document -> letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
+            document.getFileName(), document.getContentType(),
+            letterDocumentFetcher.fetchBytes(document.getDocumentId()))));
         if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
-            pdfs.add(blankClaimPackFormsProvider.getBlankResponseForm());
-            pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimForm());
+            letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
+                BLANK_RESPONSE_FORM_NAME, APPLICATION_PDF, blankClaimPackFormsProvider.getBlankResponseForm()));
+            letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
+                BLANK_COUNTERCLAIM_FORM_NAME, APPLICATION_PDF,
+                blankClaimPackFormsProvider.getBlankCounterclaimForm()));
         }
-        Document mergedLetter = new Document(Base64.getEncoder().encodeToString(pdfMerger.merge(pdfs)), SINGLE_COPY);
+        byte[] letterPdf = letterAssembler.assemble(
+            letterType.getCode() + " " + caseReference, coversheet, letterDocuments);
+        Document mergedLetter = new Document(Base64.getEncoder().encodeToString(letterPdf), SINGLE_COPY);
 
         LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
             additionalData(caseReference, recipientName, address));

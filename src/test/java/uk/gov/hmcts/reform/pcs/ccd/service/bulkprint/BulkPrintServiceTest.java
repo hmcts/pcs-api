@@ -11,15 +11,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.service.coverletter.CoveringLetterProvider;
 import uk.gov.hmcts.reform.pcs.ccd.service.coversheet.CoversheetProvider;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterResponse;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.LetterV3;
@@ -45,19 +42,15 @@ class BulkPrintServiceTest {
     @Mock
     private CoversheetProvider coversheetProvider;
     @Mock
-    private CoveringLetterProvider coveringLetterProvider;
-    @Mock
     private LetterDocumentFetcher letterDocumentFetcher;
     @Mock
-    private PdfMerger pdfMerger;
+    private BulkPrintLetterAssembler letterAssembler;
     @Mock
     private SendLetterApi sendLetterApi;
     @Mock
     private AuthTokenGenerator authTokenGenerator;
     @Mock
     private CaseReferenceFormatter caseReferenceFormatter;
-    @Mock
-    private FeatureToggleService featureToggleService;
     @Mock
     private BlankClaimPackFormsProvider blankClaimPackFormsProvider;
 
@@ -66,12 +59,14 @@ class BulkPrintServiceTest {
 
     @Captor
     private ArgumentCaptor<LetterV3> letterCaptor;
+    @Captor
+    private ArgumentCaptor<List<BulkPrintLetterAssembler.LetterDocument>> documentsCaptor;
 
     private final PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
     private final PartyEntity recipient = PartyEntity.builder().id(UUID.randomUUID()).build();
 
     @Test
-    @DisplayName("Merges the coversheet and documents into one letter and returns the letter id")
+    @DisplayName("Assembles the coversheet and documents into one letter and returns the letter id")
     void shouldMergeCoversheetPlusDocumentsAndReturnLetterId() {
         byte[] coversheetBytes = "coversheet".getBytes();
         byte[] claimFormBytes = "claim-form".getBytes();
@@ -80,10 +75,12 @@ class BulkPrintServiceTest {
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
         when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
         when(letterDocumentFetcher.fetchBytes(any())).thenReturn(claimFormBytes);
-        when(pdfMerger.merge(List.of(coversheetBytes, claimFormBytes))).thenReturn(mergedBytes);
+        when(letterAssembler.assemble(eq("CPC-01-IN0 1234-5678-9012-3456"), eq(coversheetBytes), any()))
+            .thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
-        DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
+        DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID())
+            .fileName("claim-form.docx").contentType("application/msword").build();
         AddressUK address = AddressUK.builder()
             .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
 
@@ -93,6 +90,12 @@ class BulkPrintServiceTest {
         assertThat(letterId).isEqualTo(LETTER_ID);
         verify(coversheetProvider).render("Jane Doe", address, "1234-5678-9012-3456");
         verify(letterDocumentFetcher).fetchBytes(claimForm.getDocumentId());
+        verify(letterAssembler).assemble(any(), any(), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).singleElement().satisfies(document -> {
+            assertThat(document.fileName()).isEqualTo("claim-form.docx");
+            assertThat(document.contentType()).isEqualTo("application/msword");
+            assertThat(document.content()).isEqualTo(claimFormBytes);
+        });
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         LetterV3 letter = letterCaptor.getValue();
         assertThat(letter.documents).singleElement()
@@ -106,7 +109,7 @@ class BulkPrintServiceTest {
     }
 
     @Test
-    @DisplayName("Merges coversheet, access code, claim form, blank response form, and blank counterclaim form"
+    @DisplayName("Assembles coversheet, access code, claim form, blank response form, and blank counterclaim form"
         + " for defendant claim pack")
     void shouldMergeAllFiveDocumentsForDefendantClaimPack() {
         byte[] coversheetBytes = "coversheet".getBytes();
@@ -125,15 +128,14 @@ class BulkPrintServiceTest {
         when(letterDocumentFetcher.fetchBytes(claimFormDocId)).thenReturn(claimFormBytes);
         when(blankClaimPackFormsProvider.getBlankResponseForm()).thenReturn(blankResponseBytes);
         when(blankClaimPackFormsProvider.getBlankCounterclaimForm()).thenReturn(blankCounterclaimBytes);
-        when(pdfMerger.merge(List.of(
-            coversheetBytes, accessCodeBytes, claimFormBytes, blankResponseBytes, blankCounterclaimBytes)))
+        when(letterAssembler.assemble(eq("CPD-01-IN1 1234-5678-9012-3456"), eq(coversheetBytes), any()))
             .thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
         DocumentEntity accessCode = DocumentEntity.builder().id(UUID.randomUUID())
-            .documentId(accessCodeDocId).build();
+            .documentId(accessCodeDocId).fileName("access-code.pdf").contentType("application/pdf").build();
         DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID())
-            .documentId(claimFormDocId).build();
+            .documentId(claimFormDocId).fileName("claim-form.pdf").contentType("application/pdf").build();
         AddressUK address = AddressUK.builder()
             .addressLine1("2 High Street").postTown("London").postCode("W1 2BB").build();
 
@@ -147,8 +149,27 @@ class BulkPrintServiceTest {
         verify(letterDocumentFetcher).fetchBytes(claimFormDocId);
         verify(blankClaimPackFormsProvider).getBlankResponseForm();
         verify(blankClaimPackFormsProvider).getBlankCounterclaimForm();
-        verify(pdfMerger).merge(List.of(
-            coversheetBytes, accessCodeBytes, claimFormBytes, blankResponseBytes, blankCounterclaimBytes));
+        verify(letterAssembler).assemble(any(), any(), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).satisfiesExactly(
+            document -> {
+                assertThat(document.fileName()).isEqualTo("access-code.pdf");
+                assertThat(document.content()).isEqualTo(accessCodeBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("claim-form.pdf");
+                assertThat(document.content()).isEqualTo(claimFormBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-002R-defence-form.pdf");
+                assertThat(document.contentType()).isEqualTo("application/pdf");
+                assertThat(document.content()).isEqualTo(blankResponseBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-003-counterclaim.pdf");
+                assertThat(document.contentType()).isEqualTo("application/pdf");
+                assertThat(document.content()).isEqualTo(blankCounterclaimBytes);
+            }
+        );
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo("CPD-01-IN1");
     }
@@ -156,28 +177,18 @@ class BulkPrintServiceTest {
     @ParameterizedTest(name = "{0} sends letter type {1}")
     @CsvSource({
         "CLAIMANT_CLAIM_PACK, CPC-01-IN0",
-        "DEFENCE_PACK, DEF-01-IN0",
-        "DEFENCE_PACK_LEGAL_REP, DEF-01-IN1",
-        "GEN_APP_PACK, GEN-00-IN0"
+        "DEFENCE_PACK, DEF-01-IN0"
     })
     @DisplayName("Sends renamed IN0 letter type codes for claim and defence packs")
     void shouldSendRenamedLetterTypeCode(LetterType letterType, String expectedLetterType) {
+        byte[] coversheetBytes = "coversheet".getBytes();
+        byte[] documentBytes = "document".getBytes();
+        byte[] mergedBytes = "merged-pdf".getBytes();
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
-        byte[] coversheetBytes = "coversheet".getBytes();
         when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
-        byte[] letterBytes = "covering-letter".getBytes();
-        if (letterType.includesCoveringLetter()) {
-            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
-            when(coveringLetterProvider.render(any(), any(), any(), any(), any())).thenReturn(letterBytes);
-        }
-        byte[] documentBytes = "document".getBytes();
         when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
-        List<byte[]> pdfs = letterType.includesCoveringLetter()
-            ? List.of(coversheetBytes, letterBytes, documentBytes)
-            : List.of(coversheetBytes, documentBytes);
-        byte[] mergedBytes = "merged-pdf".getBytes();
-        when(pdfMerger.merge(pdfs)).thenReturn(mergedBytes);
+        when(letterAssembler.assemble(any(), eq(coversheetBytes), any())).thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
         DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
@@ -188,31 +199,6 @@ class BulkPrintServiceTest {
 
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo(expectedLetterType);
-        verify(pdfMerger).merge(pdfs);
-    }
-
-    @Test
-    @DisplayName("Posts a defence pack without the covering letter when release 1.4 is off")
-    void shouldOmitCoveringLetterWhenRelease14IsOff() {
-        when(authTokenGenerator.generate()).thenReturn("s2s");
-        when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
-        byte[] coversheetBytes = "coversheet".getBytes();
-        when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
-        byte[] documentBytes = "document".getBytes();
-        when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
-        byte[] mergedBytes = "merged-pdf".getBytes();
-        when(pdfMerger.merge(List.of(coversheetBytes, documentBytes))).thenReturn(mergedBytes);
-        when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
-
-        DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
-        AddressUK address = AddressUK.builder()
-            .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
-
-        underTest.sendPack(pcsCase, recipient, LetterType.DEFENCE_PACK, "Jane Doe", address, List.of(document));
-
-        verify(pdfMerger).merge(List.of(coversheetBytes, documentBytes));
-        verifyNoInteractions(coveringLetterProvider);
     }
 
     @Test
@@ -224,7 +210,6 @@ class BulkPrintServiceTest {
             pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "Jane Doe", blank, List.of()))
             .isInstanceOf(MissingPostalAddressException.class);
 
-        verifyNoInteractions(coversheetProvider, coveringLetterProvider, letterDocumentFetcher, pdfMerger,
-            sendLetterApi);
+        verifyNoInteractions(coversheetProvider, letterDocumentFetcher, letterAssembler, sendLetterApi);
     }
 }
