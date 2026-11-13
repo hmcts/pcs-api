@@ -1,6 +1,6 @@
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor } from '@utils/controller';
-import test, { expect } from '@playwright/test';
+import test from '@playwright/test';
 import { initializeGenAppsExecutor, performAction, performValidation } from '@utils/controller-genApps';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { caseInfo } from '@utils/actions/custom-actions';
@@ -37,7 +37,7 @@ test.afterEach(async () => {
 
 
 test.describe('Claimant - Make an Application - e2e Journey @nightly', async () => {
-  test('Claimant- Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
+  test('Claimant- Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
