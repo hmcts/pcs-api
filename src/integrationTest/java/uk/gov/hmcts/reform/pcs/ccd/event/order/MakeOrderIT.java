@@ -15,31 +15,29 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseContext;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
@@ -71,6 +69,17 @@ class MakeOrderIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("refuses making and reviewing orders while making orders is off")
+    void refusedWhenMakeOrderIsOff() {
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+
+        assertThat(asFirstJudge.startExpectingRejection()).containsExactly(MakeOrder.NOT_AVAILABLE);
+        assertThat(events.external(caseReference, CONFIRM_ORDER_REVIEW)
+            .as(events.registerActor("A", "Caseworker", "caseworker-pcs")).startExpectingRejection())
+            .containsExactly(MakeOrder.NOT_AVAILABLE);
+    }
+
+    @Test
     @DisplayName("shows the judge the property and parties of the claim")
     void showsThePropertyAndPartiesOfTheClaim() {
         PCSCase claim = cases.claim(ENGLAND);
@@ -83,22 +92,16 @@ class MakeOrderIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("says whether the case has an issued counterclaim or application")
-    void saysWhetherTheCaseHasAnIssuedCounterclaimOrApplication() {
-        assertThat(asFirstJudge.start().caseContext())
-            .extracting(CaseContext::openCounterclaim, CaseContext::openApplication)
-            .containsExactly(false, false);
+    @DisplayName("says whether the case has an issued counterclaim")
+    void saysWhetherTheCaseHasAnIssuedCounterclaim() {
+        assertThat(asFirstJudge.start().caseContext().openCounterclaim()).isFalse();
 
         cases.update(caseReference, pcsCase -> {
             PartyEntity defendant = pcsCase.getParties().stream()
                 .filter(party -> party.getOrgName() == null).findFirst().orElseThrow();
             pcsCase.addCounterClaim(CounterClaimEntity.builder().party(defendant).status(PENDING_REVIEW).build());
-            pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(ADJOURN).state(GEN_APP_ISSUED)
-                .applicationSubmittedDate(LocalDateTime.now()).build());
         });
-        assertThat(asFirstJudge.start().caseContext())
-            .extracting(CaseContext::openCounterclaim, CaseContext::openApplication)
-            .containsExactly(false, true);
+        assertThat(asFirstJudge.start().caseContext().openCounterclaim()).isFalse();
 
         cases.update(caseReference, pcsCase -> pcsCase.getCounterClaims().getFirst().setStatus(COUNTER_CLAIM_ISSUED));
         assertThat(asFirstJudge.start().caseContext().openCounterclaim()).isTrue();
@@ -183,7 +186,7 @@ class MakeOrderIT extends OrderEventIT {
 
         var submission = asFirstJudge.submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, draft, "final"));
 
-        Order submitted = submission.changed("orders", Order.class);
+        OrderRow submitted = submission.changed("orders", OrderRow.class);
         assertThat(submitted.id()).isEqualTo(draft.id());
         assertThat(submitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
         assertThat(asFirstJudge.start().order().id()).as("no working draft after submission").isNull();
@@ -192,7 +195,7 @@ class MakeOrderIT extends OrderEventIT {
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has submitted an order for review"));
         // The submitted order is out of the judge's hands, and they can start their next one.
-        assertThat(asFirstJudge.submitExpectingRejection(change(SAVE_DRAFT, submitted, "changed")).errors())
+        assertThat(asFirstJudge.submitExpectingRejection(change(SAVE_DRAFT, draft, "changed")).errors())
             .containsExactly("The order draft does not exist for this case");
         asFirstJudge.submitExpectingSuccess(startDraft("next order"));
         assertThat(workingDraft(asFirstJudge)).isEqualTo("next order");
