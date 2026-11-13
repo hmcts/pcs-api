@@ -3,8 +3,8 @@ export const confirmHCEOfficer = {
   //Raised under HDPI-5199 E and O is capital in Figma but its small in implementation.
   mainHeader: `Cadarnhewch a ydych eisoes wedi llogi swyddog gorfodi yr Uchel Lys`,
   haveYouHiredHCEOQuestion: `A ydych wedi llogi swyddog gorfodi yr Uchel Lys?`,
-  yesRadioOption: `Ydw`,
-  noRadioOption: `Nac ydw`,
+  yesRadioOption: `Ydy`,
+  noRadioOption: `Nac ydy`,
   summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
   previousButton: `Blaenorol`,
   continueButton: `Parhau`,

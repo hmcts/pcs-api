@@ -6,7 +6,7 @@ export const suspendedOrder = {
   yesRadioOption: `Ydy`,
   noRadioOption: `Nac ydy`,
   summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
-  previousButton: `Yn ôl`,
+  previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   errorValidation: `NO`,//set it to `NO` before raising a PR
   errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`,five: `moneyFieldAndRadioOption` },
