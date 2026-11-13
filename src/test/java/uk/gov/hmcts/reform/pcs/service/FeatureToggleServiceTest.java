@@ -1,6 +1,10 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 import com.launchdarkly.sdk.LDContext;
+import com.launchdarkly.sdk.LDValue;
+import com.launchdarkly.sdk.server.LDConfig;
+import com.launchdarkly.sdk.server.Components;
+import com.launchdarkly.sdk.server.integrations.TestData;
 import com.launchdarkly.sdk.server.LDClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +29,33 @@ class FeatureToggleServiceTest {
 
     @Captor
     private ArgumentCaptor<LDContext> contextCaptor;
+
+    @Test
+    void shouldTargetUsersWithinTheirEnvironment() throws Exception {
+        TestData data = TestData.dataSource();
+        data.update(data.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(false)
+            .ifMatch("key", LDValue.of("selected-idam-id"))
+            .andMatch("environment", LDValue.of("prod")).thenReturn(true));
+        try (LDClient client = new LDClient("test", new LDConfig.Builder()
+            .dataSource(data).events(Components.noEvents()).build())) {
+            var prod = new FeatureToggleService(client, "prod");
+            assertThat(prod.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, "selected-idam-id")).isTrue();
+            assertThat(prod.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, "other-idam-id")).isFalse();
+            assertThat(new FeatureToggleService(client, "aat")
+                .isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, "selected-idam-id")).isFalse();
+            assertThat(prod.isEnabled(FeatureFlag.CASE_BUNDLE_VIEW)).isFalse();
+        }
+    }
+
+    @Test
+    void shouldHideBundlesWhenFlagUnavailableOrIdentityMissing() throws Exception {
+        try (LDClient client = new LDClient("test", new LDConfig.Builder().offline(true).build())) {
+            var service = new FeatureToggleService(client, "prod");
+            assertThat(service.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, "selected-idam-id")).isFalse();
+            assertThat(service.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, null)).isFalse();
+            assertThat(service.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, " ")).isFalse();
+        }
+    }
 
     @Test
     void shouldReturnVariationValueFromLdClient() {
