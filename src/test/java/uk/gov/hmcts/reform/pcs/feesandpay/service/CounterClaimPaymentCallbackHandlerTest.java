@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
@@ -117,6 +118,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 6, 1, 10, 0));
+        assertThat(counterClaimEntity.getRank()).isEqualTo(1);
 
         verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
 
@@ -272,6 +274,63 @@ class CounterClaimPaymentCallbackHandlerTest {
             .containsExactly("Counterclaim - Defendant 1.pdf", "counterclaim-evidence.pdf");
         verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
         verify(schedulerClient).scheduleIfNotExists(any());
+    }
+
+    @Test
+    void shouldCreateTranslateTaskWithRankWhenRelease14Enabled() throws Exception {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        UUID counterClaimId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = PartyEntity.builder().id(partyId).build();
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(1234567890123456L)
+            .claims(List.of(mainClaim))
+            .build();
+
+        DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .party(party)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+        pcsCaseEntity.setDefendantResponses(List.of(defendantResponse));
+
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(counterClaimId)
+            .rank(1)
+            .status(PENDING_COUNTER_CLAIM_ISSUED)
+            .party(party)
+            .pcsCase(pcsCaseEntity)
+            .build();
+
+        DocumentEntity activeDocument = DocumentEntity.builder()
+            .fileName("counterclaim-evidence.pdf")
+            .counterClaim(counterClaimEntity)
+            .build();
+        pcsCaseEntity.setDocuments(List.of(activeDocument));
+
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
+
+        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .paymentStatus(PaymentStatus.PAID)
+            .taskData("task-data")
+            .externalReference("PAY-999")
+            .build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().build();
+
+        underTest.handle(callback, feePaymentEntity);
+
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
+            eq(pcsCaseEntity), eq(party), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("Counterclaim CC1 - Defendant 1.pdf", "counterclaim-evidence.pdf");
     }
 
     @Test

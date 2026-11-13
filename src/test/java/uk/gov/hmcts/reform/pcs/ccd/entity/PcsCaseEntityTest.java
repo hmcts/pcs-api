@@ -114,6 +114,17 @@ class PcsCaseEntityTest {
     }
 
     @Test
+    void shouldAssignRankToCounterClaimWhenRankIsNull() {
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder().build();
+        underTest.getCounterClaims().add(counterClaim);
+        assertThat(counterClaim.getRank()).isNull();
+
+        underTest.assignCounterClaimRank(counterClaim);
+
+        assertThat(counterClaim.getRank()).isEqualTo(1);
+    }
+
+    @Test
     void shouldAddCaseReviewDateEntityAndSetCaseLevelRank() {
         // Given
         CaseReviewDateEntity reviewDateEntity1 = mock(CaseReviewDateEntity.class);

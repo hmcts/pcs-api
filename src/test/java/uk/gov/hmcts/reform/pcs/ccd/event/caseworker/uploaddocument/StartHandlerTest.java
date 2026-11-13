@@ -111,7 +111,6 @@ class StartHandlerTest {
 
         PartyEntity claimant1Party = PartyEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity defendant4Party = PartyEntity.builder().id(UUID.randomUUID()).build();
-
         CounterClaimEntity counterClaimEntity1 = createCounterClaimEntity(baseDateTime.minusDays(5), claimant1Party);
         counterClaimEntity1.setRank(1);
         CounterClaimEntity counterClaimEntity2 = createCounterClaimEntity(baseDateTime.plusDays(5), defendant4Party);

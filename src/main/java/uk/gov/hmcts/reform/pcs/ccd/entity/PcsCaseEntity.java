@@ -213,6 +213,13 @@ public class PcsCaseEntity {
         counterClaim.setPcsCase(this);
     }
 
+    public void assignCounterClaimRank(CounterClaimEntity counterClaim) {
+        if (counterClaim.getRank() == null) {
+            int index = counterClaims.indexOf(counterClaim);
+            counterClaim.setRank(index >= 0 ? index + 1 : counterClaims.size() + 1);
+        }
+    }
+
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);
         caseNote.setPcsCase(this);

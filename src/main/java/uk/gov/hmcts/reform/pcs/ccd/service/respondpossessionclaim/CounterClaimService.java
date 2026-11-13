@@ -60,9 +60,7 @@ public class CounterClaimService {
 
         CounterClaimEntity counterClaimEntity = buildCounterClaimEntity(
             counterClaim, partyRef, LocalDateTime.now(utcClock));
-        
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
-        
         CounterClaimEntity savedCounterClaim = counterClaimRepository.save(counterClaimEntity);
         log.info("Saved counterclaim {} for case {}", savedCounterClaim.getId(), caseReference);
         return Optional.of(savedCounterClaim);

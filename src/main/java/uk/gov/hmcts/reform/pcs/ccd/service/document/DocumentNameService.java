@@ -88,13 +88,30 @@ public class DocumentNameService {
         // Example label when release 1.4 is on: Evidence CC1 - Defendant 1.pdf
         String partyLabel = partyService.getPartyLabel(claim, partyId);
         Integer rank = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
-            ? counterClaimEntity.getRank()
+            ? resolveCounterClaimRank(counterClaimEntity)
             : null;
         String filename = rank != null
             ? "%s CC%d".formatted(baseName, rank)
             : baseName;
 
         return buildFilename(filename, extension, partyLabel);
+    }
+
+    private int resolveCounterClaimRank(CounterClaimEntity counterClaimEntity) {
+        if (counterClaimEntity == null) {
+            return 1;
+        }
+        if (counterClaimEntity.getRank() != null) {
+            return counterClaimEntity.getRank();
+        }
+        if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getCounterClaims() != null) {
+            int index = counterClaimEntity.getPcsCase().getCounterClaims().indexOf(counterClaimEntity);
+            if (index >= 0) {
+                return index + 1;
+            }
+            return counterClaimEntity.getPcsCase().getCounterClaims().size() + 1;
+        }
+        return 1;
     }
 
     public String appendPartyPostfix(String originalFilename,
