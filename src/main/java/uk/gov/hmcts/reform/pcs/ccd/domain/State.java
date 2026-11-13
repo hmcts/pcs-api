@@ -126,10 +126,13 @@ public enum State {
     BREATHING_SPACE,
 
     @CCD(
-            label = "Draft Discarded",
+            // State ID must be PendingDisposal for the CCD SDK retain-and-dispose contract.
+            // Label keeps Manage Case wording aligned with HDPI-3404 "Draft discarded".
+            // ClaimantAccess lets soft-delete users see the confirmation / discarded outcome.
+            label = "Draft discarded",
             access = {SystemUserAccess.class, ClaimantAccess.class}
     )
-    DRAFT_DISCARDED,
+    PendingDisposal,
 
     @CCD(
         label = "Closed",

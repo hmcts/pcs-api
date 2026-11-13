@@ -46,7 +46,7 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         return SubmitResponse.<State>builder()
-                .state(State.DRAFT_DISCARDED)
+                .state(State.PendingDisposal)
                 .confirmationBody("""
                 # Case deleted
                 Case number: %s

@@ -53,7 +53,7 @@ class DeleteThisCaseTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
 
         // Then
-        assertThat(submitResponse.getState()).isEqualTo(State.DRAFT_DISCARDED);
+        assertThat(submitResponse.getState()).isEqualTo(State.PendingDisposal);
         assertThat(submitResponse.getConfirmationBody()).contains("Case deleted");
         assertThat(submitResponse.getConfirmationBody()).contains("Case number: " + TEST_CASE_REFERENCE);
     }
