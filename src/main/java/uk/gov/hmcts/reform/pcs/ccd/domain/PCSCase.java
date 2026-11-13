@@ -167,7 +167,7 @@ public class PCSCase {
     private VerticalYesNo multipleRepresentedParties;
 
     @CCD(
-        access = {DefendantAccess.class}
+        access = {DefendantAccess.class, InternalUserAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -1219,7 +1219,7 @@ public class PCSCase {
     private YesOrNo hasUnsubmittedEnforcementData;
 
     @CCD(
-        access = {InternalCaseFlagAccess.class},
+        access = {InternalUserAccess.class},
         searchable = false
     )
     private WarrantReturn warrantReturn;
