@@ -18,19 +18,25 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   if (!manageCaseBaseUrl) {
     throw new Error('MANAGE_CASE_BASE_URL is not set.');
   }
+
+  const isDeleteDraftResponse = testInfo.title.includes('Delete Draft Response');
+  const isVerifyLink = testInfo.title.includes('verifyLink');
+
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-  if (testInfo.title.includes('Delete Draft Response')) {
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadDefault() });
-  } else {
-    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
-  }
+  await performAction('submitCaseAPI', {
+    data: isDeleteDraftResponse
+      ? submitCaseApiData.submitCasePayloadDefault()
+      : submitCaseApiData.submitCasePayload()
+  });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
-  if (testInfo.title.includes('verifyLink')) {
+
+  if (!isDeleteDraftResponse) {
     await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCaseDefendantAddressKnown()});
-  } else if (!testInfo.title.includes('Delete Draft Response')) {
-    await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
+    await performAction('submitCaseAPI', {
+      data: isVerifyLink
+        ? submitCaseApiData.submitCaseDefendantAddressKnown()
+        : submitCaseApiData.submitCasePayload()
+    });
   }
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
