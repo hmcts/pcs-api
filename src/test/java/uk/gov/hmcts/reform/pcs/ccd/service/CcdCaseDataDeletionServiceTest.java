@@ -115,7 +115,7 @@ class CcdCaseDataDeletionServiceTest {
 
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.markCaseForDeletion.name()))
+        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.MarkForDisposal.name()))
                 .thenReturn(startEventResponse);
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(SERVICE_AUTH), eq(CASE_1), any(CaseDataContent.class)))
                 .thenReturn(caseResource);
@@ -126,12 +126,12 @@ class CcdCaseDataDeletionServiceTest {
 
         // Then
         assertThat(result).isEqualTo(caseResource);
-        verify(coreCaseDataApi).startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.markCaseForDeletion.name());
+        verify(coreCaseDataApi).startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.MarkForDisposal.name());
         verify(coreCaseDataApi).createEvent(eq(IDAM_TOKEN), eq(SERVICE_AUTH), eq(CASE_1),
                 caseDataContentCaptor.capture());
 
         CaseDataContent capturedContent = caseDataContentCaptor.getValue();
-        assertThat(capturedContent.getEvent().getId()).isEqualTo(EventId.markCaseForDeletion.name());
+        assertThat(capturedContent.getEvent().getId()).isEqualTo(EventId.MarkForDisposal.name());
         assertThat(capturedContent.getEventToken()).isEqualTo("event-token");
     }
 
@@ -144,7 +144,7 @@ class CcdCaseDataDeletionServiceTest {
 
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.confirmCaseDisposal.name()))
+        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.ConfirmDisposal.name()))
                 .thenReturn(startEventResponse);
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(SERVICE_AUTH), eq(CASE_1), any(CaseDataContent.class)))
                 .thenReturn(caseResource);
@@ -155,12 +155,12 @@ class CcdCaseDataDeletionServiceTest {
 
         // Then
         assertThat(result).isEqualTo(caseResource);
-        verify(coreCaseDataApi).startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.confirmCaseDisposal.name());
+        verify(coreCaseDataApi).startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.ConfirmDisposal.name());
         verify(coreCaseDataApi).createEvent(eq(IDAM_TOKEN), eq(SERVICE_AUTH), eq(CASE_1),
                 caseDataContentCaptor.capture());
 
         CaseDataContent capturedContent = caseDataContentCaptor.getValue();
-        assertThat(capturedContent.getEvent().getId()).isEqualTo(EventId.confirmCaseDisposal.name());
+        assertThat(capturedContent.getEvent().getId()).isEqualTo(EventId.ConfirmDisposal.name());
         assertThat(capturedContent.getEventToken()).isEqualTo("event-token");
     }
 
@@ -174,7 +174,7 @@ class CcdCaseDataDeletionServiceTest {
 
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.markCaseForDeletion.name()))
+        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.MarkForDisposal.name()))
                 .thenReturn(startEventResponse);
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(SERVICE_AUTH), eq(CASE_1), any(CaseDataContent.class)))
                 .thenThrow(feignException);
@@ -195,7 +195,7 @@ class CcdCaseDataDeletionServiceTest {
 
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.markCaseForDeletion.name()))
+        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.MarkForDisposal.name()))
                 .thenReturn(startEventResponse);
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(SERVICE_AUTH), eq(CASE_1), any(CaseDataContent.class)))
                 .thenThrow(feignException);
@@ -215,7 +215,7 @@ class CcdCaseDataDeletionServiceTest {
 
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.markCaseForDeletion.name()))
+        when(coreCaseDataApi.startEvent(IDAM_TOKEN, SERVICE_AUTH, CASE_1, EventId.MarkForDisposal.name()))
                 .thenReturn(startEventResponse);
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(SERVICE_AUTH), eq(CASE_1), any(CaseDataContent.class)))
                 .thenThrow(feignException);

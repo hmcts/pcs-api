@@ -35,6 +35,6 @@ class ConfirmCaseDisposalTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
 
         // Then
-        assertThat(submitResponse.getState()).isEqualTo(State.DRAFT_DISCARDED);
+        assertThat(submitResponse.getState()).isEqualTo(State.PendingDisposal);
     }
 }
