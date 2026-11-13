@@ -31,7 +31,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
     private WarrantReturnService warrantReturnService;
     private PcsCaseService pcsCaseService;
     private EnforcementOrderMediator enforcementOrderMediator;
-    private static final String NO_WARRANT_ERROR_MESSAGE = "There is no warrant on this case";
+    private static final String NO_WARRANT_ERROR_MESSAGE = "There is no warrant on this case ";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
