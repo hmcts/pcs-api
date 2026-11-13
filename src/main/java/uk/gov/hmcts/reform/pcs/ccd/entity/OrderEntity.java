@@ -67,9 +67,12 @@ public class OrderEntity {
     @Column(nullable = false, updatable = false)
     private String authorIdamUserId;
 
-    /** The hearing the judge made the order for, if they made it for one; an order keeps its hearing. */
+    /**
+     * The hearing the judge made the order at, if they made it at one. The judge can change it while the order is
+     * theirs to change; once it is sent for review it keeps it.
+     */
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "hearing_id", updatable = false)
+    @JoinColumn(name = "hearing_id")
     private HearingEntity hearing;
 
     /** The parties court staff served the order on without notice; none means it is served on all parties. */

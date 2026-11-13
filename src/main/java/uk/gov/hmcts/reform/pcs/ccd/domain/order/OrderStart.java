@@ -20,8 +20,15 @@ import java.util.UUID;
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
  * made for, if any, and the application the judge's task asks them to decide, if it asks them to decide one.
+ * The other draft is the judge's draft already made at the order's hearing, or without one, when the order they
+ * are working on is a different draft or a new one: it cannot be saved as a draft there too.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId,
+                         UUID otherDraftId) {
+
+    public OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
+        this(order, caseContext, hearing, taskGenAppId, null);
+    }
 
     /**
      * No id means the judge has no draft for the hearing, or made without one, yet. The version is the latest
@@ -46,7 +53,8 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
 
     /**
      * Open means issued: nothing yet closes a counterclaim. The applications are every one the order can decide,
-     * in the order they were made.
+     * in the order they were made. The hearings are the case's that have not been cancelled, earliest first, any of
+     * which a judge can choose to make the order at.
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
@@ -54,7 +62,12 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               List<Party> defendants,
                               boolean openCounterclaim,
                               List<Application> applications,
-                              CaseBundle caseBundle) {
+                              CaseBundle caseBundle,
+                              List<HearingOption> hearings) {
+    }
+
+    /** One of the case's hearings, as a judge chooses which one an order is made at. */
+    public record HearingOption(int id, LocalDateTime date) {
     }
 
     /** The case's bundle, every document on it in one PDF, for a judge once one has been made. */

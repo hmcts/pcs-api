@@ -4,9 +4,18 @@ import java.util.UUID;
 
 /**
  * What the link to an order event names in its client context: the order to open, the general application an order
- * decides, or the hearing an order is for. Each is absent unless the link names it.
+ * decides, or the hearing an order is for. Each is absent unless the link names it. The judge's own choice of when
+ * the order is made, if they made one on the page, overrides the hearing the link or the order gave it.
  */
-public record OrderLink(UUID orderId, UUID genAppId, Integer hearingId) {
+public record OrderLink(UUID orderId, UUID genAppId, Integer hearingId, MadeAt madeAt) {
 
-    public static final OrderLink NONE = new OrderLink(null, null, null);
+    public static final OrderLink NONE = new OrderLink(null, null, null, null);
+
+    public OrderLink(UUID orderId, UUID genAppId, Integer hearingId) {
+        this(orderId, genAppId, hearingId, null);
+    }
+
+    /** The judge's choice: at one of the case's hearings, or with no hearing id, without a hearing. */
+    public record MadeAt(Integer hearingId) {
+    }
 }

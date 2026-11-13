@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
@@ -28,7 +29,10 @@ import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 
-/** The case as the order journeys show it: its property, its main claim's parties and its open applications. */
+/**
+ * The case as the order journeys show it: its property, its main claim's parties, its open applications and the
+ * hearings an order can be made at.
+ */
 @Component
 @AllArgsConstructor
 class OrderCaseContext {
@@ -54,7 +58,12 @@ class OrderCaseContext {
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
                 .toList(),
-            caseBundle(pcsCase)
+            caseBundle(pcsCase),
+            pcsCase.getHearings().stream()
+                .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()) && hearing.getHearingDate() != null)
+                .sorted(Comparator.comparing(HearingEntity::getHearingDate))
+                .map(hearing -> new OrderStart.HearingOption(hearing.getId(), hearing.getHearingDate()))
+                .toList()
         );
     }
 

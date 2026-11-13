@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Application;
@@ -198,6 +199,37 @@ class DecideApplicationIT extends OrderEventIT {
         issue(judgeDecides(genAppId, "grant"));
         assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
             String.class, genAppId)).containsExactlyInAnyOrder("OTHER", "GRANT");
+    }
+
+    @Test
+    @DisplayName("decides the task's application, with the case's other open applications, at a hearing the judge "
+        + "chooses, and issues the order as made that day")
+    void decidesTheApplicationAtAChosenHearing() {
+        int hearing = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
+        var atHearing = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
+            Map.of("genAppId", genAppId.toString(), "madeAt", Map.of("hearingId", hearing)));
+
+        OrderStart start = atHearing.start();
+        assertThat(start.taskGenAppId()).isEqualTo(genAppId);
+        assertThat(start.hearing().id()).isEqualTo(hearing);
+        assertThat(start.hearing().caseFacts()).as("the hearing's facts to record").isNotNull();
+        assertThat(asJudgeDeciding(genAppId).start().hearing()).as("without the judge's choice, box work").isNull();
+
+        Order order = start.order();
+        UUID orderId = atHearing.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
+                new OrderChange(order.id(), order.version(), NO_ORDER_ON_CLAIM,
+                    Map.of("app-" + genAppId + "-decision", "grant"), WORDING, decided("grant")), "decide-task",
+                new HearingChange(hearing, null, null, null)))
+            .changed("orders", OrderRow.class).id();
+        verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
+
+        Order reviewed = asCaseworkerReviewing(orderId).start().order();
+        assertThat(asCaseworkerReviewing(orderId).start().hearing().id()).isEqualTo(hearing);
+        issue(reviewed);
+        assertThat(jdbcTemplate.queryForObject("SELECT made_on FROM orders WHERE id = ?", LocalDate.class, orderId))
+            .isEqualTo(LocalDate.of(2026, 10, 14));
+        assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
+            String.class, genAppId)).containsExactly("GRANT");
     }
 
     private void issue(Order order) {

@@ -51,7 +51,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_
 
 /**
  * A judge makes an order in pcs-frontend. Each judge has one working draft per hearing on the case, and one
- * made without a hearing, which a change with no id starts; the draft's hearing never changes. An order a
+ * made without a hearing, which a change with no id starts. The judge chooses which of the case's hearings the order
+ * is made at, or none, whatever task or link brought them to it, and can change it until they send it. An order a
  * caseworker returned is the judge's to change and resubmit, opened from the task its return gave them. An order
  * made for a hearing records the case's facts and the judge's note for that hearing whenever the judge saves it.
  * The task that asks a judge to decide an application names it, for the page to put first and require.
@@ -71,6 +72,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
     private static final String NO_LONGER_CHANGEABLE = "The order is no longer waiting for you to change it";
     static final String NO_WORDING = "The order's wording did not load. Reload the page and send the order again";
+    static final String ALREADY_DRAFTED = "You already have another draft order made there. Send this order for "
+        + "review, or choose when it is made again";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -126,14 +129,33 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             }
             task = null;
         }
-        HearingEntity hearing = order.map(OrderEntity::getHearing).orElseGet(() ->
-            link.hearingId() == null ? null : hearingRecords.hearing(pcsCase, link.hearingId()));
+        // The judge's own choice of hearing, or of none, wins over the one the order or their link gave it.
+        HearingEntity hearing = link.madeAt() != null
+            ? madeAt(pcsCase, link.madeAt().hearingId())
+            : order.map(OrderEntity::getHearing).orElseGet(() -> madeAt(pcsCase, link.hearingId()));
         OrderStart.Order workingOrder = order
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
                 link.orderId() != null ? messageService.lastQuery(o).orElse(null) : null))
             .orElse(OrderStart.Order.NONE);
+        // Only a draft, or a new order, is saved as a draft, which one at each hearing is.
+        UUID otherDraft = order.isPresent() && order.get().getState() != DRAFT ? null
+            : otherDraft(caseReference, judge, hearing, order.map(OrderEntity::getId).orElse(null))
+                .map(OrderEntity::getId).orElse(null);
         return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
-            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId()));
+            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId(),
+            otherDraft));
+    }
+
+    /** One of the case's hearings, or none for an order made without a hearing. */
+    private HearingEntity madeAt(PcsCaseEntity pcsCase, Integer hearingId) {
+        return hearingId == null ? null : hearingRecords.hearing(pcsCase, hearingId);
+    }
+
+    /** The judge's draft at the hearing, or made without one, other than the given order. */
+    private Optional<OrderEntity> otherDraft(long caseReference, String judge, HearingEntity hearing, UUID orderId) {
+        return orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
+                caseReference, judge, DRAFT, hearing == null ? null : hearing.getId())
+            .filter(draft -> !draft.getId().equals(orderId));
     }
 
     /** A returned order the judge's task links to. */
@@ -161,17 +183,24 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .filter(genApp -> change.applicationDecisions().stream()
                 .anyMatch(decision -> decision.genAppId().equals(genApp.getId())))
             .toList();
+        // The judge chooses the hearing the order is made at, or none, whatever brought them to it.
         Integer hearingId = order.getHearing() == null ? null : order.getHearing().getId();
-        if (!Objects.equals(hearingId, request.hearing() == null ? null : request.hearing().id())) {
-            throw ExternalRejection.because("The order is for a different hearing");
+        Integer chosenHearingId = request.hearing() == null ? null : request.hearing().id();
+        HearingEntity chosen = Objects.equals(hearingId, chosenHearingId) ? order.getHearing()
+            : madeAt(order.getPcsCase(), chosenHearingId);
+        OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
+        // A judge has one draft at each hearing, and one made without a hearing. Checked before the order moves,
+        // as the lookup flushes it.
+        if (to == DRAFT && otherDraft(caseReference, judge, chosen, order.getId()).isPresent()) {
+            throw ExternalRejection.because(ALREADY_DRAFTED);
         }
+        order.setHearing(chosen);
         // The order holds no copy of the hearing's facts and note, which are recorded only when the judge changed
         // them, so another judge's are not refused or overwritten by a save that left them alone.
         if (request.hearing() != null && request.hearing().caseFacts() != null) {
             hearingRecords.record(order.getPcsCase(), order.getHearing(), request.hearing());
         }
         final boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
-        OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
         final OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
             .orderType(change.orderType())
             .formData(change.formData())
@@ -194,7 +223,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         }
     }
 
-    /** A judge's new draft, for the hearing the change is for, if it is for one, which it keeps. */
+    /** A judge's new draft, at the hearing the change is for, if it is for one. */
     private OrderEntity newDraft(long caseReference, String judge, HearingChange hearing) {
         PcsCaseEntity pcsCase = findCase(caseReference);
         return OrderEntity.builder()
