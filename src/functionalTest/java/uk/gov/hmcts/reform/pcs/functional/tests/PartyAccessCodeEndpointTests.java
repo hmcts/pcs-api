@@ -61,7 +61,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 400 when access code is invalid")
     @Test
     void partyAccessCodeTest400ScenarioInvalidAccessCode() {
-        Map<String, String> requestBody = Map.of("accessCode", "INVALIDCODE123");
+        Map<String, String> requestBody = Map.of("accessCode", "WRONGCODE123");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
@@ -70,7 +70,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(400);
-        apiSteps.theResponseBodyContainsAString("message", "Invalid data");
+        apiSteps.theResponseBodyContainsAString("message", "Invalid access code");
     }
 
     @Title("Party Access Code Endpoint Tests - should return 400 when access code is empty")
@@ -151,9 +151,9 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
     }
 
-    @Title("Party Access Code Endpoint Tests - Should return 404 when invalid case reference is used.")
+    @Title("Party Access Code Endpoint Tests - Should return 400, as for a wrong access code, when the case is unknown")
     @Test
-    void partyAccessCodeTest404Scenario() {
+    void partyAccessCodeTestUnknownCaseScenario() {
         accessCode = apiSteps.accessCodeIsFetched(caseReference);
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
@@ -163,7 +163,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theRequestContainsThePathParameter("caseReference", "1234123412341234");
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
-        apiSteps.checkStatusCode(404);
-        apiSteps.theResponseBodyContainsAString("message", "Case not found");
+        apiSteps.checkStatusCode(400);
+        apiSteps.theResponseBodyContainsAString("message", "Invalid access code");
     }
 }

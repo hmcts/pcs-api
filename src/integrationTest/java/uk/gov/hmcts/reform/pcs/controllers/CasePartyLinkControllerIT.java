@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -47,7 +49,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -307,20 +308,33 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Should return 404 when case not found")
-    void shouldReturn404WhenCaseNotFound() throws Exception {
+    @DisplayName("Should not reveal whether a case exists when the access code is wrong")
+    void shouldReturnSameResponseForUnknownCaseAsForWrongAccessCode() throws Exception {
         // Given
+        long existingCaseReference = 12398L;
         long nonExistentCaseReference = 99999L;
-        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(ACCESS_CODE);
+        caseCreationHelper.createTestCaseWithParty(existingCaseReference, null, PartyRole.DEFENDANT);
+        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest("WRONGCODE123");
 
-        // When/Then
-        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", nonExistentCaseReference)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message", notNullValue()));
+        // When
+        MockHttpServletResponse wrongCode = validateAccessCode(existingCaseReference, request);
+        MockHttpServletResponse unknownCase = validateAccessCode(nonExistentCaseReference, request);
+
+        // Then
+        assertThat(wrongCode.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(unknownCase.getStatus()).isEqualTo(wrongCode.getStatus());
+        assertThat(unknownCase.getContentAsString()).isEqualTo(wrongCode.getContentAsString());
+    }
+
+    private MockHttpServletResponse validateAccessCode(long caseReference,
+                                                       ValidateAccessCodeRequest request) throws Exception {
+        return mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
+                                   .header(AUTHORIZATION, AUTH_HEADER)
+                                   .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                   .contentType(MediaType.APPLICATION_JSON)
+                                   .content(objectMapper.writeValueAsString(request)))
+            .andReturn()
+            .getResponse();
     }
 
     @Test
@@ -359,7 +373,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Given
         long caseReference = 12346L;
         caseCreationHelper.createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
-        String invalidAccessCode = "INVALIDCODE12";
+        String invalidAccessCode = "WRONGCODE123";
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(invalidAccessCode);
 

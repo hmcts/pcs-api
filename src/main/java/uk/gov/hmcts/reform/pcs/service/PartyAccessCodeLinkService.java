@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +36,12 @@ public class PartyAccessCodeLinkService {
     ) {
         String idamUserId = IdamUserIds.normalise(userInfo.getUid());
 
-        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        PcsCaseEntity caseEntity;
+        try {
+            caseEntity = pcsCaseService.loadCase(caseReference);
+        } catch (CaseNotFoundException e) {
+            throw validator.rejectForUnknownCase(accessCode);
+        }
 
         PartyAccessCodeEntity pac = validator.validateAccessCode(
             caseEntity.getId(),

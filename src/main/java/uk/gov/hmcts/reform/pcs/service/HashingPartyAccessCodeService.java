@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,13 +11,23 @@ import java.util.UUID;
 
 /**
  * Stores access codes BCrypt-encoded. Plaintext never lives in {@code party_access_code.code}.
+ *
+ * <p>A lookup that finds no match always runs at least {@link #MIN_MATCH_ATTEMPTS} BCrypt compares,
+ * padding with a dummy hash, so a wrong code takes as long whether or not the case exists.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class HashingPartyAccessCodeService implements PartyAccessCodeHashingService {
 
+    static final int MIN_MATCH_ATTEMPTS = 2;
+
     private final PasswordEncoder encoder;
+    private final String dummyHash;
+
+    public HashingPartyAccessCodeService(PasswordEncoder encoder) {
+        this.encoder = encoder;
+        this.dummyHash = encoder.encode(UUID.randomUUID().toString());
+    }
 
     @Override
     public String encodeForStorage(String accessCode) {
@@ -37,10 +46,30 @@ public class HashingPartyAccessCodeService implements PartyAccessCodeHashingServ
         if (accessCode == null) {
             return Optional.empty();
         }
-        return repository.findAllByPcsCase_Id(caseId).stream()
-            .filter(entity -> entity.getCode() != null)
-            .filter(entity -> encoder.matches(accessCode, entity.getCode()))
-            .findFirst();
+        int attempts = 0;
+        for (PartyAccessCodeEntity entity : repository.findAllByPcsCase_Id(caseId)) {
+            if (entity.getCode() == null) {
+                continue;
+            }
+            attempts++;
+            if (encoder.matches(accessCode, entity.getCode())) {
+                return Optional.of(entity);
+            }
+        }
+        padMatchAttempts(accessCode, attempts);
+        return Optional.empty();
+    }
+
+    @Override
+    public void matchAgainstDummyCodes(String accessCode) {
+        if (accessCode != null) {
+            padMatchAttempts(accessCode, 0);
+        }
+    }
+
+    private void padMatchAttempts(String accessCode, int attemptsSoFar) {
+        for (int i = attemptsSoFar; i < MIN_MATCH_ATTEMPTS; i++) {
+            encoder.matches(accessCode, dummyHash);
+        }
     }
 }
-

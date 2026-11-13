@@ -45,13 +45,13 @@ public class CasePartyLinkController {
     )
     @ApiResponse(responseCode = "200", description = "Successful validation and linking",
             content = @Content())
-    @ApiResponse(responseCode = "400", description = "Invalid access code for this case",
+    @ApiResponse(responseCode = "400", description = "Invalid access code, or case not found",
             content = @Content())
     @ApiResponse(responseCode = "401", description = "Invalid access token",
             content = @Content())
     @ApiResponse(responseCode = "403", description = "Invalid Service Authorization",
             content = @Content())
-    @ApiResponse(responseCode = "404", description = "Case not found or party does not belong to this case",
+    @ApiResponse(responseCode = "404", description = "Party does not belong to this case",
             content = @Content())
     @ApiResponse(responseCode = "409", description = "Access code already used by another user",
             content = @Content())
