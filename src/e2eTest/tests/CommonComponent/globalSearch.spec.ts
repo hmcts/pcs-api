@@ -56,6 +56,8 @@ const setupGlobalSearchUser = async (
     }
   });
 
+  await performAction('updatePaymentAPI');
+
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
 
   await dismissCookieBanner(page, 'additional');
