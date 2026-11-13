@@ -187,31 +187,23 @@ export class GlobalSearchCaseAction implements IAction {
       option: accessReason.option
     });
 
-    let otherReasonTextbox = page
+    if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
+      const otherReasonTextbox = page
         .getByRole('group', {
           name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
         })
         .getByRole('textbox');
 
-    if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
       await otherReasonTextbox.fill(accessReason.text?.toString() ?? '');
     }
 
-    await expect(otherReasonTextbox).toHaveValue(accessReason.text?.toString() ?? '');
-    await page.keyboard.press('Tab');
+    const challengedAccessRequest = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/challenged-access-request') && response.status() === 201
+    );
 
-    await expect(async () => {
-      const challengedAccessRequest = page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/challenged-access-request') && response.status() === 201, { timeout: SHORT_TIMEOUT + SHORT_TIMEOUT }
-      );
-
-      await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
-      await challengedAccessRequest;
-    }).toPass({
-      intervals: [1_000, 2_000, 3_000],
-      timeout: LONG_TIMEOUT,
-    });
+    await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
+    await challengedAccessRequest;
 
     await expect(
       page.getByRole('heading', {
