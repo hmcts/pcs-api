@@ -1,10 +1,10 @@
 export const knownDefendantsDOBInformation = {
   EnforceTheOrderCaption: `Gorfodi'r gorchymyn`,
-  mainHeader: `Nodwch ddyddiad geni'r diffynnydd`,
-  defendantsDOBQuestion: `Beth yw dyddiad geni’r diffynnydd?`,
-  defendantsDOBHintText: `Er enghraifft, Billy Wright - 16 4 1991. Brian Springford - 16 4 1983. Gallwch nodi hyd at 6,800 o nodau.`,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
-  previousButton: `Yn ôl`,
+  mainHeader: `Nodwch ddyddiadau geni'r diffynyddion`,
+  defendantsDOBQuestion: `Beth yw dyddiadau geni’r diffynyddion?`,
+  defendantsDOBHintText: `Er enghraifft, Billy Wright - 16 4 1991. Brian Springford - 16 4 1983. Gallwch ddefnyddio hyd at 6800 o nodau.`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
+  previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   errorValidation: `NO`,//set it to `NO` before raising a PR
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
