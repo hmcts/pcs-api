@@ -107,6 +107,9 @@ export class PageContentValidation implements IValidation {
 
   async validateCurrentPage(page: Page): Promise<void> {
     await page.waitForLoadState('load');
+    // Short wait for network to settle so hydrated/dynamically rendered content is present.
+    // Capped + non-fatal so slow trackers don't block the run.
+    await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
     const pageUrl = page.url();
 
     if (PageContentValidation.isCYAPage(pageUrl)) {
@@ -229,7 +232,7 @@ export class PageContentValidation implements IValidation {
   private async getHeaderText(page: Page): Promise<string | null> {
     try {
       const h1Element = page.locator('h1').first();
-      if (await h1Element.isVisible({timeout: 2000})) {
+      if (await h1Element.isVisible({timeout: 5000})) {
         const h1Text = await h1Element.textContent();
         if (h1Text && h1Text.trim() !== '') {
           return h1Text.trim();
@@ -237,7 +240,7 @@ export class PageContentValidation implements IValidation {
       }
 
       const h2Element = page.locator('h2').first();
-      if (await h2Element.isVisible({timeout: 2000})) {
+      if (await h2Element.isVisible({timeout: 5000})) {
         const h2Text = await h2Element.textContent();
         if (h2Text && h2Text.trim() !== '') {
           return h2Text.trim();

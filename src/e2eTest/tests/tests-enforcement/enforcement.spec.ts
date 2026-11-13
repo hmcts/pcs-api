@@ -2,7 +2,6 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary } from '@data/page-data';
 import { home } from '@data/page-data-cy';
 import {
   checkYourAnswers
@@ -15,6 +14,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import {
   aggressiveAnimalsRisk,
   additionalInformation,
+  caseSummary,
   criminalAntisocialRisk,
   livingInTheProperty,
   evictionDelayWarning,
@@ -40,7 +40,7 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth, defendantInBreathingSpace, missedPayments
-} from '@data/page-data-figma/page-data-enforcement-figma';
+} from '@data/index.selector.enforcement';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);

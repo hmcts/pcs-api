@@ -1,6 +1,6 @@
 export const axe_Exclusions = [
   '.govuk-notification-banner__link', // temporary exclusion for link-in-text-block POFCC-165
-  '#target-size',// all these issues are found on Case tabs . These failures are not consistent as they are XUI behaviour
+  '#target-size', // all these issues are found on Case tabs. These failures are not consistent as they are XUI behaviour
   '#target-offset',
   '.sort-button-icon',
   '.toggle-button-icon',
@@ -21,4 +21,6 @@ export const axe_Exclusions = [
   'button[role="treeitem"]',
   '#nameConfirmation-2',
   '.action-cell > .govuk-link', // temporary exclusion for color-contrast issue in Fee & Pay Service Request Review
+  // temporary exclusion for label-content-name-mismatch on Case tabs (XUI aria-label vs visible text).
+  '[role="tab"][aria-label*="Case Parties"]',
 ];
