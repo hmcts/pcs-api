@@ -21,4 +21,5 @@ export const axe_Exclusions = [
   'button[role="treeitem"]',
   '#nameConfirmation-2',
   '.action-cell > .govuk-link', // temporary exclusion for color-contrast issue in Fee & Pay Service Request Review
+  '#mat-tab-group-0-label-0', // temporary exclusion for label-content-name-mismatch on Case tabs (XUI aria-label vs visible text)
 ];
