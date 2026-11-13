@@ -26,7 +26,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * off, the claimant too. When release flag 1.4 is on, only defendants will receive the claim pack.
  * Defendants also get their own access code once it exists. Only documents not covered by a {@code PACK_SENT}
  * success row are included, so a failed access-code letter self-heals without re-sending the claim form.
- * When release flag 1.4 is on, English defendants also receive the application uploads, after the claim
+ * When bulk print 2 is on, English defendants also receive the application uploads, after the claim
  * form, on that same send.
  */
 @Service
@@ -108,7 +108,7 @@ public class ClaimPackSelector {
 
     private void addUnsentEvidence(List<DocumentEntity> unsent, PcsCaseEntity pcsCase, ClaimEntity claim,
                                    PartyEntity defendant, Set<String> sent) {
-        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
+        if (!featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)
             || pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
             return;
         }
