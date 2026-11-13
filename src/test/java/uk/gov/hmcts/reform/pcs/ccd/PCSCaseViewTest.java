@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicatio
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.BreathingSpaceSummaryView;
 import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
@@ -46,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.MessagesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
@@ -166,6 +168,9 @@ class PCSCaseViewTest {
     @Mock
     private JudicialNoteView judicialNoteView;
 
+    @Mock
+    private BreathingSpaceSummaryView breathingSpaceSummaryView;
+
     private PCSCaseView underTest;
 
     @BeforeEach
@@ -184,7 +189,8 @@ class PCSCaseViewTest {
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    messagesView, judicialNoteView, enforcementOrderView
+                                    messagesView, judicialNoteView, enforcementOrderView,
+                                    breathingSpaceSummaryView
         );
     }
 
@@ -421,6 +427,7 @@ class PCSCaseViewTest {
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     @Test
@@ -523,6 +530,18 @@ class PCSCaseViewTest {
         // Then
         verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
+
+    @Test
+    void shouldPopulateBreathingSpaceSummaryWhenLoadingCase() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.BREATHING_SPACE));
+
+        // Then
+        verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
+
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, State.BREATHING_SPACE);
+    }
+
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
         AddressUK addressUK = mock(AddressUK.class);

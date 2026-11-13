@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementT
 import java.util.Set;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class EnforcementOrderService {
 
@@ -49,6 +51,42 @@ public class EnforcementOrderService {
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
 
         return enforcementOrderEntity;
+    }
+
+    @Transactional
+    public void updateStatesForBreathingSpace(long caseReference) {
+        // Discard all unsubmitted Enforce the Order drafts for this case.
+        int discardedDrafts =
+            draftCaseDataService.discardAllUnsubmittedEventData(
+                caseReference,
+                EventId.enforceTheOrder
+            );
+
+        log.info(
+            "Discarded {} enforcement drafts for case {}",
+            discardedDrafts,
+            caseReference
+        );
+
+        // Preserve AC02: transition live enforcement applications.
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+
+        Set<EnforcementOrderEntity> applications =
+            pcsCase.getEnforcementOrders();
+
+        if (CollectionUtils.isEmpty(applications)) {
+            log.info(
+                "No enforcement applications found for case {}",
+                caseReference
+            );
+            return;
+        }
+
+        for (EnforcementOrderEntity application : applications) {
+            if (application.getState() == EnforcementState.CASE_PROGRESSION) {
+                application.setState(EnforcementState.BREATHING_SPACE);
+            }
+        }
     }
 
     private EnforcementOrderEntity createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder,

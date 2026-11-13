@@ -91,6 +91,95 @@ class EnforcementOrderServiceTest {
         assertThat(retOrder).isNull();
     }
 
+    @Test
+    void shouldUpdateAllEligibleEnforcementApplications() {
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+
+        EnforcementOrderEntity liveApplication = new EnforcementOrderEntity();
+        liveApplication.setState(EnforcementState.CASE_PROGRESSION);
+
+        EnforcementOrderEntity pendingApplication = new EnforcementOrderEntity();
+        pendingApplication.setState(EnforcementState.PENDING_CASE_ISSUED);
+
+        pcsCase.setEnforcementOrders(Set.of(
+            liveApplication,
+            pendingApplication
+        ));
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        assertThat(liveApplication.getState())
+            .isEqualTo(EnforcementState.BREATHING_SPACE);
+
+        assertThat(pendingApplication.getState())
+            .isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
+
+    }
+
+
+    @Test
+    void shouldHandleCaseWithNoEnforcementApplications() {
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCase.setEnforcementOrders(Set.of());
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+    }
+
+
+    @Test
+    void shouldHandleNullEnforcementApplications() {
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCase.setEnforcementOrders(null);
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+    }
+
+
+    @Test
+    void shouldDiscardUnsubmittedEnforcementDraftsWhenEnteringBreathingSpace() {
+        // Given
+        PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCase.setEnforcementOrders(Set.of());
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        when(draftCaseDataService.discardAllUnsubmittedEventData(
+            CASE_REFERENCE, EventId.enforceTheOrder
+        )).thenReturn(2);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        verify(draftCaseDataService).discardAllUnsubmittedEventData(
+            CASE_REFERENCE, EventId.enforceTheOrder
+        );
+    }
+
+
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
     void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
@@ -121,6 +210,51 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
         assertThat(result).isSameAs(savedEntity);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("breathingSpaceStateTransitions")
+    void shouldUpdateEnforcementStateForBreathingSpace(
+        EnforcementState initialState,
+        EnforcementState expectedState) {
+
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+
+        EnforcementOrderEntity application = new EnforcementOrderEntity();
+        application.setState(initialState);
+
+        pcsCase.setEnforcementOrders(Set.of(application));
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        assertThat(application.getState()).isEqualTo(expectedState);
+
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+    }
+
+    private static Stream<Arguments> breathingSpaceStateTransitions() {
+        return Stream.of(
+            arguments(
+                EnforcementState.CASE_PROGRESSION,
+                EnforcementState.BREATHING_SPACE
+            ),
+            arguments(
+                EnforcementState.PENDING_CASE_ISSUED,
+                EnforcementState.PENDING_CASE_ISSUED
+
+            ),
+            arguments(
+                EnforcementState.BREATHING_SPACE,
+                EnforcementState.BREATHING_SPACE
+            )
+        );
     }
 
     private static Stream<Arguments> enforcementOrderTypes() {

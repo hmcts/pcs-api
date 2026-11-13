@@ -4,6 +4,7 @@ public enum EnforcementState {
 
     PENDING_CASE_ISSUED,
     CASE_PROGRESSION,
-    BREATHING_SPACE
+    BREATHING_SPACE,
+    DRAFT_DISCARD
 
 }

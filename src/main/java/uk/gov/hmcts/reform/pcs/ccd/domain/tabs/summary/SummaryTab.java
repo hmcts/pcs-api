@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 
 import java.util.List;
 
@@ -58,5 +59,9 @@ public class SummaryTab {
 
     @CCD(label = "Notice details")
     private NoticeTabDetails noticeDetails;
+
+    @CCD(
+        label = "Breathing space details", access = InternalTabAccess.class)
+    private BreathingSpaceTabDetails breathingSpaceDetails;
 
 }
