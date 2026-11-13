@@ -3,7 +3,7 @@ import { allPartyDetails, caseNumber } from '@utils/actions/custom-actions/creat
 import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, paymentApiData, submitCaseApiData } from '@data/api-data';
 import { caseSummary, user } from '@data/page-data';
-import { staff, staffUsers } from '@data/user-data/staff.user.data';
+import { staffUsers } from '@data/user-data/staff.user.data';
 import { judicial, judicialUsers } from '@data/user-data/judicial.user.data';
 import {
   addCommentsForFlag,
@@ -297,10 +297,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
         await performAction('canViewCaseAndPartyFlag', 'no');
       }
     };
-    const caseFlagStaffUsers = staffUsers.filter(
-      email => email !== staff.pcs_hearing_centre_team_leader_other_wales_email
-    );
-    for (const email of caseFlagStaffUsers) {
+    for (const email of staffUsers) {
       try {
         await test.step(`Staff user ${email}`, async () => {
           const maxRetries = 2;
@@ -348,8 +345,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
       await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
       await performAction('canViewCaseAndPartyFlag', 'yes');
     };
-    const caseFlagJudicialUsers = judicialUsers.filter(email => email !== judicial.walesRegion_Judge_email);
-    for (const email of caseFlagJudicialUsers) {
+    for (const email of judicialUsers) {
       try {
         await test.step(`Judicial user ${email}`, async () => {
           const maxRetries = 2;
