@@ -48,7 +48,6 @@ public class BundleTabView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
         CaseBundles managed = bundles.getIfAvailable();
-        pcsCase.setBundleTab(null);
         if (managed == null) {
             return;
         }
