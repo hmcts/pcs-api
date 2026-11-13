@@ -6,7 +6,7 @@ export const cannotApplyForWarrantInfo = {
   differentTermParagraph:
     'If the defendants have breached a different term in the order, you still need permission from a judge. For example, if they have breached an order to reduce their antisocial behaviour.',
   askTheJudgeLink: 'Ask the judge for permission to apply for a warrant of possession (opens in a new tab, GOV.UK).',
-  previousButton: 'Yn ôl',
+  previousButton: 'Blaenorol',
   continueButton: 'Parhau',
   cancelLink: 'Canslo',
   errorValidation: 'NO', // set it to 'NO' before raising a PR

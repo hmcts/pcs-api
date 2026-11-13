@@ -82,9 +82,9 @@ test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
         type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        label1: enforcementApplication.warrantFeeValidationParagraphHidden,
         text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
+        label2: enforcementApplication.writFeeValidationParagraphHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('validateGetQuoteFromBailiffLink', {
@@ -176,9 +176,9 @@ test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
         type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        label1: enforcementApplication.warrantFeeValidationParagraphHidden,
         text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
+        label2: enforcementApplication.writFeeValidationParagraphHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('validateGetQuoteFromBailiffLink', {
