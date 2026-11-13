@@ -93,6 +93,7 @@ class PartiesViewTest {
         List<ListValue<Party>> claimants = pcsCase.getAllClaimants();
         assertThat(claimants).hasSize(1);
         Party party = claimants.getFirst().getValue();
+        assertThat(party.getId()).isEqualTo(currentUserParty.getId().toString());
         assertThat(party.getFirstName()).isEqualTo("Jane");
         assertThat(party.getLastName()).isEqualTo("Doe");
         assertThat(party.getOrgName()).isEqualTo("Org A");
@@ -159,12 +160,16 @@ class PartiesViewTest {
 
         assertThat(pcsCase.getAllClaimants()).hasSize(1);
         assertThat(pcsCase.getAllClaimants().getFirst().getId()).isEqualTo(claimant.getId().toString());
+        assertThat(pcsCase.getAllClaimants().getFirst().getValue().getId()).isEqualTo(claimant.getId().toString());
         assertThat(pcsCase.getAllClaimants().getFirst().getValue().getFirstName()).isEqualTo("Alice");
 
         assertThat(pcsCase.getAllDefendants()).hasSize(2);
         assertThat(pcsCase.getAllDefendants())
             .extracting(lv -> lv.getValue().getFirstName())
             .containsExactly("Bob", "Carol");
+        assertThat(pcsCase.getAllDefendants())
+            .extracting(lv -> lv.getValue().getId())
+            .containsExactly(defendant1.getId().toString(), defendant2.getId().toString());
 
         assertThat(pcsCase.getAllDefendants())
             .extracting(lv -> lv.getValue().getLegalRepresentative())
@@ -174,9 +179,14 @@ class PartiesViewTest {
         assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
             .extracting(lv -> lv.getValue().getFirstName())
             .containsExactly("Dave", "Eve");
+        assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
+            .extracting(lv -> lv.getValue().getId())
+            .containsExactly(underlessee1.getId().toString(), underlessee2.getId().toString());
 
         assertThat(pcsCase.getAllLitigationFriends()).hasSize(1);
         assertThat(pcsCase.getAllLitigationFriends().getFirst().getValue().getFirstName()).isEqualTo("Frank");
+        assertThat(pcsCase.getAllLitigationFriends().getFirst().getValue().getId())
+            .isEqualTo(litigationFriend.getId().toString());
         assertThat(pcsCase.getAllLitigationFriends().getFirst().getValue().getActingForPartyId())
             .isEqualTo(claimant.getId().toString());
     }
