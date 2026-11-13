@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -64,11 +65,19 @@ class SdpClaimSnapshotJdbcRepositoryTest {
         when(resultSet.getString("serving_method")).thenReturn("POST");
         when(resultSet.getObject("notice_date", LocalDate.class)).thenReturn(LocalDate.of(2026, 1, 10));
         when(resultSet.getObject("snapshot_version", Integer.class)).thenReturn(null);
+        when(resultSet.getString("address_line1")).thenReturn("1 High Street");
+        when(resultSet.getString("address_line2")).thenReturn(null);
+        when(resultSet.getString("address_line3")).thenReturn(null);
+        when(resultSet.getString("post_town")).thenReturn("Cambridge");
+        when(resultSet.getString("county")).thenReturn(null);
+        when(resultSet.getString("country")).thenReturn("England");
+        when(resultSet.getString("postcode")).thenReturn("cb5 8bl");
 
         assertThat(repository.findHeadersByClaimId(List.of(CLAIM_ID))).containsExactly(
             new SdpClaimSnapshotHeader(
                 CLAIM_ID, "TYPE", "NO", "ENGLISH", SUBMITTED, null, 1L, 45, "ENGLAND",
-                "SECURE", "POST", LocalDate.of(2026, 1, 10), null
+                "SECURE", "POST", LocalDate.of(2026, 1, 10), null,
+                "1 High Street", null, null, "Cambridge", null, "England", "cb5 8bl"
             )
         );
     }
@@ -90,12 +99,20 @@ class SdpClaimSnapshotJdbcRepositoryTest {
     void shouldMapPaymentRow() throws Exception {
         stubQuery();
         when(resultSet.getObject("claim_id", UUID.class)).thenReturn(CLAIM_ID);
+        when(resultSet.getObject("id", Integer.class)).thenReturn(10);
+        when(resultSet.getObject("party_id", UUID.class)).thenReturn(PARTY_ID);
+        when(resultSet.getString("service_request_reference")).thenReturn("2026-123456");
         when(resultSet.getString("external_reference")).thenReturn("RC-1");
+        when(resultSet.getBigDecimal("amount")).thenReturn(new BigDecimal("355.00"));
         when(resultSet.getString("status")).thenReturn("PAID");
+        when(resultSet.getString("payment_callback_handler_type")).thenReturn("CLAIM");
         when(resultSet.getTimestamp("request_date")).thenReturn(Timestamp.valueOf(SUBMITTED));
 
         assertThat(repository.findPaymentsByClaimId(List.of(CLAIM_ID))).containsExactly(
-            new SdpClaimSnapshotPayment(CLAIM_ID, "RC-1", "PAID", SUBMITTED)
+            new SdpClaimSnapshotPayment(
+                CLAIM_ID, 10, PARTY_ID, "2026-123456", "RC-1",
+                new BigDecimal("355.00"), "PAID", "CLAIM", SUBMITTED
+            )
         );
     }
 
