@@ -1,0 +1,26 @@
+{
+  "templateId" : "DQGZWNMYHH",
+  "outputType" : "DOC",
+  "formPayload" : {
+    "caseReference" : "DQGZWNMYHH",
+    "caseName" : "TYLKSW",
+    "letterDate" : "XRLUPRV",
+    "signOff" : "YEMWRVSKPA",
+    "courtName" : "HAZXH",
+    "courtAddressLine1" : "LVNVX",
+    "courtAddressLine2" : "FMINET",
+    "courtPostcode" : "JVTLMXHUHK",
+    "recipientName" : "AVOQI",
+    "recipientPersonalName" : "GBGUTM",
+    "recipientOrganisationName" : "HAQB",
+    "recipientAddressLine1" : "AAYMFDJH",
+    "recipientAddressLine2" : "KZLULYUJPM",
+    "recipientPostTown" : "VHQPS",
+    "recipientCounty" : "WZTV",
+    "recipientPostcode" : "JPAUAOG"
+  },
+  "outputFilename" : "YLKSW",
+  "secureDocStoreEnabled" : false,
+  "caseTypeId" : "LUPRVU",
+  "jurisdictionId" : "EMWRVSKP"
+}

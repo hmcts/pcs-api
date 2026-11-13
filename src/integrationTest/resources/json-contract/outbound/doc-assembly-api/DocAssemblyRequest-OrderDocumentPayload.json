@@ -1,0 +1,25 @@
+{
+  "templateId" : "DQGZWNMYHH",
+  "outputType" : "DOC",
+  "formPayload" : {
+    "caseNumber" : "DQGZWNMYHH",
+    "courtName" : "TYLKSW",
+    "courtAddress" : "XRLUPRV",
+    "orderTitle" : "YEMWRVSKPA",
+    "parties" : [ {
+      "name" : "AZXHOL",
+      "role" : "NVXUFMIN"
+    } ],
+    "propertyAddress" : "TJJV",
+    "judgeName" : "LMXHUHK",
+    "orderDate" : "AVOQI",
+    "orderHtml" : "GBGUTM",
+    "sealName" : "HAQB",
+    "countyCourtSeal" : false,
+    "highCourtSeal" : true
+  },
+  "outputFilename" : "YLKSW",
+  "secureDocStoreEnabled" : false,
+  "caseTypeId" : "LUPRVU",
+  "jurisdictionId" : "EMWRVSKP"
+}

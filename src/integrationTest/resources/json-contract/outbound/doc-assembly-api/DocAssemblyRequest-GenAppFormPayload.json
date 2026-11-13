@@ -1,0 +1,35 @@
+{
+  "templateId" : "DQGZWNMYHH",
+  "outputType" : "DOC",
+  "formPayload" : {
+    "caseReference" : "DQGZWNMYHH",
+    "caseName" : "TYLKSW",
+    "propertyAddress" : "XRLUPRV",
+    "issuedOn" : "2032-09-02",
+    "submittedOn" : "1993-03-23",
+    "applicant" : {
+      "name" : "MWR",
+      "correspondenceAddress" : "SKPAQH",
+      "telephoneNumber" : "ZXHOLVN",
+      "emailAddress" : "XUFM"
+    },
+    "applicationType" : "ADJOURN",
+    "within14Days" : "NO",
+    "whatOrderWanted" : "TJJV",
+    "otherPartiesAgreed" : "NO",
+    "withoutNotice" : "YES",
+    "withoutNoticeReason" : "XHU",
+    "documentUploadWanted" : "YES",
+    "uploadedDocuments" : [ {
+      "filename" : "AVOQI"
+    } ],
+    "statementOfTruth" : {
+      "submittedOn" : "2017-09-08",
+      "fullName" : "BGUTMKHAQB"
+    }
+  },
+  "outputFilename" : "YLKSW",
+  "secureDocStoreEnabled" : false,
+  "caseTypeId" : "LUPRVU",
+  "jurisdictionId" : "EMWRVSKP"
+}

@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.ccd.document.am.model.CaseDocumentsMetadata;
 import uk.gov.hmcts.reform.ccd.document.am.model.Document;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
+import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.payments.request.CardPaymentServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
@@ -40,6 +41,15 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.camunda.SendMessageRequest;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.coverletter.CoveringLetterPayload;
+import uk.gov.hmcts.reform.pcs.document.model.coversheet.CoversheetPayload;
+import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.hearingnotice.HearingNoticePayload;
+import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.GetHearingsResponse;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
@@ -103,6 +113,16 @@ class OutboundJsonContractIT extends AbstractPostgresContainerIT {
         // Docmosis via doc assembly
         request("doc-assembly-api", DocAssemblyRequest.class),
         response("doc-assembly-api", DocAssemblyResponse.class),
+        // Docmosis template data: one request per pcs-api document payload
+        docmosis(AccessCodeFormPayload.class),
+        docmosis(ClaimFormPayload.class),
+        docmosis(CounterClaimFormPayload.class),
+        docmosis(CoveringLetterPayload.class),
+        docmosis(CoversheetPayload.class),
+        docmosis(DefenceFormPayload.class),
+        docmosis(GenAppFormPayload.class),
+        docmosis(HearingNoticePayload.class),
+        docmosis(OrderDocumentPayload.class),
         // Fees and payments
         response("fees-api", FeeLookupResponseDto.class),
         request("payments-api", CreateServiceRequestDTO.class),
@@ -189,18 +209,24 @@ class OutboundJsonContractIT extends AbstractPostgresContainerIT {
     }
 
     private static Contract request(String client, Class<?> type) {
-        return new Contract(client, type, type.getSimpleName(), true);
+        return new Contract(client, type, type.getSimpleName(), true, null);
     }
 
     private static Contract response(String client, Class<?> type) {
-        return new Contract(client, type, type.getSimpleName(), false);
+        return new Contract(client, type, type.getSimpleName(), false, null);
     }
 
     private static Contract response(String client, Type type, String name) {
-        return new Contract(client, type, name, false);
+        return new Contract(client, type, name, false, null);
     }
 
-    private record Contract(String client, Type type, String name, boolean request) {
+    /** A Docmosis request whose template data is the given pcs-api payload (FormPayload is an interface). */
+    private static Contract docmosis(Class<? extends FormPayload> payload) {
+        return new Contract("doc-assembly-api", DocAssemblyRequest.class,
+                            "DocAssemblyRequest-" + payload.getSimpleName(), true, payload);
+    }
+
+    private record Contract(String client, Type type, String name, boolean request, Class<?> formPayload) {
 
         String baseline() {
             return "outbound/" + client + "/" + name + ".json";
@@ -222,10 +248,15 @@ class OutboundJsonContractIT extends AbstractPostgresContainerIT {
     private Object sample(Contract contract) {
         Map<String, Object> caseDataMap = primaryMapper.convertValue(caseData, new TypeReference<>() { });
         if (contract.type() instanceof Class<?> cls) {
+            Object formPayload = contract.formPayload() == null ? null : Instancio.of(contract.formPayload())
+                .set(Select.all(Object.class), null)
+                .lenient()
+                .withSeed(SEED).withSettings(JsonContract.instancioSettings()).create();
             return Instancio.of(cls)
                 .set(Select.all(Object.class), null)
                 .set(Select.field(CaseDataContent.class, "data"), caseData)
                 .set(Select.field(CaseDetails.class, "data"), caseDataMap)
+                .set(Select.field(DocAssemblyRequest.class, "formPayload"), formPayload)
                 .lenient()
                 .withSeed(SEED).withSettings(JsonContract.instancioSettings()).create();
         }
