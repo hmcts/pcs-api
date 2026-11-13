@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -113,15 +112,12 @@ public class NotificationPersonalisationFactory {
 
     public GenAppPersonalisation forGenApp(PartyEntity recipient, GenAppEntity genApp,
                                            boolean respondent, boolean legalRep) {
-        GenAppType type = genApp.getType();
-        String subjectLine = respondent
-            ? GenAppNotificationCopy.respondentSubject(type)
-            : GenAppNotificationCopy.applicantSubject(type);
+        GenAppNotificationCopy.Copy copy = GenAppNotificationCopy.forType(genApp.getType());
 
         return GenAppPersonalisation.builder()
             .base(buildPersonalisation(recipient, genApp.getPcsCase()))
-            .subjectLine(subjectLine)
-            .applicationTypePhrase(GenAppNotificationCopy.applicationTypePhrase(type))
+            .subjectLine(respondent ? copy.respondentSubject() : copy.applicantSubject())
+            .applicationTypePhrase(copy.applicationTypePhrase())
             .signInUrl(legalRep ? manageCaseUrl : frontendUrl)
             .build();
     }

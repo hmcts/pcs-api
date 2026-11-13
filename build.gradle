@@ -735,6 +735,7 @@ cftlibTest {
   systemProperty 'feature.bulk-print-enabled', 'true'
   // Covering letters in defence/gen-app packs are gated on release 1.4
   systemProperty 'feature.release-1.4-enabled', 'true'
+  systemProperty 'feature.gen-app-notifications-enabled', 'true'
 
   systemProperty 'logging.level.root', 'INFO'
 }
