@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Send Letter Service "type" codes per pack. Codes are pending final confirmation from the print team.
- * No {@code _pcs_api} suffix: Send Letter already appends the service name to the SFTP filename, so a
+ * No {@code _pcs_api} suffix — Send Letter already appends the service name to the SFTP filename, so a
  * suffix here would duplicate it (e.g. {@code CPC-01-IN0pcsapi_pcsapi_...}).
  */
 @RequiredArgsConstructor
