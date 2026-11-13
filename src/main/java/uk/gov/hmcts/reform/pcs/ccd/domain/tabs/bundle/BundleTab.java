@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 /** The Bundle tab: the case bundle, whether it is up to date, and what is missing from it. */
 @Builder
@@ -24,6 +26,11 @@ import java.util.List;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class BundleTab {
+
+    /** The published document's SDK ID, used while building the case title, never a case field. */
+    @CCD(ignore = true)
+    @JsonIgnore
+    private UUID documentId;
 
     @CCD(label = "Status")
     private String status;

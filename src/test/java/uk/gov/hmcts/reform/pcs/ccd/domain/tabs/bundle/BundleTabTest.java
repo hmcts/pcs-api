@@ -8,12 +8,23 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BundleTabTest {
 
     private final ObjectMapper objectMapper = new JacksonConfiguration().draftCaseDataObjectMapper();
+
+    @Test
+    void shouldKeepThePublishedDocumentIdOutOfCaseData() throws Exception {
+        BundleTab tab = BundleTab.builder().documentId(UUID.randomUUID()).build();
+
+        assertThat(objectMapper.readTree(objectMapper.writeValueAsString(
+            PCSCase.builder().bundleTab(tab).build())))
+            .isEqualTo(objectMapper.readTree(objectMapper.writeValueAsString(
+                PCSCase.builder().bundleTab(new BundleTab()).build())));
+    }
 
     @Test
     void shouldReadBackTheBundleTabItWrites() throws Exception {

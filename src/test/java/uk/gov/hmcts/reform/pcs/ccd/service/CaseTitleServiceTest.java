@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,7 +26,7 @@ class CaseTitleServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseTitleService(addressFormatter, new DocumentIdExtractor());
+        underTest = new CaseTitleService(addressFormatter);
     }
 
     @Test
