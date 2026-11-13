@@ -172,6 +172,7 @@ notify:
     notice-of-change-complete-legal-rep: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP:b121bc29-d5f7-4ed4-9cbc-89fdc13c977c}
     notice-of-change-no-longer-representing: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING:b5223559-6419-4849-a609-aac606b17a86}
     notice-of-change-other-party-represented: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED:f7963e8e-c868-42fe-9367-0038552ca851}
+    notice-of-hearing: ${NOTIFY_TEMPLATE_NOTICE_OF_HEARING:f2025c6f-0287-4d9d-a447-d7815d33f608}
   legacy-templates:
     response-no-counterclaim: 8ecf44d2-860f-44e3-a891-c82745f79645
     response-no-counterclaim-legal-rep: 0abc7358-20a7-4d96-b0ab-95c2e40879de
@@ -369,6 +370,11 @@ gen-app-form:
     max-retries: ${GEN_APP_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${GEN_APP_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
+hearing-notice:
+  request:
+    max-retries: ${HEARING_NOTICE_MAX_RETRIES:5}
+    backoff-delay-seconds: ${HEARING_NOTICE_BACKOFF_DELAY_SECONDS:3600s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
@@ -447,10 +453,10 @@ ccd:
       # restored. Managed publication is provided by the CCD SDK.
       enabled: ${CASE_BUNDLE_ENABLED:false}
       worker:
-        # Every pod queues bundle jobs; this decides whether it also renders them. Off on the API
-        # pods in environments that run the pcs-bundle-worker release (cnp-flux-config), so PDF
-        # rendering does not compete with request threads for heap and CPU.
-        enabled: ${CASE_BUNDLE_WORKER_ENABLED:true}
+        # Every pod queues bundle jobs; this decides whether it also renders them. Only the
+        # pcs-bundle-worker release (cnp-flux-config) turns it on, so PDF rendering does not
+        # compete with request threads for heap and CPU on the API pods.
+        enabled: ${CASE_BUNDLE_WORKER_ENABLED:false}
         max-concurrent-renders: ${CASE_BUNDLE_WORKER_MAX_CONCURRENT_RENDERS:2}
     docmosis:
       # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with

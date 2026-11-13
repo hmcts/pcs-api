@@ -129,7 +129,7 @@ public class GenAppVisibilityService {
             .toList();
     }
 
-    private boolean isInternalUser(Collection<String> currentUserRoles) {
+    public static boolean isInternalUser(Collection<String> currentUserRoles) {
         if (currentUserRoles == null || currentUserRoles.isEmpty()) {
             return false;
         }
