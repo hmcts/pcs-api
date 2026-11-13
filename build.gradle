@@ -731,6 +731,9 @@ cftlibTest {
   // Also use wiremock spun up by tests (9400) for doc generation so we can more easily stub dynamic PDF placeholders
   environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:9400/api/render'
 
+  // Skip stale bulk-print candidates left by earlier local/CI runs.
+  environment 'BULK_PRINT_LOOKBACK_HOURS', '1'
+
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
   // Covering letters in defence/gen-app packs are gated on release 1.4

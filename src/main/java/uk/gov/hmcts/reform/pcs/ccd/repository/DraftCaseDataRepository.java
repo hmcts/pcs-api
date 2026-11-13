@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,9 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     // without it a firm's defendant draft matches here (and two defendants -> non-unique).
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);
+
+    List<DraftCaseDataEntity> findByCaseReferenceAndEventId(
+            long caseReference, EventId eventId);
 
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);

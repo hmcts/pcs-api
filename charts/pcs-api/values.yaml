@@ -92,3 +92,5 @@ wa:
   enabled: false
 pcs-frontend:
    enabled: false
+ccd-case-disposer:
+  enabled: false

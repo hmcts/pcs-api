@@ -21,6 +21,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.ccd.sdk.type.TTL;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
@@ -1215,4 +1216,9 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
 
+    @JsonProperty("TTL")
+    @CCD(
+        typeOverride = FieldType.TTL
+    )
+    private TTL ttl;
 }

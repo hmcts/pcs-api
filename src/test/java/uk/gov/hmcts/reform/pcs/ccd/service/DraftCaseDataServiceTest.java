@@ -330,6 +330,20 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
+    void shouldDeleteUnsubmittedDataWhenInitiatedBySystemUser() {
+        // Given
+        DraftCaseDataEntity draftCaseDataEntity =
+                mock(DraftCaseDataEntity.class);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventId(CASE_REFERENCE, eventId))
+            .thenReturn(List.of(draftCaseDataEntity));
+        // When
+        underTest.deleteUnsubmittedCaseDataBySystemUser(CASE_REFERENCE, eventId);
+
+        // Then
+        verify(draftCaseDataRepository).delete(draftCaseDataEntity);
+    }
+
+    @Test
     void shouldDeleteUnsubmittedDataByCaseReferenceAndPartyId() {
         // given
         UUID partyId = UUID.randomUUID();

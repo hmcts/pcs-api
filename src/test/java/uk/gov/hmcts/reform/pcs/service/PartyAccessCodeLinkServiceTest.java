@@ -95,7 +95,9 @@ class PartyAccessCodeLinkServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(partyId)
+            .party(PartyEntity.builder()
+                    .id(partyId)
+                    .build())
             .code(ACCESS_CODE)
             .build();
 
@@ -147,7 +149,9 @@ class PartyAccessCodeLinkServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(activeDefendant, removedDefendant));
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(removedPartyId)
+            .party(PartyEntity.builder()
+                    .id(removedPartyId)
+                    .build())
             .code(ACCESS_CODE)
             .build();
 
@@ -173,7 +177,9 @@ class PartyAccessCodeLinkServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(partyId)
+            .party(PartyEntity.builder()
+                    .id(partyId)
+                    .build())
             .code(ACCESS_CODE)
             .build();
 
@@ -207,7 +213,9 @@ class PartyAccessCodeLinkServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, allDefendants);
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(partyId2) // Access code for defendant 2
+            .party(PartyEntity.builder()
+                    .id(partyId2)
+                    .build()) // Access code for defendant 2
             .code(ACCESS_CODE)
             .build();
 
@@ -244,7 +252,9 @@ class PartyAccessCodeLinkServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, allDefendants);
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(partyId2)
+            .party(PartyEntity.builder()
+                    .id(partyId2)
+                    .build())
             .code(ACCESS_CODE)
             .build();
 

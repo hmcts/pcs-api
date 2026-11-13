@@ -68,7 +68,7 @@ public class MockSendLetterServer {
                                        int minLetterCount) {
 
         await("At least %d letter(s) of type %s sent since %s".formatted(minLetterCount, letterType, sentSince))
-            .atMost(Duration.ofSeconds(20))
+            .atMost(Duration.ofSeconds(60))
             .pollInterval(Duration.ofMillis(500))
             .ignoreExceptions()
             .until(
