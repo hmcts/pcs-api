@@ -123,7 +123,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
-  test('Case tabs - Summary tab test @smoke @MAC @regression', async () => {
+  test('Case tabs - Summary tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
     await performValidation('mainHeader', home.caseSummary)
     await performAction('validateCaseSummaryDetails', {
