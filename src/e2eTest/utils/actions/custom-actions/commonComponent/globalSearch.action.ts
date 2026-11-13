@@ -158,6 +158,105 @@ export class GlobalSearchCaseAction implements IAction {
   }
 
   private async requestChallengedAccess(page: Page, accessReason: actionRecord): Promise<void> {
+  if (!accessReason?.option) {
+    throw new Error('A challenge access reason must be provided.');
+  }
+
+  const normalizedCaseReference = this.getNormalizedCaseReference();
+
+  await this.validateSearchHeader(page);
+
+  const resultRow = await this.findCaseReferenceRowAcrossPages(page, normalizedCaseReference);
+  const challengedAccessLink = resultRow.getByRole('link', { name: /challenged access/i });
+
+  await expect(challengedAccessLink).toBeVisible();
+  await expect(challengedAccessLink).toBeEnabled();
+  await challengedAccessLink.click();
+
+  await performValidation('text', {
+    text: challengedCaseDetails.caseDetailsSubHeader,
+    elementType: 'subHeading'
+  });
+
+  await performAction('clickButton', challengedCaseDetails.requestAccessbutton);
+
+  await expect(
+    page.getByText(whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion, {
+      exact: true
+    })
+  ).toBeVisible();
+
+  await performAction('clickRadioButton', {
+    question: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion,
+    option: accessReason.option
+  });
+
+  if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
+    const otherReasonTextbox = page
+      .getByRole('group', {
+        name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
+      })
+      .getByRole('textbox');
+
+    await otherReasonTextbox.fill(accessReason.text?.toString() ?? '');
+  }
+
+  // Wait for the challenged access API response while clicking Submit
+  const [challengedAccessResponse] = await Promise.all([
+    page.waitForResponse(
+      response => response.url().includes('/api/challenged-access-request'),
+      { timeout: 60000 }
+    ),
+    page.getByRole('button', {
+      name: whyDoYouNeedToAccessThisCase.submitButton,
+      exact: true
+    }).click()
+  ]);
+
+  expect(challengedAccessResponse.status()).toBe(201);
+
+  // Verify successful access request
+  await page.waitForURL(/challenged-access-request\/success/, {
+    timeout: LONG_TIMEOUT
+  });
+
+  await expect(
+    page.getByRole('heading', {
+      name: new RegExp(challengedAccessSuccess.successMessage, 'i')
+    })
+  ).toBeVisible({ timeout: LONG_TIMEOUT });
+
+  await expect(page.getByText(normalizedCaseReference)).toBeVisible();
+
+  await expect(
+    page.getByText(/you can access this case file until midnight tonight/i)
+  ).toBeVisible();
+
+  await expect(
+    page.getByText(/your request will be logged for auditing purposes/i)
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole('link', {
+      name: challengedAccessSuccess.viewCaseFileLink
+    })
+  ).toBeVisible();
+
+  // Navigate to the case file
+  await performAction('clickLink', challengedAccessSuccess.viewCaseFileLink);
+
+  await performValidation('mainHeader', home.caseParties);
+
+  await performAction('clickTab', home.caseDetails);
+
+  await expect(
+    page.getByText('Claim details', { exact: true }).first()
+  ).toBeVisible({
+    timeout: LONG_TIMEOUT
+  });
+}
+/*
+  private async requestChallengedAccess(page: Page, accessReason: actionRecord): Promise<void> {
     if (!accessReason?.option) {
       throw new Error('A challenge access reason must be provided.');
     }
@@ -237,7 +336,7 @@ export class GlobalSearchCaseAction implements IAction {
       timeout: LONG_TIMEOUT
     });
   }
-
+*/
   private async findCaseReferenceRowAcrossPages(page: Page, normalizedCaseReference: string): Promise<Locator> {
     const maxPagesToScan = 50;
     const rows = page.locator('tbody tr');
