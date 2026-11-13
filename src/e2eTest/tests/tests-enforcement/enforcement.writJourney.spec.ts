@@ -80,7 +80,14 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC1, AC2, AC8, AC9' },
+      ],
+    },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -330,11 +337,12 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
   });
 
   test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
-    annotation: {
-      type: 'issue',
-      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC10' },
+      ],
     },
-  },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -361,7 +369,15 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       await performValidation('errorMessage', { header: generalApplication.eventCouldNotBeCreatedErrorMessageHeader, message: generalApplication.errMessage });
     });
 
-  test('Writ of Possession - Breathing space: claimant selects Im not sure is directed to  screen @enforcement @regression', async () => {
+  test('Writ of Possession - Breathing space: claimant selects Im not sure is directed to  screen',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC3-AC7' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);

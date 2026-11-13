@@ -45,8 +45,6 @@ import {
   breathingSpaceNotSure,
   generalApplication, uploadStatement,
 } from '@data/page-data-figma/page-data-enforcement-figma';
-import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
-import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -100,7 +98,14 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes]',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC1, AC2, AC8, AC9' },
+      ],
+    },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -600,12 +605,13 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
-    annotation: {
-      type: 'issue',
-      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
+  test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC10' },
+      ],
     },
-  },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -929,7 +935,15 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('errorValidationCannotApplyForWarrantPage', cannotApplyForWarrantInfo.errorValidation);
   });
 
-  test('Warrant of Possession - Breathing space: claimant selects Im not sure is directed to  screen @enforcement @regression', async () => {
+  test('Warrant of Possession - Breathing space: claimant selects Im not sure is directed to  screen',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC3-AC7' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -991,6 +1005,7 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
     await performValidation('mainHeader', caseSummary.mainHeader);
     await performAction('resumeDraftApplication');
   });
+
   test ('As a claimant user, I can resume the draft application of enforcement @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
