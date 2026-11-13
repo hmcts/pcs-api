@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -25,13 +26,15 @@ import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 
+@SuppressWarnings("removal")
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
-    HttpMessageConvertersAutoConfiguration.class
+    HttpMessageConvertersAutoConfiguration.class, Jackson2AutoConfiguration.class
 })
 @EnableFeignClients(clients = WorkAllocationWorkflowApi.class)
-@TestPropertySource(properties = "work-allocation.workflow-api.url=http://localhost:8899")
+@TestPropertySource(properties = {"work-allocation.workflow-api.url=http://localhost:8899",
+    "spring.http.converters.preferred-json-mapper=jackson2"})
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "wa_workflow_api_send_message", port = "8899")
 

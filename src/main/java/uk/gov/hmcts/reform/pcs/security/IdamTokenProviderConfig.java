@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 /**
  * Creates one {@link IdamTokenProvider} bean per IDAM service identity. Inject a specific
@@ -15,17 +15,17 @@ public class IdamTokenProviderConfig {
 
     @Bean
     public IdamTokenProvider systemUpdateUserTokenProvider(
-        OAuth2AuthorizedClientManager authorizedClientManager,
+        IdamClient idamClient,
         @Value("${idam.system-user.username}") String username,
         @Value("${idam.system-user.password}") String password) {
-        return new IdamTokenProvider(authorizedClientManager, "system-user", username, password);
+        return new IdamTokenProvider(idamClient, username, password);
     }
 
     @Bean
     public IdamTokenProvider prdAdminTokenProvider(
-        OAuth2AuthorizedClientManager authorizedClientManager,
+        IdamClient idamClient,
         @Value("${idam.prd-admin.username}") String username,
         @Value("${idam.prd-admin.password}") String password) {
-        return new IdamTokenProvider(authorizedClientManager, "prd-admin", username, password);
+        return new IdamTokenProvider(idamClient, username, password);
     }
 }

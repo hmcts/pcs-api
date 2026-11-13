@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.data.migration;
 
 import java.util.stream.Stream;
 import org.flywaydb.core.Flyway;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import uk.gov.hmcts.reform.pcs.exception.PendingMigrationScriptException;
 
 public class FlywayNoOpStrategy implements FlywayMigrationStrategy {

@@ -6,19 +6,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
@@ -30,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -59,11 +64,60 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
     @Autowired
     private CaseCreationHelper caseCreationHelper;
 
+    @Autowired
+    private RequestMappingHandlerAdapter handlerAdapter;
+
     @MockitoBean
     private IdamAuthenticator idamAuthenticator;
 
     @MockitoBean
-    private OAuth2AuthorizedClientManager authorizedClientManager;
+    private IdamClient idamClient;
+
+    @Test
+    @Transactional
+    @SuppressWarnings("removal")
+    void callbacksUseTheApplicationJackson2Mapper() {
+        var jsonConverters = handlerAdapter.getMessageConverters().stream()
+            .filter(converter -> converter.canWrite(Map.class, MediaType.APPLICATION_JSON))
+            .toList();
+
+        assertThat(jsonConverters).isNotEmpty();
+        assertThat(jsonConverters.getFirst()).isInstanceOf(MappingJackson2HttpMessageConverter.class);
+        assertThat(((MappingJackson2HttpMessageConverter) jsonConverters.getFirst()).getObjectMapper())
+            .isSameAs(objectMapper);
+    }
+
+    @Test
+    @Transactional
+    void callbackCaseDataPreservesNestedUnwrappedDocuments() throws Exception {
+        var payload = objectMapper.readTree("""
+            {
+              "propertyAddress": {"AddressLine1": "1 Test Street", "PostCode": "AB1 2CD"},
+              "tenancy_TypeOfTenancyLicence": "ASSURED_TENANCY",
+              "tenancy_TenancyLicenceDate": "2026-01-02",
+              "tenancy_TenancyLicenceDocuments": [{
+                "id": "c0f90078-46bf-4795-b560-6243b3f2b58e",
+                "value": {
+                  "document_url": "https://documents.example/test",
+                  "document_binary_url": "https://documents.example/test/binary",
+                  "document_filename": "tenancy.pdf"
+                }
+              }],
+              "feeAmount": null
+            }
+            """);
+        PCSCase restored = objectMapper.treeToValue(payload, PCSCase.class);
+        var result = objectMapper.valueToTree(restored);
+
+        for (String field : List.of("propertyAddress", "tenancy_TypeOfTenancyLicence",
+                "tenancy_TenancyLicenceDate", "tenancy_TenancyLicenceDocuments")) {
+            assertThat(result.get(field)).as(field).isEqualTo(payload.get(field));
+        }
+        assertThat(restored.getFeeAmount()).isNull();
+        assertThat(result.has("feeAmount")).isFalse();
+        var roundTripped = objectMapper.valueToTree(objectMapper.treeToValue(result, PCSCase.class));
+        assertThat(roundTripped).isEqualTo(result);
+    }
 
     @BeforeEach
     void setUp() {

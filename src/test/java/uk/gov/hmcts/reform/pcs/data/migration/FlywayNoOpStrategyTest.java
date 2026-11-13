@@ -15,7 +15,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import uk.gov.hmcts.reform.pcs.exception.PendingMigrationScriptException;
 
 @ExtendWith(MockitoExtension.class)

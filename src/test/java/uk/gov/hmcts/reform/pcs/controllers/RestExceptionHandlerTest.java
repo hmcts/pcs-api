@@ -9,8 +9,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -39,8 +36,7 @@ class RestExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        UpstreamThrottling upstreamThrottling = new UpstreamThrottling(
-            "30", Set.of("invalid_token_response", "temporarily_unavailable"));
+        UpstreamThrottling upstreamThrottling = new UpstreamThrottling("30");
         underTest = new RestExceptionHandler(upstreamThrottling);
     }
 
@@ -383,28 +379,7 @@ class RestExceptionHandlerTest {
     }
 
     @Test
-    void shouldMapIdamExceptionWrappingOAuth2WithRestClient429ToServiceUnavailable() {
-        // Real production shape: Spring's OAuth2 password client wraps a RestClient 429 in
-        // OAuth2AuthorizationException, then SystemUpdateUserTokenProvider wraps that in IdamException.
-        HttpClientErrorException tooMany = HttpClientErrorException.create(
-            HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
-        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled by IDAM", null);
-        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError, tooMany);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
-
-        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message())
-            .isEqualTo("Authentication service temporarily unavailable, please retry");
-    }
-
-    @Test
     void shouldMapIdamExceptionWithDirectRestClient429CauseToServiceUnavailable() {
-        // Defense-in-depth: handler should also recognise a RestClient 429 set directly as the cause,
-        // not only when buried under OAuth2AuthorizationException.
         HttpClientErrorException tooMany = HttpClientErrorException.create(
             HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
         IdamException ex = new IdamException("Unable to get access token response", tooMany);
@@ -413,56 +388,6 @@ class RestExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
-    }
-
-    // Parameterised over the default idam.throttle.oauth2-error-codes set. When the default in
-    // application.yaml / UpstreamThrottling changes, mirror it here so coverage stays complete.
-    @ParameterizedTest
-    @ValueSource(strings = {"invalid_token_response", "temporarily_unavailable"})
-    void shouldMapIdamExceptionWithOAuth2ThrottleCodeToServiceUnavailable(String errorCode) {
-        OAuth2Error oauthError = new OAuth2Error(errorCode, "throttled by IDAM", null);
-        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
-
-        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message())
-            .isEqualTo("Authentication service temporarily unavailable, please retry");
-    }
-
-    // Non-throttle OAuth2 error codes must NOT return 503 — these are not transient.
-    @ParameterizedTest
-    @ValueSource(strings = {"server_error", "access_denied", "invalid_grant", "invalid_client", "unauthorized_client"})
-    void shouldMapIdamExceptionWithNonThrottleOAuth2CodeToInternalServerError(String errorCode) {
-        OAuth2Error oauthError = new OAuth2Error(errorCode, "non-throttle OAuth2 error", null);
-        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
-
-        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNull();
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Authentication service error");
-    }
-
-    @Test
-    void shouldMapIdamExceptionWithNon429OAuth2CauseToInternalServerError() {
-        HttpClientErrorException internal = HttpClientErrorException.create(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Server Error", HttpHeaders.EMPTY, new byte[0], null);
-        OAuth2Error oauthError = new OAuth2Error("server_error", "IDAM down", null);
-        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError, internal);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
-
-        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNull();
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Authentication service error");
     }
 
     // Feign statuses that count as "upstream unavailable" — connect/read failure (status < 0),
@@ -510,30 +435,15 @@ class RestExceptionHandlerTest {
     @Test
     void shouldUseConfiguredRetryAfterValueInThrottleResponse() {
         // The Retry-After value is read from idam.throttle.retry-after-seconds, not hardcoded.
-        RestExceptionHandler handler = new RestExceptionHandler(
-            new UpstreamThrottling("90", Set.of("invalid_token_response")));
-        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled", null);
-        IdamException ex = new IdamException(
-            "Unable to get access token response", new OAuth2AuthorizationException(oauthError));
+        RestExceptionHandler handler = new RestExceptionHandler(new UpstreamThrottling("90"));
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(429);
+        IdamException ex = new IdamException("Unable to get access token response", feignEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = handler.handleIdamException(ex);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("90");
-    }
-
-    @Test
-    void shouldHonourConfiguredOAuth2ThrottleErrorCodes() {
-        // A code that is NOT in the configured set must not be treated as throttling.
-        RestExceptionHandler handler = new RestExceptionHandler(
-            new UpstreamThrottling("30", Set.of("temporarily_unavailable")));
-        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "not a configured throttle code", null);
-        IdamException ex = new IdamException(
-            "Unable to get access token response", new OAuth2AuthorizationException(oauthError));
-
-        ResponseEntity<RestExceptionHandler.Error> response = handler.handleIdamException(ex);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test

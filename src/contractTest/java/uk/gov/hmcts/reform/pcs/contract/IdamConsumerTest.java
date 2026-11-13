@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -29,12 +30,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Test-only use of the deprecated idam-java-client to preserve the pre-existing pact contract
-// (already verified by IDAM provider). Production code uses our own IdamUserInfoApi instead.
+// Token contract for the shared HMCTS IDAM client; user info uses PCS IdamUserInfoApi.
+@SuppressWarnings("removal")
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
-    HttpMessageConvertersAutoConfiguration.class})
+    HttpMessageConvertersAutoConfiguration.class, Jackson2AutoConfiguration.class})
 @EnableFeignClients(clients = IdamApi.class)
-@TestPropertySource(properties = "idam.api.url=http://localhost:5000")
+@TestPropertySource(properties = {"idam.api.url=http://localhost:5000",
+    "spring.http.converters.preferred-json-mapper=jackson2"})
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "idamApi_oidc", port = "5000")

@@ -1,0 +1,5152 @@
+{
+  "featureFlags" : {
+    "release1dot2Enabled" : "NO",
+    "release1dot3Enabled" : "YES",
+    "release1bEnabled" : "NO",
+    "release1dot4Enabled" : "YES",
+    "caseWorkerEventsEnabled" : "NO",
+    "walesMakeAClaimEnabled" : "YES",
+    "cuiRespondToClaimLrEnabled" : "YES",
+    "makeOrderEnabled" : "NO",
+    "enforcementEnabled" : "NO"
+  },
+  "reindexCases_ModifiedSince" : "1994-03-25",
+  "reindexCases_MatchingCount" : "GTYLK",
+  "feeAmount" : "WXXRLUPRVU",
+  "hasUnsubmittedCaseData" : "NO",
+  "resumeClaimKeepAnswers" : "YES",
+  "orgNameFound" : "YES",
+  "claimantName" : "RVSKP",
+  "isClaimantNameCorrect" : "NO",
+  "overriddenClaimantName" : "HAZXH",
+  "fallbackClaimantName" : "LVNVX",
+  "allClaimants" : [ {
+    "id" : "MINETJ",
+    "value" : {
+      "id" : "VTLMXHUH",
+      "rank" : 1395,
+      "idamId" : "AVOQI",
+      "firstName" : "GBGUTM",
+      "lastName" : "HAQB",
+      "orgName" : "AAYMFDJH",
+      "nameKnown" : "NO",
+      "emailAddress" : "ZLULYUJP",
+      "address" : {
+        "AddressLine1" : "JVHQPSY",
+        "AddressLine2" : "ZTVVJP",
+        "AddressLine3" : "UAOGNHSCHR",
+        "PostTown" : "QGPDOISGU",
+        "County" : "DVXWZ",
+        "PostCode" : "XPG",
+        "Country" : "URMA"
+      },
+      "addressKnown" : "YES",
+      "addressSameAsProperty" : "NO",
+      "phoneNumber" : "DRP",
+      "phoneNumberProvided" : "YES",
+      "textMessageNumber" : "ZACMU",
+      "pcqId" : "EFYSDGOAH",
+      "dateOfBirth" : "2057-06-07",
+      "legalRepresentative" : {
+        "telephoneNumber" : "SREQ",
+        "emailAddress" : "GGZSSLRNBP",
+        "organisationName" : "NMNCXDTDK",
+        "address" : {
+          "AddressLine1" : "CDUNE",
+          "AddressLine2" : "IERSX",
+          "AddressLine3" : "GXYLQJLS",
+          "PostTown" : "JWOZJTQ",
+          "County" : "QPFODZIBZ",
+          "PostCode" : "RIHCQML",
+          "Country" : "SPUWAKJ"
+        }
+      },
+      "actingForPartyId" : "TSCPA",
+      "defendantFlags" : {
+        "partyName" : "NVUWLNUE",
+        "roleOnCase" : "PWO",
+        "details" : [ {
+          "id" : "QYVCZNXQ",
+          "value" : {
+            "name" : "IWXJZGLDYF",
+            "name_cy" : "BTCQQVNXYR",
+            "subTypeValue" : "XCT",
+            "subTypeValue_cy" : "ENII",
+            "subTypeKey" : "GKXNSXZN",
+            "otherDescription" : "MYZKLFGG",
+            "otherDescription_cy" : "IPGGNDL",
+            "flagComment" : "KTRPMHDMQ",
+            "flagComment_cy" : "PECNF",
+            "flagUpdateComment" : "JHK",
+            "dateTimeModified" : "1978-08-28T00:11:28.507Z",
+            "dateTimeCreated" : "2010-03-06T10:50:13.660Z",
+            "path" : [ {
+              "id" : "EVQOIM",
+              "value" : "TLHYSDRV"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "NULDCVEGT",
+            "status" : "PPAEJOR",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "085960fd-bf1b-351f-96c5-6baed421421a"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "OUKQOUKCMC",
+          "OrganisationID" : "PKUHWEYV"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "AUNCCM",
+          "value" : {
+            "FromTimestamp" : "2083-02-26T17:56:00.997125964",
+            "ToTimestamp" : "2036-04-27T19:52:38.990323772",
+            "OrganisationName" : "CHHJLPSJOF",
+            "OrganisationAddress" : {
+              "AddressLine1" : "HXKWTVDXEB",
+              "AddressLine2" : "VJUL",
+              "AddressLine3" : "VHN",
+              "PostTown" : "WFYNQOL",
+              "County" : "GQJXIBN",
+              "PostCode" : "GCGCKNFDP",
+              "Country" : "MNKGEKDYL"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "NGD",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "challenged-access-judiciary",
+        "LastNoCRequestedBy" : "BSHI"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "OFURCDCOY",
+        "roleOnCase" : "VUZFF",
+        "details" : [ {
+          "id" : "WXDJSP",
+          "value" : {
+            "name" : "RDS",
+            "name_cy" : "LJNEO",
+            "subTypeValue" : "ODIAGZNA",
+            "subTypeValue_cy" : "YUY",
+            "subTypeKey" : "REJSADL",
+            "otherDescription" : "AXWO",
+            "otherDescription_cy" : "IMKKQVGYZ",
+            "flagComment" : "WOPKZL",
+            "flagComment_cy" : "AHSHFKCYBF",
+            "flagUpdateComment" : "LIBFYMX",
+            "dateTimeModified" : "1972-12-26T14:22:42.523Z",
+            "dateTimeCreated" : "2077-05-13T07:48:10.172Z",
+            "path" : [ {
+              "id" : "LCU",
+              "value" : "NHQKSMC"
+            }, {
+              "id" : "EIISP",
+              "value" : "ABNVB"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "OJTFKIGKUY",
+            "status" : "SXLBBNGXE",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "6fad400e-fcca-3ab1-83e9-81c8fbc2e8d1"
+      }
+    }
+  } ],
+  "representedPartyNames" : {
+    "value" : {
+      "code" : "214db11e-afca-3161-9a9d-cbd58b9151e6",
+      "label" : "DHTV"
+    },
+    "list_items" : [ {
+      "code" : "7b95a47b-a8bd-3f58-a4b1-c60dabc63a4e",
+      "label" : "FOO"
+    } ],
+    "valueCode" : "214db11e-afca-3161-9a9d-cbd58b9151e6",
+    "valueLabel" : "DHTV"
+  },
+  "currentRepresentedPartyId" : "RUIZS",
+  "currentRepresentedPartyName" : "BPRZZEVSQ",
+  "multipleRepresentedParties" : "NO",
+  "propertyAddress" : {
+    "AddressLine1" : "DCLEETHW",
+    "AddressLine2" : "BPN",
+    "AddressLine3" : "GHHJ",
+    "PostTown" : "LRQWTRPVOD",
+    "County" : "ZTRHPSPW",
+    "PostCode" : "KDDOUYROWV",
+    "Country" : "MJPJ"
+  },
+  "showPropertyNotEligiblePage" : "YES",
+  "crossBorderCountriesList" : {
+    "value" : {
+      "code" : "JULLU",
+      "label" : "RAFEDCY"
+    },
+    "list_items" : [ {
+      "code" : "HRM",
+      "label" : "SPJKGX"
+    }, {
+      "code" : "IZLREG",
+      "label" : "EBTKRGKFEK"
+    } ],
+    "valueCode" : "JULLU"
+  },
+  "crossBorderCountry1" : "EZALAXW",
+  "crossBorderCountry2" : "GIYP",
+  "caseLinks" : [ {
+    "id" : "RUQO",
+    "value" : {
+      "CaseReference" : "GPD",
+      "ReasonForLink" : [ {
+        "id" : "VWCVIGYK",
+        "value" : {
+          "Reason" : "IXCJYAIA",
+          "OtherDescription" : "YRHWPH"
+        }
+      } ],
+      "CreatedDateTime" : "1972-06-02T12:42:44.495",
+      "CaseType" : "XNY"
+    }
+  } ],
+  "LinkedCasesComponentLauncher" : { },
+  "userPcqIdSet" : "NO",
+  "caseManagementLocationNumber" : 9306,
+  "regionId" : 9451,
+  "parties" : [ {
+    "id" : "VFVMMXDCAZ",
+    "value" : {
+      "id" : "YMHFVWKTU",
+      "rank" : 4058,
+      "idamId" : "DIH",
+      "firstName" : "QCQMFI",
+      "lastName" : "RUENBDCN",
+      "orgName" : "GKINXJLER",
+      "nameKnown" : "NO",
+      "emailAddress" : "YRUMBHX",
+      "address" : {
+        "AddressLine1" : "NUV",
+        "AddressLine2" : "QHU",
+        "AddressLine3" : "UBRPMJ",
+        "PostTown" : "KWQOMKJ",
+        "County" : "QPVQAF",
+        "PostCode" : "TAJS",
+        "Country" : "LFRQK"
+      },
+      "addressKnown" : "NO",
+      "addressSameAsProperty" : "NO",
+      "phoneNumber" : "DKRW",
+      "phoneNumberProvided" : "NO",
+      "textMessageNumber" : "KTJSMNCLAR",
+      "pcqId" : "WPUWFTZFHR",
+      "dateOfBirth" : "2037-12-17",
+      "legalRepresentative" : {
+        "telephoneNumber" : "BFKWGMG",
+        "emailAddress" : "NLHLWEM",
+        "organisationName" : "UQVBDOHC",
+        "address" : {
+          "AddressLine1" : "NPIVORD",
+          "AddressLine2" : "AUEJFTMNRL",
+          "AddressLine3" : "HJFQZMTT",
+          "PostTown" : "AUZAUS",
+          "County" : "QPHWX",
+          "PostCode" : "VZIXJ",
+          "Country" : "HIRFT"
+        }
+      },
+      "actingForPartyId" : "EXCJ",
+      "defendantFlags" : {
+        "partyName" : "XWJ",
+        "roleOnCase" : "ADALJIT",
+        "details" : [ {
+          "id" : "IAXWQPQ",
+          "value" : {
+            "name" : "LEEAQLXSZ",
+            "name_cy" : "KPQAS",
+            "subTypeValue" : "XRQLIBF",
+            "subTypeValue_cy" : "FWJEOWY",
+            "subTypeKey" : "FUZ",
+            "otherDescription" : "DJCB",
+            "otherDescription_cy" : "GUFRBXEE",
+            "flagComment" : "OMTQZKGH",
+            "flagComment_cy" : "BAMBZA",
+            "flagUpdateComment" : "XGNKBYQFA",
+            "dateTimeModified" : "2023-09-19T05:07:01.915Z",
+            "dateTimeCreated" : "1999-07-26T13:55:30.730Z",
+            "path" : [ {
+              "id" : "SRD",
+              "value" : "GLF"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "CPUX",
+            "status" : "HRJEMX",
+            "availableExternally" : "YES"
+          }
+        }, {
+          "id" : "HWTZK",
+          "value" : {
+            "name" : "HKJTATR",
+            "name_cy" : "ZQTOFJ",
+            "subTypeValue" : "HHZTRFD",
+            "subTypeValue_cy" : "LZAUHVMPCP",
+            "subTypeKey" : "ODY",
+            "otherDescription" : "XYK",
+            "otherDescription_cy" : "DASUDCYYJC",
+            "flagComment" : "BMRUCGW",
+            "flagComment_cy" : "QVVD",
+            "flagUpdateComment" : "EGX",
+            "dateTimeModified" : "1970-09-15T06:50:27.815Z",
+            "dateTimeCreated" : "2066-07-15T05:34:35.432Z",
+            "path" : [ {
+              "id" : "OINOJ",
+              "value" : "NXBSGCOT"
+            }, {
+              "id" : "LCBZYZTM",
+              "value" : "OAFKDB"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "YCWXRURO",
+            "status" : "RLAPQSV",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "1f36083e-1287-356b-8cb7-97cece61f016"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "OUOQFZLBQM",
+          "OrganisationID" : "CWB"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "IHBE",
+          "value" : {
+            "FromTimestamp" : "2024-09-04T11:43:34.878463821",
+            "ToTimestamp" : "2040-01-28T02:37:21.671887352",
+            "OrganisationName" : "TJABITZ",
+            "OrganisationAddress" : {
+              "AddressLine1" : "ICNKPP",
+              "AddressLine2" : "KDFFYUUXXK",
+              "AddressLine3" : "TMJGL",
+              "PostTown" : "QJUTANBOV",
+              "County" : "LSWPWEFVP",
+              "PostCode" : "TECRODNLNC",
+              "Country" : "ZRNOXGPI"
+            }
+          }
+        }, {
+          "id" : "FLL",
+          "value" : {
+            "FromTimestamp" : "2061-04-15T22:10:38.741688427",
+            "ToTimestamp" : "1979-04-12T11:12:08.594858325",
+            "OrganisationName" : "URJWYZMBO",
+            "OrganisationAddress" : {
+              "AddressLine1" : "SXPS",
+              "AddressLine2" : "QVPGTRRKP",
+              "AddressLine3" : "WSVEBGAWM",
+              "PostTown" : "LJFIV",
+              "County" : "IHQGCOZML",
+              "PostCode" : "TPZVZB",
+              "Country" : "CEBBZSKRBH"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "IJGPLGMDS",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "ctsc",
+        "LastNoCRequestedBy" : "ZMSKW"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "TBFETIG",
+        "roleOnCase" : "VOSMLALEDV",
+        "details" : [ {
+          "id" : "URYTDB",
+          "value" : {
+            "name" : "CJQ",
+            "name_cy" : "DCXJB",
+            "subTypeValue" : "AZZBW",
+            "subTypeValue_cy" : "KLNWAF",
+            "subTypeKey" : "FYCA",
+            "otherDescription" : "SIUKQYVT",
+            "otherDescription_cy" : "DKWHTDC",
+            "flagComment" : "KBPVF",
+            "flagComment_cy" : "TWEQCA",
+            "flagUpdateComment" : "RHA",
+            "dateTimeModified" : "2044-09-14T16:16:33.018Z",
+            "dateTimeCreated" : "2036-11-21T17:13:12.482Z",
+            "path" : [ {
+              "id" : "ECWU",
+              "value" : "IZXQJHQQ"
+            }, {
+              "id" : "OEM",
+              "value" : "QBPSMV"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "RGSIPS",
+            "status" : "SMIB",
+            "availableExternally" : "NO"
+          }
+        }, {
+          "id" : "VEKHR",
+          "value" : {
+            "name" : "VAP",
+            "name_cy" : "ETKPPMR",
+            "subTypeValue" : "PYMYWJHQ",
+            "subTypeValue_cy" : "MVG",
+            "subTypeKey" : "TQJAA",
+            "otherDescription" : "GFJRNAOZHD",
+            "otherDescription_cy" : "NHRIB",
+            "flagComment" : "ZEWSD",
+            "flagComment_cy" : "ANCKUQXOY",
+            "flagUpdateComment" : "UWAEUY",
+            "dateTimeModified" : "2080-08-14T04:33:15.039Z",
+            "dateTimeCreated" : "1979-07-10T09:53:16.258Z",
+            "path" : [ {
+              "id" : "CYRBVVEPXL",
+              "value" : "JFPYMBC"
+            }, {
+              "id" : "KTQU",
+              "value" : "MMS"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "HMI",
+            "status" : "OIBRCUEW",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "93f33894-2bce-36c1-9812-264008e82707"
+      }
+    }
+  }, {
+    "id" : "KMSFIBALWI",
+    "value" : {
+      "id" : "LYREFV",
+      "rank" : 6598,
+      "idamId" : "WZZSCKW",
+      "firstName" : "JQQAJZCXGN",
+      "lastName" : "XDQQZUSR",
+      "orgName" : "NATWXUVU",
+      "nameKnown" : "NO",
+      "emailAddress" : "VDYHOGKY",
+      "address" : {
+        "AddressLine1" : "ZVIV",
+        "AddressLine2" : "OVHGAFNCRV",
+        "AddressLine3" : "IDEE",
+        "PostTown" : "COBTYZGNP",
+        "County" : "XJKVAEOZHO",
+        "PostCode" : "TCMSDRZWX",
+        "Country" : "RJHDPBEG"
+      },
+      "addressKnown" : "NO",
+      "addressSameAsProperty" : "NO",
+      "phoneNumber" : "DYHN",
+      "phoneNumberProvided" : "NO",
+      "textMessageNumber" : "XHXYFMK",
+      "pcqId" : "HGEHSQAJLQ",
+      "dateOfBirth" : "2069-03-05",
+      "legalRepresentative" : {
+        "telephoneNumber" : "VCRPNHFFY",
+        "emailAddress" : "XPWM",
+        "organisationName" : "RALHCKXY",
+        "address" : {
+          "AddressLine1" : "QJNSSFCBMA",
+          "AddressLine2" : "YGFE",
+          "AddressLine3" : "FQV",
+          "PostTown" : "GHSSYWL",
+          "County" : "WROXKC",
+          "PostCode" : "PLA",
+          "Country" : "NUUT"
+        }
+      },
+      "actingForPartyId" : "DKMT",
+      "defendantFlags" : {
+        "partyName" : "YSYRMQXET",
+        "roleOnCase" : "NCWPSAQBF",
+        "details" : [ {
+          "id" : "VVWR",
+          "value" : {
+            "name" : "WPL",
+            "name_cy" : "LQSFKFBRB",
+            "subTypeValue" : "UKX",
+            "subTypeValue_cy" : "HVLCOFSV",
+            "subTypeKey" : "UEYMBXWU",
+            "otherDescription" : "FCVCRCQLM",
+            "otherDescription_cy" : "ZJGGA",
+            "flagComment" : "ISMLSSCBV",
+            "flagComment_cy" : "UQKZ",
+            "flagUpdateComment" : "REXHJ",
+            "dateTimeModified" : "2061-05-23T04:06:18.215Z",
+            "dateTimeCreated" : "2063-04-28T19:39:38.839Z",
+            "path" : [ {
+              "id" : "EPBGUM",
+              "value" : "XREOHRIQ"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "RFGTNAXQ",
+            "status" : "KCEMHE",
+            "availableExternally" : "NO"
+          }
+        }, {
+          "id" : "EABGF",
+          "value" : {
+            "name" : "XQVQDWVJSJ",
+            "name_cy" : "WUVVSQ",
+            "subTypeValue" : "ZZAESOF",
+            "subTypeValue_cy" : "RUP",
+            "subTypeKey" : "DBGUI",
+            "otherDescription" : "CJLWNAOELZ",
+            "otherDescription_cy" : "IMUITKMD",
+            "flagComment" : "GEG",
+            "flagComment_cy" : "TTYDD",
+            "flagUpdateComment" : "EZFZYNYI",
+            "dateTimeModified" : "2070-04-25T22:37:03.724Z",
+            "dateTimeCreated" : "1978-09-22T22:10:00.095Z",
+            "path" : [ {
+              "id" : "FAHR",
+              "value" : "KKZMREQHIG"
+            }, {
+              "id" : "VIUGNYP",
+              "value" : "VWRFYMD"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "UMHVIQPM",
+            "status" : "BFNCQP",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "99e1d739-e95d-3878-a961-44c528dc6f0e"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "ROLFXN",
+          "OrganisationID" : "STGEAHETD"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "RCWJBKKEBF",
+          "value" : {
+            "FromTimestamp" : "2066-01-21T21:45:29.323265613",
+            "ToTimestamp" : "1985-07-30T05:12:44.09324354",
+            "OrganisationName" : "RHHCXSAWY",
+            "OrganisationAddress" : {
+              "AddressLine1" : "GGSRMBT",
+              "AddressLine2" : "RASO",
+              "AddressLine3" : "LLXVCZKC",
+              "PostTown" : "JRU",
+              "County" : "YFOJOA",
+              "PostCode" : "JTTBIKXT",
+              "Country" : "LBHWBRSU"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "SIPDZ",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "caseworker-ras-validation",
+        "LastNoCRequestedBy" : "CMRGVFNZ"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "UXQIR",
+        "roleOnCase" : "OVSJZNYPO",
+        "details" : [ {
+          "id" : "KXUSCHX",
+          "value" : {
+            "name" : "UXYFG",
+            "name_cy" : "FKKTUCZT",
+            "subTypeValue" : "ZEZ",
+            "subTypeValue_cy" : "BVUIQ",
+            "subTypeKey" : "JWBZ",
+            "otherDescription" : "LZYIFCHWLT",
+            "otherDescription_cy" : "UOKIWL",
+            "flagComment" : "LBJR",
+            "flagComment_cy" : "CAHSHKE",
+            "flagUpdateComment" : "QEAPON",
+            "dateTimeModified" : "2081-10-08T10:18:04.682Z",
+            "dateTimeCreated" : "2031-03-03T02:33:44.421Z",
+            "path" : [ {
+              "id" : "IDWSYIRJ",
+              "value" : "HNLA"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "DQBYZ",
+            "status" : "LMTU",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "f008f78f-f1c3-36ed-95ef-7479cfd73acb"
+      }
+    }
+  } ],
+  "organisationAddress" : {
+    "AddressLine1" : "YDYGRNCBV",
+    "AddressLine2" : "QSXLG",
+    "AddressLine3" : "UYHXLXZ",
+    "PostTown" : "DYJPAPFWQ",
+    "County" : "YSZW",
+    "PostCode" : "NWDAB",
+    "Country" : "LABMIAI"
+  },
+  "orgAddressFound" : "YES",
+  "claimantContactEmail" : "UDLLGVUYD",
+  "isCorrectClaimantContactEmail" : "YES",
+  "overriddenClaimantContactEmail" : "XJVKDOC",
+  "formattedClaimantContactAddress" : "WCYD",
+  "isCorrectClaimantContactAddress" : "YES",
+  "overriddenClaimantContactAddress" : {
+    "AddressLine1" : "VZQMRDK",
+    "AddressLine2" : "KYRXDTN",
+    "AddressLine3" : "TCCPYXMD",
+    "PostTown" : "KIT",
+    "County" : "SDTGBKZF",
+    "PostCode" : "XQUIV",
+    "Country" : "AAPCFCFH"
+  },
+  "claimantProvidePhoneNumber" : "NO",
+  "claimantContactPhoneNumber" : "WHWCPKNNTN",
+  "claimingCostsWanted" : "NO",
+  "preActionProtocolCompleted" : "NO",
+  "preActionProtocolIncompleteExplanation" : "XKMUKFBEQ",
+  "claimDueToRentArrears" : "YES",
+  "rentArrears_RentArrearsGrounds" : [ "PERSISTENT_DELAY_GROUND11", "SERIOUS_RENT_ARREARS_GROUND8" ],
+  "rentArrears_AdditionalMandatoryGrounds" : [ "DEATH_OF_TENANT_GROUND7", "STUDENT_LET_GROUND4" ],
+  "rentArrears_AdditionalDiscretionaryGrounds" : [ "BREACH_TENANCY_GROUND12", "DETERIORATION_FURNITURE_GROUND15" ],
+  "rentArrears_AdditionalOtherGround" : [ "OTHER" ],
+  "rentArrears_AdditionalOtherGroundDescription" : "JMNLZJMCGV",
+  "hasOtherAdditionalGrounds" : "YES",
+  "ownerOccupierReason" : "UGGH",
+  "repossessionByLenderReason" : "QTKW",
+  "holidayLetReason" : "QLRYDF",
+  "studentLetReason" : "YJSJRNQBOP",
+  "ministerOfReligionReason" : "SAWPWE",
+  "redevelopmentReason" : "QZL",
+  "deathOfTenantReason" : "FCTOTHQ",
+  "antisocialBehaviourReason" : "EHLVI",
+  "noRightToRentReason" : "OWACMCQRUO",
+  "suitableAltAccommodationReason" : "RCJMH",
+  "breachOfTenancyConditionsReason" : "BCYCGB",
+  "propertyDeteriorationReason" : "APWVCHT",
+  "nuisanceAnnoyanceReason" : "RWCINIPAI",
+  "domesticViolenceReason" : "OQBFE",
+  "offenceDuringRiotReason" : "YFCJPLF",
+  "furnitureDeteriorationReason" : "CAFTLQRE",
+  "employeeOfLandlordReason" : "VIBQXC",
+  "tenancyByFalseStatementReason" : "OMPRMJYUR",
+  "otherGroundReason" : "ADNWUBMC",
+  "mediationAttempted" : "NO",
+  "mediationAttemptedDetails" : "VZVYA",
+  "settlementAttempted" : "YES",
+  "settlementAttemptedDetails" : "FRGZWGJ",
+  "noticeServed" : "YES",
+  "notice_ServiceMethod" : "PERSONALLY_HANDED",
+  "notice_PostedDate" : "2004-08-27",
+  "notice_DeliveredDate" : "2017-07-17",
+  "notice_HandedOverDateTime" : "2066-10-01T08:14:11.595214809",
+  "notice_EmailSentDateTime" : "2052-11-18T07:44:36.39095342",
+  "notice_OtherElectronicDateTime" : "2082-02-02T06:12:20.613734432",
+  "notice_OtherDateTime" : "1972-03-30T11:50:16.843110152",
+  "notice_PersonName" : "ZLEKIN",
+  "notice_EmailAddress" : "QQVTYLTUE",
+  "notice_OtherExplanation" : "YEZIVFRZ",
+  "notice_OtherElectronicExplanation" : "JIHDH",
+  "notice_AbleToUploadDocument" : "Yes",
+  "notice_Documents" : [ {
+    "id" : "RAYTD",
+    "value" : {
+      "document_url" : "VJE",
+      "document_filename" : "HBPUBCK",
+      "document_binary_url" : "DJEZPTLQDJ",
+      "category_id" : "KUA",
+      "upload_timestamp" : "2032-06-08T05:57:03.473495212",
+      "document_hash" : "NWBXSKSPFH"
+    }
+  }, {
+    "id" : "XACDQ",
+    "value" : {
+      "document_url" : "QVF",
+      "document_filename" : "VDBJLJ",
+      "document_binary_url" : "GGPMTAPY",
+      "category_id" : "YHDOJ",
+      "upload_timestamp" : "1970-11-07T09:56:37.506361745",
+      "document_hash" : "VWQA"
+    }
+  } ],
+  "notice_UnableToUploadReason" : "OAQJEKHZ",
+  "legislativeCountry" : "England",
+  "claimantType" : {
+    "value" : {
+      "code" : "DXW",
+      "label" : "QEWL"
+    },
+    "list_items" : [ {
+      "code" : "ZDWRFN",
+      "label" : "FVPF"
+    }, {
+      "code" : "YDST",
+      "label" : "MPVVZDL"
+    } ],
+    "valueCode" : "DXW"
+  },
+  "showClaimantTypeNotEligibleEngland" : "YES",
+  "showClaimantTypeNotEligibleWales" : "NO",
+  "claimAgainstTrespassers" : "NO",
+  "showClaimTypeNotEligibleEngland" : "NO",
+  "showClaimTypeNotEligibleWales" : "NO",
+  "prohibitedConductWalesClaim" : "YES",
+  "prohibitedConductWalesClaimDetails" : "CQDKA",
+  "periodicContractTermsWales" : {
+    "agreedTermsOfPeriodicContract" : "NO",
+    "detailsOfTerms" : "PDMMEJGPV"
+  },
+  "rentDetails_CurrentRent" : "489286",
+  "rentDetails_Frequency" : "WEEKLY",
+  "rentDetails_OtherFrequency" : "BLDNY",
+  "rentDetails_DailyCharge" : "845843",
+  "rentDetails_PerDayCorrect" : "NO",
+  "rentDetails_AmendedDailyCharge" : "383927",
+  "rentDetails_CalculatedDailyCharge" : "936721",
+  "rentDetails_FormattedCalculatedDailyCharge" : "SRMKFWV",
+  "rentSectionPaymentFrequency" : "FORTNIGHTLY",
+  "showPostcodeNotAssignedToCourt" : "YES",
+  "postcodeNotAssignedView" : "UDWYJ",
+  "defendant1" : {
+    "nameSectionLabel" : "RXGUVMIRA",
+    "nameKnown" : "NO",
+    "firstName" : "FJNNMPROG",
+    "lastName" : "UIQB",
+    "addressSectionLabel" : "VHBDU",
+    "addressKnown" : "YES",
+    "addressSameAsPossession" : "YES",
+    "correspondenceAddress" : {
+      "AddressLine1" : "HJGIV",
+      "AddressLine2" : "SGMJLLS",
+      "AddressLine3" : "KDAOMSVA",
+      "PostTown" : "ATVROTBBF",
+      "County" : "YTXFF",
+      "PostCode" : "HIVOFE",
+      "Country" : "RBRPG"
+    }
+  },
+  "addAnotherDefendant" : "NO",
+  "additionalDefendants" : [ {
+    "id" : "QCXFFANHOS",
+    "value" : {
+      "nameSectionLabel" : "YVABAKRSP",
+      "nameKnown" : "NO",
+      "firstName" : "CWUM",
+      "lastName" : "FFESH",
+      "addressSectionLabel" : "YNJSKJYBJ",
+      "addressKnown" : "YES",
+      "addressSameAsPossession" : "YES",
+      "correspondenceAddress" : {
+        "AddressLine1" : "IPXECVJCWA",
+        "AddressLine2" : "ASIGOMRY",
+        "AddressLine3" : "ERXZESMIS",
+        "PostTown" : "ATEQL",
+        "County" : "UIJ",
+        "PostCode" : "CHSMBD",
+        "Country" : "UUIUURLHNF"
+      }
+    }
+  } ],
+  "allDefendants" : [ {
+    "id" : "CJUT",
+    "value" : {
+      "id" : "NREB",
+      "rank" : 6925,
+      "idamId" : "TIEJJ",
+      "firstName" : "ZLWNCGQWG",
+      "lastName" : "PAEGKH",
+      "orgName" : "AAZFMZEF",
+      "nameKnown" : "YES",
+      "emailAddress" : "ARXQ",
+      "address" : {
+        "AddressLine1" : "RGTS",
+        "AddressLine2" : "TXGRRGJRH",
+        "AddressLine3" : "NEOFU",
+        "PostTown" : "QCI",
+        "County" : "HFWXEEXGU",
+        "PostCode" : "CHDMI",
+        "Country" : "NLXKHFKTG"
+      },
+      "addressKnown" : "YES",
+      "addressSameAsProperty" : "NO",
+      "phoneNumber" : "WODCYIHFC",
+      "phoneNumberProvided" : "NO",
+      "textMessageNumber" : "CYQSPEOCPO",
+      "pcqId" : "PSIF",
+      "dateOfBirth" : "1970-07-08",
+      "legalRepresentative" : {
+        "telephoneNumber" : "MJAISLMLO",
+        "emailAddress" : "LHEZK",
+        "organisationName" : "LVPEAI",
+        "address" : {
+          "AddressLine1" : "ZPGISNJ",
+          "AddressLine2" : "YJOFTVQRU",
+          "AddressLine3" : "KPCXWMW",
+          "PostTown" : "PKKFZFCVEL",
+          "County" : "OMQ",
+          "PostCode" : "QQUSGGC",
+          "Country" : "DGKIM"
+        }
+      },
+      "actingForPartyId" : "OCPMFQN",
+      "defendantFlags" : {
+        "partyName" : "IHISMA",
+        "roleOnCase" : "JVBO",
+        "details" : [ {
+          "id" : "FHUP",
+          "value" : {
+            "name" : "HLWWSCSDO",
+            "name_cy" : "BRI",
+            "subTypeValue" : "ANOJ",
+            "subTypeValue_cy" : "LEDTCWYEKR",
+            "subTypeKey" : "WJMPVTLMSM",
+            "otherDescription" : "NJNMDDTF",
+            "otherDescription_cy" : "MYB",
+            "flagComment" : "ZTJFARVW",
+            "flagComment_cy" : "ZEOGXRNYB",
+            "flagUpdateComment" : "WBYNA",
+            "dateTimeModified" : "2004-01-28T01:41:04.241Z",
+            "dateTimeCreated" : "2016-05-28T20:49:15.284Z",
+            "path" : [ {
+              "id" : "EYQ",
+              "value" : "LSPIBXQS"
+            }, {
+              "id" : "VPFJEJD",
+              "value" : "DGARDV"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "FBNST",
+            "status" : "MURQYWKTUL",
+            "availableExternally" : "YES"
+          }
+        }, {
+          "id" : "ZNUUKCT",
+          "value" : {
+            "name" : "SIYMZZZUVH",
+            "name_cy" : "UVQZL",
+            "subTypeValue" : "EJMKNPBF",
+            "subTypeValue_cy" : "VSQG",
+            "subTypeKey" : "XYNTOLT",
+            "otherDescription" : "STVGKU",
+            "otherDescription_cy" : "EGK",
+            "flagComment" : "STTN",
+            "flagComment_cy" : "JSOZTJU",
+            "flagUpdateComment" : "WZOL",
+            "dateTimeModified" : "2007-07-22T11:03:16.603Z",
+            "dateTimeCreated" : "2079-03-13T13:34:09.133Z",
+            "path" : [ {
+              "id" : "EAABEW",
+              "value" : "LGNURUNPN"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "VYTZ",
+            "status" : "JTYPADNA",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "dbcd31c3-eabc-3205-b856-e36d055673d1"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "FYRFQ",
+          "OrganisationID" : "SDDBTN"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "VDCGFUFCAV",
+          "value" : {
+            "FromTimestamp" : "2085-12-10T00:59:00.562964929",
+            "ToTimestamp" : "2037-03-19T19:05:25.719367722",
+            "OrganisationName" : "YNC",
+            "OrganisationAddress" : {
+              "AddressLine1" : "KGDXV",
+              "AddressLine2" : "AQQW",
+              "AddressLine3" : "AOUXO",
+              "PostTown" : "BMCKJOAOT",
+              "County" : "LHJFSDSTGK",
+              "PostCode" : "QEAL",
+              "Country" : "QGAGVDV"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "KIOMSP",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "hearing-centre-admin",
+        "LastNoCRequestedBy" : "QKEQHCEL"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "CUAFOIP",
+        "roleOnCase" : "RZK",
+        "details" : [ {
+          "id" : "QGJRBI",
+          "value" : {
+            "name" : "RPGDWOYD",
+            "name_cy" : "TBXKIDF",
+            "subTypeValue" : "ZTBPYQ",
+            "subTypeValue_cy" : "TYWFI",
+            "subTypeKey" : "KRBMLGROTA",
+            "otherDescription" : "IIZNCW",
+            "otherDescription_cy" : "GHCO",
+            "flagComment" : "FGOSLWCW",
+            "flagComment_cy" : "GMRKJZ",
+            "flagUpdateComment" : "TLWJL",
+            "dateTimeModified" : "2084-10-14T12:11:59.184Z",
+            "dateTimeCreated" : "2035-10-27T06:57:41.977Z",
+            "path" : [ {
+              "id" : "KSG",
+              "value" : "XWIE"
+            }, {
+              "id" : "KYI",
+              "value" : "JGD"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "RNUPXOXNGD",
+            "status" : "JGIOLQURJV",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "f3c9739c-912f-3076-bb5e-584f7554e09a"
+      }
+    }
+  } ],
+  "allLitigationFriends" : [ {
+    "id" : "LRBZDHLWRF",
+    "value" : {
+      "id" : "CHYFMO",
+      "rank" : 8155,
+      "idamId" : "OBPWDXHMQS",
+      "firstName" : "ERDBM",
+      "lastName" : "VDWZ",
+      "orgName" : "YAKAKX",
+      "nameKnown" : "NO",
+      "emailAddress" : "RWRYGOAMTC",
+      "address" : {
+        "AddressLine1" : "FOJXWXO",
+        "AddressLine2" : "SBBLMJDSNW",
+        "AddressLine3" : "EIWCTQ",
+        "PostTown" : "EIDJYVJ",
+        "County" : "OTHWYWUWBY",
+        "PostCode" : "BCSQL",
+        "Country" : "VGXJZWN"
+      },
+      "addressKnown" : "NO",
+      "addressSameAsProperty" : "YES",
+      "phoneNumber" : "RLIK",
+      "phoneNumberProvided" : "YES",
+      "textMessageNumber" : "RSPESTQW",
+      "pcqId" : "BTHSFKNI",
+      "dateOfBirth" : "2063-02-12",
+      "legalRepresentative" : {
+        "telephoneNumber" : "KZO",
+        "emailAddress" : "QAM",
+        "organisationName" : "FCNSKQYL",
+        "address" : {
+          "AddressLine1" : "NEIRISDDGL",
+          "AddressLine2" : "AVOFLL",
+          "AddressLine3" : "ZJRMMSCIUT",
+          "PostTown" : "GHCLWOOXP",
+          "County" : "CVBEKT",
+          "PostCode" : "UCYSBWHFSV",
+          "Country" : "PQUAMF"
+        }
+      },
+      "actingForPartyId" : "CYMQQVW",
+      "defendantFlags" : {
+        "partyName" : "MKBTHDPCTA",
+        "roleOnCase" : "HLW",
+        "details" : [ {
+          "id" : "GUYOMZQJSM",
+          "value" : {
+            "name" : "FCTUZ",
+            "name_cy" : "EMQJ",
+            "subTypeValue" : "NUU",
+            "subTypeValue_cy" : "GALG",
+            "subTypeKey" : "HYAAYL",
+            "otherDescription" : "AFQCECZHM",
+            "otherDescription_cy" : "COGOPTXMP",
+            "flagComment" : "FRUGOSO",
+            "flagComment_cy" : "GGROMZRGQS",
+            "flagUpdateComment" : "COOOOIJCNM",
+            "dateTimeModified" : "2004-10-12T06:33:53.944Z",
+            "dateTimeCreated" : "2034-11-17T09:13:24.137Z",
+            "path" : [ {
+              "id" : "HEPRDYBYM",
+              "value" : "XCRALRVOVI"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "YBI",
+            "status" : "AOJEJL",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "33c978ab-7843-3102-90e7-34c42864af18"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "OTQBQ",
+          "OrganisationID" : "HSQZP"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "GLLLR",
+          "value" : {
+            "FromTimestamp" : "2066-01-18T11:08:16.359503916",
+            "ToTimestamp" : "2049-08-12T16:54:58.302117726",
+            "OrganisationName" : "QFCZLASC",
+            "OrganisationAddress" : {
+              "AddressLine1" : "ATHVYQT",
+              "AddressLine2" : "HPIPOYLLQX",
+              "AddressLine3" : "GCHOGRM",
+              "PostTown" : "FYJVL",
+              "County" : "RUQFAJ",
+              "PostCode" : "NBDHZCS",
+              "Country" : "ISFRV"
+            }
+          }
+        }, {
+          "id" : "MXP",
+          "value" : {
+            "FromTimestamp" : "2020-02-19T03:38:28.051381015",
+            "ToTimestamp" : "2079-05-10T10:39:10.554650751",
+            "OrganisationName" : "ACZTHRP",
+            "OrganisationAddress" : {
+              "AddressLine1" : "TXSCSRDQAU",
+              "AddressLine2" : "KFCX",
+              "AddressLine3" : "ZDSPMXWS",
+              "PostTown" : "IYTEO",
+              "County" : "QMNXQMR",
+              "PostCode" : "RSXZTVMDT",
+              "Country" : "UPAZUKCBDM"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "JLKP",
+        "PrepopulateToUsersOrganisation" : "NO",
+        "OrgPolicyCaseAssignedRole" : "circuit-judge",
+        "LastNoCRequestedBy" : "ALMMDWM"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "HFG",
+        "roleOnCase" : "PXRGOKWYQU",
+        "details" : [ {
+          "id" : "TUGU",
+          "value" : {
+            "name" : "MJGSDP",
+            "name_cy" : "TXMBUNDRV",
+            "subTypeValue" : "LRJMJUJ",
+            "subTypeValue_cy" : "UUG",
+            "subTypeKey" : "TGNNHXIF",
+            "otherDescription" : "PZQ",
+            "otherDescription_cy" : "FTWJQRSX",
+            "flagComment" : "LBTN",
+            "flagComment_cy" : "BQH",
+            "flagUpdateComment" : "MOUGSIZA",
+            "dateTimeModified" : "2043-11-17T03:46:58.612Z",
+            "dateTimeCreated" : "2060-06-05T13:07:19.495Z",
+            "path" : [ {
+              "id" : "LYMDWANYDX",
+              "value" : "RGN"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "HFVLNENC",
+            "status" : "RQXEQKNOQ",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "9782a349-9ab4-3365-aa59-7d25ce825553"
+      }
+    }
+  }, {
+    "id" : "JHTPFZPAVA",
+    "value" : {
+      "id" : "VBR",
+      "rank" : 6809,
+      "idamId" : "IDNCSA",
+      "firstName" : "BFO",
+      "lastName" : "VYN",
+      "orgName" : "CAFRAHPTM",
+      "nameKnown" : "NO",
+      "emailAddress" : "WHIDYXZXY",
+      "address" : {
+        "AddressLine1" : "ALYUFBFYE",
+        "AddressLine2" : "AZZSRJT",
+        "AddressLine3" : "VEQTTY",
+        "PostTown" : "ONZPYX",
+        "County" : "KSPWKRA",
+        "PostCode" : "QFAAKBW",
+        "Country" : "JQC"
+      },
+      "addressKnown" : "YES",
+      "addressSameAsProperty" : "YES",
+      "phoneNumber" : "IKMWQLRR",
+      "phoneNumberProvided" : "NO",
+      "textMessageNumber" : "FZRMD",
+      "pcqId" : "JGY",
+      "dateOfBirth" : "1994-09-15",
+      "legalRepresentative" : {
+        "telephoneNumber" : "QCD",
+        "emailAddress" : "IPDN",
+        "organisationName" : "UPDWG",
+        "address" : {
+          "AddressLine1" : "LVZNOWU",
+          "AddressLine2" : "ZNGW",
+          "AddressLine3" : "RXTTZOVLS",
+          "PostTown" : "OZBFDA",
+          "County" : "XNPLOVR",
+          "PostCode" : "JMX",
+          "Country" : "NNVBQR"
+        }
+      },
+      "actingForPartyId" : "TFLEUANFMI",
+      "defendantFlags" : {
+        "partyName" : "CFFCWL",
+        "roleOnCase" : "BEJESY",
+        "details" : [ {
+          "id" : "WXSV",
+          "value" : {
+            "name" : "JTMNDH",
+            "name_cy" : "DNIXVRKH",
+            "subTypeValue" : "EZRCIP",
+            "subTypeValue_cy" : "IZPTBAGR",
+            "subTypeKey" : "RYRWENIY",
+            "otherDescription" : "WPRZENJF",
+            "otherDescription_cy" : "LSCFDOUIEZ",
+            "flagComment" : "EDECSS",
+            "flagComment_cy" : "PORHU",
+            "flagUpdateComment" : "OYIYXE",
+            "dateTimeModified" : "1988-12-05T11:12:03.158Z",
+            "dateTimeCreated" : "1970-03-08T03:46:32.400Z",
+            "path" : [ {
+              "id" : "MBHIXPYUEE",
+              "value" : "DTHYGXRHG"
+            }, {
+              "id" : "DQDLRIP",
+              "value" : "MLMBMIY"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "YSVRSGK",
+            "status" : "AIDPVGFBEB",
+            "availableExternally" : "YES"
+          }
+        }, {
+          "id" : "CYT",
+          "value" : {
+            "name" : "BBXRFYAQX",
+            "name_cy" : "EDTVZNNC",
+            "subTypeValue" : "BFPXOZCY",
+            "subTypeValue_cy" : "EGLMDTPNY",
+            "subTypeKey" : "FGDT",
+            "otherDescription" : "VWD",
+            "otherDescription_cy" : "JXE",
+            "flagComment" : "UENPN",
+            "flagComment_cy" : "DSNBBH",
+            "flagUpdateComment" : "XTEBLZO",
+            "dateTimeModified" : "1971-03-10T19:55:54.739Z",
+            "dateTimeCreated" : "2030-04-07T00:36:42.970Z",
+            "path" : [ {
+              "id" : "NDUYEG",
+              "value" : "FZXOIODLFA"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "IMGMDB",
+            "status" : "YMDTN",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "3861b697-434d-3037-9b65-228db2b72a27"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "OPFLEJZM",
+          "OrganisationID" : "PVIDWOVL"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "DBUKK",
+          "value" : {
+            "FromTimestamp" : "2024-08-31T03:34:47.968911768",
+            "ToTimestamp" : "2014-01-29T14:17:13.822294448",
+            "OrganisationName" : "LDLFTU",
+            "OrganisationAddress" : {
+              "AddressLine1" : "AKSM",
+              "AddressLine2" : "PUGYBC",
+              "AddressLine3" : "SRXPHV",
+              "PostTown" : "ZHVN",
+              "County" : "ISDTU",
+              "PostCode" : "VZLE",
+              "Country" : "CRYJUSGKTB"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "ZMMZOUT",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "circuit-judge",
+        "LastNoCRequestedBy" : "WJU"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "CLYGAHDPQT",
+        "roleOnCase" : "OXNSQU",
+        "details" : [ {
+          "id" : "EKYZDMG",
+          "value" : {
+            "name" : "ZHMTYB",
+            "name_cy" : "MCXI",
+            "subTypeValue" : "XGOLW",
+            "subTypeValue_cy" : "RQCT",
+            "subTypeKey" : "IZDRIKWC",
+            "otherDescription" : "IGBEHD",
+            "otherDescription_cy" : "KDG",
+            "flagComment" : "WDOWAYCIJ",
+            "flagComment_cy" : "VLXU",
+            "flagUpdateComment" : "ILQYYXRT",
+            "dateTimeModified" : "2000-03-18T22:31:28.923Z",
+            "dateTimeCreated" : "2012-05-03T10:57:21.740Z",
+            "path" : [ {
+              "id" : "QLCBYLR",
+              "value" : "XBXVSOBT"
+            }, {
+              "id" : "KBVNKKWVOH",
+              "value" : "NUEOGOIJCE"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "ZJYZLNVL",
+            "status" : "RUWILTPOCM",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "389c84d8-3600-342c-95df-3882fd21b158"
+      }
+    }
+  } ],
+  "tenancy_TypeOfTenancyLicence" : "INTRODUCTORY_TENANCY",
+  "tenancy_DetailsOfOtherTypeOfTenancyLicence" : "TOGMPJ",
+  "tenancy_TenancyLicenceDate" : "2074-06-12",
+  "tenancy_TenancyLicenceDocuments" : [ {
+    "id" : "EPKWZ",
+    "value" : {
+      "document_url" : "GZJ",
+      "document_filename" : "TCIVOVUKF",
+      "document_binary_url" : "PAFPM",
+      "category_id" : "HYBQBHHP",
+      "upload_timestamp" : "2024-12-29T13:56:18.906427269",
+      "document_hash" : "JDGM"
+    }
+  } ],
+  "tenancy_HasCopyOfTenancyLicence" : "NO",
+  "tenancy_ReasonsForNoTenancyLicenceDocuments" : "JQXSZ",
+  "summaryLegalRepresentativeMarkdown" : "SYGVLQOD",
+  "summaryLegalRepresentativeMarkdownLabel" : "EIZ",
+  "rentArrears_StatementDocuments" : [ {
+    "id" : "JBL",
+    "value" : {
+      "document_url" : "BQDIOEOCZY",
+      "document_filename" : "BDRB",
+      "document_binary_url" : "LBZWLC",
+      "category_id" : "JSTILUYGIA",
+      "upload_timestamp" : "2012-05-08T07:02:19.747220492",
+      "document_hash" : "OVEC"
+    }
+  } ],
+  "rentArrears_Total" : "303174",
+  "rentArrears_RecoveryAttempted" : "NO",
+  "rentArrears_RecoveryAttemptDetails" : "DJAAT",
+  "showIntroductoryDemotedOtherGroundReasonPage" : "NO",
+  "introGrounds_HasIntroductoryDemotedOtherGroundsForPossession" : "YES",
+  "introGrounds_IntroductoryDemotedOrOtherGrounds" : [ "BREACH_OF_THE_TENANCY" ],
+  "introGrounds_OtherGroundDescription" : "VGYJMTAA",
+  "antiSocialBehaviourGround" : "QSDF",
+  "breachOfTheTenancyGround" : "RLFJN",
+  "absoluteGrounds" : "XILATTKS",
+  "otherGround" : "LJXIBL",
+  "noGrounds" : "KDGQOOON",
+  "secureOrFlexibleDiscretionaryGrounds" : [ "TENANCY_OBTAINED_BY_FALSE_STATEMENT" ],
+  "secureOrFlexibleMandatoryGrounds" : [ "ANTI_SOCIAL" ],
+  "secureOrFlexibleDiscretionaryGroundsAlt" : [ "SPECIAL_NEEDS_ACCOMMODATION", "UNDER_OCCUPYING_AFTER_SUCCESSION" ],
+  "secureOrFlexibleMandatoryGroundsAlt" : [ "CHARITABLE_LANDLORD", "LANDLORD_WORKS" ],
+  "secureAntisocialAdditionalGrounds" : [ "S84A_CONDITION_4" ],
+  "rentArrearsOrBreachOfTenancy" : [ "RENT_ARREARS" ],
+  "showBreachOfTenancyTextarea" : "YES",
+  "showReasonsForGroundsPage" : "NO",
+  "walesFailToGiveUpS170Reason" : "FUXRMHKJ",
+  "walesLandlordNoticePeriodicS178Reason" : "UADL",
+  "walesSeriousArrearsPeriodicS181Reason" : "IDZB",
+  "walesLandlordNoticeFtEndS186Reason" : "RAASUOECLC",
+  "walesSeriousArrearsFixedTermS187Reason" : "VVCWTVCYG",
+  "walesFailToGiveUpBreakNoticeS191Reason" : "BOLQETCS",
+  "walesLandlordBreakClauseS199Reason" : "ZNH",
+  "walesConvertedFixedTermSch1225B2Reason" : "TPAWXCQRWX",
+  "walesOtherBreachSection157Reason" : "SXGNPXQQ",
+  "walesBuildingWorksReason" : "ZQVDYW",
+  "walesRedevelopmentSchemesReason" : "RVWKRDUALX",
+  "walesCharitiesReason" : "VRZLGA",
+  "walesDisabledSuitableDwellingReason" : "FFCLOX",
+  "walesHousingAssociationsAndTrustsReason" : "DDZKMJ",
+  "walesSpecialNeedsDwellingsReason" : "MUB",
+  "walesReserveSuccessorsReason" : "BIPSYG",
+  "walesJointContractHoldersReason" : "RAOP",
+  "walesOtherEstateManagementReasonsReason" : "MMDI",
+  "walesSecureFailureToGiveUpPossessionSection170Reason" : "CWFBHZOPLX",
+  "walesSecureLandlordNoticeSection186Reason" : "BPEVVEKUVX",
+  "walesSecureFailureToGiveUpPossessionSection191Reason" : "HKLXHVM",
+  "walesSecureLandlordNoticeSection199Reason" : "IGYSCZ",
+  "walesSecureOtherBreachOfContractReason" : "LFMMY",
+  "walesSecureBuildingWorksReason" : "NURRRZOCG",
+  "walesSecureRedevelopmentSchemesReason" : "LWVFRMMHRU",
+  "walesSecureCharitiesReason" : "QUCDZUQ",
+  "walesSecureDisabledSuitableDwellingReason" : "RVRDW",
+  "walesSecureHousingAssociationsAndTrustsReason" : "YPI",
+  "walesSecureSpecialNeedsDwellingsReason" : "EKUANMFQO",
+  "walesSecureReserveSuccessorsReason" : "KNWGRYBWBH",
+  "walesSecureJointContractHoldersReason" : "CZCGLVGR",
+  "walesSecureOtherEstateManagementReasonsReason" : "CFGCQ",
+  "breachOfTenancyGround" : "XOBQ",
+  "nuisanceOrImmoralUseGround" : "GUVDKTGPLZ",
+  "domesticViolenceGround" : "VEFZWYHUY",
+  "riotOffenceGround" : "JWCKG",
+  "propertyDeteriorationGround" : "GRNP",
+  "furnitureDeteriorationGround" : "SJIGA",
+  "tenancyByFalseStatementGround" : "PIRNZAFDLN",
+  "premiumMutualExchangeGround" : "UPQ",
+  "unreasonableConductGround" : "XZK",
+  "refusalToMoveBackGround" : "XWFQCIP",
+  "tiedAccommodationGround" : "ZAU",
+  "adaptedAccommodationGround" : "ZMVNW",
+  "housingAssocSpecialGround" : "ADTQ",
+  "specialNeedsAccommodationGround" : "GQPDEH",
+  "underOccupancySuccessionGround" : "OAFEA",
+  "antiSocialGround" : "RXGRWZWT",
+  "antiSocialCondition1OfS84AGround" : "MTWDNE",
+  "antiSocialCondition2OfS84AGround" : "DIPK",
+  "antiSocialCondition3OfS84AGround" : "PMZG",
+  "antiSocialCondition4OfS84AGround" : "YYLC",
+  "antiSocialCondition5OfS84AGround" : "HKSP",
+  "overcrowdingGround" : "KWPUN",
+  "landlordWorksGround" : "WWJGLMQQX",
+  "propertySoldGround" : "FATCMDDAS",
+  "charitableLandlordGround" : "TARWXGFU",
+  "arrearsJudgmentWanted" : "YES",
+  "noRentArrears_MandatoryGrounds" : [ "REDEVELOPMENT_GROUND6", "STUDENT_LET_GROUND4" ],
+  "noRentArrears_DiscretionaryGrounds" : [ "RENT_ARREARS_GROUND10", "PERSISTENT_DELAY_GROUND11" ],
+  "noRentArrears_ShowGroundReasonPage" : "YES",
+  "noRentArrears_OtherGround" : [ "OTHER" ],
+  "noRentArrears_OtherGroundDescription" : "CDDYENXFK",
+  "assuredNoArrearsReasons_OwnerOccupier" : "FYOC",
+  "assuredNoArrearsReasons_RepossessionByLender" : "AZR",
+  "assuredNoArrearsReasons_HolidayLet" : "SMYZFQUXEG",
+  "assuredNoArrearsReasons_StudentLet" : "SFQRV",
+  "assuredNoArrearsReasons_MinisterOfReligion" : "QAPRN",
+  "assuredNoArrearsReasons_Redevelopment" : "LORL",
+  "assuredNoArrearsReasons_DeathOfTenant" : "AVPWBRM",
+  "assuredNoArrearsReasons_AntisocialBehaviour" : "XUGW",
+  "assuredNoArrearsReasons_NoRightToRent" : "EEO",
+  "assuredNoArrearsReasons_SuitableAlternativeAccomodation" : "IJCUNVTHW",
+  "assuredNoArrearsReasons_BreachOfTenancyConditions" : "BUWVHS",
+  "assuredNoArrearsReasons_PropertyDeterioration" : "NZPPL",
+  "assuredNoArrearsReasons_NuisanceOrIllegalUse" : "ZGXMUW",
+  "assuredNoArrearsReasons_DomesticViolence" : "GQOHSAU",
+  "assuredNoArrearsReasons_OffenceDuringRiot" : "TSV",
+  "assuredNoArrearsReasons_FurnitureDeterioration" : "EIGCM",
+  "assuredNoArrearsReasons_LandlordEmployee" : "HPPB",
+  "assuredNoArrearsReasons_FalseStatement" : "WRY",
+  "assuredNoArrearsReasons_OtherGround" : "GBLO",
+  "showRentSectionPage" : "YES",
+  "showRentArrearsPage" : "NO",
+  "languageUsed" : "ENGLISH",
+  "defendantCircumstancesLabel" : "XRPR",
+  "hasDefendantCircumstancesInfo" : "YES",
+  "defendantCircumstancesInfo" : "UFAXUYHOQV",
+  "defendantTermPossessive" : "LLHATMKH",
+  "alternativesToPossession" : [ "DEMOTION_OF_TENANCY", "SUSPENSION_OF_RIGHT_TO_BUY" ],
+  "suspensionOfRTB_HousingAct" : "SECTION_82A_2",
+  "suspensionOfRTB_Reason" : "CJL",
+  "suspensionOfRTB_ShowHousingActsPage" : "YES",
+  "demotionOfTenancy_HousingAct" : "SECTION_82A_2",
+  "demotionOfTenancy_StatementOfExpressTermsServed" : "NO",
+  "demotionOfTenancy_StatementOfExpressTermsDetails" : "PGLBMOJ",
+  "demotionOfTenancy_Reason" : "IXVVQEUZCT",
+  "demotionOfTenancy_ShowHousingActsPage" : "NO",
+  "additionalReasonsForPossession" : {
+    "hasReasons" : "YES",
+    "reasons" : "DFLSBPDLHF"
+  },
+  "claimantCircumstancesSelect" : "YES",
+  "claimantCircumstancesDetails" : "OJWMF",
+  "claimantNamePossessiveForm" : "EFYRM",
+  "wantToUploadDocuments" : "NO",
+  "documentsYouveUploaded" : [ "OCCUPATION_LICENCE", "DEPOSIT_SCHEME" ],
+  "additionalDocuments" : [ {
+    "id" : "HCBTGACUNI",
+    "value" : {
+      "documentType" : {
+        "value" : {
+          "code" : "d1074ea4-47c0-3cf6-a268-e8e9df2b5757",
+          "label" : "QFOWZGFWEM"
+        },
+        "list_items" : [ {
+          "code" : "a3c77c75-55c3-3481-9933-47c2470f30e2",
+          "label" : "TLRBSGB"
+        }, {
+          "code" : "b6019d12-6a6b-3e51-9f5d-8a919a6a9248",
+          "label" : "JDNVTRZDQ"
+        } ],
+        "valueCode" : "d1074ea4-47c0-3cf6-a268-e8e9df2b5757",
+        "valueLabel" : "QFOWZGFWEM"
+      },
+      "document" : {
+        "document_url" : "HTEUDJR",
+        "document_filename" : "PWJGO",
+        "document_binary_url" : "SJQEY",
+        "category_id" : "QQHRS",
+        "upload_timestamp" : "2020-06-29T12:08:24.255531573",
+        "document_hash" : "SFNKNDPAJJ"
+      },
+      "description" : "DFBBVSXK"
+    }
+  } ],
+  "cwDoc_Document" : {
+    "document_url" : "FNYRNRQV",
+    "document_filename" : "FAV",
+    "document_binary_url" : "NYDVJYFWBW",
+    "category_id" : "QOLMTHEOH",
+    "upload_timestamp" : "2046-09-21T08:20:31.005973333",
+    "document_hash" : "SVFUYC"
+  },
+  "cwDoc_RelatedSubmission" : {
+    "value" : {
+      "code" : "SMES",
+      "label" : "FXSIYHDRY"
+    },
+    "list_items" : [ {
+      "code" : "RPFEXZJN",
+      "label" : "WLGLDUL"
+    } ],
+    "valueCode" : "SMES"
+  },
+  "cwDoc_ShowRelatedSubmissionsList" : "NO",
+  "cwDoc_IssueDate" : "2036-06-27",
+  "cwDoc_RelatedParty" : {
+    "value" : {
+      "code" : "b43d6e98-90b3-397a-b6eb-91e64e440b4e",
+      "label" : "ZGOQK"
+    },
+    "list_items" : [ {
+      "code" : "4937cc22-fb70-371d-b694-8e2fc0ce8507",
+      "label" : "SGFPDSV"
+    }, {
+      "code" : "1169e2c2-4f6a-3ca9-852d-3378ce2926c6",
+      "label" : "HFGKKJFBH"
+    } ],
+    "valueCode" : "b43d6e98-90b3-397a-b6eb-91e64e440b4e",
+    "valueLabel" : "ZGOQK"
+  },
+  "cwDoc_RelatedSubmissionsDocumentType" : {
+    "value" : {
+      "code" : "GEJLDQDV",
+      "label" : "XEWWM"
+    },
+    "list_items" : [ {
+      "code" : "VUVXOL",
+      "label" : "KGHJHIWW"
+    } ],
+    "valueCode" : "GEJLDQDV"
+  },
+  "cwDoc_StandaloneDocumentType" : {
+    "value" : {
+      "code" : "XPV",
+      "label" : "DVSR"
+    },
+    "list_items" : [ {
+      "code" : "OQEVYNH",
+      "label" : "BAN"
+    }, {
+      "code" : "MNIX",
+      "label" : "QARKHVWEQO"
+    } ],
+    "valueCode" : "XPV"
+  },
+  "walesDocs_HasEnergyPerformanceCertificate" : "YES",
+  "walesDocs_EnergyPerformance" : [ {
+    "id" : "QVHDPRH",
+    "value" : {
+      "document_url" : "SBMDPKSL",
+      "document_filename" : "RHKRZVHO",
+      "document_binary_url" : "GSTFLLTCM",
+      "category_id" : "AMUNR",
+      "upload_timestamp" : "2017-12-04T13:45:25.571500474",
+      "document_hash" : "WXL"
+    }
+  }, {
+    "id" : "ADHRGUFJBX",
+    "value" : {
+      "document_url" : "MAVQ",
+      "document_filename" : "EJQNGBI",
+      "document_binary_url" : "OYG",
+      "category_id" : "JXXNPERTXU",
+      "upload_timestamp" : "2023-07-11T15:22:17.60234705",
+      "document_hash" : "AVKVEMRU"
+    }
+  } ],
+  "walesDocs_NoEpcReason" : "JCXTCFHIEG",
+  "walesDocs_HasGasSafetyReport" : "YES",
+  "walesDocs_GasSafetyReport" : [ {
+    "id" : "KFGKPXQXH",
+    "value" : {
+      "document_url" : "PCGPPQVSY",
+      "document_filename" : "JHYOP",
+      "document_binary_url" : "CDW",
+      "category_id" : "DDOJCTJFV",
+      "upload_timestamp" : "1985-03-21T10:58:12.464861991",
+      "document_hash" : "ERTV"
+    }
+  } ],
+  "walesDocs_NoGasReportReason" : "OULCIMTSP",
+  "walesDocs_HasElectricalInstallationConditionReport" : "NO",
+  "walesDocs_ElectricalInstallation" : [ {
+    "id" : "EGZ",
+    "value" : {
+      "document_url" : "CEMPIX",
+      "document_filename" : "LSPHQSAZW",
+      "document_binary_url" : "KYBDFWLG",
+      "category_id" : "ZJUGLC",
+      "upload_timestamp" : "2086-06-01T16:10:39.235108676",
+      "document_hash" : "MAN"
+    }
+  }, {
+    "id" : "BGXRTBIC",
+    "value" : {
+      "document_url" : "USVIHUKV",
+      "document_filename" : "MDBH",
+      "document_binary_url" : "TVROML",
+      "category_id" : "WBOUWKZOF",
+      "upload_timestamp" : "2044-06-11T11:17:11.602887584",
+      "document_hash" : "CHA"
+    }
+  } ],
+  "walesDocs_NoEicrReason" : "KSGFQH",
+  "uploadedAdditionalDocuments" : [ {
+    "id" : "XEJXBHGLB",
+    "value" : {
+      "documentType" : "CERTIFICATE_OF_SUITABILITY_AS_LF",
+      "document" : {
+        "document_url" : "EEKKUCPFX",
+        "document_filename" : "MBLYLBZCU",
+        "document_binary_url" : "KDLJB",
+        "category_id" : "XBYFOZ",
+        "upload_timestamp" : "2077-07-25T02:22:48.779713874",
+        "document_hash" : "XOQB"
+      },
+      "contentType" : "MVWTM",
+      "sizeInBytes" : 8822
+    }
+  } ],
+  "showRelatedApplicationsPage" : "YES",
+  "relatedApplicationOptions" : [ {
+    "id" : "VFT",
+    "value" : {
+      "genAppId" : "OITHSYWC",
+      "counterClaimId" : "VLNQKD",
+      "category" : "GENERAL_APPLICATION",
+      "submittedDate" : "2038-04-10T12:57:19.575359716"
+    }
+  }, {
+    "id" : "VAOHC",
+    "value" : {
+      "genAppId" : "UQN",
+      "counterClaimId" : "XXUPQCM",
+      "category" : "ADJOURN_HEARING_APPLICATION",
+      "submittedDate" : "1985-12-10T13:19:13.238606254"
+    }
+  } ],
+  "selectedRelatedApplicationId" : "LUHZ",
+  "documentAmend_SelectedFolder" : "ORDERS_AND_NOTICE_OF_HEARINGS",
+  "documentAmend_PropertyAddressSummary" : "EUQEL",
+  "documentAmend_AmendedFileName" : "DGGCWSAKYD",
+  "documentAmend_IssueDate" : "2087-05-28",
+  "documentAmend_StatementsOfCaseEmpty" : "NO",
+  "documentAmend_PropertyDocumentsEmpty" : "NO",
+  "documentAmend_EvidenceEmpty" : "YES",
+  "documentAmend_HearingDocumentsEmpty" : "NO",
+  "documentAmend_OrdersAndNoticeOfHearingsEmpty" : "NO",
+  "documentAmend_ApplicationsEmpty" : "YES",
+  "documentAmend_AppealsEmpty" : "YES",
+  "documentAmend_CorrespondenceEmpty" : "YES",
+  "documentAmend_UncategorisedDocumentsEmpty" : "YES",
+  "documentAmend_SelectedFolderId" : "RFDWMFNLPP",
+  "documentAmend_SelectedFolderLabel" : "KKY",
+  "documentAmend_SelectedDocumentId" : "FWPECPSSR",
+  "documentAmend_SelectedDocumentFileName" : "AJNWA",
+  "documentAmend_SelectedDocumentBaseFileName" : "JIHZHJZEBY",
+  "documentAmend_SelectedDocumentIssueDate" : "2034-11-04",
+  "documentAmend_RelatedParty" : {
+    "value" : {
+      "code" : "bc3686d5-1286-3ba3-87c4-4cbf9c1ede8d",
+      "label" : "XPDJG"
+    },
+    "list_items" : [ {
+      "code" : "f590a128-8888-34d9-8df8-e0c3b85a8aaf",
+      "label" : "GYHX"
+    } ],
+    "valueCode" : "bc3686d5-1286-3ba3-87c4-4cbf9c1ede8d",
+    "valueLabel" : "XPDJG"
+  },
+  "documentAmend_RelatedPartyCode" : "SXA",
+  "documentAmend_ShowRelatedSubmissionsList" : "NO",
+  "documentAmend_RelatedSubmission" : {
+    "value" : {
+      "code" : "IINHQTXCFZ",
+      "label" : "NXFEEUA"
+    },
+    "list_items" : [ {
+      "code" : "SGNTORNR",
+      "label" : "TQNCP"
+    }, {
+      "code" : "VPM",
+      "label" : "NFFSVWOJ"
+    } ],
+    "valueCode" : "IINHQTXCFZ"
+  },
+  "documentAmend_RelatedSubmissionCode" : "LFDW",
+  "documentAmend_RelatedSubmissionsDocumentType" : {
+    "value" : {
+      "code" : "LCWQTX",
+      "label" : "FROCKSPO"
+    },
+    "list_items" : [ {
+      "code" : "MSO",
+      "label" : "VDOBJGYFU"
+    } ],
+    "valueCode" : "LCWQTX"
+  },
+  "documentAmend_RelatedSubmissionsDocumentTypeCode" : "SMPQBJU",
+  "documentAmend_StandaloneDocumentType" : {
+    "value" : {
+      "code" : "ZLW",
+      "label" : "DBVUXXCQZ"
+    },
+    "list_items" : [ {
+      "code" : "TFWLX",
+      "label" : "QCUMM"
+    } ],
+    "valueCode" : "ZLW"
+  },
+  "documentAmend_StandaloneDocumentTypeCode" : "TGGB",
+  "documentRemoval_SelectedFolder" : "APPEALS",
+  "documentRemoval_PropertyAddressSummary" : "QCVVFBOQ",
+  "documentRemoval_StatementsOfCaseEmpty" : "YES",
+  "documentRemoval_PropertyDocumentsEmpty" : "NO",
+  "documentRemoval_EvidenceEmpty" : "NO",
+  "documentRemoval_HearingDocumentsEmpty" : "NO",
+  "documentRemoval_OrdersAndNoticeOfHearingsEmpty" : "NO",
+  "documentRemoval_ApplicationsEmpty" : "NO",
+  "documentRemoval_AppealsEmpty" : "YES",
+  "documentRemoval_CorrespondenceEmpty" : "YES",
+  "documentRemoval_UncategorisedDocumentsEmpty" : "YES",
+  "documentRemoval_SelectedFolderId" : "HZXVGMGU",
+  "documentRemoval_SelectedFolderLabel" : "FUQRHLF",
+  "documentRemoval_SelectedDocumentId" : "TAAQ",
+  "documentRemoval_SelectedDocumentFileName" : "EICFMFFQLQ",
+  "documentRemoval_StatementsOfCaseReason" : "XWBN",
+  "documentRemoval_PropertyDocumentsReason" : "CWOXXNXF",
+  "documentRemoval_EvidenceReason" : "PGBKBGYFF",
+  "documentRemoval_HearingDocumentsReason" : "KLZ",
+  "documentRemoval_OrdersAndNoticeOfHearingsReason" : "VYPZ",
+  "documentRemoval_ApplicationsReason" : "VUTYRH",
+  "documentRemoval_AppealsReason" : "AHXYR",
+  "documentRemoval_CorrespondenceReason" : "SPSYHBWVK",
+  "documentRemoval_UncategorisedDocumentsReason" : "LDUC",
+  "statementsOfCaseDocuments" : {
+    "value" : {
+      "code" : "b797c187-bb85-35af-9138-78acbb65a972",
+      "label" : "BVNKORPE"
+    },
+    "list_items" : [ {
+      "code" : "66f41556-0920-3a06-8656-e60b26081590",
+      "label" : "HSWFV"
+    }, {
+      "code" : "8aafb6b1-d8d8-375f-aeba-23fb836058f3",
+      "label" : "MBGQOFA"
+    } ],
+    "valueCode" : "b797c187-bb85-35af-9138-78acbb65a972",
+    "valueLabel" : "BVNKORPE"
+  },
+  "propertyDocuments" : {
+    "value" : {
+      "code" : "9ea9dcf8-419c-3c5e-b4b6-484b8f8fde1b",
+      "label" : "NDWXCPJ"
+    },
+    "list_items" : [ {
+      "code" : "496e8aa1-5288-3df1-989b-4334b986583a",
+      "label" : "BXQKYYNCT"
+    } ],
+    "valueCode" : "9ea9dcf8-419c-3c5e-b4b6-484b8f8fde1b",
+    "valueLabel" : "NDWXCPJ"
+  },
+  "evidenceDocuments" : {
+    "value" : {
+      "code" : "7fe0a895-76c0-3028-a602-a81005bdbfae",
+      "label" : "PAKHXLPMUE"
+    },
+    "list_items" : [ {
+      "code" : "7f5ecc95-a0f1-30e8-becb-c260ee8a557a",
+      "label" : "SCXHIM"
+    } ],
+    "valueCode" : "7fe0a895-76c0-3028-a602-a81005bdbfae",
+    "valueLabel" : "PAKHXLPMUE"
+  },
+  "hearingDocuments" : {
+    "value" : {
+      "code" : "7e089b6b-bb7a-319c-86d9-fafc049f25fc",
+      "label" : "UDQBXLOXQ"
+    },
+    "list_items" : [ {
+      "code" : "216226f9-d708-303f-8fa3-8b053c63db15",
+      "label" : "ZSO"
+    } ],
+    "valueCode" : "7e089b6b-bb7a-319c-86d9-fafc049f25fc",
+    "valueLabel" : "UDQBXLOXQ"
+  },
+  "ordersAndNoticeOfHearingsDocuments" : {
+    "value" : {
+      "code" : "6da88e6c-e723-3b4c-86a6-a75871f71f06",
+      "label" : "UMWYL"
+    },
+    "list_items" : [ {
+      "code" : "e01e2f85-33a3-3126-8f10-f58f2c4b20c3",
+      "label" : "MBWF"
+    } ],
+    "valueCode" : "6da88e6c-e723-3b4c-86a6-a75871f71f06",
+    "valueLabel" : "UMWYL"
+  },
+  "applicationsDocuments" : {
+    "value" : {
+      "code" : "a77f1c5c-230f-3b4e-a03a-e9b0c023d1f8",
+      "label" : "UZZHGVG"
+    },
+    "list_items" : [ {
+      "code" : "daf16211-d1f3-3dcd-801f-dd85ef94e335",
+      "label" : "IOIDPN"
+    }, {
+      "code" : "8eb486d6-038c-3880-9d90-94670bf2ae8b",
+      "label" : "TWMKTLPLIJ"
+    } ],
+    "valueCode" : "a77f1c5c-230f-3b4e-a03a-e9b0c023d1f8",
+    "valueLabel" : "UZZHGVG"
+  },
+  "appealsDocuments" : {
+    "value" : {
+      "code" : "119c3df8-6b84-34a9-8b57-40cca5936a4c",
+      "label" : "TUFFJBPGPZ"
+    },
+    "list_items" : [ {
+      "code" : "1fac35d8-c14c-3f1d-b93a-6b18c4715a76",
+      "label" : "YOUGV"
+    } ],
+    "valueCode" : "119c3df8-6b84-34a9-8b57-40cca5936a4c",
+    "valueLabel" : "TUFFJBPGPZ"
+  },
+  "correspondenceDocuments" : {
+    "value" : {
+      "code" : "c785fa0d-ec6a-3013-973a-e1fc0e7a4275",
+      "label" : "CVWDZD"
+    },
+    "list_items" : [ {
+      "code" : "5a1a210a-e66f-39a8-ba3b-b588f85ae1f0",
+      "label" : "WHSF"
+    }, {
+      "code" : "d33b34f0-212e-3597-8b4a-e34a26ef130f",
+      "label" : "AWQ"
+    } ],
+    "valueCode" : "c785fa0d-ec6a-3013-973a-e1fc0e7a4275",
+    "valueLabel" : "CVWDZD"
+  },
+  "uncategorisedDocuments" : {
+    "value" : {
+      "code" : "d6a730b5-858e-306e-9ce0-733f8ca21c97",
+      "label" : "GVRJRWNPGZ"
+    },
+    "list_items" : [ {
+      "code" : "90b2b582-8490-31fe-8132-c5d135016634",
+      "label" : "UONC"
+    }, {
+      "code" : "4668898d-ffd6-3d62-9df6-458e764494db",
+      "label" : "XQEZ"
+    } ],
+    "valueCode" : "d6a730b5-858e-306e-9ce0-733f8ca21c97",
+    "valueLabel" : "GVRJRWNPGZ"
+  },
+  "applicationWithClaim" : "NO",
+  "completionNextStep" : "SAVE_IT_FOR_LATER",
+  "endButtonLabel" : "ACZJM",
+  "possessionGroundsWales_DiscretionaryGrounds" : [ "RENT_ARREARS_S157", "ANTISOCIAL_BEHAVIOUR_S157" ],
+  "possessionGroundsWales_MandatoryGrounds" : [ "SERIOUS_ARREARS_FIXED_TERM_S187" ],
+  "possessionGroundsWales_EstateManagementGrounds" : [ "BUILDING_WORKS" ],
+  "suspensionOfRightToBuyActs" : "SECTION_82A_2",
+  "demotionOfTenancyActs" : "SECTION_6A_2",
+  "suspensionOrderReason" : "DWNXPU",
+  "demotionOrderReason" : "MWJR",
+  "suspensionToBuyDemotionOfTenancyPages" : "NO",
+  "walesNoticeServed" : "YES",
+  "walesTypeOfNoticeServed" : "NJKDFDE",
+  "walesNoticeStatement" : "LWKYQSE",
+  "secureGroundsWales_DiscretionaryGrounds" : [ "ESTATE_MANAGEMENT_GROUNDS_S160", "RENT_ARREARS_S157" ],
+  "secureGroundsWales_MandatoryGrounds" : [ "FAILURE_TO_GIVE_UP_POSSESSION_S191" ],
+  "secureGroundsWales_EstateManagementGrounds" : [ "DISABLED_SUITABLE_DWELLING" ],
+  "estateManagementGroundsWales" : [ "REDEVELOPMENT_SCHEMES", "OTHER_ESTATE_MANAGEMENT_REASONS" ],
+  "showReasonsForGroundsPageWales" : "YES",
+  "occupationLicenceTypeWales" : "STANDARD_CONTRACT",
+  "otherLicenceTypeDetails" : "QBQPSEAH",
+  "licenceStartDate" : "1999-01-08",
+  "licenceDocuments" : [ {
+    "id" : "AQUYVRMHWT",
+    "value" : {
+      "document_url" : "CYYQRLTD",
+      "document_filename" : "UCHFBIBMY",
+      "document_binary_url" : "ERHOUZIMF",
+      "category_id" : "ZVGOJTFTLC",
+      "upload_timestamp" : "2060-04-30T22:24:19.161865958",
+      "document_hash" : "ZOBD"
+    }
+  } ],
+  "selectEnforcementType" : "WARRANT",
+  "chooseEnforcementType" : {
+    "value" : {
+      "code" : "LXXEK",
+      "label" : "BHPO"
+    },
+    "list_items" : [ {
+      "code" : "CSTLFXS",
+      "label" : "DVUCMVOVCV"
+    } ],
+    "valueCode" : "LXXEK"
+  },
+  "warrantAdditionalInformationSelect" : "NO",
+  "warrantAdditionalInformationDetails" : "PEBMMFX",
+  "warrantCorrectNameAndAddress" : "NO",
+  "warrantDefendantInBreathingSpace" : "NOT_SURE",
+  "warrantDefendantMissedPayments" : "NO",
+  "warrantEvictEveryone" : "NO",
+  "warrantAnyRiskToBailiff" : "NO",
+  "warrantShowChangeNameAddressPage" : "YES",
+  "warrantShowPeopleWhoWillBeEvictedPage" : "YES",
+  "warrantShowPeopleYouWantToEvictPage" : "YES",
+  "warrantDefendantsDOBKnown" : "YES",
+  "warrantEnforcementViolentDetails" : "PDCROKBCV",
+  "warrantEnforcementFirearmsDetails" : "YXNSQKHILE",
+  "warrantEnforcementCriminalDetails" : "NKRQ",
+  "warrantEnforcementVerbalOrWrittenThreatsDetails" : "NSOD",
+  "warrantEnforcementProtestGroupMemberDetails" : "VME",
+  "warrantEnforcementPoliceOrSocialServicesDetails" : "JDWW",
+  "warrantEnforcementDogsOrOtherAnimalsDetails" : "RVBNUJRWKO",
+  "warrantIsDifficultToAccessProperty" : "YES",
+  "warrantClarificationOnAccessDifficultyText" : "PNOUI",
+  "warrantAreLegalCostsToBeClaimed" : "YES",
+  "warrantAmountOfLegalCosts" : "691534",
+  "warrantAmountOwed" : "574791",
+  "warrantHaveLandRegistryFeesBeenPaid" : "NO",
+  "warrantAmountOfLandRegistryFees" : "125710",
+  "warrantRepaymentChoice" : "NONE",
+  "warrantAmountOfRepaymentCosts" : "736109",
+  "warrantRepaymentSummaryMarkdown" : "NNDT",
+  "warrantStatementOfTruthRepaymentSummaryMarkdown" : "RTKNMO",
+  "warrantIsSuspendedOrder" : "NO",
+  "warrantCompletedBy" : "LEGAL_REPRESENTATIVE",
+  "warrantAgreementClaimant" : [ "BELIEVE_TRUE", "BELIEVE_TRUE" ],
+  "warrantFullNameParty" : "RYGOGN",
+  "warrantPositionParty" : "QRCP",
+  "warrantAgreementClaimantLegalRep" : [ "AGREED" ],
+  "warrantAgreementDefendantLegalRep" : [ "AGREED", "AGREED" ],
+  "warrantFullNameLegalRep" : "VMPVWSDJ",
+  "warrantFirmNameLegalRep" : "HTIRBUADEW",
+  "warrantPositionLegalRep" : "TNPT",
+  "warrantCertification" : [ "CERTIFY", "CERTIFY" ],
+  "warrantDefendantsDOBDetails" : "NIWNT",
+  "warrantEnforcementRiskCategories" : [ "PROTEST_GROUP_MEMBER" ],
+  "warrantEnforcementLanguageUsed" : "ENGLISH",
+  "writCorrectNameAndAddress" : "YES",
+  "writDefendantInBreathingSpace" : "NO",
+  "writDefendantMissedPayments" : "YES",
+  "writShowChangeNameAddressPage" : "YES",
+  "writHasHiredHighCourtEnforcementOfficer" : "NO",
+  "writHceoDetails" : "VUEWR",
+  "writAreLegalCostsToBeClaimed" : "NO",
+  "writAmountOfLegalCosts" : "830778",
+  "writAmountOwed" : "114777",
+  "writHaveLandRegistryFeesBeenPaid" : "YES",
+  "writAmountOfLandRegistryFees" : "562738",
+  "writRepaymentChoice" : "NONE",
+  "writAmountOfRepaymentCosts" : "388737",
+  "writRepaymentSummaryMarkdown" : "PKEX",
+  "writStatementOfTruthRepaymentSummaryMarkdown" : "PIHOEP",
+  "writHasClaimTransferredToHighCourt" : "NO",
+  "writWasGeneralApplicationToTransferToHighCourtSuccessful" : "YES",
+  "writCompletedBy" : "LEGAL_REPRESENTATIVE",
+  "writAgreementClaimant" : [ "BELIEVE_TRUE", "BELIEVE_TRUE" ],
+  "writFullNameParty" : "RZCYEIZ",
+  "writPositionParty" : "HWTSO",
+  "writAgreementClaimantLegalRep" : [ "AGREED", "AGREED" ],
+  "writAgreementDefendantLegalRep" : [ "AGREED" ],
+  "writFullNameLegalRep" : "GATMG",
+  "writFirmNameLegalRep" : "YJSTPVY",
+  "writPositionLegalRep" : "HHFNULNCZ",
+  "writCertification" : [ "CERTIFY" ],
+  "writEnforcementLanguageUsed" : "ENGLISH",
+  "vulnerablePeoplePresent" : "NOT_SURE",
+  "vulnerableAdultsChildren" : {
+    "vulnerableCategory" : "VULNERABLE_ADULTS",
+    "vulnerableReasonText" : "EGECNS"
+  },
+  "selectedDefendants" : {
+    "value" : [ {
+      "code" : "ESGYUNZ",
+      "label" : "PWTHG"
+    } ],
+    "list_items" : [ {
+      "code" : "GBHQQWIDBA",
+      "label" : "IIV"
+    }, {
+      "code" : "HYGQHDRE",
+      "label" : "HAYIVMMLK"
+    } ]
+  },
+  "warrant_restHowDefendantsReturned" : "WFRWPRQRMX",
+  "warrant_restAnyRiskToBailiff" : "YES",
+  "warrant_restEnforcementViolentDetails" : "XFFW",
+  "warrant_restEnforcementFirearmsDetails" : "PAXJGVX",
+  "warrant_restEnforcementCriminalDetails" : "BKKO",
+  "warrant_restEnforcementVerbalOrWrittenThreatsDetails" : "OOJ",
+  "warrant_restEnforcementProtestGroupMemberDetails" : "IKAT",
+  "warrant_restEnforcementPoliceOrSocialServicesDetails" : "IVAABHPOJ",
+  "warrant_restEnforcementDogsOrOtherAnimalsDetails" : "XWREPYN",
+  "warrant_restIsDifficultToAccessProperty" : "YES",
+  "warrant_restClarificationOnAccessDifficultyText" : "TWJIZNWBFK",
+  "warrant_restAdditionalDocuments" : [ {
+    "id" : "VXSLAOEU",
+    "value" : {
+      "documentType" : "PHOTOGRAPHIC_EVIDENCE",
+      "document" : {
+        "document_url" : "RKLK",
+        "document_filename" : "KNAOBJN",
+        "document_binary_url" : "WYPMLHHTKL",
+        "category_id" : "DMU",
+        "upload_timestamp" : "1994-02-01T14:35:32.951837277",
+        "document_hash" : "UMTINL"
+      },
+      "description" : "TQMOMFDGW"
+    }
+  } ],
+  "warrant_restAdditionalInformationSelect" : "YES",
+  "warrant_restAdditionalInformationDetails" : "LPHC",
+  "warrant_restEnforcementRiskCategories" : [ "AGENCY_VISITS" ],
+  "vulnerablePeoplePresentWarrantRest" : "NOT_SURE",
+  "vulnerableAdultsChildrenWarrantRest" : {
+    "vulnerableCategory" : "VULNERABLE_ADULTS_AND_CHILDREN",
+    "vulnerableReasonText" : "TZPGUECDPR"
+  },
+  "warrantFeeAmount" : "ERWCMPJVN",
+  "writFeeAmount" : "QFUO",
+  "warrantOfRestitutionInfoText" : "WSULZ",
+  "deleteDraftApplication" : "NO",
+  "lrDocUpload_ValidCategories" : {
+    "value" : {
+      "code" : "TERGHDJY",
+      "label" : "EIMZ"
+    },
+    "list_items" : [ {
+      "code" : "GHYACW",
+      "label" : "BYLQMZ"
+    } ],
+    "valueCode" : "TERGHDJY"
+  },
+  "lrDocUpload_LegalRepDocuments" : [ {
+    "id" : "ZJL",
+    "value" : {
+      "claimantDocumentType" : "POSSESSION_NOTICE",
+      "claimantDocumentTypeWales" : "OTHER",
+      "defendantDocumentType" : "CORRESPONDENCE_FROM_DEFENDANT",
+      "defendantDocumentTypeWales" : "CERTIFICATE_OF_SUITABILITY_AS_LF",
+      "document" : {
+        "document_url" : "FNDTM",
+        "document_filename" : "DOXVOCFNM",
+        "document_binary_url" : "CFPTFEUI",
+        "category_id" : "KQQNUF",
+        "upload_timestamp" : "2023-01-09T22:00:45.460360047",
+        "document_hash" : "MMXGVXXLQ"
+      },
+      "description" : "UXCP",
+      "contentType" : "HOBBVLTO",
+      "sizeInBytes" : 4012
+    }
+  }, {
+    "id" : "EAHM",
+    "value" : {
+      "claimantDocumentType" : "WITNESS_STATEMENT",
+      "claimantDocumentTypeWales" : "OTHER",
+      "defendantDocumentType" : "WITNESS_STATEMENT",
+      "defendantDocumentTypeWales" : "PHOTOGRAPHIC_EVIDENCE",
+      "document" : {
+        "document_url" : "XGVOIL",
+        "document_filename" : "CIJPKTIYO",
+        "document_binary_url" : "OWNJOXEBCK",
+        "category_id" : "ZALIWNALM",
+        "upload_timestamp" : "2053-07-15T09:41:37.354089408",
+        "document_hash" : "DHICCPTMN"
+      },
+      "description" : "QLIUMFS",
+      "contentType" : "GGXIHTHZMT",
+      "sizeInBytes" : 3050
+    }
+  } ],
+  "lrDocUpload_ShowExistingApplicationPage" : "NO",
+  "lrDocUpload_ExistingApplicationDocumentLinks" : "DKLJQEGQJR",
+  "lrDocUpload_PartyType" : "DEFENDANT",
+  "lrDocUpload_IsWales" : "NO",
+  "hasUnderlesseeOrMortgagee" : "NO",
+  "underlesseeOrMortgagee1" : {
+    "nameSectionLabel" : "CZOLAHGZL",
+    "nameKnown" : "YES",
+    "name" : "JIPZS",
+    "addressSectionLabel" : "HVFXTPNB",
+    "addressKnown" : "YES",
+    "address" : {
+      "AddressLine1" : "YXHY",
+      "AddressLine2" : "NPJVJNTGLB",
+      "AddressLine3" : "UXCS",
+      "PostTown" : "WUN",
+      "County" : "RHIXYDLFZ",
+      "PostCode" : "TUAHN",
+      "Country" : "KTLFSINWRB"
+    }
+  },
+  "addAdditionalUnderlesseeOrMortgagee" : "NO",
+  "additionalUnderlesseeOrMortgagee" : [ {
+    "id" : "GTWBDXPH",
+    "value" : {
+      "nameSectionLabel" : "ARTDXRR",
+      "nameKnown" : "YES",
+      "name" : "XKZYZX",
+      "addressSectionLabel" : "WCBLVDS",
+      "addressKnown" : "NO",
+      "address" : {
+        "AddressLine1" : "XHFSTMW",
+        "AddressLine2" : "YNGELJLD",
+        "AddressLine3" : "CPMUQ",
+        "PostTown" : "MUPXPIW",
+        "County" : "LCF",
+        "PostCode" : "THZK",
+        "Country" : "QGZPFSQ"
+      }
+    }
+  } ],
+  "allUnderlesseeOrMortgagees" : [ {
+    "id" : "KMXFFHD",
+    "value" : {
+      "id" : "LYFTO",
+      "rank" : 7119,
+      "idamId" : "TXOGLL",
+      "firstName" : "BWHVCMZWZO",
+      "lastName" : "GNYUVKFXGX",
+      "orgName" : "THLFQ",
+      "nameKnown" : "YES",
+      "emailAddress" : "ZLPQIEEA",
+      "address" : {
+        "AddressLine1" : "VWLTJGQ",
+        "AddressLine2" : "JLDHYFYA",
+        "AddressLine3" : "OVDSSWQ",
+        "PostTown" : "VYIPILSSW",
+        "County" : "ZVAU",
+        "PostCode" : "OKOYT",
+        "Country" : "QEKUMDNNMW"
+      },
+      "addressKnown" : "YES",
+      "addressSameAsProperty" : "YES",
+      "phoneNumber" : "KRYOQH",
+      "phoneNumberProvided" : "NO",
+      "textMessageNumber" : "GLICH",
+      "pcqId" : "LGV",
+      "dateOfBirth" : "2079-10-20",
+      "legalRepresentative" : {
+        "telephoneNumber" : "GJVBK",
+        "emailAddress" : "WOPW",
+        "organisationName" : "KKI",
+        "address" : {
+          "AddressLine1" : "OPKEVCKGK",
+          "AddressLine2" : "DKEF",
+          "AddressLine3" : "UGKJXU",
+          "PostTown" : "CGGIP",
+          "County" : "MNA",
+          "PostCode" : "KRLRN",
+          "Country" : "PPCTRTV"
+        }
+      },
+      "actingForPartyId" : "UJVRRX",
+      "defendantFlags" : {
+        "partyName" : "GOF",
+        "roleOnCase" : "NMZYLOXR",
+        "details" : [ {
+          "id" : "FSUXZ",
+          "value" : {
+            "name" : "TVNR",
+            "name_cy" : "BLSCDS",
+            "subTypeValue" : "FOVRJWZ",
+            "subTypeValue_cy" : "NDBZFBHBQ",
+            "subTypeKey" : "HJJQYRMYXV",
+            "otherDescription" : "BLGTLMWSJB",
+            "otherDescription_cy" : "NJKIKR",
+            "flagComment" : "XYL",
+            "flagComment_cy" : "DWBHAMBVAG",
+            "flagUpdateComment" : "MWLKNWRQ",
+            "dateTimeModified" : "2015-11-23T17:21:38.687Z",
+            "dateTimeCreated" : "2047-01-30T04:49:29.546Z",
+            "path" : [ {
+              "id" : "OWX",
+              "value" : "DDAWOTCUGA"
+            }, {
+              "id" : "WLLHJ",
+              "value" : "ORIMECZC"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "YFXHDNXG",
+            "status" : "CEYVMPMO",
+            "availableExternally" : "YES"
+          }
+        }, {
+          "id" : "MCKPOG",
+          "value" : {
+            "name" : "FCLBDF",
+            "name_cy" : "ZNKT",
+            "subTypeValue" : "EMGAGNZH",
+            "subTypeValue_cy" : "PGSC",
+            "subTypeKey" : "MGFZHQAL",
+            "otherDescription" : "EOI",
+            "otherDescription_cy" : "GYZ",
+            "flagComment" : "ZWC",
+            "flagComment_cy" : "UQUSMDUSYJ",
+            "flagUpdateComment" : "MUEZ",
+            "dateTimeModified" : "2086-09-23T10:56:02.308Z",
+            "dateTimeCreated" : "2068-03-06T15:47:50.025Z",
+            "path" : [ {
+              "id" : "XEOEC",
+              "value" : "NQOVOYEOHJ"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "YXMPUYZ",
+            "status" : "GMG",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "0a972dbf-a203-3f13-b6e2-20c6bcfc09dd"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "SWYJH",
+          "OrganisationID" : "JYEOPFLMMA"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "YFHHNEISEE",
+          "value" : {
+            "FromTimestamp" : "2036-12-24T10:48:01.300519038",
+            "ToTimestamp" : "2074-09-02T03:24:52.108481303",
+            "OrganisationName" : "BUM",
+            "OrganisationAddress" : {
+              "AddressLine1" : "XXBLNFBB",
+              "AddressLine2" : "NXYIO",
+              "AddressLine3" : "XMTDPS",
+              "PostTown" : "VSCNMNN",
+              "County" : "MUTBFIGARR",
+              "PostCode" : "YQGJULPY",
+              "Country" : "JZYTNTUBFV"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "XAEJHC",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "specific-access-admin",
+        "LastNoCRequestedBy" : "KKMW"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "FVPPUIJF",
+        "roleOnCase" : "KXYCDTT",
+        "details" : [ {
+          "id" : "QTWWT",
+          "value" : {
+            "name" : "LVFHWEBPK",
+            "name_cy" : "OSEVQVDE",
+            "subTypeValue" : "EPNRNNSXFA",
+            "subTypeValue_cy" : "YGTCJ",
+            "subTypeKey" : "TMLO",
+            "otherDescription" : "SVYZBUP",
+            "otherDescription_cy" : "TVHMXYGJWH",
+            "flagComment" : "IYDRBHHAFH",
+            "flagComment_cy" : "QFPIOQNUR",
+            "flagUpdateComment" : "IJQJNSOD",
+            "dateTimeModified" : "2053-05-25T14:02:18.836Z",
+            "dateTimeCreated" : "2037-01-19T10:31:57.828Z",
+            "path" : [ {
+              "id" : "NUDUVUL",
+              "value" : "PMIVJ"
+            }, {
+              "id" : "FCWMPFEU",
+              "value" : "QSXO"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "BPDCYRVQ",
+            "status" : "JYBVU",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "d9000c47-14ae-37a2-bed7-4fa65a60709f"
+      }
+    }
+  } ],
+  "statementOfTruth" : {
+    "completedBy" : "CLAIMANT",
+    "agreementClaimant" : [ "BELIEVE_TRUE", "BELIEVE_TRUE" ],
+    "fullNameParty" : "RUWXKAKI",
+    "positionParty" : "QKWWYYZX",
+    "agreementClaimantLegalRep" : [ "AGREED", "AGREED" ],
+    "agreementDefendantLegalRep" : [ "AGREED" ],
+    "fullNameLegalRep" : "OBBHSFSI",
+    "firmNameLegalRep" : "WIP",
+    "positionLegalRep" : "NYLZXBWMK"
+  },
+  "showPreActionProtocolPageWales" : "NO",
+  "showASBQuestionsPageWales" : "YES",
+  "walesAntisocialBehaviour" : "NO",
+  "walesAntisocialBehaviourDetails" : "WTROIUN",
+  "walesIllegalPurposesUse" : "NO",
+  "walesIllegalPurposesUseDetails" : "PVW",
+  "walesOtherProhibitedConduct" : "YES",
+  "walesOtherProhibitedConductDetails" : "PGHVDNYWSD",
+  "isExemptLandlord" : "NO",
+  "possessionClaimResponse" : {
+    "claimantOrganisations" : [ {
+      "id" : "CZPSBAYDMQ",
+      "value" : "JZSNZXVZB"
+    } ],
+    "claimantServiceAddress" : {
+      "AddressLine1" : "LCQYGB",
+      "AddressLine2" : "XIXXBAKBBQ",
+      "AddressLine3" : "QMKBCBXEBT",
+      "PostTown" : "PLSP",
+      "County" : "SOSTR",
+      "PostCode" : "VDRV",
+      "Country" : "IYUHLYZVXT"
+    },
+    "claimantEnteredDefendantDetails" : {
+      "id" : "GQXSLGIXPD",
+      "rank" : 4756,
+      "idamId" : "LWITFM",
+      "firstName" : "HIPZPBDT",
+      "lastName" : "DGASFYI",
+      "orgName" : "CDQTDHN",
+      "nameKnown" : "NO",
+      "emailAddress" : "WDNRQKRY",
+      "address" : {
+        "AddressLine1" : "SMS",
+        "AddressLine2" : "HVBRLSZCKV",
+        "AddressLine3" : "FZG",
+        "PostTown" : "ABWLBAHL",
+        "County" : "YDG",
+        "PostCode" : "BVJP",
+        "Country" : "NMT"
+      },
+      "addressKnown" : "NO",
+      "addressSameAsProperty" : "YES",
+      "phoneNumber" : "AHIU",
+      "phoneNumberProvided" : "YES",
+      "textMessageNumber" : "CAIY",
+      "pcqId" : "JSNXSCG",
+      "dateOfBirth" : "2064-11-14",
+      "legalRepresentative" : {
+        "telephoneNumber" : "CTWKWJEUG",
+        "emailAddress" : "WOTLEFX",
+        "organisationName" : "YIP",
+        "address" : {
+          "AddressLine1" : "DGJB",
+          "AddressLine2" : "XQCNYCII",
+          "AddressLine3" : "MEPY",
+          "PostTown" : "FQBLROC",
+          "County" : "MFJ",
+          "PostCode" : "VSFWQP",
+          "Country" : "TKVMLCKKB"
+        }
+      },
+      "actingForPartyId" : "VBW",
+      "defendantFlags" : {
+        "partyName" : "OKTHJJC",
+        "roleOnCase" : "ZCF",
+        "details" : [ {
+          "id" : "DQO",
+          "value" : {
+            "name" : "DJW",
+            "name_cy" : "WDBYAE",
+            "subTypeValue" : "BNZAVFTT",
+            "subTypeValue_cy" : "IDCCB",
+            "subTypeKey" : "JPXELRWAN",
+            "otherDescription" : "CJJEA",
+            "otherDescription_cy" : "HMV",
+            "flagComment" : "DQYXSZSFB",
+            "flagComment_cy" : "YFOTCPBQ",
+            "flagUpdateComment" : "PLRICV",
+            "dateTimeModified" : "1996-10-25T19:12:03.614Z",
+            "dateTimeCreated" : "1989-08-16T20:06:06.720Z",
+            "path" : [ {
+              "id" : "MWXZMQUNKM",
+              "value" : "IWUWCCJ"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "WLL",
+            "status" : "SFJCFEDS",
+            "availableExternally" : "NO"
+          }
+        }, {
+          "id" : "GKMDRGGT",
+          "value" : {
+            "name" : "LNFUKFHQ",
+            "name_cy" : "MXHK",
+            "subTypeValue" : "YZDBKAHC",
+            "subTypeValue_cy" : "SPCGJZV",
+            "subTypeKey" : "DMG",
+            "otherDescription" : "EMEVVJKA",
+            "otherDescription_cy" : "AGOYANNKGM",
+            "flagComment" : "KGQPZF",
+            "flagComment_cy" : "TSB",
+            "flagUpdateComment" : "ONITRYZAGI",
+            "dateTimeModified" : "2013-01-01T23:38:13.244Z",
+            "dateTimeCreated" : "2050-02-16T10:36:50.922Z",
+            "path" : [ {
+              "id" : "BASLE",
+              "value" : "TRHTTRD"
+            }, {
+              "id" : "GQCADNG",
+              "value" : "YGN"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "CFYB",
+            "status" : "ANJTGUZQ",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "f0d4fde2-b1e0-3a4f-833d-c126e03f8edf"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "AWOJQQ",
+          "OrganisationID" : "TSXEGLM"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "XCLT",
+          "value" : {
+            "FromTimestamp" : "2067-09-29T18:12:48.219594509",
+            "ToTimestamp" : "1982-04-28T20:13:43.461058808",
+            "OrganisationName" : "NUNVSWN",
+            "OrganisationAddress" : {
+              "AddressLine1" : "HXCQJPN",
+              "AddressLine2" : "FLUWKECCK",
+              "AddressLine3" : "MFBQJYYRFU",
+              "PostTown" : "DRYSCBJI",
+              "County" : "WIBPGE",
+              "PostCode" : "BSE",
+              "Country" : "KWDH"
+            }
+          }
+        }, {
+          "id" : "FFFVRG",
+          "value" : {
+            "FromTimestamp" : "2033-10-19T07:30:21.520235105",
+            "ToTimestamp" : "2079-02-02T00:18:22.64859611",
+            "OrganisationName" : "KVJPVQYFPE",
+            "OrganisationAddress" : {
+              "AddressLine1" : "USIG",
+              "AddressLine2" : "ALEHCYPYT",
+              "AddressLine3" : "SGPNFJO",
+              "PostTown" : "YFGH",
+              "County" : "KMASM",
+              "PostCode" : "TPF",
+              "Country" : "HYLKPO"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "OSF",
+        "PrepopulateToUsersOrganisation" : "NO",
+        "OrgPolicyCaseAssignedRole" : "caseworker-pcs-solicitor",
+        "LastNoCRequestedBy" : "INNIILYEPX"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "PNMAXY",
+        "roleOnCase" : "ZMCCFOFR",
+        "details" : [ {
+          "id" : "MHWHI",
+          "value" : {
+            "name" : "VORUGA",
+            "name_cy" : "MBTCPCRPUO",
+            "subTypeValue" : "VAMVUA",
+            "subTypeValue_cy" : "XSRWRVTX",
+            "subTypeKey" : "XKQRLMT",
+            "otherDescription" : "EKWLNI",
+            "otherDescription_cy" : "RQGX",
+            "flagComment" : "IPIRVBS",
+            "flagComment_cy" : "HICVCPP",
+            "flagUpdateComment" : "RBGILYRKQS",
+            "dateTimeModified" : "2072-04-18T02:32:13.366Z",
+            "dateTimeCreated" : "1971-11-04T12:06:10.443Z",
+            "path" : [ {
+              "id" : "NAZHMCNVVR",
+              "value" : "FRWQWRAY"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "BOGN",
+            "status" : "HHMGMQOPG",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "a8839e3d-da48-399a-a769-1e4f91f16738"
+      }
+    },
+    "defendantContactDetails" : {
+      "party" : {
+        "id" : "HZCATY",
+        "rank" : 3069,
+        "idamId" : "FYKNXT",
+        "firstName" : "OFTVOXZTA",
+        "lastName" : "OBRGJFNS",
+        "orgName" : "RZZ",
+        "nameKnown" : "YES",
+        "emailAddress" : "DFLPQXH",
+        "address" : {
+          "AddressLine1" : "WZXKT",
+          "AddressLine2" : "JTI",
+          "AddressLine3" : "VLMZ",
+          "PostTown" : "XGJ",
+          "County" : "UXKPQ",
+          "PostCode" : "AEAEPLK",
+          "Country" : "QSMQSS"
+        },
+        "addressKnown" : "NO",
+        "addressSameAsProperty" : "YES",
+        "phoneNumber" : "OYUZHJIT",
+        "phoneNumberProvided" : "NO",
+        "textMessageNumber" : "YIAWJEQI",
+        "pcqId" : "JEWPUIXNSN",
+        "dateOfBirth" : "2061-09-17",
+        "legalRepresentative" : {
+          "telephoneNumber" : "FYONTBUJUK",
+          "emailAddress" : "NYZVXYSMT",
+          "organisationName" : "XNTNEVWLE",
+          "address" : {
+            "AddressLine1" : "IKG",
+            "AddressLine2" : "TOYQM",
+            "AddressLine3" : "UGJSBYVY",
+            "PostTown" : "HIKLWUA",
+            "County" : "YBEXMU",
+            "PostCode" : "IGYJN",
+            "Country" : "HWN"
+          }
+        },
+        "actingForPartyId" : "MGYK",
+        "defendantFlags" : {
+          "partyName" : "ZPYKXCQX",
+          "roleOnCase" : "FXIG",
+          "details" : [ {
+            "id" : "RBMHSQ",
+            "value" : {
+              "name" : "ZTAF",
+              "name_cy" : "CGFR",
+              "subTypeValue" : "YWUNZ",
+              "subTypeValue_cy" : "TJFG",
+              "subTypeKey" : "XDPHSJ",
+              "otherDescription" : "MXAEFUIQ",
+              "otherDescription_cy" : "LCQGOEIAPU",
+              "flagComment" : "ETNYB",
+              "flagComment_cy" : "MAMA",
+              "flagUpdateComment" : "VXIG",
+              "dateTimeModified" : "1985-10-09T12:46:07.207Z",
+              "dateTimeCreated" : "2013-11-23T20:44:50.603Z",
+              "path" : [ {
+                "id" : "PGQHNKDFS",
+                "value" : "UOP"
+              }, {
+                "id" : "MKXWKSF",
+                "value" : "TEIMEOTA"
+              } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "LLMLLDQO",
+              "status" : "QVPL",
+              "availableExternally" : "NO"
+            }
+          } ],
+          "visibility" : "Internal",
+          "groupId" : "80c4b942-cdd1-3739-82a4-d497f94a1198"
+        },
+        "organisationPolicy" : {
+          "Organisation" : {
+            "OrganisationName" : "SRVBLDOYSK",
+            "OrganisationID" : "TJHGKUWDG"
+          },
+          "PreviousOrganisations" : [ {
+            "id" : "PZDEFMOVIO",
+            "value" : {
+              "FromTimestamp" : "1983-08-03T07:32:54.904224823",
+              "ToTimestamp" : "2065-01-05T08:03:37.193394358",
+              "OrganisationName" : "CQSIZ",
+              "OrganisationAddress" : {
+                "AddressLine1" : "WXL",
+                "AddressLine2" : "KUMCE",
+                "AddressLine3" : "AKBGXQBTQ",
+                "PostTown" : "SEGOXTIRWJ",
+                "County" : "FFFOTDWF",
+                "PostCode" : "WDZ",
+                "Country" : "LME"
+              }
+            }
+          } ],
+          "OrgPolicyReference" : "DNAQTQLLAC",
+          "PrepopulateToUsersOrganisation" : "NO",
+          "OrgPolicyCaseAssignedRole" : "hmcts-legal-operations",
+          "LastNoCRequestedBy" : "BJTUADIKKV"
+        },
+        "partyFlagsExternal" : {
+          "partyName" : "KEXAULA",
+          "roleOnCase" : "RQL",
+          "details" : [ {
+            "id" : "HTC",
+            "value" : {
+              "name" : "LWEAUEUUI",
+              "name_cy" : "FHLEJPDV",
+              "subTypeValue" : "FDNW",
+              "subTypeValue_cy" : "TRZJQZD",
+              "subTypeKey" : "LMLBK",
+              "otherDescription" : "QXQ",
+              "otherDescription_cy" : "HHPYNAC",
+              "flagComment" : "IVSTIGBO",
+              "flagComment_cy" : "SLBEJPPW",
+              "flagUpdateComment" : "OMJ",
+              "dateTimeModified" : "1975-10-17T09:58:03.212Z",
+              "dateTimeCreated" : "1978-08-09T15:04:15.674Z",
+              "path" : [ {
+                "id" : "XITKSP",
+                "value" : "VSLP"
+              } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "UFZLL",
+              "status" : "YMIUKAJE",
+              "availableExternally" : "NO"
+            }
+          }, {
+            "id" : "WZLKNIBSC",
+            "value" : {
+              "name" : "YQO",
+              "name_cy" : "XJRZR",
+              "subTypeValue" : "YPF",
+              "subTypeValue_cy" : "YINRTXRNDW",
+              "subTypeKey" : "XZJTQRV",
+              "otherDescription" : "EOUBA",
+              "otherDescription_cy" : "OGB",
+              "flagComment" : "ZQATJK",
+              "flagComment_cy" : "QVUXC",
+              "flagUpdateComment" : "PEECJZ",
+              "dateTimeModified" : "1986-08-15T10:33:07.446Z",
+              "dateTimeCreated" : "1987-05-12T14:56:38.196Z",
+              "path" : [ {
+                "id" : "CXILQTS",
+                "value" : "ONICDFI"
+              } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "LSJWUT",
+              "status" : "JDG",
+              "availableExternally" : "YES"
+            }
+          } ],
+          "visibility" : "Internal",
+          "groupId" : "37d6ec28-6947-3cb5-9541-4e552d072d74"
+        }
+      }
+    },
+    "defendantResponses" : {
+      "tenancyTypeConfirmation" : "NOT_SURE",
+      "tenancyType" : "RGBCUG",
+      "tenancyStartDateConfirmation" : "NO",
+      "tenancyStartDate" : "2048-11-26",
+      "rentArrearsAmountConfirmation" : "NOT_SURE",
+      "rentArrearsAmount" : "419063",
+      "possessionNoticeReceived" : "NO",
+      "noticeReceivedDate" : "2083-07-14",
+      "contactByText" : "YES",
+      "contactByPhone" : "NO",
+      "contactByEmail" : "NO",
+      "contactByPost" : "NO",
+      "freeLegalAdvice" : "YES",
+      "dateOfBirth" : "1993-03-04",
+      "defendantNameConfirmation" : "YES",
+      "correspondenceAddressConfirmation" : "YES",
+      "propertyAddressConfirmation" : "YES",
+      "exemptLandlord" : "YES",
+      "writtenTerms" : "YES",
+      "disputeClaim" : "NO",
+      "hasSolicitor" : "YES",
+      "disputeClaimDetails" : "PNMODL",
+      "landlordLicensed" : "NOT_SURE",
+      "counterClaim" : {
+        "isClaimAmountKnown" : "NO",
+        "claimAmount" : "852525",
+        "estimatedMaxClaimAmount" : "916253",
+        "claimType" : "SOMETHING_ELSE",
+        "counterClaimFor" : "IMAJI",
+        "counterClaimReasons" : "LLYNSGRGA",
+        "otherOrderRequestDetails" : "IGLM",
+        "otherOrderRequestFacts" : "FDPOBF",
+        "needHelpWithFees" : "YES",
+        "appliedForHwf" : "NO",
+        "hwfReferenceNumber" : "WEUYHJP",
+        "counterClaimAgainst" : [ {
+          "id" : "KIFVHF",
+          "value" : {
+            "id" : "UFADHC",
+            "rank" : 4239,
+            "idamId" : "KIRRPQSINW",
+            "firstName" : "VMMC",
+            "lastName" : "NNMNHGDUYC",
+            "orgName" : "ZHHM",
+            "nameKnown" : "YES",
+            "emailAddress" : "HGWBNQXD",
+            "address" : {
+              "AddressLine1" : "ESYQ",
+              "AddressLine2" : "HPJ",
+              "AddressLine3" : "DMKR",
+              "PostTown" : "AIMRIBBX",
+              "County" : "JQRSQJBAU",
+              "PostCode" : "LLG",
+              "Country" : "BHSM"
+            },
+            "addressKnown" : "YES",
+            "addressSameAsProperty" : "YES",
+            "phoneNumber" : "USQPJIOFGB",
+            "phoneNumberProvided" : "YES",
+            "textMessageNumber" : "DMWPYGXO",
+            "pcqId" : "SRCXXDRM",
+            "dateOfBirth" : "1975-08-05",
+            "legalRepresentative" : {
+              "telephoneNumber" : "YXEJUG",
+              "emailAddress" : "DOEN",
+              "organisationName" : "QZBD",
+              "address" : {
+                "AddressLine1" : "FWTZDIO",
+                "AddressLine2" : "UFOLYDPFMG",
+                "AddressLine3" : "CTLV",
+                "PostTown" : "QYNMPZXO",
+                "County" : "CSMOSYSQTD",
+                "PostCode" : "KUWRU",
+                "Country" : "ESSUH"
+              }
+            },
+            "actingForPartyId" : "VZPWZCS",
+            "defendantFlags" : {
+              "partyName" : "VGTIJWQ",
+              "roleOnCase" : "ZPLKVJ",
+              "details" : [ {
+                "id" : "CUNSODZG",
+                "value" : { }
+              }, {
+                "id" : "WKGBOTLBH",
+                "value" : { }
+              } ],
+              "visibility" : "Internal",
+              "groupId" : "b33c1120-1f4c-3320-af22-a0ebeab16ca2"
+            },
+            "organisationPolicy" : {
+              "Organisation" : {
+                "OrganisationName" : "HMWAT",
+                "OrganisationID" : "VITZPDWABQ"
+              },
+              "PreviousOrganisations" : [ {
+                "id" : "ERWY",
+                "value" : { }
+              } ],
+              "OrgPolicyReference" : "TECXVUHBE",
+              "PrepopulateToUsersOrganisation" : "NO",
+              "OrgPolicyCaseAssignedRole" : "caseworker-wa-task-configuration",
+              "LastNoCRequestedBy" : "ZFUYXFD"
+            },
+            "partyFlagsExternal" : {
+              "partyName" : "SUV",
+              "roleOnCase" : "YTEZK",
+              "details" : [ {
+                "id" : "DYRKLZHAE",
+                "value" : { }
+              } ],
+              "visibility" : "Internal",
+              "groupId" : "e5f1fb90-2302-3146-8dcf-2a0c75e17baa"
+            }
+          }
+        } ]
+      },
+      "reasonableAdjustments" : {
+        "reasonableAdjustmentsRequired" : "BGCCWKPTK"
+      },
+      "householdCircumstances" : {
+        "dependantChildren" : "YES",
+        "shareAdditionalCircumstances" : "NO",
+        "additionalCircumstancesDetails" : "ZCLGMSVU",
+        "exceptionalHardship" : "YES",
+        "exceptionalHardshipDetails" : "UTCLHTEVTS",
+        "dependantChildrenDetails" : "NKYXFKOV",
+        "otherDependants" : "NO",
+        "otherDependantDetails" : "UJUTLCQ",
+        "otherTenants" : "YES",
+        "otherTenantsDetails" : "AVFKXXVP",
+        "alternativeAccommodation" : "NO",
+        "alternativeAccommodationTransferDate" : "2063-01-08",
+        "shareIncomeExpenseDetails" : "YES",
+        "householdBills" : {
+          "applies" : "YES",
+          "amount" : "165225",
+          "frequency" : "WEEKLY"
+        },
+        "loanPayments" : {
+          "applies" : "YES",
+          "amount" : "204057",
+          "frequency" : "MONTHLY"
+        },
+        "childSpousalMaintenance" : {
+          "applies" : "YES",
+          "amount" : "257404",
+          "frequency" : "WEEKLY"
+        },
+        "mobilePhone" : {
+          "applies" : "YES",
+          "amount" : "162922",
+          "frequency" : "WEEKLY"
+        },
+        "groceryShopping" : {
+          "applies" : "NO",
+          "amount" : "286289",
+          "frequency" : "MONTHLY"
+        },
+        "fuelParkingTransport" : {
+          "applies" : "NO",
+          "amount" : "533897",
+          "frequency" : "WEEKLY"
+        },
+        "schoolCosts" : {
+          "applies" : "NO",
+          "amount" : "684787",
+          "frequency" : "MONTHLY"
+        },
+        "clothing" : {
+          "applies" : "NO",
+          "amount" : "926551",
+          "frequency" : "WEEKLY"
+        },
+        "otherExpenses" : {
+          "applies" : "NO",
+          "amount" : "354719",
+          "frequency" : "WEEKLY"
+        },
+        "incomeFromJobs" : "YES",
+        "incomeFromJobsAmount" : "964051",
+        "incomeFromJobsFrequency" : "MONTHLY",
+        "pension" : "YES",
+        "pensionAmount" : "238163",
+        "pensionFrequency" : "WEEKLY",
+        "universalCredit" : "YES",
+        "hasAppliedForUniversalCredit" : "YES",
+        "ucApplicationDate" : "1996-06-26",
+        "universalCreditAmount" : "54939",
+        "universalCreditFrequency" : "WEEKLY",
+        "otherBenefits" : "YES",
+        "otherBenefitsAmount" : "55677",
+        "otherBenefitsFrequency" : "MONTHLY",
+        "moneyFromElsewhere" : "NO",
+        "moneyFromElsewhereDetails" : "VCHOE",
+        "priorityDebts" : "YES",
+        "debtTotal" : "799351",
+        "debtContribution" : "29910",
+        "debtContributionFrequency" : "WEEKLY"
+      },
+      "paymentAgreement" : {
+        "anyPaymentsMade" : "NO",
+        "paymentDetails" : "LISVJZ",
+        "repaymentPlanAgreed" : "NOT_SURE",
+        "repaymentAgreedDetails" : "GRLBDQ",
+        "repayArrearsInstalments" : "YES",
+        "additionalRentContribution" : "282564",
+        "additionalContributionFrequency" : "GHPNRIASE"
+      },
+      "defendantDocuments" : [ {
+        "id" : "AAWBN",
+        "value" : {
+          "documentType" : "ENERGY_PERFORMANCE_CERTIFICATE",
+          "document" : {
+            "document_url" : "JCKTJVVP",
+            "document_filename" : "TPJZHB",
+            "document_binary_url" : "LAFHXOL",
+            "category_id" : "EDXHZB",
+            "upload_timestamp" : "2023-06-25T00:59:54.088942442",
+            "document_hash" : "ERLSOUGNH"
+          },
+          "contentType" : "HWBPBK",
+          "sizeInBytes" : 6647
+        }
+      }, {
+        "id" : "CRYX",
+        "value" : {
+          "documentType" : "TENANCY_AGREEMENT",
+          "document" : {
+            "document_url" : "DGV",
+            "document_filename" : "MJYCEKHTI",
+            "document_binary_url" : "PPHCL",
+            "category_id" : "CSZHZ",
+            "upload_timestamp" : "2022-09-11T21:08:52.624064468",
+            "document_hash" : "PRPYWLWLFA"
+          },
+          "contentType" : "ZFXEUS",
+          "sizeInBytes" : 6904
+        }
+      } ],
+      "counterClaimDocuments" : [ {
+        "id" : "VQKLPAYGHO",
+        "value" : {
+          "documentType" : "LEGAL_AID_CERTIFICATE",
+          "document" : {
+            "document_url" : "JJTTIEID",
+            "document_filename" : "CPBXGPL",
+            "document_binary_url" : "RJXA",
+            "category_id" : "WYEVHU",
+            "upload_timestamp" : "2087-11-17T07:26:45.252968832",
+            "document_hash" : "SFRPZBYXYA"
+          },
+          "contentType" : "ZTJMWFLC",
+          "sizeInBytes" : 2721
+        }
+      }, {
+        "id" : "ELKT",
+        "value" : {
+          "documentType" : "NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION",
+          "document" : {
+            "document_url" : "ULRWCLI",
+            "document_filename" : "YDBXKCX",
+            "document_binary_url" : "FTUZPIVGC",
+            "category_id" : "VMBZTWWAAH",
+            "upload_timestamp" : "2080-09-10T09:42:05.24344455",
+            "document_hash" : "RFQSPKGMVM"
+          },
+          "contentType" : "EXPZFSHJY",
+          "sizeInBytes" : 3723
+        }
+      } ],
+      "languageUsed" : "ENGLISH_AND_WELSH",
+      "equalityAndDiversityQuestionsChoice" : "SKIP",
+      "otherConsiderations" : "YES",
+      "otherConsiderationsDetails" : "QJEJYRT",
+      "makeCounterClaim" : "YES",
+      "counterClaimWantToUploadFiles" : "NO",
+      "completedSections" : [ "PAYMENTS", "START_NOW_AND_DETAILS" ],
+      "statementOfTruth" : {
+        "accepted" : "YES",
+        "hasLegalRepresentation" : "NO",
+        "fullName" : "HFRNPX",
+        "nameOfFirm" : "FEHTJRAYN",
+        "positionHeld" : "TKXLCAJPRW"
+      },
+      "statementOfTruthCompletedBy" : "HAO",
+      "status" : "SUBMITTED"
+    },
+    "defendantFlags" : {
+      "partyName" : "ARNYVPHF",
+      "roleOnCase" : "FMBBABZGG",
+      "details" : [ {
+        "id" : "KYLPHGUAA",
+        "value" : {
+          "name" : "TJOUVS",
+          "name_cy" : "WLDMJIYHA",
+          "subTypeValue" : "MMIVBUZGKI",
+          "subTypeValue_cy" : "ZHIVKWDIHH",
+          "subTypeKey" : "GJSPHY",
+          "otherDescription" : "TCHDE",
+          "otherDescription_cy" : "MWCDOTTMJ",
+          "flagComment" : "YLRHKVGSM",
+          "flagComment_cy" : "UIJNAXVV",
+          "flagUpdateComment" : "MUQAUUWZ",
+          "dateTimeModified" : "2050-03-23T19:23:56.221Z",
+          "dateTimeCreated" : "2087-09-26T10:48:28.071Z",
+          "path" : [ {
+            "id" : "NUGHH",
+            "value" : "KQGLZNV"
+          } ],
+          "hearingRelevant" : "YES",
+          "flagCode" : "ZNPWPZ",
+          "status" : "PVJLELBXR",
+          "availableExternally" : "NO"
+        }
+      } ],
+      "visibility" : "External",
+      "groupId" : "fc966c66-89b6-35e8-8be1-00a6698f8075"
+    },
+    "currentDefendantPartyId" : "NUXNI",
+    "responseDocumentId" : "MEVII",
+    "counterclaimDocumentId" : "CVMPTRUIC",
+    "draftVersion" : 6234,
+    "claimIssuedDate" : "2038-10-06"
+  },
+  "paperResponse_FreeLegalAdvice" : "PREFER_NOT_TO_SAY",
+  "paperResponse_FirstName" : "RLRF",
+  "paperResponse_LastName" : "MWBRII",
+  "paperResponse_DateOfBirth" : "2005-08-05",
+  "paperResponse_Address" : {
+    "AddressLine1" : "WAT",
+    "AddressLine2" : "DTPPXZF",
+    "AddressLine3" : "CLTADW",
+    "PostTown" : "JBLOONZ",
+    "County" : "DAQ",
+    "PostCode" : "EGOEFUILH",
+    "Country" : "UFCAUY"
+  },
+  "paperResponse_ContactPreferences" : [ "BY_POST", "BY_EMAIL" ],
+  "paperResponse_EmailAddress" : "FTMPSBRZ",
+  "paperResponse_PhoneNumber" : "SKTJBFQOA",
+  "paperResponse_HasMadeCounterClaim" : "YES",
+  "testCaseSupportFileList" : {
+    "value" : {
+      "code" : "8c659516-66b5-3935-8586-0c4e30b83bae",
+      "label" : "BEZ"
+    },
+    "list_items" : [ {
+      "code" : "a51db72d-4f03-3233-8c15-236557922fcc",
+      "label" : "NGDUQJ"
+    }, {
+      "code" : "cfb55d3e-2590-30a2-9eac-1ad1f9a02874",
+      "label" : "SXEAAPKLF"
+    } ],
+    "valueCode" : "8c659516-66b5-3935-8586-0c4e30b83bae",
+    "valueLabel" : "BEZ"
+  },
+  "allDocuments" : [ {
+    "id" : "VMUUPEBAZ",
+    "value" : {
+      "document_url" : "JVSXQPM",
+      "document_filename" : "DQSPIYAIL",
+      "document_binary_url" : "IMK",
+      "category_id" : "WTAWQCAP",
+      "upload_timestamp" : "1994-10-02T13:54:18.474222565",
+      "document_hash" : "LVDABSARSI"
+    }
+  } ],
+  "systemDocuments" : [ {
+    "id" : "BJCJEDV",
+    "value" : {
+      "document_url" : "JUADY",
+      "document_filename" : "PYXWM",
+      "document_binary_url" : "EOQDSZD",
+      "category_id" : "HWCQVBPP",
+      "upload_timestamp" : "2029-01-05T18:16:01.53219405",
+      "document_hash" : "MZWUMJOQ"
+    }
+  }, {
+    "id" : "YNDTHMOGTO",
+    "value" : {
+      "document_url" : "DIM",
+      "document_filename" : "CAJXP",
+      "document_binary_url" : "QEVQX",
+      "category_id" : "ITJWL",
+      "upload_timestamp" : "2070-08-30T10:47:39.699471436",
+      "document_hash" : "FNY"
+    }
+  } ],
+  "caseFileView" : { },
+  "formattedDefendantNames" : "KTRPP",
+  "formattedPropertyAddress" : "BHY",
+  "claimGroundSummaries" : [ {
+    "id" : "YWRNTQTHBR",
+    "value" : {
+      "category" : "SECURE_OR_FLEXIBLE_DISCRETIONARY",
+      "code" : "IDKDRVPEV",
+      "label" : "KUOKF",
+      "description" : "DRXFE",
+      "reason" : "LHC",
+      "isRentArrears" : "NO"
+    }
+  }, {
+    "id" : "PLYEWYRL",
+    "value" : {
+      "category" : "WALES_STANDARD_OTHER_DISCRETIONARY",
+      "code" : "WIJUZEI",
+      "label" : "DLHCURWUTG",
+      "description" : "ITMCU",
+      "reason" : "PIJMJJUU",
+      "isRentArrears" : "YES"
+    }
+  } ],
+  "dateSubmitted" : "1995-04-28T10:05:47.728711923",
+  "claimIssueDate" : "2052-05-07",
+  "dateIssued" : "1976-10-04T09:45:22.518396436",
+  "xui_genapp_ApplicationType" : "ADJOURN",
+  "xui_genapp_DefendantGenAppType" : "SOMETHING_ELSE",
+  "xui_genapp_ClaimantGenAppType" : "ADJOURN",
+  "xui_genapp_Within14Days" : "NO",
+  "xui_genapp_NeedHwf" : "NO",
+  "xui_genapp_AppliedForHwf" : "NO",
+  "xui_genapp_HwfReference" : "XUKMNUGAF",
+  "xui_genapp_OtherPartiesAgreed" : "NO",
+  "xui_genapp_WithoutNotice" : "YES",
+  "xui_genapp_WithoutNoticeReason" : "SUJEGYUK",
+  "xui_genapp_WhatOrderWanted" : "XKP",
+  "xui_genapp_HasSupportingDocuments" : "NO",
+  "xui_genapp_UploadedDocuments" : [ {
+    "id" : "SNCQSSKXO",
+    "value" : {
+      "documentType" : "CORRESPONDENCE_FROM_CLAIMANT",
+      "document" : {
+        "document_url" : "UXBXOEAA",
+        "document_filename" : "AJUFR",
+        "document_binary_url" : "PSVXFJ",
+        "category_id" : "NCJWDAKI",
+        "upload_timestamp" : "2077-10-23T17:40:05.196265435",
+        "document_hash" : "GNKURXIY"
+      },
+      "contentType" : "QCGZFGCFI",
+      "sizeInBytes" : 6032
+    }
+  } ],
+  "xui_genapp_LanguageUsed" : "ENGLISH_AND_WELSH",
+  "xui_genapp_AgreementDefendantLegalRep" : [ "AGREED", "AGREED" ],
+  "xui_genapp_SotCompletedBy" : "CLAIMANT",
+  "xui_genapp_AgreementClaimant" : [ "BELIEVE_TRUE", "BELIEVE_TRUE" ],
+  "xui_genapp_AgreementClaimantLegalRep" : [ "AGREED" ],
+  "xui_genapp_SotFullName" : "AHG",
+  "xui_genapp_SotFirmName" : "JICW",
+  "xui_genapp_SotPositionHeld" : "DYBLKS",
+  "xui_genapp_StandardFee" : "CYIBXLSQBN",
+  "xui_genapp_MaxFee" : "TNUVYS",
+  "xui_genapp_ShowHwfScreens" : "YES",
+  "xui_genapp_ApplicantPartyId" : "OUH",
+  "citizenGenAppRequest" : {
+    "applicationType" : "SOMETHING_ELSE",
+    "within14Days" : "YES",
+    "needHwf" : "NO",
+    "appliedForHwf" : "YES",
+    "hwfReference" : "TKMLZ",
+    "otherPartiesAgreed" : "YES",
+    "withoutNotice" : "NO",
+    "withoutNoticeReason" : "CYXYK",
+    "whatOrderWanted" : "GIEVO",
+    "hasSupportingDocuments" : "YES",
+    "uploadedDocuments" : [ {
+      "id" : "KCNCURUE",
+      "value" : {
+        "documentType" : "INSPECTION_OR_REPORT",
+        "document" : {
+          "document_url" : "XDABSG",
+          "document_filename" : "MCZTPT",
+          "document_binary_url" : "GVZKTPO",
+          "category_id" : "AZQRJRUQLJ",
+          "upload_timestamp" : "2018-07-24T21:46:52.453616276",
+          "document_hash" : "OTPOGD"
+        },
+        "contentType" : "INSQALGUD",
+        "sizeInBytes" : 7221
+      }
+    } ],
+    "languageUsed" : "WELSH",
+    "sotAccepted" : "YES",
+    "sotFullName" : "ACFSF",
+    "clientReference" : "UEGUL",
+    "sotFirmName" : "LWFXVOTN",
+    "sotPositionHeld" : "KRULHKHE"
+  },
+  "enter_genapp_DateReceived" : "2064-03-20",
+  "enter_genapp_ApplicationTypeOptionList" : {
+    "value" : {
+      "code" : "HIBPN",
+      "label" : "KHY"
+    },
+    "list_items" : [ {
+      "code" : "IJEPKGQE",
+      "label" : "CCSO"
+    }, {
+      "code" : "IOFWAQYBZS",
+      "label" : "RAGHQO"
+    } ],
+    "valueCode" : "HIBPN"
+  },
+  "enter_genapp_ApplicationTypeOption" : "ADJOURN",
+  "enter_genapp_SomethingElseDetails" : "PSDHRVI",
+  "enter_genapp_Within14Days" : "NO",
+  "enter_genapp_FeeReceived" : "YES",
+  "enter_genapp_FeeAmountReceived" : "965019",
+  "enter_genapp_AppliedForHwf" : "YES",
+  "enter_genapp_HwfReference" : "DEKM",
+  "enter_genapp_AllPartiesAgree" : "YES",
+  "enter_genapp_WithoutNotice" : "YES",
+  "enter_genapp_RelatedEvidence" : [ {
+    "id" : "OOCBPB",
+    "value" : {
+      "document_url" : "EBPILJAE",
+      "document_filename" : "TRDBLTG",
+      "document_binary_url" : "BRSAFTXHSY",
+      "category_id" : "IKZCRTWYAM",
+      "upload_timestamp" : "2029-10-18T05:34:54.173634033",
+      "document_hash" : "CLKFFTTAVC"
+    }
+  }, {
+    "id" : "IZOUR",
+    "value" : {
+      "document_url" : "IHSRCNQNF",
+      "document_filename" : "NNQ",
+      "document_binary_url" : "SBVCR",
+      "category_id" : "NSJ",
+      "upload_timestamp" : "1994-03-11T20:50:31.6426024",
+      "document_hash" : "YZZGR"
+    }
+  } ],
+  "breathingSpace_ReferenceNumber" : "BEOUT",
+  "breathingSpace_StartDate" : "2009-10-06",
+  "breathingSpace_Type" : "MENTAL_HEALTH_CRISIS_MORATORIUM",
+  "breathingSpace_ExpectedEndDate" : "2024-06-12",
+  "partyRadioList" : {
+    "value" : {
+      "code" : "3754c52c-fe07-3ff9-8697-625b53d36b1a",
+      "label" : "RLSGQ"
+    },
+    "list_items" : [ {
+      "code" : "7d3b3f00-a277-335a-91ad-849348c59438",
+      "label" : "RJCI"
+    } ],
+    "valueCode" : "3754c52c-fe07-3ff9-8697-625b53d36b1a",
+    "valueLabel" : "RLSGQ"
+  },
+  "messageAction" : "SEND",
+  "messageCategories" : [ "APPLICATION", "COUNTERCLAIM" ],
+  "messageGenAppList" : {
+    "value" : {
+      "code" : "c1e0cdc2-0fcf-3e51-901a-3bc12f0fbd16",
+      "label" : "DXDS"
+    },
+    "list_items" : [ {
+      "code" : "8e28eb6f-00b0-3365-9874-57648efaeb36",
+      "label" : "HJZPZNO"
+    } ],
+    "valueCode" : "c1e0cdc2-0fcf-3e51-901a-3bc12f0fbd16",
+    "valueLabel" : "DXDS"
+  },
+  "messageHasOpenGenApps" : "NO",
+  "messageRecipient" : "COURT_STAFF",
+  "messageSubject" : "ENDQHLKWU",
+  "messageUrgent" : "YES",
+  "messageBody" : "KJELOS",
+  "messageReplyList" : {
+    "value" : {
+      "code" : "9cb4707f-29f2-3dc5-8685-8363d85cabd9",
+      "label" : "LLAWZSJDP"
+    },
+    "list_items" : [ {
+      "code" : "bba84ebf-5aac-3c8a-9004-f04e52093de4",
+      "label" : "LUCLTYWF"
+    } ],
+    "valueCode" : "9cb4707f-29f2-3dc5-8685-8363d85cabd9",
+    "valueLabel" : "LLAWZSJDP"
+  },
+  "messageSummaryMarkdown" : "JLRANKMFD",
+  "messageTaskMessageId" : "KPTY",
+  "messageHistory" : "VAIAQPTGWR",
+  "messageNeedReply" : "YES",
+  "messageReplyRecipient" : "CIRCUIT_JUDGE",
+  "messageReplyUrgent" : "NO",
+  "messageReply" : "XGRXNGFI",
+  "messageClosureNote" : "PFWVEHBZEU",
+  "messagesMarkdown" : "RDGRINULHA",
+  "messagesMarkdownLabel" : "WZBKECH",
+  "SearchCriteria" : {
+    "OtherCaseReferences" : [ {
+      "id" : "IJUONH",
+      "value" : "ABRSTRWC"
+    } ],
+    "SearchParties" : [ {
+      "id" : "TND",
+      "value" : {
+        "CollectionFieldName" : "BBSDEU",
+        "Name" : "COLBK",
+        "EmailAddress" : "OCIOZLBUT",
+        "AddressLine1" : "HZPHYBZG",
+        "PostCode" : "PUPMGUP",
+        "DateOfBirth" : "2057-05-24",
+        "DateOfDeath" : "2052-05-03"
+      }
+    }, {
+      "id" : "HZKDY",
+      "value" : {
+        "CollectionFieldName" : "NGSDCWXV",
+        "Name" : "FPPPCP",
+        "EmailAddress" : "MNCXSFUA",
+        "AddressLine1" : "DPTIKTHMI",
+        "PostCode" : "AFIYXP",
+        "DateOfBirth" : "2007-11-07",
+        "DateOfDeath" : "2077-05-19"
+      }
+    } ]
+  },
+  "caseNameHmctsRestricted" : "JMVFIIJI",
+  "caseNameHmctsInternal" : "PBIY",
+  "caseNamePublic" : "ODFMYZD",
+  "caseManagementLocation" : {
+    "region" : "TLXVTD",
+    "baseLocation" : "HQBRVFAO"
+  },
+  "caseManagementCategory" : {
+    "value" : {
+      "code" : "b5102e8a-633d-3b3d-b8aa-e7b4520f1ce1",
+      "label" : "TSA"
+    },
+    "list_items" : [ {
+      "code" : "58f2282d-c98f-3b01-aa2a-c5842a2e38c5",
+      "label" : "OXBCQHYF"
+    }, {
+      "code" : "ae26268c-1a3a-3d09-a2ed-03f9f9ba2cac",
+      "label" : "AUCJ"
+    } ],
+    "valueCode" : "b5102e8a-633d-3b3d-b8aa-e7b4520f1ce1",
+    "valueLabel" : "TSA"
+  },
+  "confirmEvictionSummaryMarkup" : "FXLWFCECP",
+  "confirmEvictionSummaryMarkupLabel" : "JLQNJXRF",
+  "casePartiesHeading" : "DHRRQBJZU",
+  "summaryHeading" : "FGFRYBQ",
+  "caseDetailsHeading" : "CDNPIRJQA",
+  "claimantDetailsHeading" : "IWLNA",
+  "defendantDetailsHeading" : "JLWNRGUQ",
+  "rentArrearsHeading" : "UBWWOB",
+  "tenancyOrOccupationContractOrLicenceHeading" : "LYEBWBCPG",
+  "occupationContractOrLicenceHeading" : "WMEPPQJOO",
+  "noticeHeading" : "ACMQ",
+  "underlesseeOrMortgageeHeading" : "FTWEKMTNOZ",
+  "demotionOfTenancyHeading" : "FTH",
+  "suspensionOfRightToBuyHeading" : "RUDVAKQFQ",
+  "prohibitedConductStandardContractHeading" : "VHIVX",
+  "requiredDocumentsHeading" : "UYVGDEO",
+  "documentsYouveUploadedHeading" : "PYDYICWNJ",
+  "showConfirmEvictionJourney" : "NO",
+  "genApps" : [ {
+    "id" : "VWE",
+    "value" : {
+      "applicationType" : "ADJOURN",
+      "party" : {
+        "id" : "GXMUUJNJY",
+        "rank" : 8253,
+        "idamId" : "EYVJPP",
+        "firstName" : "JAYR",
+        "lastName" : "ZBYUUERPZN",
+        "orgName" : "MABARF",
+        "nameKnown" : "NO",
+        "emailAddress" : "TSR",
+        "address" : {
+          "AddressLine1" : "YXFNJUVEPZ",
+          "AddressLine2" : "QCBQHW",
+          "AddressLine3" : "FVOPQTEIPU",
+          "PostTown" : "YEMSRJV",
+          "County" : "LLCLQTROZY",
+          "PostCode" : "AMZRT",
+          "Country" : "YOB"
+        },
+        "addressKnown" : "NO",
+        "addressSameAsProperty" : "YES",
+        "phoneNumber" : "FDWLDPMWN",
+        "phoneNumberProvided" : "YES",
+        "textMessageNumber" : "IYQM",
+        "pcqId" : "XMTYXEFRO",
+        "dateOfBirth" : "2029-07-31",
+        "legalRepresentative" : {
+          "telephoneNumber" : "MIGZE",
+          "emailAddress" : "EKJFVKWPA",
+          "organisationName" : "UOZKSE",
+          "address" : {
+            "AddressLine1" : "QCQN",
+            "AddressLine2" : "RDFAW",
+            "AddressLine3" : "OOGDCGYC",
+            "PostTown" : "YCGAIIJ",
+            "County" : "HTZQHB",
+            "PostCode" : "IUPMJM",
+            "Country" : "QPHYSS"
+          }
+        },
+        "actingForPartyId" : "YHWK",
+        "defendantFlags" : {
+          "partyName" : "ZXLPANEPB",
+          "roleOnCase" : "NFAOLKCU",
+          "details" : [ {
+            "id" : "SHLPN",
+            "value" : {
+              "name" : "LSOEBE",
+              "name_cy" : "LYNXZVKW",
+              "subTypeValue" : "SPB",
+              "subTypeValue_cy" : "OTKZJEC",
+              "subTypeKey" : "FXS",
+              "otherDescription" : "URFMZFFTKA",
+              "otherDescription_cy" : "KJAFLCU",
+              "flagComment" : "CNBRPRPB",
+              "flagComment_cy" : "TTXFANVW",
+              "flagUpdateComment" : "QDHHM",
+              "dateTimeModified" : "2025-04-24T01:42:43.927Z",
+              "dateTimeCreated" : "1974-03-04T16:23:50.265Z",
+              "path" : [ { }, { } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "UEO",
+              "status" : "HNXPWAME",
+              "availableExternally" : "NO"
+            }
+          } ],
+          "visibility" : "External",
+          "groupId" : "23b618f0-17f7-332b-bdc0-6edd5f27fdff"
+        },
+        "organisationPolicy" : {
+          "Organisation" : {
+            "OrganisationName" : "ZUBVOQRRI",
+            "OrganisationID" : "CROKVAJKH"
+          },
+          "PreviousOrganisations" : [ {
+            "id" : "KWBDF",
+            "value" : {
+              "FromTimestamp" : "2030-05-03T07:36:50.98752067",
+              "ToTimestamp" : "1984-01-17T14:38:58.070779084",
+              "OrganisationName" : "WAAHHJIQ",
+              "OrganisationAddress" : {
+                "AddressLine1" : "JUSQRG",
+                "AddressLine2" : "TXOWGXGRY",
+                "AddressLine3" : "JGM",
+                "PostTown" : "QVBKSZ",
+                "County" : "LZAPFWRC",
+                "PostCode" : "LTBNQL",
+                "Country" : "PFFJXDOTP"
+              }
+            }
+          } ],
+          "OrgPolicyReference" : "QUUPBBFR",
+          "PrepopulateToUsersOrganisation" : "NO",
+          "OrgPolicyCaseAssignedRole" : "[CREATOR]",
+          "LastNoCRequestedBy" : "DWXW"
+        },
+        "partyFlagsExternal" : {
+          "partyName" : "SYTGLIVTBM",
+          "roleOnCase" : "ZDVKPGLECC",
+          "details" : [ {
+            "id" : "NYZOIH",
+            "value" : {
+              "name" : "WWNANK",
+              "name_cy" : "PVNH",
+              "subTypeValue" : "GYVNYCHC",
+              "subTypeValue_cy" : "JZKKVKUFZ",
+              "subTypeKey" : "EGDZR",
+              "otherDescription" : "QAQVEKSCZ",
+              "otherDescription_cy" : "TJXZ",
+              "flagComment" : "URSD",
+              "flagComment_cy" : "ZPBHCOE",
+              "flagUpdateComment" : "BNJ",
+              "dateTimeModified" : "1973-07-04T05:36:23.779Z",
+              "dateTimeCreated" : "2015-08-26T16:49:25.209Z",
+              "path" : [ { } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "YLKVFMCNG",
+              "status" : "OJCNJPU",
+              "availableExternally" : "NO"
+            }
+          }, {
+            "id" : "RUTGSO",
+            "value" : {
+              "name" : "UHAX",
+              "name_cy" : "JDQSMADP",
+              "subTypeValue" : "OFM",
+              "subTypeValue_cy" : "QKZTMDMGK",
+              "subTypeKey" : "IXPCKHJ",
+              "otherDescription" : "TGBRCE",
+              "otherDescription_cy" : "EMIWIPX",
+              "flagComment" : "YPWITGM",
+              "flagComment_cy" : "FLTOEOW",
+              "flagUpdateComment" : "NJUPSGHM",
+              "dateTimeModified" : "2032-03-30T04:18:42.140Z",
+              "dateTimeCreated" : "2058-02-25T05:10:21.463Z",
+              "path" : [ { } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "YNXIHUO",
+              "status" : "OXY",
+              "availableExternally" : "YES"
+            }
+          } ],
+          "visibility" : "Internal",
+          "groupId" : "86109364-b591-343d-8c6f-88c7084f48b4"
+        }
+      },
+      "submittedOn" : "2031-08-02T13:48:52.676559391",
+      "state" : "GEN_APP_ISSUED",
+      "submissionDocument" : {
+        "id" : "EFNESWKVCJ",
+        "document" : {
+          "document_url" : "NNASQ",
+          "document_filename" : "YEJBSVID",
+          "document_binary_url" : "IOIJQZXIFA",
+          "category_id" : "MVQNUAZHR",
+          "upload_timestamp" : "2003-06-28T21:03:30.60558798",
+          "document_hash" : "SYWPONUN"
+        }
+      },
+      "supportingDocuments" : [ {
+        "id" : "XJQVIW",
+        "value" : {
+          "document_url" : "MLQWJNSN",
+          "document_filename" : "CZKGTDA",
+          "document_binary_url" : "YILOVJ",
+          "category_id" : "WTIVKW",
+          "upload_timestamp" : "2017-02-28T03:58:42.852052113",
+          "document_hash" : "YZWDWJQF"
+        }
+      }, {
+        "id" : "PMX",
+        "value" : {
+          "document_url" : "GGAF",
+          "document_filename" : "KJG",
+          "document_binary_url" : "COTZ",
+          "category_id" : "CCBLA",
+          "upload_timestamp" : "2022-02-07T19:43:09.010053719",
+          "document_hash" : "VAFJDEC"
+        }
+      } ],
+      "rank" : 4527
+    }
+  }, {
+    "id" : "UPWSU",
+    "value" : {
+      "applicationType" : "SET_ASIDE",
+      "party" : {
+        "id" : "ITS",
+        "rank" : 1688,
+        "idamId" : "LKZCLHQ",
+        "firstName" : "NLKHJM",
+        "lastName" : "MDWDST",
+        "orgName" : "PPPZFVTHZO",
+        "nameKnown" : "YES",
+        "emailAddress" : "EQRSUBI",
+        "address" : {
+          "AddressLine1" : "BKYU",
+          "AddressLine2" : "WRCSUPUZB",
+          "AddressLine3" : "QWMM",
+          "PostTown" : "EHSDWH",
+          "County" : "XEQXZ",
+          "PostCode" : "BLPIXZN",
+          "Country" : "VCKGO"
+        },
+        "addressKnown" : "YES",
+        "addressSameAsProperty" : "NO",
+        "phoneNumber" : "AWBH",
+        "phoneNumberProvided" : "NO",
+        "textMessageNumber" : "ILQN",
+        "pcqId" : "QAIQFL",
+        "dateOfBirth" : "2038-05-20",
+        "legalRepresentative" : {
+          "telephoneNumber" : "HRSRCQG",
+          "emailAddress" : "RNRJY",
+          "organisationName" : "UOZGQGFCVL",
+          "address" : {
+            "AddressLine1" : "RBBPTW",
+            "AddressLine2" : "MWHKV",
+            "AddressLine3" : "ZPIBY",
+            "PostTown" : "HVAEYG",
+            "County" : "NJUCHM",
+            "PostCode" : "LERU",
+            "Country" : "HDMS"
+          }
+        },
+        "actingForPartyId" : "ZBM",
+        "defendantFlags" : {
+          "partyName" : "ZMIHT",
+          "roleOnCase" : "GOY",
+          "details" : [ {
+            "id" : "JHDBKFZU",
+            "value" : {
+              "name" : "RLXCIDABL",
+              "name_cy" : "DLRAH",
+              "subTypeValue" : "TVC",
+              "subTypeValue_cy" : "FBUVHKSJGU",
+              "subTypeKey" : "KQVPWPPGH",
+              "otherDescription" : "XCLZFMBOY",
+              "otherDescription_cy" : "IVYLKJERZS",
+              "flagComment" : "VUTJS",
+              "flagComment_cy" : "RCL",
+              "flagUpdateComment" : "CQBDAZMUGV",
+              "dateTimeModified" : "1975-03-23T10:28:45.532Z",
+              "dateTimeCreated" : "2023-06-22T23:51:02.222Z",
+              "path" : [ { }, { } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "YGVJSX",
+              "status" : "SICHKKOWU",
+              "availableExternally" : "NO"
+            }
+          } ],
+          "visibility" : "External",
+          "groupId" : "d971b0e8-a6e5-3e06-9c25-2eaa41969ecb"
+        },
+        "organisationPolicy" : {
+          "Organisation" : {
+            "OrganisationName" : "JUYY",
+            "OrganisationID" : "YFHCMGM"
+          },
+          "PreviousOrganisations" : [ {
+            "id" : "PONODUHG",
+            "value" : {
+              "FromTimestamp" : "2011-04-12T03:21:57.142716762",
+              "ToTimestamp" : "1999-01-01T13:17:17.712427536",
+              "OrganisationName" : "LZTINJIA",
+              "OrganisationAddress" : {
+                "AddressLine1" : "OGH",
+                "AddressLine2" : "THZ",
+                "AddressLine3" : "FECCDNGRSF",
+                "PostTown" : "NATMSOOKO",
+                "County" : "QABG",
+                "PostCode" : "VEOU",
+                "Country" : "COQKUXWZXR"
+              }
+            }
+          }, {
+            "id" : "GZDPEX",
+            "value" : {
+              "FromTimestamp" : "2086-01-07T06:16:35.058545995",
+              "ToTimestamp" : "2017-03-24T04:22:01.895859811",
+              "OrganisationName" : "XKYQ",
+              "OrganisationAddress" : {
+                "AddressLine1" : "EUEEEV",
+                "AddressLine2" : "NEU",
+                "AddressLine3" : "AMDBD",
+                "PostTown" : "KSUFU",
+                "County" : "NIGRRXPP",
+                "PostCode" : "DKEJR",
+                "Country" : "CZKWGU"
+              }
+            }
+          } ],
+          "OrgPolicyReference" : "TJTMTUJZU",
+          "PrepopulateToUsersOrganisation" : "YES",
+          "OrgPolicyCaseAssignedRole" : "hmcts-admin",
+          "LastNoCRequestedBy" : "JRFVWVE"
+        },
+        "partyFlagsExternal" : {
+          "partyName" : "RAIPL",
+          "roleOnCase" : "GGDZGMR",
+          "details" : [ {
+            "id" : "ZGLUWFLA",
+            "value" : {
+              "name" : "FIYADX",
+              "name_cy" : "JMQZILAHP",
+              "subTypeValue" : "CQXTMDDKW",
+              "subTypeValue_cy" : "VQWSV",
+              "subTypeKey" : "MLTWLNWA",
+              "otherDescription" : "WTV",
+              "otherDescription_cy" : "KQP",
+              "flagComment" : "JXPXARSN",
+              "flagComment_cy" : "WKORGKPY",
+              "flagUpdateComment" : "BZAFWGOQQ",
+              "dateTimeModified" : "2086-09-07T21:09:45.350Z",
+              "dateTimeCreated" : "2015-11-03T14:53:53.835Z",
+              "path" : [ { } ],
+              "hearingRelevant" : "NO",
+              "flagCode" : "QLZIYBLON",
+              "status" : "AALR",
+              "availableExternally" : "NO"
+            }
+          } ],
+          "visibility" : "Internal",
+          "groupId" : "17d05d4a-3558-3cbb-a763-66456f81ae11"
+        }
+      },
+      "submittedOn" : "2052-11-22T02:07:54.330965397",
+      "state" : "PENDING_GEN_APP_ISSUED",
+      "submissionDocument" : {
+        "id" : "XZXBKFJZY",
+        "document" : {
+          "document_url" : "IFEDREJWKU",
+          "document_filename" : "FSSIJEWVOM",
+          "document_binary_url" : "SKPGYOEUGG",
+          "category_id" : "MFTXHM",
+          "upload_timestamp" : "2063-01-23T05:43:09.578305217",
+          "document_hash" : "TTROPNMS"
+        }
+      },
+      "supportingDocuments" : [ {
+        "id" : "IQT",
+        "value" : {
+          "document_url" : "YSUTKZN",
+          "document_filename" : "YZJIYZK",
+          "document_binary_url" : "PCSNWOG",
+          "category_id" : "NETJ",
+          "upload_timestamp" : "2064-06-05T05:04:00.691452365",
+          "document_hash" : "TUOEEVMD"
+        }
+      } ],
+      "rank" : 9020
+    }
+  } ],
+  "casePartiesTab_ClaimantDetails" : {
+    "name" : "PQQS",
+    "serviceAddress" : {
+      "AddressLine1" : "RURJA",
+      "AddressLine2" : "BXFUTM",
+      "AddressLine3" : "FWP",
+      "PostTown" : "QNT",
+      "County" : "PBMSZDEX",
+      "PostCode" : "FQFHWFEQPG",
+      "Country" : "RAKN"
+    },
+    "emailAddress" : "UIBIS",
+    "telephoneNumber" : "HRFWW"
+  },
+  "casePartiesTab_ClaimantsDetails" : [ {
+    "id" : "QZQOSCH",
+    "value" : {
+      "name" : "DQQEERBWWL",
+      "serviceAddress" : {
+        "AddressLine1" : "JAW",
+        "AddressLine2" : "PKUUHCMCWT",
+        "AddressLine3" : "UBVBPIH",
+        "PostTown" : "LHWCJQTAC",
+        "County" : "DJWT",
+        "PostCode" : "WXQ",
+        "Country" : "CDLCPRJ"
+      },
+      "emailAddress" : "QDCNIFMC",
+      "telephoneNumber" : "ZUE"
+    }
+  } ],
+  "casePartiesTab_DefendantOneDetails" : {
+    "firstName" : "IQJFV",
+    "lastName" : "AVNSHPNFDY",
+    "serviceAddress" : {
+      "AddressLine1" : "HBPH",
+      "AddressLine2" : "SFMDVSDNH",
+      "AddressLine3" : "SQZ",
+      "PostTown" : "MHRBMH",
+      "County" : "MVUKX",
+      "PostCode" : "FNN",
+      "Country" : "QPXHAJE"
+    },
+    "representative" : {
+      "telephoneNumber" : "KXDEGF",
+      "emailAddress" : "BWFNQYNHB",
+      "organisation" : {
+        "name" : "PVVBLMJBNT",
+        "address" : {
+          "AddressLine1" : "ACUHBSB",
+          "AddressLine2" : "UABMLQXSB",
+          "AddressLine3" : "TOJOEFZMR",
+          "PostTown" : "FLIEBCJIT",
+          "County" : "GHEULL",
+          "PostCode" : "BDMMQ",
+          "Country" : "TUSJIHKTE"
+        }
+      }
+    }
+  },
+  "casePartiesTab_DefendantsDetails" : [ {
+    "id" : "EWT",
+    "value" : {
+      "firstName" : "WWPMQD",
+      "lastName" : "MQMEYFUQZH",
+      "serviceAddress" : {
+        "AddressLine1" : "LZMSM",
+        "AddressLine2" : "AEHDZGNJ",
+        "AddressLine3" : "MQO",
+        "PostTown" : "ALCLR",
+        "County" : "TDNXVIVT",
+        "PostCode" : "RRIL",
+        "Country" : "EASSWHYHMM"
+      },
+      "representative" : {
+        "telephoneNumber" : "ZLSANUZ",
+        "emailAddress" : "ITNK",
+        "organisation" : {
+          "name" : "ROPIC",
+          "address" : {
+            "AddressLine1" : "RERVHAMV",
+            "AddressLine2" : "UKD",
+            "AddressLine3" : "OTBSA",
+            "PostTown" : "HCOMFM",
+            "County" : "XBYMGASVX",
+            "PostCode" : "BHLMRIR",
+            "Country" : "ATAWKTHZ"
+          }
+        }
+      }
+    }
+  }, {
+    "id" : "METXAHB",
+    "value" : {
+      "firstName" : "LHUSER",
+      "lastName" : "SGEOZG",
+      "serviceAddress" : {
+        "AddressLine1" : "RCGQHG",
+        "AddressLine2" : "YGCVBVMRS",
+        "AddressLine3" : "GAU",
+        "PostTown" : "VHX",
+        "County" : "HKLLGD",
+        "PostCode" : "QWLOXU",
+        "Country" : "CCVWV"
+      },
+      "representative" : {
+        "telephoneNumber" : "FWVRKI",
+        "emailAddress" : "TDHAVOB",
+        "organisation" : {
+          "name" : "UOZMBZUKA",
+          "address" : {
+            "AddressLine1" : "CTARARW",
+            "AddressLine2" : "XYTECYWO",
+            "AddressLine3" : "XAU",
+            "PostTown" : "QPDDU",
+            "County" : "QBQO",
+            "PostCode" : "JTTO",
+            "Country" : "TIYZNP"
+          }
+        }
+      }
+    }
+  } ],
+  "casePartiesTab_LfDetails" : {
+    "name" : "YUMWJRR",
+    "actingFor" : "SHEC",
+    "serviceAddress" : {
+      "AddressLine1" : "SVYFRKSBF",
+      "AddressLine2" : "TSXPSURAB",
+      "AddressLine3" : "DIZHVRK",
+      "PostTown" : "FXTJAY",
+      "County" : "EYEEK",
+      "PostCode" : "PAHHU",
+      "Country" : "JDAUVS"
+    },
+    "emailAddress" : "ONLJWRTDBJ",
+    "telephoneNumber" : "AOKPQ"
+  },
+  "casePartiesTab_LfsDetails" : [ {
+    "id" : "NIL",
+    "value" : {
+      "name" : "IBOOJNBKDY",
+      "actingFor" : "ILBMMI",
+      "serviceAddress" : {
+        "AddressLine1" : "PVYALTARI",
+        "AddressLine2" : "GSHY",
+        "AddressLine3" : "YFA",
+        "PostTown" : "ELUYFZ",
+        "County" : "RTXIAC",
+        "PostCode" : "JFDVBCNFJN",
+        "Country" : "UDMCMM"
+      },
+      "emailAddress" : "KLPMLEEG",
+      "telephoneNumber" : "AAXGU"
+    }
+  }, {
+    "id" : "BNB",
+    "value" : {
+      "name" : "DQNYPTRCGD",
+      "actingFor" : "OIIE",
+      "serviceAddress" : {
+        "AddressLine1" : "SYDLUX",
+        "AddressLine2" : "GAEHZOBFJG",
+        "AddressLine3" : "TSBWIITL",
+        "PostTown" : "ZLRBR",
+        "County" : "CXYIXIC",
+        "PostCode" : "VINSOOSD",
+        "Country" : "YOZ"
+      },
+      "emailAddress" : "VYNJXUNZL",
+      "telephoneNumber" : "CSQWQHTAZ"
+    }
+  } ],
+  "summaryTab_RepossessedPropertyAddress" : {
+    "AddressLine1" : "LHNSPTIO",
+    "AddressLine2" : "FHLHHJL",
+    "AddressLine3" : "QZICPFV",
+    "PostTown" : "FFF",
+    "County" : "IAUGJVIDQU",
+    "PostCode" : "YYPDOPAVFK",
+    "Country" : "VAYVASI"
+  },
+  "summaryTab_GroundsForPossession" : {
+    "grounds" : "YNZCOLA",
+    "otherGroundsDescription" : "RUXEDZQTRW"
+  },
+  "summaryTab_ReasonsForPossession" : {
+    "ground1" : "SJYVLIWB",
+    "ground2" : "JXKR",
+    "ground2A" : "RXCZKNLYWX",
+    "ground2ZA" : "NXBJNWHTAF",
+    "ground3" : "EDQMRAGSPM",
+    "ground4" : "YHC",
+    "ground5" : "TNXWYE",
+    "ground6" : "EYY",
+    "ground7" : "VDEUCXLM",
+    "ground7A" : "ILPXLYYIIN",
+    "ground7B" : "TVUFVGTOAI",
+    "ground8" : "UWRVF",
+    "ground9" : "RJINB",
+    "ground10" : "HSJDMWBKB",
+    "ground10A" : "DMZ",
+    "ground11" : "ZBIVWI",
+    "ground12" : "YTSIGDWMX",
+    "ground13" : "PDHNOYCUT",
+    "ground14" : "FKN",
+    "ground14A" : "CPO",
+    "ground14ZA" : "PPTTJSKR",
+    "ground15" : "BCXDNAG",
+    "ground15A" : "GFBO",
+    "ground16" : "KQOT",
+    "ground17" : "UPCTLOST",
+    "groundA" : "SWCQVO",
+    "groundB" : "TCVXOZXWEH",
+    "groundC" : "SMBRGS",
+    "groundD" : "RJWTPFG",
+    "groundE" : "HCIWPBHR",
+    "groundF" : "BFABQ",
+    "groundG" : "TZTSONF",
+    "groundH" : "TUSQNTAFXN",
+    "groundI" : "NFTIWNN",
+    "condition1OfSection84A" : "DMRS",
+    "condition2OfSection84A" : "EODWOH",
+    "condition3OfSection84A" : "JXNCLMJE",
+    "condition4OfSection84A" : "JQKDL",
+    "condition5OfSection84A" : "HQLXW",
+    "section157" : "HGP",
+    "section170" : "HLPNZ",
+    "section178" : "MAGXQTJ",
+    "section181" : "HNQBR",
+    "section186" : "KGGOUEEFA",
+    "section187" : "UXVVRJPFAI",
+    "section191" : "RUZL",
+    "section199" : "SHAOAZ",
+    "paragraph25B2Schedule12" : "BQTV",
+    "antisocialBehaviour" : "PJTGFK",
+    "breachOfTheTenancy" : "WKWYJ",
+    "absoluteGrounds" : "LCPGYW",
+    "otherGrounds" : "UHYLDLPQZ",
+    "noGrounds" : "NEXPRNVJ",
+    "hasAdditionalReasons" : "WXWQHD",
+    "additionalReasonsDetails" : "EOWCPK"
+  },
+  "summaryTab_DateClaimSubmitted" : "YZKWIHS",
+  "summaryTab_ClaimantDetails" : {
+    "claimantName" : "TJYIE"
+  },
+  "summaryTab_DefendantDetails" : {
+    "nameKnown" : "BWDYZUP",
+    "firstName" : "CADBMUFESI",
+    "lastName" : "YFEMGWIU",
+    "addressKnown" : "PBPVJ",
+    "addressForService" : {
+      "AddressLine1" : "GUJZURB",
+      "AddressLine2" : "LSXOVXLT",
+      "AddressLine3" : "IJA",
+      "PostTown" : "UPBLDA",
+      "County" : "JLMPIUPKGY",
+      "PostCode" : "KZAGGHG",
+      "Country" : "OCWEIGHAOC"
+    }
+  },
+  "summaryTab_AdditionalDefendants" : [ {
+    "id" : "XHIZSLVJ",
+    "value" : {
+      "nameKnown" : "ZSQWF",
+      "firstName" : "NGVXNTELM",
+      "lastName" : "FTHTDAV",
+      "addressKnown" : "RIP",
+      "addressForService" : {
+        "AddressLine1" : "QBF",
+        "AddressLine2" : "TDYWSXPGV",
+        "AddressLine3" : "RARWNSM",
+        "PostTown" : "BDK",
+        "County" : "NJRPXA",
+        "PostCode" : "ZDMKVA",
+        "Country" : "JKPMUVUZSM"
+      }
+    }
+  } ],
+  "summaryTab_RentArrearsDetails" : {
+    "rentAmount" : "PFQBCU",
+    "calculationFrequency" : "BFELOGW",
+    "rentFrequency" : "FMUCFL",
+    "frequency" : "CUU",
+    "dailyRate" : "GACFYHGNBS",
+    "stepsToRecoverArrears" : "BXPLI",
+    "stepsToRecoverArrearsDetails" : "AQG",
+    "rentStatement" : [ {
+      "id" : "QSCS",
+      "value" : {
+        "document_url" : "OQRBLTZTSL",
+        "document_filename" : "JACHBNP",
+        "document_binary_url" : "AFUUHKS",
+        "category_id" : "ZASQMVJGT",
+        "upload_timestamp" : "2009-02-12T07:34:31.199790404",
+        "document_hash" : "YKY"
+      }
+    } ],
+    "rentStatementPlaceholder" : "EBKS",
+    "arrearsTotal" : "VGMY",
+    "judgmentRequested" : "LMZ"
+  },
+  "summaryTab_TenancyDetails" : {
+    "agreementType" : "ZSPWGWLM",
+    "agreementTypeDescription" : "GHBZQOE",
+    "agreementStartDate" : "SATS"
+  },
+  "summaryTab_OccupationContractOrLicenceDetails" : {
+    "agreementType" : "YCHK",
+    "agreementTypeDescription" : "NKXWB",
+    "agreementStartDate" : "NBF",
+    "documents" : [ {
+      "id" : "CZZVUU",
+      "value" : {
+        "document_url" : "LNVZ",
+        "document_filename" : "KWHEPVFJK",
+        "document_binary_url" : "ICD",
+        "category_id" : "QBQF",
+        "upload_timestamp" : "2031-09-23T04:31:41.708183001",
+        "document_hash" : "DJNEEOMARM"
+      }
+    } ],
+    "documentsPlaceholder" : "ZZTCDYUSP"
+  },
+  "summaryTab_NoticeDetails" : {
+    "noticeServedDate" : "PWULURBNT"
+  },
+  "detailsTab_ClaimDetails" : {
+    "claimantType" : "EKCYJIKB",
+    "trespassClaim" : "RMHO"
+  },
+  "detailsTab_PropertyAddress" : {
+    "AddressLine1" : "FKNWEX",
+    "AddressLine2" : "GLEA",
+    "AddressLine3" : "QIFREYH",
+    "PostTown" : "UKK",
+    "County" : "HCXUWH",
+    "PostCode" : "IHSI",
+    "Country" : "SLIQK"
+  },
+  "detailsTab_GroundsForPossessionDetails" : {
+    "grounds" : "BPKT",
+    "otherGroundsDescription" : "HXLSIBWB"
+  },
+  "detailsTab_DateClaimSubmitted" : "BSQYRWCSCK",
+  "detailsTab_TenancyLicenceDetails" : {
+    "typeOfTenancyLicence" : "UNTOGJJ",
+    "tenancyLicenceDescription" : "KKGJ",
+    "tenancyLicenceDate" : "GLIYAYN",
+    "hasCopyOfTenancyLicence" : "ZJHJSRMA",
+    "reasonsForNoTenancyLicenceDocuments" : "FTDOLGTK",
+    "tenancyLicenceDocuments" : [ {
+      "id" : "PJCFX",
+      "value" : {
+        "document_url" : "SSYKKODEV",
+        "document_filename" : "XLC",
+        "document_binary_url" : "DZQPUCP",
+        "category_id" : "DCDJOPRJQ",
+        "upload_timestamp" : "2084-11-28T04:14:52.802482971",
+        "document_hash" : "PJRIKCFMK"
+      }
+    } ]
+  },
+  "detailsTab_NoticeDetails" : {
+    "noticeServed" : "EAXSX",
+    "typeOfNoticeServed" : "VKETKZST",
+    "statement" : "HLUYZ",
+    "noticeDate" : "WHUJBS",
+    "noticeMethod" : "RDNG",
+    "noticePersonName" : "ZWXCSMC",
+    "noticeEmailAddress" : "EIFVTNJPS",
+    "noticeOtherElectronicDetails" : "VQLHQ",
+    "noticeOtherExplanation" : "SLNNGTCTH",
+    "noticeUploaded" : "OMAPLOJ",
+    "noticeDocuments" : [ {
+      "id" : "JKRRNBXTIJ",
+      "value" : {
+        "document_url" : "OGLZNYXHDA",
+        "document_filename" : "OCKXI",
+        "document_binary_url" : "KDZUCQKLPI",
+        "category_id" : "NVQ",
+        "upload_timestamp" : "1973-12-25T19:23:06.717581615",
+        "document_hash" : "EZBUHHVU"
+      }
+    }, {
+      "id" : "PWFUXIGXFV",
+      "value" : {
+        "document_url" : "EJHZDP",
+        "document_filename" : "SPYXP",
+        "document_binary_url" : "YKOUVNJ",
+        "category_id" : "XPWEB",
+        "upload_timestamp" : "1975-05-23T13:13:22.683020503",
+        "document_hash" : "KRWSSNIUCL"
+      }
+    } ],
+    "reasonsForNoNoticeDocument" : "TNFHZB"
+  },
+  "detailsTab_ActionsTakenDetails" : {
+    "preactionProtocolFollowed" : "UVXLIHYVQ",
+    "preActionProtocolIncompleteExplanation" : "GZPIKZUPIF",
+    "mediationAttempted" : "UWILOMZOCN",
+    "settlementAttempted" : "RPTFZR"
+  },
+  "detailsTab_RentArrearsDetails" : {
+    "rentAmount" : "YMUA",
+    "calculationFrequency" : "DABZQIQSJL",
+    "rentFrequency" : "LEOSEXUNU",
+    "frequency" : "MAPNPJO",
+    "dailyRate" : "OQK",
+    "stepsToRecoverArrears" : "IAZZJCHBW",
+    "stepsToRecoverArrearsDetails" : "GKNZKEOEGP",
+    "rentStatement" : [ {
+      "id" : "SOZF",
+      "value" : {
+        "document_url" : "XNWWZLC",
+        "document_filename" : "EGBYQ",
+        "document_binary_url" : "PTJ",
+        "category_id" : "FITOW",
+        "upload_timestamp" : "2044-07-24T02:44:33.697429395",
+        "document_hash" : "BKPHXYKP"
+      }
+    }, {
+      "id" : "NWU",
+      "value" : {
+        "document_url" : "HRPCEKVAXJ",
+        "document_filename" : "NEDC",
+        "document_binary_url" : "WWOJZ",
+        "category_id" : "MOVBJ",
+        "upload_timestamp" : "2002-07-07T07:54:36.077973021",
+        "document_hash" : "YSSC"
+      }
+    } ],
+    "rentStatementPlaceholder" : "FPKA",
+    "arrearsTotal" : "OHJZKAFG",
+    "judgmentRequested" : "JUNXFT"
+  },
+  "detailsTab_ReasonsForPossessionDetails" : {
+    "ground1" : "OTWZP",
+    "ground2" : "VYAIP",
+    "ground2A" : "JPL",
+    "ground2ZA" : "OOH",
+    "ground3" : "APJIMVFK",
+    "ground4" : "XBGKBM",
+    "ground5" : "RKVECR",
+    "ground6" : "IQUFCBYOZN",
+    "ground7" : "PTEWATLSW",
+    "ground7A" : "RQOI",
+    "ground7B" : "RWMOPOCLE",
+    "ground8" : "AHONKG",
+    "ground9" : "PHBQVTOKYK",
+    "ground10" : "YVQGFTYM",
+    "ground10A" : "AUUEMUGQRD",
+    "ground11" : "SKIVLGB",
+    "ground12" : "EXUEPPHK",
+    "ground13" : "EYYUAMPZB",
+    "ground14" : "EIPLJ",
+    "ground14A" : "YHNLSBOWY",
+    "ground14ZA" : "BJLZNPFFP",
+    "ground15" : "JNGIFNQ",
+    "ground15A" : "COEDLCBO",
+    "ground16" : "ZWFVMULCX",
+    "ground17" : "JSCXDSGGI",
+    "groundA" : "PPSCTRD",
+    "groundB" : "ETYETVJY",
+    "groundC" : "TAFXP",
+    "groundD" : "LBWYHXW",
+    "groundE" : "JXJIARZSYZ",
+    "groundF" : "OXEWNVV",
+    "groundG" : "NRYLYKCX",
+    "groundH" : "LHZJXNEWPO",
+    "groundI" : "XTPPEYNKT",
+    "condition1OfSection84A" : "CURMP",
+    "condition2OfSection84A" : "KVR",
+    "condition3OfSection84A" : "HFV",
+    "condition4OfSection84A" : "GMFS",
+    "condition5OfSection84A" : "AOMPHTEZLZ",
+    "section157" : "SQCFCLLFZ",
+    "section170" : "FXIODL",
+    "section178" : "PCZOWGFMKI",
+    "section181" : "BVKAFEOS",
+    "section186" : "NNH",
+    "section187" : "UVMHRJAACL",
+    "section191" : "MRLMCRGWN",
+    "section199" : "ARDEGDHQL",
+    "paragraph25B2Schedule12" : "SGRULXS",
+    "antisocialBehaviour" : "YKEJXICBS",
+    "breachOfTheTenancy" : "NVHPF",
+    "absoluteGrounds" : "CTUKWR",
+    "otherGrounds" : "TGTD",
+    "noGrounds" : "CZESPFBS",
+    "hasAdditionalReasons" : "SBJCYY",
+    "additionalReasonsDetails" : "IFRZAQR"
+  },
+  "detailsTab_ApplicationsDetails" : {
+    "planToMakeGeneralApplication" : "CER"
+  },
+  "detailsTab_ClaimantInformation" : {
+    "claimantName" : "NVODNTWL"
+  },
+  "detailsTab_ClaimantAddress" : {
+    "AddressLine1" : "KTEXNIYYJ",
+    "AddressLine2" : "NHBIJSLRPF",
+    "AddressLine3" : "MXIVPXOY",
+    "PostTown" : "RBFYJHM",
+    "County" : "WSDOFWBB",
+    "PostCode" : "JBK",
+    "Country" : "SDAUATMTVP"
+  },
+  "detailsTab_ClaimantContactDetails" : {
+    "emailAddress" : "NPJDQAJMN",
+    "phoneNumberProvided" : "GKXIW",
+    "phoneNumber" : "NZXXXVTYJQ"
+  },
+  "detailsTab_ClaimantCircumstances" : {
+    "claimantCircumstancesGiven" : "JCGZRQMJ",
+    "claimantCircumstancesDetails" : "POBO"
+  },
+  "detailsTab_DefendantInformationDetails" : {
+    "nameKnown" : "ZYIFI",
+    "firstName" : "OKGFOWWDC",
+    "lastName" : "TPIQB",
+    "addressKnown" : "JAHRBE",
+    "addressForService" : {
+      "AddressLine1" : "UIMQLOVER",
+      "AddressLine2" : "ZRFNDGH",
+      "AddressLine3" : "MUQITSXG",
+      "PostTown" : "JRJRFIEAPZ",
+      "County" : "PMHAA",
+      "PostCode" : "DNZVUOK",
+      "Country" : "UMZJK"
+    }
+  },
+  "detailsTab_AdditionalDefendants" : [ {
+    "id" : "FWRY",
+    "value" : {
+      "nameKnown" : "SIMBTH",
+      "firstName" : "SQRQ",
+      "lastName" : "NVQ",
+      "addressKnown" : "YBJRQSUAH",
+      "addressForService" : {
+        "AddressLine1" : "YSV",
+        "AddressLine2" : "QMWCFTH",
+        "AddressLine3" : "GEPKITQUU",
+        "PostTown" : "XPI",
+        "County" : "RWVLR",
+        "PostCode" : "LFUDGA",
+        "Country" : "XOGFMSBUNR"
+      }
+    }
+  } ],
+  "detailsTab_DefendantCircumstanceDetails" : {
+    "defendantCircumstancesGiven" : "SNJMAO",
+    "defendantCircumstances" : "POZROD"
+  },
+  "detailsTab_MortgageOneDetails" : {
+    "nameKnown" : "OTAWKNHMR",
+    "name" : "TELQ",
+    "addressKnown" : "KVCTDST",
+    "address" : {
+      "AddressLine1" : "TOFCUE",
+      "AddressLine2" : "BPJZC",
+      "AddressLine3" : "ZHNX",
+      "PostTown" : "PWHSRSEVVT",
+      "County" : "HMBMKKZD",
+      "PostCode" : "LSZXG",
+      "Country" : "QOKSIJ"
+    }
+  },
+  "detailsTab_MortgageDetails" : [ {
+    "id" : "ZRFK",
+    "value" : {
+      "nameKnown" : "IQD",
+      "name" : "IYMNND",
+      "addressKnown" : "KREZWOZ",
+      "address" : {
+        "AddressLine1" : "AEKOGPAC",
+        "AddressLine2" : "ACRSCHX",
+        "AddressLine3" : "IBZEGNHBRB",
+        "PostTown" : "JEFTE",
+        "County" : "RQAQCVCYBN",
+        "PostCode" : "QYMBX",
+        "Country" : "PIZNYBXEJI"
+      }
+    }
+  }, {
+    "id" : "HRTXSTLXO",
+    "value" : {
+      "nameKnown" : "RTICLXYF",
+      "name" : "DVSKVCVFB",
+      "addressKnown" : "FJFLQLMGW",
+      "address" : {
+        "AddressLine1" : "GOIJVEUYZ",
+        "AddressLine2" : "DVVKHZJRVL",
+        "AddressLine3" : "NMTAKDNTR",
+        "PostTown" : "GEVLUDD",
+        "County" : "DTJLOJD",
+        "PostCode" : "EUHIPQTVLC",
+        "Country" : "SKT"
+      }
+    }
+  } ],
+  "detailsTab_DemotionOfTenancyDetails" : {
+    "housingAct" : "WDQRETDL",
+    "statementOfExpressTermsServed" : "XUOFZJVDHC",
+    "terms" : "VGL",
+    "reasons" : "RVBPCC"
+  },
+  "detailsTab_SuspensionOfRightToBuyDetails" : {
+    "housingAct" : "HGRY",
+    "reasons" : "HGHG"
+  },
+  "detailsTab_OccupationContractLicenceDetails" : {
+    "agreementType" : "BYOAJ",
+    "agreementTypeDescription" : "UUNBYHS",
+    "agreementStartDate" : "CDFTM",
+    "documents" : [ {
+      "id" : "FGZEJRGNWY",
+      "value" : {
+        "document_url" : "HIU",
+        "document_filename" : "YEVVMD",
+        "document_binary_url" : "NTSJ",
+        "category_id" : "MBTJRMEQN",
+        "upload_timestamp" : "2020-07-06T23:27:41.138815449",
+        "document_hash" : "GRR"
+      }
+    }, {
+      "id" : "FCJXXD",
+      "value" : {
+        "document_url" : "FZHELVBRXK",
+        "document_filename" : "GRJF",
+        "document_binary_url" : "WGOTGBT",
+        "category_id" : "EXRRV",
+        "upload_timestamp" : "1971-08-30T08:41:32.44332266",
+        "document_hash" : "BIMEZQAJLY"
+      }
+    } ],
+    "documentsPlaceholder" : "QUGELNYAYA"
+  },
+  "detailsTab_AntisocialAndConductDetails" : {
+    "antiSocialBehaviour" : "HFLJTVN",
+    "antiSocialBehaviourDetails" : "TYZFCE",
+    "propertyUsedIllegally" : "OMAHYUOVT",
+    "propertyUsedIllegallyDetails" : "CELUT",
+    "otherProhibitedConduct" : "KAFC",
+    "otherProhibitedConductDetails" : "PQI"
+  },
+  "detailsTab_ClaimantRegistrationAndLicensingDetails" : {
+    "isExemptLandlord" : "NZCU"
+  },
+  "detailsTab_ProhibitedConductStandardContractDetails" : {
+    "seekingProhibitedConductStandardContract" : "TSPYYK",
+    "agreedTerms" : "IXYSZNAOBT",
+    "termDetails" : "TWQTRUF",
+    "whyMakingClaim" : "FIYHOQ"
+  },
+  "detailsTab_RequiredDocumentsDetails" : {
+    "hasEnergyPerformanceCertificate" : "RBYRRSKVJ",
+    "noEnergyPerformanceCertificateReason" : "SYJC",
+    "energyPerformanceCertificates" : [ {
+      "id" : "JRMMOEJY",
+      "value" : {
+        "document_url" : "ABEHT",
+        "document_filename" : "GNSJRZSK",
+        "document_binary_url" : "HUWHAZXR",
+        "category_id" : "MZWKUJTPQ",
+        "upload_timestamp" : "2013-04-25T13:41:56.912400318",
+        "document_hash" : "ZUZ"
+      }
+    }, {
+      "id" : "WIKAQGAJMO",
+      "value" : {
+        "document_url" : "XZUU",
+        "document_filename" : "WPQMRY",
+        "document_binary_url" : "TNZJMBDTF",
+        "category_id" : "ZRID",
+        "upload_timestamp" : "2039-07-30T05:01:00.846207464",
+        "document_hash" : "XLTLFASJ"
+      }
+    } ],
+    "hasGasSafetyReport" : "SITHIJFO",
+    "noGasSafetyReportReason" : "QGCAGAW",
+    "gasSafetyReports" : [ {
+      "id" : "JXOWDXSJL",
+      "value" : {
+        "document_url" : "EEZQTHEKY",
+        "document_filename" : "JHUQWD",
+        "document_binary_url" : "XXG",
+        "category_id" : "RWKZTBEU",
+        "upload_timestamp" : "2052-12-28T08:44:27.055960386",
+        "document_hash" : "RKZJ"
+      }
+    }, {
+      "id" : "ANVWXCRMZ",
+      "value" : {
+        "document_url" : "TBW",
+        "document_filename" : "VBYSHSC",
+        "document_binary_url" : "ZQFMGMS",
+        "category_id" : "HKHZQ",
+        "upload_timestamp" : "1991-05-07T23:26:00.149722133",
+        "document_hash" : "PGWWFLWF"
+      }
+    } ],
+    "hasElectricalInstallationConditionReport" : "XHSTLRUIVU",
+    "noElectricalInstallationConditionReportReason" : "LRFOO",
+    "electricalInstallationReports" : [ {
+      "id" : "NMTTFMFSN",
+      "value" : {
+        "document_url" : "ZCYDRDW",
+        "document_filename" : "NKEOOLZTD",
+        "document_binary_url" : "RTHMMG",
+        "category_id" : "SRNKIEV",
+        "upload_timestamp" : "2016-04-16T11:32:19.689294903",
+        "document_hash" : "ZCRSWGGIY"
+      }
+    } ]
+  },
+  "detailsTab_UploadedDocumentsChecklistDetails" : {
+    "documentsYouveUploaded" : "MTDJDAF"
+  },
+  "bundleTab_Status" : "RFNZ",
+  "bundleTab_Bundle" : {
+    "document_url" : "KLSLPSGFU",
+    "document_filename" : "HMHVSGCHA",
+    "document_binary_url" : "HBQY",
+    "category_id" : "LUYRQCSISQ",
+    "upload_timestamp" : "1980-02-06T18:31:51.755942789",
+    "document_hash" : "CQVTTGL"
+  },
+  "bundleTab_LastUpdated" : "RBODCVC",
+  "bundleTab_Pages" : 7430,
+  "bundleTab_MissingDocuments" : [ {
+    "id" : "OILZLUIK",
+    "value" : {
+      "documentName" : "RUPS",
+      "folder" : "LFN",
+      "page" : 5875,
+      "reason" : "YVJVRQHVT"
+    }
+  }, {
+    "id" : "STCB",
+    "value" : {
+      "documentName" : "ALWQ",
+      "folder" : "VBAYNCHT",
+      "page" : 2035,
+      "reason" : "COZKJ"
+    }
+  } ],
+  "note" : "ODGQDOKKFS",
+  "caseNotes" : [ {
+    "id" : "VMS",
+    "value" : {
+      "createdBy" : "TSRQV",
+      "createdOn" : "2068-08-11T18:48:40.220232606",
+      "note" : "GWFHCIYXAE"
+    }
+  } ],
+  "judicialNote" : "ACTGB",
+  "judicialNotesMarkdown" : "MNRML",
+  "judicialNotesMarkdownLabel" : "TXGG",
+  "caseReviewDatesMarkdown" : "ZHFAGXJO",
+  "caseReviewDatesMarkdownLabel" : "AIXROFDIU",
+  "reviewDates" : [ {
+    "id" : "HDETMVSZ",
+    "value" : {
+      "date" : "2040-07-25",
+      "reason" : "LIFT_STAY",
+      "description" : "TICFNXHL"
+    }
+  }, {
+    "id" : "XXTTG",
+    "value" : {
+      "date" : "2010-10-06",
+      "reason" : "DISMISS_CASE",
+      "description" : "LIWZPP"
+    }
+  } ],
+  "caseFlags" : {
+    "partyName" : "NKLNIRIWF",
+    "roleOnCase" : "ZRORYVHWQH",
+    "details" : [ {
+      "id" : "WLT",
+      "value" : {
+        "name" : "GEICUO",
+        "name_cy" : "DBZQBYBIF",
+        "subTypeValue" : "WUOIVXGWYU",
+        "subTypeValue_cy" : "LNCMDY",
+        "subTypeKey" : "YQTZJ",
+        "otherDescription" : "EUPWAVZMGS",
+        "otherDescription_cy" : "SUFJ",
+        "flagComment" : "QODAZQUZRP",
+        "flagComment_cy" : "KUFQBMVLE",
+        "flagUpdateComment" : "WKILAIJWWA",
+        "dateTimeModified" : "2040-03-01T05:51:02.614Z",
+        "dateTimeCreated" : "2050-09-02T10:33:27.477Z",
+        "path" : [ {
+          "id" : "GEDOTEMYW",
+          "value" : "UXPA"
+        }, {
+          "id" : "ZWE",
+          "value" : "MJNU"
+        } ],
+        "hearingRelevant" : "NO",
+        "flagCode" : "LBGU",
+        "status" : "DZIES",
+        "availableExternally" : "NO"
+      }
+    }, {
+      "id" : "USUNVU",
+      "value" : {
+        "name" : "AHNESURMM",
+        "name_cy" : "WOCOI",
+        "subTypeValue" : "BPZWMJJ",
+        "subTypeValue_cy" : "JIAMFQ",
+        "subTypeKey" : "LFQDEBWT",
+        "otherDescription" : "HTPNR",
+        "otherDescription_cy" : "MDFQHS",
+        "flagComment" : "ANQ",
+        "flagComment_cy" : "EGDVIVIS",
+        "flagUpdateComment" : "YBUZ",
+        "dateTimeModified" : "2087-04-14T22:11:40.151Z",
+        "dateTimeCreated" : "2065-06-22T01:33:24.041Z",
+        "path" : [ {
+          "id" : "HZZLAK",
+          "value" : "AZBXAKWX"
+        }, {
+          "id" : "QYIXE",
+          "value" : "PDA"
+        } ],
+        "hearingRelevant" : "NO",
+        "flagCode" : "LXSTB",
+        "status" : "VHYYACS",
+        "availableExternally" : "NO"
+      }
+    } ],
+    "visibility" : "External",
+    "groupId" : "3fb391e0-063d-3e94-91c9-70f5dd7273b1"
+  },
+  "flagLauncherInternal" : { },
+  "flagLauncherExternal" : { },
+  "partySupport" : [ {
+    "id" : "JZGFWXKEDB",
+    "value" : {
+      "supportFlags" : {
+        "partyName" : "YTYITXMMWU",
+        "roleOnCase" : "FVAYX",
+        "details" : [ {
+          "id" : "CXWDIN",
+          "value" : {
+            "name" : "QGOPJIIYP",
+            "name_cy" : "WHWUUN",
+            "subTypeValue" : "CJBRWJ",
+            "subTypeValue_cy" : "QCZZYGANPE",
+            "subTypeKey" : "HWZAKRJN",
+            "otherDescription" : "OPHSN",
+            "otherDescription_cy" : "MRGGRZD",
+            "flagComment" : "DIKRAMQI",
+            "flagComment_cy" : "FSPKUPRB",
+            "flagUpdateComment" : "SOTF",
+            "dateTimeModified" : "1973-12-31T02:31:18.389Z",
+            "dateTimeCreated" : "2027-08-15T01:49:52.602Z",
+            "path" : [ {
+              "id" : "ISKFCWXTL",
+              "value" : "ZDLM"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "ETYTZA",
+            "status" : "FRVXAD",
+            "availableExternally" : "YES"
+          }
+        }, {
+          "id" : "SYN",
+          "value" : {
+            "name" : "EOBE",
+            "name_cy" : "WZA",
+            "subTypeValue" : "NPTIEVY",
+            "subTypeValue_cy" : "FUZBMEM",
+            "subTypeKey" : "WBGUS",
+            "otherDescription" : "IWCGSYHW",
+            "otherDescription_cy" : "FBKQVGVQ",
+            "flagComment" : "WWMOI",
+            "flagComment_cy" : "QCURDJ",
+            "flagUpdateComment" : "YHVCKJ",
+            "dateTimeModified" : "2055-10-18T20:52:19.514Z",
+            "dateTimeCreated" : "2033-02-12T14:23:00.812Z",
+            "path" : [ {
+              "id" : "BME",
+              "value" : "NGVLPQI"
+            }, {
+              "id" : "RXGXHQ",
+              "value" : "NTHSEZUYQM"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "KILLSDDU",
+            "status" : "OSMZUXOR",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "46466320-bc95-3122-84f1-72ac91744cfb"
+      }
+    }
+  } ],
+  "supportReviewFlags" : [ {
+    "id" : "SSMFREXHP",
+    "value" : {
+      "supportFlags" : {
+        "partyName" : "FBEN",
+        "roleOnCase" : "IBVRWZR",
+        "details" : [ {
+          "id" : "YJPMXCKCX",
+          "value" : {
+            "name" : "YVRZZX",
+            "name_cy" : "TFKQMFAN",
+            "subTypeValue" : "WBF",
+            "subTypeValue_cy" : "RGJ",
+            "subTypeKey" : "QSBW",
+            "otherDescription" : "YPFTNBGXB",
+            "otherDescription_cy" : "KVLCPYGSF",
+            "flagComment" : "ULFE",
+            "flagComment_cy" : "EZQLQZ",
+            "flagUpdateComment" : "DWMBBUQ",
+            "dateTimeModified" : "1998-03-21T11:25:30.051Z",
+            "dateTimeCreated" : "2024-02-26T11:48:40.068Z",
+            "path" : [ {
+              "id" : "CAQZWZ",
+              "value" : "FTO"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "IUM",
+            "status" : "CTUPDWNQQD",
+            "availableExternally" : "YES"
+          }
+        } ],
+        "visibility" : "External",
+        "groupId" : "104c4bbe-eab2-3006-a735-adc9ea059e17"
+      }
+    }
+  } ],
+  "allLinkedDefendants" : [ {
+    "id" : "DEPKBFA",
+    "value" : {
+      "id" : "ATUQCWHVNN",
+      "rank" : 2635,
+      "idamId" : "DSDJCYQN",
+      "firstName" : "ZXOYCCTH",
+      "lastName" : "ZIQ",
+      "orgName" : "EJZEFNOMT",
+      "nameKnown" : "NO",
+      "emailAddress" : "ILPWEATFRE",
+      "address" : {
+        "AddressLine1" : "ABHDDHXE",
+        "AddressLine2" : "ZDOPKZM",
+        "AddressLine3" : "NQHPJGVZ",
+        "PostTown" : "YVTPCMMS",
+        "County" : "OZAOH",
+        "PostCode" : "IHE",
+        "Country" : "SXYAJG"
+      },
+      "addressKnown" : "NO",
+      "addressSameAsProperty" : "YES",
+      "phoneNumber" : "ZTVM",
+      "phoneNumberProvided" : "NO",
+      "textMessageNumber" : "PDGGH",
+      "pcqId" : "DQZXHWAIT",
+      "dateOfBirth" : "2074-04-11",
+      "legalRepresentative" : {
+        "telephoneNumber" : "MIDHPIME",
+        "emailAddress" : "BTXH",
+        "organisationName" : "UVTZU",
+        "address" : {
+          "AddressLine1" : "URTUIJDNS",
+          "AddressLine2" : "STQDOXYIX",
+          "AddressLine3" : "MLJGWFY",
+          "PostTown" : "BCVRKMW",
+          "County" : "TFBTPAO",
+          "PostCode" : "DTYRPZWL",
+          "Country" : "ROFMBVWQDC"
+        }
+      },
+      "actingForPartyId" : "XOQ",
+      "defendantFlags" : {
+        "partyName" : "AEEQLHFOKJ",
+        "roleOnCase" : "IRLV",
+        "details" : [ {
+          "id" : "WDGO",
+          "value" : {
+            "name" : "GVTTCYOBTI",
+            "name_cy" : "MHGRTHJH",
+            "subTypeValue" : "PVRCHHUFE",
+            "subTypeValue_cy" : "UAEWQ",
+            "subTypeKey" : "LYELTQQ",
+            "otherDescription" : "MHAU",
+            "otherDescription_cy" : "WNUEQCM",
+            "flagComment" : "UAIV",
+            "flagComment_cy" : "IMXXG",
+            "flagUpdateComment" : "XZJY",
+            "dateTimeModified" : "2071-09-11T04:11:06.853Z",
+            "dateTimeCreated" : "2056-06-24T08:32:10.333Z",
+            "path" : [ {
+              "id" : "IAJJQEBOI",
+              "value" : "VXC"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "JRYE",
+            "status" : "LHKR",
+            "availableExternally" : "NO"
+          }
+        }, {
+          "id" : "GQCMI",
+          "value" : {
+            "name" : "FIHRLYEGZA",
+            "name_cy" : "NVXGVVO",
+            "subTypeValue" : "UOZDAJKV",
+            "subTypeValue_cy" : "MMJZ",
+            "subTypeKey" : "SMPAQEM",
+            "otherDescription" : "HQOASUYF",
+            "otherDescription_cy" : "BNTONBSS",
+            "flagComment" : "YARHATI",
+            "flagComment_cy" : "VWRBSXGRNM",
+            "flagUpdateComment" : "FJEVVQIMPQ",
+            "dateTimeModified" : "2060-03-25T08:15:33.515Z",
+            "dateTimeCreated" : "2057-01-29T05:44:33.551Z",
+            "path" : [ {
+              "id" : "XKFWF",
+              "value" : "AUEKZH"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "UFZFS",
+            "status" : "PEEBGS",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "0c296415-3c71-30dc-8aab-0d725e9f6b63"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "NCHHDPNJSO",
+          "OrganisationID" : "HJM"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "FNJJ",
+          "value" : {
+            "FromTimestamp" : "2082-12-14T03:51:36.578824449",
+            "ToTimestamp" : "2004-06-12T09:13:25.359473221",
+            "OrganisationName" : "XZNFMOT",
+            "OrganisationAddress" : {
+              "AddressLine1" : "FVLO",
+              "AddressLine2" : "DQIRKBC",
+              "AddressLine3" : "CAYOSNT",
+              "PostTown" : "HKEWVQBZC",
+              "County" : "MAIFGJRZ",
+              "PostCode" : "XYZGSFT",
+              "Country" : "NTWILV"
+            }
+          }
+        }, {
+          "id" : "OEYVXO",
+          "value" : {
+            "FromTimestamp" : "1975-03-28T02:44:53.891762248",
+            "ToTimestamp" : "2056-11-18T09:36:58.472485582",
+            "OrganisationName" : "DCJTXMCMN",
+            "OrganisationAddress" : {
+              "AddressLine1" : "JIWGW",
+              "AddressLine2" : "GCAX",
+              "AddressLine3" : "CKWXJHJJHM",
+              "PostTown" : "OUU",
+              "County" : "RUEI",
+              "PostCode" : "XXPIOZKNZ",
+              "Country" : "JXINJOFJMT"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "PEZYAEEN",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "hearing-centre-team-leader",
+        "LastNoCRequestedBy" : "BILRXWMHHI"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "JCWXTNMIT",
+        "roleOnCase" : "DDULSBIWTW",
+        "details" : [ {
+          "id" : "OTXFZ",
+          "value" : {
+            "name" : "VSTNCC",
+            "name_cy" : "CUD",
+            "subTypeValue" : "VOKGVO",
+            "subTypeValue_cy" : "MGLESKCB",
+            "subTypeKey" : "WFEJITFCUZ",
+            "otherDescription" : "MPHQZ",
+            "otherDescription_cy" : "XNABKXNPYJ",
+            "flagComment" : "BQPY",
+            "flagComment_cy" : "DOSRUR",
+            "flagUpdateComment" : "HGP",
+            "dateTimeModified" : "2018-01-23T15:24:02.614Z",
+            "dateTimeCreated" : "2050-09-02T10:52:00.668Z",
+            "path" : [ {
+              "id" : "XOCON",
+              "value" : "ENHL"
+            } ],
+            "hearingRelevant" : "NO",
+            "flagCode" : "OQEMOZOSI",
+            "status" : "TCE",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "c59202c0-7bc7-3376-abce-2eec524f3f69"
+      }
+    }
+  }, {
+    "id" : "NUPKXEHX",
+    "value" : {
+      "id" : "NHK",
+      "rank" : 4226,
+      "idamId" : "YPENGCJV",
+      "firstName" : "VHRRVOS",
+      "lastName" : "LRNKDICV",
+      "orgName" : "NRNC",
+      "nameKnown" : "NO",
+      "emailAddress" : "SFBXDM",
+      "address" : {
+        "AddressLine1" : "SMEG",
+        "AddressLine2" : "WEYBR",
+        "AddressLine3" : "CWJLNLAGDE",
+        "PostTown" : "ARCZZQ",
+        "County" : "DQAVNGRSR",
+        "PostCode" : "KHWEDOCKL",
+        "Country" : "OINQPQOBY"
+      },
+      "addressKnown" : "NO",
+      "addressSameAsProperty" : "YES",
+      "phoneNumber" : "XCPPJY",
+      "phoneNumberProvided" : "YES",
+      "textMessageNumber" : "XLLC",
+      "pcqId" : "NNZSZJF",
+      "dateOfBirth" : "2003-09-23",
+      "legalRepresentative" : {
+        "telephoneNumber" : "ZGQFYRCHE",
+        "emailAddress" : "LQQKEDRDQ",
+        "organisationName" : "HDPNVYHQ",
+        "address" : {
+          "AddressLine1" : "RFW",
+          "AddressLine2" : "GQVBBPR",
+          "AddressLine3" : "SMV",
+          "PostTown" : "ASE",
+          "County" : "DIGB",
+          "PostCode" : "SRG",
+          "Country" : "DZE"
+        }
+      },
+      "actingForPartyId" : "OJYRWJSX",
+      "defendantFlags" : {
+        "partyName" : "HHI",
+        "roleOnCase" : "ICEDMZBAK",
+        "details" : [ {
+          "id" : "LYYCKGDE",
+          "value" : {
+            "name" : "DWQKZQMXHY",
+            "name_cy" : "RVSO",
+            "subTypeValue" : "JEVTALUK",
+            "subTypeValue_cy" : "TJQUQTIY",
+            "subTypeKey" : "LWDVSMCWQ",
+            "otherDescription" : "YGZWRSXL",
+            "otherDescription_cy" : "ZCGUUIP",
+            "flagComment" : "BOAXHG",
+            "flagComment_cy" : "HOFGJKPZ",
+            "flagUpdateComment" : "UEEDFROTGW",
+            "dateTimeModified" : "1999-03-02T06:33:20.068Z",
+            "dateTimeCreated" : "1970-09-16T01:41:47.815Z",
+            "path" : [ {
+              "id" : "HZOGG",
+              "value" : "SCSSFJTS"
+            }, {
+              "id" : "FBRSEAT",
+              "value" : "ZMCMPHDBYM"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "MVEJBNAIU",
+            "status" : "EOBF",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "9eb3a406-73e0-3c28-a42e-dbe58abc8209"
+      },
+      "organisationPolicy" : {
+        "Organisation" : {
+          "OrganisationName" : "UNXXVRCKYH",
+          "OrganisationID" : "IJZJHQOJNX"
+        },
+        "PreviousOrganisations" : [ {
+          "id" : "SCFHSF",
+          "value" : {
+            "FromTimestamp" : "1970-05-03T03:54:04.553523029",
+            "ToTimestamp" : "2024-01-02T14:19:05.76742642",
+            "OrganisationName" : "AIUZR",
+            "OrganisationAddress" : {
+              "AddressLine1" : "PIDEYLH",
+              "AddressLine2" : "EDPGEQZ",
+              "AddressLine3" : "RTCNK",
+              "PostTown" : "RFULNZ",
+              "County" : "SPZULWL",
+              "PostCode" : "KGQZCTXOY",
+              "Country" : "UKFPHWNYW"
+            }
+          }
+        } ],
+        "OrgPolicyReference" : "TVQ",
+        "PrepopulateToUsersOrganisation" : "YES",
+        "OrgPolicyCaseAssignedRole" : "claimant-solicitor",
+        "LastNoCRequestedBy" : "RHJF"
+      },
+      "partyFlagsExternal" : {
+        "partyName" : "WCJ",
+        "roleOnCase" : "ZGBH",
+        "details" : [ {
+          "id" : "AHDVSXEP",
+          "value" : {
+            "name" : "NRQYHOBINX",
+            "name_cy" : "AEETGXT",
+            "subTypeValue" : "XHWOYDKI",
+            "subTypeValue_cy" : "RIQMJP",
+            "subTypeKey" : "ZDZS",
+            "otherDescription" : "KGPM",
+            "otherDescription_cy" : "MKBVXJ",
+            "flagComment" : "PGSXGW",
+            "flagComment_cy" : "IMJPWIYJ",
+            "flagUpdateComment" : "JGKJYZE",
+            "dateTimeModified" : "1994-03-12T18:31:01.277Z",
+            "dateTimeCreated" : "1990-09-13T22:16:26.557Z",
+            "path" : [ {
+              "id" : "ZSRSRSVQ",
+              "value" : "SJBPNM"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "XJUGJCRRG",
+            "status" : "OJUDPHJ",
+            "availableExternally" : "NO"
+          }
+        }, {
+          "id" : "HXTSWR",
+          "value" : {
+            "name" : "BOGS",
+            "name_cy" : "KYVT",
+            "subTypeValue" : "QEFEHUA",
+            "subTypeValue_cy" : "OSFDIATKQT",
+            "subTypeKey" : "IOVRSH",
+            "otherDescription" : "MLDYXODX",
+            "otherDescription_cy" : "QBGDX",
+            "flagComment" : "IZZSWRN",
+            "flagComment_cy" : "BFUBII",
+            "flagUpdateComment" : "VJSQ",
+            "dateTimeModified" : "2031-05-01T04:27:39.864Z",
+            "dateTimeCreated" : "2004-07-12T12:27:00.540Z",
+            "path" : [ {
+              "id" : "AXA",
+              "value" : "JAEECBWB"
+            } ],
+            "hearingRelevant" : "YES",
+            "flagCode" : "WVWIOT",
+            "status" : "LYNCSACQEM",
+            "availableExternally" : "NO"
+          }
+        } ],
+        "visibility" : "Internal",
+        "groupId" : "f1f2efc6-3d7b-341f-94c6-15c8867b23ce"
+      }
+    }
+  } ],
+  "hasUnsubmittedDefendantResponses" : "NO",
+  "CaseAccessGroups" : [ {
+    "id" : "IXYY",
+    "value" : {
+      "caseAccessGroupType" : "YELZSX",
+      "caseAccessGroupId" : "RAAAIVU"
+    }
+  }, {
+    "id" : "XDZLYDKXZ",
+    "value" : {
+      "caseAccessGroupType" : "DLVJG",
+      "caseAccessGroupId" : "LTOGDPFCN"
+    }
+  } ],
+  "postCode" : "DFBRQLKYCM",
+  "claimantNames" : "FGGLR",
+  "defendantNames" : "WRNOBBWW",
+  "targetState" : "DECISION_OUTCOME",
+  "uploadSingleDocument" : {
+    "document_url" : "NJMPID",
+    "document_filename" : "UACRMUPCAU",
+    "document_binary_url" : "GYEVVRFJ",
+    "category_id" : "PAPGAEPEP",
+    "upload_timestamp" : "1986-10-15T00:15:02.678245634",
+    "document_hash" : "WRPDHU"
+  },
+  "changeOrganisationRequestField" : {
+    "OrganisationToAdd" : {
+      "OrganisationName" : "JJPACQRRA",
+      "OrganisationID" : "PHUFMKCY"
+    },
+    "OrganisationToRemove" : {
+      "OrganisationName" : "YTICSHKKEL",
+      "OrganisationID" : "OLHHASLAM"
+    },
+    "CaseRoleId" : {
+      "value" : {
+        "code" : "NRPHYNAZ",
+        "label" : "ZPXE"
+      },
+      "list_items" : [ {
+        "code" : "EMPASCBC",
+        "label" : "ZSRUWQOG"
+      } ],
+      "caseTypePermissions" : "ZPXE",
+      "role" : "NRPHYNAZ",
+      "accessGroups" : [ ]
+    },
+    "Reason" : "VAYUTFJFQ",
+    "NotesReason" : "WETJR",
+    "ApprovalStatus" : "2",
+    "RequestTimestamp" : "2058-12-24T20:31:31.281761439",
+    "ApprovalRejectionTimestamp" : "1985-09-12T11:33:07.995415574",
+    "CreatedBy" : "WBCMZG"
+  },
+  "addParty_ManagePartyOptions" : "REMOVE_LEGAL_REPRESENTATIVE",
+  "addParty_AddPartyType" : "DEFENDANT",
+  "addParty_ClaimantOrganisationName" : "VFDO",
+  "addParty_ClaimantFirstName" : "OBUVZILS",
+  "addParty_ClaimantLastName" : "HPAOZWULU",
+  "addParty_ClaimantAddress" : {
+    "AddressLine1" : "JQW",
+    "AddressLine2" : "FFH",
+    "AddressLine3" : "LVIHDRZJ",
+    "PostTown" : "ZQMXKMD",
+    "County" : "KFIJHS",
+    "PostCode" : "XDGPJE",
+    "Country" : "LBCPMAOYM"
+  },
+  "addParty_ClaimantEmail" : "WNSVIOFEQT",
+  "addParty_ClaimantPhoneNumber" : "JGD",
+  "addParty_FirstName" : "BNFIO",
+  "addParty_LastName" : "ZWBBQWV",
+  "addParty_DefendantDateOfBirth" : "2036-03-04",
+  "addParty_DefendantAddress" : {
+    "AddressLine1" : "ZXLYAVPO",
+    "AddressLine2" : "ASZSFUTNYR",
+    "AddressLine3" : "NDXEZIZJ",
+    "PostTown" : "PGNMGFGIG",
+    "County" : "FSLV",
+    "PostCode" : "GMCPDTHXGC",
+    "Country" : "EXGFC"
+  },
+  "addParty_DefendantEmail" : "UWHLK",
+  "addParty_DefendantPhoneNumber" : "ZLDKFCSXC",
+  "addParty_LFFirstName" : "NHUL",
+  "addParty_LFLastName" : "SCFWA",
+  "addParty_LFOrganisationName" : "EMOSLVP",
+  "addParty_LFAddress" : {
+    "AddressLine1" : "JERQUB",
+    "AddressLine2" : "GVNQKWV",
+    "AddressLine3" : "TJALUARRV",
+    "PostTown" : "QCC",
+    "County" : "QGMTIAOT",
+    "PostCode" : "EVSYEUSJ",
+    "Country" : "GIURKXMY"
+  },
+  "addParty_LFEmail" : "SHSITPAFE",
+  "addParty_LFPhoneNumber" : "OFZYGBLG",
+  "addParty_PartyRadioList" : {
+    "value" : {
+      "code" : "8f479cc2-c768-3f32-a1d6-d98544940dcd",
+      "label" : "WETYJXYBR"
+    },
+    "list_items" : [ {
+      "code" : "f5aad876-b704-3fda-a140-0241fac48d06",
+      "label" : "UMAZCGKA"
+    } ],
+    "valueCode" : "8f479cc2-c768-3f32-a1d6-d98544940dcd",
+    "valueLabel" : "WETYJXYBR"
+  },
+  "updateParty_PartyToUpdate" : {
+    "value" : {
+      "code" : "3c9d4fc0-ef2e-3af4-bef5-233af7be052c",
+      "label" : "TLM"
+    },
+    "list_items" : [ {
+      "code" : "9dd00493-6ec3-3b9d-828e-b8f55dc01169",
+      "label" : "KKZX"
+    }, {
+      "code" : "92a527f9-8181-368f-884a-d8e409b49576",
+      "label" : "WFONQB"
+    } ],
+    "valueCode" : "3c9d4fc0-ef2e-3af4-bef5-233af7be052c",
+    "valueLabel" : "TLM"
+  },
+  "updateParty_UpdatePartyType" : "CLAIMANT",
+  "updateParty_UpdatePartyAddress" : {
+    "AddressLine1" : "STRUB",
+    "AddressLine2" : "KXEJLTPDG",
+    "AddressLine3" : "XXC",
+    "PostTown" : "RAEALYBQH",
+    "County" : "MCSEGNWP",
+    "PostCode" : "MJUAZTYAB",
+    "Country" : "JGINGF"
+  },
+  "updateParty_UpdatePartyEmail" : "PMSOK",
+  "updateParty_PhoneNumber" : "DVQID",
+  "updateParty_DateOfBirth" : "2058-09-23",
+  "updateParty_PreviouslySelectedPartyId" : "QFRWUZHVF",
+  "removeParty_PartyToRemove" : {
+    "value" : {
+      "code" : "471ee3e4-ada4-358b-8500-16b1746e79b4",
+      "label" : "WRU"
+    },
+    "list_items" : [ {
+      "code" : "58292773-27c0-3ec6-a4cc-4230bb8c1080",
+      "label" : "CPWBWFEL"
+    }, {
+      "code" : "03aa67f4-76cc-3d46-9735-23cfc4253ba6",
+      "label" : "WNP"
+    } ],
+    "valueCode" : "471ee3e4-ada4-358b-8500-16b1746e79b4",
+    "valueLabel" : "WRU"
+  },
+  "removeParty_UnremovablePartyList" : "ZPFRGZDJJ",
+  "removeParty_LastPartyMessage" : "SDHAOHNZU",
+  "removeParty_CanSelectParty" : "NO",
+  "removeParty_SelectedPartyLabel" : "UHVEEHCRFV",
+  "removeParty_PartyType" : "DEFENDANT",
+  "removeParty_DateOfBirth" : "SCOZTSM",
+  "removeParty_Address" : "CIFVQSL",
+  "removeParty_RemoveSelectedParty" : "NO",
+  "manageHearingOption" : "CANCEL",
+  "hearing_HearingId" : 1844,
+  "hearing_Type" : "APPLICATION",
+  "hearing_OtherHearingType" : "HCN",
+  "hearing_NoticeWording" : "TPL",
+  "hearing_Date" : "2039-07-26T12:38:50.218723938",
+  "hearing_DurationDays" : 2545,
+  "hearing_DurationHours" : 8059.86,
+  "hearing_DurationMinutes" : 5372.5,
+  "hearing_Notes" : "MUEEIQSV",
+  "hearing_IssueNotice" : "NO",
+  "hearing_IsWithoutNotice" : "NO",
+  "hearing_AdditionalInformation" : "CRGQWOWWVU",
+  "hearing_CancellationReason" : "NRWPU",
+  "hearing_HearingSummaryMarkdown" : "DMISB",
+  "mhDraft_HearingId" : 6868,
+  "mhDraft_Type" : "APPLICATION",
+  "mhDraft_OtherHearingType" : "ZHDBZH",
+  "mhDraft_NoticeWording" : "ADJ",
+  "mhDraft_Date" : "2069-01-25T00:29:54.384565286",
+  "mhDraft_DurationDays" : 8554,
+  "mhDraft_DurationHours" : 7749.46,
+  "mhDraft_DurationMinutes" : 9414.14,
+  "mhDraft_Notes" : "UJUVIEF",
+  "mhDraft_IssueNotice" : "YES",
+  "mhDraft_IsWithoutNotice" : "NO",
+  "mhDraft_AdditionalInformation" : "YOREVZUAR",
+  "mhDraft_CancellationReason" : "GUCZDRD",
+  "mhDraft_HearingSummaryMarkdown" : "MIBZKCDY",
+  "hearingList" : [ {
+    "id" : "IFAKKUDPVC",
+    "value" : {
+      "HearingId" : 1344,
+      "Type" : "APPLICATION",
+      "OtherHearingType" : "VXYM",
+      "NoticeWording" : "ADJ",
+      "Date" : "1996-09-02T14:17:15.872303416",
+      "DurationDays" : 2279,
+      "DurationHours" : 1061.88,
+      "DurationMinutes" : 8695.22,
+      "Notes" : "AIDD",
+      "IssueNotice" : "NO",
+      "IsWithoutNotice" : "NO",
+      "AdditionalInformation" : "KXDGOJ",
+      "CancellationReason" : "OSB",
+      "HearingSummaryMarkdown" : "PLUARNJWKO"
+    }
+  } ],
+  "showManageHearingPage" : "YES",
+  "selectedHearingId" : "ETT",
+  "hearingLocation" : "TOZTG",
+  "defendantRadioList" : {
+    "value" : {
+      "code" : "c2fe2e21-d665-3f51-973d-9d971bba5655",
+      "label" : "HXIFF"
+    },
+    "list_items" : [ {
+      "code" : "27727367-c1b7-3c0d-bb30-f064e9a3330d",
+      "label" : "VFMLVAEY"
+    } ],
+    "valueCode" : "c2fe2e21-d665-3f51-973d-9d971bba5655",
+    "valueLabel" : "HXIFF"
+  },
+  "partyMultiSelectionList" : {
+    "value" : [ {
+      "code" : "QPJ",
+      "label" : "YFUOMBFXBS"
+    }, {
+      "code" : "INWCMF",
+      "label" : "QYJ"
+    } ],
+    "list_items" : [ {
+      "code" : "FFIZCWVR",
+      "label" : "LJKFPV"
+    } ]
+  },
+  "mhDraftPartyList" : {
+    "value" : [ {
+      "code" : "XBHTY",
+      "label" : "ROSE"
+    }, {
+      "code" : "TXLOGRQ",
+      "label" : "EZYRPM"
+    } ],
+    "list_items" : [ {
+      "code" : "GKSUSLNQ",
+      "label" : "MVBEXQOKR"
+    } ]
+  },
+  "useEmailAddress" : "YES",
+  "emailAddress" : "YIYSOVSY",
+  "originalEmailAddress" : "YMP",
+  "reference" : "ILPYVTY",
+  "provideContactPhoneNumber" : "YES",
+  "contactPhoneNumber" : "NCVX",
+  "nameSectionLabel" : "PDJ",
+  "differentPostalAddress" : "YES",
+  "updatedCorrespondenceAddress" : {
+    "AddressLine1" : "YYLQFEVIXM",
+    "AddressLine2" : "YHARKADZZ",
+    "AddressLine3" : "CQAMDSYMRI",
+    "PostTown" : "IBZXV",
+    "County" : "NOYKCXPI",
+    "PostCode" : "TGJPPC",
+    "Country" : "QUTYWIRH"
+  },
+  "legalRepresentativeOrganisationAddress" : {
+    "AddressLine1" : "ZSD",
+    "AddressLine2" : "KYBVR",
+    "AddressLine3" : "QOVJJKVJ",
+    "PostTown" : "ILUXDOARY",
+    "County" : "IFSABVDOA",
+    "PostCode" : "SUHFPRIPR",
+    "Country" : "TGSVH"
+  },
+  "organisationAddressFound" : "YES",
+  "formattedContactAddress" : "CEA",
+  "organisationId" : "UJOREUTZ",
+  "legalRepUpdatedDetails" : "NO",
+  "deleteDraftResponse" : "NO",
+  "hasDraftResponse" : "YES",
+  "casePaymentHistoryViewer" : "XUV",
+  "hasUnsubmittedEnforcementData" : "YES"
+}
