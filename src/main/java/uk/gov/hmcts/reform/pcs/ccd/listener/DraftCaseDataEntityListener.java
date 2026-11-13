@@ -53,8 +53,8 @@ public class DraftCaseDataEntityListener {
     public void onSave(DraftCaseDataEntity draft) {
         if (hasHashToken(draft.getCaseData())) {
             try {
-                Map<UUID, String> uploads = uploads(draft.getCaseData());
-                uploads.keySet().removeAll(uploads(draft.getSavedCaseData()).keySet());
+                Map<UUID, String> uploads = uploads(draft.getCaseData(), draft.getCaseReference());
+                uploads.keySet().removeAll(uploads(draft.getSavedCaseData(), null).keySet());
                 if (!uploads.isEmpty()) {
                     long caseReference = draft.getCaseReference();
                     afterCommit(() -> scheduleAll(caseReference, uploads));
@@ -90,15 +90,20 @@ public class DraftCaseDataEntityListener {
         });
     }
 
-    private static Map<UUID, String> uploads(String caseData) throws JsonProcessingException {
+    // caseReference is only for the warning: null for the previously saved data, already warned about when saved.
+    private static Map<UUID, String> uploads(String caseData, Long caseReference) throws JsonProcessingException {
         Map<UUID, String> uploads = new LinkedHashMap<>();
         if (hasHashToken(caseData)) {
             for (JsonNode document : JSON.readTree(caseData).findParents("document_hash")) {
                 String hashToken = document.get("document_hash").textValue();
                 if (hashToken != null && !hashToken.isBlank()) {
-                    Matcher url = DOCUMENT_ID.matcher(document.path("document_url").asText());
+                    String documentUrl = document.path("document_url").asText();
+                    Matcher url = DOCUMENT_ID.matcher(documentUrl);
                     if (url.find()) {
                         uploads.put(UUID.fromString(url.group(1)), hashToken);
+                    } else if (caseReference != null) {
+                        log.warn("Not attaching draft upload with unrecognised document URL {} to case {}",
+                                 documentUrl, caseReference);
                     }
                 }
             }

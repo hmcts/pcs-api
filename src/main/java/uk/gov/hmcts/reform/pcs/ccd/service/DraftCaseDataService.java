@@ -130,6 +130,7 @@ public class DraftCaseDataService {
         try {
             userId = securityContextService.getCurrentUserId();
         } catch (SecurityContextException e) {
+            log.warn("No current user, so no draft uploads returned for case {}", caseReference, e);
             return List.of();
         }
         // IDAM ids are opaque: legacy accounts have numeric ones, so only a missing id means there is no owner.
