@@ -1,5 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -40,6 +45,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.doReturn;
 
 /** Real PCS persistence and projection, real SDK rendering, and the SDK's existing CDAM fixture. */
 @PcsCcdEventTest
@@ -64,6 +70,8 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     private BundleJobWorker worker;
     @Autowired
     private TransactionTemplate transaction;
+    @MockitoSpyBean
+    private FeatureToggleService featureToggleService;
 
     @Test
     void documentHookQueuesOnlyCommittedCascadedWrites() throws Exception {
@@ -98,6 +106,11 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
             .doesNotContain(first.stored().orElseThrow().url());
         assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
+        // The judge making an order links it; nobody else is given it.
+        doReturn(true).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+        assertThat(orderBundle(reference, "judge")).isEqualTo(new OrderStart.CaseBundle(
+            first.stored().orElseThrow().id(), first.fileName(), first.recordedAt()));
+        assertThat(orderBundle(reference, "hearing-centre-admin")).isNull();
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
     }
@@ -165,6 +178,11 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
             assertThat(missingDocument.getValue().getPage()).isPositive();
         });
+    }
+
+    private OrderStart.CaseBundle orderBundle(long reference, String role) {
+        return events.external(reference, MakeOrder.MAKE_ORDER)
+            .as(events.registerActor("Bundle", "Reader", "caseworker-pcs", role)).start().caseContext().caseBundle();
     }
 
     private PCSCase view(long reference, String role) {
