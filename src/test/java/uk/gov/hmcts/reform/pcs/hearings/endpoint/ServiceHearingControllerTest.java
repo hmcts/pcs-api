@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 class ServiceHearingControllerTest {
 
     private static final String AUTHORIZATION = "Bearer token";
+    private static final String SERVICE_AUTHORIZATION = "Bearer service-token";
     private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
@@ -42,7 +43,9 @@ class ServiceHearingControllerTest {
         when(serviceHearingService.getServiceHearingValues(CASE_REFERENCE)).thenReturn(values);
 
         ResponseEntity<ServiceHearingValues> response =
-            underTest.getHearingValues(AUTHORIZATION, request(String.valueOf(CASE_REFERENCE)));
+            underTest.getHearingValues(
+                AUTHORIZATION, SERVICE_AUTHORIZATION, request(String.valueOf(CASE_REFERENCE))
+            );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isSameAs(values);
@@ -53,14 +56,15 @@ class ServiceHearingControllerTest {
         when(serviceHearingService.getServiceHearingValues(CASE_REFERENCE))
             .thenThrow(new CaseNotFoundException(CASE_REFERENCE));
 
-        assertThatThrownBy(() -> underTest.getHearingValues(AUTHORIZATION, request(String.valueOf(CASE_REFERENCE))))
+        assertThatThrownBy(() -> underTest.getHearingValues(
+            AUTHORIZATION, SERVICE_AUTHORIZATION, request(String.valueOf(CASE_REFERENCE))))
             .isInstanceOf(CaseNotFoundException.class);
     }
 
     @Test
     void shouldRejectNullHearingValuesRequest() {
         assertThatNullPointerException()
-            .isThrownBy(() -> underTest.getHearingValues(AUTHORIZATION, null))
+            .isThrownBy(() -> underTest.getHearingValues(AUTHORIZATION, SERVICE_AUTHORIZATION, null))
             .withMessage("requestDetails is marked non-null but is null");
         verifyNoInteractions(serviceHearingService);
     }
@@ -68,7 +72,9 @@ class ServiceHearingControllerTest {
     @Test
     void shouldReturnNoLinkedCases() {
         ResponseEntity<List<ServiceLinkedCases>> response =
-            underTest.getLinkedCases(AUTHORIZATION, request(String.valueOf(CASE_REFERENCE)));
+            underTest.getLinkedCases(
+                AUTHORIZATION, SERVICE_AUTHORIZATION, request(String.valueOf(CASE_REFERENCE))
+            );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEmpty();
@@ -77,7 +83,7 @@ class ServiceHearingControllerTest {
     @Test
     void shouldRejectNullLinkedCasesRequest() {
         assertThatNullPointerException()
-            .isThrownBy(() -> underTest.getLinkedCases(AUTHORIZATION, null))
+            .isThrownBy(() -> underTest.getLinkedCases(AUTHORIZATION, SERVICE_AUTHORIZATION, null))
             .withMessage("requestDetails is marked non-null but is null");
     }
 

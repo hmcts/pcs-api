@@ -30,6 +30,8 @@ import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingService;
 @AllArgsConstructor
 public class ServiceHearingController {
 
+    public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+
     private final ServiceHearingService serviceHearingService;
 
     @PostMapping(path = {
@@ -43,6 +45,7 @@ public class ServiceHearingController {
     })
     public ResponseEntity<ServiceHearingValues> getHearingValues(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @NonNull @RequestBody ServiceHearingRequest requestDetails) {
 
         ServiceHearingValues hearingValues = serviceHearingService
@@ -63,6 +66,7 @@ public class ServiceHearingController {
     })
     public ResponseEntity<List<ServiceLinkedCases>> getLinkedCases(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @NonNull @RequestBody ServiceHearingRequest requestDetails) {
 
         // Need to load linked cases from PCS

@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 )
 class ServiceHearingValuesConfigurationTest {
 
-    private static final String CASE_ID = "1234567890123456";
-
     @Autowired
     private ServiceHearingValuesConfiguration underTest;
 
@@ -30,26 +28,10 @@ class ServiceHearingValuesConfigurationTest {
     }
 
     @Test
-    void shouldLoadDefaultValuesFromApplicationYaml() {
-        assertThat(underTest.getHmctsServiceId()).isEqualTo("AAA3");
-        assertThat(underTest.isCaseAdditionalSecurityFlag()).isFalse();
-        assertThat(underTest.isCaseRestrictedFlag()).isFalse();
-        assertThat(underTest.isAutoListFlag()).isFalse();
-        assertThat(underTest.isHearingInWelshFlag()).isFalse();
-        assertThat(underTest.isPrivateHearingRequiredFlag()).isFalse();
-        assertThat(underTest.isHearingIsLinkedFlag()).isFalse();
-        assertThat(underTest.getLocationType()).isEqualTo("Court");
-        assertThat(underTest.getRoleTypes()).containsExactly("24", "45");
-        assertThat(underTest.getPreferredHearingChannel()).isEqualTo("INTER");
-        assertThat(underTest.getNumberOfDaysOffset()).isEqualTo(57);
-    }
-
-    @Test
     void shouldBuildServiceHearingValuesUsingApplicationYamlDefaults() {
 
-        ServiceHearingValues result = underTest.getDefaultValues(CASE_ID);
+        ServiceHearingValues result = underTest.getDefaultValues();
 
-        assertThat(result.getCaseId()).isEqualTo(CASE_ID);
         assertThat(result.getHmctsServiceID()).isEqualTo("AAA3");
         assertThat(result.getCaseAdditionalSecurityFlag()).isFalse();
         assertThat(result.getCaseRestrictedFlag()).isFalse();

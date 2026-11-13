@@ -33,7 +33,6 @@ public class ServiceHearingService {
     static final int DUTY_SOLICITOR_ATTENDEES = 1;
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
     static final String ACTIVE_FLAG_STATUS = "Active";
-    static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/PCS/PCS/%d#Case%%20File%%20View";
 
     private final ServiceHearingValuesConfiguration defaults;
@@ -56,7 +55,7 @@ public class ServiceHearingService {
         PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
-        ServiceHearingValues values = defaults.getDefaultValues(String.valueOf(caseReference));
+        ServiceHearingValues values = defaults.getDefaultValues();
 
         String caseName = caseNameFormatter.formatCaseName(pcsCase);
         values.setCaseId(String.valueOf(pcsCase.getCaseReference()));
@@ -100,14 +99,7 @@ public class ServiceHearingService {
             .map(ServiceHearingService::formatFlag)
             .toList();
 
-        if (flags.isEmpty()) {
-            return null;
-        }
-
-        String comments = CASE_FLAGS_PREFIX + String.join(", ", flags);
-        return comments.length() > MAX_LISTING_COMMENTS_LENGTH
-            ? comments.substring(0, MAX_LISTING_COMMENTS_LENGTH)
-            : comments;
+        return flags.isEmpty() ? null : CASE_FLAGS_PREFIX + String.join(", ", flags);
     }
 
     private static String formatFlag(BaseCaseFlag flag) {
