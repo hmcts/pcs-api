@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -26,6 +27,10 @@ import java.util.stream.Collectors;
 public class UserRoleService {
 
     private static final Duration RAS_ROLE_CACHE_TTL = Duration.ofMinutes(1);
+
+    /** Judges as IDAM and their role assignments name them. */
+    private static final Set<String> JUDGE_ROLES = Set.of("judiciary", UserRole.JUDGE.getRole(),
+        UserRole.FEE_PAID_JUDGE.getRole(), UserRole.CIRCUIT_JUDGE.getRole(), UserRole.LEADERSHIP_JUDGE.getRole());
 
     private final SecurityContextService securityContextService;
     private final AuthTokenGenerator authTokenGenerator;
@@ -81,6 +86,10 @@ public class UserRoleService {
         }
 
         return new UserRoles(securityContextService.toUserId(currentUserId), List.copyOf(roles));
+    }
+
+    public boolean isJudge() {
+        return getCurrentUserOrganisationalRoles().roles().stream().anyMatch(JUDGE_ROLES::contains);
     }
 
     private Set<String> getOrganisationalRoles(String userId) {

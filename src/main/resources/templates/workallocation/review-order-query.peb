@@ -1,7 +1,5 @@
 ### Review order query
 
-{{caseworkerName}} has returned your {{orderType}} order with a query:
-
-<div class="govuk-inset-text">{{query}}</div>
+{{caseworkerName}} has returned your {{orderType}} order with a query, which you can read on the order and on the Messages tab.
 
 <a href="{{changeUrl}}">Change the order</a> and submit it for review again. The task will close when you submit it.
