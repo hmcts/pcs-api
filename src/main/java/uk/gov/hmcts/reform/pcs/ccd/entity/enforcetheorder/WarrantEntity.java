@@ -125,7 +125,7 @@ public class WarrantEntity {
     private String defendantsDOBDetails;
 
     @JoinColumn(name = "enf_application_decision_id")
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private EnforcementApplicationDecisionEntity enforcementApplicationDecision;
 
     @Enumerated(EnumType.STRING)
