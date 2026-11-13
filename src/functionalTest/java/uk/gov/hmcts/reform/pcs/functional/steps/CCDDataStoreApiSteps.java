@@ -2,19 +2,16 @@ package uk.gov.hmcts.reform.pcs.functional.steps;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
-import net.serenitybdd.rest.SerenityRest;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.config.CaseTypeEvents;
-import uk.gov.hmcts.reform.pcs.functional.testutils.EventDataUtil;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
-import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.TestUsers;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -27,18 +24,12 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.hmcts.reform.pcs.functional.steps.PCSBaseApiSteps.MAPPER;
 
-public class CCDDataStoreApiSteps {
+public class CCDDataStoreApiSteps extends ApiSteps<CCDDataStoreApiSteps> {
 
     private static final String DATA_STORE_URL = System.getenv("DATA_STORE_URL_BASE");
-    private static final String CCD_DATA = "ccd_data";
     private static final String caseType = CaseType.getCaseType();
 
-    private RequestSpecification request;
-    private Response response;
-    private String currentUserId;
-    private String idamToken;
     private String serviceAuthorisationToken;
     private String caseReference;
     private String internalCaseId;
@@ -46,22 +37,27 @@ public class CCDDataStoreApiSteps {
     private ObjectNode caseData;
     public String eventToken;
 
+    @Override
+    protected String baseUrl() {
+        return DATA_STORE_URL;
+    }
+
     @Step("initialise CCD data store request")
     public CCDDataStoreApiSteps init() {
-        response = null;
-        currentUserId = null;
+        setUp();
+        resetHttpState();
         eventToken = null;
         currentEventId = null;
-        this.serviceAuthorisationToken = new ServiceAuthenticationGenerator().generate(CCD_DATA);
-        request = createRequest();
+        idamToken = null;
+        caseReference = null;
+        internalCaseId = null;
+        caseData = null;
+        this.serviceAuthorisationToken = ccdDataS2sToken;
         return this;
     }
 
-    @Step("with user {0}")
-    public CCDDataStoreApiSteps withUser(String userIdentifier) {
-        this.idamToken = PcsIdamTokenClient.generateTokenForUser(userIdentifier);
-        currentUserId = TestUsers.getIdamId(userIdentifier);
-        request = createRequest().header(TestConstants.AUTHORIZATION, "Bearer " + idamToken);
+    @Override
+    protected CCDDataStoreApiSteps self() {
         return this;
     }
 
@@ -86,32 +82,30 @@ public class CCDDataStoreApiSteps {
     public CCDDataStoreApiSteps createPossessionClaimCase(String legislativeCountry)  {
 
         response = createRequest()
-            .pathParam("userId", currentUserId)
+            .pathParam("userId", getCurrentUserId())
             .pathParam("caseType", caseType)
-            .when()
-            .get("/aggregated/caseworkers/{userId}/jurisdictions/PCS"
-                     + "/case-types/{caseType}/event-triggers/createPossessionClaim")
-            .then()
+            .when().get("/aggregated/caseworkers/{userId}/jurisdictions/PCS"
+                     + "/case-types/{caseType}/event-triggers/createPossessionClaim");
+        response.then()
             .statusCode(200)
             .body("event_token", notNullValue())
             .extract().response();
-        String eventToken = response.jsonPath().getString("event_token");
+        String eventToken = getResponse().jsonPath().getString("event_token");
 
-        ObjectNode data = EventDataUtil.forEvent(CaseTypeEvents.CREATE_POSSESSION_CLAIM).getData();
+        ObjectNode data = parseEventData(PayloadLoader.load("/payloads/ccdEvent/createPossessionClaim.json"));
         LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase(Locale.ROOT));
         data.put("legislativeCountry", country.getLabel());
         ObjectNode submitBody = eventRequest(CaseTypeEvents.CREATE_POSSESSION_CLAIM.getEventId(), data, eventToken);
         response = createRequest()
-            .pathParam("userId", currentUserId)
+            .pathParam("userId", getCurrentUserId())
             .pathParam("caseType", caseType)
             .body(submitBody)
-            .when()
-            .post("/caseworkers/{userId}/jurisdictions/PCS/case-types/{caseType}/cases")
-            .then()
+            .when().post("/caseworkers/{userId}/jurisdictions/PCS/case-types/{caseType}/cases");
+        response.then()
             .statusCode(201)
             .body("id", notNullValue())
             .extract().response();
-        setCaseReference(response.jsonPath().getString("id"));
+        setCaseReference(getResponse().jsonPath().getString("id"));
         return this;
     }
 
@@ -148,7 +142,6 @@ public class CCDDataStoreApiSteps {
 
 
     public Map<String, String> getDefendantParty(int defendantIndex) {
-        fetchCaseDetails();
         JsonNode defendant = caseData.at("/data/allDefendants/" + defendantIndex);
         JsonNode defendantId = defendant.path("id");
         if (defendantId.isMissingNode() || defendantId.isNull()) {
@@ -165,7 +158,6 @@ public class CCDDataStoreApiSteps {
     }
 
     public Map<String, String> getClaimantParty(int index) {
-        fetchCaseDetails();
         JsonNode claimant = caseData.at("/data/allClaimants/" + index);
         JsonNode claimantId = claimant.path("id");
         if (claimantId.isMissingNode() || claimantId.isNull()) {
@@ -194,23 +186,35 @@ public class CCDDataStoreApiSteps {
     @Step("trigger event {0}")
     public CCDDataStoreApiSteps triggerEvent(String eventId) {
         currentEventId = eventId;
+        eventToken = null;
         response = createRequest()
             .pathParam("caseReference", this.caseReference)
             .pathParam("eventId", eventId)
-            .when()
-            .get("/cases/{caseReference}/event-triggers/{eventId}")
-        .then()
-            .statusCode(200)
-            .extract().response();
-        eventToken = response.jsonPath().getString("token");
+            .when().get("/cases/{caseReference}/event-triggers/{eventId}");
         return this;
     }
 
-    @Step("validate event {0} for case {1}")
-    public CCDDataStoreApiSteps validateEvent(String pageId, ObjectNode eventData) {
-        if (currentEventId == null || currentEventId.isBlank()) {
-            throw new IllegalStateException("No event selected. Call triggerEvent before validateEvent.");
+    @Step("validate trigger event response status is {0}")
+    public CCDDataStoreApiSteps validateTriggerEvent(int expectedStatusCode) {
+        eventToken = null;
+        getResponse().then().statusCode(expectedStatusCode);
+        if (expectedStatusCode == 200) {
+            String token = getResponse().jsonPath().getString("token");
+            if (token == null || token.isBlank()) {
+                throw new IllegalStateException("Trigger event response has no event token");
+            }
+            eventToken = token;
         }
+        return this;
+    }
+
+    @Step("post validate event on page {0}")
+    public CCDDataStoreApiSteps postValidateEvent(String pageId, String eventData) {
+        if (currentEventId == null || currentEventId.isBlank()) {
+            throw new IllegalStateException("No event selected. Call triggerEvent before postValidateEvent.");
+        }
+
+        final ObjectNode eventDataObject = parseEventData(eventData);
 
         ObjectNode requestBody = MAPPER.createObjectNode();
         requestBody.putObject("event")
@@ -223,52 +227,76 @@ public class CCDDataStoreApiSteps {
             .put("isClaimantNameCorrect", "YES");
         requestBody.put("ignore_warning", false);
         requestBody.put("case_reference", caseReference);
-        requestBody.set("event_data", eventData);
+        requestBody.set("event_data", eventDataObject);
 
         String acceptVal = "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8";
 
-        Response validationResponse = createRequest()
+        response = createRequest()
             .pathParam("caseType", caseType)
             .header("Experimental", "True")
             .header("Accept",acceptVal)
             .header("Content-Type","application/json")
             .queryParam("pageId", pageId)
             .body(requestBody)
-            .when()
-            .post("/case-types/{caseType}/validate")
-            .then()
-            .statusCode(200)
+            .when().post("/case-types/{caseType}/validate");
+        return this;
+    }
+
+    @Step("verify validate event response status is {0}")
+    public CCDDataStoreApiSteps verifyValidateEvent(int expectedStatusCode) {
+        getResponse().then().statusCode(expectedStatusCode);
+        if (expectedStatusCode != 200) {
+            return this;
+        }
+        getResponse().then()
             .body("errors", anyOf(nullValue(), empty()))
             .extract().response();
-        Object responseData = validationResponse.jsonPath().get("data");
+        Object responseData = getResponse().jsonPath().get("data");
         JsonNode validatedData = MAPPER.valueToTree(responseData);
-        if (validatedData instanceof ObjectNode objectData) {
-            eventData.setAll(objectData);
-        } else {
+        if (!(validatedData instanceof ObjectNode)) {
             throw new IllegalStateException("Event validation did not return case data for " + currentEventId);
         }
         return this;
     }
 
     @Step("submit event {0} for case")
-    public CCDDataStoreApiSteps submitEvent(String event, ObjectNode eventData) {
+    public CCDDataStoreApiSteps submitEvent(String event, String eventData) {
         if (eventToken == null || eventToken.isBlank()) {
-            throw new IllegalStateException("No event token available. Call triggerEvent before submitEvent.");
+            throw new IllegalStateException(
+                "No event token available. Call triggerEvent and validateTriggerEvent(200) before submitEvent.");
         }
 
-        ObjectNode requestBody = eventRequest(event, eventData, eventToken);
+        ObjectNode requestBody = eventRequest(event, parseEventData(eventData), eventToken);
 
         response = createRequest()
             .pathParam("caseReference", this.caseReference)
             .header("Accept", "application/vnd.uk.gov.hmcts.ccd-data-store-api.create-event.v2+json;charset=UTF-8")
             .header("experimental", true)
             .body(requestBody)
-            .when()
-            .post("/cases/{caseReference}/events")
-        .then()
-            .statusCode(201)
-            .extract().response();
+            .when().post("/cases/{caseReference}/events");
         return this;
+    }
+
+    @Step("validate submit event response status is {0}")
+    public CCDDataStoreApiSteps validateSubmitEvent(int expectedStatusCode) {
+        getResponse().then().statusCode(expectedStatusCode);
+        return this;
+    }
+
+    private static ObjectNode parseEventData(String eventData) {
+        if (eventData == null || eventData.isBlank()) {
+            throw new IllegalArgumentException("Event data must be a JSON object");
+        }
+        JsonNode parsedEventData;
+        try {
+            parsedEventData = MAPPER.readTree(eventData);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Failed to parse event data as JSON", e);
+        }
+        if (!(parsedEventData instanceof ObjectNode eventDataObject)) {
+            throw new IllegalArgumentException("Event data must be a JSON object");
+        }
+        return eventDataObject;
     }
 
     private static ObjectNode eventRequest(String event, ObjectNode data, String token) {
@@ -288,7 +316,7 @@ public class CCDDataStoreApiSteps {
     }
 
     public String getCaseInternalId() {
-        String liveCaseNoteToken = response.jsonPath().getString("token");
+        String liveCaseNoteToken = getResponse().jsonPath().getString("token");
         DecodedJWT decodedJWT = JWT.decode(liveCaseNoteToken);
         internalCaseId = decodedJWT.getClaim("case-id").asString();
         return internalCaseId;
@@ -310,23 +338,23 @@ public class CCDDataStoreApiSteps {
 
 
     public String getCaseVersion() {
-        return response.jsonPath().getString("case_details.version");
+        return getResponse().jsonPath().getString("case_details.version");
     }
 
     public Response accessCaseDetails() {
         response = createRequest()
             .pathParam("caseReference", this.caseReference)
-            .header("experimental",
-                    "true")
-            .when()
-            .get("/cases/{caseReference}");
+            .header("experimental", "true")
+            .when().get("/cases/{caseReference}");
         return response;
     }
 
     private RequestSpecification createRequest() {
-        RequestSpecification newRequest = SerenityRest.given()
-            .baseUri(DATA_STORE_URL)
-            .contentType(ContentType.JSON)
+        if (serviceAuthorisationToken == null) {
+            setUp();
+            serviceAuthorisationToken = ccdDataS2sToken;
+        }
+        RequestSpecification newRequest = newRequest()
             .header(TestConstants.SERVICE_AUTHORIZATION, this.serviceAuthorisationToken);
         if (this.idamToken != null) {
             newRequest = newRequest.header(TestConstants.AUTHORIZATION, "Bearer " + this.idamToken);
@@ -337,10 +365,43 @@ public class CCDDataStoreApiSteps {
 
     @Step("expect status {0}")
     public CCDDataStoreApiSteps expectStatus(int statusCode) {
-        response.then().assertThat().statusCode(statusCode);
+        checkStatusCode(statusCode);
         return this;
     }
 
+    @Step("retrieving internal details from ccd data store")
+    public Map<String, String> getInternalCaseDetails(Long caseReference) {
+        setUp();
+        response = newRequest()
+            .header(TestConstants.AUTHORIZATION, "Bearer " + idamTokenFor(TestUsers.UserType.citizenUser))
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .header("Experimental", "True")
+            .pathParam("caseReference", caseReference)
+            .when().get("/cases/{caseReference}/event-triggers/addCaseNote");
+        response.then().statusCode(200);
+        return Map.of(
+            "case-id", JWT.decode(getResponse().jsonPath().getString("token")).getClaim("case-id").asString(),
+            "case-version", getResponse().jsonPath().getString("case_details.version")
+        );
+    }
+
+    @Step("Validate event data")
+    public Response validateEventData(String caseType, TestUsers.UserType userType,
+                                      String eventPageId, Object body) {
+        setUp();
+        response = newRequest()
+            .header(TestConstants.AUTHORIZATION, "Bearer " + idamTokenFor(userType))
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .header("Experimental", "True")
+            .header("Accept",
+                    "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8")
+            .pathParam("caseType", caseType)
+            .queryParam("pageId", eventPageId)
+            .body(body)
+            .when().post("/case-types/{caseType}/validate");
+        response.then().statusCode(200);
+        return response;
+    }
 
 
 }

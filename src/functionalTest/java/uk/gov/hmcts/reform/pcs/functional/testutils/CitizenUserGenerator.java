@@ -12,8 +12,6 @@ public class CitizenUserGenerator {
 
     private static final String BASE_URL = getEnv("IDAM_TESTING_SUPPORT_URL");
     private static final String GENERIC_PASSWORD = TestConstants.GENERIC_PASSWORD;
-    private static final String AUTHORIZATION
-        = "Bearer " + PcsIdamTokenClient.generateToken(PcsIdamTokenClient.UserType.systemUser);
 
     public static String createCitizenUser() {
         String email = "pcs-citizen-" + System.currentTimeMillis() + "@test.com";
@@ -36,7 +34,7 @@ public class CitizenUserGenerator {
         var response = SerenityRest
             .given()
             .baseUri(BASE_URL)
-            .header("Authorization", AUTHORIZATION)
+            .header("Authorization", "Bearer " + TestUsers.getToken(TestUsers.UserType.systemUser))
             .contentType(APPLICATION_JSON_VALUE)
             .body(requestBody)
             .post("/test/idam/users");
