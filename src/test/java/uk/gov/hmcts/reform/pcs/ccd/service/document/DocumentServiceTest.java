@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -54,6 +56,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -65,6 +68,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -96,7 +100,7 @@ class DocumentServiceTest {
     @Mock
     private CamundaService camundaService;
     @Mock(strictness = LENIENT)
-    private PcsCaseEntity pcsCase;
+    private PcsCaseEntity pcsCaseEntity;
 
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
@@ -109,7 +113,7 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(pcsCase.getCaseReference()).thenReturn(CASE_REFERENCE);
+        when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
         underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService,
                                         documentTypeMapper, documentCategoryMapper,
@@ -117,7 +121,7 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldSetDocumentIdFromUrl() {
+    void shouldSetDocumentIdFromUrlForEngland() {
         // Given
         UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
         String documentUrl = "document URL";
@@ -125,22 +129,20 @@ class DocumentServiceTest {
 
         PCSCase pcsCase = mock(PCSCase.class);
 
-        DynamicList documentTypeList1 = new DynamicList(
-                new DynamicListElement(UUID.randomUUID(), "Witness statement"),
-                new ArrayList<>()
-        );
-
-        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
             .document(Document.builder()
                           .url(documentUrl)
-                          .filename("file-WITNESS_STATEMENT")
-                          .binaryUrl("bin-WITNESS_STATEMENT")
-                          .categoryId("cat-WITNESS_STATEMENT")
+                          .filename("file-TENANCY_AGREEMENT")
+                          .binaryUrl("bin-TENANCY_AGREEMENT")
+                          .categoryId("cat-TENANCY_AGREEMENT")
                           .build())
-            .documentType(documentTypeList1)
+            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
             .build();
 
-        when(pcsCase.getAdditionalDocuments()).thenReturn(ListValueUtils.wrapListItems(List.of(additionalDocument1)));
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(
+            ListValueUtils.wrapListItems(List.of(additionalDocument))
+        );
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -155,36 +157,57 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldSaveTwoAdditionalDocumentTypes() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
+    void shouldSetDocumentIdFromUrlForWales() {
+        UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        String documentUrl = "document URL";
+        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(expectedDocumentId);
 
-        DynamicList documentTypeList1 = new DynamicList(
-                new DynamicListElement(UUID.randomUUID(), "Witness statement"),
-                new ArrayList<>()
-        );
-        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
             .document(Document.builder()
-                          .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-                          .filename("file-WITNESS_STATEMENT.pdf")
-                          .binaryUrl("bin-WITNESS_STATEMENT")
-                          .categoryId("cat-WITNESS_STATEMENT")
-                          .build())
-            .documentType(documentTypeList1)
+                .url(documentUrl)
+                .filename("file-OCCUPATION_LICENCE")
+                .binaryUrl("bin-OCCUPATION_LICENCE")
+                .categoryId("cat-OCCUPATION_LICENCE")
+                .build())
+            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
             .build();
 
-        DynamicList documentTypeList2 = new DynamicList(
-                new DynamicListElement(UUID.randomUUID(), "Rent statement"),
-                new ArrayList<>()
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(
+            ListValueUtils.wrapListItems(List.of(additionalDocument))
         );
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getDocumentId()).isEqualTo(expectedDocumentId);
+    }
+
+    @Test
+    void shouldSaveTwoAdditionalDocumentTypesForEngland() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+            .document(Document.builder()
+                          .url("url-TENANCY_AGREEMENT-1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                          .filename("file-TENANCY_AGREEMENT-1.pdf")
+                          .binaryUrl("bin-TENANCY_AGREEMENT-1")
+                          .categoryId("cat-TENANCY_AGREEMENT-1")
+                          .build())
+            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+            .build();
         AdditionalDocument additionalDocument2 = AdditionalDocument.builder()
             .document(Document.builder()
-                           .url("url-RENT_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-                           .filename("file-RENT_STATEMENT.pdf")
-                           .binaryUrl("bin-RENT_STATEMENT")
-                           .categoryId("cat-RENT_STATEMENT")
+                           .url("url-TENANCY_AGREEMENT-2/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                           .filename("file-TENANCY_AGREEMENT-2.pdf")
+                           .binaryUrl("bin-TENANCY_AGREEMENT-2")
+                           .categoryId("cat-TENANCY_AGREEMENT-2")
                            .build())
-            .documentType(documentTypeList2)
+            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
             .build();
 
         ListValue<AdditionalDocument> lv1 = ListValue.<AdditionalDocument>builder()
@@ -192,14 +215,8 @@ class DocumentServiceTest {
         ListValue<AdditionalDocument> lv2 = ListValue.<AdditionalDocument>builder()
             .id("2").value(additionalDocument2).build();
 
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(lv1, lv2);
-
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
-
-        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.WITNESS_STATEMENT))
-            .thenReturn(DocumentType.WITNESS_STATEMENT);
-        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.RENT_STATEMENT))
-            .thenReturn(DocumentType.RENT_STATEMENT);
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(lv1, lv2));
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -212,12 +229,55 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactlyInAnyOrder("file-WITNESS_STATEMENT - Claimant 1.pdf",
-                    "file-RENT_STATEMENT - Claimant 1.pdf");
+            .containsExactlyInAnyOrder("file-TENANCY_AGREEMENT-1 - Claimant 1.pdf",
+                    "file-TENANCY_AGREEMENT-2 - Claimant 1.pdf");
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
-            .containsExactlyInAnyOrder(DocumentType.WITNESS_STATEMENT, DocumentType.RENT_STATEMENT);
+            .containsExactlyInAnyOrder(DocumentType.TENANCY_AGREEMENT, DocumentType.TENANCY_AGREEMENT);
+    }
+
+    @Test
+    void shouldSaveTwoAdditionalDocumentTypesForWales() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+            .document(Document.builder()
+                .url("url-OCCUPATION_LICENCE-1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                .filename("file-OCCUPATION_LICENCE-1.pdf")
+                .binaryUrl("bin-OCCUPATION_LICENCE-1")
+                .categoryId("cat-OCCUPATION_LICENCE-1")
+                .build())
+            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+            .build();
+        AdditionalDocument additionalDocument2 = AdditionalDocument.builder()
+            .document(Document.builder()
+                .url("url-OCCUPATION_LICENCE-2/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                .filename("file-OCCUPATION_LICENCE-2.pdf")
+                .binaryUrl("bin-OCCUPATION_LICENCE-2")
+                .categoryId("cat-OCCUPATION_LICENCE-2")
+                .build())
+            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().id("1").value(additionalDocument1).build(),
+            ListValue.<AdditionalDocument>builder().id("2").value(additionalDocument2).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(2);
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getFileName)
+            .containsExactlyInAnyOrder("file-OCCUPATION_LICENCE-1 - Claimant 1.pdf",
+                "file-OCCUPATION_LICENCE-2 - Claimant 1.pdf");
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactlyInAnyOrder(DocumentType.OCCUPATION_LICENCE, DocumentType.OCCUPATION_LICENCE);
     }
 
     @Test
@@ -225,11 +285,6 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.OCCUPATION_LICENCE;
-        DynamicList documentTypeList = new DynamicList(
-                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
-                new ArrayList<>()
-        );
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .filename("userEnteredDetails.pdf")
@@ -238,15 +293,13 @@ class DocumentServiceTest {
                         .binaryUrl("someUrl")
                         .categoryId("uploaded-category")
                         .build())
-                .documentType(documentTypeList)
+                .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
                 .build();
 
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
                 ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
-
-        DocumentType expectedDocumentType = mock(DocumentType.class);
-        when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(expectedDocumentType);
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -257,7 +310,256 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
                 .extracting(DocumentEntity::getType)
-                .containsExactly(expectedDocumentType);
+                .containsExactly(DocumentType.OCCUPATION_LICENCE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentTypeEngland.class)
+    void shouldMapAllAdditionalDocumentTypesForEngland(AdditionalDocumentTypeEngland additionalDocumentType) {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                    .filename("userEnteredDetails.pdf")
+                    .uploadTimestamp(LocalDateTime.now())
+                    .url("https://host/" + UUID.randomUUID())
+                    .binaryUrl("someUrl")
+                    .categoryId("uploaded-category")
+                    .build())
+            .documentTypeEngland(additionalDocumentType)
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        // Assert
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.valueOf(additionalDocumentType.name()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentTypeWales.class)
+    void shouldMapAllAdditionalDocumentTypesForWales(AdditionalDocumentTypeWales additionalDocumentType) {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("userEnteredDetails.pdf")
+                .uploadTimestamp(LocalDateTime.now())
+                .url("https://host/" + UUID.randomUUID())
+                .binaryUrl("someUrl")
+                .categoryId("uploaded-category")
+                .build())
+            .documentTypeWales(additionalDocumentType)
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.valueOf(additionalDocumentType.name()));
+    }
+
+    @Test
+    void shouldMapAdditionalDocumentsWhenPresentForEngland() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("legacy-user-entered-details.pdf")
+                .uploadTimestamp(LocalDateTime.now())
+                .url("https://host/" + UUID.randomUUID())
+                .binaryUrl("someUrl")
+                .categoryId("uploaded-category")
+                .build())
+            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+            .description("Legacy tenancy agreement")
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.TENANCY_AGREEMENT);
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getDescription)
+            .containsExactly("Legacy tenancy agreement");
+    }
+
+    @Test
+    void shouldMapAdditionalDocumentsWhenPresentForWales() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("legacy-user-entered-details.pdf")
+                .uploadTimestamp(LocalDateTime.now())
+                .url("https://host/" + UUID.randomUUID())
+                .binaryUrl("someUrl")
+                .categoryId("uploaded-category")
+                .build())
+            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+            .description("Legacy tenancy agreement")
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.OCCUPATION_LICENCE);
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getDescription)
+            .containsExactly("Legacy tenancy agreement");
+    }
+
+    @Test
+    void shouldMapLegacyAdditionalDocumentsWhenPresentForEngland() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("legacy-user-entered-details.pdf")
+                .url("https://host/" + UUID.randomUUID())
+                .build())
+            .documentType(new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), "Tenancy agreement"),
+                List.of()
+            ))
+            .description("Legacy tenancy agreement")
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.TENANCY_AGREEMENT))
+            .thenReturn(DocumentType.TENANCY_AGREEMENT);
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        verify(documentTypeMapper).mapToDocumentType(AdditionalDocumentType.TENANCY_AGREEMENT);
+        assertThat(documentEntityListCaptor.getValue())
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.TENANCY_AGREEMENT);
+    }
+
+    @Test
+    void shouldMapLegacyAdditionalDocumentsWhenPresentForWales() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("legacy-user-entered-details.pdf")
+                .url("https://host/" + UUID.randomUUID())
+                .build())
+            .documentType(new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), "Occupation contract or licence"),
+                List.of()
+            ))
+            .description("Legacy occupation contract")
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.OCCUPATION_LICENCE))
+            .thenReturn(DocumentType.OCCUPATION_LICENCE);
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        verify(documentTypeMapper).mapToDocumentType(AdditionalDocumentType.OCCUPATION_LICENCE);
+        assertThat(documentEntityListCaptor.getValue())
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.OCCUPATION_LICENCE);
+    }
+
+
+
+    @Test
+    void shouldMapAdditionalDocumentsToCaseFileCategoriesForEngland() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                        .url("https://host/" + UUID.randomUUID())
+                        .filename("filename.txt")
+                        .categoryId("uploaded-category")
+                        .build())
+            .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getCategoryId)
+            .containsExactly(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
+    }
+
+    @Test
+    void shouldMapAdditionalDocumentsToCaseFileCategoriesForWales() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .url("https://host/" + UUID.randomUUID())
+                .filename("filename.txt")
+                .categoryId("uploaded-category")
+                .build())
+            .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getCategoryId)
+            .containsExactly(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
     @ParameterizedTest
@@ -267,22 +569,16 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.OTHER; // Doesn't matter for the test
-        when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(documentType);
-
-        DynamicList documentTypeList = new DynamicList(
-                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
-                new ArrayList<>()
-        );
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
             .document(Document.builder()
                         .url("https://host/" + UUID.randomUUID())
                         .filename("filename.txt")
                         .categoryId("uploaded-category")
                         .build())
-            .documentType(documentTypeList)
+            .documentTypeEngland(AdditionalDocumentTypeEngland.valueOf(documentType.name()))
             .build();
 
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
             ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
@@ -298,6 +594,34 @@ class DocumentServiceTest {
             .extracting(DocumentEntity::getCategoryId)
             .containsExactly(expectedCategoryId);
 
+    }
+
+    @Test
+    void shouldReturnUncategorisedCategoryIdWhenAdditionalDocumentTypeIsNull() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .url("https://host/" + UUID.randomUUID())
+                .filename("filename.txt")
+                .categoryId("uploaded-category")
+                .build())
+            .documentType(null)
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getType()).isNull();
+        assertThat(capturedEntities.getFirst().getCategoryId())
+            .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
     }
 
     @Test
@@ -457,14 +781,25 @@ class DocumentServiceTest {
     void shouldReturnEmptyListIfNoDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
 
         // Then
         assertThat(entities).isEmpty();
-        verify(documentRepository).saveAll(List.of());
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDocumentsIsEmpty() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(Collections.emptyList());
+
+        List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
+
+        assertThat(entities).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
     }
 
 
@@ -556,19 +891,11 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldSaveDescriptionForAdditionalDocuments() {
-        // Given
+    void shouldSaveDescriptionForAdditionalDocumentsForEngland() {
         PCSCase pcsCase = mock(PCSCase.class);
-
-        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.WITNESS_STATEMENT;
-        when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(DocumentType.WITNESS_STATEMENT);
 
         String description = "A short description";
 
-        DynamicList documentTypeList = new DynamicList(
-                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
-                new ArrayList<>()
-        );
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .filename("witness1.pdf")
@@ -577,28 +904,25 @@ class DocumentServiceTest {
                         .categoryId("cat1")
                         .uploadTimestamp(LocalDateTime.now())
                         .build())
-                .documentType(documentTypeList)
+                .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
                 .description(description)
                 .build();
 
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
                 ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
-        );
-
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+        ));
 
         // When
         underTest.createAllDocuments(pcsCase);
 
         // Then
-        DocumentType expectedDocumentType = DocumentType.valueOf(additionalDocumentType.name());
-
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
 
         assertThat(capturedEntities)
                 .extracting(DocumentEntity::getType)
-                .containsExactly(expectedDocumentType);
+                .containsExactly(DocumentType.TENANCY_AGREEMENT);
 
         assertThat(capturedEntities)
                 .extracting(DocumentEntity::getDescription)
@@ -606,14 +930,45 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldConvertEmptyDescriptionToNull() {
-        // Given
+    void shouldSaveDescriptionForAdditionalDocumentsForWales() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        String description = "A short description";
+
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+                .document(Document.builder()
+                        .filename("witness1.pdf")
+                        .binaryUrl("someUrl")
+                        .url("https://host/" + UUID.randomUUID())
+                        .categoryId("cat1")
+                        .uploadTimestamp(LocalDateTime.now())
+                        .build())
+                .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+                .description(description)
+                .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+                .extracting(DocumentEntity::getType)
+                .containsExactly(DocumentType.OCCUPATION_LICENCE);
+
+        assertThat(capturedEntities)
+                .extracting(DocumentEntity::getDescription)
+                .containsExactly(description);
+    }
+
+    @Test
+    void shouldConvertEmptyDescriptionToNullForEngland() {
         PCSCase pcsCase = mock(PCSCase.class);
 
-        DynamicList documentTypeList = new DynamicList(
-                new DynamicListElement(UUID.randomUUID(), "Witness statement"),
-                new ArrayList<>()
-        );
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
@@ -621,20 +976,48 @@ class DocumentServiceTest {
                         .binaryUrl("bin1")
                         .categoryId("cat1")
                         .build())
-                .documentType(documentTypeList)
+                .documentTypeEngland(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
                 .description("")
                 .build();
 
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
                 ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
-        );
-
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+        ));
 
         // When
         underTest.createAllDocuments(pcsCase);
 
         // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getDescription()).isNull();
+    }
+
+    @Test
+    void shouldConvertEmptyDescriptionToNullForWales() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+                .document(Document.builder()
+                        .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                        .filename("file1")
+                        .binaryUrl("bin1")
+                        .categoryId("cat1")
+                        .build())
+                .documentTypeWales(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+                .description("")
+                .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
 
@@ -782,7 +1165,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
-        setUpDefendantParty(pcsCase, party, 2);
+        setUpDefendantParty(pcsCaseEntity, party, 2);
 
         UploadedDocument defDoc1 = UploadedDocument.builder()
             .document(Document.builder()
@@ -811,7 +1194,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result =
-            underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+            underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -822,7 +1205,7 @@ class DocumentServiceTest {
             assertThat(entity.getType()).isNull();
             assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
             assertThat(entity.getDefendantResponse()).isEqualTo(response);
-            assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
+            assertThat(entity.getPcsCase()).isEqualTo(pcsCaseEntity);
             assertThat(entity.getParty()).isEqualTo(party);
         });
 
@@ -849,7 +1232,7 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(null, response, pcsCase, party);
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(null, response, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -864,7 +1247,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
-            Collections.emptyList(), response, pcsCase, party);
+            Collections.emptyList(), response, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -876,7 +1259,7 @@ class DocumentServiceTest {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
-        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+        when(pcsCaseEntity.getClaims()).thenReturn(Collections.emptyList());
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder().url("url1").filename("file1.pdf").binaryUrl("bin1").build())
@@ -888,7 +1271,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
-            uploadedDocs, response, pcsCase, party);
+            uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -901,7 +1284,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
-        setUpDefendantParty(pcsCase, party, 1);
+        setUpDefendantParty(pcsCaseEntity, party, 1);
 
         UploadedDocument validDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -920,7 +1303,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -935,7 +1318,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
-        setUpDefendantParty(pcsCase, party, 1);
+        setUpDefendantParty(pcsCaseEntity, party, 1);
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -949,7 +1332,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCaseEntity, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -985,8 +1368,8 @@ class DocumentServiceTest {
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendPartyPostfix("file-new.pdf", mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
@@ -1009,7 +1392,7 @@ class DocumentServiceTest {
         )).thenReturn(description);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1024,7 +1407,7 @@ class DocumentServiceTest {
         assertThat(entity.getBinaryUrl()).isEqualTo("bin-new");
         assertThat(entity.getContentType()).isEqualTo("application/pdf");
         assertThat(entity.getSize()).isEqualTo(123L);
-        assertThat(entity.getPcsCase()).isSameAs(pcsCase);
+        assertThat(entity.getPcsCase()).isSameAs(pcsCaseEntity);
         assertThat(entity.getParty()).isSameAs(party);
         verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
     }
@@ -1037,8 +1420,8 @@ class DocumentServiceTest {
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         GenAppEntity selectedGenApp = mock(GenAppEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendGenAppPostfix("file-new.pdf", selectedGenApp, mainClaim, partyId))
             .thenReturn("file-new GA1 - Defendant 1.pdf");
         UUID genAppId = UUID.randomUUID();
@@ -1063,7 +1446,7 @@ class DocumentServiceTest {
         )).thenReturn(expectedTaskDescription);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, selectedGenApp, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1090,8 +1473,8 @@ class DocumentServiceTest {
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
         UUID counterClaimId = UUID.randomUUID();
@@ -1113,7 +1496,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, selectedCounterClaim);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1136,8 +1519,8 @@ class DocumentServiceTest {
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
         UUID counterClaimId = UUID.randomUUID();
@@ -1162,7 +1545,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, selectedCounterClaim);
 
         // Then
         verify(camundaService).createTask(
@@ -1181,8 +1564,8 @@ class DocumentServiceTest {
         DocumentEntity existing = DocumentEntity.builder().url("url-existing").build();
         List<DocumentEntity> existingDocs = new ArrayList<>();
         existingDocs.add(existing);
-        when(pcsCase.getDocuments()).thenReturn(existingDocs);
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getDocuments()).thenReturn(existingDocs);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         UploadedDocument duplicate = UploadedDocument.builder()
             .document(Document.builder()
@@ -1206,7 +1589,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1220,8 +1603,8 @@ class DocumentServiceTest {
         // Given
         List<DocumentEntity> existingDocs = new ArrayList<>();
         existingDocs.add(DocumentEntity.builder().url("url-existing").build());
-        when(pcsCase.getDocuments()).thenReturn(existingDocs);
-        when(pcsCase.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+        when(pcsCaseEntity.getDocuments()).thenReturn(existingDocs);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
 
         UploadedDocument duplicate = UploadedDocument.builder()
             .document(Document.builder()
@@ -1234,7 +1617,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());
@@ -1246,8 +1629,8 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(null, pcsCase, party, null, null);
-        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(null, pcsCaseEntity, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCaseEntity, party, null, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());
@@ -1257,8 +1640,8 @@ class DocumentServiceTest {
     void shouldThrowClaimNotFoundExceptionWhenCaseHasNoClaims() {
         // Given
         PartyEntity party = mock(PartyEntity.class);
-        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
-        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+        when(pcsCaseEntity.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCaseEntity.getClaims()).thenReturn(Collections.emptyList());
 
         UploadedDocument uploaded = UploadedDocument.builder()
             .document(Document.builder()
@@ -1270,7 +1653,7 @@ class DocumentServiceTest {
 
         // When / Then
         assertThatThrownBy(() ->
-            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null))
+            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, party, null, null))
             .isInstanceOf(ClaimNotFoundException.class)
             .hasMessageContaining(String.valueOf(CASE_REFERENCE));
 
@@ -1304,15 +1687,12 @@ class DocumentServiceTest {
     class LegalRepDocumentTests {
 
         @Mock
-        private PcsCaseEntity pcsCaseEntity;
-        @Mock
         private ClaimEntity mainClaim;
         @Mock
         private PartyEntity party;
 
         @BeforeEach
         void setUp() {
-            when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
             when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
         }
 
@@ -1489,7 +1869,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result =
-            underTest.createCounterClaimUploadedDocuments(null, counterClaim, pcsCase, party);
+            underTest.createCounterClaimUploadedDocuments(null, counterClaim, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -1505,7 +1885,7 @@ class DocumentServiceTest {
         // When
         List<DocumentEntity> result =
             underTest.createCounterClaimUploadedDocuments(
-                Collections.emptyList(), counterClaim, pcsCase, party);
+                Collections.emptyList(), counterClaim, pcsCaseEntity, party);
 
         // Then
         assertThat(result).isEmpty();
