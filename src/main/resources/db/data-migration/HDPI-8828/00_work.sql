@@ -165,8 +165,9 @@ tenancy_of_claim AS (
   SELECT c.id AS claim_id,
          CASE
            WHEN count(tl.id) = 0 THEN 'NO_TENANCY'
-           WHEN count(DISTINCT tl.type) = 1 THEN min(tl.type)
-           ELSE 'MIXED_TENANCY_TYPES'
+           WHEN count(tl.id) FILTER (WHERE nullif(btrim(tl.type), '') IS NULL) > 0 THEN 'AMBIGUOUS_TENANCY_TYPES'
+           WHEN count(DISTINCT btrim(tl.type)) = 1 THEN min(btrim(tl.type))
+           ELSE 'AMBIGUOUS_TENANCY_TYPES'
          END AS tenancy_type
   FROM public.claim c
   LEFT JOIN public.tenancy_licence tl ON tl.case_id = c.case_id
@@ -181,7 +182,7 @@ source_rows AS (
          NULL::text AS current_subkey
   FROM public.claim_party cp
   JOIN public.claim c ON c.id = cp.claim_id
-  WHERE cp.role = 'CLAIMANT'
+  WHERE btrim(cp.role) = 'CLAIMANT'
   UNION ALL
   SELECT 'claim_party.entity_role_code_key', claim_id::text || '/' || party_id::text, '',
          nullif(btrim(role), ''), entity_role_code_key::text, NULL::text
