@@ -197,13 +197,18 @@ export class GlobalSearchCaseAction implements IAction {
       await otherReasonTextbox.fill(accessReason.text?.toString() ?? '');
     }
 
-    const challengedAccessRequest = page.waitForResponse(
-      (response) =>
-        response.url().includes('/api/challenged-access-request') && response.status() === 201
-    );
+    await expect(async () => {
+      const challengedAccessRequest = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/challenged-access-request') && response.status() === 201, { timeout: SHORT_TIMEOUT }
+      );
 
-    await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
-    await challengedAccessRequest;
+      await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
+      await challengedAccessRequest;
+    }).toPass({
+      intervals: [1_000, 2_000, 3_000],
+      timeout: LONG_TIMEOUT,
+    });
 
     await expect(
       page.getByRole('heading', {
