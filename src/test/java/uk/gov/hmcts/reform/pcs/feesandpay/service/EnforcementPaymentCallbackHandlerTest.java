@@ -1,84 +1,103 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforcementPayment;
-import static uk.gov.hmcts.reform.pcs.system.SystemAction.ENFORCEMENT_PAYMENT;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementPaymentCallbackHandlerTest {
 
-    private static final long CASE_REFERENCE = 1234L;
-    private static final UUID RESPONSIBLE_PARTY_ID = UUID.randomUUID();
-
     @Mock
-    private CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
+    private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
-    private PartyService partyService;
-    @Mock
-    private ObjectMapper objectMapper;
+    private PaymentStatusCallback paymentStatusCallback;
 
     @InjectMocks
     private EnforcementPaymentCallbackHandler underTest;
 
-    @ParameterizedTest
-    @MethodSource("paymentStatuses")
-    void shouldSetResponsiblePartyAndSubmitSuccessOnlyWhenPaid(PaymentStatus paymentStatus) throws Exception {
-        // Given
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .caseReference(CASE_REFERENCE)
-            .responsiblePartyId(RESPONSIBLE_PARTY_ID)
+    @Test
+    void shouldMoveEnforcementApplicationToCaseProgressionWhenPaymentIsPaid() {
+        UUID enforcementApplicationId = UUID.randomUUID();
+        FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
+        EnforcementOrderEntity enforcementOrderEntity = enforcementOrder(
+            enforcementApplicationId, EnforcementState.PENDING_CASE_ISSUED
+        );
+        when(enforcementOrderRepository.findById(enforcementApplicationId))
+            .thenReturn(Optional.of(enforcementOrderEntity));
+
+        underTest.handle(paymentStatusCallback, feePaymentEntity);
+
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(EnforcementState.CASE_PROGRESSION);
+        verify(enforcementOrderRepository).save(enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldNotChangeStateWhenPaymentIsPaidButStateIsNotPendingCaseIssued() {
+        UUID enforcementApplicationId = UUID.randomUUID();
+        FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
+        EnforcementOrderEntity enforcementOrderEntity = enforcementOrder(
+            enforcementApplicationId, EnforcementState.CASE_PROGRESSION
+        );
+        when(enforcementOrderRepository.findById(enforcementApplicationId))
+            .thenReturn(Optional.of(enforcementOrderEntity));
+
+        underTest.handle(paymentStatusCallback, feePaymentEntity);
+
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(EnforcementState.CASE_PROGRESSION);
+        verify(enforcementOrderRepository, never()).save(enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldNotLookUpEnforcementApplicationWhenPaymentIsNotPaid() {
+        FeePaymentEntity feePaymentEntity = feePayment(UUID.randomUUID(), PaymentStatus.NOT_PAID);
+
+        underTest.handle(paymentStatusCallback, feePaymentEntity);
+
+        verify(enforcementOrderRepository, never()).findById(any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEnforcementApplicationIsNotFound() {
+        UUID enforcementApplicationId = UUID.randomUUID();
+        FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
+        when(enforcementOrderRepository.findById(enforcementApplicationId)).thenReturn(Optional.empty());
+
+        Throwable throwable = catchThrowable(() -> underTest.handle(paymentStatusCallback, feePaymentEntity));
+
+        assertThat(throwable).isInstanceOf(EnforcementApplicationNotFoundException.class);
+        verify(enforcementOrderRepository).findById(enforcementApplicationId);
+    }
+
+    private static FeePaymentEntity feePayment(UUID relatedEntityId, PaymentStatus paymentStatus) {
+        return FeePaymentEntity.builder()
+            .relatedEntityId(relatedEntityId)
+            .paymentStatus(paymentStatus)
             .build();
-        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(party);
-        FeePaymentEntity feePayment = FeePaymentEntity.builder().taskData("task data").paymentStatus(paymentStatus)
-            .build();
-        PaymentStatusCallback paymentStatusCallback = paymentStatusCallback();
-
-        // When
-        underTest.handle(paymentStatusCallback, feePayment);
-
-        // Then
-        assertThat(feePayment.getParty()).isSameAs(party);
-        if (paymentStatus == PaymentStatus.PAID) {
-            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(CASE_REFERENCE, enforcementPayment,
-                                                                      paymentStatusCallback, ENFORCEMENT_PAYMENT);
-        } else {
-            verifyNoInteractions(ccdPaymentStateUpdateService);
-        }
     }
 
-    private static Stream<PaymentStatus> paymentStatuses() {
-        return Stream.of(PaymentStatus.values());
+    private static EnforcementOrderEntity enforcementOrder(UUID id, EnforcementState state) {
+        EnforcementOrderEntity entity = new EnforcementOrderEntity();
+        entity.setId(id);
+        entity.setState(state);
+        return entity;
     }
-
-    private PaymentStatusCallback paymentStatusCallback() {
-        return PaymentStatusCallback.builder().payment(Payment.builder()
-            .paymentReference(UUID.randomUUID().toString()).build()).build();
-    }
-
 }

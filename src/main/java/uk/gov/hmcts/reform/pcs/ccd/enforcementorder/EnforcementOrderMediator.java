@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.enforcementorder;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -20,7 +19,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.M
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_WITH_DATES;
 
 @Component
-@Slf4j
 @AllArgsConstructor
 public class EnforcementOrderMediator {
 
@@ -42,7 +40,7 @@ public class EnforcementOrderMediator {
             // this to be confirmed beyond this ticket scope (HDPI-4312)
             Set<EnforcementOrderEntity> enforcementOrderEntities = pcsCaseEntity.getEnforcementOrders();
             if (!enforcementOrderEntities.isEmpty()) {
-                return Optional.of(enforcementOrderEntities.stream().findAny().orElse(null));
+                return enforcementOrderEntities.stream().findFirst();
             }
         }
         return Optional.empty();

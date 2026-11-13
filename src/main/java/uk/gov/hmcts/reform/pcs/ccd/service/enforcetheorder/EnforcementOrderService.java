@@ -45,9 +45,12 @@ public class EnforcementOrderService {
     }
 
     @Transactional
-    public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder, EnforcementState state) {
-        createEnforcementOrder(caseReference, enforcementOrder, state);
+    public EnforcementOrderEntity saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder,
+                                                        EnforcementState state) {
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrder(caseReference, enforcementOrder, state);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
+
+        return enforcementOrderEntity;
     }
 
     @Transactional
@@ -66,28 +69,22 @@ public class EnforcementOrderService {
         }
 
         for (EnforcementOrderEntity application : applications) {
-            EnforcementState currentState = application.getState();
-
-            if (currentState == EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
-                || currentState == EnforcementState.PENDING_CASE_ISSUED) {
-
-                application.setState(EnforcementState.DRAFT_DISCARD);
-
-            } else if (currentState == EnforcementState.CASE_PROGRESSION) {
-
+            if (application.getState() == EnforcementState.CASE_PROGRESSION) {
                 application.setState(EnforcementState.BREATHING_SPACE);
             }
         }
     }
 
-    private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder, EnforcementState state) {
+    private EnforcementOrderEntity createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder,
+                                                          EnforcementState state) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, pcsCaseEntity, state);
         strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enforcementOrderEntity, enforcementOrder);
-        enforcementOrderRepository.save(enforcementOrderEntity);
+
+        return enforcementOrderRepository.save(enforcementOrderEntity);
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, PcsCaseEntity pcsCaseEntity,

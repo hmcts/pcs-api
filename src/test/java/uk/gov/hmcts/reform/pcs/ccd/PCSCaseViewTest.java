@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
@@ -44,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.MessagesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
@@ -161,6 +163,9 @@ class PCSCaseViewTest {
     private OrganisationService organisationService;
 
     @Mock
+    private MessagesView messagesView;
+
+    @Mock
     private JudicialNoteView judicialNoteView;
 
     @Mock
@@ -184,7 +189,8 @@ class PCSCaseViewTest {
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    judicialNoteView, enforcementOrderView, breathingSpaceSummaryView
+                                    messagesView, judicialNoteView, enforcementOrderView,
+                                    breathingSpaceSummaryView
         );
     }
 

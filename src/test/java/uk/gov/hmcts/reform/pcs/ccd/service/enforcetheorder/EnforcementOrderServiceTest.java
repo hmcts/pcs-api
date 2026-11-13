@@ -99,16 +99,12 @@ class EnforcementOrderServiceTest {
         EnforcementOrderEntity liveApplication = new EnforcementOrderEntity();
         liveApplication.setState(EnforcementState.CASE_PROGRESSION);
 
-        EnforcementOrderEntity draftApplication = new EnforcementOrderEntity();
-        draftApplication.setState(EnforcementState.PENDING_CASE_ISSUED);
-
-        EnforcementOrderEntity deletionApplication = new EnforcementOrderEntity();
-        deletionApplication.setState(EnforcementState.REQUESTED_FOR_DELETION);
+        EnforcementOrderEntity pendingApplication = new EnforcementOrderEntity();
+        pendingApplication.setState(EnforcementState.PENDING_CASE_ISSUED);
 
         pcsCase.setEnforcementOrders(Set.of(
             liveApplication,
-            draftApplication,
-            deletionApplication
+            pendingApplication
         ));
 
         when(pcsCaseService.loadCase(CASE_REFERENCE))
@@ -121,11 +117,9 @@ class EnforcementOrderServiceTest {
         assertThat(liveApplication.getState())
             .isEqualTo(EnforcementState.BREATHING_SPACE);
 
-        assertThat(draftApplication.getState())
-            .isEqualTo(EnforcementState.DRAFT_DISCARD);
+        assertThat(pendingApplication.getState())
+            .isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
 
-        assertThat(deletionApplication.getState())
-            .isEqualTo(EnforcementState.REQUESTED_FOR_DELETION);
     }
 
 
@@ -173,10 +167,12 @@ class EnforcementOrderServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(strategy);
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder,
-                EnforcementState.PENDING_CASE_ISSUED);
+        EnforcementOrderEntity result = enforcementOrderService.saveAndClearDraftData(
+                CASE_REFERENCE, enforcementOrder, EnforcementState.PENDING_CASE_ISSUED);
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
@@ -188,6 +184,8 @@ class EnforcementOrderServiceTest {
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        assertThat(savedEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
+        assertThat(result).isSameAs(savedEntity);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 
@@ -225,16 +223,9 @@ class EnforcementOrderServiceTest {
                 EnforcementState.BREATHING_SPACE
             ),
             arguments(
-                EnforcementState.AWAITING_SUBMISSION_TO_HMCTS,
-                EnforcementState.DRAFT_DISCARD
-            ),
-            arguments(
                 EnforcementState.PENDING_CASE_ISSUED,
-                EnforcementState.DRAFT_DISCARD
-            ),
-            arguments(
-                EnforcementState.REQUESTED_FOR_DELETION,
-                EnforcementState.REQUESTED_FOR_DELETION
+                EnforcementState.PENDING_CASE_ISSUED
+
             ),
             arguments(
                 EnforcementState.BREATHING_SPACE,
