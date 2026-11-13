@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -122,6 +123,10 @@ public class WarrantEntity {
 
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;
+
+    @JoinColumn(name = "enf_application_decision_id")
+    @OneToOne(cascade = CascadeType.ALL)
+    private EnforcementApplicationDecisionEntity enforcementApplicationDecision;
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;

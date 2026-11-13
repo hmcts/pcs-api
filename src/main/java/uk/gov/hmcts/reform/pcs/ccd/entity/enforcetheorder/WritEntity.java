@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -110,6 +111,10 @@ public class WritEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo hasClaimTransferredToHighCourt;
+
+    @JoinColumn(name = "enf_application_decision_id")
+    @OneToOne(cascade = CascadeType.ALL)
+    private EnforcementApplicationDecisionEntity enforcementApplicationDecision;
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
