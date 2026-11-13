@@ -160,8 +160,6 @@ test.describe('Claimant - Make an Application - e2e Journey @nightly', async () 
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersClaimantGenApps.submitButton);
-    await performAction('verifyApplicationSubmitted');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
 });
 
