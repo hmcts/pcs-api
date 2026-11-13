@@ -129,12 +129,20 @@ export class CaseManagementCommonUtils {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
-  public static getGenApplicationType(length: number): string[] {
+  public static getGenApplicationType(length: number, app?: string): string[] {
     const today = new Date().toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
     });
+
+    if(app && app === 'CC'){
+      return Array.from(
+      { length: length },
+      (_, index) =>
+        `Counter Claim CC${index + 1} - submitted ${today}`
+    );
+    }
 
     return Array.from(
       { length: length },
@@ -143,10 +151,11 @@ export class CaseManagementCommonUtils {
     );
   }
 
-  public static renameDocument(fileName: string, fileDate?: string, app?: string): string {
+  public static renameDocument(fileName: string, fileDate?: string, app?: string, party?: string): string {
     const extension = fileName.match(/\.[^.]+$/)?.[0] ?? '';
+    //const baseName = fileName.replace(/\.[^.]+$/, '').replace(/\s*-\s*(Claimant|Defendant)\s+\d+/i, '').replace(/\s+CC\d+/i, '');
     const baseName = fileName.replace(/\.[^.]+$/, '');
-    const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
+    const appNumber = app?.match(/\b(?:GA|CC)\d+\b|\b(?:Claimant|Defendant)\s+\d+\b/i)?.[0] ?? '';
     const formattedDate = fileDate ? (() => {
       const [day, month, year] = fileDate.split('/');
       return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
@@ -157,8 +166,14 @@ export class CaseManagementCommonUtils {
       parts.push(formattedDate);
     }
 
-    if (gaNumber) {
-      parts.push(gaNumber);
+    if (appNumber) {
+      parts.push(appNumber);
+    }
+
+    if (party) {
+      parts.push(/^(GA|CC)\d*/i.test(party)
+        ? party
+        : `- ${party}`)
     }
     return `${parts.join(' ')}${extension}`;
   }
@@ -180,6 +195,18 @@ export class CaseManagementCommonUtils {
       { length: partyCount },
       (_, index) =>
         `Notice of hearing ${sequence} - ${party} ${index + 1}.pdf ${today}`
+    );
+  }
+  
+  public static getAllGenApplicationFiles(length: number, fileName: string, party?: string): string[] {  
+
+    const extension = fileName.match(/\.[^.]+$/)?.[0] ?? '.pdf';
+    const baseName = fileName.replace(/\.[^.]+$/, '');
+
+    return Array.from(
+      { length: length },
+      (_, index) =>
+        `${baseName} GA${index + 1} - ${party} ${index + 1}${extension}`
     );
   }
 }
