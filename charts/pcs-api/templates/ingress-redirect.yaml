@@ -10,6 +10,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: admin-httptohttpsredirect@kubernetescrd
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
+  ingressClassName: traefik
   rules:
     - host: {{ tpl .Values.java.ingressHost . }}
       http:
