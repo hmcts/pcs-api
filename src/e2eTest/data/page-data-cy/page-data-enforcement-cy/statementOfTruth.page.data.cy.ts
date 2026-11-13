@@ -1,7 +1,7 @@
 export const statementOfTruth = {
   EnforceTheOrderCaption: `Gorfodi'r gorchymyn`,
   mainHeader: `Datganiad gwirionedd`,
-  iCertifyCheckboxDynamic: `Rwy’n tystio:`,
+  iCertifyCheckboxDynamic: `Rwy’n tystio bod:`,
   //Will create dynamic elements while page replacement with HDPI-3644 for below 4 lines as its diff in Warrant/Writ
   //iCertifyCheckbox: `I certify that:`,
   //defendantHasNotVacatedParagraph: `the defendant has not vacated the land as ordered (*and that the whole or part of any instalments due under the judgment or order have not been paid) (†and the balance now due is as shown)`,
