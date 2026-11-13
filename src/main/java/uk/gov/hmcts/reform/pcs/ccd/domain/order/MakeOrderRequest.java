@@ -16,9 +16,11 @@ public record MakeOrderRequest(Action action, OrderChange order, String taskId, 
         this(action, order, taskId, null);
     }
 
+    /** Discarding names the judge's saved draft by its id and version; nothing else it carries is read. */
     public enum Action {
         SAVE_DRAFT,
-        SUBMIT_FOR_REVIEW
+        SUBMIT_FOR_REVIEW,
+        DISCARD_DRAFT
     }
 
     /**

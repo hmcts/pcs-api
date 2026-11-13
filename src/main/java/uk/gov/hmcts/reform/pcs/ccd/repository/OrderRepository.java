@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
-    /** A judge's draft for one of the case's hearings, or with a null hearing, their draft made without one. */
-    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
-        long caseReference, String authorIdamUserId, OrderState state, Integer hearingId);
+    /** A judge's order on the case in the state: their draft, of which they have one, wherever it is made. */
+    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
+        long caseReference, String authorIdamUserId, OrderState state);
 
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
         UUID id, long caseReference, String authorIdamUserId, Collection<OrderState> states);

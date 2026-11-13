@@ -69,7 +69,7 @@ public class OrderEntity {
 
     /**
      * The hearing the judge made the order at, if they made it at one. The judge can change it while the order is
-     * theirs to change; once it is sent for review it keeps it.
+     * theirs to change, as a draft or returned to them; while it is with court staff, and once issued, it keeps it.
      */
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "hearing_id")

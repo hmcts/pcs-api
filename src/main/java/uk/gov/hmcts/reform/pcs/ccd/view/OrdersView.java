@@ -23,7 +23,8 @@ public class OrdersView {
         OrderState.DRAFT, "Draft",
         OrderState.SUBMITTED_FOR_REVIEW, "Waiting for review",
         OrderState.RETURNED_TO_JUDGE, "Returned to judge",
-        OrderState.ISSUED, "Issued"
+        OrderState.ISSUED, "Issued",
+        OrderState.DISCARDED, "Discarded"
     );
 
     private final OrderStepRepository orderStepRepository;

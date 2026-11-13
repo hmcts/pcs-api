@@ -44,16 +44,19 @@ import java.util.Set;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.DISCARD_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.DISCARDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 
 /**
- * A judge makes an order in pcs-frontend. Each judge has one working draft per hearing on the case, and one
- * made without a hearing, which a change with no id starts. The judge chooses which of the case's hearings the order
- * is made at, or none, whatever task or link brought them to it, and can change it until they send it. An order a
- * caseworker returned is the judge's to change and resubmit, opened from the task its return gave them. An order
+ * A judge makes an order in pcs-frontend. Each judge has one working draft on the case, which a change with no id
+ * starts and every task or link opens, until they send it for review or discard it. The judge chooses which of the
+ * case's hearings the order is made at, or none, and can change it until they send it; a link's hearing is only where
+ * a new order starts. An order a caseworker returned is the judge's to change and resubmit beside their draft,
+ * opened from the task its return gave them. An order
  * made for a hearing records the case's facts and the judge's note for that hearing whenever the judge saves it.
  * The task that asks a judge to decide an application names it, for the page to put first and require.
  */
@@ -72,8 +75,10 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
     private static final String NO_LONGER_CHANGEABLE = "The order is no longer waiting for you to change it";
     static final String NO_WORDING = "The order's wording did not load. Reload the page and send the order again";
-    static final String ALREADY_DRAFTED = "You already have another draft order made there. Send this order for "
-        + "review, or choose when it is made again";
+    static final String ALREADY_DRAFTING = "You already have a draft order on this case, saved since this page was "
+        + "opened. Nothing on this page was saved. Copy anything you want to keep, then reload the page to open "
+        + "your draft";
+    static final String NO_DRAFT_TO_DISCARD = "Only a saved draft order can be discarded";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -116,12 +121,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         String judge = IdamUserIds.normalise(start.user().id());
         PcsCaseEntity pcsCase = findCase(caseReference);
         OrderLink link = start.clientContext().as(OrderLink.class).orElse(OrderLink.NONE);
+        // The judge's one draft on the case, wherever it is made, unless the link names an order of theirs.
         Optional<OrderEntity> order = link.orderId() != null
             ? Optional.of(chosenOrder(link.orderId(), caseReference, judge))
-            : orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
-                caseReference, judge, DRAFT, link.hearingId());
-        GenAppEntity task = link.orderId() != null || link.genAppId() == null ? null
-            : openGenApp(pcsCase, link.genAppId());
+            : draft(caseReference, judge);
+        GenAppEntity task = link.genAppId() == null ? null : openGenApp(pcsCase, link.genAppId());
         // A judge reopens their draft whatever another order has done since, which refuses it when it is issued.
         if (task != null && !orderTasks.canDecide(task)) {
             if (order.isEmpty()) {
@@ -129,21 +133,20 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             }
             task = null;
         }
-        // The judge's own choice of hearing, or of none, wins over the one the order or their link gave it.
-        HearingEntity hearing = link.madeAt() != null
-            ? madeAt(pcsCase, link.madeAt().hearingId())
-            : order.map(OrderEntity::getHearing).orElseGet(() -> madeAt(pcsCase, link.hearingId()));
+        // The judge's own choice of hearing, or of none, wins over the order's, and a link's is only a new order's.
+        HearingEntity hearing;
+        if (link.madeAt() != null) {
+            hearing = madeAt(pcsCase, link.madeAt().hearingId());
+        } else {
+            // A saved order made without a hearing stays so, whichever hearing the link names.
+            hearing = order.isPresent() ? order.get().getHearing() : madeAt(pcsCase, link.hearingId());
+        }
         OrderStart.Order workingOrder = order
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
                 link.orderId() != null ? messageService.lastQuery(o).orElse(null) : null))
             .orElse(OrderStart.Order.NONE);
-        // Only a draft, or a new order, is saved as a draft, which one at each hearing is.
-        UUID otherDraft = order.isPresent() && order.get().getState() != DRAFT ? null
-            : otherDraft(caseReference, judge, hearing, order.map(OrderEntity::getId).orElse(null))
-                .map(OrderEntity::getId).orElse(null);
         return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
-            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId(),
-            otherDraft));
+            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId()));
     }
 
     /** One of the case's hearings, or none for an order made without a hearing. */
@@ -151,14 +154,12 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         return hearingId == null ? null : hearingRecords.hearing(pcsCase, hearingId);
     }
 
-    /** The judge's draft at the hearing, or made without one, other than the given order. */
-    private Optional<OrderEntity> otherDraft(long caseReference, String judge, HearingEntity hearing, UUID orderId) {
-        return orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
-                caseReference, judge, DRAFT, hearing == null ? null : hearing.getId())
-            .filter(draft -> !draft.getId().equals(orderId));
+    /** The judge's draft on the case, of which they have one. */
+    private Optional<OrderEntity> draft(long caseReference, String judge) {
+        return orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(caseReference, judge, DRAFT);
     }
 
-    /** A returned order the judge's task links to. */
+    /** The judge's draft, or an order returned to them, that their link names. */
     private OrderEntity chosenOrder(UUID orderId, long caseReference, String judge) {
         return orderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(orderId, caseReference, judge, CHANGEABLE)
@@ -176,6 +177,13 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         }
         long caseReference = submit.caseReference();
         String judge = IdamUserIds.normalise(submit.user().id());
+        if (request.action() == DISCARD_DRAFT) {
+            return discard(caseReference, judge, change);
+        }
+        // A page opened before the judge's draft was saved elsewhere starts no second one, and replaces nothing.
+        if (change.id() == null && draft(caseReference, judge).isPresent()) {
+            throw ExternalRejection.because(ALREADY_DRAFTING);
+        }
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge, request.hearing())
             : workingDraft(caseReference, judge, change);
@@ -188,12 +196,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         Integer chosenHearingId = request.hearing() == null ? null : request.hearing().id();
         HearingEntity chosen = Objects.equals(hearingId, chosenHearingId) ? order.getHearing()
             : madeAt(order.getPcsCase(), chosenHearingId);
-        OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
-        // A judge has one draft at each hearing, and one made without a hearing. Checked before the order moves,
-        // as the lookup flushes it.
-        if (to == DRAFT && otherDraft(caseReference, judge, chosen, order.getId()).isPresent()) {
-            throw ExternalRejection.because(ALREADY_DRAFTED);
-        }
         order.setHearing(chosen);
         // The order holds no copy of the hearing's facts and note, which are recorded only when the judge changed
         // them, so another judge's are not refused or overwritten by a save that left them alone.
@@ -201,6 +203,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             hearingRecords.record(order.getPcsCase(), order.getHearing(), request.hearing());
         }
         final boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
+        OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
         final OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
             .orderType(change.orderType())
             .formData(change.formData())
@@ -214,6 +217,27 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
+    }
+
+    /**
+     * The judge discards their saved draft, as they last saw it. It is kept as it was last saved, with a step
+     * recording that it was discarded, and is no longer their draft on the case: their next order is a new one.
+     * Its tasks and messages are left as they are, for the order that does answer them.
+     */
+    private ExternalSubmitResponse<State> discard(long caseReference, String judge, OrderChange change) {
+        if (change.id() == null) {
+            throw ExternalRejection.because(NO_DRAFT_TO_DISCARD);
+        }
+        OrderEntity draft = workingDraft(caseReference, judge, change);
+        if (draft.getState() != DRAFT) {
+            throw ExternalRejection.because(NO_DRAFT_TO_DISCARD);
+        }
+        OrderStepEntity saved = orderSteps.latest(draft);
+        orderSteps.append(draft, DISCARDED, judge, OrderStepEntity.builder()
+            .orderType(saved.getOrderType())
+            .formData(saved.getFormData())
+            .docweaveSnapshot(saved.getDocweaveSnapshot()));
+        return ExternalSubmitResponse.accepted("Order draft discarded", "Discarded a draft order");
     }
 
     /** Refuses the order events while making orders is off, as their show condition only hides them in XUI. */

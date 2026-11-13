@@ -20,33 +20,27 @@ import java.util.UUID;
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
  * made for, if any, and the application the judge's task asks them to decide, if it asks them to decide one.
- * The other draft is the judge's draft already made at the order's hearing, or without one, when the order they
- * are working on is a different draft or a new one: it cannot be saved as a draft there too.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId,
-                         UUID otherDraftId) {
-
-    public OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
-        this(order, caseContext, hearing, taskGenAppId, null);
-    }
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
 
     /**
-     * No id means the judge has no draft for the hearing, or made without one, yet. The version is the latest
-     * step's id, sent back with a change to the order.
+     * No id, and no state, means the judge has no draft on the case yet. The version is the latest step's id, sent
+     * back with a change to the order.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,
                         long version,
+                        OrderState state,
                         OrderType orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot,
                         String queryFromCaseworker) {
 
-        public static final Order NONE = new Order(null, 0, null, Map.of(), null, null);
+        public static final Order NONE = new Order(null, 0, null, null, Map.of(), null, null);
 
         /** An order as its latest step left it, with the query it was returned with if it was. */
         public static Order of(OrderEntity order, OrderStepEntity latest, String queryFromCaseworker) {
-            return new Order(order.getId(), latest.getId(), latest.getOrderType(),
+            return new Order(order.getId(), latest.getId(), order.getState(), latest.getOrderType(),
                 latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker);
         }
     }
