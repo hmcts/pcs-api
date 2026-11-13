@@ -24,6 +24,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.BailiffAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -1219,7 +1220,7 @@ public class PCSCase {
     private YesOrNo hasUnsubmittedEnforcementData;
 
     @CCD(
-        access = {InternalUserAccess.class},
+        access = {BailiffAccess.class},
         searchable = false
     )
     private WarrantReturn warrantReturn;
