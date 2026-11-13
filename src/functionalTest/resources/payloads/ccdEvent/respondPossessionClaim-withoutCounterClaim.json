@@ -1,0 +1,61 @@
+{
+  "possessionClaimResponse": {
+    "draftVersion": "${DRAFT_VERSION}",
+    "defendantResponses": {
+      "dateOfBirth": "2000-02-01",
+      "disputeClaim": "NO",
+      "hasSolicitor": "NO",
+      "contactByPost": "NO",
+      "contactByEmail": "YES",
+      "contactByPhone": "NO",
+      "freeLegalAdvice": "NO",
+      "makeCounterClaim": "YES",
+      "paymentAgreement": {
+        "anyPaymentsMade": "NO",
+        "repaymentPlanAgreed": "NO",
+        "repayArrearsInstalments": "NO"
+      },
+      "completedSections": [
+        "START_NOW_AND_DETAILS",
+        "PERSONAL_DETAILS",
+        "DISPUTE_AND_TENANCY",
+        "PAYMENTS",
+        "SITUATION_AND_CIRCUMSTANCES",
+        "INCOME_AND_EXPENDITURE",
+        "UPLOAD_FILES"
+      ],
+      "defendantDocuments": [],
+      "otherConsiderations": "NO",
+      "householdCircumstances": {
+        "otherTenants": "NO",
+        "otherDependants": "NO",
+        "dependantChildren": "NO",
+        "exceptionalHardship": "NO",
+        "alternativeAccommodation": "NO",
+        "shareIncomeExpenseDetails": "NO",
+        "shareAdditionalCircumstances": "NO"
+      },
+      "tenancyTypeConfirmation": "YES",
+      "possessionNoticeReceived": "NO",
+      "defendantNameConfirmation": "YES",
+      "propertyAddressConfirmation": "YES",
+      "tenancyStartDateConfirmation": "YES",
+      "counterClaimWantToUploadFiles": "NO",
+      "rentArrearsAmountConfirmation": "YES"
+    },
+    "defendantContactDetails": {
+      "party": {
+        "address": {
+          "County": "",
+          "Country": "United Kingdom",
+          "PostCode": "W3 7RX",
+          "PostTown": "London",
+          "AddressLine1": "3 Second Avenue",
+          "AddressLine2": "",
+          "AddressLine3": ""
+        },
+        "emailAddress": "test@test.com"
+      }
+    }
+  }
+}
