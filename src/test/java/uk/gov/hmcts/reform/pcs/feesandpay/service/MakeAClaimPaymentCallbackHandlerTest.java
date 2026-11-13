@@ -231,6 +231,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void shouldScheduleNotificationForLatestClaimFeePaymentOnly() {
         // Given
         FeePaymentEntity olderClaimPayment = FeePaymentEntity.builder()
@@ -260,6 +261,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void shouldScheduleOneAccessCodeTaskPerDefendantWithDeterministicInstanceId() {
         // Given
         UUID defendantOne = UUID.randomUUID();
@@ -284,15 +286,13 @@ class MakeAClaimPaymentCallbackHandlerTest {
                                        CASE_REFERENCE + ":" + defendantTwo);
     }
 
-    private FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-        .claim(ClaimEntity.builder().id(UUID.randomUUID()).build())
-        .build();
-
     @Test
     void shouldBuildPaymentStateTaskData() {
         // Given
         PaymentStatusCallback callback = PaymentStatusCallback.builder().payment(
             Payment.builder().paymentReference("RC-1234-5678").build()).build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .claim(ClaimEntity.builder().id(UUID.randomUUID()).build()).build();
 
         // When
         PaymentStateTaskData result = underTest.createPaymentStateTaskData(feePaymentEntity,
