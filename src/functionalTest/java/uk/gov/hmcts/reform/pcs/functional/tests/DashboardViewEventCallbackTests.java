@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
