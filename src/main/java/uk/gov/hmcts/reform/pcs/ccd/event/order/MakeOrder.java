@@ -44,16 +44,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.DISCARD_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.DISCARDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 
 /**
  * A judge makes an order in pcs-frontend. Each judge has one working draft on the case, which a change with no id
- * starts and every task or link opens, until they send it for review or discard it. The judge chooses which of the
+ * starts and every task or link opens, until they send it for review. The judge chooses which of the
  * case's hearings the order is made at, or none, and can change it until they send it; a link's hearing is only where
  * a new order starts. An order a caseworker returned is the judge's to change and resubmit beside their draft,
  * opened from the task its return gave them. An order
@@ -78,7 +76,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     static final String ALREADY_DRAFTING = "You already have a draft order on this case, saved since this page was "
         + "opened. Nothing on this page was saved. Copy anything you want to keep, then reload the page to open "
         + "your draft";
-    static final String NO_DRAFT_TO_DISCARD = "Only a saved draft order can be discarded";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -169,6 +166,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
         requireMakeOrder(featureToggleService);
         MakeOrderRequest request = submit.payload();
+        if (request.action() == null) {
+            throw ExternalRejection.because("Select whether to save the draft or send the order for review");
+        }
         OrderChange change = request.order();
         // Its page posts the wording its script built; an order without it could not be reviewed or issued.
         if (request.action() == SUBMIT_FOR_REVIEW
@@ -177,9 +177,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         }
         long caseReference = submit.caseReference();
         String judge = IdamUserIds.normalise(submit.user().id());
-        if (request.action() == DISCARD_DRAFT) {
-            return discard(caseReference, judge, change);
-        }
         // A page opened before the judge's draft was saved elsewhere starts no second one, and replaces nothing.
         if (change.id() == null && draft(caseReference, judge).isPresent()) {
             throw ExternalRejection.because(ALREADY_DRAFTING);
@@ -217,27 +214,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
-    }
-
-    /**
-     * The judge discards their saved draft, as they last saw it. It is kept as it was last saved, with a step
-     * recording that it was discarded, and is no longer their draft on the case: their next order is a new one.
-     * Its tasks and messages are left as they are, for the order that does answer them.
-     */
-    private ExternalSubmitResponse<State> discard(long caseReference, String judge, OrderChange change) {
-        if (change.id() == null) {
-            throw ExternalRejection.because(NO_DRAFT_TO_DISCARD);
-        }
-        OrderEntity draft = workingDraft(caseReference, judge, change);
-        if (draft.getState() != DRAFT) {
-            throw ExternalRejection.because(NO_DRAFT_TO_DISCARD);
-        }
-        OrderStepEntity saved = orderSteps.latest(draft);
-        orderSteps.append(draft, DISCARDED, judge, OrderStepEntity.builder()
-            .orderType(saved.getOrderType())
-            .formData(saved.getFormData())
-            .docweaveSnapshot(saved.getDocweaveSnapshot()));
-        return ExternalSubmitResponse.accepted("Order draft discarded", "Discarded a draft order");
     }
 
     /** Refuses the order events while making orders is off, as their show condition only hides them in XUI. */

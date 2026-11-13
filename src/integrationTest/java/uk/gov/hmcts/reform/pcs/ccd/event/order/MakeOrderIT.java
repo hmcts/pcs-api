@@ -27,16 +27,13 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.DISCARD_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.DISCARDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_REVIEW;
@@ -217,78 +214,14 @@ class MakeOrderIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("discards the judge's saved draft, keeping it as they last saved it, for their next order to be a "
-        + "new one")
-    void discardsADraft() {
-        // There is nothing to discard until a draft is saved, and discarding makes no record of its own.
-        assertThat(asFirstJudge.submitExpectingRejection(discard(asFirstJudge.start().order())).errors())
-            .containsExactly(MakeOrder.NO_DRAFT_TO_DISCARD);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM orders WHERE case_id = "
-            + "(SELECT id FROM pcs_case WHERE case_reference = ?)", Integer.class, caseReference)).isZero();
-        asFirstJudge.submitExpectingSuccess(startDraft("first version"));
-        Order staleCopy = asFirstJudge.start().order();
-        asFirstJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(staleCopy.id(),
-            staleCopy.version(), OrderType.ADJOURNMENT, Map.of("notes", "last saved"), WORDING), "a-task"));
-        final Order draft = asFirstJudge.start().order();
-
-        // Only its judge discards it, as they last saw it.
-        assertThat(asSecondJudge.submitExpectingRejection(discard(draft)).errors())
-            .containsExactly("The order draft does not exist for this case");
-        assertThat(asFirstJudge.submitExpectingRejection(discard(staleCopy)).errors())
-            .containsExactly("The order has been updated by another user. Reload it and try again");
-        assertThat(events.external(cases.issue(), MAKE_ORDER).as(firstJudge)
-            .submitExpectingRejection(discard(draft)).errors())
-            .containsExactly("The order draft does not exist for this case");
-        assertThat(workingDraft(asFirstJudge)).isEqualTo("last saved");
-
-        var discarded = asFirstJudge.submitExpectingSuccess(discard(draft));
-
-        assertThat(discarded.changed("orders", OrderRow.class)).extracting(OrderRow::id, OrderRow::state)
-            .containsExactly(draft.id(), DISCARDED);
-        assertThat(discarded.audit().summary()).isEqualTo("Order draft discarded");
-        // Every step it had is kept, with one more for the discarding, which carries what was last saved.
-        assertThat(jdbcTemplate.queryForList("SELECT state, order_type, form_data ->> 'notes' AS notes, "
-            + "docweave_snapshot #>> '{}' AS wording FROM order_steps WHERE order_id = ? ORDER BY id", draft.id()))
-            .extracting(step -> step.get("state"), step -> step.get("order_type"), step -> step.get("notes"),
-                step -> step.get("wording"))
-            .containsExactly(tuple("DRAFT", "OUTRIGHT_POSSESSION", "first version", "the order"),
-                tuple("DRAFT", "ADJOURNMENT", "last saved", "the order"),
-                tuple("DISCARDED", "ADJOURNMENT", "last saved", "the order"));
-        // No task is completed or made, and no message closed, by discarding.
-        verifyNoInteractions(camundaService, taskManagementApi);
-
-        // It is no longer the judge's to open, change or discard again, and their next order is a new one.
-        assertThat(asFirstJudge.start().order()).isEqualTo(Order.NONE);
-        assertThat(asFirstJudge.withClientContext(Map.of("orderId", draft.id().toString()))
-            .startExpectingRejection()).containsExactly("The order is no longer waiting for you to change it");
-        assertThat(asFirstJudge.submitExpectingRejection(change(SAVE_DRAFT, draft, "changed")).errors())
-            .containsExactly("The order draft does not exist for this case");
-        assertThat(asFirstJudge.submitExpectingRejection(discard(draft)).errors())
-            .containsExactly("The order draft does not exist for this case");
-        asFirstJudge.submitExpectingSuccess(startDraft("next order"));
-        assertThat(asFirstJudge.start().order().id()).isNotNull().isNotEqualTo(draft.id());
-    }
-
-    @Test
-    @DisplayName("does not discard an order sent for review")
-    void doesNotDiscardASubmittedOrder() {
-        asFirstJudge.submitExpectingSuccess(startDraft("draft"));
+    @DisplayName("rejects an unsupported action without changing the saved draft")
+    void refusesUnsupportedAction() {
+        asFirstJudge.submitExpectingSuccess(startDraft("saved wording"));
         Order draft = asFirstJudge.start().order();
-        OrderRow submitted = asFirstJudge.submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, draft, "final"))
-            .changed("orders", OrderRow.class);
-
-        assertThat(asFirstJudge.submitExpectingRejection(
-            new MakeOrderRequest(DISCARD_DRAFT, new OrderChange(draft.id(), draft.version() + 1, null, null, null),
-                null)).errors())
-            .containsExactly("The order draft does not exist for this case");
-        assertThat(jdbcTemplate.queryForObject("SELECT state FROM orders WHERE id = ?", String.class, submitted.id()))
-            .isEqualTo("SUBMITTED_FOR_REVIEW");
-    }
-
-    /** The judge discards the draft as they last saw it, which the page names by its id and version alone. */
-    private static MakeOrderRequest discard(Order order) {
-        return new MakeOrderRequest(DISCARD_DRAFT, new OrderChange(order.id(), order.version(), null, null, null),
-            null);
+        assertThat(asFirstJudge.submitExpectingRejection(new MakeOrderRequest(null,
+            new OrderChange(draft.id(), draft.version(), OrderType.ADJOURNMENT, Map.of("notes", "changed"), WORDING),
+            null)).errors()).containsExactly("Select whether to save the draft or send the order for review");
+        assertThat(asFirstJudge.start().order()).isEqualTo(draft);
     }
 
     /** The note on the judge's working draft. */

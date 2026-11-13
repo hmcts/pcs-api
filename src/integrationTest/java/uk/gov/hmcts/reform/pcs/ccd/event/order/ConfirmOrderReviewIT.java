@@ -47,7 +47,6 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.DISCARD_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
@@ -353,13 +352,10 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asJudge.start().order().id()).isEqualTo(draftId);
         assertThat(asJudge.start().order().queryFromCaseworker()).isNull();
 
-        // Saved, it is the same order, still returned, beside the draft; and it is not a draft to discard.
+        // Saved, it is the same order, still returned, beside the draft.
         asAuthor.submitExpectingSuccess(change(SAVE_DRAFT, returned, "half way"));
         assertThat(asAuthor.start().order()).extracting(Order::id, Order::state, saved -> saved.formData().get("notes"))
             .containsExactly(order.id(), RETURNED_TO_JUDGE, "half way");
-        assertThat(asAuthor.submitExpectingRejection(new MakeOrderRequest(DISCARD_DRAFT, new OrderChange(order.id(),
-            asAuthor.start().order().version(), null, null, null), null)).errors())
-            .containsExactly(MakeOrder.NO_DRAFT_TO_DISCARD);
         asJudge.submitExpectingSuccess(change(SAVE_DRAFT, asJudge.start().order(), "the next order, changed"));
         assertThat(jdbcTemplate.queryForList("SELECT state FROM orders WHERE case_id = "
             + "(SELECT id FROM pcs_case WHERE case_reference = ?) ORDER BY state", String.class, caseReference))
