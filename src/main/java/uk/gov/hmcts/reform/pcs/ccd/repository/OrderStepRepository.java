@@ -12,8 +12,12 @@ public interface OrderStepRepository extends JpaRepository<OrderStepEntity, Long
 
     Optional<OrderStepEntity> findFirstByOrderIdOrderByIdDesc(UUID orderId);
 
-    /** The step that last returned the order to its judge, with the query it was returned with. */
-    Optional<OrderStepEntity> findFirstByOrderIdAndNoteIsNotNullOrderByIdDesc(UUID orderId);
+    /** The order's steps that returned it with a query, latest first. */
+    @Query("""
+        select step from OrderStepEntity step
+        where step.order.id = :orderId and step.messageEntry is not null
+        order by step.id desc""")
+    List<OrderStepEntity> findQueriesByOrderId(UUID orderId);
 
     /** Each order on a case as it stands. */
     @Query("""

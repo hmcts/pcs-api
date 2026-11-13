@@ -1,5 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 
+import com.launchdarkly.sdk.server.LDClient;
+import com.launchdarkly.sdk.server.LDConfig;
+import com.launchdarkly.sdk.server.integrations.TestData;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -43,6 +54,7 @@ import static org.awaitility.Awaitility.await;
 
 /** Real PCS persistence and projection, real SDK rendering, and the SDK's existing CDAM fixture. */
 @PcsCcdEventTest
+@Import(CaseBundleIT.Flags.class)
 @TestPropertySource(properties = {
     "ccd.bundling.enabled=true", "ccd.bundling.managed.enabled=true", "ccd.bundling.job.enabled=true",
     "ccd.bundling.job.worker.enabled=true", "ccd.bundling.job.worker.poll-delay=1h"
@@ -64,6 +76,29 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     private BundleJobWorker worker;
     @Autowired
     private TransactionTemplate transaction;
+    @Autowired
+    private TestData flags;
+
+    @TestConfiguration
+    static class Flags {
+        @Bean
+        TestData bundleFlags() {
+            return TestData.dataSource();
+        }
+
+        @Bean(destroyMethod = "close")
+        @Primary
+        LDClient bundleFlagClient(TestData data) {
+            return new LDClient("test", new LDConfig.Builder().dataSource(data).events(
+                com.launchdarkly.sdk.server.Components.noEvents()).build());
+        }
+    }
+
+    @BeforeEach
+    void hideBundles() {
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
+        flags.update(flags.flag(FeatureFlag.MAKE_ORDER.key()).variationForAll(true));
+    }
 
     @Test
     void documentHookQueuesOnlyCommittedCascadedWrites() throws Exception {
@@ -92,12 +127,17 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
         run(key);
         var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         PCSCase judge = view(reference, "judge");
         assertThat(judge.getBundleTab().getPages()).isEqualTo(first.pageCount());
         assertThat(judge.getBundleTab().getBundle().getUrl()).isEqualTo(first.stored().orElseThrow().url());
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
             .doesNotContain(first.stored().orElseThrow().url());
         assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
+        // The judge making an order links it; nobody else is given it.
+        assertThat(orderBundle(reference, "judge")).isEqualTo(new OrderStart.CaseBundle(
+            first.stored().orElseThrow().id(), first.fileName(), first.recordedAt()));
+        assertThat(orderBundle(reference, "hearing-centre-admin")).isNull();
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
     }
@@ -159,12 +199,69 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         events.documents().delete(stored);
         transaction.executeWithoutResult(status -> add(reference, missing));
         run(key);
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         var missingDetails = view(reference, "judge").getBundleTab().getMissingDocuments();
         assertThat(missingDetails).singleElement().satisfies(missingDocument -> {
             assertThat(missingDocument.getValue().getDocumentName()).isEqualTo("Deleted.pdf");
             assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
             assertThat(missingDocument.getValue().getPage()).isPositive();
         });
+    }
+
+    @Test
+    void rendersInBackgroundButOnlyTargetedJudgesReceiveBundleFields() throws Exception {
+        long reference = cases.issue();
+        UUID key = caseKey(reference);
+        transaction.executeWithoutResult(status -> add(reference,
+            document("Background.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1))));
+        run(key);
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current()).isPresent();
+
+        var allowed = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
+        final var other = events.registerActor("Other", "Judge", "caseworker-pcs", "judge");
+        var admin = events.registerActor("Selected", "Admin", "caseworker-pcs", "hearing-centre-admin");
+        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        String originalTitle = events.view(reference, allowed).getCaseTitleMarkdown();
+        assertThat(originalTitle).doesNotContain("/documentsv2/");
+
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false)
+            .variationForUser(allowed.uid(), true).variationForUser(admin.uid(), true));
+        PCSCase visible = events.view(reference, allowed);
+        assertThat(visible.getBundleTab().getBundle()).isNotNull();
+        UUID documentId = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
+            .stored().orElseThrow().id();
+        assertThat(visible.getCaseTitleMarkdown())
+            .contains("href=\"/documentsv2/" + documentId + "/binary\"")
+            .contains("target=\"_blank\" rel=\"noopener noreferrer\"")
+            .contains("Whole file download (opens in new tab)");
+        assertThat(events.view(reference, other).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, other).getCaseTitleMarkdown()).isEqualTo(originalTitle);
+        assertThat(events.view(reference, admin).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, admin).getCaseTitleMarkdown()).isEqualTo(originalTitle);
+
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
+        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, allowed).getCaseTitleMarkdown()).isEqualTo(originalTitle);
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current()).isPresent();
+    }
+
+    @Test
+    void overviewHasNoDownloadUntilTheBundleIsPublished() throws Exception {
+        long reference = cases.issue();
+        var judge = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForUser(judge.uid(), true));
+        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
+
+        transaction.executeWithoutResult(status -> add(reference,
+            document("Preparing.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1))));
+        assertThat(events.view(reference, judge).getBundleTab().getStatus()).isEqualTo("The bundle is being prepared.");
+        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
+        run(caseKey(reference));
+    }
+
+    private OrderStart.CaseBundle orderBundle(long reference, String role) {
+        return events.external(reference, MakeOrder.MAKE_ORDER)
+            .as(events.registerActor("Bundle", "Reader", "caseworker-pcs", role)).start().caseContext().caseBundle();
     }
 
     private PCSCase view(long reference, String role) {

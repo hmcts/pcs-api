@@ -27,7 +27,22 @@ public class CaseTitleService {
                 </p>
                 <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
                     Property address: %s
-                </p>""".formatted(addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER));
+                </p>%s""".formatted(addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER),
+                                      caseBundleLink(pcsCase));
+    }
+
+    private String caseBundleLink(PCSCase pcsCase) {
+        // BundleTabView supplies this document only to judges targeted by case-bundle-view-enabled.
+        var tab = pcsCase.getBundleTab();
+        if (tab == null || tab.getDocumentId() == null) {
+            return "";
+        }
+        return """
+
+                <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
+                    <a class="govuk-link" href="/documentsv2/%s/binary" target="_blank" rel="noopener noreferrer">Whole \
+                file download (opens in new tab)</a>
+                </p>""".formatted(tab.getDocumentId());
     }
 
 }
