@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -50,6 +51,10 @@ class EnforcementOrderServiceTest {
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private EnforcementStateService enforcementStateService;
     @Mock
     private EnforcementTypeStrategyFactory strategyFactory;
     @InjectMocks
@@ -111,14 +116,16 @@ class EnforcementOrderServiceTest {
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
                 ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
-        inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
+        var saveOrder = inOrder(strategyFactory, strategy, enforcementStateService, pcsCaseRepository,
+                enforcementOrderRepository);
+        saveOrder.verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
+        saveOrder.verify(enforcementStateService)
+                .mapToEntity(pcsCaseEntity, EnforcementState.PENDING_CASE_ISSUED);
+        saveOrder.verify(pcsCaseRepository).save(pcsCaseEntity);
+        saveOrder.verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        assertThat(savedEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
         assertThat(result).isSameAs(savedEntity);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }

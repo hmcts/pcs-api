@@ -12,11 +12,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementStateService;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
@@ -42,6 +46,9 @@ public class DraftCaseDataService {
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
     private final TransactionTemplate transactionTemplate;
+    private final PcsCaseService pcsCaseService;
+    private final PcsCaseRepository pcsCaseRepository;
+    private final EnforcementStateService enforcementStateService;
 
     private static final int LAST_WRITE_WINS_ATTEMPTS = 3;
 
@@ -50,13 +57,19 @@ public class DraftCaseDataService {
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
                                 SecurityContextService securityContextService,
-                                TransactionTemplate transactionTemplate) {
+                                TransactionTemplate transactionTemplate,
+                                PcsCaseService pcsCaseService,
+                                PcsCaseRepository pcsCaseRepository,
+                                EnforcementStateService enforcementStateService) {
         this.draftCaseDataRepository = draftCaseDataRepository;
         this.organisationService = organisationService;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
         this.transactionTemplate = transactionTemplate;
+        this.pcsCaseService = pcsCaseService;
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.enforcementStateService = enforcementStateService;
     }
 
     private String getCurrentUserId() {
@@ -374,6 +387,9 @@ public class DraftCaseDataService {
 
         patchUnsubmittedEventDataInternal(DraftCaseData.builder().caseReference(caseReference)
                                               .eventId(eventId).build(), eventData);
+        if (eventId == EventId.enforceTheOrder) {
+            patchEnforcementState(caseReference);
+        }
     }
 
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId, UUID partyId,
@@ -412,6 +428,12 @@ public class DraftCaseDataService {
                 caseReference, eventId, userId, patchEventDataJson, organisationId
             )
         ));
+    }
+
+    private void patchEnforcementState(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        enforcementStateService.mapToEntity(pcsCaseEntity, EnforcementState.AWAITING_SUBMISSION_TO_HMCTS);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     private String mergeCaseDataJson(String baseCaseDataJson, String patchCaseDataJson) {

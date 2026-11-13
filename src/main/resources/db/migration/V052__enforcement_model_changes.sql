@@ -1,3 +1,12 @@
+CREATE TABLE public.enf_state (
+    pcs_case_id UUID NOT NULL,
+    state VARCHAR(30) NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_modified_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT enf_state_pkey PRIMARY KEY (pcs_case_id),
+    CONSTRAINT enf_state_pcs_case_id_fkey FOREIGN KEY (pcs_case_id) REFERENCES public.pcs_case (id)
+);
+
 ALTER TABLE public.enf_case RENAME TO enf_application;
 
 ALTER TABLE public.enf_application
@@ -11,7 +20,6 @@ ALTER INDEX public.idx_enf_case_sot_id RENAME TO idx_enf_application_sot_id;
 ALTER TABLE public.enf_application
     DROP COLUMN claim_id,
     ADD COLUMN pcs_case_id UUID NOT NULL,
-    ADD COLUMN state VARCHAR(30) NOT NULL,
     ADD COLUMN created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     ADD COLUMN last_modified_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL;
 

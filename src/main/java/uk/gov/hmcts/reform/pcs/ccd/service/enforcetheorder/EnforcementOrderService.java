@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -23,6 +24,8 @@ public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseService pcsCaseService;
+    private final PcsCaseRepository pcsCaseRepository;
+    private final EnforcementStateService enforcementStateService;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
 
@@ -55,20 +58,20 @@ public class EnforcementOrderService {
                                                           EnforcementState state) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, pcsCaseEntity, state);
+        EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, pcsCaseEntity);
         strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enforcementOrderEntity, enforcementOrder);
 
+        enforcementStateService.mapToEntity(pcsCaseEntity, state);
+        pcsCaseRepository.save(pcsCaseEntity);
         return enforcementOrderRepository.save(enforcementOrderEntity);
     }
 
-    private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, PcsCaseEntity pcsCaseEntity,
-                                               EnforcementState state) {
+    private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, PcsCaseEntity pcsCaseEntity) {
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setPcsCase(pcsCaseEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
-        enforcementOrderEntity.setState(state);
         return enforcementOrderEntity;
     }
 }
