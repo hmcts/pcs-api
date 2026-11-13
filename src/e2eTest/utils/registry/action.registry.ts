@@ -150,11 +150,13 @@ export class ActionRegistry {
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
+    ['validateTabNotPresent', new CreateCaseAction()],
     ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
     ['navigateToSummaryPage', new RespondToAClaimAction()],
     ['deleteDraftResponseOption', new RespondToAClaimAction()],
     ['confirmDeleteDraftResponse', new RespondToAClaimAction()],
     ['getAddressInfo', new RespondToAClaimAction()],
+    ['validateDropDownValues', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
@@ -218,8 +220,13 @@ export class ActionRegistry {
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
+    ['validateChallengedAccessLink', new GlobalSearchCaseAction()],
+    ['requestChallengedAccess', new GlobalSearchCaseAction()],
     ['removeFile', new RemoveFileAction()],
-    ['getAllPartyDetails', new CreateCaseAction()],   
+    ['getAllPartyDetails', new CreateCaseAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
+    ['removeFile', new RemoveFileAction()],
   ]);
 
   static getAction(actionName: string): IAction {
