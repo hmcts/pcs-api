@@ -4,8 +4,8 @@ export const hCEOfficerDetails = {
   nameOfYourHCEOTextLabel: `Enw eich Swyddog Gorfodi yr Uchel Lys`,
   ifYouDoNotKnowHintText: `Os nad ydych yn gwybod eu henw, defnyddiwch enw'r sefydliad maent yn gweithio iddo`,
   nameOfYourHCEOTextInput: `Morgan Freeman`,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
-  previousButton: `Yn ôl`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
+  previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`,
   errorValidation: 'NO',//set it to 'NO' before raising a PR

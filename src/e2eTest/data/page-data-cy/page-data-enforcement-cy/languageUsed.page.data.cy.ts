@@ -6,7 +6,7 @@ export const languageUsed = {
   englishRadioOption: `Saesneg`,
   welshRadioOption: `Cymraeg`,
   englishAndWelshRadioOption: `Saesneg a Chymraeg`,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
   previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`,

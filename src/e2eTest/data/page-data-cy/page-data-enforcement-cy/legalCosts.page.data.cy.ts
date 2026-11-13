@@ -15,8 +15,8 @@ export const legalCosts = {
   youCanEitherParagraphHidden: `Gallwch naill ai:`,
   askYourLawyerListHidden: `ofyn i'ch cyfreithiwr neu gynrychiolydd cyfreithiol faint y gallwch ei adennill, neu`,
   checkTheCivilLinkHidden: `wirio'r Rheolau Trefniadaeth Sifil (Gwefan Justice.gov, yn agor mewn tab newydd)`,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
-  previousButton: `Yn ôl`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
+  previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`,
   errorValidation: `NO`,//set it to `NO` before raising a PR

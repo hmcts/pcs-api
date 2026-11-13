@@ -4,7 +4,7 @@ export const confirmDefendantsDOB = {
   defendantsDOBQuestion: `A ydych chi'n gwybod beth yw dyddiadau geni'r diffynyddion?`,
   yesRadioOption: `Ydy`,
   noRadioOption: `Nac ydy`,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
   previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   errorValidation: `NO`,//set it to `NO` before raising a PR

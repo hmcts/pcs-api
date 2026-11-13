@@ -29,7 +29,7 @@ export const enforcementApplication = {
   youllNeedToProvideReasonsParagraphHidden: `Bydd angen i chi ddarparu rhesymau dros wneud cais am writ yn hytrach na gwarant.`,
   theJudgeWillConsiderParagraphHidden: `The judge will consider this evidence, along with the other information in your application, when deciding whether to grant your request.`,
   youCanContactALawyerParagraphHidden: `Gallwch gysylltu â chyfreithiwr neu Swyddog Gorfodi yr Uchel Lys cyn ichi wneud cais am writ. Gallant eich helpu i wirio a oes gennych y dystiolaeth i wneud cais llwyddiannus.`,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
   previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`,

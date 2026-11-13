@@ -8,8 +8,8 @@ export const propertyAccessDetails = {
   whyItsDifficultToAccessToThePropertyTextLabelHidden: `Eglurwch pam ei bod yn anodd cael mynediad i'r eiddo`,
   maxCharactersHintTextHidden: `Gallwch nodi hyd at 6,800 o nodau.`,
   whyItsDifficultToAccessToThePropertyTextInputHidden: 1100,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
-  previousButton: `Yn ôl`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
+  previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`
 }
