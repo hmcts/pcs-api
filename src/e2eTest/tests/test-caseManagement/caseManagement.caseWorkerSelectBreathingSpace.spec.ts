@@ -43,7 +43,7 @@ test.afterEach(async () => {
 });
 
 
-test.describe('case management - case worker selects Breathing Space', () => {
+test.describe('Case management - Add E2E automation tests for Caseworker Breathing Space recording and Check Your Answers review journey', () => {
   test.beforeEach(async () => {
     await test.step('Given the caseworker selects the "Enter breathing space" event', async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enterBreathingSpaceEvent);
@@ -53,7 +53,7 @@ test.describe('case management - case worker selects Breathing Space', () => {
   });
 
   test(
-    'caseworker enters breathing space details, validates the check your answers screen, amends the reference number, and submits successfully',
+    'Caseworker enters breathing space details, validates the check your answers screen, amends the reference number, and submits successfully',
     {
       tag: ['@CM', '@regression'],
       annotation: [
