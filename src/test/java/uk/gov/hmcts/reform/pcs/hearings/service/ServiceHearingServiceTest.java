@@ -205,6 +205,33 @@ class ServiceHearingServiceTest {
         assertThat(values.getListingComments()).isNull();
     }
 
+    @Test
+    void shouldTruncateListingCommentsLongerThanMaxLength() {
+        String longComment = "x".repeat(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH);
+        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", longComment, 1))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        String expected = ("Case Flags: Urgent case (Comments: " + longComment + ")")
+            .substring(0, ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH);
+        assertThat(values.getListingComments())
+            .hasSize(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH)
+            .isEqualTo(expected);
+    }
+
+    @Test
+    void shouldNotTruncateListingCommentsAtMaxLength() {
+        String prefix = "Case Flags: Urgent case (Comments: ";
+        String comment = "x".repeat(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH - prefix.length() - 1);
+        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", comment, 1))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments())
+            .hasSize(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH)
+            .isEqualTo(prefix + comment + ")");
+    }
+
     private void givenCase(PcsCaseEntity pcsCase) {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCase));
     }
