@@ -473,6 +473,48 @@ class DefencePackSelectorTest {
     }
 
     @Test
+    @DisplayName("HDPI-9007 scenario 9: serves the LR defence pack on the claimant when the only defendant is "
+        + "represented, an HWF reference is present and the counterclaim is pending with no translation")
+    void shouldServeDefencePackToClaimantWhenOnlyDefendantRepresentedAndCounterClaimPendingWithHwf() {
+        PartyEntity representedDefendant = representedParty(YesOrNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(lrDefence, lrCounterClaim));
+        pcsCase.setDefendantResponses(List.of(submittedDefence(representedDefendant, LanguageUsed.ENGLISH)));
+        pcsCase.setCounterClaims(List.of(CounterClaimEntity.builder()
+            .party(representedDefendant)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .languageUsed(LanguageUsed.ENGLISH)
+            .hwfReferenceNumber("HWF-123")
+            .build()));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient()).isEqualTo(claimant);
+            assertThat(candidate.role()).isEqualTo(PartyRole.CLAIMANT);
+            assertThat(candidate.documents()).containsExactlyInAnyOrder(lrDefence, lrCounterClaim);
+        });
+    }
+
+    @Test
+    @DisplayName("Excludes the claimant fallback when the release 1.4 claimant exclusion is on")
+    void shouldNotServeClaimantFallbackWhenClaimantExclusionOn() {
+        PartyEntity representedDefendant = representedParty(YesOrNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(lrDefence));
+        pcsCase.setDefendantResponses(List.of(submittedDefence(representedDefendant, LanguageUsed.ENGLISH)));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
     @DisplayName("Still sends a citizen's defence to the citizen alongside a legal rep defence for a co-defendant")
     void shouldKeepCitizenOwnCopyWhenCoDefendantRespondedByLegalRep() {
         PartyEntity citizenDefendant = partyWithPostPreference(VerticalYesNo.YES);
