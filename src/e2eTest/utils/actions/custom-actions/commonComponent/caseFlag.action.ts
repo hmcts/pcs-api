@@ -291,8 +291,11 @@ export class CaseFlagAction implements IAction {
   }
 
   private caseFlagsTabLocator(page: Page) {
-    return page.locator('div.mat-tab-label-content', { hasText: viewCaseFlag.caseFlagsTab });
-  }
+  return page.getByRole('tab', {
+    name: viewCaseFlag.caseFlagsTab,
+    exact: true
+  });
+}
 
   private async canViewCaseAndPartyFlag(option: actionData, page: Page): Promise<void> {
     const caseFlagsTab = this.caseFlagsTabLocator(page);
