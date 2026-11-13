@@ -22,31 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
-import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
-import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
-import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
-import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
-import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
-import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
-import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.DraftResponseView;
-import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
-import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
-import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
-import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
-import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
-import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
-import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
-import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.*;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -107,6 +83,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final OrganisationService organisationService;
     private final JudicialNoteView judicialNoteView;
     private final EnforcementOrderView enforcementOrderView;
+    private final BreathingSpaceSummaryView breathingSpaceSummaryView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -134,6 +111,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         } else {
             caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity);
         }
+        breathingSpaceSummaryView.setCaseFields(pcsCase, caseReference, state);
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepos
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -48,5 +49,13 @@ public class BreathingSpaceService {
                 .build())
             .toList();
     }
+
+
+    public Optional<BreathingSpaceDetails> getLatestBreathingSpace(long caseReference) {
+        return getBreathingSpaces(caseReference)
+            .stream()
+            .findFirst();
+    }
+
 
 }
