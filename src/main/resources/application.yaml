@@ -443,6 +443,14 @@ shutter:
 
 ccd:
   decentralised-runtime:
+    retain-and-dispose:
+      # off | dry-run | live. Prefer dry-run in preview before enabling live.
+      mode: ${CCD_RETAIN_AND_DISPOSE_MODE:off}
+      cron: ${CCD_RETAIN_AND_DISPOSE_CRON:0 0 2 * * *}
+      zone: ${CCD_RETAIN_AND_DISPOSE_ZONE:UTC}
+      system-user:
+        username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
+        password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
     noc:
       enabled: true
     system-user:

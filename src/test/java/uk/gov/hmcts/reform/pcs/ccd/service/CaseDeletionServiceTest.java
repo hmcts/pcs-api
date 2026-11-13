@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.exception.PcsCaseDeletionException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +43,15 @@ class CaseDeletionServiceTest {
         verify(pcsCaseService).deleteCase(caseRef);
         verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseRef, resumePossessionClaim);
         verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
+    }
+
+    @Test
+    void shouldDeleteServiceOwnedDataWithoutCcdRows() {
+        underTest.deleteServiceOwnedData(caseRef);
+
+        verify(pcsCaseService).deleteCase(caseRef);
+        verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseRef, resumePossessionClaim);
+        verifyNoInteractions(ccdCaseDataDeletionService);
     }
 
     @Test
