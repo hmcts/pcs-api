@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
@@ -39,12 +40,38 @@ class ConfirmationScreenFactoryTest {
         underTest = new ConfirmationScreenFactory(moneyFormatter);
     }
 
+    @ParameterizedTest
+    @MethodSource("feePlaceholderScenarios")
+    void shouldBuildFeeConfirmationScreenWithFeePlaceholder(VerticalYesNo otherPartiesAgreed,
+                                                            VerticalYesNo withoutNotice,
+                                                            String expectedPlaceholder) {
+        // Given
+        GenAppRequest genAppRequest = XuiGenAppRequest.builder()
+            .applicationType(GenAppType.SET_ASIDE)
+            .otherPartiesAgreed(otherPartiesAgreed)
+            .withoutNotice(withoutNotice)
+            .build();
+        FeeDetails feeDetails = mock(FeeDetails.class);
+
+        // When
+        SubmitResponse<State> response
+            = underTest.buildConfirmationScreenResponse(genAppRequest, CASE_REFERENCE, feeDetails);
+
+        // Then
+        assertThat(response.getConfirmationBody())
+            .contains("Pay " + expectedPlaceholder + " application fee")
+            .contains("You must pay the application fee of " + expectedPlaceholder)
+            .contains("/cases/case-details/${[CASE_REFERENCE]}#Service%20Request");
+    }
+
     @Test
-    void shouldBuildFeeConfirmationScreen() {
+    void shouldBuildSuspendFeeConfirmationScreenWithFormattedFee() {
         // Given
         String expectedFormattedFee = "expected formatted fee";
 
-        GenAppRequest genAppRequest = XuiGenAppRequest.builder().build();
+        GenAppRequest genAppRequest = XuiGenAppRequest.builder()
+            .applicationType(GenAppType.SUSPEND)
+            .build();
         FeeDetails feeDetails = mock(FeeDetails.class);
         BigDecimal applicationFee = mock(BigDecimal.class);
         when(feeDetails.getFeeAmount()).thenReturn(applicationFee);
@@ -56,8 +83,7 @@ class ConfirmationScreenFactoryTest {
 
         // Then
         assertThat(response.getConfirmationBody())
-            .contains("Pay " + expectedFormattedFee);
-        assertThat(response.getConfirmationBody())
+            .contains("Pay " + expectedFormattedFee + " application fee")
             .contains("You must pay the application fee of " + expectedFormattedFee);
     }
 
@@ -79,6 +105,14 @@ class ConfirmationScreenFactoryTest {
         // Then
         assertThat(response.getConfirmationBody())
             .contains(expectedMessage);
+    }
+
+    private static Stream<Arguments> feePlaceholderScenarios() {
+        return Stream.of(
+            arguments(VerticalYesNo.NO, VerticalYesNo.NO, "${xui_genapp_MaxFee}"),
+            arguments(VerticalYesNo.YES, VerticalYesNo.NO, "${xui_genapp_StandardFee}"),
+            arguments(VerticalYesNo.NO, VerticalYesNo.YES, "${xui_genapp_StandardFee}")
+        );
     }
 
     private static Stream<Arguments> noFeeScenarios() {
