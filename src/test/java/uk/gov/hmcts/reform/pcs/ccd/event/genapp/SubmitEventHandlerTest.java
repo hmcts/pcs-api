@@ -21,6 +21,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
@@ -36,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -106,6 +108,9 @@ class SubmitEventHandlerTest {
     @Captor
     private ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor;
 
+    @Mock
+    private DraftOrderWordingAccess draftOrderWordingAccess;
+
     private SubmitEventHandler underTest;
 
     @BeforeEach
@@ -116,8 +121,24 @@ class SubmitEventHandlerTest {
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            organisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
-                                           genAppWaTaskService, objectMapper, organisationService
+                                           genAppWaTaskService, objectMapper, organisationService,
+                                           draftOrderWordingAccess
         );
+    }
+
+    @Test
+    void shouldRejectDraftWordingFromAnUnsupportedActorEvenWhenClientSetsTheEligibilityFlag() {
+        XuiGenAppRequest request = XuiGenAppRequest.builder()
+            .applicationType(GenAppType.SOMETHING_ELSE)
+            .draftOrderWording("<p>The hearing is adjourned.</p>")
+            .draftOrderWordingAllowed(VerticalYesNo.YES)
+            .build();
+        PCSCase caseData = PCSCase.builder().xuiGenAppRequest(request).build();
+
+        SubmitResponse<State> response = underTest.submit(eventPayload(caseData));
+
+        assertThat(response.getErrors()).containsExactly("Only a solicitor can provide draft order wording");
+        verifyNoInteractions(genAppService);
     }
 
     @Nested
@@ -141,7 +162,10 @@ class SubmitEventHandlerTest {
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
                 .applicantPartyId(claimantPartyId.toString())
+                .draftOrderWording("<ol><li>The hearing is adjourned.</li></ol>")
                 .build();
+
+            when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(true);
 
             when(partyService.getPartyEntityById(claimantPartyId, TEST_CASE_REFERENCE))
                 .thenReturn(claimantParty);
