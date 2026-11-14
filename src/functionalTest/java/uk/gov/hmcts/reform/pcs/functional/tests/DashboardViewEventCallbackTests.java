@@ -13,11 +13,11 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.PCSApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
+import uk.gov.hmcts.reform.pcs.functional.testutils.TestUsers;
 
 import java.util.Map;
 
@@ -29,7 +29,7 @@ import java.util.Map;
 public class DashboardViewEventCallbackTests extends BaseApi {
 
     @Steps
-    ApiSteps apiSteps;
+    PCSApiSteps apiSteps;
 
     private Long caseReference;
     private String accessCode;
@@ -39,7 +39,7 @@ public class DashboardViewEventCallbackTests extends BaseApi {
     @BeforeEach
     void setUp() {
         caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
     }
 
     @AfterEach
@@ -61,9 +61,9 @@ public class DashboardViewEventCallbackTests extends BaseApi {
             Map.of("caseId", caseReference)
         );
 
-        apiSteps.validateAccessCode(caseReference.toString(), accessCode);
+        apiSteps.validateAccessCodeAsCitizen(caseReference.toString(), accessCode);
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "dashboardView");
         apiSteps.theRequestContainsBody(dashboardViewRequestBody);

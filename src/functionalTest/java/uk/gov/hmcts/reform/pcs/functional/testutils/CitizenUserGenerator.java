@@ -12,18 +12,17 @@ public class CitizenUserGenerator {
 
     private static final String BASE_URL = getEnv("IDAM_TESTING_SUPPORT_URL");
     private static final String GENERIC_PASSWORD = TestConstants.GENERIC_PASSWORD;
-    private static final String AUTHORIZATION
-        = "Bearer " + PcsIdamTokenClient.generateToken(PcsIdamTokenClient.UserType.systemUser);
 
     public static String createCitizenUser() {
-
         String email = "pcs-citizen-" + System.currentTimeMillis() + "@test.com";
+        return createCitizenUser(email, "PCS", "Citizen");
+    }
 
-
+    public static String createCitizenUser(String email, String forename, String surname) {
         Map<String, Object> user = Map.of(
             "email", email,
-            "forename", "PCS",
-            "surname", "Citizen",
+            "forename", forename,
+            "surname", surname,
             "roleNames", new String[]{"citizen"}
         );
 
@@ -35,12 +34,12 @@ public class CitizenUserGenerator {
         var response = SerenityRest
             .given()
             .baseUri(BASE_URL)
-            .header("Authorization", AUTHORIZATION)
+            .header("Authorization", "Bearer " + TestUsers.getToken(TestUsers.UserType.systemUser))
             .contentType(APPLICATION_JSON_VALUE)
             .body(requestBody)
             .post("/test/idam/users");
 
-        if (response.getStatusCode() != 201) {
+        if (response.getStatusCode() != 201 && response.getStatusCode() != 409) {
             throw new RuntimeException(String.format(
                 "Failed to generate Citizen User '%s'. Status code: %d.%nResponse: %s",
                 email,

@@ -12,10 +12,10 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.PCSApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
+import uk.gov.hmcts.reform.pcs.functional.testutils.TestUsers;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 class PartyAccessCodeEndpointTests extends BaseApi {
 
     @Steps
-    ApiSteps apiSteps;
+    PCSApiSteps apiSteps;
 
     private Long caseReference;
     private String accessCode;
@@ -46,11 +46,11 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 200 when successfully link user with valid access code")
     @Test
     void partyAccessCodeTest200Scenario() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
@@ -65,7 +65,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -80,7 +80,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -91,11 +91,11 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is missing")
     @Test
     void partyAccessCodeTest401MissingServiceToken() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -105,12 +105,12 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is invalid")
     @Test
     void partyAccessCodeTest401InvalidServiceToken() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsExpiredServiceToken();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -120,11 +120,11 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - return 403 Forbidden when the request uses an unauthorised S2S token")
     @Test
     void partyAccessCodeTest403Scenario() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsUnauthorisedServiceToken();
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
@@ -135,11 +135,11 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return a 409 when request is duplicated")
     @Test
     void partyAccessCodeTest409Scenario() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
@@ -154,12 +154,12 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - Should return 404 when invalid case reference is used.")
     @Test
     void partyAccessCodeTest404Scenario() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
+        accessCode = apiSteps.accessCodeIsFetched();
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", "1234123412341234");
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");

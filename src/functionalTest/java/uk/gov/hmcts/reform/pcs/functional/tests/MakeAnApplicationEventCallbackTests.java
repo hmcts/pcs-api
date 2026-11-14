@@ -15,10 +15,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.TestInstance;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.PCSApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.CCDDataStoreApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
+import uk.gov.hmcts.reform.pcs.functional.testutils.TestUsers;
 
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -33,7 +34,10 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 public class MakeAnApplicationEventCallbackTests extends BaseApi {
 
     @Steps
-    ApiSteps apiSteps;
+    PCSApiSteps apiSteps;
+
+    @Steps
+    CCDDataStoreApiSteps ccdDataStoreApiSteps;
 
     private Long caseReference;
     private static final String caseType = CaseType.getCaseType();
@@ -42,8 +46,8 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     void setUp() {
         caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
 
-        String accessCode = apiSteps.accessCodeIsFetched(caseReference);
-        apiSteps.validateAccessCode(caseReference.toString(), accessCode);
+        String accessCode = apiSteps.accessCodeIsFetched();
+        apiSteps.validateAccessCodeAsCitizen(caseReference.toString(), accessCode);
     }
 
     @Title("makeAnApplication start event callback test (citizen user) - returns 200")
@@ -59,7 +63,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
         apiSteps.theRequestContainsBody(makeApplicationRequestBody);
@@ -74,7 +78,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     @Test
     @Order(2)
     void makeAnApplicationSubmitEventCallbackTest() {
-        Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
+        Map<String,String> caseInternalDetails = ccdDataStoreApiSteps.getInternalCaseDetails(caseReference);
 
         String submitApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
@@ -86,7 +90,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");

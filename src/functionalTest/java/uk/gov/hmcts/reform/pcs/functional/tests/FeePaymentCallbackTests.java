@@ -14,7 +14,7 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.PCSApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
@@ -35,13 +35,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class FeePaymentCallbackTests extends BaseApi {
 
     @Steps
-    ApiSteps apiSteps;
+    PCSApiSteps apiSteps;
     private Long caseReference;
     private String paymentRequestReference;
 
     @BeforeEach
     void setUp() {
-        apiSteps.requestIsPreparedWithAppropriateValues();
         caseReference = apiSteps.ccdCaseIsCreated("england");
 
         Map<String,Object> claimantPaymentRef = getClaimantPaymentReference(caseReference);
@@ -60,7 +59,8 @@ public class FeePaymentCallbackTests extends BaseApi {
     }
 
     Map<String,Object> getClaimantPaymentReference(Long caseReference) {
-        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        List<Map<String,Object>> paymentRefs =
+            apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
         assertNotNull(paymentRefs, "Payment references should not be null");
         assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
         return paymentRefs.getFirst();
@@ -109,6 +109,7 @@ public class FeePaymentCallbackTests extends BaseApi {
                    "requestReference", paymentRequestReference,
                    "status", "Paid")
         );
+        apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsBody(paymentUpdateRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
@@ -159,7 +160,8 @@ public class FeePaymentCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
         apiSteps.checkStatusCode(204);
 
-        List<Map<String,Object>> paymentRefUpdates =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        List<Map<String,Object>> paymentRefUpdates =
+            apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
         Map<String,Object> paymentDetails = paymentRefUpdates.getFirst();;
 
         String paymentStatus = paymentDetails.get("paymentStatus").toString();

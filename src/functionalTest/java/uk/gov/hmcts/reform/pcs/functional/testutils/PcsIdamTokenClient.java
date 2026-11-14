@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.pcs.functional.testutils;
 
 import net.serenitybdd.rest.SerenityRest;
+import io.restassured.response.Response;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
+import uk.gov.hmcts.reform.pcs.functional.testutils.TestUsers.UserType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,31 +18,29 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
 public class PcsIdamTokenClient {
 
+    public static final Map<String, Map<String, String>> usersDetails = new HashMap<>();
     private static final String BASE_URL = getEnv("IDAM_API_URL");
-    private static final String IDAM_SYSTEM_USERNAME = getEnv("IDAM_SYSTEM_USERNAME");
-    private static final String IDAM_SYSTEM_PASSWORD = getEnv("IDAM_SYSTEM_USER_PASSWORD");
     private static final String GENERIC_PASSWORD = TestConstants.GENERIC_PASSWORD;
-    private static final String SOLICITOR_USERNAME = TestConstants.PCS_SOLICITOR_USER;
     private static final String CLIENT_SECRET = getEnv("PCS_API_IDAM_SECRET");
 
-    public enum UserType {
-        systemUser,
-        citizenUser,
-        solicitorUser
-    }
-
     public static String generateToken(UserType user) {
-
-        String username = switch (user) {
-            case systemUser -> IDAM_SYSTEM_USERNAME;
-            case citizenUser -> CitizenUserGenerator.createCitizenUser();
-            case solicitorUser -> SOLICITOR_USERNAME;
-        };
+        String username = TestUsers.getUsername(user);
+        if (TestUsers.isCitizenUser(user)) {
+            username = CitizenUserGenerator.createCitizenUser(username, "PCS", "Citizen");
+        }
 
         String password = switch (user) {
-            case systemUser -> IDAM_SYSTEM_PASSWORD;
-            case citizenUser, solicitorUser -> GENERIC_PASSWORD;
+            case systemUser -> TestConstants.IDAM_SYSTEM_PASSWORD;
+            default -> GENERIC_PASSWORD;
         };
+
+        return generateTokenWithCredentials(username, password);
+    }
+
+    private static String generateTokenWithCredentials(String username, String password) {
+        if (usersDetails.containsKey(username)) {
+            return usersDetails.get(username).get("access_token");
+        }
 
         Map<String, String> formData = Map.of(
             "username", username,
@@ -50,23 +51,26 @@ public class PcsIdamTokenClient {
             "grant_type", GRANT_TYPE
         );
 
-        SerenityRest
+        Response response = SerenityRest
             .given()
             .baseUri(BASE_URL)
             .contentType(APPLICATION_FORM_URLENCODED_VALUE)
             .formParams(formData)
             .post(ENDPOINT);
 
-        if (SerenityRest.lastResponse().statusCode() != 200) {
+        if (response.statusCode() != 200) {
             throw new RuntimeException(String.format(
                 "Failed to generate IDAM token. Status code: %d%nResponse: %s",
-                SerenityRest.lastResponse().statusCode(),
-                SerenityRest.lastResponse().prettyPrint()
+                response.statusCode(),
+                response.prettyPrint()
             ));
         }
 
-        assertThat(SerenityRest.lastResponse().getStatusCode()).isEqualTo(200);
+        assertThat(response.getStatusCode()).isEqualTo(200);
 
-        return SerenityRest.lastResponse().jsonPath().getString("access_token");
+        String accessToken = response.jsonPath().getString("access_token");
+        usersDetails.put(username, Map.of("access_token", accessToken));
+
+        return accessToken;
     }
 }

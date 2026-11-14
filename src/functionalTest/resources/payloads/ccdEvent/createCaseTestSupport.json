@@ -1,0 +1,37 @@
+{
+    "propertyAddress": {
+      "AddressLine1": "3 Second Avenue",
+      "AddressLine2": "",
+      "AddressLine3": "",
+      "PostTown": "London",
+      "County": "",
+      "Country": "United Kingdom",
+      "PostCode": "W3 7RX"
+    },
+    "defendant1": {
+        "nameKnown": "YES",
+        "firstName": "test",
+        "lastName": "def1",
+        "addressKnown": "NO",
+        "addressSameAsPossession": "YES"
+    },
+    "addAnotherDefendant": "YES",
+    "additionalDefendants": [
+        {
+            "value": {
+                "nameKnown": "YES",
+                "firstName": "test",
+                "lastName": "def2",
+                "addressKnown": "NO"
+            }
+        },
+        {
+            "value": {
+                "nameKnown": "YES",
+                "firstName": "test",
+                "lastName": "def3",
+                "addressKnown": "NO"
+            }
+        }
+    ]
+}
