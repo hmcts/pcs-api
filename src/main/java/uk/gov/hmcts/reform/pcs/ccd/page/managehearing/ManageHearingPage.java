@@ -13,6 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
+import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -21,6 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
 
     private final HearingService hearingService;
+    private final HearingSummaryRenderer hearingSummaryRenderer;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -32,6 +37,8 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
             .showCondition("showManageHearingPage=\"YES\"")
             .label("manageHearingSeparator", "---")
             .mandatory(PCSCase::getManageHearingOption)
+            .mandatory(PCSCase::getHearingSelection,
+                       "manageHearingOption=\"EDIT\" OR manageHearingOption=\"CANCEL\"", true)
             .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true)
             .readonly(PCSCase::getMhDraftPartyList, NEVER_SHOW, true)
             .complex(PCSCase::getHearing)
@@ -67,23 +74,25 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
 
         if (caseData.getManageHearingOption() == ManageHearingOption.ADD) {
             hearingService.clearHearingForm(caseData);
-        } else if (caseData.getManageHearingOption() == ManageHearingOption.EDIT) {
-            String previouslySelectedHearingId = caseData.getSelectedHearingId();
-            hearingService.initialiseEditableHearing(details.getId(), caseData, previouslySelectedHearingId);
-        } else if (caseData.getManageHearingOption() == ManageHearingOption.CANCEL) {
-            initialiseCancellableHearing(details.getId(), caseData);
+            caseData.setSelectedHearingId(null);
+        } else {
+            String selectedId = caseData.getHearingSelection() == null
+                ? null : caseData.getHearingSelection().getValueCode();
+            try {
+                var selected = hearingService.requireEditableHearing(details.getId(), selectedId);
+                String previousId = caseData.getSelectedHearingId();
+                caseData.setSelectedHearingId(selectedId);
+                hearingService.initialiseEditableHearing(details.getId(), caseData, previousId);
+                caseData.getHearing().setHearingSummaryMarkdown(
+                    hearingSummaryRenderer.renderMarkdown(selected, caseData.getHearingLocation()));
+            } catch (HearingNotFoundException e) {
+                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                    .data(caseData).errors(List.of(e.getMessage())).build();
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
-    }
-
-    private void initialiseCancellableHearing(long caseReference, PCSCase caseData) {
-        hearingService.findEditableHearing(caseReference).ifPresent(hearingEntity -> {
-            Hearing hearing = caseData.getHearing() == null ? Hearing.builder().build() : caseData.getHearing();
-            hearing.setHearingId(hearingEntity.getId());
-            caseData.setHearing(hearing);
-        });
     }
 }

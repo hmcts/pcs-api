@@ -17,7 +17,7 @@ public class HearingSummaryRenderer {
         = DateTimeFormatter.ofPattern("d MMMM yyyy, hh:mma", Locale.UK);
 
     private static final String TEMPLATE = """
-        <p class="body govuk-!-font-weight-bold">You’re viewing the next scheduled hearing for this case.</p>
+        <p class="body govuk-!-font-weight-bold">You’re viewing the selected hearing for this case.</p>
 
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Hearing location:</h3>
         <p class="body">%s</p>

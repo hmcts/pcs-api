@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
+import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
@@ -92,6 +93,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         pcsCase.setPartyMultiSelectionList(hearingService.buildPartyList(pcsCaseEntity));
         setHearingLocation(eventPayload, pcsCase);
 
+        pcsCase.setHearingSelection(hearingService.buildHearingSelection(pcsCaseEntity));
         Optional<HearingEntity> editableHearing = hearingService.findEditableHearing(pcsCaseEntity);
 
         if (editableHearing.isEmpty()) {
@@ -150,27 +152,31 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         String confirmationBody = "";
-        switch (caseData.getManageHearingOption()) {
-            case ADD: {
-                HearingEntity addedHearing = hearingService.addHearing(caseReference, caseData);
-                hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, addedHearing.getId());
-                confirmationBody = confirmationBodyRenderer
-                    .renderHearingAddedConfirmationBody(caseData, caseReference);
-                break;
+        try {
+            switch (caseData.getManageHearingOption()) {
+                case ADD: {
+                    HearingEntity addedHearing = hearingService.addHearing(caseReference, caseData);
+                    hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, addedHearing.getId());
+                    confirmationBody = confirmationBodyRenderer
+                        .renderHearingAddedConfirmationBody(caseData, caseReference);
+                    break;
+                }
+                case EDIT: {
+                    HearingEntity updatedHearing = hearingService.updateHearing(caseReference, caseData);
+                    hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, updatedHearing.getId());
+                    confirmationBody = confirmationBodyRenderer
+                        .renderHearingEditedConfirmationBody(caseData, caseReference);
+                    break;
+                }
+                case CANCEL: {
+                    hearingService.cancelHearing(caseReference, caseData);
+                    confirmationBody = confirmationBodyRenderer
+                        .renderHearingCancelledConfirmationBody(caseData, caseReference);
+                    break;
+                }
             }
-            case EDIT: {
-                HearingEntity updatedHearing = hearingService.updateHearing(caseReference, caseData);
-                hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, updatedHearing.getId());
-                confirmationBody = confirmationBodyRenderer
-                    .renderHearingEditedConfirmationBody(caseData, caseReference);
-                break;
-            }
-            case CANCEL: {
-                hearingService.cancelHearing(caseData.getHearing());
-                confirmationBody = confirmationBodyRenderer
-                    .renderHearingCancelledConfirmationBody(caseData, caseReference);
-                break;
-            }
+        } catch (HearingNotFoundException e) {
+            return SubmitResponse.<State>builder().errors(List.of(e.getMessage())).build();
         }
 
         return SubmitResponse.<State>builder()

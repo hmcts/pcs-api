@@ -448,7 +448,7 @@ public class ManageHearingTest extends BaseEventTest {
             SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
             // Then
-            verify(hearingService).cancelHearing(hearing);
+            verify(hearingService).cancelHearing(TEST_CASE_REFERENCE, pcsCase);
             assertThat(submitResponse.getConfirmationBody()).isEqualTo(expectedConfirmationBody);
             verifyNoInteractions(hearingNoticeScheduler);
         }
