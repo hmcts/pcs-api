@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.writofpossession;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -32,13 +32,12 @@ import uk.gov.hmcts.reform.pcs.document.model.writofpossession.WritOfPossessionP
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
-import java.time.Clock;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@AllArgsConstructor
 public class WritOfPossessionPersistenceService {
 
     static final String COMPLETED_BY_CLAIMANT = "Claimant";
@@ -57,33 +56,6 @@ public class WritOfPossessionPersistenceService {
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final RecipientAddressResolver recipientAddressResolver;
     private final NotificationService notificationService;
-    private final Clock ukClock;
-
-    public WritOfPossessionPersistenceService(EnforcementOrderRepository enforcementOrderRepository,
-                                              DocumentImportService documentImportService,
-                                              ClaimActivityLogService claimActivityLogService,
-                                              PartyService partyService,
-                                              CaseReferenceFormatter caseReferenceFormatter,
-                                              CaseNameFormatter caseNameFormatter,
-                                              AddressMapper addressMapper,
-                                              AddressFormatter addressFormatter,
-                                              DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
-                                              RecipientAddressResolver recipientAddressResolver,
-                                              NotificationService notificationService,
-                                              @Qualifier("ukClock") Clock ukClock) {
-        this.enforcementOrderRepository = enforcementOrderRepository;
-        this.documentImportService = documentImportService;
-        this.claimActivityLogService = claimActivityLogService;
-        this.partyService = partyService;
-        this.caseReferenceFormatter = caseReferenceFormatter;
-        this.caseNameFormatter = caseNameFormatter;
-        this.addressMapper = addressMapper;
-        this.addressFormatter = addressFormatter;
-        this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
-        this.recipientAddressResolver = recipientAddressResolver;
-        this.notificationService = notificationService;
-        this.ukClock = ukClock;
-    }
 
     /**
      * Builds the data needed to render the writ, or nothing when the order isn't a writ or its writ has already been
@@ -152,12 +124,11 @@ public class WritOfPossessionPersistenceService {
             .hceoSelectionOutcome(writ.getHasHiredHighCourtEnforcementOfficer() == VerticalYesNo.NO
                                       ? HCEO_SELECTED_BY_NICE : null)
             // Statement of truth
-            .statementOfTruthCompletedBy(statementOfTruth == null
-                                             ? null : completedBy(statementOfTruth.getCompletedBy()))
-            .signatoryFullName(statementOfTruth == null ? null : statementOfTruth.getFullName())
-            .signatoryPosition(statementOfTruth == null ? null : statementOfTruth.getPositionHeld())
-            .signatoryOrganisation(statementOfTruth == null ? null : statementOfTruth.getFirmName())
-            .submissionDate(submissionDate(statementOfTruth))
+            .statementOfTruthCompletedBy(completedBy(statementOfTruth.getCompletedBy()))
+            .signatoryFullName(statementOfTruth.getFullName())
+            .signatoryPosition(statementOfTruth.getPositionHeld())
+            .signatoryOrganisation(statementOfTruth.getFirmName())
+            .submissionDate(statementOfTruth.getCompletedDate().toLocalDate())
             .build();
     }
 
@@ -185,13 +156,6 @@ public class WritOfPossessionPersistenceService {
             return null;
         }
         return addressFormatter.formatFullAddress(address, AddressFormatter.NEWLINE_DELIMITER);
-    }
-
-    private LocalDate submissionDate(StatementOfTruthEntity statementOfTruth) {
-        if (statementOfTruth != null && statementOfTruth.getCompletedDate() != null) {
-            return statementOfTruth.getCompletedDate().toLocalDate();
-        }
-        return LocalDate.now(ukClock);
     }
 
     private String completedBy(StatementOfTruthCompletedBy completedBy) {

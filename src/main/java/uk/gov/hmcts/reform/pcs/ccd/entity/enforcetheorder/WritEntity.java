@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -27,12 +24,10 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "enf_writ")
@@ -122,16 +117,6 @@ public class WritEntity {
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private Instant created;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "writOfPossession")
-    @Builder.Default
-    @JsonManagedReference
-    private List<DocumentEntity> writDocuments = new ArrayList<>();
-
-    public void addWritDocuments(DocumentEntity document) {
-        writDocuments.add(document);
-        document.setWritOfPossession(this);
-    }
 
     //Payment fields
     /**

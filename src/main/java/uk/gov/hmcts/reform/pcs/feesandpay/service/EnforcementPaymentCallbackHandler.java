@@ -55,11 +55,9 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
     }
 
     private void scheduleEnforcementDocuments(EnforcementOrderEntity enforcementOrderEntity) {
-        long caseReference = enforcementOrderEntity.getPcsCase().getCaseReference();
-
         if (enforcementOrderEntity.getWritDetails() != null) {
-            writOfPossessionScheduler.scheduleWritOfPossessionGeneration(caseReference,
-                                                                         enforcementOrderEntity.getId());
+            writOfPossessionScheduler.scheduleWritOfPossessionGeneration(
+                enforcementOrderEntity.getPcsCase().getCaseReference(), enforcementOrderEntity.getId());
         } else if (enforcementOrderEntity.getWarrantDetails() != null) {
             // Warrant of possession and risk assessment documents to follow
         }

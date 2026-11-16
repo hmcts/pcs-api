@@ -1819,7 +1819,10 @@ class DocumentServiceTest {
             Arguments.of(DocumentType.WITHOUT_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.OTHER, null),
-            Arguments.of(DocumentType.GENERAL_APPLICATION, CaseFileCategory.APPLICATIONS)
+            Arguments.of(DocumentType.GENERAL_APPLICATION, CaseFileCategory.APPLICATIONS),
+            Arguments.of(DocumentType.WRIT_OF_POSSESSION, CaseFileCategory.ENFORCEMENT),
+            Arguments.of(DocumentType.WARRANT_OF_POSSESSION, CaseFileCategory.ENFORCEMENT),
+            Arguments.of(DocumentType.RISK_ASSESSMENT, CaseFileCategory.ENFORCEMENT)
         );
     }
 

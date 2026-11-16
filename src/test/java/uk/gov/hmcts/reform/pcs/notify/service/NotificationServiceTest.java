@@ -51,6 +51,7 @@ import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
@@ -61,7 +62,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCom
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
@@ -978,6 +978,45 @@ class NotificationServiceTest {
 
             // Then
             verify(schedulerClient, never()).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send writ of possession email to the claimant with no personalisation")
+        void shouldSendWritOfPossessionEmail() {
+            // Given
+            String expectedTemplateId = "some template ID";
+            String expectedEmailAddress = "claimant@example.com";
+
+            when(templateConfiguration.getTemplateId(EmailTemplate.WRIT_OF_POSSESSION))
+                .thenReturn(expectedTemplateId);
+            when(templateConfiguration.isRelease14Enabled()).thenReturn(true);
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+
+            PartyEntity claimantParty = mock(PartyEntity.class);
+            when(claimantParty.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(claimantParty.getEmailAddress()).thenReturn(expectedEmailAddress);
+            when(partyService.getPartyRole(claimantParty)).thenReturn(PartyRole.CLAIMANT);
+            when(partyService.canSendEmailNotification(claimantParty, PartyRole.CLAIMANT)).thenReturn(true);
+
+            // When
+            notificationService.sendWritOfPossessionEmail(claimantParty);
+
+            // Then
+            ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
+            verify(notificationRepository, times(2)).save(notificationCaptor.capture());
+            assertThat(notificationCaptor.getAllValues().get(0).getClaimType())
+                .isEqualTo(NotificationClaimType.ENFORCEMENT);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(expectedEmailAddress);
+            assertThat(taskData.getTemplateId()).isEqualTo(expectedTemplateId);
+            assertThat(taskData.getPersonalisation()).isEmpty();
         }
 
         @Test
