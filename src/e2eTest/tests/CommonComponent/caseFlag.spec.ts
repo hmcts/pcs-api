@@ -14,7 +14,10 @@ import {
   updateFlagComments,
   viewCaseFlag,
   whereShouldThisFlagBeAdded,
-  confirmStatusForFlag
+  confirmStatusForFlag,
+  whyDoYouNeedToAccessThisCase,
+  challengedCaseDetails,
+  challengedAccessSuccess
 } from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { BrowserContext, Page } from '@playwright/test';
@@ -225,13 +228,22 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
-    const runStaffUserTest = async (email: string) => {
+    const runStaffUserTest = async (email: string, attempt: number) => {
       await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
       await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
       await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       await performAction('navigateToCaseSummary', 'yes');
       if (email.includes("pcs-hearing-centre")) {
+        if(email.includes("wales") && attempt === 0) {
+          await performAction('handleChallengedAccess', {
+          button: challengedCaseDetails.requestAccessbutton,
+          reason: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer,
+          successMessage: challengedAccessSuccess.successMessage,
+          link: challengedAccessSuccess.viewCaseFileLink
+        });
+
+        }
         await performAction('canCreateCaseLevelFlag', 'yes');
         await performAction('canCreatePartyLevelFlag', {condition:'yes',name:`${partyNames[0].firstName} ${partyNames[0].lastName}`});
         await performAction('canManageCaseLevelFlag', 'yes');
@@ -251,7 +263,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
           const maxRetries = 2;
           for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-              await runStaffUserTest(email);
+              await runStaffUserTest(email, attempt);
               break;
             } catch (error) {
               if (attempt === maxRetries) {
@@ -280,7 +292,8 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
-    const runJudicialUserTest = async (email: string) => {
+    await performAction('updatePaymentAPI');
+    const runJudicialUserTest = async (email: string, attempt: number) => {
       await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       if (
@@ -290,8 +303,20 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
         await performAction('handleJudgeBookingPageForCaseFlags');
       }
       await performAction('navigateToCaseSummary', 'yes');
-      await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
-      await performAction('canViewCaseAndPartyFlag', 'yes');
+
+      if (attempt === 0 && email.includes("wales") ) {
+        await performAction('handleChallengedAccess', {
+          button: challengedCaseDetails.requestAccessbutton,
+          reason: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer,
+          successMessage: challengedAccessSuccess.successMessage,
+          link: challengedAccessSuccess.viewCaseFileLink
+        });
+      }
+        await performAction('canViewCaseAndPartyFlag', 'yes');
+        await performAction('canCreateCaseLevelFlag', 'no');
+        await performAction('canCreatePartyLevelFlag', {condition:'no',name:`${partyNames[0].firstName} ${partyNames[0].lastName}`});
+        await performAction('canManageCaseLevelFlag', 'no');
+        await performAction('canManagePartyLevelFlag', 'no');
     };
     for (const email of judicialUsers) {
       try {
@@ -299,7 +324,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
           const maxRetries = 2;
           for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-              await runJudicialUserTest(email);
+              await runJudicialUserTest(email, attempt);
               break;
             } catch (error) {
               if (attempt === maxRetries) {
