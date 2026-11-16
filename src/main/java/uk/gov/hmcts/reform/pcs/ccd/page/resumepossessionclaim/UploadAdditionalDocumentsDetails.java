@@ -64,7 +64,6 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
             .list(PCSCase::getAdditionalDocuments)
                 .readonly(AdditionalDocument::getDocumentType, NEVER_SHOW, true)
-                    .showSummaryContentOption(1)
                 .mandatory(AdditionalDocument::getDocumentTypeEngland, ENGLAND)
                 .mandatory(AdditionalDocument::getDocumentTypeWales, WALES)
                 .mandatory(AdditionalDocument::getDocument)
