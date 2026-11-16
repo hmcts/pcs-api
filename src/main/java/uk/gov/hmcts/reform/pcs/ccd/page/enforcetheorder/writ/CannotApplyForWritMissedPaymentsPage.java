@@ -22,7 +22,7 @@ public class CannotApplyForWritMissedPaymentsPage implements CcdPageConfiguratio
             <p class="govuk-body govuk-!-font-weight-bold">If the defendants have breached a
              different term in the suspended order</p>
             <p class="govuk-body">If the defendants have breached a different term in the order,
-             you still need permission from a judge.  For example, if they have breached an order
+             you still need permission from a judge. For example, if they have breached an order
               to reduce their antisocial behaviour.</p>
             <p><a id="cannotApplyForWritMissedPayments-link" class="govuk-link" target="_blank" href="#">
         Ask the judge for permission to apply for a writ of possession (opens in a new tab, GOV.UK)</a>.</p>
