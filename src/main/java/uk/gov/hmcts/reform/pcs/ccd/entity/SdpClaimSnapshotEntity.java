@@ -29,9 +29,6 @@ public class SdpClaimSnapshotEntity {
     @Column(name = "snapshot_version", nullable = false)
     private Integer snapshotVersion;
 
-    @Column(name = "snapshot_hash", nullable = false)
-    private String snapshotHash;
-
     @Column(name = "exported_at", nullable = false)
     private LocalDateTime exportedAt;
 }

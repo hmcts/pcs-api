@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -10,13 +10,9 @@ import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshotRecord;
 import uk.gov.hmcts.reform.pcs.sdp.model.Producer;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotDimensions;
 
-import java.util.List;
+import java.io.ByteArrayOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ClaimSnapshotFileWriterTest {
 
@@ -45,8 +41,13 @@ class ClaimSnapshotFileWriterTest {
                 .build())
             .build();
 
-        byte[] written = fileWriter.write(List.of(snapshotRecord));
-        JsonNode root = objectMapper.readTree(written);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (JsonGenerator generator = objectMapper.getFactory().createGenerator(out)) {
+            fileWriter.writeStartArray(generator);
+            fileWriter.writeRecord(generator, snapshotRecord);
+            fileWriter.finishArray(generator);
+        }
+        JsonNode root = objectMapper.readTree(out.toByteArray());
 
         assertThat(root.isArray()).isTrue();
         assertThat(root).hasSize(1);
@@ -55,16 +56,5 @@ class ClaimSnapshotFileWriterTest {
         assertThat(root.get(0).get("claim").get("claim_reference").asText()).isEqualTo("PCS-1001");
         assertThat(root.get(0).get("claim").get("dimensions").get("claim_type").asText())
             .isEqualTo("AAA3-SLD");
-    }
-
-    @Test
-    void shouldThrowWhenSerialiseFails() throws Exception {
-        ObjectMapper objectMapper = mock(ObjectMapper.class);
-        when(objectMapper.writeValueAsBytes(any())).thenThrow(new JsonProcessingException("boom") {
-        });
-
-        assertThatThrownBy(() -> new ClaimSnapshotFileWriter(objectMapper).write(List.of()))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Failed to serialise SDP claim snapshot");
     }
 }

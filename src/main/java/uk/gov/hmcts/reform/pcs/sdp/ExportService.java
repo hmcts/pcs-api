@@ -1,23 +1,13 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SdpClaimSnapshotEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.SdpClaimSnapshotRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
@@ -29,6 +19,11 @@ import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotParty;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotPaymentReference;
 import uk.gov.hmcts.reform.pcs.sdp.model.SnapshotResponse;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,30 +46,29 @@ import java.util.stream.Collectors;
 @Service
 public class ExportService {
 
-    private final ClaimRepository claimRepository;
+    private final SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository;
     private final SnapshotMapper claimSnapshotMapper;
     private final ClaimSnapshotFileWriter claimSnapshotFileWriter;
-    private final SnapshotHasher snapshotHasher;
-    private final SdpClaimSnapshotRepository sdpClaimSnapshotRepository;
     private final Optional<BlobUploader> blobUploader;
+    private final ObjectMapper objectMapper;
     private final Clock utcClock;
     private final String environment;
+    static final int EXPORT_CHUNK_SIZE = 200;
+
     private final CaseReferenceFormatter caseReferenceFormatter = new CaseReferenceFormatter();
 
-    public ExportService(ClaimRepository claimRepository,
+    public ExportService(SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository,
                          SnapshotMapper claimSnapshotMapper,
                          ClaimSnapshotFileWriter claimSnapshotFileWriter,
-                         SnapshotHasher snapshotHasher,
-                         SdpClaimSnapshotRepository sdpClaimSnapshotRepository,
                          Optional<BlobUploader> blobUploader,
+                         ObjectMapper objectMapper,
                          @Qualifier("utcClock") Clock utcClock,
                          @Value("${sdp.export.environment}") String environment) {
-        this.claimRepository = claimRepository;
+        this.sdpClaimSnapshotJdbcRepository = sdpClaimSnapshotJdbcRepository;
         this.claimSnapshotMapper = claimSnapshotMapper;
         this.claimSnapshotFileWriter = claimSnapshotFileWriter;
-        this.snapshotHasher = snapshotHasher;
-        this.sdpClaimSnapshotRepository = sdpClaimSnapshotRepository;
         this.blobUploader = blobUploader;
+        this.objectMapper = objectMapper;
         this.utcClock = utcClock;
         this.environment = environment;
     }
@@ -83,98 +76,139 @@ public class ExportService {
     @Transactional
     public ExportResult exportClaims() {
         String extractDate = LocalDate.now(utcClock).minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        List<ClaimEntity> claims = claimRepository.findAllForSdpSnapshotExport();
-        Map<UUID, SdpClaimSnapshotEntity> stored = sdpClaimSnapshotRepository
-            .findAllById(claims.stream().map(ClaimEntity::getId).toList()).stream()
-            .collect(Collectors.toMap(SdpClaimSnapshotEntity::getClaimId, Function.identity()));
+        List<UUID> ids = sdpClaimSnapshotJdbcRepository.findIdsForExport();
+        log.info("SDP claim snapshot export started: {} claim(s)", ids.size());
         final String publishedDate = Instant.now(utcClock).toString();
         LocalDateTime now = LocalDateTime.now(utcClock);
-
-        List<ClaimSnapshotRecord> records = new ArrayList<>();
-        List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
-        for (ClaimEntity claim : claims) {
-            addIfChanged(claim, extractDate, publishedDate, stored, now, records, changed);
-        }
-        return writeAndUpload(extractDate, records, changed);
-    }
-
-    private void addIfChanged(ClaimEntity claim,
-                              String extractDate,
-                              String publishedDate,
-                              Map<UUID, SdpClaimSnapshotEntity> stored,
-                              LocalDateTime now,
-                              List<ClaimSnapshotRecord> records,
-                              List<SdpClaimSnapshotEntity> changed) {
-        ClaimSnapshotRecord snapshotRecord = mapClaim(claim, extractDate, publishedDate);
-        String hash = snapshotHasher.hash(snapshotRecord.getClaim());
-        SdpClaimSnapshotEntity snapshot = stored.get(claim.getId());
-        if (snapshot == null) {
-            snapshot = SdpClaimSnapshotEntity.builder()
-                .claimId(claim.getId())
-                .snapshotVersion(1)
-                .snapshotHash(hash)
-                .exportedAt(now)
-                .build();
-            changed.add(snapshot);
-        } else if (!snapshot.getSnapshotHash().equals(hash)) {
-            snapshot.setSnapshotVersion(snapshot.getSnapshotVersion() + 1);
-            snapshot.setSnapshotHash(hash);
-            snapshot.setExportedAt(now);
-            changed.add(snapshot);
-        } else if (snapshot.getExportedAt() != null
-            && snapshot.getExportedAt().toLocalDate().equals(now.toLocalDate())) {
-            snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
-            records.add(snapshotRecord);
-            return;
-        } else {
-            return;
-        }
-        snapshotRecord.getClaim().setSnapshotVersion(snapshot.getSnapshotVersion());
-        records.add(snapshotRecord);
-    }
-
-    private ExportResult writeAndUpload(String extractDate,
-                                        List<ClaimSnapshotRecord> records,
-                                        List<SdpClaimSnapshotEntity> changed) {
         String filename = "claim_snapshot_" + extractDate + ".json";
-        byte[] json = claimSnapshotFileWriter.write(records);
-        if (!records.isEmpty()) {
-            blobUploader.ifPresent(uploader -> uploader.upload(filename, json));
+        Path snapshotFile = createSnapshotFile();
+        try {
+            int recordCount = writeSnapshotFile(snapshotFile, ids, extractDate, publishedDate, now);
+            if (recordCount > 0) {
+                blobUploader.ifPresent(uploader -> uploader.upload(filename, snapshotFile));
+            }
+            log.info("SDP claim snapshot export complete: {} record(s) -> {}", recordCount, filename);
+            return new ExportResult(filename, recordCount);
+        } finally {
+            deleteSnapshotFile(snapshotFile);
         }
-        sdpClaimSnapshotRepository.saveAll(changed);
-
-        log.info("SDP claim snapshot export complete: {} record(s) -> {}", records.size(), filename);
-        return new ExportResult(filename, records.size());
     }
 
-    private ClaimSnapshotRecord mapClaim(ClaimEntity claim, String extractDate, String publishedDate) {
-        PcsCaseEntity pcsCase = claim.getPcsCase();
-        NoticeOfPossessionEntity notice = claim.getNoticeOfPossession();
-        TenancyLicenceEntity tenancy = pcsCase != null ? pcsCase.getTenancyLicence() : null;
+    private int writeSnapshotFile(Path snapshotFile,
+                                  List<UUID> ids,
+                                  String extractDate,
+                                  String publishedDate,
+                                  LocalDateTime now) {
+        try (OutputStream out = Files.newOutputStream(snapshotFile);
+             JsonGenerator generator = objectMapper.getFactory().createGenerator(out)) {
+            claimSnapshotFileWriter.writeStartArray(generator);
+            int recordCount = 0;
+            List<SdpClaimSnapshotEntity> changed = new ArrayList<>();
+            for (int i = 0; i < ids.size(); i += EXPORT_CHUNK_SIZE) {
+                List<UUID> chunk = ids.subList(i, Math.min(i + EXPORT_CHUNK_SIZE, ids.size()));
+                List<SdpClaimSnapshotHeader> headers = sdpClaimSnapshotJdbcRepository.findHeadersByClaimId(chunk);
+                Map<UUID, List<SdpClaimSnapshotParty>> parties = groupByClaimId(
+                    sdpClaimSnapshotJdbcRepository.findPartiesByClaimId(chunk), SdpClaimSnapshotParty::claimId);
+                Map<UUID, List<SdpClaimSnapshotPayment>> payments = groupByClaimId(
+                    sdpClaimSnapshotJdbcRepository.findPaymentsByClaimId(chunk), SdpClaimSnapshotPayment::claimId);
+                Map<UUID, List<SdpClaimSnapshotGround>> grounds = groupByClaimId(
+                    sdpClaimSnapshotJdbcRepository.findGroundsByClaimId(chunk), SdpClaimSnapshotGround::claimId);
+                Map<UUID, List<SdpClaimSnapshotResponse>> responses = groupByClaimId(
+                    sdpClaimSnapshotJdbcRepository.findResponsesByClaimId(chunk), SdpClaimSnapshotResponse::claimId);
+                for (SdpClaimSnapshotHeader header : headers) {
+                    writeClaim(
+                        header,
+                        parties.getOrDefault(header.claimId(), List.of()),
+                        payments.getOrDefault(header.claimId(), List.of()),
+                        grounds.getOrDefault(header.claimId(), List.of()),
+                        responses.getOrDefault(header.claimId(), List.of()),
+                        extractDate,
+                        publishedDate,
+                        now,
+                        generator,
+                        changed
+                    );
+                    recordCount++;
+                }
+                log.info(
+                    "SDP claim snapshot export progress: {}/{} claim(s)",
+                    Math.min(i + EXPORT_CHUNK_SIZE, ids.size()),
+                    ids.size()
+                );
+            }
+            sdpClaimSnapshotJdbcRepository.upsertSnapshots(changed);
+            claimSnapshotFileWriter.finishArray(generator);
+            return recordCount;
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to write SDP claim snapshot", e);
+        }
+    }
 
+    private void writeClaim(SdpClaimSnapshotHeader header,
+                                List<SdpClaimSnapshotParty> parties,
+                                List<SdpClaimSnapshotPayment> payments,
+                                List<SdpClaimSnapshotGround> grounds,
+                                List<SdpClaimSnapshotResponse> responses,
+                                String extractDate,
+                                String publishedDate,
+                                LocalDateTime now,
+                                JsonGenerator generator,
+                                List<SdpClaimSnapshotEntity> changed) throws IOException {
+        ClaimSnapshotRecord snapshotRecord = mapClaim(header, parties, payments, grounds, responses,
+            extractDate, publishedDate);
+        int version = header.snapshotVersion() == null ? 1 : header.snapshotVersion() + 1;
+        changed.add(SdpClaimSnapshotEntity.builder()
+            .claimId(header.claimId())
+            .snapshotVersion(version)
+            .exportedAt(now)
+            .build());
+        snapshotRecord.getClaim().setSnapshotVersion(version);
+        claimSnapshotFileWriter.writeRecord(generator, snapshotRecord);
+    }
+
+    private static Path createSnapshotFile() {
+        try {
+            return Files.createTempFile(
+                "sdp-claim-snapshot-",
+                ".json",
+                PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))
+            );
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to create SDP claim snapshot file", e);
+        }
+    }
+
+    private void deleteSnapshotFile(Path snapshotFile) {
+        try {
+            Files.deleteIfExists(snapshotFile);
+        } catch (IOException e) {
+            log.warn("Failed to delete SDP claim snapshot temp file {}", snapshotFile, e);
+        }
+    }
+
+    private ClaimSnapshotRecord mapClaim(SdpClaimSnapshotHeader header,
+                                         List<SdpClaimSnapshotParty> parties,
+                                         List<SdpClaimSnapshotPayment> payments,
+                                         List<SdpClaimSnapshotGround> grounds,
+                                         List<SdpClaimSnapshotResponse> responses,
+                                         String extractDate,
+                                         String publishedDate) {
         SnapshotDimensions dimensions = claimSnapshotMapper.mapDimensions(
-            enumName(claim.getClaimantType()),
-            enumName(claim.getAgainstTrespassers()),
-            enumName(claim.getLanguageUsed()),
-            tenancy != null ? enumName(tenancy.getType()) : null,
-            pcsCase != null && pcsCase.getCaseManagementLocation() != null
-                ? String.valueOf(pcsCase.getCaseManagementLocation())
-                : null,
-            pcsCase != null ? enumName(pcsCase.getLegislativeCountry()) : null
+            header.claimantType(),
+            header.againstTrespassers(),
+            header.languageUsed(),
+            header.tenancyType(),
+            header.caseManagementLocation() != null ? String.valueOf(header.caseManagementLocation()) : null,
+            header.legislativeCountry()
         );
 
         SnapshotMilestones milestones = claimSnapshotMapper.mapMilestones(
-            notice != null ? enumName(notice.getServingMethod()) : null,
-            notice != null && notice.getNoticeDate() != null ? notice.getNoticeDate().toString() : null,
-            formatDateTime(claim.getClaimSubmittedDate()),
-            formatDateTime(claim.getClaimIssuedDate()),
-            formatDateTime(firstPaidFeeDate(claim.getFeePayments()))
+            header.servingMethod(),
+            header.noticeDate() != null ? header.noticeDate().toString() : null,
+            formatDateTime(header.claimSubmittedDate()),
+            formatDateTime(header.claimIssuedDate()),
+            formatDateTime(firstPaidFeeDate(payments))
         );
-
-        List<SnapshotParty> parties = mapParties(claim.getClaimParties(), enumName(claim.getClaimantType()));
-
-        String claimReference = caseReferenceFormatter
-            .formatCaseReferenceWithDashes(pcsCase != null ? pcsCase.getCaseReference() : null);
 
         return claimSnapshotMapper.mapRecord(
             environment,
@@ -182,114 +216,100 @@ public class ExportService {
             UUID.randomUUID().toString(),
             publishedDate,
             ClaimSnapshot.builder()
-                .claimReference(claimReference)
+                .claimReference(caseReferenceFormatter.formatCaseReferenceWithDashes(header.caseReference()))
                 .snapshotVersion(0)
-                .recordedDate(formatDateTime(claim.getClaimSubmittedDate()))
+                .recordedDate(formatDateTime(header.claimSubmittedDate()))
                 .dimensions(dimensions)
                 .milestones(milestones)
-                .parties(parties)
-                .paymentReferences(mapPayments(claim.getFeePayments()))
-                .grounds(mapGrounds(claim.getClaimGrounds()))
-                .responses(mapResponses(pcsCase != null ? pcsCase.getDefendantResponses() : null, claim.getId()))
+                .parties(mapParties(parties, header.claimantType()))
+                .paymentReferences(mapPayments(payments))
+                .grounds(mapGrounds(grounds))
+                .responses(mapResponses(responses))
                 .build()
         );
     }
 
-    private List<SnapshotParty> mapParties(List<ClaimPartyEntity> claimParties, String claimantType) {
-        if (claimParties == null || claimParties.isEmpty()) {
+    private List<SnapshotParty> mapParties(List<SdpClaimSnapshotParty> parties, String claimantType) {
+        if (parties == null || parties.isEmpty()) {
             return List.of();
         }
-        List<SnapshotParty> parties = new ArrayList<>();
-        for (ClaimPartyEntity claimParty : claimParties) {
-            PartyEntity party = claimParty.getParty();
-            if (party == null) {
+        List<SnapshotParty> mapped = new ArrayList<>();
+        for (SdpClaimSnapshotParty party : parties) {
+            if (party.partyId() == null) {
                 continue;
             }
-            parties.add(claimSnapshotMapper.mapParty(
-                party.getId() != null ? party.getId().toString() : null,
-                enumName(claimParty.getRole()),
+            mapped.add(claimSnapshotMapper.mapParty(
+                party.partyId().toString(),
+                party.role(),
                 claimantType,
-                isRepresented(party)
+                party.represented()
             ));
         }
-        return parties;
+        return mapped;
     }
 
-    private List<SnapshotPaymentReference> mapPayments(List<FeePaymentEntity> feePayments) {
-        if (feePayments == null || feePayments.isEmpty()) {
+    private List<SnapshotPaymentReference> mapPayments(List<SdpClaimSnapshotPayment> payments) {
+        if (payments == null || payments.isEmpty()) {
             return List.of();
         }
-        List<SnapshotPaymentReference> payments = new ArrayList<>();
-        for (FeePaymentEntity feePayment : feePayments) {
-            if (feePayment.getExternalReference() == null || feePayment.getExternalReference().isBlank()) {
+        List<SnapshotPaymentReference> mapped = new ArrayList<>();
+        for (SdpClaimSnapshotPayment payment : payments) {
+            if (payment.externalReference() == null || payment.externalReference().isBlank()) {
                 continue;
             }
-            payments.add(claimSnapshotMapper.mapPayment(feePayment.getExternalReference()));
+            mapped.add(claimSnapshotMapper.mapPayment(payment.externalReference()));
         }
-        return payments;
+        return mapped;
     }
 
-    private List<SnapshotGround> mapGrounds(Set<ClaimGroundEntity> claimGrounds) {
-        if (claimGrounds == null || claimGrounds.isEmpty()) {
+    private List<SnapshotGround> mapGrounds(List<SdpClaimSnapshotGround> grounds) {
+        if (grounds == null || grounds.isEmpty()) {
             return List.of();
         }
-        List<SnapshotGround> grounds = new ArrayList<>();
-        for (ClaimGroundEntity ground : claimGrounds) {
-            grounds.add(claimSnapshotMapper.mapGround(
-                ground.getCode(),
-                ground.getDescription(),
-                enumName(ground.getCategory())
+        List<SnapshotGround> mapped = new ArrayList<>();
+        for (SdpClaimSnapshotGround ground : grounds) {
+            mapped.add(claimSnapshotMapper.mapGround(
+                ground.code(),
+                ground.description(),
+                ground.category()
             ));
         }
-        return grounds;
+        return mapped;
     }
 
-    private List<SnapshotResponse> mapResponses(List<DefendantResponseEntity> defendantResponses, UUID claimId) {
-        if (defendantResponses == null || defendantResponses.isEmpty()) {
+    private List<SnapshotResponse> mapResponses(List<SdpClaimSnapshotResponse> responses) {
+        if (responses == null || responses.isEmpty()) {
             return List.of();
         }
-        List<SnapshotResponse> responses = new ArrayList<>();
-        for (DefendantResponseEntity response : defendantResponses) {
-            if (response.getClaim() != null && claimId != null
-                && !claimId.equals(response.getClaim().getId())) {
-                continue;
-            }
-            PartyEntity party = response.getParty();
-            responses.add(claimSnapshotMapper.mapResponse(
-                response.getId() != null ? response.getId().toString() : null,
-                party != null && party.getId() != null ? party.getId().toString() : null,
-                enumName(response.getMakeCounterClaim()),
-                formatDateTime(response.getResponseSubmittedDate())
+        List<SnapshotResponse> mapped = new ArrayList<>();
+        for (SdpClaimSnapshotResponse response : responses) {
+            mapped.add(claimSnapshotMapper.mapResponse(
+                response.responseId() != null ? response.responseId().toString() : null,
+                response.partyId() != null ? response.partyId().toString() : null,
+                response.makeCounterClaim(),
+                formatDateTime(response.responseSubmittedDate())
             ));
         }
-        return responses;
+        return mapped;
     }
 
-    private static boolean isRepresented(PartyEntity party) {
-        if (party.getClaimPartyOrganisationList() == null) {
-            return false;
-        }
-        return party.getClaimPartyOrganisationList().stream()
-            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
-    }
-
-    private static LocalDateTime firstPaidFeeDate(List<FeePaymentEntity> feePayments) {
-        if (feePayments == null) {
+    private static LocalDateTime firstPaidFeeDate(List<SdpClaimSnapshotPayment> payments) {
+        if (payments == null) {
             return null;
         }
-        return feePayments.stream()
-            .filter(payment -> payment.getPaymentStatus() == PaymentStatus.PAID)
-            .map(FeePaymentEntity::getRequestDate)
+        return payments.stream()
+            .filter(payment -> PaymentStatus.PAID.name().equals(payment.paymentStatus()))
+            .map(SdpClaimSnapshotPayment::requestDate)
             .filter(Objects::nonNull)
             .min(LocalDateTime::compareTo)
             .orElse(null);
     }
 
-    private static String formatDateTime(LocalDateTime dateTime) {
-        return dateTime == null ? null : dateTime.toInstant(ZoneOffset.UTC).toString();
+    private static <T> Map<UUID, List<T>> groupByClaimId(List<T> values, Function<T, UUID> claimId) {
+        return values.stream().collect(Collectors.groupingBy(claimId));
     }
 
-    private static String enumName(Enum<?> value) {
-        return value == null ? null : value.name();
+    private static String formatDateTime(LocalDateTime dateTime) {
+        return dateTime == null ? null : dateTime.toInstant(ZoneOffset.UTC).toString();
     }
 }

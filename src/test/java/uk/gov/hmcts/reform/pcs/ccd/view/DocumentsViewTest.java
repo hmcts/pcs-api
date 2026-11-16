@@ -4,20 +4,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -26,12 +30,17 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +59,9 @@ class DocumentsViewTest {
     @Mock
     private SecurityContextService securityContextService;
 
+    @Mock
+    private OrderRepository orderRepository;
+
     private PCSCase pcsCase;
 
     private DocumentsView underTest;
@@ -63,7 +75,7 @@ class DocumentsViewTest {
         pcsCase = PCSCase.builder().build();
 
         underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
-                                      securityContextService);
+                                      securityContextService, orderRepository);
     }
 
     @Test
@@ -150,24 +162,53 @@ class DocumentsViewTest {
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+        assertThat(pcsCase.getSystemDocuments()).isNull();
     }
 
     @Test
-    void shouldShowAccessCodeLettersToTheSystemUser() {
+    void shouldGiveTheSystemUserAccessCodeLettersAndInternallyVisibleDocumentsInSystemDocuments() {
         DocumentEntity accessCodeLetter = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("access-code-letter.pdf")
             .url("pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter));
+        DocumentEntity issuedCounterClaimDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("issued-counter-claim.pdf")
+            .url("issued-counter-claim-url")
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.COUNTER_CLAIM_ISSUED).build())
+            .build();
+        DocumentEntity unissuedCounterClaimDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("counter-claim.pdf")
+            .url("counter-claim-url")
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED).build())
+            .build();
+        DocumentEntity withoutNoticeApplicationDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without-notice.pdf")
+            .url("without-notice-url")
+            .generalApplication(GenAppEntity.builder().withoutNotice(VerticalYesNo.YES).build())
+            .build();
+        DocumentEntity unissuedApplicationDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("unissued-application.pdf")
+            .url("unissued-application-url")
+            .generalApplication(GenAppEntity.builder().withoutNotice(VerticalYesNo.NO).build())
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter, issuedCounterClaimDocument,
+            unissuedCounterClaimDocument, withoutNoticeApplicationDocument, unissuedApplicationDocument));
         when(securityContextService.isIdamSystemUser()).thenReturn(true);
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
-        assertThat(pcsCase.getAllDocuments()).singleElement()
-            .satisfies(document -> assertThat(document.getValue().getFilename())
-                .isEqualTo("access-code-letter.pdf"));
+        assertThat(pcsCase.getSystemDocuments())
+            .extracting(document -> document.getValue().getFilename())
+            .containsExactly("access-code-letter.pdf", "issued-counter-claim.pdf", "without-notice.pdf");
+        // CCD strips allDocuments for the system user, so it is not built and no case roles are looked up.
+        assertThat(pcsCase.getAllDocuments()).isNull();
+        verifyNoInteractions(userRoleService);
     }
 
     @Test
@@ -373,6 +414,79 @@ class DocumentsViewTest {
         // Then
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("without notice order.pdf"));
+    }
+
+    @ParameterizedTest(name = "visible to one of its parties: {0}")
+    @ValueSource(booleans = {true, false})
+    void shouldShowAGeneratedOrderOnlyToItsRecipients(boolean visibleToOne) {
+        // Given
+        PartyEntity served = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity alsoServed = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(any(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of()))).thenAnswer(call -> visibleToOne && call.getArgument(0) == alsoServed);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .build();
+
+        when(orderRepository.findServedPartiesByDocumentIds(List.of(documentEntity.getId())))
+            .thenReturn(Map.of(documentEntity.getId(), List.of(served, alsoServed)));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(visibleToOne ? 1 : 0);
+    }
+
+    @Test
+    void shouldNotLookUpAWithoutNoticeOrdersRecipientsForCourtStaff() {
+        // Given
+        String role = CaseworkerRoles.CASEWORKER_ROLES[0].getRole();
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of(role)));
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(any(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of(role)))).thenReturn(true);
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(1);
+        verifyNoInteractions(orderRepository);
+    }
+
+    @ParameterizedTest(name = "court staff: {0}")
+    @ValueSource(booleans = {true, false})
+    void shouldShowAWithoutNoticeOrderWithNoPartyRecordedOnlyToCourtStaff(boolean courtStaff) {
+        // Given
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(isNull(), eq(CURRENT_USER_ID), eq(ORGANISATION_ID),
+            eq(List.of()))).thenReturn(courtStaff);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(courtStaff ? 1 : 0);
     }
 
     @ParameterizedTest(name = "[{index}] description={0} => isEmpty={1}")

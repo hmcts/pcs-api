@@ -14,6 +14,7 @@ import {getCurrentBSTTime} from "@utils/common/string.utils";
 import {
   CaseManagementCommonUtils
 } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
+import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 
 test.use({ storageState: undefined })
@@ -128,6 +129,8 @@ test.use({ storageState: undefined })
             await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
           });
 
+          CYAStore.getInstance().clearAll();
+
           await test.step(`And the user selects the "Add a judicial note" event again to add a second note`, async () => {
             await performAction('selectAnEvent', {eventType: caseSummary.addJudicialNote});
             await performValidation('mainHeader', addJudicialNotes.mainHeader);
@@ -145,7 +148,7 @@ test.use({ storageState: undefined })
           await test.step(`And the user confirms the judicial2 note has been added successfully`, async () => {
             await performAction('confirmAddJudicialNotes');
             await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
-          });
+          });          
 
           await test.step(`Then the user verifies that both judicial notes are displayed in reverse chronological order on the Judicial Notes tab`, async () => {
             await performAction('clickTab', home.judicialNotes);

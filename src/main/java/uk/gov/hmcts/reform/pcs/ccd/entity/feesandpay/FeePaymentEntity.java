@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
@@ -82,5 +83,8 @@ public class FeePaymentEntity {
     private String taskData;
 
     private UUID relatedEntityId;
+
+    @UpdateTimestamp
+    private LocalDateTime lastModified;
 
 }

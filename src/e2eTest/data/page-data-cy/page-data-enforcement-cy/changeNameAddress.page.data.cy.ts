@@ -1,0 +1,21 @@
+export const changeNameAddress = {
+  titleDynamic: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  EnforceTheOrderCaption: `Gorfodi'r gorchymyn`,
+  mainHeader: `Rydych angen gofyn am ganiatâd gan farnwr i newid yr enw a'r cyfeiriad ar gyfer y troi allan`,
+  youNeedToAskPermissionParagraph: `Rydych angen gofyn am ganiatâd gan y barnwr cyn y gallwch newid yr enw neu'r cyfeiriad ar gyfer y troi allan.`,
+  theJudgeWillDecideParagraph: `Bydd y barnwr yn penderfynu os:`,
+  canChangeTheAddressList: `gallwch newid y cyfeiriad a pharhau â'r cais hwn (os yw'r newid yn rhywbeth bach, fel gwall teipio)`,
+  mustStartAgainList: `rhaid dechrau eto gyda chais newydd (os yw'r newid yn fwy sylweddol, fel cyfeiriad cwbl wahanol)`,
+  youCannotcontinueParagraph: `Ni allwch barhau â'ch cais nes byddwch wedi gofyn i'r barnwr am ganiatâd i wneud y newid hwn.`,
+  ifyouWantToProceedParagraph: `Os ydych eisiau parhau â newid yr enw neu'r cyfeiriad ar gyfer y troi allan`,
+  askTheJudgeParagraph: `Gofynnwch i'r barnwr os gallwch newid yr enw neu'r cyfeiriad ar gyfer y troi allan (GOV.UK, yn agor mewn tab newydd).`,
+  ifyouWantToKeepParagraph: `Os ydych eisiau cadw'r enw neu'r cyfeiriad presennol`,
+  ifYouAreconfidentParagraph: `Os ydych yn hyderus bod yr enw neu'r cyfeiriad yn gywir, gallwch ddychwelyd i'r dudalen flaenorol a newid eich ateb i'r cwestiwn olaf.`,
+  ifTheNameAndAddressParagraph: `Rhybudd Os yw'r enw a'r cyfeiriad yn anghywir, ni fydd y beili yn gallu gweithredu'r troi allan.`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
+  previousButton: `Yn ôl`,
+  continueButton: `Parhau`,
+  cancelLink: `Canslo`,
+  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
+  errMessageDynamic: `You cannot continue with this application until you ask the judge for permission to change the name and address.`
+}

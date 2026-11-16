@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicatio
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
@@ -43,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.MessagesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -94,6 +96,8 @@ class PCSCaseViewTest {
     private ClaimView claimView;
     @Mock
     private DocumentsView documentsView;
+    @Mock
+    private BundleTabView bundleTabView;
     @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
@@ -157,6 +161,9 @@ class PCSCaseViewTest {
     private OrganisationService organisationService;
 
     @Mock
+    private MessagesView messagesView;
+
+    @Mock
     private JudicialNoteView judicialNoteView;
 
     private PCSCaseView underTest;
@@ -167,7 +174,8 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
-                                    caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
+                                    caseTitleService, claimView, documentsView, bundleTabView, tenancyLicenceView,
+                                    claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
@@ -176,7 +184,7 @@ class PCSCaseViewTest {
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    judicialNoteView, enforcementOrderView
+                                    messagesView, judicialNoteView, enforcementOrderView
         );
     }
 
