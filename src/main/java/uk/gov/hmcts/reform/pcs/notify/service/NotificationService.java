@@ -247,6 +247,10 @@ public class NotificationService {
         sendEmail(partyRecipient(claimant), EmailTemplate.WRIT_OF_POSSESSION, NotificationClaimType.ENFORCEMENT);
     }
 
+    public void sendWarrantOfPossessionEmail(PartyEntity claimant) {
+        sendEmail(partyRecipient(claimant), EmailTemplate.WARRANT_OF_POSSESSION, NotificationClaimType.ENFORCEMENT);
+    }
+
     public void sendNoticeOfChangeCompletedEmailNotification(PartyEntity defendant) {
         sendEmail(
             partyRecipient(defendant),

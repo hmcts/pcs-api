@@ -28,6 +28,7 @@ public enum EmailTemplate {
 
     // Enforcement Email Templates
     WRIT_OF_POSSESSION("writ-of-possession"),
+    WARRANT_OF_POSSESSION("warrant-of-possession"),
 
     // Notice of Change Email Templates
     NOTICE_OF_CHANGE_COMPLETED("notice-of-change-completed"),

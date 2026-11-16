@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.enforcement.EnforcementDefendant;
 import uk.gov.hmcts.reform.pcs.document.model.warrantofpossession.WarrantOfPossessionPayload;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,7 @@ public class WarrantOfPossessionPersistenceService {
     private final AddressFormatter addressFormatter;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final RecipientAddressResolver recipientAddressResolver;
+    private final NotificationService notificationService;
 
     /**
      * Builds the data needed to render the warrant, or nothing when the order isn't a warrant or its warrant has
@@ -72,7 +74,7 @@ public class WarrantOfPossessionPersistenceService {
     }
 
     @Transactional
-    public void attachDocument(UUID enforcementOrderId, String documentUrl) {
+    public void attachDocumentAndQueueEmail(UUID enforcementOrderId, String documentUrl) {
         EnforcementOrderEntity enforcementOrder = loadEnforcementOrder(enforcementOrderId);
         PcsCaseEntity pcsCase = enforcementOrder.getPcsCase();
         PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(pcsCase);
@@ -83,6 +85,7 @@ public class WarrantOfPossessionPersistenceService {
         enforcementOrder.addDocuments(List.of(document));
 
         claimActivityLogService.logGenerationSuccess(pcsCase, claimant);
+        notificationService.sendWarrantOfPossessionEmail(claimant);
     }
 
     private WarrantOfPossessionPayload toPayload(EnforcementOrderEntity enforcementOrder) {

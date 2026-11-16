@@ -32,7 +32,7 @@ public class WarrantOfPossessionService {
 
         String documentUrl = documentGenerator.generate(payload.get(), OUTPUT_FILENAME);
         try {
-            persistenceService.attachDocument(enforcementOrderId, documentUrl);
+            persistenceService.attachDocumentAndQueueEmail(enforcementOrderId, documentUrl);
         } catch (Exception e) {
             deleteOrphanedDocument(enforcementOrderId, documentUrl);
             throw e;
