@@ -95,11 +95,10 @@
     "AddressLine2": "",
     "AddressLine3": ""
   },
-  "writCompletedBy": "CLAIMANT",
-  "statementOfTruth": {
+  "writStatementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameParty": "wert",
-    "positionParty": "ewrt",
+    "fullNameParty": "Test name",
+    "positionParty": "Test position",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]
