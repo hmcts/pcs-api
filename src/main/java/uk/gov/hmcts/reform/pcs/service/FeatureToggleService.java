@@ -23,6 +23,16 @@ public class FeatureToggleService {
         return ldClient.boolVariation(flag.key(), context, flag.defaultValue());
     }
 
+    public boolean isEnabledFor(FeatureFlag flag, String userId) {
+        if (userId == null || userId.isBlank()) {
+            return false;
+        }
+        LDContext user = LDContext.builder(userId)
+            .set("environment", context.getValue("environment"))
+            .build();
+        return ldClient.boolVariation(flag.key(), user, flag.defaultValue());
+    }
+
     // Anonymous service identity carrying the environment attribute for LD targeting; invariant, built once.
     private static LDContext context(String environment) {
         return LDContext.builder(SERVICE_KEY)
