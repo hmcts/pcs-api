@@ -1,7 +1,7 @@
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import { allPartyDetails, caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import { test } from '@utils/test-fixtures';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { expect, test } from '@utils/test-fixtures';
+import { createCaseApiData, paymentApiData, submitCaseApiData } from '@data/api-data';
 import { caseSummary, user } from '@data/page-data';
 import { staffUsers } from '@data/user-data/staff.user.data';
 import { judicial, judicialUsers } from '@data/user-data/judicial.user.data';
@@ -76,6 +76,58 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
 
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
+  test('Case Flags - Claimant organisation details are not displayed', async ({ page }) => {
+    await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary');
+    await performAction('clickTab', viewCaseFlag.caseFlagsTab);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+
+    const claimantOrganisation = submitCaseApiData.submitCasePayload();
+    await expect(page.getByText(claimantOrganisation.claimantName, { exact: false }).filter({ visible: true })).toHaveCount(0);
+    await expect(page.getByText(claimantOrganisation.claimantContactEmail, { exact: false }).filter({ visible: true })).toHaveCount(0);
+    await expect(page.getByText(/claimant organisation/i).filter({ visible: true })).toHaveCount(0);
+    await expect(page.getByRole('radio', { name: /claimant/i })).toHaveCount(0);
+  });
+  test('Case Flags - Only case and defendant flag levels are available', async ({ page }) => {
+    await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary');
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+
+    const defendantNames = allPartyDetails
+      .filter(party => / - Defendant \d+$/.test(party))
+      .map(party => party.replace(/ - Defendant \d+$/, ''));
+    const flagLevelRadios = page.getByRole('radio');
+    await expect(page.getByRole('radio', { name: whereShouldThisFlagBeAdded.caseLevelRadioOption, exact: true })).toBeVisible();
+    for (const defendantName of defendantNames) {
+      await expect(page.getByRole('radio', { name: defendantName })).toBeVisible();
+    }
+    await expect(page.getByRole('radio', { name: /claimant/i })).toHaveCount(0);
+    await expect(flagLevelRadios).toHaveCount(defendantNames.length + 1);
+  });
+
+  test('Case Flags - Claimant organisation name is not displayed on the table', async ({ page }) => {
+  await performAction('login', {
+    email: user.hearingCenterAdmin.email,
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  });
+  await dismissCookieBanner(page, 'analytics');
+  await performAction('navigateToCaseSummary');
+  await performAction('clickTab', viewCaseFlag.caseFlagsTab);
+  await performValidation('text', {
+    elementType: 'subHeading',
+    text: viewCaseFlag.caseFlagsViewHeader
+  });
+
+  const claimantName = submitCaseApiData.submitCasePayload().claimantName;
+  await expect(page.getByText(claimantName, { exact: true }).filter({ visible: true })).toHaveCount(0);
+});
+
 
   test('Case Flags - Create case level Flag', async ({ page }) => {
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
