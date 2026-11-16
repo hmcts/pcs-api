@@ -204,8 +204,8 @@ public class GenAppDocumentGenerator {
         return formattedPartyAddress;
     }
 
-    private String formatAddress(AddressEntity propertyAddress) {
-        AddressUK addressUK = addressMapper.toAddressUK(propertyAddress);
+    private String formatAddress(AddressEntity addressEntity) {
+        AddressUK addressUK = addressMapper.toAddressUK(addressEntity);
         return addressFormatter.formatFullAddress(addressUK, AddressFormatter.NEWLINE_DELIMITER);
     }
 

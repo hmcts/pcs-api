@@ -31,7 +31,38 @@ public class DocumentsView {
     private final SecurityContextService securityContextService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
+        // CDAM only serves a document attached to a case to a user who can see it in the case. Bulk print and
+        // bundling download documents as PCS's IDAM system account, so it sees what they send: access code letters
+        // and what an internal user sees in case file view. It cannot read allDocuments, so that is not built.
+        if (securityContextService.isIdamSystemUser()) {
+            pcsCase.setSystemDocuments(pcsCaseEntity.getDocuments().stream()
+                .filter(document -> document.getType() == DocumentType.DEFENDANT_ACCESS_CODE
+                    || isVisibleToInternalReaders(document))
+                .map(this::toListValue)
+                .toList());
+        } else {
+            pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
+        }
+    }
+
+    /** What an internal user sees in case file view. The case bundle holds the same documents. */
+    public static boolean isVisibleToInternalReaders(DocumentEntity document) {
+        if (document.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
+            return false;
+        }
+        GenAppEntity genApp = document.getGeneralApplication();
+        CounterClaimEntity counterClaim = document.getCounterClaim();
+        return (genApp == null || isVisibleToInternalReaders(genApp))
+            && (counterClaim == null || isVisibleToInternalReaders(counterClaim));
+    }
+
+    public static boolean isVisibleToInternalReaders(GenAppEntity genApp) {
+        return GenAppVisibilityService.isGenAppDocumentVisibleToInternalUsers(genApp);
+    }
+
+    /** Every user sees an issued counterclaim's documents, and none sees an unissued one's. */
+    public static boolean isVisibleToInternalReaders(CounterClaimEntity counterClaim) {
+        return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
     }
 
     private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
@@ -46,21 +77,26 @@ public class DocumentsView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
                                                                    organisationId))
-            .map(entity -> ListValue.<Document>builder()
-                .id(entity.getId().toString())
-                .value(Document.builder()
-                           .filename(entity.getFileName())
-                           .url(entity.getUrl())
-                           .binaryUrl(entity.getBinaryUrl())
-                           .categoryId(entity.getCategoryId())
-                           .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
-                           .build())
-                .build())
+            .map(this::toListValue)
             .collect(Collectors.toList());
     }
 
+    private ListValue<Document> toListValue(DocumentEntity entity) {
+        return ListValue.<Document>builder()
+            .id(entity.getId().toString())
+            .value(Document.builder()
+                       .filename(entity.getFileName())
+                       .url(entity.getUrl())
+                       .binaryUrl(entity.getBinaryUrl())
+                       .categoryId(entity.getCategoryId())
+                       .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
+                       .build())
+            .build();
+    }
+
     private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
-        if (isExcludedFromCaseFile(documentEntity)) {
+        // Access code letters are only for bulk print, which finds them in systemDocuments.
+        if (documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;
         }
 
@@ -83,17 +119,10 @@ public class DocumentsView {
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
         if (counterClaim != null) {
-            return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
+            return isVisibleToInternalReaders(counterClaim);
         }
 
         return true;
-    }
-
-    private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
-        // Access code letters are only for bulk print, which downloads them through CDAM as PCS's IDAM system
-        // account. CDAM only serves a document attached to a case to a user who can see it in the case.
-        return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE
-            && !securityContextService.isIdamSystemUser();
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {

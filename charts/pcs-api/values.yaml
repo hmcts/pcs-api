@@ -34,6 +34,8 @@ java:
           alias: ELASTIC_SEARCH_HOSTS
         - name: launchdarkly-sdk-key
           alias: LAUNCHDARKLY_SDK_KEY
+        - name: docmosis-access-key
+          alias: DOCMOSIS_ACCESS_KEY
   environment:
     PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin
@@ -65,7 +67,11 @@ java:
     DECENTRALISED_CASE_TYPE_CONFIG: >-
       {"PCS": {"webUrl": "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net", "nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
     PCS_FRONTEND_URL: "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net"
+    SDP_EXPORT_ENVIRONMENT: "{{ .Values.global.environment }}"
+    SDP_EXPORT_ACCOUNT_URL: "https://pcssdp{{ .Values.global.environment }}.blob.core.windows.net"
     MANAGE_CASE_BASE_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net"
+    SDP_EXPORT_ENVIRONMENT: "{{ .Values.global.environment }}"
+    SDP_EXPORT_ACCOUNT_URL: "https://pcssdp{{ .Values.global.environment }}.blob.core.windows.net"
 servicebus:
   enabled: false
 ccd:

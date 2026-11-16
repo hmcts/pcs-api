@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValid
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
@@ -29,6 +31,7 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     private final TenancyLicenceView tenancyLicenceView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final RentArrearsView rentArrearsView;
+    private final NoticeDetailsBuilder noticeDetailsBuilder;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -68,6 +71,14 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
         pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
+
+        CaseDetailsTab existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
+        CaseDetailsTab caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
+
+        caseDetailsTab.setNoticeDetails(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, caseEntity));
+
+        pcsCase.setCaseDetailsTab(caseDetailsTab);
+
         return pcsCase;
     }
 

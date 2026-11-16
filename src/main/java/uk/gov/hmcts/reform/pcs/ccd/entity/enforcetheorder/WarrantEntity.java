@@ -21,7 +21,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -43,6 +43,14 @@ public class WarrantEntity {
     @JoinColumn(name = "enf_case_id", nullable = false)
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesNoNotSure defendantInBreathingSpace;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo defendantMissedPayments;
 
     // UI Control Flags
     @Enumerated(EnumType.STRING)
@@ -113,27 +121,6 @@ public class WarrantEntity {
 
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;
-
-    // Statement of Truth
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private StatementOfTruthCompletedBy completedBy;
-
-    private String agreementClaimant;
-
-    private String fullNameClaimant;
-
-    private String positionClaimant;
-
-    private String agreementLegalRep;
-
-    private String fullNameLegalRep;
-
-    private String firmNameLegalRep;
-
-    private String positionLegalRep;
-
-    private String certification;
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;

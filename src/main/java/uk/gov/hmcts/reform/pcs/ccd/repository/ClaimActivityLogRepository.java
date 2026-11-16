@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,9 @@ import java.util.UUID;
 public interface ClaimActivityLogRepository extends JpaRepository<ClaimActivityLogEntity, Integer> {
 
     List<ClaimActivityLogEntity> findAllByPcsCase_Id(UUID caseId);
+
+    List<ClaimActivityLogEntity> findAllByPcsCase_IdInAndActivityType(Collection<UUID> caseIds,
+                                                                      ClaimActivityType activityType);
 
     @Query("select distinct log.pcsCase.id from ClaimActivityLogEntity log "
         + "where log.activityType = :activityType and log.status = :status")

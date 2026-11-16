@@ -1,0 +1,21 @@
+export const livingInTheProperty = {
+  EnforceTheOrderCaption: `Gorfodi'r gorchymyn`,
+  mainHeader: `Pawb sy'n byw yn yr eiddo`,
+  theBailiffNeedsToKnowParagraph: `Mae'r beili angen gwybod os oes unrhyw un yn yr eiddo yn peri risg.`,
+  forExampleParagraph: `Er enghraifft, os ydynt yn:`,
+  areVoilentList: `dreisgar neu'n ymosodol`,
+  possessAFirearmList: `yn meddu ar ddryll tanio neu arf arall,`,
+  haveAHistoryList: `gyda hanes o ymddygiad troseddol neu wrthgymdeithasol`,
+  haveMadeVErbalList: `wedi gwneud bygythiadau llafar neu ysgrifenedig yn eich erbyn`,
+  areAMemberList: `maent yn aelod o grŵp sy'n protestio yn erbyn troi allan,`,
+  haveHadVisitsList: `maent wedi cael ymweliadau gan yr heddlu neu'r gwasanaethau cymdeithasol,`,
+  ownAnAggressiveList: `maent yn berchen ar gi neu anifail ymosodol arall`,
+  riskToBailiffQuestion: `A yw unrhyw un sy'n byw yn yr eiddo yn peri risg i'r beili?`,
+  yesRadioOption: `Ydw`,
+  noRadioOption: `Nac ydw`,
+  notSureRadioOption:`Nid wyf yn siŵr`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
+  previousButton: `Yn ôl`,
+  continueButton: `Parhau`,
+  cancelLink: `Canslo`
+}

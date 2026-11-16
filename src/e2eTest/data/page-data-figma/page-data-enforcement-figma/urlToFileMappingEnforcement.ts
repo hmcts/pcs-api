@@ -61,4 +61,6 @@ export default {
     'enforceTheOrdershareEvidenceWithJudge': 'shareEvidenceWithJudge',
     'confirmEvictionconfirmEvictionDetails': 'confirmEvictionDetails',
     'confirmEvictionevictionDate': 'evictionDate',
+    'enforceTheOrderenforcementMissedPayments': 'missedPayments',
+    'enforceTheOrderenforcementCannotApplyforWarrantInfo': 'cannotApplyforWarrantInfo',
 };

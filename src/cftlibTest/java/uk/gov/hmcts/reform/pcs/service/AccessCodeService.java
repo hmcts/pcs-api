@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static uk.gov.hmcts.reform.pcs.auth.ServiceAuthorizationGenerator.generateTestS2SToken;
 
@@ -34,11 +34,11 @@ public class AccessCodeService {
         this.serviceAuthorisation = generateTestS2SToken("pcs_frontend");
     }
 
-    public List<PartyAccessCode> waitForAccessCodes(long caseReference) {
+    public List<PartyAccessCode> waitForAccessCodes(long caseReference, int minCount) {
         return Awaitility.await()
             .atMost(Duration.ofSeconds(180))
-            .pollInterval(Duration.ofMillis(1000))
-            .until(() -> getAccessCodesForCase(caseReference), not(empty()));
+            .pollInterval(Duration.ofMillis(500))
+            .until(() -> getAccessCodesForCase(caseReference), hasSize(greaterThanOrEqualTo(minCount)));
     }
 
     public void linkUserToCase(long caseReference, String accessCode, String authorisation) {
@@ -70,7 +70,9 @@ public class AccessCodeService {
                 SELECT tsac.party_id, tsac.plaintext_code
                 FROM testing_support_access_code tsac
                 JOIN pcs_case pcs on pcs.id = tsac.case_id
+                JOIN claim_party cp on cp.party_id = tsac.party_id
                 WHERE pcs.case_reference = :caseReference
+                ORDER BY cp.rank
                 """,
             namedParameters,
             (rs, rowNum) -> PartyAccessCode.builder()

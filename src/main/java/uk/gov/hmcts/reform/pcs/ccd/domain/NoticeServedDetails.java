@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalDocumentMoveAccess;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -121,7 +122,8 @@ public class NoticeServedDetails {
             hint = "Upload a document to the system",
             typeOverride = FieldType.Collection,
             typeParameterOverride = "Document",
-            access = {CaseworkerReadAccess.class, DefendantReadAccess.class, CitizenReadAccess.class}
+            access = {CaseworkerReadAccess.class, DefendantReadAccess.class, CitizenReadAccess.class,
+                InternalDocumentMoveAccess.class}
     )
     private List<ListValue<Document>> documents;
 

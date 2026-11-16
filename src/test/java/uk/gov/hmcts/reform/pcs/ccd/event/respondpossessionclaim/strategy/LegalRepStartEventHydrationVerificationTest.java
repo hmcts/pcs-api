@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -30,6 +32,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +57,9 @@ class LegalRepStartEventHydrationVerificationTest {
     @Mock
     private UploadTimestampProvider uploadTimestampProvider;
 
+    @Mock
+    private NoticeDetailsBuilder noticeDetailsBuilder;
+
     private LegalRepStartEventStrategy underTest;
 
     @BeforeEach
@@ -62,9 +70,13 @@ class LegalRepStartEventHydrationVerificationTest {
             legalRepPartySelectionService,
             organisationService,
             new TenancyLicenceView(uploadTimestampProvider),
-            new NoticeOfPossessionView(uploadTimestampProvider),
-            new RentArrearsView(uploadTimestampProvider)
+            new NoticeOfPossessionView(),
+            new RentArrearsView(uploadTimestampProvider),
+            noticeDetailsBuilder
         );
+        lenient().when(noticeDetailsBuilder.buildNoticeTabDetails(
+            any(PCSCase.class), any(PcsCaseEntity.class)
+        )).thenReturn(null);
     }
 
     @Test
@@ -133,6 +145,35 @@ class LegalRepStartEventHydrationVerificationTest {
         assertThat(result.getNoticeServedDetails()).isNotNull();
         assertThat(result.getNoticeServedDetails().getPostedDate()).isEqualTo(noticePosted);
         assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+    }
+
+    @Test
+    void shouldPopulateCaseDetailsTabWithNoticeDetailsFromNoticeDetailsBuilder() {
+        String organisationId = "org";
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        PartyEntity defendant = PartyEntity.builder().build();
+        List<PartyEntity> defendants = List.of(defendant);
+        NoticeTabDetails noticeDetails = NoticeTabDetails.builder()
+            .noticeServed("Yes")
+            .typeOfNoticeServed("Section 8 notice")
+            .noticeDate("1 January 2026")
+            .build();
+
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
+            .thenReturn(defendants);
+        when(legalRepPartySelectionService.filterDefendantsAwaitingResponse(CASE_REFERENCE, defendants))
+            .thenReturn(List.of());
+        when(legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase, defendants)).thenReturn(pcsCase);
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, caseEntity)).thenReturn(noticeDetails);
+
+        PCSCase result = underTest.loadDraft(CASE_REFERENCE, pcsCase);
+
+        assertThat(result.getCaseDetailsTab()).isNotNull();
+        assertThat(result.getCaseDetailsTab().getNoticeDetails()).isEqualTo(noticeDetails);
+        verify(noticeDetailsBuilder).buildNoticeTabDetails(pcsCase, caseEntity);
     }
 
     @Test

@@ -16,7 +16,7 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
                                   the
                                   National Information Centre for Enforcement (NICE)
                                   </li>
-                                  <li class="govuk-!-font-size-19">NICE will choose a High Court enforcement officer
+                                  <li class="govuk-!-font-size-19">NICE will choose a High Court Enforcement Officer
                                   (HCEO)
                                   for you
                                   </li>
@@ -24,7 +24,7 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
                                 <p class="govuk-body govuk-!-margin-bottom-1">NICE will then contact you to tell you:
                                 </p>
                                 <ul class="govuk-list govuk-list--bullet">
-                                  <li class="govuk-!-font-size-19">the name of your High Court enforcement officer
+                                  <li class="govuk-!-font-size-19">the name of your High Court Enforcement Officer
                                   </li>
                                   <li class="govuk-!-font-size-19">how to contact them, if you have any questions about
                                   the
@@ -37,7 +37,7 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("enforcementOfficerSelection")
-            .pageLabel("The National Information Centre for Enforcement will choose a High Court enforcement officer "
+            .pageLabel("The National Information Centre for Enforcement will choose a High Court Enforcement Officer "
                            + "for you")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
                                + " AND writHasHiredHighCourtEnforcementOfficer=\"NO\"")

@@ -59,7 +59,7 @@ public class StartAdjourn implements CcdPageConfiguration {
         <h2 class="govuk-heading-m">If you are worried about the defendant paying fees</h2>
         <p class="govuk-body">They may be eligible to apply for
         <a href="https://www.gov.uk/get-help-with-court-fees" target="_blank" rel="noopener noreferrer"
-        class="govuk-link">help with fees (GOV.UK, opens in a new tab)</a>.
+        class="govuk-link">Help with Fees (GOV.UK, opens in a new tab)</a>.
         We will ask you if they want to do this when you apply.
         <h2 class="govuk-heading-m">Apply by post</h2>
         <p class="govuk-body">You cannot apply to suspend (stop or delay) the eviction online.</p>

@@ -6,6 +6,7 @@ public enum EventId {
     createPossessionClaim,
     resumePossessionClaim,
     enforceTheOrder,
+    enterBreathingSpace,
     respondPossessionClaim,
     submitDefendantResponse,
     makeAnApplication,
@@ -35,5 +36,10 @@ public enum EventId {
     reindexCases,
     defendantPaperResponse,
     legalRepresentativeContactDetails,
-    addJudicialNote
+    deleteDraftResponse,
+    addJudicialNote,
+    // Must match the system event id CCD data-store sends for CFV moves
+    DocumentUpdated,
+    resumeEnforcementOrder,
+    deleteDraftApplication
 }

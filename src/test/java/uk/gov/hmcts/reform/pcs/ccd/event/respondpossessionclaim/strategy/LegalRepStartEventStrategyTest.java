@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -41,6 +44,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -72,8 +76,21 @@ class LegalRepStartEventStrategyTest {
     @Mock
     private RentArrearsView rentArrearsView;
 
+    @Mock
+    private PartyRepository partyRepository;
+
+    @Mock
+    private NoticeDetailsBuilder noticeDetailsBuilder;
+
     @InjectMocks
     private LegalRepStartEventStrategy underTest;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(noticeDetailsBuilder.buildNoticeTabDetails(
+            any(PCSCase.class), any(PcsCaseEntity.class)
+        )).thenReturn(null);
+    }
 
     @Test
     void shouldSupportNonCitizenRoles() {
@@ -282,7 +299,7 @@ class LegalRepStartEventStrategyTest {
             .thenReturn(true);
 
         LegalRepForDefendantAccessValidator accessValidator =
-            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor(partyRepository));
 
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,
@@ -298,7 +315,8 @@ class LegalRepStartEventStrategyTest {
             organisationService,
             tenancyLicenceView,
             noticeOfPossessionView,
-            rentArrearsView);
+            rentArrearsView,
+            noticeDetailsBuilder);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
@@ -316,6 +334,7 @@ class LegalRepStartEventStrategyTest {
 
     @Test
     void shouldExcludeRespondedDefendantsFromSelectionList() {
+
         // Given
         String organisationId = "ORG-123";
         UUID respondedId = UUID.randomUUID();
@@ -343,7 +362,7 @@ class LegalRepStartEventStrategyTest {
         when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, awaitingId2)).thenReturn(false);
 
         LegalRepForDefendantAccessValidator accessValidator =
-            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor(partyRepository));
 
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,
@@ -359,7 +378,8 @@ class LegalRepStartEventStrategyTest {
             organisationService,
             tenancyLicenceView,
             noticeOfPossessionView,
-            rentArrearsView);
+            rentArrearsView,
+            noticeDetailsBuilder);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
@@ -402,7 +422,7 @@ class LegalRepStartEventStrategyTest {
         when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, respondedId2)).thenReturn(true);
 
         LegalRepForDefendantAccessValidator accessValidator =
-            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor(partyRepository));
 
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,
@@ -418,7 +438,8 @@ class LegalRepStartEventStrategyTest {
             organisationService,
             tenancyLicenceView,
             noticeOfPossessionView,
-            rentArrearsView);
+            rentArrearsView,
+            noticeDetailsBuilder);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);

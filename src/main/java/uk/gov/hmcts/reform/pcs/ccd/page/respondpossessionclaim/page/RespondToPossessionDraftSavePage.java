@@ -29,6 +29,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 @Slf4j
 public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
+    public static final String PAGE_ID = "respondToPossessionDraftSavePage";
+
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
@@ -36,9 +38,9 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        pageBuilder.page("respondToPossessionDraftSavePage", this::midEvent)
+        pageBuilder.page(PAGE_ID, this::midEvent)
             .pageLabel("Respond To Claim Event Page")
-            .label("respondToPossessionDraftSavePage-info",
+            .label(PAGE_ID + "-info",
                    "Placeholder page to save draft data via mid event");
     }
 

@@ -46,7 +46,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl.includes('#Case%20File%20View') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases` || currentUrl === `https://www.hceoa.org.uk/choosing-a-hceo`){
         await performValidation('autoValidatePageContent');
         return;
       }

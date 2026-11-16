@@ -20,7 +20,9 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.WaTaskEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.WaTaskRepository;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -73,6 +75,9 @@ public class CamundaServiceTest {
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
+
+    @Mock
+    private WaTaskRepository waTaskRepository;
 
     @Captor
     private ArgumentCaptor<SchedulableInstance<CamundaRequestTaskData>> schedulableInstanceCaptor;
@@ -218,14 +223,14 @@ public class CamundaServiceTest {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().baseLocation(1).regionId(2).build();
         when(authTokenGenerator.generate()).thenReturn("authToken");
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(
-            Optional.ofNullable(PcsCaseEntity.builder().baseLocation(1).regionId(2).build())
-        );
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.ofNullable(pcsCaseEntity));
         CourtVenue courtVenue = mock(CourtVenue.class);
         when(courtVenue.courtName()).thenReturn("court name");
         when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of(courtVenue));
         stubWaFeatureFlag(true);
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
 
         String expectedDescription = "some description";
         CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType, expectedDescription);
@@ -234,6 +239,14 @@ public class CamundaServiceTest {
         camundaService.handleRequest(taskData);
 
         // Then
+        ArgumentCaptor<WaTaskEntity> waTaskEntityArgumentCaptor = ArgumentCaptor.forClass(WaTaskEntity.class);
+        verify(waTaskRepository).save(waTaskEntityArgumentCaptor.capture());
+        WaTaskEntity waTaskEntity = waTaskEntityArgumentCaptor.getValue();
+        assertThat(waTaskEntity.getPcsCase()).isEqualTo(pcsCaseEntity);
+        assertThat(waTaskEntity.getAction()).isEqualTo(Action.CREATE);
+        assertThat(waTaskEntity.getTaskType()).isEqualTo(taskType);
+        assertThat(waTaskEntity.getTaskDetails()).isNull();
+
         ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
         verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
@@ -276,6 +289,8 @@ public class CamundaServiceTest {
         assertThat(processVariables.get("taskRegion").getType()).isEqualTo("Integer");
         assertThat(processVariables.get("idempotencyKey").getValue()).isNotNull();
         assertThat(processVariables.get("idempotencyKey").getType()).isEqualTo("String");
+        assertThat(processVariables.get("pcsTaskId").getType()).isEqualTo("Integer");
+        assertThat(processVariables.get("pcsTaskId").getValue()).isEqualTo(1);
     }
 
     @Test
@@ -288,6 +303,7 @@ public class CamundaServiceTest {
             Optional.ofNullable(PcsCaseEntity.builder().baseLocation(1).regionId(2).build())
         );
         when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of());
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
         stubWaFeatureFlag(true);
 
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
@@ -323,6 +339,7 @@ public class CamundaServiceTest {
             Optional.ofNullable(PcsCaseEntity.builder().baseLocation(1).regionId(2).build())
         );
         when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of());
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
         stubWaFeatureFlag(true);
 
         String expectedDescription = "some description";
@@ -354,10 +371,10 @@ public class CamundaServiceTest {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         when(authTokenGenerator.generate()).thenReturn("authToken");
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(
-            Optional.ofNullable(PcsCaseEntity.builder().build())
-        );
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.ofNullable(pcsCaseEntity));
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
         stubWaFeatureFlag(true);
 
         String expectedDescription = "some description";
@@ -414,6 +431,7 @@ public class CamundaServiceTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(
             Optional.ofNullable(PcsCaseEntity.builder().baseLocation(1).regionId(2).build())
         );
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
         CourtVenue courtVenue = mock(CourtVenue.class);
         when(courtVenue.courtName()).thenReturn("court name");
         when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of(courtVenue));
@@ -439,7 +457,10 @@ public class CamundaServiceTest {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().baseLocation(1).regionId(2).build();
         when(authTokenGenerator.generate()).thenReturn("authToken");
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.ofNullable(pcsCaseEntity));
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
         stubWaFeatureFlag(true);
 
         CamundaRequestTaskData taskData = buildTaskDataForCancel(taskType);
@@ -448,6 +469,15 @@ public class CamundaServiceTest {
         camundaService.handleRequest(taskData);
 
         // Then
+        ArgumentCaptor<WaTaskEntity> waTaskEntityArgumentCaptor = ArgumentCaptor.forClass(WaTaskEntity.class);
+        verify(waTaskRepository).save(waTaskEntityArgumentCaptor.capture());
+        WaTaskEntity waTaskEntity = waTaskEntityArgumentCaptor.getValue();
+        assertThat(waTaskEntity.getPcsCase()).isEqualTo(pcsCaseEntity);
+        assertThat(waTaskEntity.getAction()).isEqualTo(Action.CANCEL);
+        assertThat(waTaskEntity.getTaskType()).isEqualTo(taskType);
+        assertThat(waTaskEntity.getTaskDetails()).isNull();
+        assertThat(waTaskEntity.getRequestedAt()).isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
+
         ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
         verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
@@ -464,6 +494,8 @@ public class CamundaServiceTest {
         assertThat(correlationKeys).isNotEmpty();
         assertThat(correlationKeys.get("caseId").getValue()).isEqualTo(Long.toString(CASE_REFERENCE));
         assertThat(correlationKeys.get("__processCategory__NewClaimCreateNewHearing").getValue()).isEqualTo(true);
+        assertThat(processVariables.get("pcsTaskId").getType()).isEqualTo("Integer");
+        assertThat(processVariables.get("pcsTaskId").getValue()).isEqualTo(1);
     }
 
     @Test
@@ -524,6 +556,61 @@ public class CamundaServiceTest {
         assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
         assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
             .isEqualTo(instant);
+    }
+
+    @Test
+    void shouldScheduleCamundaCreateRequestTaskWithTaskDetails() {
+        // When
+        stubWaFeatureFlag(true);
+        Map<String, Object> taskDetails = Map.of("test", "value");
+        camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, "description", taskDetails);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+
+        CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
+        assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(taskData.getTaskDetails()).hasSize(1);
+        assertThat(taskData.getTaskDetails().get("test")).isEqualTo("value");
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
+    }
+
+    @Test
+    void shouldSaveTaskDetailsOnCreateRequest() {
+        // Given
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().baseLocation(1).regionId(2).build();
+        when(authTokenGenerator.generate()).thenReturn("authToken");
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.ofNullable(pcsCaseEntity));
+        CourtVenue courtVenue = mock(CourtVenue.class);
+        when(courtVenue.courtName()).thenReturn("court name");
+        when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of(courtVenue));
+        stubWaFeatureFlag(true);
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
+
+        String expectedDescription = "some description";
+        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType, expectedDescription);
+        taskData.setTaskDetails(Map.of("test", "value"));
+
+        // When
+        camundaService.handleRequest(taskData);
+
+        // Then
+        ArgumentCaptor<WaTaskEntity> waTaskEntityArgumentCaptor = ArgumentCaptor.forClass(WaTaskEntity.class);
+        verify(waTaskRepository).save(waTaskEntityArgumentCaptor.capture());
+        WaTaskEntity waTaskEntity = waTaskEntityArgumentCaptor.getValue();
+        assertThat(waTaskEntity.getPcsCase()).isEqualTo(pcsCaseEntity);
+        assertThat(waTaskEntity.getAction()).isEqualTo(Action.CREATE);
+        assertThat(waTaskEntity.getTaskType()).isEqualTo(taskType);
+        assertThat(taskData.getTaskDetails()).hasSize(1);
+        assertThat(waTaskEntity.getTaskDetails().get("test")).isEqualTo("value");
+        assertThat(waTaskEntity.getRequestedAt()).isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType, String taskDescription) {

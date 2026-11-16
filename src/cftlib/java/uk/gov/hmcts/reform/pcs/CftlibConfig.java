@@ -46,6 +46,8 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
                                                               "caseworker-pcs-solicitor",  "caseworker-pcs"));
         users.put("citizen@pcs.com", List.of("citizen"));
+        users.put("defendant1@localhost", List.of("citizen"));
+        users.put("defendant2@localhost", List.of("citizen"));
         users.put("data.store.idam.system.user@gmail.com", List.of());
         users.put("ccd.import@pcs.com", List.of("ccd-import"));
         users.put("pcs-system-user@localhost",

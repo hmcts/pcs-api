@@ -88,11 +88,21 @@ public class GenAppVisibilityService {
             return false;
         }
 
+        if (isInternalUser(currentUserRoles)) {
+            return isGenAppDocumentVisibleToInternalUsers(genAppEntity);
+        }
+
         if (genAppEntity.getWithoutNotice() == VerticalYesNo.YES) {
             return isWithoutNoticeVisibleToUser(genAppEntity.getParty(), userId, organisationId, currentUserRoles);
         }
 
         return isGenAppVisibleToUser(genAppEntity, userId, organisationId, currentUserRoles);
+    }
+
+    /** Case file view, the case bundle and the system user's documents all follow this rule. */
+    public static boolean isGenAppDocumentVisibleToInternalUsers(GenAppEntity genAppEntity) {
+        return genAppEntity.getWithoutNotice() == VerticalYesNo.YES
+            || genAppEntity.getState() == GenAppState.GEN_APP_ISSUED;
     }
 
     public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps,

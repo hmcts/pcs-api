@@ -28,7 +28,7 @@ export const askTheCourtToMakeAnOrder = {
   youSeeFinalApplicationFeeParagraph: `You’ll see the final application fee before you pay.`,
   ifYouAreWorriedAboutDefendantPayingFeesHeader: `If you are worried about the defendant paying fees`,
   theyMayBeEligibleParagraph: `They may be eligible to apply for`,
-  helpWithFeesLink: `help with fees (GOV.UK, opens in a new tab)`,
+  helpWithFeesLink: `Help with Fees (GOV.UK, opens in a new tab)`,
   weWillAskYouParagraph: `. We will ask you if they want to do this when you apply.`,
   applyByPostHeader: `Apply by post`,
   ifYouPreferToRespondParagraph: `If you’d prefer to respond by post:`,

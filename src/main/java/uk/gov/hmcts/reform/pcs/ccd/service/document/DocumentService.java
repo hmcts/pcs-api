@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -285,7 +286,8 @@ public class DocumentService {
             type = DocumentType.OTHER;
             categoryId = CaseFileCategory.APPLICATIONS.getId();
         } else if (selectedCounterClaim != null) {
-            renamed = documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, party.getId());
+            renamed = documentNameService.appendCounterClaimPostfix(
+                originalFilename, selectedCounterClaim, mainClaim, party.getId());
             type = DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM;
             // Set explicitly: mapDocumentTypeToCategory has no mapping for this type
             categoryId = CaseFileCategory.STATEMENTS_OF_CASE.getId();
@@ -385,7 +387,7 @@ public class DocumentService {
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
                 .fileName(documentNameService.appendCounterClaimPostfix(
-                    ccDoc.getDocument().getFilename(), claim, party.getId()))
+                    ccDoc.getDocument().getFilename(), counterClaim, claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())
@@ -612,7 +614,8 @@ public class DocumentService {
                 documentEntities
             );
 
-            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
+            Map<String, Object> taskDetails = Map.of("genAppId", selectedGenApp.getId());
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description, taskDetails);
         } else if (selectedCounterClaim != null) {
             String description = taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
                 caseReference,
@@ -620,7 +623,13 @@ public class DocumentService {
                 party,
                 documentEntities
             );
-            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM, description);
+            Map<String, Object> taskDetails = Map.of("counterClaimId", selectedCounterClaim.getId());
+            camundaService.createTask(
+                caseReference,
+                TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM,
+                description,
+                taskDetails
+            );
         } else {
             String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
                 caseReference,

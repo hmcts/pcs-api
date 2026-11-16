@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.DefendantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.LitigationFriendTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.time.LocalDateTime;
@@ -50,6 +51,9 @@ class CaseTabViewTest {
 
     @Mock
     private CaseDetailsTabView caseDetailsTabView;
+
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
 
     @InjectMocks
     private CaseTabView underTest;
@@ -78,7 +82,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -116,7 +120,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -159,7 +163,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -200,7 +204,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -239,7 +243,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab().getLfDetails().getActingFor()).isEqualTo("Acme Ltd");
@@ -260,7 +264,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         LitigationFriendTabDetails litigationFriend1TabDetails =
@@ -314,7 +318,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -392,7 +396,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -457,7 +461,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -498,7 +502,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -538,7 +542,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -558,7 +562,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -578,7 +582,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -586,7 +590,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -594,9 +598,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
     }
 
     @Test
@@ -634,7 +638,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(draftGrounds);
@@ -648,7 +652,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -656,9 +660,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         assertThat(draftCaseData.getAllDefendants()).hasSize(2);
         Party firstDefendant = draftCaseData.getAllDefendants().getFirst().getValue();
@@ -698,7 +702,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -708,7 +712,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -716,9 +720,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         assertThat(draftCaseData.getAllDefendants()).hasSize(1);
         Party defendant = draftCaseData.getAllDefendants().getFirst().getValue();
@@ -748,7 +752,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -758,7 +762,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -766,9 +770,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
         assertThat(draftCaseData.getAllDefendants()).hasSize(1);
         Party defendant = draftCaseData.getAllDefendants().getFirst().getValue();
         assertThat(defendant.getFirstName()).isEqualTo("Only");
@@ -795,7 +799,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -805,7 +809,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -813,9 +817,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         assertThat(draftCaseData.getAllDefendants()).isSameAs(existingDefendants);
     }
@@ -845,7 +849,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -853,7 +857,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -861,9 +865,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).hasSize(2);
@@ -899,7 +903,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -907,7 +911,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -915,9 +919,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).hasSize(1);
@@ -936,7 +940,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -944,7 +948,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -952,9 +956,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).isNull();
@@ -975,7 +979,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -983,7 +987,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -991,9 +995,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).isNull();
@@ -1020,7 +1024,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -1028,7 +1032,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -1036,9 +1040,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy.getHousingAct()).isEqualTo(SuspensionOfRightToBuyHousingAct.SECTION_6A_2);
@@ -1070,7 +1074,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -1078,7 +1082,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -1086,9 +1090,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy).isNull();
@@ -1118,7 +1122,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -1126,7 +1130,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -1134,9 +1138,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy).isNull();
@@ -1155,7 +1159,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -1163,7 +1167,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
 
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
@@ -1171,9 +1175,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, pcsCaseEntity, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy).isNull();
@@ -1190,11 +1194,11 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase);
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
 
         // Then
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, false);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(pcsCase, true);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(pcsCase, pcsCaseEntity, true);
     }
 
     private static <T> ListValue<T> listValue(T value) {

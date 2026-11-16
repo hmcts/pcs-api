@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class EnforcementPageConfigurer implements PageConfigurer {
 
-    EnforcementApplicationPage enforcementApplicationPage;
+    private EnforcementApplicationPage enforcementApplicationPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {

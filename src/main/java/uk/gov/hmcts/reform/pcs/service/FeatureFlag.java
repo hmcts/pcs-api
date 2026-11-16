@@ -9,6 +9,7 @@ import java.util.Optional;
 public enum FeatureFlag {
 
     BULK_PRINT("bulk-print-enabled", false),
+    SDP_EXPORT("sdp-export-enabled", false),
     CASEWORKER_EVENTS("caseworker-events-enabled", true),
     CUI_RESPOND_TO_CLAIM_LR("cui-respond-to-claim-lr-enabled", true),
     RELEASE_1_DOT_2("release-1.2-enabled", true),

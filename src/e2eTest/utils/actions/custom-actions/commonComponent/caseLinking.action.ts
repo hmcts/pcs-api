@@ -130,9 +130,9 @@ export class CaseLinking implements IAction {
   }
 
   private LinkedCasesTabLocator(page: Page) {
-    return page.locator('div.mat-tab-label-content', { hasText: caseSummary.linkedCasesTab });
+    return page.getByRole('tab', { name: caseSummary.linkedCasesTab, exact: true });
   }
-
+  
   private async canViewLinkedCases(option: actionData, page: Page): Promise<void> {
     const linkedCasesTab = this.LinkedCasesTabLocator(page);
 
