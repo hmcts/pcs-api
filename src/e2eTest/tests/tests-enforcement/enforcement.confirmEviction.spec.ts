@@ -10,22 +10,20 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { confirmEvictionDetails, evictionDate } from '@data/page-data-figma/page-data-enforcement-figma';
 
-test.beforeEach(async ({ page }, testInfo) => {
+test.beforeEach(async ({ page } ) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
 
-
-    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
-    await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload()
-    });
-
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
+  await performAction('getDefendantDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload()
+  });
   await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
@@ -46,7 +44,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Confirm Eviction]', async () => {
+test.describe('[Enforcement - Confirm Eviction] @nightly', async () => {
   test('Confirm Eviction - Eviction data provide by Bailiff @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.confirmEvictionEvent);

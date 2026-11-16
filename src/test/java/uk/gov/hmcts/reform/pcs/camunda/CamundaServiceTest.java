@@ -499,6 +499,28 @@ public class CamundaServiceTest {
     }
 
     @Test
+    void shouldCancelOnlyOneSidesTaskAboutAMessage() {
+        when(authTokenGenerator.generate()).thenReturn("authToken");
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(PcsCaseEntity.builder().build()));
+        when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
+        stubWaFeatureFlag(true);
+        UUID messageId = UUID.randomUUID();
+
+        camundaService.handleRequest(CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(CASE_REFERENCE)
+            .messageId(messageId.toString())
+            .taskType(TaskType.REVIEW_MESSAGE_JUDGE)
+            .build());
+
+        ArgumentCaptor<SendMessageRequest> request = ArgumentCaptor.forClass(SendMessageRequest.class);
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), request.capture());
+        assertThat(request.getValue().getCorrelationKeys()).containsOnlyKeys("caseId",
+            "__processCategory__message_" + messageId, "__processCategory__ReviewMessageJudge");
+    }
+
+    @Test
     void shouldSkipCancellingTaskIfWaIsNotEnabled() {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
@@ -581,7 +603,7 @@ public class CamundaServiceTest {
     }
 
     @Test
-    void shouldSaveTaskDetailsOnCreateRequest() {
+    void shouldSaveTaskDetailsAndSendMessagePriorityOnCreateRequest() {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
@@ -595,8 +617,16 @@ public class CamundaServiceTest {
         when(waTaskRepository.save(any(WaTaskEntity.class))).thenReturn(WaTaskEntity.builder().id(1).build());
 
         String expectedDescription = "some description";
-        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType, expectedDescription);
-        taskData.setTaskDetails(Map.of("test", "value"));
+        UUID messageId = UUID.randomUUID();
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CREATE)
+            .caseReference(CASE_REFERENCE)
+            .taskType(taskType)
+            .taskDescription(expectedDescription)
+            .taskDetails(Map.of("test", "value"))
+            .urgent(true)
+            .messageId(messageId.toString())
+            .build();
 
         // When
         camundaService.handleRequest(taskData);
@@ -611,6 +641,13 @@ public class CamundaServiceTest {
         assertThat(taskData.getTaskDetails()).hasSize(1);
         assertThat(waTaskEntity.getTaskDetails().get("test")).isEqualTo("value");
         assertThat(waTaskEntity.getRequestedAt()).isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
+
+        ArgumentCaptor<SendMessageRequest> request = ArgumentCaptor.forClass(SendMessageRequest.class);
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), request.capture());
+        Map<String, DmnValue<?>> variables = request.getValue().getProcessVariables();
+        assertThat(variables.get("urgent").getValue()).isEqualTo("Yes");
+        assertThat(variables.get("messageId").getValue()).isEqualTo(messageId.toString());
+        assertThat(variables.get("__processCategory__message_" + messageId).getValue()).isEqualTo(true);
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType, String taskDescription) {

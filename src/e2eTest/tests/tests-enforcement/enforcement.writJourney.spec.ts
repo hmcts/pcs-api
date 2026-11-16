@@ -19,12 +19,8 @@ import {
   confirmHCEOfficer,
   defendantInBreathingSpace,
   enforcementApplication,
-  landRegistryFees,
-  languageUsed,
-  legalCosts, missedPayments,
-  moneyOwed,
+  languageUsed, missedPayments,
   nameAndAddressForEviction,
-  repayments,
   statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
@@ -79,8 +75,8 @@ test.afterEach(async () => {
   }
   PageContentValidation.finaliseTest();
 });
-// Skipping this test case as the feature is not part of Release 1 to save execution time.
-test.describe('[Enforcement - Writ of Possession]', async () => {
+
+test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
   test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
