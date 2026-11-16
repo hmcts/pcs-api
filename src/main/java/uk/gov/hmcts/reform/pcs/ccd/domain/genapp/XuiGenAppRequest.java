@@ -85,8 +85,10 @@ public class XuiGenAppRequest implements GenAppRequest {
     private String whatOrderWanted;
 
     @CCD(
-        label = "Draft order wording",
-        hint = "Provide the wording you propose for the order. You can use numbering and formatting.",
+        label = "Detail the draft order the defendant would like the judge to consider",
+        hint = "Set out the full text of the draft order you want the judge to approve for this application. "
+            + "Use the same format as when submitting a draft word order (for example, with numbered paragraphs "
+            + "and any standard wording).",
         typeOverride = FieldType.RichTextArea,
         access = {SolicitorAccess.class, DefendantSolicitorAccess.class},
         inheritAccessFromParent = false

@@ -10,27 +10,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WhatOrderWantedTest extends BasePageTest {
 
     @Test
-    void shouldOfferDraftWordingWithoutRequiringIt() {
+    void shouldRequireDraftWordingForTheClaimantSolicitor() {
         setPageUnderTest(new WhatOrderWanted());
 
         assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
             .filteredOn(field -> "xui_genapp_DraftOrderWording".equals(field.getId()))
             .singleElement()
             .satisfies(field -> {
-                assertThat(field.getContext()).isEqualTo(DisplayContext.Optional);
+                assertThat(field.getContext()).isEqualTo(DisplayContext.Mandatory);
+                assertThat(field.getCaseEventFieldLabel())
+                    .isEqualTo("Detail the draft order you would like the judge to consider");
                 assertThat(field.getShowCondition()).isEqualTo("xui_genapp_DraftOrderWordingAllowed=\"YES\"");
             });
     }
 
     @Test
-    void shouldOfferOptionalConditionalDraftWordingOnTheDefendantSolicitorApplicationPage() {
+    void shouldRequireConditionalDraftWordingOnTheDefendantSolicitorApplicationPage() {
         setPageUnderTest(new uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted());
 
         assertThat(event.getFields().getFields().stream().map(Field.FieldBuilder::build).toList())
             .filteredOn(field -> "xui_genapp_DraftOrderWording".equals(field.getId()))
             .singleElement()
             .satisfies(field -> {
-                assertThat(field.getContext()).isEqualTo(DisplayContext.Optional);
+                assertThat(field.getContext()).isEqualTo(DisplayContext.Mandatory);
                 assertThat(field.getShowCondition()).isEqualTo("xui_genapp_DraftOrderWordingAllowed=\"YES\"");
             });
     }

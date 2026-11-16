@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -139,6 +140,23 @@ class SubmitEventHandlerTest {
 
         assertThat(response.getErrors()).containsExactly("Only a solicitor can provide draft order wording");
         verifyNoInteractions(genAppService);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "\t\n"})
+    void shouldRequireDraftWordingFromAnEligibleSolicitor(String wording) {
+        when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(true);
+        XuiGenAppRequest request = XuiGenAppRequest.builder()
+            .applicationType(GenAppType.SOMETHING_ELSE)
+            .draftOrderWording(wording)
+            .build();
+
+        SubmitResponse<State> response = underTest.submit(eventPayload(
+            PCSCase.builder().xuiGenAppRequest(request).build()));
+
+        assertThat(response.getErrors()).containsExactly("Enter the draft order you would like the judge to consider");
+        verifyNoInteractions(genAppService, pcsCaseService);
     }
 
     @Nested

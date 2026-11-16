@@ -63,8 +63,9 @@ public class WhatOrderWanted implements CcdPageConfiguration {
             .mandatory(XuiGenAppRequest::getWhatOrderWanted, null, null,
                        "Explain what you want the court to do, and why")
             .readonly(XuiGenAppRequest::getDraftOrderWordingAllowed, ShowConditions.NEVER_SHOW, true)
-            .optional(XuiGenAppRequest::getDraftOrderWording,
-                      fieldEquals("xui_genapp_DraftOrderWordingAllowed", VerticalYesNo.YES))
+            .mandatory(XuiGenAppRequest::getDraftOrderWording,
+                      fieldEquals("xui_genapp_DraftOrderWordingAllowed", VerticalYesNo.YES), null,
+                       "Detail the draft order you would like the judge to consider")
             .done();
     }
 

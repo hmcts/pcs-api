@@ -54,7 +54,7 @@ public class WhatOrderWanted implements CcdPageConfiguration {
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWhatOrderWanted)
             .readonly(XuiGenAppRequest::getDraftOrderWordingAllowed, ShowConditions.NEVER_SHOW, true)
-            .optional(XuiGenAppRequest::getDraftOrderWording,
+            .mandatory(XuiGenAppRequest::getDraftOrderWording,
                       fieldEquals("xui_genapp_DraftOrderWordingAllowed", VerticalYesNo.YES))
             .done();
     }
