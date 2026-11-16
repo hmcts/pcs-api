@@ -18,7 +18,7 @@ public class WritStrategy implements EnforcementTypeStrategy {
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         processWrit(enforcementOrder, enforcementOrderEntity);
-        statementOfTruthService.processStatementOfTruth(enforcementOrder.getWritDetails().getStatementOfTruth(),
+        statementOfTruthService.processStatementOfTruth(enforcementOrder.getRawWritDetails().getWritStatementOfTruth(),
                 enforcementOrderEntity);
     }
 
