@@ -30,11 +30,15 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ServiceHearingServiceTest {
+class ServiceHearingValuesMapperTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
     private static final String MANAGE_CASE_URL = "https://manage-case.example";
@@ -46,7 +50,7 @@ class ServiceHearingServiceTest {
     @Mock
     private CaseNameFormatter caseNameFormatter;
 
-    private ServiceHearingService underTest;
+    private ServiceHearingValuesMapper underTest;
 
     @BeforeEach
     void setUp() {
@@ -56,7 +60,7 @@ class ServiceHearingServiceTest {
         defaults.setRoleTypes(List.of("24", "45"));
         defaults.setPreferredHearingChannel("INTER");
 
-        underTest = new ServiceHearingService(defaults, pcsCaseRepository, caseNameFormatter, MANAGE_CASE_URL);
+        underTest = new ServiceHearingValuesMapper(defaults, pcsCaseRepository, caseNameFormatter, MANAGE_CASE_URL);
     }
 
     @Test
@@ -116,8 +120,18 @@ class ServiceHearingServiceTest {
     }
 
     @Test
-    void shouldLeaveSlaStartDateEmptyWhenClaimNotIssued() {
+    void shouldLeaveSlaStartDateEmptyWhenCaseHasNoClaim() {
         givenCase(caseBuilder().build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseSlaStartDate()).isNull();
+    }
+
+    @Test
+    void shouldLeaveSlaStartDateEmptyWhenMainClaimNotIssued() {
+        ClaimEntity claim = ClaimEntity.builder().build();
+        givenCase(caseBuilder().claims(new ArrayList<>(List.of(claim))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
@@ -156,7 +170,7 @@ class ServiceHearingServiceTest {
 
     @Test
     void shouldFormatFlagWithoutComment() {
-        givenCase(caseBuilder().caseFlags(flags(flag("Complex case", null, 1))).build());
+        givenCase(caseBuilder().caseFlags(flags(flag("Complex case", null))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
@@ -165,7 +179,7 @@ class ServiceHearingServiceTest {
 
     @Test
     void shouldFormatFlagWithComment() {
-        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", "so urgent", 1))).build());
+        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", "so urgent"))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
@@ -173,10 +187,10 @@ class ServiceHearingServiceTest {
     }
 
     @Test
-    void shouldJoinMultipleFlagsInCreationOrder() {
+    void shouldJoinMultipleFlagsWithComma() {
         givenCase(caseBuilder().caseFlags(flags(
-            flag("Urgent case", "so urgent", 2),
-            flag("Complex case", " ", 1)
+            flag("Complex case", " "),
+            flag("Urgent case", "so urgent")
         )).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
@@ -188,10 +202,10 @@ class ServiceHearingServiceTest {
     @Test
     void shouldIncludeOnlyActiveFlags() {
         givenCase(caseBuilder().caseFlags(flags(
-            flag("Complex case", null, 1, "Active"),
-            flag("Urgent case", "so urgent", 2, "Inactive"),
-            flag("Vulnerable user", null, 3, "Requested"),
-            flag("Lack of capacity", null, 4, "Not approved")
+            flag("Complex case", null, "Active"),
+            flag("Urgent case", "so urgent", "Inactive"),
+            flag("Vulnerable user", null, "Requested"),
+            flag("Lack of capacity", null, "Not approved")
         )).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
@@ -202,8 +216,8 @@ class ServiceHearingServiceTest {
     @Test
     void shouldOmitListingCommentsWhenNoActiveFlags() {
         givenCase(caseBuilder().caseFlags(flags(
-            flag("Urgent case", "so urgent", 1, "Inactive"),
-            flag("Complex case", null, 2, "Requested")
+            flag("Urgent case", "so urgent", "Inactive"),
+            flag("Complex case", null, "Requested")
         )).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
@@ -213,28 +227,28 @@ class ServiceHearingServiceTest {
 
     @Test
     void shouldTruncateListingCommentsLongerThanMaxLength() {
-        String longComment = "x".repeat(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH);
-        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", longComment, 1))).build());
+        String longComment = "x".repeat(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH);
+        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", longComment))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         String expected = ("Case Flags: Urgent case (Comments: " + longComment + ")")
-            .substring(0, ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH);
+            .substring(0, ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH);
         assertThat(values.getListingComments())
-            .hasSize(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH)
+            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
             .isEqualTo(expected);
     }
 
     @Test
     void shouldNotTruncateListingCommentsAtMaxLength() {
         String prefix = "Case Flags: Urgent case (Comments: ";
-        String comment = "x".repeat(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH - prefix.length() - 1);
-        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", comment, 1))).build());
+        String comment = "x".repeat(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH - prefix.length() - 1);
+        givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", comment))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getListingComments())
-            .hasSize(ServiceHearingService.MAX_LISTING_COMMENTS_LENGTH)
+            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
             .isEqualTo(prefix + comment + ")");
     }
     
@@ -254,6 +268,7 @@ class ServiceHearingServiceTest {
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
         assertThat(linkedCases).isEmpty();
+        verify(pcsCaseRepository, never()).findAllByCaseReferenceIn(any());
     }
 
     @Test
@@ -262,7 +277,8 @@ class ServiceHearingServiceTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001", "CLRC002")))
             .build());
-        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.of(linkedCase));
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE)))
+            .thenReturn(List.of(linkedCase));
         when(caseNameFormatter.formatCaseName(linkedCase)).thenReturn(CASE_NAME);
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
@@ -279,7 +295,7 @@ class ServiceHearingServiceTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001")))
             .build());
-        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
@@ -296,7 +312,7 @@ class ServiceHearingServiceTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE)))
             .build());
-        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
@@ -312,14 +328,40 @@ class ServiceHearingServiceTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001"), link(secondLinkedCase, "CLRC003")))
             .build());
-        when(pcsCaseRepository.findByCaseReference(LINKED_CASE_REFERENCE)).thenReturn(Optional.empty());
-        when(pcsCaseRepository.findByCaseReference(secondLinkedCase)).thenReturn(Optional.empty());
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
+            .thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
         assertThat(linkedCases)
             .extracting(ServiceLinkedCases::getCaseReference)
             .containsExactly("6543210987654321", "1111222233334444");
+    }
+
+    @Test
+    void shouldLookUpEveryLinkedCaseInOneQuery() {
+        long secondLinkedCase = 1111222233334444L;
+        PcsCaseEntity firstCase = PcsCaseEntity.builder().caseReference(LINKED_CASE_REFERENCE).build();
+        PcsCaseEntity secondCase = PcsCaseEntity.builder().caseReference(secondLinkedCase).build();
+        givenCase(caseBuilder()
+            .caseLinks(links(
+                link(LINKED_CASE_REFERENCE, "CLRC001"),
+                link(secondLinkedCase, "CLRC003"),
+                link(LINKED_CASE_REFERENCE, "CLRC002")))
+            .build());
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
+            .thenReturn(List.of(secondCase, firstCase));
+        when(caseNameFormatter.formatCaseName(firstCase)).thenReturn(CASE_NAME);
+        when(caseNameFormatter.formatCaseName(secondCase)).thenReturn("Other Landlord vs Other Tenant");
+
+        List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
+
+        assertThat(linkedCases)
+            .extracting(ServiceLinkedCases::getCaseName)
+            .containsExactly(CASE_NAME, "Other Landlord vs Other Tenant", CASE_NAME);
+        verify(pcsCaseRepository, times(1)).findAllByCaseReferenceIn(any());
+        verify(pcsCaseRepository, never()).findByCaseReference(LINKED_CASE_REFERENCE);
+        verify(pcsCaseRepository, never()).findByCaseReference(secondLinkedCase);
     }
 
     private void givenCase(PcsCaseEntity pcsCase) {
@@ -349,16 +391,15 @@ class ServiceHearingServiceTest {
         return new ArrayList<>(List.of(flags));
     }
 
-    private static CaseFlagEntity flag(String name, String comment, int createdOrder) {
-        return flag(name, comment, createdOrder, "Active");
+    private static CaseFlagEntity flag(String name, String comment) {
+        return flag(name, comment, "Active");
     }
 
-    private static CaseFlagEntity flag(String name, String comment, int createdOrder, String status) {
+    private static CaseFlagEntity flag(String name, String comment, String status) {
         return CaseFlagEntity.builder()
             .flagRefData(FlagRefDataEntity.builder().flagName(name).build())
             .flagComment(comment)
             .defaultStatus(status)
-            .dateTimeCreated(LocalDateTime.of(2026, 1, createdOrder, 9, 0))
             .build();
     }
 }

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
-import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingService;
+import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingValuesMapper;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -33,7 +33,7 @@ public class ServiceHearingController {
 
     public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
 
-    private final ServiceHearingService serviceHearingService;
+    private final ServiceHearingValuesMapper serviceHearingValuesMapper;
     private final FeatureToggleService featureToggleService;
 
     @PostMapping(path = {
@@ -57,7 +57,7 @@ public class ServiceHearingController {
             return ResponseEntity.notFound().build();
         }
 
-        ServiceHearingValues hearingValues = serviceHearingService
+        ServiceHearingValues hearingValues = serviceHearingValuesMapper
             .getServiceHearingValues(Long.parseLong(requestDetails.getCaseId()));
 
         return new ResponseEntity<>(hearingValues, HttpStatus.OK);
@@ -85,7 +85,7 @@ public class ServiceHearingController {
             return ResponseEntity.notFound().build();
         }
 
-        List<ServiceLinkedCases> linkedCases = serviceHearingService.getServiceLinkedCases(
+        List<ServiceLinkedCases> linkedCases = serviceHearingValuesMapper.getServiceLinkedCases(
             Long.parseLong(requestDetails.getCaseId()));
 
         return new ResponseEntity<>(linkedCases, HttpStatus.OK);

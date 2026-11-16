@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
-import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingService;
+import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingValuesMapper;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -32,7 +32,7 @@ class ServiceHearingControllerTest {
     private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
-    private ServiceHearingService serviceHearingService;
+    private ServiceHearingValuesMapper serviceHearingValuesMapper;
     @Mock
     private FeatureToggleService featureToggleService;
 
@@ -53,7 +53,7 @@ class ServiceHearingControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isNull();
-        verifyNoInteractions(serviceHearingService);
+        verifyNoInteractions(serviceHearingValuesMapper);
     }
 
     @Test
@@ -65,7 +65,7 @@ class ServiceHearingControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isNull();
-        verifyNoInteractions(serviceHearingService);
+        verifyNoInteractions(serviceHearingValuesMapper);
     }
 
     @Test
@@ -74,7 +74,7 @@ class ServiceHearingControllerTest {
             .caseId(String.valueOf(CASE_REFERENCE))
             .hmctsServiceID("AAA3")
             .build();
-        when(serviceHearingService.getServiceHearingValues(CASE_REFERENCE)).thenReturn(values);
+        when(serviceHearingValuesMapper.getServiceHearingValues(CASE_REFERENCE)).thenReturn(values);
 
         ResponseEntity<ServiceHearingValues> response =
             underTest.getHearingValues(
@@ -87,7 +87,7 @@ class ServiceHearingControllerTest {
 
     @Test
     void shouldPropagateCaseNotFound() {
-        when(serviceHearingService.getServiceHearingValues(CASE_REFERENCE))
+        when(serviceHearingValuesMapper.getServiceHearingValues(CASE_REFERENCE))
             .thenThrow(new CaseNotFoundException(CASE_REFERENCE));
 
         assertThatThrownBy(() -> underTest.getHearingValues(
@@ -102,7 +102,7 @@ class ServiceHearingControllerTest {
             .caseName("Jane Landlord vs John Tenant")
             .reasonsForLink(List.of("CLRC001"))
             .build());
-        when(serviceHearingService.getServiceLinkedCases(CASE_REFERENCE)).thenReturn(linkedCases);
+        when(serviceHearingValuesMapper.getServiceLinkedCases(CASE_REFERENCE)).thenReturn(linkedCases);
 
         ResponseEntity<List<ServiceLinkedCases>> response =
             underTest.getLinkedCases(
@@ -115,7 +115,7 @@ class ServiceHearingControllerTest {
 
     @Test
     void shouldPropagateCaseNotFoundForLinkedCases() {
-        when(serviceHearingService.getServiceLinkedCases(CASE_REFERENCE))
+        when(serviceHearingValuesMapper.getServiceLinkedCases(CASE_REFERENCE))
             .thenThrow(new CaseNotFoundException(CASE_REFERENCE));
 
         assertThatThrownBy(() -> underTest.getLinkedCases(

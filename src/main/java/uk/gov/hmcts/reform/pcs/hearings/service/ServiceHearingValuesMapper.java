@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -17,9 +18,12 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -30,7 +34,7 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
  */
 @Slf4j
 @Service
-public class ServiceHearingService {
+public class ServiceHearingValuesMapper {
 
     static final int DUTY_SOLICITOR_ATTENDEES = 1;
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
@@ -43,10 +47,10 @@ public class ServiceHearingService {
     private final CaseNameFormatter caseNameFormatter;
     private final String manageCaseUrl;
 
-    public ServiceHearingService(ServiceHearingValuesConfiguration defaults,
-                                 PcsCaseRepository pcsCaseRepository,
-                                 CaseNameFormatter caseNameFormatter,
-                                 @Value("${manage_case.url}") String manageCaseUrl) {
+    public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
+                                      PcsCaseRepository pcsCaseRepository,
+                                      CaseNameFormatter caseNameFormatter,
+                                      @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseRepository = pcsCaseRepository;
         this.caseNameFormatter = caseNameFormatter;
@@ -78,15 +82,31 @@ public class ServiceHearingService {
         PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
+        Map<Long, PcsCaseEntity> linkedCasesByReference = findLinkedCases(pcsCase.getCaseLinks());
+
         return pcsCase.getCaseLinks().stream()
             .map(link -> ServiceLinkedCases.builder()
                 .caseReference(String.valueOf(link.getLinkedCaseReference()))
-                .caseName(pcsCaseRepository.findByCaseReference(link.getLinkedCaseReference())
+                .caseName(Optional.ofNullable(linkedCasesByReference.get(link.getLinkedCaseReference()))
                     .map(caseNameFormatter::formatCaseName)
                     .orElse(null))
                 .reasonsForLink(link.getReasons().stream().map(CaseLinkReasonEntity::getReasonCode).toList())
                 .build())
             .toList();
+    }
+
+    private Map<Long, PcsCaseEntity> findLinkedCases(List<CaseLinkEntity> caseLinks) {
+        List<Long> linkedCaseReferences = caseLinks.stream()
+            .map(CaseLinkEntity::getLinkedCaseReference)
+            .distinct()
+            .toList();
+
+        if (linkedCaseReferences.isEmpty()) {
+            return Map.of();
+        }
+
+        return pcsCaseRepository.findAllByCaseReferenceIn(linkedCaseReferences).stream()
+            .collect(Collectors.toMap(PcsCaseEntity::getCaseReference, Function.identity()));
     }
 
 
@@ -95,8 +115,7 @@ public class ServiceHearingService {
     }
 
     private LocalDate caseSlaStartDate(PcsCaseEntity pcsCase) {
-        return pcsCase.getClaims().stream()
-            .findFirst()
+        return Optional.ofNullable(pcsCase.getMainClaim())
             .map(ClaimEntity::getClaimIssuedDate)
             .map(issued -> issued.atZone(ZoneOffset.UTC).withZoneSameInstant(UK_ZONE_ID).toLocalDate())
             .orElse(null);
@@ -114,9 +133,7 @@ public class ServiceHearingService {
         List<String> flags = pcsCase.getCaseFlags().stream()
             .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
             .filter(flag -> flag.getFlagRefData() != null)
-            .sorted(Comparator.comparing(BaseCaseFlag::getDateTimeCreated,
-                Comparator.nullsLast(Comparator.naturalOrder())))
-            .map(ServiceHearingService::formatFlag)
+            .map(ServiceHearingValuesMapper::formatFlag)
             .toList();
 
         if (flags.isEmpty()) {
