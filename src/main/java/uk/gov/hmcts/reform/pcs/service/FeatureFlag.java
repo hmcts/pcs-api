@@ -8,6 +8,7 @@ import java.util.Optional;
 // and there is no system property override
 public enum FeatureFlag {
 
+    CASE_BUNDLE_VIEW("case-bundle-view-enabled", false),
     BULK_PRINT("bulk-print-enabled", false),
     SDP_EXPORT("sdp-export-enabled", false),
     CASEWORKER_EVENTS("caseworker-events-enabled", true),
