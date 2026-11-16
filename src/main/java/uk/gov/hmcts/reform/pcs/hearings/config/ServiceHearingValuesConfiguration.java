@@ -30,7 +30,7 @@ public class ServiceHearingValuesConfiguration {
     private String preferredHearingChannel;
     private int numberOfDaysOffset;
 
-    public ServiceHearingValues getDefaultValues(String caseId) {
+    public ServiceHearingValues getDefaultValues() {
         List<PartyDetails> parties = List.of(
             PartyDetails.builder()
                 .individualDetails(IndividualDetails.builder()
@@ -40,7 +40,6 @@ public class ServiceHearingValuesConfiguration {
         );
 
         return ServiceHearingValues.builder()
-            .caseId(caseId)
             .hmctsServiceID(hmctsServiceId)
             .caseAdditionalSecurityFlag(caseAdditionalSecurityFlag)
             .caseRestrictedFlag(caseRestrictedFlag)

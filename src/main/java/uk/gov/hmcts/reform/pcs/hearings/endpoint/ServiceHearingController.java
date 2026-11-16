@@ -4,11 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -19,10 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.exception.FeatureNotEnabledException;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
+import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 @Tag(name = "Service Hearing Controller")
 @Slf4j
@@ -30,7 +32,10 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 @AllArgsConstructor
 public class ServiceHearingController {
 
-    private final ServiceHearingValuesConfiguration serviceHearingValuesConfiguration;
+    public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+
+    private final ServiceHearingService serviceHearingService;
+    private final FeatureToggleService featureToggleService;
 
     @PostMapping(path = {
         "/serviceHearingValues"
@@ -38,15 +43,21 @@ public class ServiceHearingController {
     @Operation(summary = "Builds and returns the hearing values for exui")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Bad Request"),
         @ApiResponse(responseCode = "401", description = "Incorrect authorisation"),
-        @ApiResponse(responseCode = "400", description = "Bad Request")
+        @ApiResponse(responseCode = "403", description = "Invalid Service Authorization"),
+        @ApiResponse(responseCode = "404", description = "Case not found, or hearings integration is not enabled"),
+        @ApiResponse(responseCode = "500", description = "Unexpected error")
     })
     public ResponseEntity<ServiceHearingValues> getHearingValues(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-        @NonNull @RequestBody ServiceHearingRequest requestDetails) {
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
+        @Valid @RequestBody ServiceHearingRequest requestDetails) {
 
-        ServiceHearingValues hearingValues = serviceHearingValuesConfiguration
-            .getDefaultValues(requestDetails.getCaseId());
+        requireHmcIntegrationEnabled();
+
+        ServiceHearingValues hearingValues = serviceHearingService
+            .getServiceHearingValues(Long.parseLong(requestDetails.getCaseId()));
 
         return new ResponseEntity<>(hearingValues, HttpStatus.OK);
     }
@@ -58,17 +69,28 @@ public class ServiceHearingController {
     @Operation(summary = "Get linked cases for a Case and it's Hearing")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Bad Request"),
         @ApiResponse(responseCode = "401", description = "Incorrect authorisation"),
-        @ApiResponse(responseCode = "400", description = "Bad Request")
+        @ApiResponse(responseCode = "403", description = "Invalid Service Authorization"),
+        @ApiResponse(responseCode = "404", description = "Case not found, or hearings integration is not enabled"),
+        @ApiResponse(responseCode = "500", description = "Unexpected error")
     })
     public ResponseEntity<List<ServiceLinkedCases>> getLinkedCases(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-        @NonNull @RequestBody ServiceHearingRequest requestDetails) {
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
+        @Valid @RequestBody ServiceHearingRequest requestDetails) {
 
-        // Need to load linked cases from PCS
+        requireHmcIntegrationEnabled();
 
-        List<ServiceLinkedCases> linkedCases = new ArrayList<>();
+        List<ServiceLinkedCases> linkedCases = serviceHearingService.getServiceLinkedCases(
+            Long.parseLong(requestDetails.getCaseId()));
 
         return new ResponseEntity<>(linkedCases, HttpStatus.OK);
+    }
+
+    private void requireHmcIntegrationEnabled() {
+        if (!featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)) {
+            throw new FeatureNotEnabledException(FeatureFlag.HMC_INTEGRATION);
+        }
     }
 }
