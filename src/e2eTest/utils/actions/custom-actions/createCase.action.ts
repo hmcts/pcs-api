@@ -72,6 +72,7 @@ import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { CaseManagementCommonUtils } from './custom-actions-caseManagement/caseManagementUtils.action';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -1625,18 +1626,19 @@ export class CreateCaseAction implements IAction {
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
+    let gaPayload = caseFile.gaPayload as Record<string, any>;
     let userInputFiles:string[]= [];
     const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload ?? caseFile.caseWorkerHearing;
 
     switch (folderName) {
       case 'Property documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport, 'Claimant',caseFile.claimantIndex as number|| 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments,'Claimant',caseFile.claimantIndex as number || 1);
         if (caseFile.caseWorkerAmend) {
           userInputFiles.push(...(Array.isArray(caseFile.caseWorkerAmend) ? caseFile.caseWorkerAmend : [caseFile.caseWorkerAmend]));
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
@@ -1646,48 +1648,53 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Statements of case':
-        // Exact names (CC1 / Defendant n suffixes etc.) are validated through caseFile.expectedFiles below
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Notice for service out of the jurisdiction');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Claimant', caseFile.claimantIndex as number || 1 ,'Notice for service out of the jurisdiction');
         if (ccPayload) {
           this.readDocFilesFromPayLoad(
             userInputFiles,
-            ccPayload.event_data.possessionClaimResponse?.defendantResponses?.counterClaimDocuments
+            ccPayload.event_data.possessionClaimResponse?.defendantResponses?.counterClaimDocuments, `CC${caseFile.defendantIndex} - Defendant`, caseFile.defendantIndex as number
           );
         }
-        if (file) {
+        if (caseFile.caseWorkerAmend) {
+          let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, caseFile.date as string || '',caseFile.app as string || '', `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+        } else if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
       case 'Evidence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Inspection or report');
         if (caseFile.caseWorkerAmend) {
-          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
-          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+          let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, ``, ``, `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string);
         } else if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
       case 'Correspondence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Legal aid certificate');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Legal aid certificate');
         break;
 
       case 'Uncategorised documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Other document');
         if (ccPayload)
-          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments)
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments, caseFile.partyType as string || 'Defendant', caseFile.defendantIndex as number)
         if (caseFile.caseWorkerAmend) {
-          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
-          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+          let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, ``, ``, `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string);
         } else if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
       case 'Applications':
-        if (submitPayLoad) {
-          this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.xui_genapp_UploadedDocuments, 'All Files');
+        if (gaPayload) {
+          this.readDocFilesFromPayLoad(userInputFiles, gaPayload?.xui_genapp_UploadedDocuments, caseFile.partyType as string || '', undefined, 'All Files');
           userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
         }
         if (file) {
@@ -1788,7 +1795,9 @@ export class CreateCaseAction implements IAction {
     return uniqueFiles;
   }
 
-  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
+  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[],party?: string,index?: number, multiDocsLabel?: string) {
+
+    const partyLabel = [party, index].filter(Boolean).join(' ');
 
     if (subArray && Array.isArray(subArray)) {
       subArray.forEach(doc => {
@@ -1797,7 +1806,7 @@ export class CreateCaseAction implements IAction {
           const filename = doc.value?.document?.document_filename ?? doc.value?.document_filename;
 
           if (multiDocsLabel === valueLabel && filename) {
-            mainArray.push(filename);
+            mainArray.push(CaseManagementCommonUtils.renameDocument(filename,'','',partyLabel || undefined));
           }
         } else {
           const filename =
@@ -1805,7 +1814,7 @@ export class CreateCaseAction implements IAction {
             doc.value?.document_filename;
 
           if (filename) {
-            mainArray.push(filename);
+            mainArray.push(CaseManagementCommonUtils.renameDocument(filename,'','',partyLabel || undefined));
           }
         }
       });
@@ -1917,8 +1926,8 @@ export class CreateCaseAction implements IAction {
         .toEqual((tab.tabs as string[]).slice().sort());
     });
   }
-
-    public async validateTabNotPresent(page: Page, tab: actionRecord) {
+  
+  public async validateTabNotPresent(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.getByRole('tab');
       await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
@@ -1928,17 +1937,15 @@ export class CreateCaseAction implements IAction {
     });
   }
 
-  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
+  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number, party: string = 'Defendant'): string[] {
     const result: string[] = [];
 
-    for (let i = 1; i <= defendantCount; i++) {
-      for (const file of filesArray) {
-        result.push(
-          file.replace(/\.pdf$/i, ` GA${i}.pdf`)
-        );
-      }
 
-      result.push(`General Application GA${i}.pdf`);
+    for (const file of filesArray) {
+      result.push(
+        ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantCount, file, party)
+
+      );
     }
 
     return result;
@@ -2165,7 +2172,7 @@ export class CreateCaseAction implements IAction {
       allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
     }
 
-  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string,): string[] {
+  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string): string[] {
     if (oldFile && amendedFile) {
       return files
         .filter(file => file !== oldFile)
