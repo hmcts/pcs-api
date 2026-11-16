@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.FeatureNotEnabledException;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
@@ -46,23 +45,26 @@ class ServiceHearingControllerTest {
     }
 
     @Test
-    void shouldRejectHearingValuesWhenHmcIntegrationDisabled() {
+    void shouldReturnNotFoundForHearingValuesWhenHmcIntegrationDisabled() {
         when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(false);
 
-        assertThatThrownBy(() -> underTest.getHearingValues(
-            AUTHORIZATION, SERVICE_AUTHORIZATION, request(String.valueOf(CASE_REFERENCE))))
-            .isInstanceOf(FeatureNotEnabledException.class)
-            .hasMessage("Feature flag hmc-integration-enabled is not enabled");
+        ResponseEntity<ServiceHearingValues> response = underTest.getHearingValues(
+            AUTHORIZATION, SERVICE_AUTHORIZATION, request(String.valueOf(CASE_REFERENCE)));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNull();
         verifyNoInteractions(serviceHearingService);
     }
 
     @Test
-    void shouldRejectLinkedCasesWhenHmcIntegrationDisabled() {
+    void shouldReturnNotFoundForLinkedCasesWhenHmcIntegrationDisabled() {
         when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(false);
 
-        assertThatThrownBy(() -> underTest.getLinkedCases(
-            AUTHORIZATION, SERVICE_AUTHORIZATION, request(String.valueOf(CASE_REFERENCE))))
-            .isInstanceOf(FeatureNotEnabledException.class);
+        ResponseEntity<List<ServiceLinkedCases>> response = underTest.getLinkedCases(
+            AUTHORIZATION, SERVICE_AUTHORIZATION, request(String.valueOf(CASE_REFERENCE)));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNull();
         verifyNoInteractions(serviceHearingService);
     }
 

@@ -474,7 +474,7 @@ docweave:
   templates:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
 
-hmc-service-hearing-values:
+service-hearing-values:
   hmcts-service-id: AAA3
   case-additional-security-flag: false
   case-restricted-flag: false

@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 
 @Data
 @Component
-@ConfigurationProperties("hmc-service-hearing-values")
+@ConfigurationProperties("service-hearing-values")
 public class ServiceHearingValuesConfiguration {
     
     private String hmctsServiceId;

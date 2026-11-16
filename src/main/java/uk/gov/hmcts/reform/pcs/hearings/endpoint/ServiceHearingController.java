@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import uk.gov.hmcts.reform.pcs.exception.FeatureNotEnabledException;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
@@ -54,7 +53,9 @@ public class ServiceHearingController {
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @Valid @RequestBody ServiceHearingRequest requestDetails) {
 
-        requireHmcIntegrationEnabled();
+        if (!isHmcIntegrationEnabled()) {
+            return ResponseEntity.notFound().build();
+        }
 
         ServiceHearingValues hearingValues = serviceHearingService
             .getServiceHearingValues(Long.parseLong(requestDetails.getCaseId()));
@@ -80,7 +81,9 @@ public class ServiceHearingController {
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @Valid @RequestBody ServiceHearingRequest requestDetails) {
 
-        requireHmcIntegrationEnabled();
+        if (!isHmcIntegrationEnabled()) {
+            return ResponseEntity.notFound().build();
+        }
 
         List<ServiceLinkedCases> linkedCases = serviceHearingService.getServiceLinkedCases(
             Long.parseLong(requestDetails.getCaseId()));
@@ -88,9 +91,7 @@ public class ServiceHearingController {
         return new ResponseEntity<>(linkedCases, HttpStatus.OK);
     }
 
-    private void requireHmcIntegrationEnabled() {
-        if (!featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)) {
-            throw new FeatureNotEnabledException(FeatureFlag.HMC_INTEGRATION);
-        }
+    private boolean isHmcIntegrationEnabled() {
+        return featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION);
     }
 }

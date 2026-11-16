@@ -20,9 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import uk.gov.hmcts.reform.pcs.controllers.RestExceptionHandler.Error;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.FeatureNotEnabledException;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingRequest;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -100,16 +98,6 @@ class ServiceHearingExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isEqualTo(new Error(ServiceHearingExceptionHandler.CASE_NOT_FOUND));
         assertLoggedError("Not found for " + PATH + ": No case found with reference 1234567890123456");
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenFeatureDisabled() {
-        ResponseEntity<Error> response =
-            underTest.handleFeatureNotEnabled(new FeatureNotEnabledException(FeatureFlag.HMC_INTEGRATION), request);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isEqualTo(new Error(ServiceHearingExceptionHandler.HMC_INTEGRATION_DISABLED));
-        assertLoggedError("Not available for " + PATH + ": Feature flag hmc-integration-enabled is not enabled");
     }
 
     @Test

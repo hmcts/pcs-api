@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uk.gov.hmcts.reform.pcs.controllers.RestExceptionHandler.Error;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.FeatureNotEnabledException;
 
 import java.util.stream.Collectors;
 
@@ -34,7 +33,6 @@ public class ServiceHearingExceptionHandler {
     static final String REQUEST_BODY_INVALID = "Request body is missing or is not valid JSON";
     static final String CASE_NOT_FOUND = "Case not found";
     static final String UNEXPECTED_ERROR = "Unexpected error";
-    static final String HMC_INTEGRATION_DISABLED = "Hearings integration is not enabled";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Error> handleValidationFailure(MethodArgumentNotValidException ex,
@@ -66,12 +64,6 @@ public class ServiceHearingExceptionHandler {
     public ResponseEntity<Error> handleCaseNotFound(CaseNotFoundException ex, HttpServletRequest request) {
         log.error("Not found for {}: {}", request.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Error(CASE_NOT_FOUND));
-    }
-
-    @ExceptionHandler(FeatureNotEnabledException.class)
-    public ResponseEntity<Error> handleFeatureNotEnabled(FeatureNotEnabledException ex, HttpServletRequest request) {
-        log.error("Not available for {}: {}", request.getRequestURI(), ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Error(HMC_INTEGRATION_DISABLED));
     }
 
     @ExceptionHandler(Exception.class)
