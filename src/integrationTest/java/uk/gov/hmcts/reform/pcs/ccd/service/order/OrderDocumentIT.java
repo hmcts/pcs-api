@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.order;
 
+import com.github.kagkarlsson.scheduler.ScheduledExecution;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload.OrderParty;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
@@ -269,9 +272,19 @@ class OrderDocumentIT extends OrderEventIT {
 
     /** The document generation the issuing event left for the scheduler. */
     private OrderDocumentTaskData scheduledGeneration() {
-        byte[] data = schedulerClient.getScheduledExecutionsForTask(ORDER_DOCUMENT_TASK_DESCRIPTOR.getTaskName())
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(20))
+            .pollInterval(Duration.ofMillis(500))
+            .ignoreExceptions()
+            .until(() -> !getScheduledExecutionsForOrderDocumentTask().isEmpty());
+
+        byte[] data = getScheduledExecutionsForOrderDocumentTask()
             .getFirst().getRawData();
         return new JacksonSerializer().deserialize(OrderDocumentTaskData.class, data);
+    }
+
+    private List<ScheduledExecution<Object>> getScheduledExecutionsForOrderDocumentTask() {
+        return schedulerClient.getScheduledExecutionsForTask(ORDER_DOCUMENT_TASK_DESCRIPTOR.getTaskName());
     }
 
     /** The documents on the case, as the case file view lists them. */
