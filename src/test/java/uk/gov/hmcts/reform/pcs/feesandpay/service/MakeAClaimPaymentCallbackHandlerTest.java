@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -30,9 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -55,8 +52,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-import static uk.gov.hmcts.reform.pcs.system.SystemAction.CLAIM_ISSUED_PAYMENT;
 
 @ExtendWith(MockitoExtension.class)
 class MakeAClaimPaymentCallbackHandlerTest {
@@ -179,9 +174,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(CASE_REFERENCE))
             .thenReturn(List.of(defendantOne, defendantTwo));
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        SystemEventResult result = underTest.apply(buildPaymentStateTaskData());
+        SystemEventResult result = underTest.apply(CASE_REFERENCE, callback);
 
         // Then
         assertThat(result).isNotNull();
@@ -200,9 +196,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        SystemEventResult result = underTest.apply(buildPaymentStateTaskData());
+        SystemEventResult result = underTest.apply(CASE_REFERENCE, callback);
 
         // Then - the state transition is still returned, but there are no duplicate side effects
         assertThat(result).isNotNull();
@@ -221,9 +218,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(CASE_REFERENCE))
             .thenReturn(List.of());
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        underTest.apply(buildPaymentStateTaskData());
+        underTest.apply(CASE_REFERENCE, callback);
 
         // Then
         verify(pcsCaseService).setCaseIssuedDate(CASE_REFERENCE);
@@ -248,9 +246,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(CASE_REFERENCE))
             .thenReturn(List.of());
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        underTest.apply(buildPaymentStateTaskData());
+        underTest.apply(CASE_REFERENCE, callback);
 
         // Then
         ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
@@ -273,9 +272,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(CASE_REFERENCE))
             .thenReturn(List.of(defendantOne, defendantTwo));
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        underTest.apply(buildPaymentStateTaskData());
+        underTest.apply(CASE_REFERENCE, callback);
 
         // Then
         ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
@@ -284,46 +284,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
             .extracting(instance -> instance.getTaskInstance().getId())
             .containsExactlyInAnyOrder(CASE_REFERENCE + ":" + defendantOne,
                                        CASE_REFERENCE + ":" + defendantTwo);
-    }
-
-    @Test
-    void shouldBuildPaymentStateTaskData() {
-        // Given
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().payment(
-            Payment.builder().paymentReference("RC-1234-5678").build()).build();
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .claim(ClaimEntity.builder().id(UUID.randomUUID()).build()).build();
-
-        // When
-        PaymentStateTaskData result = underTest.createPaymentStateTaskData(feePaymentEntity, CASE_REFERENCE, callback);
-
-        // Then
-        assertThat(result.getCaseReference()).isEqualTo(CASE_REFERENCE);
-        assertThat(result.getEventId()).isEqualTo(resumePossessionClaim);
-        assertThat(result.getSystemAction()).isEqualTo(CLAIM_ISSUED_PAYMENT);
-        assertThat(result.getPaymentReference()).isEqualTo("RC-1234-5678");
-        assertThat(result.getIdempotencyKey()).isNotNull();
-    }
-
-    @Test
-    void shouldExecuteSystemEventForCaseReferenceInsideTransactionTemplate() {
-        // Given
-        SystemEventExecutionResult expectedResult = mock(SystemEventExecutionResult.class);
-        when(systemEventExecutor.execute(eq(CASE_REFERENCE), any(UUID.class), any()))
-            .thenReturn(expectedResult);
-
-        // When
-        underTest.executeEvent(buildPaymentStateTaskData());
-
-        // Then
-        verify(systemEventExecutor).execute(eq(CASE_REFERENCE), any(UUID.class), any());
-        verify(transactionManager).getTransaction(any(TransactionDefinition.class));
-    }
-
-    private PaymentStateTaskData buildPaymentStateTaskData() {
-        return PaymentStateTaskData.builder().caseReference(CASE_REFERENCE).eventId(resumePossessionClaim)
-            .systemAction(CLAIM_ISSUED_PAYMENT).paymentReference("RC-1234-5678").idempotencyKey(UUID.randomUUID())
-            .build();
     }
 
     private FeesAndPayTaskData buildTaskData() {
