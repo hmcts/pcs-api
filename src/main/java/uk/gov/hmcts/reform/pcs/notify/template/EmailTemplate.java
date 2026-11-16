@@ -26,6 +26,9 @@ public enum EmailTemplate {
     // Hearing Notice Email Template
     NOTICE_OF_HEARING("notice-of-hearing"),
 
+    // Enforcement Email Templates
+    WRIT_OF_POSSESSION("writ-of-possession"),
+
     // Notice of Change Email Templates
     NOTICE_OF_CHANGE_COMPLETED("notice-of-change-completed"),
     NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP("notice-of-change-complete-legal-rep"),

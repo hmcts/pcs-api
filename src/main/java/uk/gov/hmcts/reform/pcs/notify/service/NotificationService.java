@@ -243,6 +243,10 @@ public class NotificationService {
         );
     }
 
+    public void sendWritOfPossessionEmail(PartyEntity claimant) {
+        sendEmail(partyRecipient(claimant), EmailTemplate.WRIT_OF_POSSESSION, NotificationClaimType.ENFORCEMENT);
+    }
+
     public void sendNoticeOfChangeCompletedEmailNotification(PartyEntity defendant) {
         sendEmail(
             partyRecipient(defendant),
@@ -606,6 +610,17 @@ public class NotificationService {
             recipient.claim(),
             recipient.party()
         );
+    }
+
+    /**
+     * Sends an email whose template has no personalisation fields.
+     */
+    public EmailNotificationResponse sendEmail(
+        NotificationRecipient recipient,
+        EmailTemplate template,
+        NotificationClaimType claimType
+    ) {
+        return sendEmail(recipient, template, claimType, Map::of);
     }
 
     public EmailNotificationResponse sendEmail(

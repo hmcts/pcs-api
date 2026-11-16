@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.enforcement.EnforcementDefendant;
 import uk.gov.hmcts.reform.pcs.document.model.writofpossession.WritOfPossessionPayload;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -55,6 +56,7 @@ public class WritOfPossessionPersistenceService {
     private final AddressFormatter addressFormatter;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final RecipientAddressResolver recipientAddressResolver;
+    private final NotificationService notificationService;
     private final Clock ukClock;
 
     public WritOfPossessionPersistenceService(EnforcementOrderRepository enforcementOrderRepository,
@@ -67,6 +69,7 @@ public class WritOfPossessionPersistenceService {
                                               AddressFormatter addressFormatter,
                                               DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                               RecipientAddressResolver recipientAddressResolver,
+                                              NotificationService notificationService,
                                               @Qualifier("ukClock") Clock ukClock) {
         this.enforcementOrderRepository = enforcementOrderRepository;
         this.documentImportService = documentImportService;
@@ -78,6 +81,7 @@ public class WritOfPossessionPersistenceService {
         this.addressFormatter = addressFormatter;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.recipientAddressResolver = recipientAddressResolver;
+        this.notificationService = notificationService;
         this.ukClock = ukClock;
     }
 
@@ -95,16 +99,18 @@ public class WritOfPossessionPersistenceService {
     }
 
     @Transactional
-    public void attachDocument(UUID enforcementOrderId, String documentUrl) {
+    public void attachDocumentAndQueueEmail(UUID enforcementOrderId, String documentUrl) {
         EnforcementOrderEntity enforcementOrder = loadEnforcementOrder(enforcementOrderId);
         PcsCaseEntity pcsCase = enforcementOrder.getPcsCase();
+        PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(pcsCase);
 
         DocumentEntity document = documentImportService.addDocumentToCase(
             pcsCase, documentUrl, CaseFileCategory.ENFORCEMENT);
         document.setType(DocumentType.WRIT_OF_POSSESSION);
         enforcementOrder.addDocuments(List.of(document));
 
-        claimActivityLogService.logGenerationSuccess(pcsCase, partyService.getPrimaryClaimantPartyEntity(pcsCase));
+        claimActivityLogService.logGenerationSuccess(pcsCase, claimant);
+        notificationService.sendWritOfPossessionEmail(claimant);
     }
 
     private WritOfPossessionPayload toPayload(EnforcementOrderEntity enforcementOrder) {
