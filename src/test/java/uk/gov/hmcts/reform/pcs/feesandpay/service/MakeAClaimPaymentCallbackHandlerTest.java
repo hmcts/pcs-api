@@ -94,16 +94,14 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-
         PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(RESPONSIBLE_PARTY).build();
         when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-
         ClaimEntity claimEntity = new ClaimEntity();
         claimEntity.setId(UUID.randomUUID());
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
         claimEntity.setPcsCase(pcsCase);
-        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity)
+            .taskData(new ObjectMapper().writeValueAsString(taskData))
             .paymentStatus(paymentStatus).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
@@ -233,6 +231,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void shouldScheduleNotificationForLatestClaimFeePaymentOnly() {
         // Given
         FeePaymentEntity olderClaimPayment = FeePaymentEntity.builder()
@@ -262,6 +261,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void shouldScheduleOneAccessCodeTaskPerDefendantWithDeterministicInstanceId() {
         // Given
         UUID defendantOne = UUID.randomUUID();
@@ -286,15 +286,13 @@ class MakeAClaimPaymentCallbackHandlerTest {
                                        CASE_REFERENCE + ":" + defendantTwo);
     }
 
-    private FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-        .claim(ClaimEntity.builder().id(UUID.randomUUID()).build())
-        .build();
-
     @Test
     void shouldBuildPaymentStateTaskData() {
         // Given
         PaymentStatusCallback callback = PaymentStatusCallback.builder().payment(
             Payment.builder().paymentReference("RC-1234-5678").build()).build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .claim(ClaimEntity.builder().id(UUID.randomUUID()).build()).build();
 
         // When
         PaymentStateTaskData result = underTest.createPaymentStateTaskData(feePaymentEntity,
