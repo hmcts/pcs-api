@@ -20,20 +20,23 @@ import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-
 
 test.use({ storageState: undefined })
 
+let submitPayload: Record<string, any>;
+
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
   allPartyDetails.length = 0;
+  submitPayload = submitCaseApiData.submitCasePayloadCaseFileView();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
+  await performAction('submitCaseAPI', { data: submitPayload });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
+    defendant1NameKnown: submitPayload.defendant1.nameKnown,
+    additionalDefendants: submitPayload.addAnotherDefendant,
+    payLoad: submitPayload
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
@@ -65,12 +68,14 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenappApplication.whatDateAppReceivedQuestion,
       date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppHearingDate.mainHeader
     })
     await performAction('errorValidationHearingDatePage', enterGenAppHearingDate.errorValidation);
     await performAction('confirmIfCourtHearingInNext14Days', {
       question: enterGenAppHearingDate.hearingInNext14DaysQuestion,
       option: enterGenAppHearingDate.yesRadioOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppapplicationFee.mainHeader
     });
     await performAction('errorValidationApplicationFeePage', enterGenappApplication.errorValidation);
@@ -80,26 +85,31 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppConsentAndNotice.mainHeader
     });
     await performAction('errorValidationApplicationConsentAndNotice', enterGenAppConsentAndNotice.errorValidation);
     await performAction('enterApplicationConsentAndNotice', {
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
     });
     await performAction('errorValidationUploadGenAppsFile', enterGenAppUploadGeneralApplication.errorValidation);
     await performAction('uploadADocument', {
       label: enterGenAppUploadGeneralApplication.uploadADocumentParagraph,
-      file: fileName
+      file: fileName,
+      submitPayload: submitPayload,
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
     await performAction('uploadRelativeEvidence', {
       label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
       files: enterGenAppUploadRelatedEvidence.uploadDocHiddenOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge', {
+      submitPayload: submitPayload,
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);

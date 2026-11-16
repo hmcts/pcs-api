@@ -81,6 +81,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       option: manageParty.addPartyRadioOption,
       whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
       option1: manageParty.defendantHiddenRadioOption,
+      submitPayload: submitPayload,
       nextPage: partyDetails.mainHeader,
     });
     await performAction('addNewParty', {
@@ -89,6 +90,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       label2: partyDetails.lastNameTextLabel,
       input2: lastName,
       dateLabel: partyDetails.addDOBHiddenTextLabel,
+      submitPayload: submitPayload,
       date: date,
     });
     await performAction('addNewPartyAddress', {
@@ -112,6 +114,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       mainTable: 'Additional defendant 3',
       subTable: 'Service address',
       defAddress: getDefendantAddress(submitPayload, createPayload, `${firstName} ${lastName}`),
+      submitPayload: submitPayload
     });
   });
 
@@ -127,6 +130,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       option: manageParty.addPartyRadioOption,
       whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
       option1: manageParty.claimantHiddenRadioOption,
+      submitPayload: submitPayload,
       nextPage: partyDetails.mainHeader,
     });
     await performAction('addNewParty', {
@@ -138,6 +142,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       input2: lastName,
       dateLabel: partyDetails.addDOBHiddenTextLabel,
       date: date,
+      submitPayload: submitPayload,
     });
     await performAction('addNewPartyAddress', {
       enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
@@ -158,7 +163,8 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       orgName: orgName,
       email: partyDetails.emailHiddenTextInput,
       phone: partyDetails.phoneHiddenTextInput,
-      table: 'Additional claimant 1'
+      table: 'Additional claimant 1',
+      submitPayload: submitPayload,
     });
   });
 
@@ -175,6 +181,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       option: manageParty.addPartyRadioOption,
       whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
       option1: manageParty.litigationFriendHiddenRadioOption,
+      submitPayload: submitPayload,
       nextPage: addParty.mainHeader,
     });
     await performAction('clickRadioButton', { question: addParty.litigationFriendQuestion, option: party });
@@ -188,6 +195,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       input2: lastName,
       dateLabel: partyDetails.addDOBHiddenTextLabel,
       date: date,
+      submitPayload: submitPayload,
     });
     await performAction('addNewPartyAddress', {
       enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
@@ -211,6 +219,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       mainTable: 'Litigation friend',
       subTable: 'Service address',
       defAddress: getDefendantAddress(submitPayload, createPayload, `${firstName} ${lastName}`),
+      submitPayload: submitPayload,
     });
   });
 
@@ -230,6 +239,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         option1: manageParty.updatePartyRadioOption,
         question2: manageParty.whichPartyContactInformationHiddenQuestion,
         option2: party,
+        submitPayload: submitPayload,
         nextPage: updatePartyDetails.mainHeader
       });
     });
@@ -242,6 +252,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         button: updatePartyDetails.findAddressButton,
         addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
         addressIndex: updatePartyDetails.defendantAddressIndex,
+        submitPayload: submitPayload,
         nextPage: checkYourAnswersManageParties.mainHeader
       });
     });
@@ -263,6 +274,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         option1: manageParty.removePartyRadioOption,
         question2: manageParty.whichPartyYouRemovingHiddenQuestion,
         option2: party,
+        submitPayload: submitPayload,
         nextPage: checkFullPartyDetails.mainHeader
       });
     });
@@ -288,6 +300,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       option1: manageParty.updatePartyRadioOption,
       question2: manageParty.whichPartyContactInformationHiddenQuestion,
       option2: party,
+      submitPayload: submitPayload,
       nextPage: updatePartyDetails.mainHeader
     });
     await performAction('updatePartyDetails', {
@@ -296,6 +309,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       button: updatePartyDetails.findAddressButton,
       addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
       addressIndex: updatePartyDetails.claimantAddressIndex,
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersManageParties.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
@@ -331,6 +345,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
           option1: manageParty.removePartyRadioOption,
           question2: manageParty.whichPartyYouRemovingHiddenQuestion,
           option2: party1,
+          submitPayload: submitPayload,
           nextPage: checkFullPartyDetails.mainHeader
         });
       });
@@ -342,6 +357,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
           defAddress: partyAddress,
           question: removeParty,
           option: checkFullPartyDetails.yesRadioOption,
+          submitPayload: submitPayload,
           nextPage: checkYourAnswersManageParties.mainHeader
         });
       });
@@ -400,6 +416,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         option1: manageParty.removePartyRadioOption,
         question2: manageParty.whichPartyYouRemovingHiddenQuestion,
         option2: party,
+        submitPayload: submitPayload,
         nextPage: checkFullPartyDetails.mainHeader
       });
     });
@@ -440,6 +457,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
         question2: manageParty.whichPartyYouRemovingHiddenQuestion,
         option2: party,
         activeApp: true,
+        submitPayload: submitPayload,
         errorHeader: manageParty.errorMessageHiddenHeader,
         errorMessage: manageParty.errorAppHiddenMessage,
       });
@@ -463,6 +481,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       await performAction('selectParty', {
         question1: manageParty.whatChangeQuestion,
         option1: manageParty.removePartyRadioOption,
+        submitPayload: submitPayload,
         singleDefendant: true,
         errorHeader: manageParty.errorMessageHiddenHeader,
         errorMessage: manageParty.errorHiddenMessage,
