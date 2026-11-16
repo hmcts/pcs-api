@@ -375,6 +375,21 @@ hearing-notice:
     max-retries: ${HEARING_NOTICE_MAX_RETRIES:5}
     backoff-delay-seconds: ${HEARING_NOTICE_BACKOFF_DELAY_SECONDS:3600s}
 
+writ-of-possession:
+  request:
+    max-retries: ${WRIT_OF_POSSESSION_MAX_RETRIES:5}
+    backoff-delay-seconds: ${WRIT_OF_POSSESSION_BACKOFF_DELAY_SECONDS:3600s}
+
+warrant-of-possession:
+  request:
+    max-retries: ${WARRANT_OF_POSSESSION_MAX_RETRIES:5}
+    backoff-delay-seconds: ${WARRANT_OF_POSSESSION_BACKOFF_DELAY_SECONDS:3600s}
+
+risk-assessment:
+  request:
+    max-retries: ${RISK_ASSESSMENT_MAX_RETRIES:5}
+    backoff-delay-seconds: ${RISK_ASSESSMENT_BACKOFF_DELAY_SECONDS:3600s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}

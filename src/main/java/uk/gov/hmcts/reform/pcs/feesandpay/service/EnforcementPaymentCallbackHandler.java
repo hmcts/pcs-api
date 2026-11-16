@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementStateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.writofpossession.WritOfPossessionScheduler;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -25,6 +26,7 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
 
     private final EnforcementStateService enforcementStateService;
     private final EnforcementOrderRepository enforcementOrderRepository;
+    private final WritOfPossessionScheduler writOfPossessionScheduler;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -41,6 +43,7 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
                 enforcementStateService.mapToEntity(enforcementOrderEntity.getPcsCase(), CASE_PROGRESSION);
                 enforcementOrderRepository.save(enforcementOrderEntity);
                 log.info("Enforcement app {} state updated to CASE_PROGRESSION", enfApplicationId);
+                scheduleEnforcementDocuments(enforcementOrderEntity);
             } else {
                 log.warn("Enforcement app {} state {} not valid for this callback", enfApplicationId,
                         enforcementState);
@@ -48,6 +51,17 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
         } else {
             log.warn("The payment was not successful [{}] for enforcement app {} on case {}",
                      feePaymentEntity.getPaymentStatus(), enfApplicationId, paymentStatusCallback.getCcdCaseNumber());
+        }
+    }
+
+    private void scheduleEnforcementDocuments(EnforcementOrderEntity enforcementOrderEntity) {
+        long caseReference = enforcementOrderEntity.getPcsCase().getCaseReference();
+
+        if (enforcementOrderEntity.getWritDetails() != null) {
+            writOfPossessionScheduler.scheduleWritOfPossessionGeneration(caseReference,
+                                                                         enforcementOrderEntity.getId());
+        } else if (enforcementOrderEntity.getWarrantDetails() != null) {
+            // Warrant of possession and risk assessment documents to follow
         }
     }
 

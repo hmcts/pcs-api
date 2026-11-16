@@ -447,6 +447,10 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
             case GENERAL_APPLICATION ->
                 Optional.of(CaseFileCategory.APPLICATIONS);
+            case WRIT_OF_POSSESSION,
+                 WARRANT_OF_POSSESSION,
+                 RISK_ASSESSMENT ->
+                Optional.of(CaseFileCategory.ENFORCEMENT);
             case NOTICE_SERVED,
                  POLICE_REPORT,
                  // Defendant access-code letters aren't shown on the case file

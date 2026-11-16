@@ -99,6 +99,10 @@ public class DocumentAmendDetails implements DocumentSelectionDetails {
     private YesOrNo correspondenceEmpty;
 
     @CCD(searchable = false)
+    @JsonProperty(PREFIX + "_EnforcementEmpty")
+    private YesOrNo enforcementEmpty;
+
+    @CCD(searchable = false)
     @JsonProperty(PREFIX + "_UncategorisedDocumentsEmpty")
     private YesOrNo uncategorisedDocumentsEmpty;
 
@@ -194,6 +198,7 @@ public class DocumentAmendDetails implements DocumentSelectionDetails {
             case APPLICATIONS -> applicationsEmpty = empty;
             case APPEALS -> appealsEmpty = empty;
             case CORRESPONDENCE -> correspondenceEmpty = empty;
+            case ENFORCEMENT -> enforcementEmpty = empty;
             case UNCATEGORISED_DOCUMENTS -> uncategorisedDocumentsEmpty = empty;
         }
     }

@@ -26,6 +26,7 @@ import org.hibernate.annotations.SoftDelete;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -34,8 +35,8 @@ import uk.gov.hmcts.reform.pcs.ccd.listener.DocumentEntityListener;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleChangeListener;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -122,6 +123,10 @@ public class DocumentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "hearing_id")
     private HearingEntity hearing;
+
+    @ManyToOne
+    @JoinColumn(name = "enf_writ_id")
+    private WritEntity writOfPossession;
 
     private String removalReason;
 
