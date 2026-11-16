@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
-import java.util.Arrays;
-
 @AllArgsConstructor
 @Getter
 public enum SelectEnforcementType implements HasLabel {

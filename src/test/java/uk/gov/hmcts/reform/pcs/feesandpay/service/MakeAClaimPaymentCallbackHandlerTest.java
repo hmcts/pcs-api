@@ -127,7 +127,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Given
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class)))
             .thenThrow(new JsonProcessingException("Invalid JSON") {});
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(new ClaimEntity()).taskData("aasdfsdf{{")
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(new ClaimEntity()).taskData("test{{")
             .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
 
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
@@ -295,8 +295,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
             .claim(ClaimEntity.builder().id(UUID.randomUUID()).build()).build();
 
         // When
-        PaymentStateTaskData result = underTest.createPaymentStateTaskData(feePaymentEntity,
-            CASE_REFERENCE, resumePossessionClaim, callback, CLAIM_ISSUED_PAYMENT);
+        PaymentStateTaskData result = underTest.createPaymentStateTaskData(feePaymentEntity, CASE_REFERENCE, callback);
 
         // Then
         assertThat(result.getCaseReference()).isEqualTo(CASE_REFERENCE);

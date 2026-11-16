@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.claim.ClaimWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
@@ -29,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.system.SystemAction;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -63,7 +61,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         feePaymentEntity.setParty(getResponsibleParty(taskData));
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             PaymentStateTaskData paymentStateTaskData = createPaymentStateTaskData(feePaymentEntity,
-                taskData.getCaseReference(), resumePossessionClaim, paymentStatusCallback, CLAIM_ISSUED_PAYMENT);
+                taskData.getCaseReference(), paymentStatusCallback);
             executeEvent(paymentStateTaskData);
         } else {
             log.warn("The payment was not successful: [{}] for case: {}",
@@ -72,12 +70,11 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     }
 
     PaymentStateTaskData createPaymentStateTaskData(FeePaymentEntity feePaymentEntity, long caseId,
-                                                           EventId eventId, PaymentStatusCallback paymentStatusCallback,
-                                                           SystemAction systemAction) {
+                                                       PaymentStatusCallback paymentStatusCallback) {
         return PaymentStateTaskData.builder()
             .caseReference(caseId)
-            .eventId(eventId)
-            .systemAction(systemAction)
+            .eventId(resumePossessionClaim)
+            .systemAction(CLAIM_ISSUED_PAYMENT)
             .paymentReference(paymentStatusCallback.getPaymentReference())
             .idempotencyKey(feePaymentEntity.getClaim().getId()).build();
     }
