@@ -45,6 +45,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SOMETHING_ELSE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SUSPEND;
@@ -289,6 +290,42 @@ class DecideApplicationIT extends OrderEventIT {
                 WORDING, decided("grant")), "decide-task", new HearingChange(hearing, null, null, null)));
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
         assertThat(asJudgeDeciding(genAppId).start().order()).isEqualTo(Order.NONE);
+    }
+
+    @Test
+    @DisplayName("reopens the judge's order from its link after the application it names has closed, and starts no "
+        + "new order on the closed application")
+    void reopensAnOrderAfterItsApplicationCloses() {
+        var asJudge = asJudgeDeciding(genAppId);
+        UUID draftId = asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), "grant", null))
+            .changed("orders", OrderRow.class).id();
+        cases.update(caseReference, pcsCase ->
+            pcsCase.findGenApp(genAppId).orElseThrow().setState(PENDING_GEN_APP_ISSUED));
+
+        OrderStart reopened = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
+            Map.of("orderId", draftId.toString(), "genAppId", genAppId.toString())).start();
+        assertThat(reopened.order().id()).isEqualTo(draftId);
+        assertThat(reopened.taskGenAppId()).isNull();
+
+        Actor otherJudge = events.registerActor("Other", "Judge", "caseworker-pcs");
+        assertThat(events.external(caseReference, MAKE_ORDER).as(otherJudge)
+            .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
+            .containsExactly(MakeOrder.NOT_OPEN);
+    }
+
+    @Test
+    @DisplayName("completes every task the judge worked on their one draft from when they send it")
+    void completesEveryTaskTheDraftWasWorkedOnFrom() {
+        var asJudge = asJudgeDeciding(genAppId);
+        asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), "grant", "decide-task"));
+        verifyNoInteractions(taskManagementApi);
+
+        var fromHearing = events.external(caseReference, MAKE_ORDER).as(judge);
+        fromHearing.submitExpectingSuccess(
+            decision(SUBMIT_FOR_REVIEW, fromHearing.start().order(), "grant", "hearing-task"));
+
+        verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
+        verify(taskManagementApi).completeTask(any(), any(), eq("hearing-task"), any());
     }
 
     private void issue(Order order) {

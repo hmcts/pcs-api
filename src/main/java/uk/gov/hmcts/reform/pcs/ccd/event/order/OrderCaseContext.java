@@ -60,7 +60,7 @@ class OrderCaseContext {
                 .toList(),
             caseBundle(pcsCase),
             pcsCase.getHearings().stream()
-                .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()) && hearing.getHearingDate() != null)
+                .filter(HearingRecords::canHaveOrder)
                 .sorted(Comparator.comparing(HearingEntity::getHearingDate))
                 .map(hearing -> new OrderStart.HearingOption(hearing.getId(), hearing.getHearingDate()))
                 .toList()

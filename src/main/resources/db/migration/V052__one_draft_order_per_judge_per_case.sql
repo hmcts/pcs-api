@@ -15,10 +15,10 @@ DROP INDEX orders_one_draft_per_author_idx;
 CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id)
     WHERE state = 'DRAFT';
 
--- A judge can discard their draft. It is kept, with every step it had, and is no longer their draft on the case.
-ALTER TABLE orders DROP CONSTRAINT orders_state_check,
-    ADD CONSTRAINT orders_state_check
-        CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE', 'ISSUED', 'DISCARDED'));
-ALTER TABLE order_steps DROP CONSTRAINT order_steps_state_check,
-    ADD CONSTRAINT order_steps_state_check
-        CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE', 'ISSUED', 'DISCARDED'));
+-- The tasks a judge has worked on an order from, which sending it for review completes: the one draft can be opened
+-- from several.
+CREATE TABLE order_task (
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    task_id  TEXT NOT NULL,
+    PRIMARY KEY (order_id, task_id)
+);

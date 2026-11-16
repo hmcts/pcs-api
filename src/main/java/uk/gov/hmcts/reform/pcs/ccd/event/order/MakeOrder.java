@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -54,8 +55,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_
  * starts and every task or link opens, until they send it for review. The judge chooses which of the
  * case's hearings the order is made at, or none, and can change it until they send it; a link's hearing is only where
  * a new order starts. An order a caseworker returned is the judge's to change and resubmit beside their draft,
- * opened from the task its return gave them. An order
- * made for a hearing records the case's facts and the judge's note for that hearing whenever the judge saves it.
+ * opened from the task its return gave them. Sending an order completes every task the judge worked on it from.
+ * An order made for a hearing records the case's facts and the judge's note for that hearing whenever the judge saves
+ * it.
  * The task that asks a judge to decide an application names it, for the page to put first and require.
  */
 @Component
@@ -68,6 +70,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     static final String NOT_AVAILABLE = "Making orders is not available";
     static final String ALREADY_DECIDED =
         "Another order has decided this application";
+    static final String NOT_OPEN = "The application is not open";
 
     /** The states that leave an order its author's to change. */
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
@@ -122,11 +125,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         Optional<OrderEntity> order = link.orderId() != null
             ? Optional.of(chosenOrder(link.orderId(), caseReference, judge))
             : draft(caseReference, judge);
-        GenAppEntity task = link.genAppId() == null ? null : openGenApp(pcsCase, link.genAppId());
-        // A judge reopens their draft whatever another order has done since, which refuses it when it is issued.
+        GenAppEntity task = link.genAppId() == null ? null : genApp(pcsCase, link.genAppId());
+        // A judge reopens their order whatever has become of the application since; issuing the order refuses it.
         if (task != null && !orderTasks.canDecide(task)) {
             if (order.isEmpty()) {
-                throw ExternalRejection.because(ALREADY_DECIDED);
+                throw ExternalRejection.because(task.isOpen() ? ALREADY_DECIDED : NOT_OPEN);
             }
             task = null;
         }
@@ -198,6 +201,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         HearingEntity chosen = Objects.equals(hearingId, chosenHearingId) ? order.getHearing()
             : madeAt(order.getPcsCase(), chosenHearingId);
         order.setHearing(chosen);
+        if (request.taskId() != null) {
+            order.getTaskIds().add(request.taskId());
+        }
         // The order holds no copy of the hearing's facts and note, which are recorded only when the judge changed
         // them, so another judge's are not refused or overwritten by a save that left them alone.
         if (request.hearing() != null && request.hearing().caseFacts() != null) {
@@ -205,15 +211,23 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         }
         final boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
         OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
-        final OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
-            .orderType(change.orderType())
-            .formData(change.formData())
-            .docweaveSnapshot(change.docweaveSnapshot()));
+        final OrderStepEntity step;
+        try {
+            step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
+                .orderType(change.orderType())
+                .formData(change.formData())
+                .docweaveSnapshot(change.docweaveSnapshot()));
+        } catch (DataIntegrityViolationException e) {
+            // Two pages saving the judge's first draft at the same moment both pass the check above.
+            throw change.id() == null ? ExternalRejection.because(ALREADY_DRAFTING) : e;
+        }
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
-        // The task the judge opened the order from: its return, a hearing's, or the application it decides.
-        submit.afterCommit(taskCompletionService.complete(request.taskId()));
+        // Every task the judge worked on the order from: its return, a hearing's, or an application it decides.
+        List<Runnable> completions = order.getTaskIds().stream().map(taskCompletionService::complete).toList();
+        order.getTaskIds().clear();
+        submit.afterCommit(() -> completions.forEach(Runnable::run));
         messageService.closeAnsweredByOrder(order, decided, judge, orderTasks.currentUserName("Judge"));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
@@ -248,14 +262,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         return draft;
     }
 
-    /** The case's application, which an order can only be made on while it is open. */
-    private static GenAppEntity openGenApp(PcsCaseEntity pcsCase, UUID genAppId) {
-        GenAppEntity genApp = pcsCase.findGenApp(genAppId)
+    private static GenAppEntity genApp(PcsCaseEntity pcsCase, UUID genAppId) {
+        return pcsCase.findGenApp(genAppId)
             .orElseThrow(() -> ExternalRejection.because("The application is not on this case"));
-        if (!genApp.isOpen()) {
-            throw ExternalRejection.because("The application is not open");
-        }
-        return genApp;
     }
 
     private PcsCaseEntity findCase(long caseReference) {
