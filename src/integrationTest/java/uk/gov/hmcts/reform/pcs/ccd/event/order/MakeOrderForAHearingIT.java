@@ -325,6 +325,33 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("keeps a saved draft usable after its hearing is cancelled, and lets the judge move it to boxwork")
+    void keepsADraftUsableAfterItsHearingIsCancelled() {
+        forHearing(firstJudge, firstHearing).submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
+            new OrderChange(null, 0, OrderType.ADJOURNMENT, Map.of("notes", "kept"), WORDING), null,
+            new HearingChange(firstHearing, null, null, null)));
+        jdbcTemplate.update("UPDATE hearing SET cancelled = true WHERE id = ?", firstHearing);
+
+        var atCancelledHearing = madeAt(firstJudge, firstHearing, firstHearing);
+        OrderStart reopened = atCancelledHearing.start();
+        assertThat(reopened.hearing().id()).isEqualTo(firstHearing);
+        assertThat(reopened.order().formData()).containsEntry("notes", "kept");
+        atCancelledHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
+            new OrderChange(reopened.order().id(), reopened.order().version(), OrderType.ADJOURNMENT,
+                reopened.order().formData(), WORDING), null, new HearingChange(firstHearing, null, null, null)));
+
+        var boxwork = events.external(caseReference, MAKE_ORDER).as(firstJudge)
+            .withClientContext(Map.of("madeAt", Map.of()));
+        OrderStart moved = boxwork.start();
+        assertThat(moved.hearing()).isNull();
+        boxwork.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
+            new OrderChange(moved.order().id(), moved.order().version(), OrderType.ADJOURNMENT,
+                moved.order().formData(), WORDING), null));
+        assertThat(orders(firstJudge))
+            .containsExactly(tuple(reopened.order().id(), "SUBMITTED_FOR_REVIEW", null));
+    }
+
+    @Test
     @DisplayName("only lets the judge choose one of the case's own hearings that has not been cancelled")
     void onlyChoosesTheCasesOwnHearings() {
         int otherCasesHearing = cases.hearing(cases.issue(), FIRST_HEARING, false);

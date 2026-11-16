@@ -133,7 +133,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         // The judge's own choice of hearing, or of none, wins over the order's, and a link's is only a new order's.
         HearingEntity hearing;
         if (link.madeAt() != null) {
-            hearing = madeAt(pcsCase, link.madeAt().hearingId());
+            HearingEntity savedHearing = order.map(OrderEntity::getHearing).orElse(null);
+            Integer savedHearingId = savedHearing == null ? null : savedHearing.getId();
+            // Keep the order usable if its hearing was cancelled after the draft was saved.
+            hearing = Objects.equals(savedHearingId, link.madeAt().hearingId()) ? savedHearing
+                : madeAt(pcsCase, link.madeAt().hearingId());
         } else {
             // A saved order made without a hearing stays so, whichever hearing the link names.
             hearing = order.isPresent() ? order.get().getHearing() : madeAt(pcsCase, link.hearingId());

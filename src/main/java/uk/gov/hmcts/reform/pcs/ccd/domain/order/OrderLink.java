@@ -11,10 +11,6 @@ public record OrderLink(UUID orderId, UUID genAppId, Integer hearingId, MadeAt m
 
     public static final OrderLink NONE = new OrderLink(null, null, null, null);
 
-    public OrderLink(UUID orderId, UUID genAppId, Integer hearingId) {
-        this(orderId, genAppId, hearingId, null);
-    }
-
     /** The judge's choice: at one of the case's hearings, or with no hearing id, without a hearing. */
     public record MadeAt(Integer hearingId) {
     }
