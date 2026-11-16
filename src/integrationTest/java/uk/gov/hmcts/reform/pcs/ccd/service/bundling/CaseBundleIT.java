@@ -1,10 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import com.launchdarkly.sdk.server.LDClient;
+import com.launchdarkly.sdk.server.LDConfig;
+import com.launchdarkly.sdk.server.integrations.TestData;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -45,10 +51,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.doReturn;
 
 /** Real PCS persistence and projection, real SDK rendering, and the SDK's existing CDAM fixture. */
 @PcsCcdEventTest
+@Import(CaseBundleIT.Flags.class)
 @TestPropertySource(properties = {
     "ccd.bundling.enabled=true", "ccd.bundling.managed.enabled=true", "ccd.bundling.job.enabled=true",
     "ccd.bundling.job.worker.enabled=true", "ccd.bundling.job.worker.poll-delay=1h"
@@ -70,8 +76,29 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     private BundleJobWorker worker;
     @Autowired
     private TransactionTemplate transaction;
-    @MockitoSpyBean
-    private FeatureToggleService featureToggleService;
+    @Autowired
+    private TestData flags;
+
+    @TestConfiguration
+    static class Flags {
+        @Bean
+        TestData bundleFlags() {
+            return TestData.dataSource();
+        }
+
+        @Bean(destroyMethod = "close")
+        @Primary
+        LDClient bundleFlagClient(TestData data) {
+            return new LDClient("test", new LDConfig.Builder().dataSource(data).events(
+                com.launchdarkly.sdk.server.Components.noEvents()).build());
+        }
+    }
+
+    @BeforeEach
+    void hideBundles() {
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
+        flags.update(flags.flag(FeatureFlag.MAKE_ORDER.key()).variationForAll(true));
+    }
 
     @Test
     void documentHookQueuesOnlyCommittedCascadedWrites() throws Exception {
@@ -100,6 +127,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
         run(key);
         var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         PCSCase judge = view(reference, "judge");
         assertThat(judge.getBundleTab().getPages()).isEqualTo(first.pageCount());
         assertThat(judge.getBundleTab().getBundle().getUrl()).isEqualTo(first.stored().orElseThrow().url());
@@ -107,7 +135,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             .doesNotContain(first.stored().orElseThrow().url());
         assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
         // The judge making an order links it; nobody else is given it.
-        doReturn(true).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
         assertThat(orderBundle(reference, "judge")).isEqualTo(new OrderStart.CaseBundle(
             first.stored().orElseThrow().id(), first.fileName(), first.recordedAt()));
         assertThat(orderBundle(reference, "hearing-centre-admin")).isNull();
@@ -172,12 +199,38 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         events.documents().delete(stored);
         transaction.executeWithoutResult(status -> add(reference, missing));
         run(key);
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         var missingDetails = view(reference, "judge").getBundleTab().getMissingDocuments();
         assertThat(missingDetails).singleElement().satisfies(missingDocument -> {
             assertThat(missingDocument.getValue().getDocumentName()).isEqualTo("Deleted.pdf");
             assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
             assertThat(missingDocument.getValue().getPage()).isPositive();
         });
+    }
+
+    @Test
+    void rendersInBackgroundButOnlyTargetedJudgesReceiveBundleFields() throws Exception {
+        long reference = cases.issue();
+        UUID key = caseKey(reference);
+        transaction.executeWithoutResult(status -> add(reference,
+            document("Background.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1))));
+        run(key);
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current()).isPresent();
+
+        var allowed = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
+        final var other = events.registerActor("Other", "Judge", "caseworker-pcs", "judge");
+        var admin = events.registerActor("Selected", "Admin", "caseworker-pcs", "hearing-centre-admin");
+        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false)
+            .variationForUser(allowed.uid(), true).variationForUser(admin.uid(), true));
+        assertThat(events.view(reference, allowed).getBundleTab().getBundle()).isNotNull();
+        assertThat(events.view(reference, other).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, admin).getBundleTab()).isIn(null, new BundleTab());
+
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
+        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current()).isPresent();
     }
 
     private OrderStart.CaseBundle orderBundle(long reference, String role) {
