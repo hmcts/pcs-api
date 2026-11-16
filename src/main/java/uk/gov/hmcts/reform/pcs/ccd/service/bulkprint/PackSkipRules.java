@@ -35,9 +35,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 /**
  * Selector-time skip rules for bulk-print packs. When {@link FeatureFlag#RELEASE_1_DOT_3} is on, the claim pack is
  * held back silently when it needs translation or has a follow-on gen app (until its hold period after claim issue
- * ends), and the defence pack is held back only when it needs translation (HDPI-9007: for RTAC Pro an HWF reference
- * does not hold the defence pack) — no {@code PACK_SENT} or {@code PACK_FAILED} row is written. Flag off keeps current
- * send behaviour. When {@link FeatureFlag#RELEASE_1_DOT_4} is on, claimants are excluded from every pack type.
+ * ends), and the defence pack is held back only when it needs translation — no {@code PACK_SENT} or
+ * {@code PACK_FAILED} row is written. Flag off keeps current send behaviour.
+ * When {@link FeatureFlag#RELEASE_1_DOT_4} is on, claimants are excluded from every pack type.
  */
 @Service
 @Slf4j
@@ -166,10 +166,7 @@ public class PackSkipRules {
             .anyMatch(counterClaim -> requiresTranslation(counterClaim.getLanguageUsed()));
     }
 
-    // A counterclaim is "included" once it exists on the case, in any state. A counterclaim awaiting its
-    // help-with-fees decision stays PENDING_COUNTER_CLAIM_ISSUED (it is only ISSUED after the fee is paid),
-    // so a counterclaim needing translation holds the defence pack from that state too - not only once
-    // COUNTER_CLAIM_ISSUED.
+    // Counterclaims in any state hold the defence pack if they need translation.
     private Stream<CounterClaimEntity> includedCounterClaims(PcsCaseEntity pcsCase) {
         return streamOf(pcsCase.getCounterClaims());
     }
