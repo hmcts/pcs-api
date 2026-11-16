@@ -119,7 +119,7 @@ public class ServiceHearingService {
             .map(ServiceHearingService::formatFlag)
             .toList();
 
-         if (flags.isEmpty()) {
+        if (flags.isEmpty()) {
             return null;
         }
 
