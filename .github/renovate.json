@@ -4,19 +4,6 @@
     "local>hmcts/.github:renovate-config",
     "local>hmcts/.github//renovate/automerge-all"
   ],
-  "packageRules": [
-    {
-      "description": "Keep the Flyway buildscript and application Jackson 3 versions aligned",
-      "matchManagers": ["gradle"],
-      "matchPackageNames": [
-        "tools.jackson:jackson-bom",
-        "tools.jackson.core:jackson-core",
-        "tools.jackson.core:jackson-databind"
-      ],
-      "groupName": "Jackson 3",
-      "separateMajorMinor": false
-    }
-  ],
   "platformAutomerge": false,
   "automergeSchedule": [
     "after 7am and before 9am every weekday",
