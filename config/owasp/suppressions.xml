@@ -29,7 +29,7 @@
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2020-29582</cve>
   </suppress>
-  <suppress until="2026-11-15">
+  <suppress until="2027-01-15">
     <notes><![CDATA[
     CPE mismatch: PCS uses only the Java OTel client;
     these CVEs target the JS/Go clients which are absent from this codebase
@@ -39,30 +39,6 @@
     <cve>CVE-2026-39883</cve>
     <cve>CVE-2026-41178</cve>
     <cve>CVE-2026-54285</cve>
-  </suppress>
-  <suppress until="2026-11-15">
-    <notes><![CDATA[
-    HDPI-9102: false positive (CPE mismatch). CVE-2026-33117 affects only
-    com.azure:azure-security-keyvault-keys < 4.10.6, which PCS does not depend on.
-    NVD records it against the whole "azure_sdk_for_java" product, before 4.10.6, so
-    dependency-check flags every com.azure jar whose own version number is below 4.10.6.
-    https://github.com/advisories/ghsa-97jf-46m3-8953
-    Re-review by the until date.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.azure/(azure-core|azure-core-http-jdk-httpclient|azure-identity|azure-json)@.*$</packageUrl>
-    <cve>CVE-2026-33117</cve>
-  </suppress>
-  <suppress until="2026-11-15">
-    <notes><![CDATA[
-    HDPI-9102: false positive (already patched). CVE-2023-36415 was fixed in
-    azure-identity 1.10.2, and CVE-2024-35255 in azure-identity 1.12.2 / msal4j 1.15.1.
-    PCS has azure-identity 1.18.4 and msal4j 1.23.1. NVD's CPE version ranges for these
-    products do not line up with the Java artifact versions.
-    Re-review by the until date.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/(com\.azure/azure-identity@1\.18\.4|com\.microsoft\.azure/msal4j@1\.23\.1)$</packageUrl>
-    <cve>CVE-2023-36415</cve>
-    <cve>CVE-2024-35255</cve>
   </suppress>
   <!--End of false positives section -->
 
@@ -129,7 +105,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
     <cve>CVE-2026-59270</cve>
   </suppress>
-  <suppress until="2026-11-15">
+  <suppress until="2027-01-15">
     <notes><![CDATA[
     CVE-2026-59284: Spring Cloud Commons 4.3.3 has no allow list for property keys when
     the writable /actuator/env endpoint is enabled.
@@ -146,7 +122,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring-cloud-.*@4\.3\..*$</packageUrl>
     <cve>CVE-2026-59284</cve>
   </suppress>
-  <suppress until="2026-11-15">
+  <suppress until="2027-01-15">
     <notes><![CDATA[
     Spring Framework 6.2.19. No bump possible: the 6.2.x fix (6.2.20) is Enterprise
     Support Only and is not published to Maven Central; the OSS fix is 7.0.8.1, which
@@ -178,7 +154,7 @@
     <cve>CVE-2026-59281</cve>
     <cve>CVE-2026-59282</cve>
   </suppress>
-  <suppress until="2026-11-15">
+  <suppress until="2027-01-15">
     <notes><![CDATA[
     HDPI-8818: Spring Framework 6.2.19. Fix is Enterprise-only on 6.2.x (6.2.20) / OSS in 7.0.9,
     which needs Spring Boot 4. None of these are reachable in PCS:
@@ -200,7 +176,7 @@
     <cve>CVE-2026-47888</cve>
     <cve>CVE-2026-47889</cve>
   </suppress>
-  <suppress until="2026-11-15">
+  <suppress until="2027-01-15">
     <notes><![CDATA[
     CVE-2026-59276: Spring Security 6.5.11 compares some security-sensitive values with
     String.equals() rather than a constant-time comparison, allowing a timing side channel.
