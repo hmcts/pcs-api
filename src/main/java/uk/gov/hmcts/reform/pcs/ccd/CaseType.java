@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -161,6 +162,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildSupportTab(builder);
+
+        builder.tab("Messages", "Messages")
+            .showCondition(ShowConditions.and(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS),
+                ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER)))
+            .field("messagesMarkdownLabel")
+            .field("messagesMarkdown", NEVER_SHOW);
 
         buildJudicialNotesTab(builder);
 
