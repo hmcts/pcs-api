@@ -10,7 +10,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
+import { allPartyDetails, caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   askTheCourtToSetAsideTheOrder, checkYourAnswersGenApps, chooseAnApplication,
@@ -37,7 +37,7 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('getDefendantDetails', {
+  await performAction('getAllPartyDetails', {
     defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
     additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
     payLoad: submitCaseApiData.submitCasePayload()
@@ -69,7 +69,11 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
   test('Select an Application - Ask to Set aside @regression', async () => {
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let fileName = (chooseAnApplication.uploadDocHiddenOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '');
-    let uploadFile = (chooseAnApplication.uploadDocHiddenOption)[1]
+    let uploadFile = (chooseAnApplication.uploadDocHiddenOption)[1];
+    let party = allPartyDetails[0];    
+    const partyName = party.split(' - ')[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
@@ -82,7 +86,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', selectParty.mainHeader);
     await performAction('selectApplicant', {
       question: selectParty.partyMakingApplicationQuestion,
-      option: defendantDetails[0],
+      option: partyName,
     });
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
@@ -105,7 +109,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', uploadDocumentsToSupportDefendantsApplication.mainHeader);
     await performAction('uploadFilesGenApps', {
       documents: [
-        {type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: uploadFile},
+        { type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: uploadFile },
       ]
     });
     await performAction('selectLanguageUsedToComplete', {
@@ -132,7 +136,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      genApp: [CaseManagementCommonUtils.renameDocument(fileName, '', appType), CaseManagementCommonUtils.renameDocument(uploadFile, '', appType)],
+      genApp: [CaseManagementCommonUtils.renameDocument(fileName, '', appType, `${partyType} ${partyIndex}`), CaseManagementCommonUtils.renameDocument(uploadFile, '', appType, `${partyType} ${partyIndex}`)],
       defendantIndex: 1
     });
   });

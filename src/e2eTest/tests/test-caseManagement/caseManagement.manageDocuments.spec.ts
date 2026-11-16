@@ -11,6 +11,7 @@ import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { midEventLRRespondPossessionClaimApiData } from '@data/api-data/respondPossessionClaimMidEventLR.api.data';
+import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 test.use({ storageState: undefined })
 
@@ -73,6 +74,8 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
@@ -101,15 +104,18 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerAmend: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)],
     });
   });
 
   test('Case management - Manage documents - Amend Document not related to any App or Counterclaim @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
-    let party = allPartyDetails[1];
+    let party = allPartyDetails[1];    
+    const claimantIndex = 1;
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[2].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
@@ -139,8 +145,12 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitPayload,
-      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date)
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: claimantIndex,
+      partyIndex: partyIndex,
+      partyType: partyType,
+      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date,'',`${partyType} ${partyIndex}`)
+      
     });
   });
 
@@ -148,6 +158,9 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = '';
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[0];
+    const claimantIndex = 1;
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[1].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
@@ -177,9 +190,12 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Uncategorised documents',
-      submitPayload: submitPayload,
-      ccPayload : midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
-      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName)
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: 1,
+      defendantIndex : partyIndex,
+      partyType: partyType,
+      ccPayload: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
+      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, '','',`${partyType} ${partyIndex}`)
     });
   });
 
@@ -187,6 +203,9 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0]
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
+
     let fileName = uploadADocument.uploadDocHiddenOption[0];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
@@ -203,15 +222,16 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitPayload});
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerUpload: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),  ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
     });
+    CYAStore.getInstance().clearAll();
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
     const pages = page.context().pages();
@@ -226,8 +246,8 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerUpload: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),  ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
     });
   });
 
@@ -235,6 +255,8 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = uploadADocument.notRelatedToAppRadioOption;
     let party = allPartyDetails[1];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = uploadADocument.uploadDocHiddenOption[1];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
@@ -258,8 +280,9 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitPayload,
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date)
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: 1,
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`)
     });
   });
 
@@ -268,6 +291,8 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = uploadADocument.notRelatedToAppRadioOption;
     let party = allPartyDetails[2];
     let fileName = uploadADocument.uploadDocHiddenOption[1];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
@@ -290,9 +315,12 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitPayload,
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName)
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: 1,
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`)
+      
     });
+    CYAStore.getInstance().clearAll();
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
     const pages = page.context().pages();
@@ -307,8 +335,9 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitPayload,
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName)
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: 1,
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`)
     });
   });
 
@@ -317,6 +346,9 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[1];
     let fileName = uploadADocument.uploadDocHiddenOption[3];
+    const claimantIndex = 1;
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
@@ -339,9 +371,10 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerUpload: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),  ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
     });
+    CYAStore.getInstance().clearAll();
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
     const pages = page.context().pages();
@@ -356,14 +389,53 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitPayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: claimantIndex
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitPayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: claimantIndex,
       allowEmptyFolder: true
     });
 
+  });
+
+  test('Case management - Manage documents - Upload Document related to any App or Counterclaim @CM @regression', async ({ page, context }) => {
+    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length, 'CC')[0];
+    let party = allPartyDetails[0];
+    const claimantIndex = 1;
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
+    let fileName = uploadADocument.uploadDocHiddenOption[0];
+    let ccDocList = uploadADocument.ccDocHiddenOption.map(files =>
+      CaseManagementCommonUtils.renameDocument(files));
+    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+    await performValidation('mainHeader', uploadADocument.mainHeader);
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+      question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+      option: appType,
+      label: uploadADocument.addIssueDateTextLabel,
+      date: date,
+      question1: uploadADocument.partyDocRelatedToQuestion,
+      option1: party,
+      nextPage: checkYourAnswersUploadADocument.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Statements of case',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      claimantIndex: claimantIndex,
+      ccPayload: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
+      defendantIndex : partyIndex,
+      caseWorkerUpload: [...ccDocList,CaseManagementCommonUtils.renameDocument(fileName, date,appType, `${partyType} ${partyIndex}`)]
+    });
   });
 });
 
