@@ -3,12 +3,15 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.service.coverletter.CoveringLetterProvider;
 import uk.gov.hmcts.reform.pcs.ccd.service.coversheet.CoversheetProvider;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.LetterV3;
@@ -36,26 +39,32 @@ public class BulkPrintService {
     private static final String BLANK_COUNTERCLAIM_FORM_NAME = "ONC-003-counterclaim.pdf";
 
     private final CoversheetProvider coversheetProvider;
+    private final CoveringLetterProvider coveringLetterProvider;
     private final LetterDocumentFetcher letterDocumentFetcher;
     private final BulkPrintLetterAssembler letterAssembler;
     private final SendLetterApi sendLetterApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseReferenceFormatter caseReferenceFormatter;
+    private final FeatureToggleService featureToggleService;
     private final BlankClaimPackFormsProvider blankClaimPackFormsProvider;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
+                            CoveringLetterProvider coveringLetterProvider,
                             LetterDocumentFetcher letterDocumentFetcher,
                             BulkPrintLetterAssembler letterAssembler,
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter,
+                            FeatureToggleService featureToggleService,
                             BlankClaimPackFormsProvider blankClaimPackFormsProvider) {
         this.coversheetProvider = coversheetProvider;
+        this.coveringLetterProvider = coveringLetterProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
         this.letterAssembler = letterAssembler;
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
         this.caseReferenceFormatter = caseReferenceFormatter;
+        this.featureToggleService = featureToggleService;
         this.blankClaimPackFormsProvider = blankClaimPackFormsProvider;
     }
 
@@ -63,9 +72,14 @@ public class BulkPrintService {
                          String recipientName, AddressUK address, List<DocumentEntity> documents) {
         requirePostalAddress(address, recipient);
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
-
-        byte[] coversheet = coversheetProvider.render(recipientName, address, caseReference);
+        final byte[] coversheet = coversheetProvider.render(recipientName, address, caseReference);
         List<BulkPrintLetterAssembler.LetterDocument> letterDocuments = new ArrayList<>();
+        if (letterType.includesCoveringLetter()
+            && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
+                "covering-letter.pdf", APPLICATION_PDF,
+                coveringLetterProvider.render(pcsCase, recipient, recipientName, address, caseReference)));
+        }
         documents.forEach(document -> letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
             document.getFileName(), document.getContentType(),
             letterDocumentFetcher.fetchBytes(document.getDocumentId()))));

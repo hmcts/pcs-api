@@ -55,6 +55,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType.PAYMENT_OR_COMPENSATION;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.CLAIMANT_CLAIM_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENCE_PACK;
@@ -157,24 +158,24 @@ class BulkPrintPacksTest extends CftlibTest {
 
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.DEFENDANT_RESPONSE, testStart, 1);
 
-        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
-
-        List<Letter> letters = mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, 2);
+        List<Letter> letters = waitForDefencePacks(testStart, 2);
         assertThat(letters)
             .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(2);
-            // Coversheet is posted as-is; converted pack pages have no extractable text.
+            // Coversheet, covering letter and defence form, padded to an even page count.
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
             assertConvertedPage(pdDocument, 1);
+            assertConvertedPage(pdDocument, 2);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(2);
+            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
             assertConvertedPage(pdDocument, 1);
+            assertConvertedPage(pdDocument, 2);
         }
 
     }
@@ -203,19 +204,18 @@ class BulkPrintPacksTest extends CftlibTest {
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.DEFENDANT_RESPONSE, testStart, 1);
         caseDocumentService.waitForDocumentsOfType(caseReference, DocumentType.COUNTERCLAIM, testStart, 1);
 
-        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
-
-        List<Letter> letters = mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, 2);
+        List<Letter> letters = waitForDefencePacks(testStart, 2);
         assertThat(letters)
             .map(BulkPrintPacksTest::getRecipientName)
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            // Coversheet + defence + counterclaim is 3 pages; bulk print pads to an even count for duplex.
+            // Coversheet, covering letter, defence form and counterclaim form. Already an even count.
             assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
             assertConvertedPage(pdDocument, 1);
             assertConvertedPage(pdDocument, 2);
+            assertConvertedPage(pdDocument, 3);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
@@ -223,8 +223,21 @@ class BulkPrintPacksTest extends CftlibTest {
             assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
             assertConvertedPage(pdDocument, 1);
             assertConvertedPage(pdDocument, 2);
+            assertConvertedPage(pdDocument, 3);
         }
 
+    }
+
+    private List<Letter> waitForDefencePacks(Instant testStart, int minLetterCount) {
+        await("Defence packs available for case " + caseReference)
+            .atMost(Duration.ofSeconds(90))
+            .pollInterval(Duration.ofSeconds(2))
+            .ignoreExceptions()
+            .until(() -> {
+                testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
+                return mockSendLetterServer.countSentLetters(caseReference, DEFENCE_PACK, testStart) >= minLetterCount;
+            });
+        return mockSendLetterServer.getSentLetters(caseReference, DEFENCE_PACK, testStart, minLetterCount);
     }
 
     private void submitDefendantResponse(String emailAddress, CounterClaim counterClaim, String defendantToken) {
