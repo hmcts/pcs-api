@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementStateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession.WarrantOfPossessionScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.writofpossession.WritOfPossessionScheduler;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -27,6 +28,7 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
     private final EnforcementStateService enforcementStateService;
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final WritOfPossessionScheduler writOfPossessionScheduler;
+    private final WarrantOfPossessionScheduler warrantOfPossessionScheduler;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -59,7 +61,9 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
             writOfPossessionScheduler.scheduleWritOfPossessionGeneration(
                 enforcementOrderEntity.getPcsCase().getCaseReference(), enforcementOrderEntity.getId());
         } else if (enforcementOrderEntity.getWarrantDetails() != null) {
-            // Warrant of possession and risk assessment documents to follow
+            warrantOfPossessionScheduler.scheduleWarrantOfPossessionGeneration(
+                enforcementOrderEntity.getPcsCase().getCaseReference(), enforcementOrderEntity.getId());
+            // Risk assessment document to follow
         }
     }
 
