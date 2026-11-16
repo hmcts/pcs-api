@@ -16,11 +16,4 @@ public enum SelectEnforcementType implements HasLabel {
     WRIT_OF_RESTITUTION("Writ of restitution");
 
     private final String label;
-
-    public static SelectEnforcementType getSelectEnforcementTypeFromName(String code) {
-        return Arrays.stream(values())
-                .filter(type -> type.name().equals(code))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown enforcement type: " + code));
-    }
 }

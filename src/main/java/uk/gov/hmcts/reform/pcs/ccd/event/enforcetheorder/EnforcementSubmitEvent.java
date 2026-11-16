@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import java.time.Instant;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
@@ -95,7 +94,7 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
 
     private static @NonNull SelectEnforcementType getSelectEnforcementType(EnforcementOrder enforcementOrder) {
         String enforcementType = enforcementOrder.getChooseEnforcementType().getValueCode();
-        return getSelectEnforcementTypeFromName(enforcementType);
+        return SelectEnforcementType.valueOf(enforcementType);
     }
 
     private static String getPaymentConfirmationMarkdown(String enforcementFee, long caseReference) {

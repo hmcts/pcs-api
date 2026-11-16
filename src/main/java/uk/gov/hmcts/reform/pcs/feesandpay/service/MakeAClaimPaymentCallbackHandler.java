@@ -66,8 +66,8 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
                 taskData.getCaseReference(), resumePossessionClaim, paymentStatusCallback, CLAIM_ISSUED_PAYMENT);
             executeEvent(paymentStateTaskData);
         } else {
-            log.warn("The {} was not successful [{}] for case: {}",
-                     resumePossessionClaim, feePaymentEntity.getPaymentStatus(), taskData.getCaseReference());
+            log.warn("The payment was not successful: [{}] for case: {}",
+                     feePaymentEntity.getPaymentStatus(), taskData.getCaseReference());
         }
     }
 
@@ -105,7 +105,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
             scheduleClaimIssuedNotification(caseReference);
             claimWaTaskService.createTasksForIssuedClaim(caseReference);
         }
-        return stateTransition(taskData);
+        return buildSateTransitionResult(taskData);
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(FeePaymentEntity feePaymentEntity) {
@@ -123,7 +123,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
                                                      feesAndPayTaskData.getCaseReference());
     }
 
-    private SystemEventResult stateTransition(PaymentStateTaskData taskData) {
+    private SystemEventResult buildSateTransitionResult(PaymentStateTaskData taskData) {
         return SystemEventResult.withStateTransition(
             taskData.getEventId().name(),
             taskData.getEventId().name(),
