@@ -19,7 +19,7 @@ import {
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
-  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps, paymentDetails,
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
 import { home } from '@data/page-data';

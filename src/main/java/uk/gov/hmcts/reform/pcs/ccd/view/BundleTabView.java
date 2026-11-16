@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.MissingBundleDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 
 import java.time.ZoneId;
@@ -42,11 +44,17 @@ public class BundleTabView {
 
     private final ObjectProvider<CaseBundles> bundles;
     private final UserRoleService roles;
+    private final FeatureToggleService features;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
         CaseBundles managed = bundles.getIfAvailable();
+        if (managed == null) {
+            return;
+        }
         // The judge roles are all organisational, so no case-level lookup is needed.
-        if (managed == null || !JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
+        var user = roles.getCurrentUserOrganisationalRoles();
+        if (!JudicialReadAccess.isJudge(user.roles())
+            || !features.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, user.userId())) {
             return;
         }
         CaseBundleView view = managed.view(CaseBundleDefinition.NAME, entity.getId().toString());
@@ -64,6 +72,7 @@ public class BundleTabView {
             case UP_TO_DATE -> missing.isEmpty() ? UP_TO_DATE : UP_TO_DATE_WITH_MISSING;
         };
         pcsCase.setBundleTab(BundleTab.builder().status(status)
+            .documentId(publication.flatMap(current -> current.stored().map(stored -> stored.id())).orElse(null))
             .bundle(publication.flatMap(current -> current.stored().map(stored -> Document.builder()
                 .url(stored.url())
                 .binaryUrl(stored.binaryUrl())
