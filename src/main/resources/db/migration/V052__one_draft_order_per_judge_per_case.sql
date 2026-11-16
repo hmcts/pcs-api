@@ -4,11 +4,3 @@
 DROP INDEX orders_one_draft_per_author_idx;
 CREATE UNIQUE INDEX orders_one_draft_per_author_idx ON orders(case_id, author_idam_user_id)
     WHERE state = 'DRAFT';
-
--- The tasks a judge has worked on an order from, which sending it for review completes: the one draft can be opened
--- from several.
-CREATE TABLE order_task (
-    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    task_id  TEXT NOT NULL,
-    PRIMARY KEY (order_id, task_id)
-);

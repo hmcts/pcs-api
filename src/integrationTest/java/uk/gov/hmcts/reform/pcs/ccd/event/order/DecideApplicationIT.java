@@ -313,21 +313,6 @@ class DecideApplicationIT extends OrderEventIT {
             .containsExactly(MakeOrder.NOT_OPEN);
     }
 
-    @Test
-    @DisplayName("completes every task the judge worked on their one draft from when they send it")
-    void completesEveryTaskTheDraftWasWorkedOnFrom() {
-        var asJudge = asJudgeDeciding(genAppId);
-        asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), "grant", "decide-task"));
-        verifyNoInteractions(taskManagementApi);
-
-        var fromHearing = events.external(caseReference, MAKE_ORDER).as(judge);
-        fromHearing.submitExpectingSuccess(
-            decision(SUBMIT_FOR_REVIEW, fromHearing.start().order(), "grant", "hearing-task"));
-
-        verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
-        verify(taskManagementApi).completeTask(any(), any(), eq("hearing-task"), any());
-    }
-
     private void issue(Order order) {
         asCaseworkerReviewing(order.id()).submitExpectingSuccess(issueRequest(order));
     }

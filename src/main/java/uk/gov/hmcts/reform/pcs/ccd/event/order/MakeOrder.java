@@ -55,9 +55,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_
  * starts and every task or link opens, until they send it for review. The judge chooses which of the
  * case's hearings the order is made at, or none, and can change it until they send it; a link's hearing is only where
  * a new order starts. An order a caseworker returned is the judge's to change and resubmit beside their draft,
- * opened from the task its return gave them. Sending an order completes every task the judge worked on it from.
- * An order made for a hearing records the case's facts and the judge's note for that hearing whenever the judge saves
- * it.
+ * opened from the task its return gave them. An order
+ * made for a hearing records the case's facts and the judge's note for that hearing whenever the judge saves it.
  * The task that asks a judge to decide an application names it, for the page to put first and require.
  */
 @Component
@@ -201,9 +200,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         HearingEntity chosen = Objects.equals(hearingId, chosenHearingId) ? order.getHearing()
             : madeAt(order.getPcsCase(), chosenHearingId);
         order.setHearing(chosen);
-        if (request.taskId() != null) {
-            order.getTaskIds().add(request.taskId());
-        }
         // The order holds no copy of the hearing's facts and note, which are recorded only when the judge changed
         // them, so another judge's are not refused or overwritten by a save that left them alone.
         if (request.hearing() != null && request.hearing().caseFacts() != null) {
@@ -224,10 +220,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
-        // Every task the judge worked on the order from: its return, a hearing's, or an application it decides.
-        List<Runnable> completions = order.getTaskIds().stream().map(taskCompletionService::complete).toList();
-        order.getTaskIds().clear();
-        submit.afterCommit(() -> completions.forEach(Runnable::run));
+        // The task the judge opened the order from: its return, a hearing's, or the application it decides.
+        submit.afterCommit(taskCompletionService.complete(request.taskId()));
         messageService.closeAnsweredByOrder(order, decided, judge, orderTasks.currentUserName("Judge"));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(

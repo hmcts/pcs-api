@@ -75,14 +75,6 @@ public class OrderEntity {
     @JoinColumn(name = "hearing_id")
     private HearingEntity hearing;
 
-    /** The tasks the judge has worked on the order from, which sending it for review completes. */
-    @ElementCollection
-    @CollectionTable(name = "order_task", joinColumns = @JoinColumn(name = "order_id"))
-    @Column(name = "task_id")
-    @Builder.Default
-    @Setter(AccessLevel.NONE)
-    private Set<String> taskIds = new HashSet<>();
-
     /** The parties court staff served the order on without notice; none means it is served on all parties. */
     @ManyToMany
     @JoinTable(name = "order_served_party", joinColumns = @JoinColumn(name = "order_id"),
