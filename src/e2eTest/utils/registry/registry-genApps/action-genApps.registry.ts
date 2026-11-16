@@ -65,6 +65,7 @@ export class ActionGenAppsRegistry {
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['inputErrorValidation', new GenAppsAction()],
     ['errorValidationChooseAnApplicationPage', new ErrorValidationAction()],
+    ['getAllPartyDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {
