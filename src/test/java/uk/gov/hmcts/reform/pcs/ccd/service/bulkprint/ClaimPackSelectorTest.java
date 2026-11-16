@@ -109,6 +109,18 @@ class ClaimPackSelectorTest {
     }
 
     @Test
+    @DisplayName("Leaves application evidence out when bulk print 2 is off")
+    void shouldLeaveEvidenceOutWhenBulkPrint2IsOff() {
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = englishCase(pinA);
+        attachEvidence(pcsCase, evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z")));
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase).get(1).documents())
+            .containsExactly(pinA, claimForm);
+    }
+
+    @Test
     @DisplayName("Puts application evidence after the claim form for an English defendant")
     void shouldIncludeApplicationEvidenceAfterTheClaimForm() {
         enableBulkPrint2();

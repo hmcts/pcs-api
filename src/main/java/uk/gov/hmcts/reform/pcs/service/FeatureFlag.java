@@ -10,7 +10,7 @@ public enum FeatureFlag {
 
     CASE_BUNDLE_VIEW("case-bundle-view-enabled", false),
     BULK_PRINT("bulk-print-enabled", false),
-    BULK_PRINT_2("bulk-print-2-enabled", false),
+    BULK_PRINT_2("bulk-print-2-enabled", false), // Gates bulk print v2 work. See HDPI-10018 Jira ticket for details.
     SDP_EXPORT("sdp-export-enabled", false),
     CASEWORKER_EVENTS("caseworker-events-enabled", true),
     CUI_RESPOND_TO_CLAIM_LR("cui-respond-to-claim-lr-enabled", true),
