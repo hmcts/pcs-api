@@ -5,10 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
+import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -29,12 +32,18 @@ class OrderCaseContextTest {
     private PartyService partyService;
     @Mock
     private CaseNameFormatter caseNameFormatter;
+    @Mock
+    private OrderTasks orderTasks;
+    @Mock
+    private ObjectProvider<CaseBundles> bundles;
+    @Mock
+    private UserRoleService roles;
 
     private OrderCaseContext underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new OrderCaseContext(addressMapper, partyService, caseNameFormatter);
+        underTest = new OrderCaseContext(addressMapper, partyService, caseNameFormatter, orderTasks, bundles, roles);
     }
 
     @Test

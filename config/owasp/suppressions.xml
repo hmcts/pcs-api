@@ -29,7 +29,7 @@
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2020-29582</cve>
   </suppress>
-  <suppress until="2026-11-15">
+  <suppress until="2027-01-15">
     <notes><![CDATA[
     CPE mismatch: PCS uses only the Java OTel client;
     these CVEs target the JS/Go clients which are absent from this codebase
